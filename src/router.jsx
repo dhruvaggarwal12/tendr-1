@@ -9,7 +9,6 @@ import ErrorPage from "./components/ErrorPage";
 import CorporateLogin from "./pages/corporate/Login";
 import CorporateSignup from "./pages/corporate/SignUp.jsx";
 
-import OtpPage from './pages/customer/OtpVerification';
 import VendorList from './pages/customer/VendorList';
 import VendorDetails from './pages/customer/VendorDetails';
 import Chat from './pages/customer/Chat';
@@ -27,11 +26,10 @@ import OtpVerification from "./pages/customer/OtpVerification";
 import RefundPolicy from "./pages/info/RefundPolicy";
 import CancellationPolicy from "./pages/info/CancellationPolicy";
 import ContactUs from "./pages/info/ContactUs.jsx";
+import AboutUs from "./pages/info/AboutUs.jsx";
 
 import ChooseBooking from "./pages/customer/ChooseBooking";
-import AltBookingFlow from "./pages/customer/AltBookingFlow";
 
-import Corporate from "./components/corporateEventPlanning.jsx";
 import CorporateDashboard from './pages/corporate/Dashboard.jsx';
 import TimelineBuilder from './pages/timeline/TimelineBuilder';
 import Timeline from './pages/timeline/Timeline';
@@ -258,10 +256,16 @@ const router = createBrowserRouter([
   },
 
   // Info pages
-  { 
-    path: "/contact-us", 
-    element: <ContactUs />, 
-    errorElement: <ErrorPage /> 
+  {
+    path: "/contact-us",
+    element: <ContactUs />,
+    errorElement: <ErrorPage />
+  },
+
+  {
+    path: "/about-us",
+    element: <AboutUs />,
+    errorElement: <ErrorPage />
   },
 
   { 

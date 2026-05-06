@@ -1042,8 +1042,8 @@ body {
 .event-card {
   position: relative;
   width: 100%;
-  max-width: 420px;        /* was fixed to 500px — now responsive */
-  height: 350px;
+  max-width: 370px;
+  height: 300px;
   border-radius: 16px;
   overflow: hidden;
   cursor: pointer;
@@ -1062,7 +1062,7 @@ body {
 .event-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.1));
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.82) 0%, rgba(0, 0, 0, 0.18) 55%, transparent 100%);
   display: flex;
   align-items: flex-end;
   padding: 1.2rem 1.5rem;
@@ -1071,10 +1071,12 @@ body {
 
 .event-overlay h3 {
   color: #fff;
-  font-size: 1.1rem;
-  font-weight: 600;
+  font-size: 1.15rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.08em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+  font-family: 'Outfit', sans-serif;
 }
 
 /* ===========================
@@ -1106,8 +1108,8 @@ body {
   }
 
   .event-card {
-    max-width: 450px;
-    height: 320px;
+    max-width: 400px;
+    height: 270px;
   }
 }
 
@@ -1127,7 +1129,7 @@ body {
   }
 
   .event-card {
-    height: 260px;
+    height: 230px;
   }
 }
 
@@ -1139,7 +1141,7 @@ body {
 
   .event-card {
     width: 100%;
-    height: 220px;
+    height: 200px;
   }
 
   .events-title {

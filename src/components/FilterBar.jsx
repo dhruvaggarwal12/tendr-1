@@ -31,7 +31,6 @@ const FilterBar = () => {
     "Delhi",
     "Noida",
     "Greater Noida",
-    "Gurugram",
     "Ghaziabad"
   ];
   const serviceOptions = [

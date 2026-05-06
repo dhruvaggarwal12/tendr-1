@@ -16,11 +16,57 @@ import JourneyFlow from "../../components/JourneyFlow";
 // WhatsApp icon
 import { FaWhatsapp } from "react-icons/fa";
 import Navbar from "../../components/Navbar.jsx";
-import Navabar from "./Navabar.jsx";
+import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
+
+const CELEBRATION_PHOTOS = [
+  {
+    url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1100&q=85",
+    label: "Wedding Decor",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1100&q=85",
+    label: "Wedding Ceremony",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1100&q=85",
+    label: "Golden Celebration",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1100&q=85",
+    label: "Festive Moments",
+  },
+  {
+    url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=1100&q=85",
+    label: "Celebration Feast",
+  },
+];
 
 const Home = () => {
   const navigate = useNavigate();
   const [scrolled, setScrolled] = useState(false);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const [heroPrev, setHeroPrev] = useState(null);
+  const [heroFading, setHeroFading] = useState(false);
+
+  const goToSlide = (idx) => {
+    if (heroFading) return;
+    setHeroPrev(heroIndex);
+    setHeroFading(true);
+    setTimeout(() => {
+      setHeroIndex(idx);
+      setHeroPrev(null);
+      setHeroFading(false);
+    }, 420);
+  };
+
+  const heroNext = () => goToSlide((heroIndex + 1) % CELEBRATION_PHOTOS.length);
+  const heroPrevSlide = () =>
+    goToSlide((heroIndex - 1 + CELEBRATION_PHOTOS.length) % CELEBRATION_PHOTOS.length);
+
+  useEffect(() => {
+    const t = setInterval(heroNext, 4500);
+    return () => clearInterval(t);
+  }, [heroIndex, heroFading]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -87,14 +133,14 @@ const Home = () => {
     } else if (selectedValue === "invitation") {
       navigate("/invitation");
     } else if (selectedValue === "our-products") {
-      navigate("/gift-hampers-cakes");
+      // Gift Hampers disabled
     }
     event.target.selectedIndex = 0;
   };
 
   const handleGiftHampersClick = (e) => {
     e.preventDefault();
-    navigate("/gift-hampers-cakes");
+    // Gift Hampers disabled
   };
 
   const handlePartnerClick = (e) => {
@@ -137,39 +183,39 @@ const Home = () => {
   const events = [
     {
       id: 1,
-      title: "Dinner Eve",
+      title: "Sangeet Night",
       image:
-        "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1619529398688-b99e1cc3c4e5?auto=format&fit=crop&w=600&h=400&q=80",
     },
     {
       id: 2,
-      title: "Family Gathering",
+      title: "Holi Celebration",
       image:
-        "https://belvederebanquets.com/wp-content/uploads/2024/02/Belvedere-Family-Reunion-Ideas-Create-New-Memories-With-Fun-Activities.jpg",
+        "https://images.unsplash.com/photo-1576473550018-d9fa22c3fb47?auto=format&fit=crop&w=600&h=400&q=80",
     },
     {
       id: 3,
-      title: "Lunch Celebrations",
+      title: "Diwali Gala",
       image:
-        "https://images.unsplash.com/photo-1530023367847-a683933f4172?w=500&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1604014237800-1c9102c219da?auto=format&fit=crop&w=600&h=400&q=80",
     },
     {
       id: 4,
-      title: "Marriage Ceremony",
+      title: "Wedding Reception",
       image:
-        "https://seasons5.com.au/wp-content/uploads/2024/06/luxury-wedding-trends.jpg",
+        "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=600&h=400&q=80",
     },
     {
       id: 5,
-      title: "Magical Ring Ceremony",
+      title: "Birthday Bash",
       image:
-        "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=500&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&h=400&q=80",
     },
     {
       id: 6,
-      title: "Birthday Bash",
+      title: "Gala Dinner",
       image:
-        "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=500&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&h=400&q=80",
     },
   ];
 
@@ -206,6 +252,7 @@ const Home = () => {
       >
         <BasicSpeedDial />
       </div>
+      <SelectedVendorsFloat />
 
       {/* Header / Navbar */}
       <nav
@@ -217,16 +264,285 @@ const Home = () => {
       </nav>
 
       {/* Hero Section */}
-      <section className="hero">
-        <div className="hero-content">
-          <h1>Experience Event Planning</h1>
-          <p className="hero-subtitle">We Curate You Celebrate</p>
-          <button className="cta-button" onClick={() => navigate("/booking")}>
-            {" "}
-            Booking{" "}
-          </button>
+      <section
+        style={{
+          height: "100vh",
+          paddingTop: 76,
+          background: "linear-gradient(135deg, #FFF8EE 0%, #FFF3DC 60%, #FDE8C8 100%)",
+          display: "flex",
+          alignItems: "stretch",
+          fontFamily: "'Outfit', sans-serif",
+          overflow: "hidden",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "stretch",
+            flex: 1,
+          }}
+          className="hero-split"
+        >
+          {/* ── Left: copy + CTA ── */}
+          <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
+            <span
+              style={{
+                display: "inline-block",
+                background: "rgba(139,69,19,0.1)",
+                color: "#8B4513",
+                fontSize: 13,
+                fontWeight: 700,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                padding: "5px 14px",
+                borderRadius: 100,
+                marginBottom: 28,
+                width: "fit-content",
+              }}
+            >
+              Delhi NCR's Trusted Platform
+            </span>
+
+            <h1
+              style={{
+                fontSize: "clamp(2rem, 3.2vw, 3.4rem)",
+                fontWeight: 800,
+                lineHeight: 1.18,
+                color: "#2C1A0E",
+                marginBottom: 24,
+                letterSpacing: "-0.02em",
+              }}
+            >
+              Plan, organize, and bring your entire party to life—
+              <span
+                style={{
+                  background: "linear-gradient(135deg, #C47A2E, #DEB887)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}
+              >
+                without the chaos
+              </span>
+              {" "}of managing everything on your own
+            </h1>
+
+            <p
+              style={{
+                fontSize: 17,
+                fontWeight: 400,
+                color: "#6B4226",
+                lineHeight: 1.65,
+                marginBottom: 40,
+                maxWidth: 480,
+              }}
+            >
+              From ideas to execution, handle every part of your celebration in one seamless flow with smart tools and trusted services.
+            </p>
+
+            <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+              <button
+                onClick={() => navigate("/booking")}
+                style={{
+                  background: "linear-gradient(135deg, #C47A2E 0%, #DEB887 100%)",
+                  color: "#fff",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  letterSpacing: "0.03em",
+                  padding: "14px 36px",
+                  borderRadius: 12,
+                  border: "none",
+                  cursor: "pointer",
+                  boxShadow: "0 4px 20px rgba(196,122,46,0.38)",
+                  transition: "transform 0.2s, box-shadow 0.2s",
+                  fontFamily: "'Outfit', sans-serif",
+                  whiteSpace: "nowrap",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                  e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.5)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(196,122,46,0.38)";
+                }}
+              >
+                Plan Your Event
+              </button>
+            </div>
+          </div>
+
+          {/* ── Right: photo carousel ── */}
+          <div style={{ flex: 1, position: "relative", overflow: "hidden" }}>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: "0 0 0 32px",
+                overflow: "hidden",
+                boxShadow: "-8px 0 40px rgba(139,69,19,0.15)",
+              }}
+            >
+              {/* Current photo */}
+              <img
+                key={heroIndex}
+                src={CELEBRATION_PHOTOS[heroIndex].url}
+                alt={CELEBRATION_PHOTOS[heroIndex].label}
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  animation: "heroFadeIn 0.42s ease",
+                }}
+              />
+
+              {/* Gradient overlay at bottom */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: "45%",
+                  background: "linear-gradient(to top, rgba(30,15,5,0.72) 0%, transparent 100%)",
+                  pointerEvents: "none",
+                }}
+              />
+
+              {/* Event label */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 20,
+                  left: 20,
+                  color: "#fff",
+                  fontSize: 16,
+                  fontWeight: 700,
+                  letterSpacing: "0.02em",
+                  textShadow: "0 1px 4px rgba(0,0,0,0.4)",
+                }}
+              >
+                {CELEBRATION_PHOTOS[heroIndex].label}
+              </div>
+
+              {/* Prev arrow */}
+              <button
+                onClick={heroPrevSlide}
+                style={{
+                  position: "absolute",
+                  left: 14,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "rgba(255,255,255,0.22)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  color: "#fff",
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  fontSize: 18,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background 0.2s",
+                  zIndex: 2,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.38)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.22)")}
+              >
+                ‹
+              </button>
+
+              {/* Next arrow */}
+              <button
+                onClick={heroNext}
+                style={{
+                  position: "absolute",
+                  right: 14,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  background: "rgba(255,255,255,0.22)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255,255,255,0.3)",
+                  color: "#fff",
+                  width: 40,
+                  height: 40,
+                  borderRadius: "50%",
+                  fontSize: 18,
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background 0.2s",
+                  zIndex: 2,
+                }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.38)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(255,255,255,0.22)")}
+              >
+                ›
+              </button>
+
+              {/* Dot indicators */}
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 18,
+                  right: 18,
+                  display: "flex",
+                  gap: 6,
+                  zIndex: 2,
+                }}
+              >
+                {CELEBRATION_PHOTOS.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => goToSlide(i)}
+                    style={{
+                      width: i === heroIndex ? 20 : 7,
+                      height: 7,
+                      borderRadius: 4,
+                      background: i === heroIndex ? "#fff" : "rgba(255,255,255,0.5)",
+                      border: "none",
+                      cursor: "pointer",
+                      transition: "all 0.3s ease",
+                      padding: 0,
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
+
+      <style>{`
+        @keyframes heroFadeIn {
+          from { opacity: 0; transform: scale(1.04); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        @media (max-width: 900px) {
+          .hero-split {
+            flex-direction: column !important;
+          }
+          .hero-split > div:first-child {
+            flex: unset !important;
+            padding: 40px 28px 32px !important;
+          }
+          .hero-split > div:last-child {
+            flex: unset !important;
+            position: relative !important;
+            height: 340px !important;
+            width: 100% !important;
+          }
+          .hero-split > div:last-child > div {
+            border-radius: 0 !important;
+          }
+        }
+      `}</style>
 
       <JourneyFlow />
 

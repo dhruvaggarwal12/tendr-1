@@ -1,78 +1,168 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { CalendarDays, Briefcase, ArrowRight } from "lucide-react";
 import { setBookingType, resetEventPlanning } from "../../redux/eventPlanningSlice";
+import { clearVendorCompare, clearFinalisedVendor } from "../../redux/listingFiltersSlice";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+
+const font = "'Outfit', sans-serif";
+
+const FLOWS = [
+  {
+    type: "you-do-it",
+    emoji: "🔍",
+    title: "You Do It",
+    subtitle: "Browse & choose vendors yourself",
+    description: "Fill in your event details, browse verified vendors by category, compare them side by side, and finalise who you want to hire.",
+    steps: ["Fill event form", "Browse vendor listings", "Compare & chat", "Finalise & book"],
+    cta: "Start Browsing",
+    accentColor: "#C47A2E",
+    bgAccent: "rgba(196,122,46,0.06)",
+    borderColor: "rgba(196,122,46,0.25)",
+  },
+  {
+    type: "let-us-do-it",
+    emoji: "✨",
+    title: "Let Us Do It",
+    subtitle: "Tell us your needs, we handle the rest",
+    description: "Share your event requirements and budget. Our planning team will suggest the best options and coordinate everything for you.",
+    steps: ["Fill event form", "Tell us your needs", "We execute your event", "Review & confirm"],
+    cta: "Get Started",
+    accentColor: "#7A4A1E",
+    bgAccent: "rgba(122,74,30,0.05)",
+    borderColor: "rgba(122,74,30,0.18)",
+  },
+];
 
 export default function ChooseBooking() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const handleChoose = (type) => {
-    dispatch(resetEventPlanning());      // ✅ Reset state first
-    dispatch(setBookingType(type));      // ✅ Then set booking type
-    navigate(`/plan-event/form?bookingType=${type}`);
+    dispatch(resetEventPlanning());
+    dispatch(clearVendorCompare());
+    dispatch(clearFinalisedVendor());
+    dispatch(setBookingType(type));
+    navigate("/plan-event/form?bookingType=" + type);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "48px 24px 80px",
+        fontFamily: font,
+      }}
+    >
       <BasicSpeedDial />
-      <div className="flex flex-col items-center w-full max-w-5xl">
-        {/* Header */}
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-            <span className="bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent">
-              Choose Your Booking Type
-            </span>
-          </h1>
-          <p className="mt-3 text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
-            Two simple options. Pick what fits you best.
-          </p>
-          <div className="mt-6 w-16 h-1 bg-amber-600 mx-auto rounded-full" />
-        </header>
 
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-          {/* You Do It */}
-          <div className="rounded-xl border bg-white p-8 shadow-md hover:shadow-lg transition flex flex-col">
-            <div className="flex items-center gap-3">
-              <span className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                <CalendarDays className="h-8 w-8 text-amber-700" />
-              </span>
-              <h2 className="text-xl font-semibold text-gray-800">You Do It</h2>
-            </div>
-            <p className="mt-4 text-base text-gray-600 flex-grow">
-              Guided flow with vendors and budget.
-            </p>
-            <button
-              onClick={() => handleChoose("you-do-it")}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 bg-amber-600 text-white text-base font-medium hover:bg-amber-700 transition w-full"
-            >
-              Continue <ArrowRight className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Let Us Do It */}
-          <div className="rounded-xl border bg-white p-8 shadow-md hover:shadow-lg transition flex flex-col">
-            <div className="flex items-center gap-3">
-              <span className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                <Briefcase className="h-8 w-8 text-amber-700" />
-              </span>
-              <h2 className="text-xl font-semibold text-gray-800">Let Us Do It</h2>
-            </div>
-            <p className="mt-4 text-base text-gray-600 flex-grow">
-              Just tell us the requirement, and we’ll take care of everything.
-            </p>
-            <button
-              onClick={() => handleChoose("let-us-do-it")}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 bg-amber-600 text-white text-base font-medium hover:bg-amber-700 transition w-full"
-            >
-              Continue <ArrowRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+      {/* Header */}
+      <div style={{ textAlign: "center", marginBottom: 52 }}>
+        <p style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>
+          Event Planning
+        </p>
+        <h1 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px", lineHeight: 1.15 }}>
+          How would you like to plan?
+        </h1>
+        <p style={{ fontSize: 16, color: "#9B7450", margin: 0 }}>
+          Two simple paths to your perfect event. Pick what works best for you.
+        </p>
+        <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "20px auto 0" }} />
       </div>
+
+      {/* Flow cards */}
+      <div
+        style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24, width: "100%", maxWidth: 860 }}
+        className="choose-booking-grid"
+      >
+        {FLOWS.map((flow) => (
+          <div
+            key={flow.type}
+            style={{
+              background: "#FFFCF5",
+              border: "2px solid " + flow.borderColor,
+              borderRadius: 24,
+              padding: "40px 32px",
+              minHeight: 520,
+              display: "flex",
+              flexDirection: "column",
+              boxShadow: "0 4px 24px rgba(139,69,19,0.08)",
+              transition: "transform 0.2s, box-shadow 0.2s",
+              cursor: "default",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(139,69,19,0.14)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(139,69,19,0.08)"; }}
+          >
+            {/* Icon + title */}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ width: 52, height: 52, borderRadius: 16, background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 14 }}>
+                {flow.emoji}
+              </div>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "-0.01em" }}>
+                {flow.title}
+              </h2>
+              <p style={{ fontSize: 13.5, fontWeight: 600, color: flow.accentColor, margin: 0 }}>
+                {flow.subtitle}
+              </p>
+            </div>
+
+            {/* Description */}
+            <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.62, margin: "0 0 20px", flex: 1 }}>
+              {flow.description}
+            </p>
+
+            {/* Steps */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 28 }}>
+              {flow.steps.map((step, i) => (
+                <div key={step} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: flow.accentColor, flexShrink: 0 }}>
+                    {i + 1}
+                  </span>
+                  <span style={{ fontSize: 13.5, color: "#5a3a1a", fontWeight: 500 }}>{step}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* CTA */}
+            <button
+              onClick={() => handleChoose(flow.type)}
+              style={{
+                width: "100%",
+                padding: "13px",
+                borderRadius: 12,
+                border: "none",
+                background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+                color: "#fff",
+                fontSize: 15,
+                fontWeight: 700,
+                fontFamily: font,
+                cursor: "pointer",
+                boxShadow: "0 4px 14px rgba(196,122,46,0.32)",
+                transition: "opacity 0.18s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              {flow.cta} →
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <p style={{ marginTop: 32, fontSize: 13, color: "#9B7450", textAlign: "center" }}>
+        Both options start with the same event form — you can always switch later.
+      </p>
+
+      <style>{`
+        @media (max-width: 640px) {
+          .choose-booking-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }

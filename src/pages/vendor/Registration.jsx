@@ -1,103 +1,75 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import ServiceSpecificFields from "../../components/forms/ServiceSpecificFields";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const font = "'Outfit', sans-serif";
+
+const inputStyle = {
+  width: "100%",
+  padding: "13px 16px",
+  borderRadius: 12,
+  border: "1.5px solid rgba(196,122,46,0.3)",
+  fontSize: 15,
+  fontFamily: font,
+  color: "#2C1A0E",
+  background: "#fff",
+  outline: "none",
+  transition: "border-color 0.18s",
+  boxSizing: "border-box",
+};
+
+const labelStyle = {
+  display: "block",
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#6B3A1F",
+  marginBottom: 6,
+  fontFamily: font,
+};
+
+const errorStyle = {
+  fontSize: 12,
+  color: "#c0392b",
+  marginTop: 4,
+  fontFamily: font,
+};
 
 export default function VendorRegistration() {
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
-    phoneNumber: "",
-    secondaryPhoneNumber: "",
-    otp: "",
-    name: "",
-    location: "",
-    address: "",
-    state: "",
-    gstNumber: "",
-    teamSize: "",
-    experience: "",
-    eventsCompleted: "",
-    concurrentEvents: "",
-    clientReferences: "",
-    governmentId: "",
-    accHolderName: "",
-    bankName: "",
-    accNumber: "",
-    ifscCode: "",
-    upiId: "",
-    aadhaarNumber: "",
-    password: "",
-    portfolioFiles: [],
-    service: "",
-    customService: "",
-    serviceFilters: {},
-  });
-
-  const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
+  const [form, setForm] = useState({ name: "", email: "", phoneNumber: "", address: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const [apiError, setApiError] = useState("");
-  const [canResend, setCanResend] = useState(true);
-  const [resendCooldown, setResendCooldown] = useState(0);
-  const [supportedCities, setSupportedCities] = useState([]);
-  const otpInputRefs = useRef([]);
+  const [focused, setFocused] = useState("");
 
-  useEffect(() => {
-    // Mock cities data instead of API call
-    const mockCities = [
-      "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", 
-      "Kolkata", "Pune", "Ahmedabad", "Jaipur", "Surat"
-    ];
-    setSupportedCities(mockCities);
-  }, []);
-
-  const lowercaseService = (service) => {
-    if (service === "others") return service;
-    return service.toLowerCase();
-  };
-
-  const handleInputChange = (e) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+    if (apiError) setApiError("");
   };
 
-  const handleOtpChange = (index, value) => {
-    if (value.length > 1) return;
-    const newOtpDigits = [...otpDigits];
-    newOtpDigits[index] = value;
-    setOtpDigits(newOtpDigits);
-    setFormData((prev) => ({ ...prev, otp: newOtpDigits.join("") }));
-
-    if (value && index < otpDigits.length - 1) {
-      otpInputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && otpDigits[index] === "") {
-      if (index > 0) {
-        otpInputRefs.current[index - 1]?.focus();
-      }
-    }
-  };
-
-  const validateStep1 = () => {
+  const validate = () => {
     const newErrors = {};
-    if (!formData.phoneNumber.trim()) {
+    if (!form.name.trim()) newErrors.name = "Name is required";
+    if (!form.email.trim()) {
+      newErrors.email = "Email is required";
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      newErrors.email = "Enter a valid email address";
+    }
+    if (!form.phoneNumber.trim()) {
       newErrors.phoneNumber = "Phone number is required";
-    } else if (!/^[6-9]\d{9}$/.test(formData.phoneNumber)) {
-      newErrors.phoneNumber = "Please enter a valid 10-digit phone number";
+    } else if (!/^[6-9]\d{9}$/.test(form.phoneNumber)) {
+      newErrors.phoneNumber = "Enter a valid 10-digit phone number";
     }
-    console.log("Validation errors:", newErrors);
+    if (!form.address.trim()) newErrors.address = "Address is required";
     return newErrors;
   };
 
-  const handleStep1Submit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const validationErrors = validateStep1();
+    const validationErrors = validate();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
@@ -105,458 +77,335 @@ export default function VendorRegistration() {
 
     setLoading(true);
     setApiError("");
-    setErrors({});
-    
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Generate mock OTP
-      const mockOtp = String(Math.floor(1000 + Math.random() * 9000));
-      localStorage.setItem("vendorOtp", mockOtp);
-      localStorage.setItem("vendorPhoneNumber", formData.phoneNumber);
-      
-      console.info("=== VENDOR OTP GENERATED ===");
-      console.info("Phone Number:", formData.phoneNumber);
-      console.info("OTP:", mockOtp);
-      console.info("Stored in localStorage as 'vendorOtp'");
-      console.info("================================");
-      
-      setStep(2);
-    } catch {
-      setApiError("Failed to send OTP. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setCanResend(false);
-    setResendCooldown(30);
-    setApiError("");
-    setErrors({});
-    
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Generate new mock OTP
-      const mockOtp = String(Math.floor(1000 + Math.random() * 9000));
-      localStorage.setItem("vendorOtp", mockOtp);
-      
-      console.info("Vendor OTP (dev):", mockOtp);
-      alert("OTP resent successfully!");
-    } catch {
-      setApiError("Failed to resend OTP. Please try again.");
-    }
-  };
-
-  useEffect(() => {
-    if (resendCooldown > 0) {
-      const timer = setTimeout(() => {
-        setResendCooldown((prev) => prev - 1);
-        if (resendCooldown === 1) setCanResend(true);
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [resendCooldown]);
-
-  const validateStep2 = () => {
-    const newErrors = {};
-    if (!formData.otp || formData.otp.length !== 4) {
-      newErrors.otp = "Please enter a valid 4-digit OTP";
-    }
-    return newErrors;
-  };
-
-  const handleStep2Submit = async (e) => {
-    e.preventDefault();
-    const validationErrors = validateStep2();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setLoading(true);
-    setApiError("");
-    setErrors({});
-    
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Verify mock OTP
-      const storedOtp = localStorage.getItem("vendorOtp");
-      const storedPhone = localStorage.getItem("vendorPhoneNumber");
-      
-      console.info("=== VENDOR OTP VERIFICATION ===");
-      console.info("Entered OTP:", formData.otp);
-      console.info("Stored OTP:", storedOtp);
-      console.info("Entered Phone:", formData.phoneNumber);
-      console.info("Stored Phone:", storedPhone);
-      console.info("OTP Match:", formData.otp === storedOtp);
-      console.info("Phone Match:", formData.phoneNumber === storedPhone);
-      console.info("=================================");
-      
-      if (formData.otp === storedOtp && formData.phoneNumber === storedPhone) {
-        setStep(3);
-      } else {
-        setApiError("Invalid OTP. Please try again.");
+      const res = await fetch(`${BASE_URL}/vendor-applications`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        if (res.status === 409) {
+          setApiError(data.message || "Application already exists with this email or phone.");
+        } else if (data.errors) {
+          const mapped = {};
+          data.errors.forEach((err) => { mapped[err.param] = err.msg; });
+          setErrors(mapped);
+        } else {
+          setApiError(data.message || "Submission failed. Please try again.");
+        }
+        return;
       }
+      setSubmitted(true);
     } catch {
-      setApiError("OTP verification failed. Please try again.");
+      setApiError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
   };
 
-  const validateStep3 = () => {
-    const newErrors = {};
-    if (!formData.name.trim()) {
-      newErrors.name = "Vendor name is required";
-    }
-    if (!formData.location.trim()) {
-      newErrors.location = "Location is required";
-    }
-    if (!formData.address.trim()) {
-      newErrors.address = "Address is required";
-    }
-    if (!formData.state.trim()) {
-      newErrors.state = "State is required";
-    }
-    if (!formData.gstNumber.trim()) {
-      newErrors.gstNumber = "GST number is required";
-    }
-    if (!formData.teamSize) {
-      newErrors.teamSize = "Team size is required";
-    }
-    if (!formData.experience) {
-      newErrors.experience = "Experience is required";
-    }
-    if (!formData.eventsCompleted) {
-      newErrors.eventsCompleted = "Number of events completed is required";
-    }
-    if (!formData.concurrentEvents) {
-      newErrors.concurrentEvents = "Concurrent events capacity is required";
-    }
-    if (!formData.accHolderName.trim()) {
-      newErrors.accHolderName = "Account holder name is required";
-    }
-    if (!formData.bankName.trim()) {
-      newErrors.bankName = "Bank name is required";
-    }
-    if (!formData.accNumber.trim()) {
-      newErrors.accNumber = "Account number is required";
-    }
-    if (!formData.ifscCode.trim()) {
-      newErrors.ifscCode = "IFSC code is required";
-    }
-    if (!formData.governmentId.trim()) {
-      newErrors.governmentId = "PAN number is required";
-    }
-    if (!formData.aadhaarNumber.trim()) {
-      newErrors.aadhaarNumber = "Aadhaar number is required";
-    } else if (!/^\d{12}$/.test(formData.aadhaarNumber)) {
-      newErrors.aadhaarNumber = "Aadhaar number must be 12 digits";
-    }
-    if (formData.secondaryPhoneNumber && !/^[6-9]\d{9}$/.test(formData.secondaryPhoneNumber)) {
-      newErrors.secondaryPhoneNumber = "Secondary phone number must be a valid 10-digit number";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
-    return newErrors;
-  };
-
-  const handleStep3Submit = async (e) => {
-    e.preventDefault();
-    const validationErrors = validateStep3();
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      return;
-    }
-
-    setLoading(true);
-    setApiError("");
-    setErrors({});
-    
-    try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Store vendor data in localStorage
-      const vendorData = {
-        ...formData,
-        registrationDate: new Date().toISOString(),
-        status: "pending_approval"
-      };
-      
-      localStorage.setItem("vendorData", JSON.stringify(vendorData));
-      localStorage.removeItem("vendorOtp");
-      localStorage.removeItem("vendorPhoneNumber");
-      
-      console.log("Vendor registration completed:", vendorData);
-      
-      // Navigate to success page or dashboard
-      alert("Vendor registration completed successfully! Your application is under review.");
-      navigate("/");
-    } catch {
-      setApiError("Registration failed. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const inputClass =
-    "border border-[#D48060] p-3 rounded-xl text-sm text-[#D48060] placeholder-[#D48060] focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] bg-white transition-all duration-300";
-
-  const otpInputClass =
-    "w-12 h-12 border border-[#D48060] rounded-xl text-center text-[#D48060] text-xl font-semibold focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] bg-white transition-all duration-300";
+  if (submitted) {
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "24px",
+          fontFamily: font,
+        }}
+      >
+        <div
+          style={{
+            background: "#FFFCF5",
+            borderRadius: 24,
+            padding: "52px 40px",
+            maxWidth: 480,
+            width: "100%",
+            textAlign: "center",
+            boxShadow: "0 8px 40px rgba(139,69,19,0.1)",
+          }}
+        >
+          <div
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              margin: "0 auto 24px",
+              fontSize: 32,
+            }}
+          >
+            ✓
+          </div>
+          <h2
+            style={{
+              fontSize: 24,
+              fontWeight: 800,
+              color: "#2C1A0E",
+              margin: "0 0 12px",
+              letterSpacing: "-0.01em",
+            }}
+          >
+            Application Submitted!
+          </h2>
+          <p style={{ fontSize: 15, color: "#9B7450", margin: "0 0 32px", lineHeight: 1.6 }}>
+            Thank you for your interest in listing your service on Tendr. Our team will review your details and get in touch with you shortly.
+          </p>
+          <button
+            onClick={() => navigate("/")}
+            style={{
+              background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+              color: "#fff",
+              border: "none",
+              borderRadius: 12,
+              padding: "13px 32px",
+              fontSize: 15,
+              fontWeight: 700,
+              fontFamily: font,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(196,122,46,0.35)",
+            }}
+          >
+            Back to Home
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#F7F4EF] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-4xl bg-[#FFD3C3] p-6 sm:p-8 rounded-[40px] shadow-lg space-y-8">
-        <h2 className="text-3xl font-extrabold text-[#D48060] text-center">Register as a Vendor</h2>
-        {apiError && <p className="text-red-500 text-center font-medium">{apiError}</p>}
-        {/* citiesError && <p className="text-red-500 text-center font-medium">{citiesError}</p> */}
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "40px 24px",
+        fontFamily: font,
+      }}
+    >
+      <div style={{ width: "100%", maxWidth: 520 }}>
 
-        {step === 1 && (
-          <form onSubmit={handleStep1Submit} className="space-y-6">
+        {/* Header */}
+        <div style={{ textAlign: "center", marginBottom: 36 }}>
+          <p
+            style={{
+              fontSize: 12,
+              fontWeight: 700,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "#C47A2E",
+              marginBottom: 10,
+            }}
+          >
+            Partner with Tendr
+          </p>
+          <h1
+            style={{
+              fontSize: "clamp(1.8rem, 4vw, 2.4rem)",
+              fontWeight: 900,
+              color: "#2C1A0E",
+              letterSpacing: "-0.02em",
+              margin: "0 0 10px",
+              lineHeight: 1.2,
+            }}
+          >
+            List Your Service
+          </h1>
+          <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>
+            Tell us about yourself and we'll be in touch soon.
+          </p>
+          <div
+            style={{
+              width: 48,
+              height: 3,
+              background: "linear-gradient(90deg, #C47A2E, #CCAB4A)",
+              borderRadius: 100,
+              margin: "18px auto 0",
+            }}
+          />
+        </div>
+
+        {/* Form card */}
+        <div
+          style={{
+            background: "#FFFCF5",
+            borderRadius: 24,
+            padding: "36px 32px",
+            boxShadow: "0 8px 40px rgba(139,69,19,0.1)",
+            border: "1px solid rgba(196,122,46,0.1)",
+          }}
+        >
+          {apiError && (
+            <div
+              style={{
+                background: "#fff5f5",
+                border: "1px solid #fca5a5",
+                borderRadius: 10,
+                padding: "11px 16px",
+                fontSize: 13,
+                color: "#c0392b",
+                marginBottom: 20,
+                fontFamily: font,
+              }}
+            >
+              {apiError}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+            {/* Name */}
             <div>
-              <label className="block mb-2 text-[#D48060] font-semibold">Phone Number</label>
+              <label style={labelStyle}>Full Name *</label>
+              <input
+                name="name"
+                type="text"
+                placeholder="e.g. Rahul Sharma"
+                value={form.name}
+                onChange={handleChange}
+                onFocus={() => setFocused("name")}
+                onBlur={() => setFocused("")}
+                style={{
+                  ...inputStyle,
+                  borderColor: errors.name
+                    ? "#c0392b"
+                    : focused === "name"
+                    ? "#C47A2E"
+                    : "rgba(196,122,46,0.3)",
+                }}
+              />
+              {errors.name && <p style={errorStyle}>{errors.name}</p>}
+            </div>
+
+            {/* Email */}
+            <div>
+              <label style={labelStyle}>Email Address *</label>
+              <input
+                name="email"
+                type="email"
+                placeholder="e.g. rahul@example.com"
+                value={form.email}
+                onChange={handleChange}
+                onFocus={() => setFocused("email")}
+                onBlur={() => setFocused("")}
+                style={{
+                  ...inputStyle,
+                  borderColor: errors.email
+                    ? "#c0392b"
+                    : focused === "email"
+                    ? "#C47A2E"
+                    : "rgba(196,122,46,0.3)",
+                }}
+              />
+              {errors.email && <p style={errorStyle}>{errors.email}</p>}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <label style={labelStyle}>Phone Number *</label>
               <input
                 name="phoneNumber"
-                placeholder="Enter your 10-digit phone number"
-                value={formData.phoneNumber}
-                onChange={handleInputChange}
-                className={inputClass + " w-full"}
+                type="tel"
+                placeholder="10-digit mobile number"
+                value={form.phoneNumber}
+                onChange={handleChange}
+                onFocus={() => setFocused("phoneNumber")}
+                onBlur={() => setFocused("")}
+                maxLength={10}
+                style={{
+                  ...inputStyle,
+                  borderColor: errors.phoneNumber
+                    ? "#c0392b"
+                    : focused === "phoneNumber"
+                    ? "#C47A2E"
+                    : "rgba(196,122,46,0.3)",
+                }}
               />
-              {errors.phoneNumber && <p className="text-red-500 text-xs mt-1">{errors.phoneNumber}</p>}
+              {errors.phoneNumber && <p style={errorStyle}>{errors.phoneNumber}</p>}
             </div>
+
+            {/* Address */}
+            <div>
+              <label style={labelStyle}>Address *</label>
+              <textarea
+                name="address"
+                placeholder="Your business / service address"
+                value={form.address}
+                onChange={handleChange}
+                onFocus={() => setFocused("address")}
+                onBlur={() => setFocused("")}
+                rows={3}
+                style={{
+                  ...inputStyle,
+                  resize: "vertical",
+                  borderColor: errors.address
+                    ? "#c0392b"
+                    : focused === "address"
+                    ? "#C47A2E"
+                    : "rgba(196,122,46,0.3)",
+                }}
+              />
+              {errors.address && <p style={errorStyle}>{errors.address}</p>}
+            </div>
+
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className={`bg-[#CCAB4A] hover:bg-[#D48060] text-white font-semibold px-6 py-3 rounded-xl w-full transform transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95 ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
+              style={{
+                width: "100%",
+                padding: "14px",
+                borderRadius: 12,
+                border: "none",
+                background: loading
+                  ? "#e5e7eb"
+                  : "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+                color: loading ? "#9ca3af" : "#fff",
+                fontSize: 16,
+                fontWeight: 700,
+                fontFamily: font,
+                cursor: loading ? "not-allowed" : "pointer",
+                boxShadow: loading ? "none" : "0 4px 14px rgba(196,122,46,0.35)",
+                transition: "all 0.2s",
+                marginTop: 4,
+              }}
+              onMouseEnter={(e) => {
+                if (!loading) e.currentTarget.style.opacity = "0.9";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.opacity = "1";
+              }}
             >
-              {loading ? "Sending OTP..." : "Send OTP"}
+              {loading ? "Submitting..." : "Submit Application"}
             </button>
           </form>
-        )}
+        </div>
 
-        {step === 2 && (
-          <form onSubmit={handleStep2Submit} className="space-y-6">
-            <div>
-              <label className="block mb-2 text-[#D48060] font-semibold">Enter OTP</label>
-              <div className="flex justify-center gap-4" onPaste={() => {}}>
-                {otpDigits.map((digit, index) => (
-                  <input
-                    key={index}
-                    type="text"
-                    maxLength="1"
-                    value={digit}
-                    onChange={(e) => handleOtpChange(index, e.target.value)}
-                    onKeyDown={(e) => handleKeyDown(e, index)}
-                    ref={(el) => (otpInputRefs.current[index] = el)}
-                    className={otpInputClass}
-                    autoFocus={index === 0}
-                  />
-                ))}
-              </div>
-              {errors.otp && <p className="text-red-500 text-center text-xs mt-2">{errors.otp}</p>}
-            </div>
-            <div className="flex justify-center">
-              <button
-                type="button"
-                onClick={handleResendOtp}
-                disabled={!canResend}
-                className={`text-[#D48060] font-semibold hover:underline mt-2 ${
-                  !canResend ? "opacity-50 cursor-not-allowed" : ""
-                }`}
-              >
-                {canResend ? "Resend OTP" : `Resend OTP (${resendCooldown}s)`}
-              </button>
-            </div>
-            <button
-              type="submit"
-              disabled={loading}
-              className={`bg-[#CCAB4A] hover:bg-[#D48060] text-white font-semibold px-6 py-3 rounded-xl w-full transform transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95 ${
-                loading ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-            >
-              {loading ? "Verifying OTP..." : "Verify OTP"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="text-[#D48060] font-semibold hover:underline mt-2"
-            >
-              Back
-            </button>
-          </form>
-        )}
-
-        {step === 3 && (
-          <form onSubmit={handleStep3Submit} className="space-y-6">
-            {/* citiesLoading && <p className="text-[#D48060] text-center">Loading supported cities...</p> */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              {[
-                { name: "name", placeholder: "Vendor Name *" },
-                { name: "location", placeholder: "Select City *", type: "select", options: supportedCities },
-                { name: "address", placeholder: "Street Address *" },
-                { name: "state", placeholder: "State *" },
-                { name: "gstNumber", placeholder: "GST Number *" },
-                { name: "teamSize", placeholder: "Team Size *" },
-                { name: "experience", placeholder: "Years of Service" },
-                { name: "eventsCompleted", placeholder: "Total Events Completed" },
-                { name: "concurrentEvents", placeholder: "Concurrent Events You Can Handle" },
-                { name: "clientReferences", placeholder: "Past Client References" },
-                { name: "governmentId", placeholder: "PAN Number *" },
-                { name: "aadhaarNumber", placeholder: "Aadhaar Number (12 digits) *" },
-                { name: "secondaryPhoneNumber", placeholder: "Secondary Phone Number (Optional)" },
-              ].map(({ name, placeholder, type, options }, i) => (
-                <div key={i}>
-                  {type === "select" ? (
-                    <select
-                      name={name}
-                      value={formData[name]}
-                      onChange={handleInputChange}
-                      className={inputClass + " w-full"}
-                      // disabled={citiesLoading}
-                    >
-                      <option value="">{placeholder}</option>
-                      {options.map((option) => (
-                        <option key={option} value={option}>
-                          {option}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <input
-                      name={name}
-                      placeholder={placeholder}
-                      value={formData[name]}
-                      onChange={handleInputChange}
-                      className={inputClass + " w-full"}
-                    />
-                  )}
-                  {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name]}</p>}
-                </div>
-              ))}
-            </div>
-
-            <div>
-              <label className="block mb-2 text-[#D48060] font-semibold">Service Type *</label>
-              <select
-                name="service"
-                value={formData.service}
-                onChange={handleInputChange}
-                className={inputClass + " w-full"}
-              >
-                <option value="">Select Service</option>
-                <option value="caterer">Caterer</option>
-                <option value="dj">DJ</option>
-                <option value="decorator">Decorator</option>
-                <option value="photographer">Photographer</option>
-                <option value="others">Others</option>
-              </select>
-              {errors.service && <p className="text-red-500 text-xs mt-1">{errors.service}</p>}
-            </div>
-
-            {formData.service === "others" && (
-              <div>
-                <input
-                  name="customService"
-                  placeholder="Specify Your Service"
-                  value={formData.customService || ""}
-                  onChange={handleInputChange}
-                  className={inputClass + " w-full"}
-                />
-              </div>
-            )}
-
-            {formData.service && (
-              <ServiceSpecificFields
-                service={lowercaseService(formData.service)}
-                onChange={() => {}} // No state update for filters here, as it's not in formData
-                initialFilters={formData.serviceFilters}
-              />
-            )}
-
-            <div>
-              <h3 className="text-xl font-bold text-[#D48060] mb-4">Bank Details</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                {[
-                  { name: "accHolderName", placeholder: "Account Holder Name *" },
-                  { name: "bankName", placeholder: "Bank Name *" },
-                  { name: "accNumber", placeholder: "Account Number *" },
-                  { name: "ifscCode", placeholder: "IFSC Code *" },
-                  { name: "upiId", placeholder: "UPI ID (Optional)" },
-                ].map(({ name, placeholder }, i) => (
-                  <div key={i}>
-                    <input
-                      name={name}
-                      placeholder={placeholder}
-                      value={formData[name]}
-                      onChange={handleInputChange}
-                      className={inputClass + " w-full"}
-                    />
-                    {errors[name] && <p className="text-red-500 text-xs mt-1">{errors[name]}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block mb-2 text-[#D48060] font-semibold">Password *</label>
-              <input
-                type="password"
-                name="password"
-                placeholder="Enter your password (min 8 characters)"
-                value={formData.password}
-                onChange={handleInputChange}
-                className={inputClass + " w-full"}
-              />
-              {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password}</p>}
-            </div>
-
-            <div>
-              <label className="block mb-2 font-semibold text-[#D48060]">
-                Upload Portfolio Files (Images, Videos)
-              </label>
-              <input
-                type="file"
-                name="portfolioFiles"
-                multiple
-                accept="image/*,video/*"
-                onChange={() => {}} // No state update for files here
-                className="w-full border border-[#D48060] rounded-xl p-2 bg-white text-[#D48060] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-[#CCAB4A] file:text-white hover:file:bg-[#D48060] transition-all duration-300"
-              />
-              {/* No file count display as files are not managed in state */}
-            </div>
-
-            <button
-              type="submit"
-              disabled={loading || false}
-              className={`bg-[#CCAB4A] hover:bg-[#D48060] text-white font-semibold px-6 py-3 rounded-xl w-full transform transition-transform duration-300 ease-in-out hover:scale-105 active:scale-95 ${
-                (loading || false) ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={() => console.log("Submit button clicked, disabled:", loading || false)}
-            >
-              {loading ? "Submitting..." : "Complete Registration"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(2)}
-              className="text-[#D48060] font-semibold hover:underline mt-2"
-            >
-              Back
-            </button>
-          </form>
-        )}
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: 13,
+            color: "#9B7450",
+            marginTop: 20,
+          }}
+        >
+          Already registered?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            style={{ color: "#C47A2E", fontWeight: 600, cursor: "pointer" }}
+          >
+            Sign in
+          </span>
+        </p>
       </div>
     </div>
   );

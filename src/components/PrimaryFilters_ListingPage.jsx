@@ -2,7 +2,9 @@ import React from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { setFilters } from "../redux/listingFiltersSlice";
 
-const PrimaryFilters_ListingPage = ({ onSearch = () => {} }) => {
+const ALL_SERVICE_TYPES = ["Caterer", "Photographer", "DJ", "Decorator"];
+
+const PrimaryFilters_ListingPage = ({ onSearch = () => {}, allowedServiceTypes = [] }) => {
   const dispatch = useDispatch();
   const filters = useSelector((state) => state.listingFilters);
 
@@ -10,6 +12,8 @@ const PrimaryFilters_ListingPage = ({ onSearch = () => {} }) => {
     dispatch(setFilters({ [key]: value }));
   };
 
+  const serviceOptions =
+    allowedServiceTypes.length > 0 ? allowedServiceTypes : ALL_SERVICE_TYPES;
 
   return (
     <div className="primary-filters space-y-4 sm:space-y-6">
@@ -21,13 +25,13 @@ const PrimaryFilters_ListingPage = ({ onSearch = () => {} }) => {
         </label>
         <select
           value={filters.serviceType}
-          onChange={(e) => handleChange("serviceType", e.target.value)} // ✅ keeps Redux updated
+          onChange={(e) => handleChange("serviceType", e.target.value)}
           className="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CCAB4A] focus:border-[#CCAB4A] text-sm sm:text-base"
         >
-          <option value="">All Services</option>
-          <option value="Caterer">Caterer</option>
-          <option value="Decorator">Decorator</option>
-          <option value="Photographer">Photographer</option>
+          {serviceOptions.length > 1 && <option value="">All Selected</option>}
+          {serviceOptions.map((type) => (
+            <option key={type} value={type}>{type}</option>
+          ))}
         </select>
       </div>
 
@@ -45,45 +49,8 @@ const PrimaryFilters_ListingPage = ({ onSearch = () => {} }) => {
           <option value="Delhi">Delhi</option>
           <option value="Noida">Noida</option>
           <option value="Greater Noida">Greater Noida</option>
-          <option value="Gurugram">Gurugram</option>
           <option value="Ghaziabad">Ghaziabad</option>
         </select>
-      </div>
-
-      {/* Event Type */}
-      <div className="filter-group">
-        <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
-          Event Type
-        </label>
-        <select
-          value={filters.eventType}
-          onChange={(e) => handleChange("eventType", e.target.value)} // ✅ Redux updates
-          className="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CCAB4A] focus:border-[#CCAB4A] text-sm sm:text-base"
-        >
-          <option value="">All Event Types</option>
-          <option value="Get-together">Get-together</option>
-          <option value="Birthday">Birthday</option>
-          <option value="Office Party">Office Party</option>
-          <option value="Concert">Concert</option>
-          <option value="Anniversary">Anniversary</option>
-          <option value="Pre Wedding">Pre Wedding</option>
-          <option value="Rituals">Rituals</option>
-          <option value="Festival">Festival</option>
-          <option value="Others">Others</option>
-        </select>
-      </div>
-
-      {/* Date */}
-      <div className="filter-group">
-        <label className="block text-sm sm:text-base font-medium text-gray-700 mb-2">
-          Date
-        </label>
-        <input
-          type="date"
-          value={filters.date}
-          onChange={(e) => handleChange("date", e.target.value)} // ✅ Redux updates
-          className="w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#CCAB4A] focus:border-[#CCAB4A] text-sm sm:text-base"
-        />
       </div>
 
       {/* Guest Count */}

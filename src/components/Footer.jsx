@@ -1,143 +1,169 @@
 import React from "react";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
-import { FaXTwitter } from "react-icons/fa6";
+import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
+
+const font = "'Outfit', sans-serif";
 
 export default function Footer() {
+
   return (
-    <footer className="bg-gradient-to-br from-[#fae6cc] to-[#FAEBD7] text-[#8B4513] py-14 px-6">
-      {/* MAIN GRID */}
-      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
-        {/* BRAND SECTION */}
-        <div>
-          <h1 className="text-4xl font-bold text-[#4b2e0f] drop-shadow-md mb-4">
-            TENDR
-          </h1>
+    <footer style={{ fontFamily: font }}>
 
-          <p className="text-lg text-[#a26320] mb-3">
-            Empowering your celebrations with curated planning and unforgettable
-            experiences.
-          </p>
+      {/* ── Main footer body ── */}
+      <div style={{ background: "linear-gradient(180deg, #FDF0DC 0%, #F5E6CC 100%)", padding: "64px 0 0" }}>
+        <div
+          style={{ maxWidth: 1200, margin: "0 auto", padding: "0 48px", display: "grid", gridTemplateColumns: "1.7fr 1fr 1fr 1fr", gap: 48, alignItems: "start" }}
+          className="footer-grid"
+        >
+          {/* Brand column */}
+          <div>
+            <h1 style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", marginBottom: 12 }}>
+              TENDR
+            </h1>
+            <p style={{ fontSize: 15, color: "#7A5535", lineHeight: 1.65, marginBottom: 22, maxWidth: 280 }}>
+              Empowering your celebrations with curated planning and unforgettable experiences across Delhi NCR.
+            </p>
 
-          <p className="text-[#a26320] text-lg">
-            <strong className="text-[#4b2e0f]">Email:</strong>{" "}
-            <a href="mailto:contacttendr@gmail.com" className="hover:underline">
-              contacttendr@gmail.com
-            </a>
-          </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
+              {[
+                { label: "Email", value: "contacttendr@gmail.com", href: "mailto:contacttendr@gmail.com" },
+                { label: "Phone", value: "+91-9211668427", href: "tel:+919211668427" },
+                { label: "Area", value: "Delhi NCR, India", href: null },
+              ].map(({ label, value, href }) => (
+                <p key={label} style={{ margin: 0, fontSize: 14, color: "#7A5535" }}>
+                  <span style={{ fontWeight: 700, color: "#3B2110" }}>{label}: </span>
+                  {href ? (
+                    <a href={href} style={{ color: "#7A5535", textDecoration: "none" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "#C47A2E")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "#7A5535")}
+                    >{value}</a>
+                  ) : value}
+                </p>
+              ))}
+            </div>
 
-          <p className="text-[#a26320] text-lg">
-            <strong className="text-[#4b2e0f]">Phone:</strong> +91-9211668427
-          </p>
+            {/* Social icons */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
+              {[
+                { Icon: FaInstagram, href: "https://instagram.com", label: "Instagram" },
+                { Icon: FaFacebookF, href: "https://facebook.com", label: "Facebook" },
+                { Icon: FaWhatsapp, href: "https://wa.me/919211668427", label: "WhatsApp" },
+                { Icon: FaXTwitter, href: "https://twitter.com", label: "Twitter" },
+                { Icon: FaLinkedinIn, href: "https://linkedin.com", label: "LinkedIn" },
+              ].map(({ Icon, href, label }) => (
+                <a
+                  key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
+                  style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "1px solid rgba(139,69,19,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "#6B3A1F", fontSize: 15, textDecoration: "none", transition: "all 0.2s" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#DEB887)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.border = "1px solid transparent"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(44,26,14,0.08)"; e.currentTarget.style.color = "#6B3A1F"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.border = "1px solid rgba(139,69,19,0.15)"; }}
+                >
+                  <Icon />
+                </a>
+              ))}
+            </div>
 
-          <p className="text-[#a26320] text-lg mb-3">
-            <strong className="text-[#4b2e0f]">Address:</strong> DELHI NCR
-          </p>
+            <button
+              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+              style={{ background: "#2C1A0E", color: "#fff", fontSize: 13, fontWeight: 600, letterSpacing: "0.04em", padding: "8px 18px", borderRadius: 100, border: "none", cursor: "pointer", transition: "background 0.2s", fontFamily: font }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "#C47A2E")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "#2C1A0E")}
+            >
+              ↑ Back to Top
+            </button>
+          </div>
 
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="mt-3 px-5 py-2 bg-[#6b3d1c] text-white rounded-full hover:bg-[#f0c674] hover:text-[#4b2e0f] transition"
-          >
-            ↑ Back to Top
-          </button>
+          {/* Services */}
+          <FooterColumn title="Services" links={[
+            { label: "Wedding Planning", href: "/booking" },
+            { label: "Photography", href: "/listing" },
+            { label: "Catering", href: "/listing" },
+            { label: "Decoration", href: "/listing" },
+            { label: "DJ & Entertainment", href: "/listing" },
+            { label: "Corporate Events", href: "/corporate" },
+          ]} />
+
+          {/* Company */}
+          <FooterColumn title="Company" links={[
+            { label: "About Us", href: "/about-us" },
+            { label: "Careers", href: "#" },
+            { label: "Become a Vendor", href: "/vendor/register" },
+            { label: "Gift Hampers", href: null, disabled: true },
+            { label: "Invitation Flyers", href: "/invitation" },
+          ]} />
+
+          {/* Support */}
+          <FooterColumn title="Support" links={[
+            { label: "Contact Us", href: "/contact-us" },
+            { label: "Refund Policy", href: "/refund-policy" },
+            { label: "Cancellation Policy", href: "/cancellation-policy" },
+            { label: "Privacy Policy", href: "#" },
+            { label: "Terms of Service", href: "#" },
+          ]} />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-1">
-          <FooterColumn
-            title="Services"
-            links={[
-              "Corporate Events",
-              "Photography",
-              "Private Parties",
-              "Decoration",
-              "Catering",
-              "DJ",
-            ]}
-          />
-
-          <FooterColumn
-            title="Platform"
-            links={[{ label: "Event Planning", href: "/event-planning" }]}
-          />
-
-          <FooterColumn title="Company" links={["About Us", "Careers"]} />
-
-          <FooterColumn
-            title="Support"
-            links={[
-              { label: "Contact Us", href: "/contact-us" },
-              { label: "Refund Policy", href: "/refund-policy" },
-              { label: "Cancellation Policy", href: "/cancellation-policy" },
-            ]}
-          />
+        {/* Bottom bar */}
+        <div
+          style={{ borderTop: "1px solid rgba(139,69,19,0.12)", marginTop: 52, padding: "20px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, maxWidth: 1200, margin: "52px auto 0" }}
+          className="footer-bottom"
+        >
+          <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>
+            © 2025 Tendr. All rights reserved. Made with ♥ in Delhi NCR.
+          </p>
+          <div style={{ display: "flex", gap: 22 }}>
+            {["Privacy Policy", "Terms of Service", "Sitemap"].map((item) => (
+              <a key={item} href="#"
+                style={{ fontSize: 13, color: "#9B7450", textDecoration: "none", fontWeight: 500 }}
+                onMouseEnter={(e) => (e.currentTarget.style.color = "#C47A2E")}
+                onMouseLeave={(e) => (e.currentTarget.style.color = "#9B7450")}
+              >{item}</a>
+            ))}
+          </div>
         </div>
+        <div style={{ height: 20 }} />
       </div>
 
-      {/* SOCIAL ICONS */}
-      <div className="flex justify-center gap-6 my-8">
-        <SocialIcon Icon={FaFacebookF} href="https://facebook.com" />
-        <SocialIcon Icon={FaInstagram} href="https://instagram.com" />
-        <SocialIcon Icon={FaXTwitter} href="https://twitter.com" />
-        <SocialIcon Icon={FaLinkedinIn} href="https://linkedin.com" />
-      </div>
-
-      {/* FOOTER BOTTOM */}
-      <div className="text-center border-t border-black/10 pt-4">
-        <p className="text-[#a26320]">
-          © 2025 tendr. All rights reserved. |{" "}
-          <a className="hover:underline" href="#">
-            Privacy Policy
-          </a>{" "}
-          |{" "}
-          <a className="hover:underline" href="#">
-            Terms of Service
-          </a>
-        </p>
-      </div>
+      <style>{`
+        @media (max-width: 900px) {
+          .footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; padding: 0 28px !important; }
+        }
+        @media (max-width: 560px) {
+          .footer-grid { grid-template-columns: 1fr !important; }
+          .footer-bottom { flex-direction: column !important; align-items: flex-start !important; padding: 18px 24px !important; }
+        }
+      `}</style>
     </footer>
   );
 }
 
-/* ------------ COMPONENTS ------------ */
-
 function FooterColumn({ title, links }) {
   return (
     <div>
-      <h3 className="text-2xl font-bold text-[#4b2e0f] drop-shadow mb-4">
+      <h3 style={{ fontSize: 11.5, fontWeight: 800, color: "#2C1A0E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 20 }}>
         {title}
       </h3>
-      <ul className="space-y-2">
-        {links.map((link, i) => {
-          const label = typeof link === "string" ? link : link.label;
-          const href = typeof link === "string" ? "#" : link.href;
-
-          return (
-            <li key={i}>
+      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 11 }}>
+        {links.map(({ label, href, disabled }) => (
+          <li key={label}>
+            {disabled ? (
+              <span
+                title="Coming Soon"
+                style={{ fontSize: 14.5, fontWeight: 400, color: "#ccc", display: "inline-block", cursor: "not-allowed" }}
+              >
+                {label}
+              </span>
+            ) : (
               <a
                 href={href}
-                className="block text-lg text-[#a26320] hover:text-[#4b2e0f] hover:translate-x-2 transition"
+                style={{ fontSize: 14.5, fontWeight: 400, color: "#7A5535", textDecoration: "none", transition: "color 0.15s, padding-left 0.15s", display: "inline-block" }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = "#C47A2E"; e.currentTarget.style.paddingLeft = "5px"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = "#7A5535"; e.currentTarget.style.paddingLeft = "0"; }}
               >
                 {label}
               </a>
-            </li>
-          );
-        })}
+            )}
+          </li>
+        ))}
       </ul>
     </div>
-  );
-}
-
-function SocialIcon({ Icon, href }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="w-14 h-14 rounded-full flex items-center justify-center text-2xl text-[#8B4513]
-      bg-white/30 backdrop-blur-md border border-[#8B4513]/20
-      transition-transform duration-300 hover:-translate-y-2 hover:scale-110
-      hover:bg-gradient-to-br hover:from-[#CD853F] hover:to-[#DEB887] hover:text-white shadow-xl"
-    >
-      <Icon />
-    </a>
   );
 }

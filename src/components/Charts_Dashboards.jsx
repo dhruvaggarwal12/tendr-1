@@ -153,10 +153,10 @@ export const Doughnut_BookingCategory_AdminDashboard = () => {
 
 export const Doughnut_BookingCity_AdminDashboard = () => {
     const data = {
-        labels: ["Delhi", "Noida", "Greater Noida", "Gurugram", "Ghaziabad"],
+        labels: ["Delhi", "Noida", "Greater Noida", "Ghaziabad"],
         datasets: [
             {
-                data: [19, 40, 21, 42, 15],
+                data: [32, 40, 21, 15],
                 backgroundColor: [
                     "#FF9F40", // Bright Orange
                     "#9966FF", // Bright Purple
@@ -184,10 +184,10 @@ export const Doughnut_BookingCity_AdminDashboard = () => {
 
 export const Doughnut_VendorCity_AdminDashboard = () => {
     const data = {
-        labels: ["Delhi", "Noida", "Greater Noida", "Gurugram", "Ghaziabad"],
+        labels: ["Delhi", "Noida", "Greater Noida", "Ghaziabad"],
         datasets: [
             {
-                data: [22, 26, 13, 33, 11],
+                data: [22, 26, 13, 11],
                 backgroundColor: [
                     "#FFDE59", // Punchy Yellow
                     "#00F0FF", // Electric Cyan
@@ -215,15 +215,14 @@ export const Doughnut_VendorCity_AdminDashboard = () => {
 
 export const Doughnut_UserCity_AdminDashboard = () => {
     const data = {
-        labels: ["Delhi", "Noida", "Greater Noida", "Gurugram", "Ghaziabad"],
+        labels: ["Delhi", "Noida", "Greater Noida", "Ghaziabad"],
         datasets: [
             {
-                data: [223, 337, 148, 394, 127],
+                data: [223, 337, 148, 127],
                 backgroundColor: [
                     "#FF6B6B", // Coral Red - Delhi
                     "#6C5CE7", // Indigo - Noida
                     "#00B894", // Mint Green - Greater Noida
-                    "#FDCB6E", // Mustard Yellow - Gurugram
                     "#0984E3", // Sky Blue - Ghaziabad
                 ],
                 borderWidth: 1,

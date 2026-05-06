@@ -205,13 +205,13 @@ const stats_vendors = [
 const topVendors = [
   { name: "Vendor A", city: "Delhi", bookings: 59, medal: "🥇" },
   { name: "Vendor B", city: "Noida", bookings: 54, medal: "🥈" },
-  { name: "Vendor C", city: "Gurugram", bookings: 48, medal: "🥉" },
+  { name: "Vendor C", city: "Ghaziabad", bookings: 48, medal: "🥉" },
 ];
 
 const topEarners = [
   { name: "Vendor X", city: "Noida", medal: "🥇", earnings: 670000 },
-  { name: "Vendor Y", city: "Gurugram", medal: "🥈", earnings: 625500 },
-  { name: "Vendor Z", city: "Gurugram", medal: "🥉", earnings: 592000 },
+  { name: "Vendor Y", city: "Greater Noida", medal: "🥈", earnings: 625500 },
+  { name: "Vendor Z", city: "Ghaziabad", medal: "🥉", earnings: 592000 },
 ];
 
 const stats_users = [

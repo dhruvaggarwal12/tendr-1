@@ -66,6 +66,17 @@
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
+const loadFormData = () => {
+  try {
+    const saved = localStorage.getItem("eventPlanningFormData");
+    return saved ? JSON.parse(saved) : {};
+  } catch { return {}; }
+};
+
+const saveFormData = (formData) => {
+  try { localStorage.setItem("eventPlanningFormData", JSON.stringify(formData)); } catch {}
+};
+
 /** Example async submit (replace with your real API) */
 export const submitEventPlan = createAsyncThunk(
   "eventPlanning/submitEventPlan",
@@ -112,12 +123,13 @@ const eventPlanningSlice = createSlice({
     setFormData: (state, action) => {
       const { field, value } = action.payload;
       state.formData[field] = value;
+      saveFormData(state.formData);
     },
     setMultipleFormData: (state, action) => {
-      // action.payload = { field1: val1, field2: val2, ... }
       Object.entries(action.payload || {}).forEach(([k, v]) => {
         if (k in state.formData) state.formData[k] = v;
       });
+      saveFormData(state.formData);
     },
     setBookingType: (state, action) => {
       state.bookingType = action.payload || "you-do-it";
@@ -152,7 +164,27 @@ const eventPlanningSlice = createSlice({
         ? action.payload
         : [];
     },
-    resetEventPlanning: () => initialState,
+    resetEventPlanning: () => {
+      try { localStorage.removeItem("eventPlanningFormData"); } catch {}
+      return {
+        formData: {
+          eventName: "",
+          eventType: "",
+          guests: "",
+          budget: "",
+          location: "",
+          date: "",
+          additionalInfo: "",
+        },
+        currentStep: 0,
+        showVendorScreen: false,
+        selectedVendors: [],
+        bookingType: "",
+        submitting: false,
+        submitError: null,
+        lastSubmission: null,
+      };
+    },
   },
   extraReducers: (builder) => {
     builder
