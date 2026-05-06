@@ -38,3 +38,6 @@ Thumbs.db
 # package-lock.json
 # yarn.lock
 # pnpm-lock.yaml
+
+# Backend folder (kept locally in VS Code only, has its own repo)
+TENDR-2/
