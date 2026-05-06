@@ -11,12 +11,10 @@ import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 
 const OTPPage = () => {
-  const [otp, setOtp] = useState(["", "", "", ""]);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timeLeft, setTimeLeft] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const [localError, setLocalError] = useState("");
-  const [corporateMode, setCorporateMode] = useState(false);
-  const [regularMode, setRegularMode] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -26,43 +24,11 @@ const OTPPage = () => {
 
   useEffect(() => {
     const corporateData = localStorage.getItem("corporatePlan");
-    const mockUserData = localStorage.getItem("mockUserData");
-    const isCorporateUser = !!corporateData;
-    const isRegularUser = !!mockUserData;
     const isReduxUser = verificationId && userData?.phoneNumber;
-
-    if (!isCorporateUser && !isRegularUser && !isReduxUser) {
-      navigate("/signup"); // redirecting to signup if not registered
+    if (!corporateData && !isReduxUser) {
+      navigate("/signup");
     }
-    setCorporateMode(isCorporateUser);
-    setRegularMode(isRegularUser);
   }, [verificationId, userData, navigate]);
-
-  // Generate a mock OTP for corporate flow (no real SMS integration here)
-  useEffect(() => {
-    if (corporateMode) {
-      const existing = localStorage.getItem("corporateOtp");
-      if (!existing) {
-        const generated = String(Math.floor(1000 + Math.random() * 9000));
-        localStorage.setItem("corporateOtp", generated);
-        // For development convenience, log the OTP
-        console.info("Corporate OTP (dev):", generated);
-      }
-    }
-  }, [corporateMode]);
-
-  // Generate a mock OTP for regular user flow
-  useEffect(() => {
-    if (regularMode) {
-      const existing = localStorage.getItem("mockOtp");
-      if (!existing) {
-        const generated = String(Math.floor(1000 + Math.random() * 9000));
-        localStorage.setItem("mockOtp", generated);
-        // For development convenience, log the OTP
-        console.info("Regular User OTP (dev):", generated);
-      }
-    }
-  }, [regularMode]);
 
   useEffect(() => {
     if (timeLeft > 0) {
@@ -98,75 +64,41 @@ const OTPPage = () => {
   const handleVerify = async (e) => {
     e.preventDefault();
     const finalOtp = otp.join("");
-    if (finalOtp.length !== 4) {
-      if (corporateMode || regularMode) {
-        setLocalError("Please enter a 4-digit OTP");
-      } else {
-        dispatch({
-          type: "auth/verifyOtp/rejected",
-          payload: "Please enter a 4-digit OTP",
-        });
-      }
+    if (finalOtp.length !== 6) {
+      setLocalError("Please enter the complete 6-digit OTP");
       return;
     }
+    setLocalError("");
 
-    if (corporateMode) {
+    // Corporate flow still uses mock OTP
+    const corporateData = localStorage.getItem("corporatePlan");
+    if (corporateData) {
       setLocalLoading(true);
-      setLocalError("");
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       const expected = localStorage.getItem("corporateOtp");
       if (finalOtp === expected) {
-        // Mark corporate as verified and redirect to corporate dashboard
         localStorage.removeItem("corporateOtp");
-        localStorage.setItem(
-          "corporateLogin",
-          JSON.stringify({ loginTime: new Date().toISOString() })
-        );
+        localStorage.setItem("corporateLogin", JSON.stringify({ loginTime: new Date().toISOString() }));
         navigate("/corporate/dashboard");
       } else {
         setLocalError("Invalid OTP. Please try again.");
       }
       setLocalLoading(false);
-    } else if (regularMode) {
-      setLocalLoading(true);
-      setLocalError("");
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      return;
+    }
 
-      const expected = localStorage.getItem("mockOtp");
-      if (finalOtp === expected) {
-        // Mark regular user as verified and redirect to dashboard
-        localStorage.removeItem("mockOtp");
-        localStorage.removeItem("mockVerificationId");
-        localStorage.setItem(
-          "mockLogin",
-          JSON.stringify({ 
-            user: JSON.parse(localStorage.getItem("mockUserData")),
-            loginTime: new Date().toISOString() 
-          })
-        );
-        navigate("/dashboard");
-      } else {
-        setLocalError("Invalid OTP. Please try again.");
-      }
-      setLocalLoading(false);
+    // Real OTP verification via backend
+    const result = await dispatch(verifyOtpAction({
+      phoneNumber: userData.phoneNumber,
+      name: userData.name,
+      email: userData.email,
+      password: userData.password,
+      otp: finalOtp,
+      verificationId,
+    }));
+    if (result.meta.requestStatus === "fulfilled") {
+      navigate("/dashboard");
     } else {
-      dispatch(
-        verifyOtpAction({
-          phoneNumber: userData.phoneNumber,
-          name: userData.name,
-          email: userData.email,
-          password: userData.password,
-          otp: finalOtp,
-          verificationId,
-        })
-      ).then((result) => {
-        if (result.meta.requestStatus === "fulfilled") {
-          navigate("/dashboard"); // Redirect to user dashboard after successful verification
-        }
-      });
+      setLocalError(result.payload || "Invalid OTP. Please try again.");
     }
   };
 
@@ -174,23 +106,15 @@ const OTPPage = () => {
     setTimeLeft(60);
     setCanResend(false);
     setLocalError("");
-    if (corporateMode) {
-      const generated = String(Math.floor(1000 + Math.random() * 9000));
+    setOtp(["", "", "", "", "", ""]);
+    const corporateData = localStorage.getItem("corporatePlan");
+    if (corporateData) {
+      const generated = String(Math.floor(100000 + Math.random() * 900000));
       localStorage.setItem("corporateOtp", generated);
       console.info("Corporate OTP (dev):", generated);
-      setOtp(["", "", "", ""]);
-    } else if (regularMode) {
-      const generated = String(Math.floor(1000 + Math.random() * 9000));
-      localStorage.setItem("mockOtp", generated);
-      console.info("Regular User OTP (dev):", generated);
-      setOtp(["", "", "", ""]);
     } else {
       dispatch(clearError());
-      dispatch(resendOtpAction()).then((result) => {
-        if (result.meta.requestStatus === "fulfilled") {
-          setOtp(["", "", "", ""]); // Clear OTP inputs
-        }
-      });
+      dispatch(resendOtpAction());
     }
   };
 
@@ -224,13 +148,14 @@ const OTPPage = () => {
                   <input
                     key={index}
                     type="text"
+                    inputMode="numeric"
                     maxLength={1}
                     value={digit}
                     onChange={handleChange}
                     onKeyDown={(e) => handleKeyDown(e, index)}
                     id={`otp-input-${index}`}
                     data-index={index}
-                    className="w-10 h-10 text-center text-xl border border-yellow-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    className="w-9 h-10 text-center text-xl border border-yellow-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-yellow-500"
                     disabled={loading || localLoading}
                   />
                 ))}

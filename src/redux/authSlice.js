@@ -65,16 +65,26 @@ export const fetchUserProfile = createAsyncThunk('auth/fetchUserProfile', async 
   }
 });
 
+const loadAuth = () => {
+  try {
+    const token = localStorage.getItem('tendr_token');
+    const user = localStorage.getItem('tendr_user');
+    return { token: token || null, user: user ? JSON.parse(user) : null };
+  } catch { return { token: null, user: null }; }
+};
+
+const { token: savedToken, user: savedUser } = loadAuth();
+
 const authSlice = createSlice({
   name: 'auth',
   initialState: {
-    user: null,
-    token: null,
+    user: savedUser,
+    token: savedToken,
     loading: false,
     error: null,
     verificationId: null,
     userData: null,
-    profile: null, 
+    profile: null,
   },
   reducers: {
     clearError: (state) => {
@@ -104,6 +114,8 @@ const authSlice = createSlice({
         state.loading = false;
         state.user = action.payload.consumer;
         state.token = action.payload.token;
+        localStorage.setItem('tendr_token', action.payload.token);
+        localStorage.setItem('tendr_user', JSON.stringify(action.payload.consumer));
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;
@@ -114,16 +126,24 @@ const authSlice = createSlice({
         state.token = null;
         state.verificationId = null;
         state.userData = null;
-        state.profile = null; // Clear profile on logout
+        state.profile = null;
+        localStorage.removeItem('tendr_token');
+        localStorage.removeItem('tendr_user');
       })
       .addCase(verifyOtpAction.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(verifyOtpAction.fulfilled, (state) => {
+      .addCase(verifyOtpAction.fulfilled, (state, action) => {
         state.loading = false;
         state.verificationId = null;
         state.userData = null;
+        if (action.payload?.token) {
+          state.token = action.payload.token;
+          state.user = action.payload.consumer;
+          localStorage.setItem('tendr_token', action.payload.token);
+          localStorage.setItem('tendr_user', JSON.stringify(action.payload.consumer));
+        }
       })
       .addCase(verifyOtpAction.rejected, (state, action) => {
         state.loading = false;
