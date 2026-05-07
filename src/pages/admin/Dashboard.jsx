@@ -1,9 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-
-const BASE_URL = import.meta.env.VITE_BASE_URL;
-
 import EastIcon from "@mui/icons-material/East";
 
 import Dashboards_Nav from "../../components/Dashboards_Nav";
@@ -46,6 +43,8 @@ import {
 } from "lucide-react";
 import useConversations from "../../hooks/useConversations";
 import { getConversationMessages } from "../../apis/conversationsApi";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const formatEarnings = (amount) => {
   if (amount >= 1000) {
