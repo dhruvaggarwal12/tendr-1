@@ -1,12 +1,10 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import router from "../router";
 
-const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
-  const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const formData = useSelector((s) => s.eventPlanning.formData);
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
@@ -19,7 +17,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const handleSupport = () => {
     setOpen(false);
     // Navigate to chat as concierge (let-us-do-it style)
-    navigate("/chat", {
+    router.navigate("/chat", {
       state: {
         vendor: { _id: "concierge", name: "Tendr Support", approved: true },
         bookingType: "let-us-do-it",
@@ -31,7 +29,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleVendorChat = () => {
     setOpen(false);
-    navigate("/listings");
+    router.navigate("/listings");
   };
 
   return (
