@@ -93,17 +93,31 @@ const Auth = () => {
     setLocalLoading(true);
     setLocalError("");
     try {
-      const result = await dispatch(signup({
-        phoneNumber: formData.phoneNumber,
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      }));
-      if (signup.fulfilled.match(result)) {
-        navigate("/otp");
-      } else {
-        setLocalError(result.payload || "Signup failed. Please try again.");
+      // TEMP: direct signup without OTP — restore OTP flow when ready
+      const BASE_URL = import.meta.env.VITE_BASE_URL;
+      const res = await fetch(`${BASE_URL}/auth/signup/direct`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phoneNumber: formData.phoneNumber,
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+        }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setLocalError(data.message || "Signup failed. Please try again.");
+        return;
       }
+      // Store token + user in Redux (same as login)
+      dispatch({ type: "auth/login/fulfilled", payload: data });
+      navigate("/dashboard");
+
+      // OTP FLOW (kept for when you re-enable):
+      // const result = await dispatch(signup({ phoneNumber, name, email, password }));
+      // if (signup.fulfilled.match(result)) navigate("/otp");
     } catch {
       setLocalError("Signup failed. Please try again.");
     } finally {
