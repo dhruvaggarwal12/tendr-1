@@ -84,8 +84,6 @@ const Chat = () => {
 
   const fallbackVendor = { _id: "concierge", name: "Tendr Concierge", approved: true };
   const vendor = navVendor || fallbackVendor;
-  // Chat is enabled if vendor is pre-approved OR admin has approved the chat request
-  const vendorApproved = vendor?.approved || vendorApprovedByAdmin || false;
   const filters = navFilters || {};
 
   // Redux
@@ -112,13 +110,9 @@ const Chat = () => {
     });
     socketRef.current = socket;
 
-    const formData = useSelector ? undefined : undefined; // accessed via closure below
-    const reduxFormData = socketRef._formData;
-
     socket.emit("open_conversation", {
       chatType: "VENDOR",
-      vendorId: vendor?._id,
-      eventDetails: reduxFormData || {},
+      vendorId: vendor?._id && vendor._id !== "concierge" ? vendor._id : undefined,
     });
 
     socket.on("conversation_opened", ({ _id, chatApproved: approved }) => {
@@ -146,6 +140,9 @@ const Chat = () => {
   const [messages, setMessages] = useState([]);
   const [hasSentInitialMessage, setHasSentInitialMessage] = useState(false);
   const [vendorApprovedByAdmin, setVendorApprovedByAdmin] = useState(false);
+
+  // Chat is enabled if vendor is pre-approved OR admin has approved the chat request
+  const vendorApproved = vendor?.approved || vendorApprovedByAdmin || false;
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);

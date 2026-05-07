@@ -113,7 +113,7 @@ const Auth = () => {
       }
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
-      navigate(data.consumer?.isAdmin ? "/AdminDashboard" : "/dashboard");
+      navigate(data.consumer?.isAdmin ? "/AdminDashboard" : "/");
 
       // OTP FLOW (kept for when you re-enable):
       // const result = await dispatch(signup({ phoneNumber, name, email, password }));
@@ -137,7 +137,7 @@ const Auth = () => {
       }));
       if (login.fulfilled.match(result)) {
         const loggedUser = result.payload?.consumer;
-        navigate(loggedUser?.isAdmin ? "/AdminDashboard" : "/dashboard");
+        navigate(loggedUser?.isAdmin ? "/AdminDashboard" : "/");
       } else {
         setLocalError(result.payload || "Invalid phone number or password.");
       }

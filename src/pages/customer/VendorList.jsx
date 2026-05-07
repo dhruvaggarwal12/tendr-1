@@ -41,6 +41,11 @@ const VendorList = () => {
   // Categories pre-selected on the service category page
   const selectedCategories = location.state?.selectedCategories || [];
 
+  // Active category tab — default to first selected or redux serviceType
+  const [activeCategory, setActiveCategory] = useState(
+    selectedCategories[0] || serviceType || null
+  );
+
   const [vendorList, setVendorList] = useState([]);
   const [paginationInfo, setPaginationInfo] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -110,18 +115,15 @@ const VendorList = () => {
   // Scroll to top on mount
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // fetch on changes
+  // fetch on changes — always filter by activeCategory only (one category at a time)
   useEffect(() => {
     setIsLoading(true);
 
-    // Use selectedCategories from route state, or fall back to Redux serviceType
-    const activeServiceTypes = selectedCategories.length > 0
-      ? selectedCategories
-      : serviceType ? [serviceType] : [];
+    const categoryToFetch = activeCategory || serviceType || null;
 
     const payload = {
       ...(locationType && { location: locationType }),
-      ...(activeServiceTypes.length > 0 && { serviceTypes: activeServiceTypes }),
+      ...(categoryToFetch && { serviceTypes: [categoryToFetch] }),
       sortBy,
       sortOrder,
       page: 1,
@@ -137,16 +139,14 @@ const VendorList = () => {
       })
       .catch((err) => console.error("Error fetching vendors:", err))
       .finally(() => setIsLoading(false));
-  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, selectedCategories.length]);
+  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, activeCategory]);
 
   const fetchPage = (pageNum) => {
     setIsLoading(true);
-    const activeServiceTypes = selectedCategories.length > 0
-      ? selectedCategories
-      : serviceType ? [serviceType] : [];
+    const categoryToFetch = activeCategory || serviceType || null;
     const payload = {
       ...(locationType && { location: locationType }),
-      ...(activeServiceTypes.length > 0 && { serviceTypes: activeServiceTypes }),
+      ...(categoryToFetch && { serviceTypes: [categoryToFetch] }),
       sortBy,
       sortOrder,
       page: pageNum,
@@ -194,10 +194,42 @@ const VendorList = () => {
   };
 
 
+  // Category labels mapping
+  const CATEGORY_LABELS = { Caterer: "Catering", Photographer: "Photography", DJ: "DJ & Music", Decorator: "Decoration" };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <BasicSpeedDial />
       <ListingsNav hasSelections={compareSelected.length > 0} />
+
+      {/* Category tabs — shown when multiple categories selected */}
+      {selectedCategories.length > 1 && (
+        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.15)", padding: "0 24px" }}>
+          <div style={{ maxWidth: 1280, margin: "0 auto", display: "flex", gap: 4, overflowX: "auto", paddingBottom: 0 }}>
+            {selectedCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                style={{
+                  padding: "12px 20px",
+                  border: "none",
+                  background: "transparent",
+                  borderBottom: activeCategory === cat ? "3px solid #C47A2E" : "3px solid transparent",
+                  color: activeCategory === cat ? "#C47A2E" : "#9B7450",
+                  fontWeight: activeCategory === cat ? 700 : 500,
+                  fontSize: 14,
+                  fontFamily: "'Outfit', sans-serif",
+                  cursor: "pointer",
+                  whiteSpace: "nowrap",
+                  transition: "all 0.18s",
+                }}
+              >
+                {CATEGORY_LABELS[cat] || cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <div className="w-full lg:w-1/4 bg-white shadow-lg lg:shadow-none lg:border-r border-gray-200">
