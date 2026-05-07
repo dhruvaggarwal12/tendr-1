@@ -576,41 +576,66 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Partner Section */}
-      <section className="partner-section">
-        <div className="partner-overlay"></div>
+      {/* Become a Partner Section */}
+      <section style={{ background: "#2C1A0E", padding: "96px 24px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }} className="partner-grid">
 
-        <div className="partner-content">
-          <h2>Become a Partner</h2>
-          <p>3 easy steps to join the tendr!</p>
-          <button
-            className="partner-btn"
-            onClick={() => navigate("/vendor/register")}
-          >
-            START HERE
-          </button>
-
-          {/* Steps container */}
-          <div className="partner-steps">
-            <div className="step">
-              <div className="step-circle">1</div>
-              <h4>Register</h4>
-              <p>Join our network of event professionals</p>
+          {/* Left: text */}
+          <div>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 16 }}>
+              For Vendors
+            </p>
+            <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 20px" }}>
+              Grow your business<br />
+              <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                with Tendr
+              </span>
+            </h2>
+            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.75, margin: "0 0 32px", maxWidth: 420 }}>
+              Join Delhi NCR's most trusted event services marketplace. Get discovered by customers actively looking for photographers, caterers, decorators, and DJs.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 36 }}>
+              {[
+                "No paid ads needed — we bring customers to you",
+                "Verified profile builds trust instantly",
+                "Direct chat with clients before committing",
+                "Grow your reviews and ranking over time",
+              ].map((item, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(204,171,74,0.2)", border: "1.5px solid rgba(204,171,74,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#CCAB4A", flexShrink: 0, marginTop: 2 }}>✓</span>
+                  <span style={{ fontSize: 14.5, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>{item}</span>
+                </div>
+              ))}
             </div>
+            <button
+              onClick={() => navigate("/vendor/register")}
+              style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 4px 18px rgba(196,122,46,0.45)", transition: "opacity 0.2s" }}
+              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+            >
+              List Your Service →
+            </button>
+          </div>
 
-            <div className="step">
-              <div className="step-circle">2</div>
-              <h4>Verify</h4>
-              <p>Complete our verification process</p>
-            </div>
-
-            <div className="step">
-              <div className="step-circle">3</div>
-              <h4>Grow</h4>
-              <p>Start receiving bookings and grow your business</p>
-            </div>
+          {/* Right: 3 steps */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {[
+              { num: "01", title: "Submit Your Details", desc: "Fill in your name, phone, and address. Takes under 2 minutes." },
+              { num: "02", title: "Get Verified", desc: "Our team reviews your profile and approves your listing within 24–48 hours." },
+              { num: "03", title: "Start Receiving Bookings", desc: "Go live on Tendr and get discovered by customers across Delhi NCR." },
+            ].map((step, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "24px 24px", display: "flex", gap: 20, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 28, fontWeight: 900, color: "#CCAB4A", lineHeight: 1, flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>{step.num}</span>
+                <div>
+                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#fff", margin: "0 0 6px" }}>{step.title}</h4>
+                  <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.55 }}>{step.desc}</p>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+
+        <style>{`.partner-grid { } @media (max-width: 768px) { .partner-grid { grid-template-columns: 1fr !important; gap: 48px !important; } }`}</style>
       </section>
 
       {/* Footer */}
