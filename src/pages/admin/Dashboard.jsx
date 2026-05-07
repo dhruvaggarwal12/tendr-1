@@ -333,9 +333,12 @@ const AdminDashboard = () => {
     if (!token || !user?.isAdmin) return;
     const socket = io(BASE_URL, {
       query: { userId: user._id, role: 'admin' },
-      transports: ['websocket'],
+      transports: ['websocket', 'polling'],
       withCredentials: true,
     });
+
+    socket.on('connect', () => console.log('Admin socket connected:', socket.id));
+    socket.on('connect_error', (e) => console.error('Admin socket error:', e.message));
 
     socket.on('new_chat_request', (req) => {
       setChatRequests((prev) => {

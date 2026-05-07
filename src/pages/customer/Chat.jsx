@@ -110,9 +110,14 @@ const Chat = () => {
     });
     socketRef.current = socket;
 
-    socket.emit("open_conversation", {
-      chatType: "VENDOR",
-      vendorId: vendor?._id && vendor._id !== "concierge" ? vendor._id : undefined,
+    const vendorId = vendor?._id && vendor._id !== "concierge" ? vendor._id : undefined;
+
+    // Wait for connection before emitting — socket.io is async
+    socket.on("connect", () => {
+      socket.emit("open_conversation", {
+        chatType: "VENDOR",
+        vendorId,
+      });
     });
 
     socket.on("conversation_opened", ({ _id, chatApproved: approved }) => {
@@ -129,6 +134,10 @@ const Chat = () => {
         { text: msg.content, sender: msg.sender === "user" ? "user" : "vendor", ts: msg.createdAt || Date.now() },
       ]);
       setIsVendorTyping(false);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Chat socket error:", err.message);
     });
 
     return () => socket.disconnect();
