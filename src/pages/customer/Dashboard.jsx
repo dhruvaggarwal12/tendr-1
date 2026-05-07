@@ -1,5 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 import EastIcon from "@mui/icons-material/East";
 
@@ -103,8 +106,29 @@ const preferredServices = [
 
 const UserDashboard = () => {
   const navigate = useNavigate();
+  const { user, token } = useSelector((state) => state.auth);
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeDropdown, setactiveDropdown] = useState("bookings")
+  const [activeDropdown, setactiveDropdown] = useState("bookings");
+  const [eventPlans, setEventPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    setLoadingPlans(true);
+    fetch(`${BASE_URL}/event-plans`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setEventPlans(data.plans || []))
+      .catch(() => {})
+      .finally(() => setLoadingPlans(false));
+  }, [token]);
+
+  const totalPlans = eventPlans.length;
+  const submittedPlans = eventPlans.filter((p) => p.status === "submitted").length;
+  const completedPlans = eventPlans.filter((p) => p.status === "completed").length;
+  const cancelledPlans = eventPlans.filter((p) => p.status === "cancelled").length;
 
   return (
 
@@ -235,32 +259,56 @@ const UserDashboard = () => {
             <div className="py-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
-                {stats_bookings.map((item) => (
-                  <div
-                    key={item.key}
-                    className={`min-h-[160px] w-full px-6 rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-5`}
-                  >
-                    {/* Icon */}
+                {[
+                  { label: 'Total Event Plans', value: totalPlans, icon: stats_bookings[0].icon },
+                  { label: 'Submitted', value: submittedPlans, icon: stats_bookings[2].icon },
+                  { label: 'Completed', value: completedPlans, icon: stats_bookings[1].icon },
+                  { label: 'Cancelled', value: cancelledPlans, icon: stats_bookings[3].icon },
+                ].map((item, idx) => (
+                  <div key={idx} className="min-h-[160px] w-full px-6 rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-5">
                     <div className="icon">{item.icon}</div>
-
-                    {/* Bottom Content */}
                     <div className="content flex flex-col items-center">
-                      <div className="heading font-semibold text-base md:text-lg text-gray-500 leading-none text-center">
-                        {item.label}
-                      </div>
+                      <div className="heading font-semibold text-base md:text-lg text-gray-500 leading-none text-center">{item.label}</div>
                       <div className="metric text-[38px] md:text-[55px] lg:text-[65px] font-bold text-[#CCAB4A] leading-none">
-                        {item.label.toLowerCase().includes('value')
-                          ? formatMoney1(item.value)
-                          : item.value.toLocaleString('en-IN')}
+                        {loadingPlans ? "—" : item.value}
                       </div>
                     </div>
                   </div>
-
                 ))}
 
               </div>
             </div>
 
+          </div>
+        )}
+
+        {/* Event Plans table — shown in bookings section below stats */}
+        {activeDropdown === "bookings" && eventPlans.length > 0 && (
+          <div style={{ position: "absolute", bottom: 0, left: "30%", right: 0, background: "#FDFAF0", borderTop: "1.5px solid rgba(204,171,74,0.3)", padding: "16px 32px", maxHeight: "45%", overflowY: "auto" }}>
+            <div style={{ fontWeight: 700, fontSize: 16, color: "#d08f4e", marginBottom: 12 }}>Your Event Plans</div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
+                  {["Event", "Type", "Date", "Location", "Services", "Status"].map((h) => (
+                    <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 700, color: "#7A5535" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {eventPlans.map((plan, i) => (
+                  <tr key={plan._id} style={{ borderBottom: "1px solid rgba(204,171,74,0.15)", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
+                    <td style={{ padding: "8px 12px", fontWeight: 600, color: "#2C1A0E" }}>{plan.eventName}</td>
+                    <td style={{ padding: "8px 12px", color: "#5a3a1a" }}>{plan.eventType}</td>
+                    <td style={{ padding: "8px 12px", color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date}</td>
+                    <td style={{ padding: "8px 12px", color: "#5a3a1a" }}>{plan.location}</td>
+                    <td style={{ padding: "8px 12px", color: "#5a3a1a" }}>{(plan.selectedServices || []).join(", ") || "—"}</td>
+                    <td style={{ padding: "8px 12px" }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>{plan.status}</span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
 
