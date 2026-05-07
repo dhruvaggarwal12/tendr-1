@@ -112,17 +112,21 @@ const VendorList = () => {
 
   // fetch on changes
   useEffect(() => {
-    if (!locationType || !serviceType) return;
-
     setIsLoading(true);
+
+    // Use selectedCategories from route state, or fall back to Redux serviceType
+    const activeServiceTypes = selectedCategories.length > 0
+      ? selectedCategories
+      : serviceType ? [serviceType] : [];
+
     const payload = {
-      location: locationType,
-      serviceTypes: [serviceType],
+      ...(locationType && { location: locationType }),
+      ...(activeServiceTypes.length > 0 && { serviceTypes: activeServiceTypes }),
       sortBy,
       sortOrder,
       page: 1,
-      limit: 10,
-      serviceFilters: secondaryFilters, // <- send selected secondary filters
+      limit: 20,
+      serviceFilters: secondaryFilters,
     };
 
     getVendors(payload)
@@ -133,17 +137,20 @@ const VendorList = () => {
       })
       .catch((err) => console.error("Error fetching vendors:", err))
       .finally(() => setIsLoading(false));
-  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType]);
+  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, selectedCategories.length]);
 
   const fetchPage = (pageNum) => {
     setIsLoading(true);
+    const activeServiceTypes = selectedCategories.length > 0
+      ? selectedCategories
+      : serviceType ? [serviceType] : [];
     const payload = {
-      location: locationType,
-      serviceTypes: [serviceType],
+      ...(locationType && { location: locationType }),
+      ...(activeServiceTypes.length > 0 && { serviceTypes: activeServiceTypes }),
       sortBy,
       sortOrder,
       page: pageNum,
-      limit: 10,
+      limit: 20,
       serviceFilters: secondaryFilters,
     };
     getVendors(payload)
