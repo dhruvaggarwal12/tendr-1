@@ -520,30 +520,41 @@ const AdminDashboard = () => {
                         </div>
                       </div>
 
-                      {!req.chatApproved && !req.chatRejected && (
-                        <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
-                          <button
-                            onClick={() => {
-                              fetch(`${BASE_URL}/admin/chat-requests/${req._id}/approve`, {
-                                method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                              }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatApproved: true } : r)));
-                            }}
-                            style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                        {!req.chatApproved && !req.chatRejected && (
+                          <>
+                            <button
+                              onClick={() => {
+                                fetch(`${BASE_URL}/admin/chat-requests/${req._id}/approve`, {
+                                  method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                                }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatApproved: true } : r)));
+                              }}
+                              style={{ padding: "7px 18px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                            >
+                              ✓ Accept
+                            </button>
+                            <button
+                              onClick={() => {
+                                fetch(`${BASE_URL}/admin/chat-requests/${req._id}/reject`, {
+                                  method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                                }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatRejected: true } : r)));
+                              }}
+                              style={{ padding: "7px 18px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                            >
+                              ✗ Reject
+                            </button>
+                          </>
+                        )}
+                        {req.chatApproved && req.customerId?.phoneNumber && (
+                          <a
+                            href={`https://wa.me/91${req.customerId.phoneNumber}?text=${encodeURIComponent(`Hi ${req.customerName || "there"}! Your chat request with ${req.vendorName || "the vendor"} on Tendr has been accepted. You can now start chatting. — Team Tendr`)}`}
+                            target="_blank" rel="noopener noreferrer"
+                            style={{ padding: "7px 16px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 13, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}
                           >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => {
-                              fetch(`${BASE_URL}/admin/chat-requests/${req._id}/reject`, {
-                                method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                              }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatRejected: true } : r)));
-                            }}
-                            style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      )}
+                            📱 Notify on WhatsApp
+                          </a>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -883,12 +894,18 @@ const AdminDashboard = () => {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {vendorApplications.map((app) => {
+                    // ── Replace this URL when you have the Google Form link ──
+                    const GOOGLE_FORM_URL = "https://forms.google.com/your-form-link-here";
+
                     const statusStyle = {
-                      pending:    { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
-                      contacted:  { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
-                      registered: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-                      rejected:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" },
-                    }[app.status] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" };
+                      pending:    { bg: "#fffbeb", color: "#b45309",  border: "#fde68a",  label: "Pending" },
+                      form_sent:  { bg: "#eff6ff", color: "#0369a1",  border: "#bfdbfe",  label: "Form Sent" },
+                      approved:   { bg: "#f0fdf4", color: "#15803d",  border: "#bbf7d0",  label: "Approved" },
+                      registered: { bg: "#f0fdf4", color: "#15803d",  border: "#bbf7d0",  label: "Registered ✓" },
+                      rejected:   { bg: "#fff5f5", color: "#c0392b",  border: "#fca5a5",  label: "Rejected" },
+                    }[app.status] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: app.status };
+
+                    const waNum = app.whatsappNumber || app.phoneNumber;
 
                     const updateStatus = (newStatus) => {
                       fetch(`${BASE_URL}/vendor-applications/${app._id}/status`, {
@@ -904,60 +921,93 @@ const AdminDashboard = () => {
                         .catch(() => {});
                     };
 
+                    const btnStyle = (bg, color, border) => ({
+                      padding: "7px 14px", borderRadius: 8, border: border ? `1.5px solid ${border}` : "none",
+                      background: bg, color, fontSize: 12, fontWeight: 600, cursor: "pointer",
+                      fontFamily: "'Outfit', sans-serif", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5,
+                    });
+
                     return (
                       <div key={app._id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(204,171,74,0.2)", padding: "16px 20px", boxShadow: "0 2px 10px rgba(139,69,19,0.05)" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                        {/* Info row */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
                           <div style={{ flex: 1 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
                               <span style={{ fontWeight: 700, fontSize: 16, color: "#2C1A0E" }}>{app.name}</span>
                               <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: statusStyle.bg, color: statusStyle.color, border: `1px solid ${statusStyle.border}` }}>
-                                {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                                {statusStyle.label}
                               </span>
                             </div>
-                            <div style={{ display: "flex", gap: 20, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
+                            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
                               <span>📞 {app.phoneNumber}</span>
                               {app.whatsappNumber && <span>💬 {app.whatsappNumber}</span>}
                               {app.email && <span>✉️ {app.email}</span>}
                             </div>
-                            <div style={{ fontSize: 13, color: "#9B7450", marginTop: 4 }}>{app.address}</div>
-                            <div style={{ fontSize: 11, color: "#bbb", marginTop: 4 }}>{new Date(app.createdAt).toLocaleDateString("en-IN")}</div>
+                            <div style={{ fontSize: 12, color: "#9B7450", marginTop: 4 }}>{app.address} · {new Date(app.createdAt).toLocaleDateString("en-IN")}</div>
                           </div>
+                        </div>
 
-                          <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", alignItems: "center" }}>
-                            {/* WhatsApp quick link */}
+                        {/* Action buttons — step by step */}
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", borderTop: "1px solid rgba(204,171,74,0.15)", paddingTop: 10 }}>
+
+                          {/* STEP 1 — pending: send form */}
+                          {app.status === "pending" && (
                             <a
-                              href={`https://wa.me/91${app.whatsappNumber || app.phoneNumber}?text=${encodeURIComponent(`Hi ${app.name}, your Tendr vendor application has been reviewed. Our team will share the onboarding form with you shortly!`)}`}
+                              href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 👋 Thank you for your interest in joining Tendr. Please fill in this form to complete your vendor registration: ${GOOGLE_FORM_URL}`)}`}
                               target="_blank" rel="noopener noreferrer"
-                              style={{ padding: "6px 14px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}
+                              onClick={() => setTimeout(() => updateStatus("form_sent"), 500)}
+                              style={btnStyle("linear-gradient(135deg,#C47A2E,#CCAB4A)", "#fff", null)}
+                            >
+                              📋 Send Google Form
+                            </a>
+                          )}
+
+                          {/* STEP 2 — form sent: approve or reject */}
+                          {app.status === "form_sent" && (
+                            <>
+                              <span style={{ fontSize: 12, color: "#9B7450", marginRight: 4 }}>Form sent ✓</span>
+                              <button onClick={() => updateStatus("approved")} style={btnStyle("linear-gradient(135deg,#C47A2E,#CCAB4A)", "#fff", null)}>
+                                ✓ Approve
+                              </button>
+                              <button onClick={() => updateStatus("rejected")} style={btnStyle("#fff5f5", "#c0392b", "#fca5a5")}>
+                                ✗ Reject
+                              </button>
+                            </>
+                          )}
+
+                          {/* STEP 3 — approved: WhatsApp approval message + mark registered */}
+                          {app.status === "approved" && (
+                            <>
+                              <a
+                                href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! 🎉 Congratulations! You are approved by Tendr as a vendor. Our team will contact you shortly with your profile link and next steps. Welcome to the Tendr family! — Team Tendr`)}`}
+                                target="_blank" rel="noopener noreferrer"
+                                style={btnStyle("#25D366", "#fff", null)}
+                              >
+                                📱 Send Approval on WhatsApp
+                              </a>
+                              <button onClick={() => updateStatus("registered")} style={btnStyle("#15803d", "#fff", null)}>
+                                ✓ Mark as Registered
+                              </button>
+                            </>
+                          )}
+
+                          {/* STEP 4 — registered: WhatsApp again if needed */}
+                          {app.status === "registered" && (
+                            <a
+                              href={`https://wa.me/91${waNum}?text=${encodeURIComponent(`Hi ${app.name}! You are now fully registered as a Tendr vendor. — Team Tendr`)}`}
+                              target="_blank" rel="noopener noreferrer"
+                              style={btnStyle("#25D366", "#fff", null)}
                             >
                               📱 WhatsApp
                             </a>
+                          )}
 
-                            {app.status === "pending" && (
-                              <>
-                                <button onClick={() => updateStatus("contacted")}
-                                  style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                  ✓ Accept
-                                </button>
-                                <button onClick={() => updateStatus("rejected")}
-                                  style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                  ✗ Reject
-                                </button>
-                              </>
-                            )}
-                            {app.status === "contacted" && (
-                              <button onClick={() => updateStatus("registered")}
-                                style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#15803d", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                ✓ Mark Registered
-                              </button>
-                            )}
-                            {app.status === "rejected" && (
-                              <button onClick={() => updateStatus("pending")}
-                                style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #CCAB4A", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                                ↩ Reconsider
-                              </button>
-                            )}
-                          </div>
+                          {/* Rejected: reconsider */}
+                          {app.status === "rejected" && (
+                            <button onClick={() => updateStatus("pending")} style={btnStyle("#fff", "#C47A2E", "#CCAB4A")}>
+                              ↩ Reconsider
+                            </button>
+                          )}
                         </div>
                       </div>
                     );
