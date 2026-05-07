@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
 
 import Dashboards_Nav from "../../components/Dashboards_Nav";
@@ -326,6 +327,26 @@ const AdminDashboard = () => {
     const convo = await getConversationMessages(id);
     setCurrentConversation(convo);
   };
+
+  // Real-time socket connection for admin — listens for new chat requests
+  useEffect(() => {
+    if (!token || !user?.isAdmin) return;
+    const socket = io(BASE_URL, {
+      query: { userId: user._id, role: 'admin' },
+      transports: ['websocket'],
+      withCredentials: true,
+    });
+
+    socket.on('new_chat_request', (req) => {
+      setChatRequests((prev) => {
+        const exists = prev.find((r) => r._id === req._id);
+        if (exists) return prev;
+        return [req, ...prev];
+      });
+    });
+
+    return () => socket.disconnect();
+  }, [token, user]);
 
   if (!token || !user?.isAdmin) return null;
 
