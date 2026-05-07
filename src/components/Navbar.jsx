@@ -407,7 +407,7 @@ const Navbar = ({
                       </div>
                       {[
                         { label: "Dashboard", path: "/dashboard" },
-                        ...(user.email === "mudit27@gmail.com" ? [{ label: "Admin Dashboard", path: "/AdminDashboard" }] : []),
+                        ...(user.isAdmin ? [{ label: "Admin Dashboard", path: "/AdminDashboard" }] : []),
                       ].map(({ label, path }) => (
                         <button key={label} onClick={() => { navigate(path); setShowProfileMenu(false); }}
                           style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}

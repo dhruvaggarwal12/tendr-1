@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
-const ADMIN_EMAIL = "mudit27@gmail.com";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 import EastIcon from "@mui/icons-material/East";
@@ -295,7 +294,7 @@ const AdminDashboard = () => {
   // Redirect if not logged in or not admin
   useEffect(() => {
     if (!token) { navigate("/login"); return; }
-    if (user?.email !== ADMIN_EMAIL) { navigate("/"); return; }
+    if (!user?.isAdmin) { navigate("/"); return; }
   }, [token, user, navigate]);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -304,12 +303,13 @@ const AdminDashboard = () => {
   const [currentConversation, setCurrentConversation] = useState([]);
   const [liveStats, setLiveStats] = useState(null);
   const [vendorApplications, setVendorApplications] = useState([]);
+  const [eventPlans, setEventPlans] = useState([]);
 
   const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
 
   // Fetch real stats from backend
   useEffect(() => {
-    if (!token || user?.email !== ADMIN_EMAIL) return;
+    if (!token || !user?.isAdmin) return;
     fetch(`${BASE_URL}/admin/stats`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
@@ -325,6 +325,14 @@ const AdminDashboard = () => {
       .then((r) => r.json())
       .then((data) => setVendorApplications(data.applications || []))
       .catch(() => {});
+
+    fetch(`${BASE_URL}/admin/event-plans`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setEventPlans(data.plans || []))
+      .catch(() => {});
   }, [token, user]);
 
   const loadConversation = async (id) => {
@@ -332,7 +340,7 @@ const AdminDashboard = () => {
     setCurrentConversation(convo);
   };
 
-  if (!token || user?.email !== ADMIN_EMAIL) return null;
+  if (!token || !user?.isAdmin) return null;
 
   return (
     <div className="flex flex-col h-screen">
@@ -510,10 +518,51 @@ const AdminDashboard = () => {
 
         {activeDropdown === "bookings" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            {/* Heading */}
             <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
               Bookings
             </div>
+
+            {/* Real Event Plans from DB */}
+            {eventPlans.length > 0 && (
+              <div className="mb-8">
+                <div className="text-xl font-semibold text-black mb-3">Event Plans ({eventPlans.length})</div>
+                <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-x-auto">
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
+                    <thead>
+                      <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
+                        {["Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Status"].map((h) => (
+                          <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {eventPlans.map((plan, i) => (
+                        <tr key={plan._id} style={{ borderBottom: i < eventPlans.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
+                          <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: "#2C1A0E", whiteSpace: "nowrap" }}>{plan.customerId?.name || "—"}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventName}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventType}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.guests}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.budget}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 12, color: "#5a3a1a" }}>{(plan.selectedServices || []).join(", ") || "—"}</td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: plan.bookingType === "you-do-it" ? "#eff6ff" : "#f5f3ff", color: plan.bookingType === "you-do-it" ? "#0369a1" : "#7c3aed", border: "1px solid currentColor" }}>
+                              {plan.bookingType}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>{plan.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+            {eventPlans.length === 0 && (
+              <div className="text-center py-12 text-gray-400">No event plans submitted yet. Plans appear here when customers complete a booking.</div>
+            )}
 
             {/* Info Cards Upper */}
             <div className="py-4">
