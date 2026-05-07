@@ -3,6 +3,7 @@ import { createBrowserRouter } from "react-router-dom";
 import Home from "./pages/Home/Home";
 import Auth from "./pages/customer/Auth";
 import VendorRegistration from "./pages/vendor/Registration";
+import ApplicationStatus from "./pages/vendor/ApplicationStatus";
 import EventPlanningForm from "./pages/customer/EventPlanning.jsx"; // ✅ use the new form
 import NotFound from "./pages/shared/NotFound";
 import ErrorPage from "./components/ErrorPage";
@@ -204,6 +205,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: "register", element: <VendorOnboarding /> },
+      { path: "status", element: <ApplicationStatus /> },
       // Vendor dashboard disabled for now
       // { path: "dashboard", element: <VendorDashboard /> },
       // { path: "chats", element: <VendorChatList /> },

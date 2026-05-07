@@ -107,12 +107,17 @@ export default function VendorRegistration() {
         <div style={{ background: "#FFFCF5", borderRadius: 24, padding: "52px 40px", maxWidth: 480, width: "100%", textAlign: "center", boxShadow: "0 8px 40px rgba(139,69,19,0.1)" }}>
           <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 32, color: "#fff" }}>✓</div>
           <h2 style={{ fontSize: 24, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px" }}>Application Submitted!</h2>
-          <p style={{ fontSize: 15, color: "#9B7450", margin: "0 0 32px", lineHeight: 1.6 }}>
-            Thank you for your interest in listing your service on Tendr. Our team will review your details and get in touch with you shortly.
+          <p style={{ fontSize: 15, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.6 }}>
+            Thank you! Our team will review your details and get in touch on WhatsApp or email within 24–48 hours.
           </p>
-          <button onClick={() => navigate("/")} style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "13px 32px", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
-            Back to Home
-          </button>
+          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+            <button onClick={() => navigate("/vendor/status")} style={{ background: "transparent", color: "#C47A2E", border: "1.5px solid rgba(196,122,46,0.4)", borderRadius: 12, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
+              Check Status
+            </button>
+            <button onClick={() => navigate("/")} style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+              Back to Home
+            </button>
+          </div>
         </div>
       </div>
     );

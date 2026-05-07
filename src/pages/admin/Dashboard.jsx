@@ -874,39 +874,97 @@ const AdminDashboard = () => {
             )}
 
             {/* Vendor Applications Table */}
-            {vendorApplications.length > 0 && (
-              <div className="mb-8">
-                <div className="text-xl font-semibold text-black mb-3">Vendor Applications</div>
-                <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-hidden">
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
-                    <thead>
-                      <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
-                        {["Name", "Phone", "WhatsApp", "Email", "Address", "Status", "Date"].map((h) => (
-                          <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 13, fontWeight: 700, color: "#7A5535" }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {vendorApplications.map((app, i) => (
-                        <tr key={app._id} style={{ borderBottom: i < vendorApplications.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
-                          <td style={{ padding: "10px 14px", fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>{app.name}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{app.phoneNumber}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{app.whatsappNumber || "—"}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{app.email || "—"}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{app.address}</td>
-                          <td style={{ padding: "10px 14px" }}>
-                            <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 100, background: app.status === "pending" ? "#fffbeb" : "#f0fdf4", color: app.status === "pending" ? "#b45309" : "#15803d", border: `1px solid ${app.status === "pending" ? "#fde68a" : "#bbf7d0"}` }}>
-                              {app.status}
-                            </span>
-                          </td>
-                          <td style={{ padding: "10px 14px", fontSize: 12, color: "#9B7450" }}>{new Date(app.createdAt).toLocaleDateString("en-IN")}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+            <div className="mb-8">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div className="text-xl font-semibold text-black">Vendor Applications ({vendorApplications.length})</div>
               </div>
-            )}
+              {vendorApplications.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>No applications yet.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {vendorApplications.map((app) => {
+                    const statusStyle = {
+                      pending:    { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
+                      contacted:  { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
+                      registered: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
+                      rejected:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" },
+                    }[app.status] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" };
+
+                    const updateStatus = (newStatus) => {
+                      fetch(`${BASE_URL}/vendor-applications/${app._id}/status`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                        credentials: "include",
+                        body: JSON.stringify({ status: newStatus }),
+                      })
+                        .then((r) => r.json())
+                        .then(() => setVendorApplications((prev) =>
+                          prev.map((a) => a._id === app._id ? { ...a, status: newStatus } : a)
+                        ))
+                        .catch(() => {});
+                    };
+
+                    return (
+                      <div key={app._id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(204,171,74,0.2)", padding: "16px 20px", boxShadow: "0 2px 10px rgba(139,69,19,0.05)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontWeight: 700, fontSize: 16, color: "#2C1A0E" }}>{app.name}</span>
+                              <span style={{ fontSize: 12, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: statusStyle.bg, color: statusStyle.color, border: `1px solid ${statusStyle.border}` }}>
+                                {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+                              </span>
+                            </div>
+                            <div style={{ display: "flex", gap: 20, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
+                              <span>📞 {app.phoneNumber}</span>
+                              {app.whatsappNumber && <span>💬 {app.whatsappNumber}</span>}
+                              {app.email && <span>✉️ {app.email}</span>}
+                            </div>
+                            <div style={{ fontSize: 13, color: "#9B7450", marginTop: 4 }}>{app.address}</div>
+                            <div style={{ fontSize: 11, color: "#bbb", marginTop: 4 }}>{new Date(app.createdAt).toLocaleDateString("en-IN")}</div>
+                          </div>
+
+                          <div style={{ display: "flex", gap: 8, flexShrink: 0, flexWrap: "wrap", alignItems: "center" }}>
+                            {/* WhatsApp quick link */}
+                            <a
+                              href={`https://wa.me/91${app.whatsappNumber || app.phoneNumber}?text=${encodeURIComponent(`Hi ${app.name}, your Tendr vendor application has been reviewed. Our team will share the onboarding form with you shortly!`)}`}
+                              target="_blank" rel="noopener noreferrer"
+                              style={{ padding: "6px 14px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: 5 }}
+                            >
+                              📱 WhatsApp
+                            </a>
+
+                            {app.status === "pending" && (
+                              <>
+                                <button onClick={() => updateStatus("contacted")}
+                                  style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                  ✓ Accept
+                                </button>
+                                <button onClick={() => updateStatus("rejected")}
+                                  style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                  ✗ Reject
+                                </button>
+                              </>
+                            )}
+                            {app.status === "contacted" && (
+                              <button onClick={() => updateStatus("registered")}
+                                style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#15803d", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                ✓ Mark Registered
+                              </button>
+                            )}
+                            {app.status === "rejected" && (
+                              <button onClick={() => updateStatus("pending")}
+                                style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #CCAB4A", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                ↩ Reconsider
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
 
             {/* Info Cards Lower */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-10 mt-4 sm:mt-8">
