@@ -530,10 +530,10 @@ const AdminDashboard = () => {
             <div className="py-4">
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {[
-                  { label: "Users Count", value: liveStats ? liveStats.users.total : "—", icon: stats_dashboard[0].icon },
-                  { label: "Vendor Count", value: liveStats ? liveStats.vendors.total : "—", icon: stats_dashboard[1].icon },
-                  { label: "Vendor Applications", value: liveStats ? liveStats.applications.total : "—", icon: stats_dashboard[2].icon },
-                  { label: "Pending Applications", value: liveStats ? liveStats.applications.pending : "—", icon: stats_dashboard[3].icon },
+                  { label: "Users Count", value: liveStats?.users?.total ?? "—", icon: stats_dashboard[0].icon },
+                  { label: "Vendor Count", value: liveStats?.vendors?.total ?? "—", icon: stats_dashboard[1].icon },
+                  { label: "Vendor Applications", value: liveStats?.applications?.total ?? "—", icon: stats_dashboard[2].icon },
+                  { label: "Pending Applications", value: liveStats?.applications?.pending ?? "—", icon: stats_dashboard[3].icon },
                 ].map((item, idx) => (
                   <div
                     key={idx}
