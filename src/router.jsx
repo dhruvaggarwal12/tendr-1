@@ -204,9 +204,10 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       { path: "register", element: <VendorOnboarding /> },
-      { path: "dashboard", element: <VendorDashboard /> },
-      { path: "chats", element: <VendorChatList /> },
-      { path: "chat", element: <VendorChat /> },
+      // Vendor dashboard disabled for now
+      // { path: "dashboard", element: <VendorDashboard /> },
+      // { path: "chats", element: <VendorChatList /> },
+      // { path: "chat", element: <VendorChat /> },
     ],
   },
 

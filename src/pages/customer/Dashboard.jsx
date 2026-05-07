@@ -1,464 +1,209 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import BasicSpeedDial from "../../components/BasicSpeedDial";
+import Footer from "../../components/Footer";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+const font = "'Outfit', sans-serif";
 
-import EastIcon from "@mui/icons-material/East";
+const TABS = ["All", "Upcoming", "Completed", "Cancelled"];
 
-import Dashboards_Nav from "../../components/Dashboards_Nav";
-
-import { Doughnut_BookingCategory_UserDashboard } from "../../components/Charts_Dashboards";
-
-import { LayoutDashboard, IndianRupee, TicketSlash, ChartColumnDecreasing, UserRound, BriefcaseBusiness, Puzzle, ArrowLeft, CalendarCheck2, CalendarClock, CalendarFold, BadgeIndianRupee, CalendarX2, Camera, Music, SprayCan, HandPlatter, Store, Handshake, MonitorCheck, MonitorX, UserPlus } from 'lucide-react';
-
-import MenuIcon from '@mui/icons-material/Menu';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import BasicSpeedDial from "../../components/BasicSpeedDial";
-
-const formatMoney1 = (amount) => {
-  return `₹${amount.toLocaleString('en-IN')}`;
+const statusMap = {
+  Upcoming:  ["submitted", "in_progress"],
+  Completed: ["completed"],
+  Cancelled: ["cancelled"],
 };
 
-const sidebar_arr = [
-  {
-    label: 'Bookings',
-    icon: <CalendarFold size={22} />,
-    key: 'Bookings',
-  },
-  {
-    label: 'Payments',
-    icon: <BadgeIndianRupee size={22} />,
-    key: 'Payments',
-  },
-  {
-    label: 'Preferences',
-    icon: <Puzzle size={22} />,
-    key: 'Preferences',
-  }
-];
+const statusBadge = (status) => {
+  const map = {
+    submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "Submitted" },
+    in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe", label: "In Progress" },
+    completed:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0", label: "Completed" },
+    cancelled:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5", label: "Cancelled" },
+  };
+  const s = map[status] || map.submitted;
+  return (
+    <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 100,
+      background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>
+      {s.label}
+    </span>
+  );
+};
 
-const stats_bookings = [
-  {
-    label: 'Total Bookings',
-    value: 7,
-    icon: <CalendarFold size={32} />,
-    key: 'customer'
-  },
-  {
-    label: 'Completed bookings',
-    value: 6,
-    icon: <CalendarCheck2 size={32} />,
-    key: 'vendor'
-  },
-  {
-    label: 'Pending bookings',
-    value: 1,
-    icon: <CalendarClock size={32} />,
-    key: 'events-completed'
-  },
-  {
-    label: 'Cancelled bookings',
-    value: 2,
-    icon: <CalendarX2 size={32} />,
-    key: 'events-completed'
-  },
-  {
-    label: 'Average booking value',
-    value: 23800,
-    icon: <IndianRupee size={32} />,
-    key: 'events-due'
-  }
-];
+export default function CustomerDashboard() {
+  const navigate  = useNavigate();
+  const { user, token } = useSelector((s) => s.auth);
 
-const stats_payments = [
-  {
-    label: 'Total amount spent',
-    value: 238000,
-    icon: <CalendarFold size={32} />,
-    key: 'customer'
-  },
-  {
-    label: 'Average transaction value',
-    value: 34000,
-    icon: <CalendarCheck2 size={32} />,
-    key: 'vendor'
-  },
-  {
-    label: 'Number of payments',
-    value: 132,
-    icon: <CalendarClock size={32} />,
-    key: 'events-completed'
-  }
-];
+  const [activeTab, setActiveTab] = useState("All");
+  const [plans, setPlans] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-const favoriteEventTypes = [
-  { type: "Office Party", count: 18, medal: "🥇" },
-  { type: "Birthday", count: 12, medal: "🥈" },
-  { type: "Festival", count: 8, medal: "🥉" },
-];
+  // Redirect if not logged in
+  useEffect(() => {
+    if (!token) navigate("/login");
+  }, [token, navigate]);
 
-const preferredServices = [
-  { service: "Photographer", count: 9, medal: "🥇" },
-  { service: "Catering", count: 8, medal: "🥈" },
-  { service: "Entertainment", count: 7, medal: "🥉" },
-];
-
-const UserDashboard = () => {
-  const navigate = useNavigate();
-  const { user, token } = useSelector((state) => state.auth);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeDropdown, setactiveDropdown] = useState("bookings");
-  const [eventPlans, setEventPlans] = useState([]);
-  const [loadingPlans, setLoadingPlans] = useState(false);
-
+  // Fetch event plans
   useEffect(() => {
     if (!token) return;
-    setLoadingPlans(true);
+    setLoading(true);
     fetch(`${BASE_URL}/event-plans`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
     })
       .then((r) => r.json())
-      .then((data) => setEventPlans(data.plans || []))
+      .then((d) => setPlans(Array.isArray(d.plans) ? d.plans : []))
       .catch(() => {})
-      .finally(() => setLoadingPlans(false));
+      .finally(() => setLoading(false));
   }, [token]);
 
-  const totalPlans = eventPlans.length;
-  const submittedPlans = eventPlans.filter((p) => p.status === "submitted").length;
-  const completedPlans = eventPlans.filter((p) => p.status === "completed").length;
-  const cancelledPlans = eventPlans.filter((p) => p.status === "cancelled").length;
+  const filtered = activeTab === "All"
+    ? plans
+    : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
+
+  const counts = {
+    All: plans.length,
+    Upcoming:  plans.filter((p) => statusMap.Upcoming.includes(p.status)).length,
+    Completed: plans.filter((p) => p.status === "completed").length,
+    Cancelled: plans.filter((p) => p.status === "cancelled").length,
+  };
 
   return (
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <BasicSpeedDial />
 
-    <div className="flex flex-col h-screen">
-      <BasicSpeedDial/>
-
-      {/* Navbar */}
-      <div className="navbar bg-white border-b-2 border-[#CCAB4A]">
-        <Dashboards_Nav />
+      {/* Sticky nav */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <span onClick={() => navigate("/")} style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", cursor: "pointer", letterSpacing: "-0.02em" }}>TENDR</span>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => navigate("/booking")} style={{ fontSize: 13, fontWeight: 600, color: "#fff", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontFamily: font }}>Plan New Event</button>
+            <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: font }}>← Home</button>
+          </div>
+        </div>
       </div>
 
-      {/* Main content below navbar, takes remaining height */}
-      <div className="mainbody w-full flex flex-1">
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 32px 80px" }}>
 
-        <div
-          className="h-full flex"
-          style={{
-            width: sidebarOpen ? "30%" : "4rem",
-            transition: "width 0.3s ease",
-          }}
-        >
-
-          {/* Sidebar */}
-          <div
-            className="bg-[#fff4d4] h-full flex flex-col items-center py-8 relative"
-            style={{
-              width: sidebarOpen ? "100%" : "4rem",
-              padding: sidebarOpen ? "2rem 0.5rem" : "1rem 0.25rem",
-              transition: "all 0.3s ease",
-            }}
-          >
-
-            {/* Sidebar Options */}
-            {sidebarOpen && (
-              <div className="options flex flex-col items-center w-full">
-                <div className="flex flex-col gap-3 w-[220px] items-center">
-                  {sidebar_arr.map((item) => {
-                    const key = item.key.toLowerCase();
-                    const isActive = activeDropdown === key;
-
-                    return (
-                      <button
-                        key={item.key}
-                        type="button"
-                        onClick={() => setactiveDropdown(key)}
-                        className={`group cursor-pointer rounded-[16px] pl-2 sm:pl-4 pr-2 flex items-center justify-between font-bold w-[80px] sm:w-[100px] md:w-[140px] lg:w-[180px] xl:w-[250px] h-[40px] transform transition-transform duration-500 ease-in-out hover:scale-105 hover:-translate-y-1 active:scale-95 ${isActive
-                          ? "bg-[#CCAB4A] text-white"
-                          : "bg-white text-[#CCAB4A] hover:bg-[#CCAB4A] hover:text-white"
-                          }`}
-                      >
-                        <span className="pb-[2px] text-base hidden lg:block">
-                          {item.label}
-                        </span>
-                        <span className="pb-[2px] text-base block lg:hidden">
-                          {item.icon}
-                        </span>
-                        <span
-                          className={`arrowButton w-[30px] h-[30px] rounded-[13px] flex items-center justify-center transition duration-500 ${isActive
-                            ? "bg-white text-[#CCAB4A]"
-                            : "bg-[#CCAB4A] text-white group-hover:bg-white group-hover:text-[#CCAB4A]"
-                            }`}
-                        >
-                          <EastIcon fontSize="medium" />
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Bottom Buttons */}
-            {sidebarOpen ? (
-
-              <div className="mt-auto flex flex-col gap-2 w-full items-center">
-
-                {/* Go Back */}
-                <button
-                  type="button"
-                  onClick={() => navigate("/")}
-                  className="w-[50px] sm:w-[120px] xl:w-[200px] flex justify-center items-center gap-2 sm:pr-4 py-2 text-black bg-white hover:shadow-md transition-all duration-300 rounded-full"
-                >
-                  <span className="text-base font-semibold hidden sm:block">
-                    Go Back
-                  </span>
-                </button>
-
-                {/* Hide */}
-                <button
-                  type="button"
-                  onClick={() => setSidebarOpen(false)}
-                  className="w-[50px] sm:w-[120px] xl:w-[200px] flex justify-center items-center gap-2 sm:pr-4 py-2 text-black bg-white hover:shadow-md transition-all duration-300 rounded-full"
-                >
-                  <KeyboardArrowLeftIcon />
-                  <span className="text-base font-semibold hidden sm:block">
-                    Hide
-                  </span>
-                </button>
-
-              </div>
-
-            ) : (
-
-              // Collapsed Hamburger
-              <div className="absolute top-1/2 left-0 w-full flex justify-center -translate-y-1/2">
-                <button
-                  onClick={() => setSidebarOpen(true)}
-                  className="p-2 rounded-lg hover:bg-[#ffdc73]"
-                >
-                  <MenuIcon className="text-[#CCAB4A]" />
-                </button>
-              </div>
-
-            )}
+        {/* Profile card */}
+        <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", padding: "28px 32px", marginBottom: 32, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+            {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
-
+          <div style={{ flex: 1 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "-0.01em" }}>{user?.name || "Customer"}</h2>
+            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+              {user?.phoneNumber && (
+                <span style={{ fontSize: 14, color: "#9B7450" }}>📞 {user.phoneNumber}</span>
+              )}
+              {user?.email && (
+                <span style={{ fontSize: 14, color: "#9B7450" }}>✉️ {user.email}</span>
+              )}
+            </div>
+          </div>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            {[
+              { label: "Total Events", val: counts.All },
+              { label: "Upcoming", val: counts.Upcoming },
+              { label: "Completed", val: counts.Completed },
+            ].map(({ label, val }) => (
+              <div key={label} style={{ textAlign: "center", background: "rgba(196,122,46,0.07)", borderRadius: 12, padding: "10px 18px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#C47A2E" }}>{val}</div>
+                <div style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        {activeDropdown === "bookings" && (
-          <div className="right-dashboard w-[70%] xs:w-[85%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-10">
+        {/* Events section */}
+        <div style={{ marginBottom: 20 }}>
+          <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px", letterSpacing: "-0.01em" }}>Your Events</h3>
 
-            {/* Heading */}
-            <div className="heading font-semibold text-[32px] xs:text-4xl sm:text-5xl my-4 text-[#d08f4e]">
-              Bookings
-            </div>
-
-            {/* Info Cards Upper */}
-            <div className="py-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-
-                {[
-                  { label: 'Total Event Plans', value: totalPlans, icon: stats_bookings[0].icon },
-                  { label: 'Submitted', value: submittedPlans, icon: stats_bookings[2].icon },
-                  { label: 'Completed', value: completedPlans, icon: stats_bookings[1].icon },
-                  { label: 'Cancelled', value: cancelledPlans, icon: stats_bookings[3].icon },
-                ].map((item, idx) => (
-                  <div key={idx} className="min-h-[160px] w-full px-6 rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-5">
-                    <div className="icon">{item.icon}</div>
-                    <div className="content flex flex-col items-center">
-                      <div className="heading font-semibold text-base md:text-lg text-gray-500 leading-none text-center">{item.label}</div>
-                      <div className="metric text-[38px] md:text-[55px] lg:text-[65px] font-bold text-[#CCAB4A] leading-none">
-                        {loadingPlans ? "—" : item.value}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-              </div>
-            </div>
-
-          </div>
-        )}
-
-        {/* Event Plans table — shown in bookings section below stats */}
-        {activeDropdown === "bookings" && eventPlans.length > 0 && (
-          <div style={{ position: "absolute", bottom: 0, left: "30%", right: 0, background: "#FDFAF0", borderTop: "1.5px solid rgba(204,171,74,0.3)", padding: "16px 32px", maxHeight: "45%", overflowY: "auto" }}>
-            <div style={{ fontWeight: 700, fontSize: 16, color: "#d08f4e", marginBottom: 12 }}>Your Event Plans</div>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif", fontSize: 13 }}>
-              <thead>
-                <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
-                  {["Event", "Type", "Date", "Location", "Services", "Status"].map((h) => (
-                    <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontWeight: 700, color: "#7A5535" }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {eventPlans.map((plan, i) => (
-                  <tr key={plan._id} style={{ borderBottom: "1px solid rgba(204,171,74,0.15)", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
-                    <td style={{ padding: "8px 12px", fontWeight: 600, color: "#2C1A0E" }}>{plan.eventName}</td>
-                    <td style={{ padding: "8px 12px", color: "#5a3a1a" }}>{plan.eventType}</td>
-                    <td style={{ padding: "8px 12px", color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date}</td>
-                    <td style={{ padding: "8px 12px", color: "#5a3a1a" }}>{plan.location}</td>
-                    <td style={{ padding: "8px 12px", color: "#5a3a1a" }}>{(plan.selectedServices || []).join(", ") || "—"}</td>
-                    <td style={{ padding: "8px 12px" }}>
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>{plan.status}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {activeDropdown === "payments" && (
-
-          <div className="right-dashboard w-[70%] xs:w-[85%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-10">
-
-            {/* Heading */}
-            <div className="heading font-semibold text-[32px] xs:text-4xl sm:text-5xl my-4 text-[#d08f4e]">
-              Payments
-            </div>
-
-            {/* Info Cards Upper */}
-            <div className="py-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                {stats_payments.map((item, index) => (
-                  <div
-                    key={item.key}
-                    className="min-h-[160px] w-full px-6 rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-5"
-                  >
-                    <div className="icon">{item.icon}</div>
-
-                    <div className="content flex flex-col items-center">
-                      <div className="heading font-semibold text-base md:text-lg text-gray-500 leading-none text-center">
-                        {item.label}
-                      </div>
-                      <div className="metric text-[38px] md:text-[55px] lg:text-[65px] font-bold text-[#CCAB4A] leading-none text-center">
-                        {item.label === "Number of payments"
-                          ? item.value.toLocaleString('en-IN')
-                          : formatMoney1(item.value)}
-                      </div>
-                    </div>
-                  </div>
-
-                ))}
-
-              </div>
-            </div>
-
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+            {TABS.map((tab) => (
+              <button key={tab} onClick={() => setActiveTab(tab)}
+                style={{ padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
+                  borderColor: activeTab === tab ? "#C47A2E" : "rgba(139,69,19,0.2)",
+                  background: activeTab === tab ? "#C47A2E" : "#fff",
+                  color: activeTab === tab ? "#fff" : "#6B3A1F",
+                }}
+              >
+                {tab}
+                <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700,
+                  background: activeTab === tab ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)",
+                  color: activeTab === tab ? "#fff" : "#C47A2E",
+                  borderRadius: 100, padding: "1px 7px" }}>
+                  {counts[tab]}
+                </span>
+              </button>
+            ))}
           </div>
 
-        )}
-
-        {activeDropdown === "preferences" && (
-
-          <div className="right-dashboard w-[70%] xs:w-[85%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-10">
-
-            {/* Heading */}
-            <div className="heading font-semibold text-[32px] xs:text-4xl sm:text-5xl my-4 text-[#d08f4e]">
-              Preferences
+          {/* Event cards */}
+          {loading ? (
+            <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading your events...</div>
+          ) : filtered.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
+              <div style={{ fontSize: 40, marginBottom: 14 }}>📅</div>
+              <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>
+                {activeTab === "All" ? "No events yet" : `No ${activeTab.toLowerCase()} events`}
+              </h4>
+              <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px" }}>
+                {activeTab === "All" ? "Start planning your first event with Tendr." : ""}
+              </p>
+              {activeTab === "All" && (
+                <button onClick={() => navigate("/booking")}
+                  style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                  Plan an Event →
+                </button>
+              )}
             </div>
-
-            {/* Info Cards */}
-            <div className="py-4">
-
-              <div className="grid grid-cols-1 2xl:grid-cols-2 gap-6 mb-10">
-
-                {/* Two side-by-side custom columns */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-
-                  {/* Favorite Event Types */}
-                  <div className="w-full px-6 py-5 bg-white border-2 border-[#CCAB4A] rounded-[20px] flex flex-col justify-start min-h-[400px]">
-                    <div className="mb-4">
-                      <div className="text-xl md:text-2xl font-semibold text-black">Favorite Event Types</div>
-                      <div className="text-sm text-gray-400 leading-4">Most frequently booked</div>
-                    </div>
-
-                    <div className="flex-1 flex flex-col justify-evenly space-y-4">
-                      {favoriteEventTypes.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-start group cursor-pointer"
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="text-xl md:text-2xl leading-tight group-hover:text-3xl transition-all duration-500">
-                              {item.medal}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-base md:text-xl leading-none break-words">
-                                {item.type}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="text-[#CCAB4A] font-bold text-xl md:text-2xl leading-none">
-                            {item.count}
-                          </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {filtered.map((plan) => (
+                <div key={plan._id}
+                  style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "20px 24px", transition: "box-shadow 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 6px 24px rgba(139,69,19,0.1)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "0 2px 12px rgba(139,69,19,0.06)")}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>{plan.eventName}</span>
+                        {statusBadge(plan.status)}
+                        <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 100, background: plan.bookingType === "you-do-it" ? "#eff6ff" : "#f5f3ff", color: plan.bookingType === "you-do-it" ? "#0369a1" : "#7c3aed", border: "1px solid currentColor", fontWeight: 600 }}>
+                          {plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", gap: 20, flexWrap: "wrap", fontSize: 13, color: "#7A5535" }}>
+                        <span>📋 {plan.eventType}</span>
+                        <span>📅 {plan.date}</span>
+                        <span>📍 {plan.location}</span>
+                        <span>👥 {plan.guests} guests</span>
+                        <span>💰 {plan.budget}</span>
+                      </div>
+                      {plan.selectedServices?.length > 0 && (
+                        <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          {plan.selectedServices.map((s) => (
+                            <span key={s} style={{ fontSize: 11, padding: "2px 9px", borderRadius: 100, background: "rgba(196,122,46,0.08)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.2)", fontWeight: 600 }}>{s}</span>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  </div>
-
-                  {/* Preferred Services */}
-                  <div className="w-full px-6 py-5 bg-white border-2 border-[#CCAB4A] rounded-[20px] flex flex-col justify-start min-h-[400px]">
-                    <div className="mb-4">
-                      <div className="text-xl md:text-2xl font-semibold text-black">Preferred Services</div>
-                      <div className="text-sm text-gray-400 leading-4">Most chosen offerings</div>
-                    </div>
-
-                    <div className="flex-1 flex flex-col justify-evenly space-y-4">
-                      {preferredServices.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-start group cursor-pointer"
-                        >
-                          <div className="flex items-start gap-2">
-                            <div className="text-xl md:text-2xl leading-tight group-hover:text-3xl transition-all duration-500">
-                              {item.medal}
-                            </div>
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-base md:text-xl leading-none break-words">
-                                {item.service}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="text-[#CCAB4A] font-bold text-xl md:text-2xl leading-none">
-                            {item.count}
-                          </div>
-                        </div>
-                      ))}
+                    <div style={{ fontSize: 11, color: "#bbb", whiteSpace: "nowrap" }}>
+                      {new Date(plan.createdAt).toLocaleDateString("en-IN")}
                     </div>
                   </div>
                 </div>
-
-
-                {/* Vendors by City */}
-                <div className="h-[400px] w-full px-6 py-5 rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-start">
-                  <div className="heading font-semibold text-2xl text-black mb-2">
-                    Booking by Category
-                  </div>
-                  <div className="flex-1 flex items-center justify-center text-gray-400">
-                    <Doughnut_BookingCategory_UserDashboard />
-                  </div>
-                </div>
-
-              </div>
-
+              ))}
             </div>
-
-          </div>
-
-        )}
-
+          )}
+        </div>
       </div>
 
+      <Footer />
     </div>
-
   );
-};
-
-export default UserDashboard;
+}
