@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaUserCircle } from "react-icons/fa";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logout } from "../redux/authSlice";
 
 const Navbar = ({
   handleLogoClick,
@@ -7,6 +10,27 @@ const Navbar = ({
   handleGiftHampersClick,
   handleSignInClick,
 }) => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { user, token } = useSelector((state) => state.auth);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef(null);
+
+  const handleLogout = () => {
+    dispatch(logout());
+    setShowProfileMenu(false);
+    navigate("/");
+  };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [scrolled, setScrolled] = useState(false);
@@ -358,41 +382,62 @@ const Navbar = ({
               <FaWhatsapp size={17} />
             </a>
 
-            {/* My Profile icon */}
-            <a
-              href="/login"
-              onClick={handleSignInClick}
-              title="My Profile"
-              style={{
-                width: 40,
-                height: 40,
-                borderRadius: "50%",
-                border: "2px solid rgba(139,69,19,0.22)",
-                background: "rgba(255,248,240,0.9)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#7A4A1E",
-                textDecoration: "none",
-                flexShrink: 0,
-                marginLeft: 10,
-                transition: "all 0.2s",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#DEB887)";
-                e.currentTarget.style.color = "#fff";
-                e.currentTarget.style.borderColor = "transparent";
-                e.currentTarget.style.boxShadow = "0 4px 14px rgba(196,122,46,0.35)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = "rgba(255,248,240,0.9)";
-                e.currentTarget.style.color = "#7A4A1E";
-                e.currentTarget.style.borderColor = "rgba(139,69,19,0.22)";
-                e.currentTarget.style.boxShadow = "none";
-              }}
-            >
-              <FaUserCircle size={20} />
-            </a>
+            {/* Auth area */}
+            {token && user ? (
+              <div ref={profileMenuRef} style={{ position: "relative", marginLeft: 10 }}>
+                <button
+                  onClick={() => setShowProfileMenu(!showProfileMenu)}
+                  style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.12)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
+                >
+                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
+                    {user.name?.[0]?.toUpperCase() || "U"}
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#3B2F2F", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</span>
+                  <FaChevronDown size={9} style={{ color: "#9B7450", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
+                </button>
+                {showProfileMenu && (
+                  <>
+                    <div style={{ position: "fixed", inset: 0, zIndex: 998 }} onClick={() => setShowProfileMenu(false)} />
+                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 32px rgba(139,69,19,0.12)", border: "1px solid rgba(139,69,19,0.08)", minWidth: 180, padding: 6, zIndex: 999 }}>
+                      <div style={{ padding: "8px 14px 10px", borderBottom: "1px solid rgba(139,69,19,0.08)", marginBottom: 4 }}>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{user.name}</p>
+                        {user.email && <p style={{ fontSize: 11.5, color: "#9B7450", margin: "2px 0 0" }}>{user.email}</p>}
+                      </div>
+                      {[
+                        { label: "Dashboard", path: "/dashboard" },
+                        ...(user.email === "mudit27@gmail.com" ? [{ label: "Admin Dashboard", path: "/AdminDashboard" }] : []),
+                      ].map(({ label, path }) => (
+                        <button key={label} onClick={() => { navigate(path); setShowProfileMenu(false); }}
+                          style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >{label}</button>
+                      ))}
+                      <div style={{ borderTop: "1px solid rgba(139,69,19,0.08)", marginTop: 4, paddingTop: 4 }}>
+                        <button onClick={handleLogout}
+                          style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#C0392B", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(192,57,43,0.07)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                        >Logout</button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
+                <a href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#6B3A1F", padding: "7px 14px", borderRadius: 8, textDecoration: "none", border: "1.5px solid rgba(139,69,19,0.2)", transition: "background 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                >Sign In</a>
+                <a href="/signup" style={{ fontSize: 14, fontWeight: 700, color: "#fff", padding: "7px 16px", borderRadius: 8, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 10px rgba(196,122,46,0.3)", transition: "opacity 0.2s" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                >Sign Up</a>
+              </div>
+            )}
           </div>
         </div>
 

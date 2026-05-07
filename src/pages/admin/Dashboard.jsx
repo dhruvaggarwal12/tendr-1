@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+const ADMIN_EMAIL = "mudit27@gmail.com";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 import EastIcon from "@mui/icons-material/East";
 
@@ -286,18 +290,49 @@ const sidebar_arr = [
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { user, token } = useSelector((state) => state.auth);
+
+  // Redirect if not logged in or not admin
+  useEffect(() => {
+    if (!token) { navigate("/login"); return; }
+    if (user?.email !== ADMIN_EMAIL) { navigate("/"); return; }
+  }, [token, user, navigate]);
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeDropdown, setactiveDropdown] = useState("dashboard");
   const [selectedChat, setSelectedChat] = useState(null);
   const [currentConversation, setCurrentConversation] = useState([]);
-  const { recentChats, supportChats, adminChats } = useConversations({
-    enabled: true,
-  });
+  const [liveStats, setLiveStats] = useState(null);
+  const [vendorApplications, setVendorApplications] = useState([]);
+
+  const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
+
+  // Fetch real stats from backend
+  useEffect(() => {
+    if (!token || user?.email !== ADMIN_EMAIL) return;
+    fetch(`${BASE_URL}/admin/stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setLiveStats(data))
+      .catch(() => {});
+
+    fetch(`${BASE_URL}/vendor-applications`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setVendorApplications(data.applications || []))
+      .catch(() => {});
+  }, [token, user]);
 
   const loadConversation = async (id) => {
     const convo = await getConversationMessages(id);
     setCurrentConversation(convo);
   };
+
+  if (!token || user?.email !== ADMIN_EMAIL) return null;
 
   return (
     <div className="flex flex-col h-screen">
@@ -424,15 +459,17 @@ const AdminDashboard = () => {
             {/* Info Cards Upper */}
             <div className="py-4">
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {stats_dashboard.map((item) => (
+                {[
+                  { label: "Users Count", value: liveStats ? liveStats.users.total : "—", icon: stats_dashboard[0].icon },
+                  { label: "Vendor Count", value: liveStats ? liveStats.vendors.total : "—", icon: stats_dashboard[1].icon },
+                  { label: "Vendor Applications", value: liveStats ? liveStats.applications.total : "—", icon: stats_dashboard[2].icon },
+                  { label: "Pending Applications", value: liveStats ? liveStats.applications.pending : "—", icon: stats_dashboard[3].icon },
+                ].map((item, idx) => (
                   <div
-                    key={item.key}
+                    key={idx}
                     className="min-h-[160px] sm:min-h-[180px] w-full px-4 sm:px-6 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-4 sm:py-5 hover:shadow-md transition-shadow"
                   >
-                    {/* Icon */}
                     <div className="icon text-[#d08f4e]">{item.icon}</div>
-
-                    {/* Bottom Content */}
                     <div className="content flex flex-col items-center gap-2">
                       <div className="heading font-semibold text-sm sm:text-base lg:text-lg text-gray-500 leading-tight text-center">
                         {item.label}
@@ -592,30 +629,64 @@ const AdminDashboard = () => {
               Vendors
             </div>
 
-            {/* Info Cards Upper */}
+            {/* Live Vendor Stats */}
             <div className="py-4">
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {stats_vendors.map((item) => (
-                  <div
-                    key={item.key}
-                    className="min-h-[160px] sm:min-h-[180px] w-full px-4 sm:px-6 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-4 sm:py-5 hover:shadow-md transition-shadow"
-                  >
-                    {/* Icon */}
+                {[
+                  { label: "Total Vendors", value: liveStats?.vendors?.total ?? "—", icon: stats_vendors[0].icon },
+                  { label: "Approved Vendors", value: liveStats?.vendors?.approved ?? "—", icon: stats_vendors[6].icon },
+                  { label: "Pending Approval", value: liveStats?.vendors?.pending ?? "—", icon: stats_vendors[7].icon },
+                  { label: "Caterers", value: liveStats?.vendors?.caterers ?? "—", icon: stats_vendors[1].icon },
+                  { label: "DJs", value: liveStats?.vendors?.djs ?? "—", icon: stats_vendors[2].icon },
+                  { label: "Decorators", value: liveStats?.vendors?.decorators ?? "—", icon: stats_vendors[3].icon },
+                  { label: "Photographers", value: liveStats?.vendors?.photographers ?? "—", icon: stats_vendors[4].icon },
+                  { label: "Applications (Total)", value: liveStats?.applications?.total ?? "—", icon: stats_vendors[5].icon },
+                ].map((item, idx) => (
+                  <div key={idx} className="min-h-[160px] sm:min-h-[180px] w-full px-4 sm:px-6 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-4 sm:py-5 hover:shadow-md transition-shadow">
                     <div className="icon text-[#d08f4e]">{item.icon}</div>
-
-                    {/* Bottom Content */}
                     <div className="content flex flex-col items-center gap-2">
-                      <div className="heading font-semibold text-sm sm:text-base lg:text-lg text-gray-500 leading-tight text-center">
-                        {item.label}
-                      </div>
-                      <div className="metric text-4xl sm:text-5xl md:text-6xl lg:text-[75px] font-bold text-[#CCAB4A] leading-tight">
-                        {item.value}
-                      </div>
+                      <div className="heading font-semibold text-sm sm:text-base lg:text-lg text-gray-500 leading-tight text-center">{item.label}</div>
+                      <div className="metric text-4xl sm:text-5xl md:text-6xl lg:text-[75px] font-bold text-[#CCAB4A] leading-tight">{item.value}</div>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
+
+            {/* Vendor Applications Table */}
+            {vendorApplications.length > 0 && (
+              <div className="mb-8">
+                <div className="text-xl font-semibold text-black mb-3">Vendor Applications</div>
+                <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-hidden">
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
+                    <thead>
+                      <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
+                        {["Name", "Phone", "WhatsApp", "Email", "Address", "Status", "Date"].map((h) => (
+                          <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 13, fontWeight: 700, color: "#7A5535" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {vendorApplications.map((app, i) => (
+                        <tr key={app._id} style={{ borderBottom: i < vendorApplications.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
+                          <td style={{ padding: "10px 14px", fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>{app.name}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{app.phoneNumber}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{app.whatsappNumber || "—"}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{app.email || "—"}</td>
+                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{app.address}</td>
+                          <td style={{ padding: "10px 14px" }}>
+                            <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 10px", borderRadius: 100, background: app.status === "pending" ? "#fffbeb" : "#f0fdf4", color: app.status === "pending" ? "#b45309" : "#15803d", border: `1px solid ${app.status === "pending" ? "#fde68a" : "#bbf7d0"}` }}>
+                              {app.status}
+                            </span>
+                          </td>
+                          <td style={{ padding: "10px 14px", fontSize: 12, color: "#9B7450" }}>{new Date(app.createdAt).toLocaleDateString("en-IN")}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
 
             {/* Info Cards Lower */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-10 mt-4 sm:mt-8">
