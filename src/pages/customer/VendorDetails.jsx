@@ -337,28 +337,25 @@ const VendorDetailsPage = () => {
             {(() => {
               const CATEGORY_SECTIONS = {
                 Caterer: [
-                  { key: "cuisineTypes", title: "Cuisine Types" },
-                  { key: "dietaryPreferences", title: "Dietary Preferences" },
-                  { key: "serviceFeatures", title: "Service Features" },
+                  { key: "cuisine",           title: "Cuisine Types" },
+                  { key: "serviceStyle",      title: "Service Type" },
+                  { key: "menuType",          title: "Menu Type" },
+                  { key: "beveragesIncluded", title: "Beverage Included", bool: true },
                 ],
                 Decorator: [
-                  { key: "decorationType", title: "Decoration Types" },
-                  { key: "themes", title: "Themes" },
-                  { key: "venueCoverage", title: "Venue Coverage" },
+                  { key: "typesOfDecoration", title: "Types of Decoration" },
+                  { key: "venueCoverage",     title: "Venue Coverage" },
                 ],
                 Photographer: [
-                  { key: "styles", title: "Photography Styles" },
-                  { key: "deliverables", title: "Deliverables" },
-                  { key: "photographyType", title: "Photography Type" },
-                  { key: "hoursIncluded", title: "Hours Included" },
-                  { key: "editingTime", title: "Editing Time" },
+                  { key: "services",          title: "Which Services" },
+                  { key: "photographyType",   title: "Photography Type" },
+                  { key: "hoursIncluded",     title: "Hours Included", single: true },
+                  { key: "editingTimeDays",   title: "Editing Time (days)", single: true },
                 ],
                 DJ: [
-                  { key: "musicGenres", title: "Music Genres" },
-                  { key: "djServices", title: "Services" },
-                  { key: "equipment", title: "Equipment" },
-                  { key: "setup", title: "Setup Type" },
-                  { key: "lightIncluded", title: "Light Included" },
+                  { key: "setup",             title: "Setup Type" },
+                  { key: "lightsIncluded",    title: "Lights Included?", bool: true },
+                  { key: "eventTypes",        title: "Event Type" },
                 ],
                 Makeup: [
                   { key: "makeupStyles", title: "Makeup Styles" },
@@ -389,9 +386,32 @@ const VendorDetailsPage = () => {
                 (k) => k.toLowerCase() === normalised
               );
               const sections = CATEGORY_SECTIONS[categoryKey] || [];
-              return sections.map(({ key, title }) => {
+              return sections.map(({ key, title, bool, single }) => {
                 const raw = vendor[key];
-                const values = Array.isArray(raw) ? raw : (raw ? [raw] : []);
+                if (raw === undefined || raw === null) return null;
+
+                // Boolean field (Yes / No badge)
+                if (bool) return (
+                  <div key={key} className="mt-6">
+                    <div className="font-semibold text-lg mb-2">{title}</div>
+                    <span className={`text-sm px-3 py-1 rounded-full border font-medium ${raw ? "border-green-400 bg-green-50 text-green-700" : "border-gray-300 bg-white text-gray-500"}`}>
+                      {raw ? "Yes" : "No"}
+                    </span>
+                  </div>
+                );
+
+                // Single value field (number/string)
+                if (single) return (
+                  <div key={key} className="mt-6">
+                    <div className="font-semibold text-lg mb-2">{title}</div>
+                    <span className="text-sm px-3 py-1 rounded-full border border-[#CCAB4A] bg-[#fffaea] text-[#7a6527] font-medium">
+                      {raw}
+                    </span>
+                  </div>
+                );
+
+                // Array field (tags)
+                const values = Array.isArray(raw) ? raw : [raw];
                 return (
                   <div key={key} className="mt-6">
                     <div className="font-semibold text-lg mb-2">{title}</div>
