@@ -245,46 +245,15 @@ const stats_users = [
 ];
 
 const sidebar_arr = [
-  {
-    label: "Dashboard",
-    icon: <LayoutDashboard size={22} />,
-    key: "Dashboard",
-  },
-  {
-    label: "Bookings",
-    icon: <CalendarFold size={22} />,
-    key: "Bookings",
-  },
-  {
-    label: "Payments",
-    icon: <BadgeIndianRupee size={22} />,
-    key: "Payments",
-  },
-  {
-    label: "Vendors",
-    icon: <BriefcaseBusiness size={22} />,
-    key: "Vendors",
-  },
-  {
-    label: "Users",
-    icon: <UserRound size={22} />,
-    key: "Users",
-  },
-  {
-    label: "Chat",
-    icon: <MessageCircle size={22} />,
-    key: "Chat",
-  },
-  {
-    label: "Chat-Support",
-    icon: <MessagesSquare size={22} />,
-    key: "ChatSupport",
-  },
-  {
-    label: "Chat-Concierge",
-    icon: <MessagesSquare size={22} />,
-    key: "ChatConcierge",
-  },
+  { label: "Dashboard",      icon: <LayoutDashboard size={22} />,     key: "Dashboard" },
+  { label: "Chat Requests",  icon: <MessageCircle size={22} />,       key: "ChatRequests" },
+  { label: "Bookings",       icon: <CalendarFold size={22} />,        key: "Bookings" },
+  { label: "Vendors",        icon: <BriefcaseBusiness size={22} />,   key: "Vendors" },
+  { label: "Users",          icon: <UserRound size={22} />,           key: "Users" },
+  { label: "Payments",       icon: <BadgeIndianRupee size={22} />,    key: "Payments" },
+  { label: "Chat",           icon: <MessageCircle size={22} />,       key: "Chat" },
+  { label: "Chat-Support",   icon: <MessagesSquare size={22} />,      key: "ChatSupport" },
+  { label: "Chat-Concierge", icon: <MessagesSquare size={22} />,      key: "ChatConcierge" },
 ];
 
 const AdminDashboard = () => {
@@ -304,6 +273,9 @@ const AdminDashboard = () => {
   const [liveStats, setLiveStats] = useState(null);
   const [vendorApplications, setVendorApplications] = useState([]);
   const [eventPlans, setEventPlans] = useState([]);
+  const [chatRequests, setChatRequests] = useState([]);
+  const [vendorStats, setVendorStats] = useState([]);
+  const [selectedVendor, setSelectedVendor] = useState(null);
 
   const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
 
@@ -332,6 +304,22 @@ const AdminDashboard = () => {
     })
       .then((r) => r.json())
       .then((data) => setEventPlans(data.plans || []))
+      .catch(() => {});
+
+    fetch(`${BASE_URL}/admin/chat-requests`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setChatRequests(data.conversations || []))
+      .catch(() => {});
+
+    fetch(`${BASE_URL}/admin/vendor-stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setVendorStats(data.vendors || []))
       .catch(() => {});
   }, [token, user]);
 
@@ -456,6 +444,81 @@ const AdminDashboard = () => {
             )}
           </div>
         </div>
+
+        {/* ── CHAT REQUESTS TAB ── */}
+        {activeDropdown === "chatrequests" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+            <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
+              Chat Requests
+            </div>
+
+            {chatRequests.length === 0 ? (
+              <div className="text-center py-16 text-gray-400 text-lg">No chat requests yet.</div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {chatRequests.map((req) => (
+                  <div key={req._id} style={{ background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A", padding: "20px 24px", boxShadow: "0 2px 12px rgba(139,69,19,0.07)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 800, fontSize: 16, color: "#2C1A0E" }}>{req.customerName || req.customerId?.name || "Customer"}</span>
+                          <span style={{ fontSize: 12, color: "#9B7450" }}>wants to chat with</span>
+                          <span style={{ fontWeight: 800, fontSize: 16, color: "#C47A2E" }}>{req.vendorName || req.vendorId?.name || "Vendor"}</span>
+                          <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "#eff6ff", color: "#0369a1", border: "1px solid #bfdbfe", fontWeight: 600 }}>{req.serviceType}</span>
+                          <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, fontWeight: 600,
+                            ...(req.chatApproved ? { background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }
+                            : req.chatRejected ? { background: "#fff5f5", color: "#c0392b", border: "1px solid #fca5a5" }
+                            : { background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }) }}>
+                            {req.chatApproved ? "Approved" : req.chatRejected ? "Rejected" : "Pending"}
+                          </span>
+                        </div>
+
+                        {req.eventDetails && Object.values(req.eventDetails).some(Boolean) && (
+                          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
+                            {req.eventDetails.eventName  && <span><b>Event:</b> {req.eventDetails.eventName}</span>}
+                            {req.eventDetails.eventType  && <span><b>Type:</b> {req.eventDetails.eventType}</span>}
+                            {req.eventDetails.date       && <span><b>Date:</b> {req.eventDetails.date}</span>}
+                            {req.eventDetails.location   && <span><b>City:</b> {req.eventDetails.location}</span>}
+                            {req.eventDetails.guests     && <span><b>Guests:</b> {req.eventDetails.guests}</span>}
+                            {req.eventDetails.budget     && <span><b>Budget:</b> {req.eventDetails.budget}</span>}
+                          </div>
+                        )}
+                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 8 }}>
+                          Requested: {new Date(req.createdAt).toLocaleString("en-IN")}
+                        </div>
+                      </div>
+
+                      {!req.chatApproved && !req.chatRejected && (
+                        <div style={{ display: "flex", gap: 10, flexShrink: 0 }}>
+                          <button
+                            onClick={() => {
+                              fetch(`${BASE_URL}/admin/chat-requests/${req._id}/approve`, {
+                                method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                              }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatApproved: true } : r)));
+                            }}
+                            style={{ padding: "8px 20px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => {
+                              fetch(`${BASE_URL}/admin/chat-requests/${req._id}/reject`, {
+                                method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                              }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatRejected: true } : r)));
+                            }}
+                            style={{ padding: "8px 20px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {activeDropdown === "dashboard" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
@@ -701,6 +764,82 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
+
+            {/* Individual Vendor Stats */}
+            {vendorStats.length > 0 && (
+              <div className="mb-8">
+                <div className="text-xl font-semibold text-black mb-3">Vendor Details</div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
+                  {vendorStats.map((v) => (
+                    <div key={v._id}
+                      onClick={() => setSelectedVendor(v)}
+                      style={{ background: "#fff", borderRadius: 14, border: "2px solid #CCAB4A", padding: "16px 18px", cursor: "pointer", transition: "box-shadow 0.2s" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 6px 20px rgba(204,171,74,0.25)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
+                    >
+                      <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E", marginBottom: 4 }}>{v.name}</div>
+                      <div style={{ fontSize: 12, color: "#C47A2E", fontWeight: 600, marginBottom: 10 }}>{v.serviceType} · {v.city}</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                        {[
+                          { label: "Requests", val: v.requestCount },
+                          { label: "Chats Approved", val: v.chatCount },
+                          { label: "Rating", val: v.avgReviewScore?.toFixed(1) ?? "—" },
+                          { label: "Experience", val: `${v.yearsOfExperience}y` },
+                        ].map(({ label, val }) => (
+                          <div key={label} style={{ background: "#fffaf0", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
+                            <div style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>{label}</div>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: "#CCAB4A" }}>{val}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ marginTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 100, fontWeight: 600,
+                          ...(v.status === "approved" ? { background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }
+                          : { background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }) }}>
+                          {v.status}
+                        </span>
+                        <span style={{ fontSize: 11, color: "#9B7450" }}>Team: {v.teamSize}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Vendor Detail Modal */}
+                {selectedVendor && (
+                  <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}
+                    onClick={() => setSelectedVendor(null)}>
+                    <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "32px", maxWidth: 480, width: "90%", boxShadow: "0 20px 60px rgba(0,0,0,0.15)", fontFamily: "'Outfit', sans-serif" }}
+                      onClick={(e) => e.stopPropagation()}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+                        <div>
+                          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{selectedVendor.name}</h2>
+                          <p style={{ fontSize: 13, color: "#C47A2E", fontWeight: 600, margin: "4px 0 0" }}>{selectedVendor.serviceType} · {selectedVendor.city}</p>
+                        </div>
+                        <button onClick={() => setSelectedVendor(null)} style={{ border: "none", background: "#f3f4f6", borderRadius: "50%", width: 32, height: 32, cursor: "pointer", fontSize: 16 }}>×</button>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+                        {[
+                          { label: "Total Requests", val: selectedVendor.requestCount },
+                          { label: "Approved Chats", val: selectedVendor.chatCount },
+                          { label: "Avg Rating", val: selectedVendor.avgReviewScore?.toFixed(1) ?? "—" },
+                          { label: "Ranking Score", val: selectedVendor.rankingScore },
+                          { label: "Experience", val: `${selectedVendor.yearsOfExperience} years` },
+                          { label: "Team Size", val: selectedVendor.teamSize },
+                        ].map(({ label, val }) => (
+                          <div key={label} style={{ background: "#fffaf0", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(204,171,74,0.3)" }}>
+                            <div style={{ fontSize: 11, color: "#9B7450", fontWeight: 600, marginBottom: 4 }}>{label}</div>
+                            <div style={{ fontSize: 22, fontWeight: 800, color: "#C47A2E" }}>{val}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{ fontSize: 13, color: "#5a3a1a", padding: "12px 14px", background: "#fffaf0", borderRadius: 10, border: "1px solid rgba(204,171,74,0.3)" }}>
+                        <b>Status:</b> {selectedVendor.status}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Vendor Applications Table */}
             {vendorApplications.length > 0 && (

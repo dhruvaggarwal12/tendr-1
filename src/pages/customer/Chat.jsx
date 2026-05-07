@@ -84,7 +84,8 @@ const Chat = () => {
 
   const fallbackVendor = { _id: "concierge", name: "Tendr Concierge", approved: true };
   const vendor = navVendor || fallbackVendor;
-  const vendorApproved = vendor?.approved || false;
+  // Chat is enabled if vendor is pre-approved OR admin has approved the chat request
+  const vendorApproved = vendor?.approved || vendorApprovedByAdmin || false;
   const filters = navFilters || {};
 
   // Redux
@@ -111,8 +112,22 @@ const Chat = () => {
     });
     socketRef.current = socket;
 
-    socket.emit("open_conversation", { chatType: "VENDOR" });
-    socket.on("conversation_opened", ({ _id }) => setConversationId(_id));
+    const formData = useSelector ? undefined : undefined; // accessed via closure below
+    const reduxFormData = socketRef._formData;
+
+    socket.emit("open_conversation", {
+      chatType: "VENDOR",
+      vendorId: vendor?._id,
+      eventDetails: reduxFormData || {},
+    });
+
+    socket.on("conversation_opened", ({ _id, chatApproved: approved }) => {
+      setConversationId(_id);
+      if (approved) setVendorApprovedByAdmin(true);
+    });
+
+    socket.on("chat_approved", () => setVendorApprovedByAdmin(true));
+    socket.on("chat_rejected", () => setVendorApprovedByAdmin(false));
 
     socket.on("new_message", (msg) => {
       setMessages((prev) => [
@@ -130,6 +145,7 @@ const Chat = () => {
   const [isVendorTyping, setIsVendorTyping] = useState(false);
   const [messages, setMessages] = useState([]);
   const [hasSentInitialMessage, setHasSentInitialMessage] = useState(false);
+  const [vendorApprovedByAdmin, setVendorApprovedByAdmin] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -576,7 +592,7 @@ const Chat = () => {
 
           <input
             type="text"
-            placeholder={vendorApproved ? "Write your message..." : "Waiting for vendor approval..."}
+            placeholder={vendorApproved ? "Write your message..." : "Waiting for admin to approve your chat request..."}
             value={message}
             onChange={handleUserTyping}
             disabled={!vendorApproved}
