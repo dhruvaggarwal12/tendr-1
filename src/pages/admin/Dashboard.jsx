@@ -263,7 +263,7 @@ const AdminDashboard = () => {
   // Redirect if not logged in or not admin
   useEffect(() => {
     if (!token) { navigate("/login"); return; }
-    if (!user?.isAdmin) { navigate("/"); return; }
+    if (user && !user.isAdmin) { navigate("/login"); return; }
   }, [token, user, navigate]);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -351,7 +351,16 @@ const AdminDashboard = () => {
     return () => socket.disconnect();
   }, [token, user]);
 
-  if (!token || !user?.isAdmin) return null;
+  if (!token || !user) return null;
+  if (!user.isAdmin) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit', sans-serif", background: "#F8F4EF" }}>
+      <div style={{ textAlign: "center" }}>
+        <p style={{ fontSize: 18, fontWeight: 600, color: "#C47A2E" }}>Access Denied</p>
+        <p style={{ color: "#9B7450", marginBottom: 20 }}>You don't have admin permissions.</p>
+        <button onClick={() => navigate("/login")} style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 10, padding: "10px 24px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 700 }}>Go to Login</button>
+      </div>
+    </div>
+  );
 
   return (
     <div className="flex flex-col h-screen">
