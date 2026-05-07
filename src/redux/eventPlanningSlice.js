@@ -97,8 +97,16 @@ export const submitEventPlan = createAsyncThunk(
   }
 );
 
+const loadSession = () => {
+  try {
+    const saved = sessionStorage.getItem('tendr_formData');
+    return saved ? JSON.parse(saved) : null;
+  } catch { return null; }
+};
+const savedSession = loadSession();
+
 const initialState = {
-  formData: {
+  formData: savedSession || {
     eventName: "",
     eventType: "",
     guests: "",
@@ -124,6 +132,8 @@ const eventPlanningSlice = createSlice({
       const { field, value } = action.payload;
       state.formData[field] = value;
       saveFormData(state.formData);
+      // Also persist to sessionStorage so data survives in-tab navigation
+      try { sessionStorage.setItem('tendr_formData', JSON.stringify(state.formData)); } catch {}
     },
     setMultipleFormData: (state, action) => {
       Object.entries(action.payload || {}).forEach(([k, v]) => {
@@ -165,7 +175,10 @@ const eventPlanningSlice = createSlice({
         : [];
     },
     resetEventPlanning: () => {
-      try { localStorage.removeItem("eventPlanningFormData"); } catch {}
+      try {
+        localStorage.removeItem("eventPlanningFormData");
+        sessionStorage.removeItem("tendr_formData");
+      } catch {}
       return {
         formData: {
           eventName: "",

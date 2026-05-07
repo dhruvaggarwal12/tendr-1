@@ -65,13 +65,6 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
-      label: "Explore Vendors",
-      items: [
-        { icon: "⭐", label: "Top Rated Vendors", onClick: () => scrollToSection("events") },
-        { icon: "💼", label: "Vendor Portfolio", onClick: () => scrollToSection("events") },
-      ],
-    },
-    {
       label: "Planning Tools",
       items: [
         { icon: "✅", label: "Checklist", href: "/checklist" },
@@ -84,8 +77,7 @@ const Navbar = ({
     {
       label: "Booking",
       items: [
-        { icon: "🏢", label: "Corporate Booking", onClick: () => scrollToSection("corporate-section") },
-        { icon: "🥂", label: "Other Celebrations", href: "/booking" },
+        { icon: "🥂", label: "Plan an Event", href: "/booking" },
       ],
     },
   ];

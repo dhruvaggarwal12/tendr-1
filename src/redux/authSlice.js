@@ -129,6 +129,10 @@ const authSlice = createSlice({
         state.profile = null;
         localStorage.removeItem('tendr_token');
         localStorage.removeItem('tendr_user');
+        // Clear per-tab vendor selections and form data
+        sessionStorage.removeItem('compareSelected');
+        sessionStorage.removeItem('finalisedVendors');
+        sessionStorage.removeItem('tendr_formData');
       })
       .addCase(verifyOtpAction.pending, (state) => {
         state.loading = true;

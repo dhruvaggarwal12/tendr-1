@@ -17,6 +17,7 @@ import JourneyFlow from "../../components/JourneyFlow";
 import { FaWhatsapp } from "react-icons/fa";
 import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
+import { useSelector } from "react-redux";
 
 const CELEBRATION_PHOTOS = [
   {
@@ -43,6 +44,19 @@ const CELEBRATION_PHOTOS = [
 
 const Home = () => {
   const navigate = useNavigate();
+  const bookingType = useSelector((s) => s.eventPlanning.bookingType);
+  const formEventName = useSelector((s) => s.eventPlanning.formData.eventName);
+  const showVendorScreen = useSelector((s) => s.eventPlanning.showVendorScreen);
+
+  const handlePlanEvent = () => {
+    // If form already filled and service screen was shown, go back to service selection
+    if (bookingType && formEventName) {
+      navigate("/plan-event/form");
+    } else {
+      navigate("/booking");
+    }
+  };
+
   const [scrolled, setScrolled] = useState(false);
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPrev, setHeroPrev] = useState(null);
@@ -343,7 +357,7 @@ const Home = () => {
 
             <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
               <button
-                onClick={() => navigate("/booking")}
+                onClick={handlePlanEvent}
                 style={{
                   background: "linear-gradient(135deg, #C47A2E 0%, #DEB887 100%)",
                   color: "#fff",
@@ -546,35 +560,10 @@ const Home = () => {
 
       <JourneyFlow />
 
-
-      {/* Corporate Booking Section */}
-      <CorporateLogin />
-      {/* Events Gallery */}
-      <section className="events-section" id="events">
-        <div className="events-container">
-          <div className="events-header">
-            <p className="events-subtitle">
-              A tour of events we have executed.
-            </p>
-            <h2 className="events-title">A Glimpse Into Our Events</h2>
-          </div>
-
-          <div className="events-grid">
-            {events.map((event) => (
-              <div key={event.id} className="event-card">
-                <div
-                  className="event-image"
-                  style={{ backgroundImage: `url('${event.image}')` }}
-                >
-                  <div className="event-overlay">
-                    <h3>{event.title}</h3>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Corporate Booking Section — disabled for now */}
+      {/* <CorporateLogin /> */}
+      {/* Events Gallery — disabled for now */}
+      {/* <section className="events-section" id="events">...</section> */}
 
       {/* Become a Partner Section */}
       <section style={{ background: "#2C1A0E", padding: "96px 24px", fontFamily: "'Outfit', sans-serif" }}>
