@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
 
@@ -163,12 +164,7 @@ export default function AboutUs() {
             justifyContent: "space-between",
           }}
         >
-          <span
-            onClick={() => navigate("/")}
-            style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", cursor: "pointer", letterSpacing: "-0.02em" }}
-          >
-            TENDR
-          </span>
+          <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 38, width: "auto", cursor: "pointer", display: "block" }} />
           <button
             onClick={() => navigate("/")}
             style={{
