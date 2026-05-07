@@ -560,10 +560,46 @@ const Home = () => {
 
       <JourneyFlow />
 
-      {/* Corporate Booking Section — disabled for now */}
-      {/* <CorporateLogin /> */}
-      {/* Events Gallery — disabled for now */}
-      {/* <section className="events-section" id="events">...</section> */}
+      {/* Events Portfolio Gallery */}
+      <section style={{ background: "#FFFCF5", padding: "80px 24px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Our Work</p>
+            <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>A Glimpse Into Our Events</h2>
+            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 500, margin: "0 auto" }}>From intimate birthdays to grand weddings — events we have curated across Delhi NCR.</p>
+            <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="events-portfolio-grid">
+            {[
+              { title: "Wedding Ceremony", img: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Sangeet Night", img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Birthday Bash", img: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Gala Dinner", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Ring Ceremony", img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Family Gathering", img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&h=400&q=80" },
+            ].map(({ title, img }) => (
+              <div key={title}
+                style={{ position: "relative", borderRadius: 16, overflow: "hidden", cursor: "pointer", height: 220 }}
+                onMouseEnter={(e) => { e.currentTarget.querySelector("div").style.opacity = "1"; }}
+                onMouseLeave={(e) => { e.currentTarget.querySelector("div").style.opacity = "0"; }}
+              >
+                <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
+                  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.75) 0%, transparent 55%)", opacity: 0, transition: "opacity 0.3s ease", display: "flex", alignItems: "flex-end", padding: "16px 20px" }}>
+                  <span style={{ color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif" }}>{title}</span>
+                </div>
+                <div style={{ position: "absolute", bottom: 14, left: 16 }}>
+                  <span style={{ color: "#fff", fontSize: 14, fontWeight: 600, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{title}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <style>{`@media (max-width: 768px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } } @media (max-width: 480px) { .events-portfolio-grid { grid-template-columns: 1fr !important; } }`}</style>
+      </section>
 
       {/* Become a Partner Section */}
       <section style={{ background: "#2C1A0E", padding: "96px 24px", fontFamily: "'Outfit', sans-serif" }}>

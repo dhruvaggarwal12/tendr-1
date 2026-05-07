@@ -65,15 +65,6 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
-      label: "Vendors",
-      items: [
-        { icon: "📸", label: "Photographers", href: "/listings?serviceType=Photographer" },
-        { icon: "🍽️", label: "Caterers", href: "/listings?serviceType=Caterer" },
-        { icon: "🎵", label: "DJs", href: "/listings?serviceType=DJ" },
-        { icon: "🌸", label: "Decorators", href: "/listings?serviceType=Decorator" },
-      ],
-    },
-    {
       label: "Planning Tools",
       items: [
         { icon: "✅", label: "Checklist", href: "/checklist" },
