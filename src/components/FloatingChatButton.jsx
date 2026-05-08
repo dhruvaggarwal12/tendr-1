@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import router from "../router";
 
@@ -9,9 +9,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const formData = useSelector((s) => s.eventPlanning.formData);
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
   const [open, setOpen] = useState(false);
+  const [path, setPath] = useState(() => router.state.location.pathname);
 
-  // Hide on chat pages
-  const path = window.location.pathname;
+  // Track route changes in the SPA
+  useEffect(() => {
+    const unsub = router.subscribe((state) => {
+      setPath(state.location.pathname);
+      setOpen(false);
+    });
+    return unsub;
+  }, []);
+
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
 
   const handleSupport = () => {

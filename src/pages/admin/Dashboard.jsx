@@ -576,7 +576,7 @@ const AdminDashboard = () => {
                 {[
                   { label: "Users Count", value: liveStats?.users?.total ?? "—", icon: stats_dashboard[0].icon },
                   { label: "Vendor Count", value: liveStats?.vendors?.total ?? "—", icon: stats_dashboard[1].icon },
-                  { label: "Vendor Applications", value: liveStats?.applications?.total ?? "—", icon: stats_dashboard[2].icon },
+                  { label: "Registered Vendors", value: liveStats?.applications?.registered ?? "—", icon: stats_dashboard[2].icon },
                   { label: "Pending Applications", value: liveStats?.applications?.pending ?? "—", icon: stats_dashboard[3].icon },
                 ].map((item, idx) => (
                   <div

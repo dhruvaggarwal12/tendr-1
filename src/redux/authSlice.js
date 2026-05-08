@@ -133,6 +133,7 @@ const authSlice = createSlice({
         sessionStorage.removeItem('compareSelected');
         sessionStorage.removeItem('finalisedVendors');
         sessionStorage.removeItem('tendr_formData');
+        sessionStorage.removeItem('tendr_session');
       })
       .addCase(verifyOtpAction.pending, (state) => {
         state.loading = true;

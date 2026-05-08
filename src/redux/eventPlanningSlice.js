@@ -99,14 +99,25 @@ export const submitEventPlan = createAsyncThunk(
 
 const loadSession = () => {
   try {
-    const saved = sessionStorage.getItem('tendr_formData');
-    return saved ? JSON.parse(saved) : null;
+    const raw = sessionStorage.getItem('tendr_session');
+    return raw ? JSON.parse(raw) : null;
   } catch { return null; }
+};
+const saveSession = (state) => {
+  try {
+    sessionStorage.setItem('tendr_session', JSON.stringify({
+      formData: state.formData,
+      bookingType: state.bookingType,
+      currentStep: state.currentStep,
+      showVendorScreen: state.showVendorScreen,
+      selectedVendors: state.selectedVendors,
+    }));
+  } catch {}
 };
 const savedSession = loadSession();
 
 const initialState = {
-  formData: savedSession || {
+  formData: savedSession?.formData || {
     eventName: "",
     eventType: "",
     guests: "",
@@ -115,10 +126,10 @@ const initialState = {
     date: "",
     additionalInfo: "",
   },
-  currentStep: 0,
-  showVendorScreen: false,
-  selectedVendors: [],
-  bookingType: "", // 'you-do-it' | 'let-us-do-it'
+  currentStep: savedSession?.currentStep || 0,
+  showVendorScreen: savedSession?.showVendorScreen || false,
+  selectedVendors: savedSession?.selectedVendors || [],
+  bookingType: savedSession?.bookingType || "", // 'you-do-it' | 'let-us-do-it'
   submitting: false,
   submitError: null,
   lastSubmission: null, // { bookingId, bookingType }
@@ -132,52 +143,60 @@ const eventPlanningSlice = createSlice({
       const { field, value } = action.payload;
       state.formData[field] = value;
       saveFormData(state.formData);
-      // Also persist to sessionStorage so data survives in-tab navigation
-      try { sessionStorage.setItem('tendr_formData', JSON.stringify(state.formData)); } catch {}
+      saveSession(state);
     },
     setMultipleFormData: (state, action) => {
       Object.entries(action.payload || {}).forEach(([k, v]) => {
         if (k in state.formData) state.formData[k] = v;
       });
       saveFormData(state.formData);
+      saveSession(state);
     },
     setBookingType: (state, action) => {
       state.bookingType = action.payload || "you-do-it";
+      saveSession(state);
     },
     setCurrentStep: (state, action) => {
       state.currentStep = action.payload;
+      saveSession(state);
     },
     goToNextStep: (state) => {
       state.currentStep += 1;
+      saveSession(state);
     },
     goToPreviousStep: (state) => {
       if (state.currentStep > 0) state.currentStep -= 1;
+      saveSession(state);
     },
     showVendorScreenAction: (state) => {
       state.showVendorScreen = true;
+      saveSession(state);
     },
     backToFormAction: (state) => {
       state.showVendorScreen = false;
+      saveSession(state);
     },
     addSelectedVendor: (state, action) => {
       const id = action.payload;
       if (id && !state.selectedVendors.includes(id)) {
         state.selectedVendors.push(id);
+        saveSession(state);
       }
     },
     removeSelectedVendor: (state, action) => {
       const id = action.payload;
       state.selectedVendors = state.selectedVendors.filter((v) => v !== id);
+      saveSession(state);
     },
     setSelectedVendors: (state, action) => {
-      state.selectedVendors = Array.isArray(action.payload)
-        ? action.payload
-        : [];
+      state.selectedVendors = Array.isArray(action.payload) ? action.payload : [];
+      saveSession(state);
     },
     resetEventPlanning: () => {
       try {
         localStorage.removeItem("eventPlanningFormData");
         sessionStorage.removeItem("tendr_formData");
+        sessionStorage.removeItem("tendr_session");
       } catch {}
       return {
         formData: {
