@@ -1,5 +1,14 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+
+// Map display title to backend serviceType key
+const CATEGORY_KEYS = {
+  Photography: "Photographer",
+  Decor: "Decorator",
+  Catering: "Caterer",
+  Entertainment: "DJ",
+};
 
 const steps = [
   {
@@ -35,6 +44,7 @@ const CARD_H = 420;
 const SIDE_OFFSET = 390;
 
 const JourneyFlow = () => {
+  const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
 
   const prev = () =>
@@ -177,7 +187,10 @@ const JourneyFlow = () => {
                       : "0 8px 24px rgba(0,0,0,0.12)",
                   cursor: offset !== 0 ? "pointer" : "default",
                 }}
-                onClick={() => offset !== 0 && setActiveIndex(idx)}
+                onClick={() => {
+                  if (offset !== 0) { setActiveIndex(idx); }
+                  else { navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`); }
+                }}
               >
                 {/* Background image */}
                 <div
@@ -254,12 +267,34 @@ const JourneyFlow = () => {
                       fontSize: 14,
                       fontWeight: 400,
                       lineHeight: 1.55,
-                      margin: 0,
+                      margin: "0 0 12px",
                       textShadow: "0 1px 4px rgba(0,0,0,0.4)",
                     }}
                   >
                     {step.description}
                   </p>
+                  {offset === 0 && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`);
+                      }}
+                      style={{
+                        background: "rgba(196,122,46,0.9)",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: 8,
+                        padding: "8px 18px",
+                        fontSize: 13,
+                        fontWeight: 700,
+                        fontFamily: "'Outfit', sans-serif",
+                        cursor: "pointer",
+                        backdropFilter: "blur(8px)",
+                      }}
+                    >
+                      Explore Vendors →
+                    </button>
+                  )}
                 </div>
               </motion.div>
             );

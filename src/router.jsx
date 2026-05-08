@@ -4,6 +4,7 @@ import Home from "./pages/Home/Home";
 import Auth from "./pages/customer/Auth";
 import VendorRegistration from "./pages/vendor/Registration";
 import ApplicationStatus from "./pages/vendor/ApplicationStatus";
+import TopRatedVendors from "./pages/customer/TopRatedVendors";
 import EventPlanningForm from "./pages/customer/EventPlanning.jsx"; // ✅ use the new form
 import NotFound from "./pages/shared/NotFound";
 import ErrorPage from "./components/ErrorPage";
@@ -178,10 +179,16 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage /> 
   },
 
-  { 
+  {
     path: "/listings/:vendorType",
-    element: <VendorList />, 
-    errorElement: <ErrorPage /> 
+    element: <VendorList />,
+    errorElement: <ErrorPage />
+  },
+
+  {
+    path: "/top-rated/:category",
+    element: <TopRatedVendors />,
+    errorElement: <ErrorPage />,
   },
 
   // Auth
