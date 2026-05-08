@@ -276,6 +276,8 @@ const AdminDashboard = () => {
   const [chatRequests, setChatRequests] = useState([]);
   const [vendorStats, setVendorStats] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState(null);
+  const [userList, setUserList] = useState([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
 
@@ -322,6 +324,36 @@ const AdminDashboard = () => {
       .then((data) => setVendorStats(data.vendors || []))
       .catch(() => {});
   }, [token, user]);
+
+  // Fetch users when Users tab is active
+  useEffect(() => {
+    if (activeDropdown !== 'users' || !token || !user?.isAdmin) return;
+    setLoadingUsers(true);
+    fetch(`${BASE_URL}/admin/users`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+    })
+      .then((r) => r.json())
+      .then((d) => setUserList(d.users || []))
+      .catch(() => {})
+      .finally(() => setLoadingUsers(false));
+  }, [activeDropdown, token]);
+
+  const handleDeleteUser = (userId) => {
+    if (!window.confirm('Delete this user? They will need to sign up again.')) return;
+    fetch(`${BASE_URL}/admin/users/${userId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+    })
+      .then((r) => r.json())
+      .then(() => {
+        setUserList((prev) => prev.filter((u) => u._id !== userId));
+        // Refresh stats count
+        setLiveStats((prev) => prev ? { ...prev, users: { total: (prev.users?.total ?? 1) - 1 } } : prev);
+      })
+      .catch(() => {});
+  };
 
   const loadConversation = async (id) => {
     const convo = await getConversationMessages(id);
@@ -1144,27 +1176,49 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            {/* Info Cards Lower */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-10 mt-4 sm:mt-8">
-              {/* Users by City */}
-              <div className="min-h-[300px] sm:min-h-[350px] md:min-h-[400px] w-full px-4 sm:px-6 py-4 sm:py-5 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-start hover:shadow-md transition-shadow">
-                <div className="heading font-semibold text-lg sm:text-xl md:text-2xl text-black mb-2 sm:mb-4">
-                  Users by City
-                </div>
-                <div className="flex-1 flex items-center justify-center min-h-[250px]">
-                  <Doughnut_UserCity_AdminDashboard />
-                </div>
+            {/* All Users List */}
+            <div className="mb-8 mt-2">
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                <div className="text-xl font-semibold text-black">All Users ({userList.length})</div>
+                <div style={{ fontSize: 12, color: "#9B7450" }}>Deleting a user removes their account — they must sign up again</div>
               </div>
 
-              {/* New Users per month */}
-              <div className="min-h-[300px] sm:min-h-[350px] md:min-h-[400px] w-full px-4 sm:px-6 py-4 sm:py-5 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-start hover:shadow-md transition-shadow">
-                <div className="heading font-semibold text-lg sm:text-xl md:text-2xl text-black mb-2 sm:mb-4">
-                  New Users per month
+              {loadingUsers ? (
+                <div style={{ textAlign: "center", padding: "32px", color: "#9B7450" }}>Loading users...</div>
+              ) : userList.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>No users yet.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {userList.map((u) => (
+                    <div key={u._id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(204,171,74,0.2)", padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, boxShadow: "0 2px 8px rgba(139,69,19,0.05)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 15, flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>
+                          {u.name?.[0]?.toUpperCase() || "U"}
+                        </div>
+                        <div>
+                          <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E", fontFamily: "'Outfit', sans-serif" }}>
+                            {u.name}
+                            {u.isAdmin && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 100, background: "#f5f3ff", color: "#7c3aed", border: "1px solid #ddd6fe" }}>Admin</span>}
+                          </div>
+                          <div style={{ display: "flex", gap: 14, fontSize: 12, color: "#9B7450", marginTop: 2 }}>
+                            {u.phoneNumber && <span>📞 {u.phoneNumber}</span>}
+                            {u.email && <span>✉️ {u.email}</span>}
+                            <span>Joined {new Date(u.createdAt).toLocaleDateString("en-IN")}</span>
+                          </div>
+                        </div>
+                      </div>
+                      {!u.isAdmin && (
+                        <button
+                          onClick={() => handleDeleteUser(u._id)}
+                          style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                        >
+                          Delete
+                        </button>
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <div className="flex-1 flex items-center justify-center min-h-[250px] text-gray-400">
-                  <LineChart_UserNew_AdminDashboard />
-                </div>
-              </div>
+              )}
             </div>
           </div>
         )}

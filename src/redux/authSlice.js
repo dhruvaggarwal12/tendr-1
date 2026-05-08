@@ -182,3 +182,8 @@ const authSlice = createSlice({
 
 export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
+
+// Call this from any component to handle 401 — clears session so user must sign up again
+export const handleUnauthorized = () => (dispatch) => {
+  dispatch(logout());
+};

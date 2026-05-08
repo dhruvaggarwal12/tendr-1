@@ -9,6 +9,24 @@ import './index.css'
 // Setup global error handling
 setupGlobalErrorHandling();
 
+// Global 401 interceptor — if a deleted user makes any API call,
+// their session is cleared automatically and they must sign up again
+const _originalFetch = window.fetch;
+window.fetch = async (...args) => {
+  const res = await _originalFetch(...args);
+  if (res.status === 401) {
+    const { auth } = store.getState();
+    if (auth.token) {
+      const clone = res.clone();
+      const body = await clone.json().catch(() => ({}));
+      if (body.error === 'Authentication required' || body.error === 'Consumer not found' || body.error?.includes('not found')) {
+        store.dispatch({ type: 'auth/logout/fulfilled' });
+      }
+    }
+  }
+  return res;
+};
+
 ReactDOM.createRoot(document.getElementById('root')).render(
   <Provider store={store}>
     <App />
