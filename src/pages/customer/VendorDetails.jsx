@@ -105,12 +105,10 @@ const VendorDetailsPage = () => {
   }, [id, vendorFromState]);
 
   // Auto-add vendor to selected list when viewing their profile
+  // The reducer handles deduplication so safe to always dispatch
   useEffect(() => {
-    if (!vendor) return;
-    const alreadySelected = compareSelected.some((v) => v._id === vendor._id);
-    if (!alreadySelected) {
-      dispatch(addVendorToCompare(vendor));
-    }
+    if (!vendor?._id) return;
+    dispatch(addVendorToCompare(vendor));
   }, [vendor?._id]);
 
   // ===== Helpers =====

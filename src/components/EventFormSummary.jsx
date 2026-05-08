@@ -5,12 +5,14 @@ import {
   backToFormAction
 } from '../redux/eventPlanningSlice';
 
+
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
 const rupee = (v) => (v ? `₹${Number(v).toLocaleString('en-IN')}` : '—');
 
 export default function EventFormSummary() {
   const f = useSelector(selectFormData);
   const selected = useSelector(selectSelectedVendors);
+  const vendorProfiles = useSelector((s) => s.listingFilters.compareSelected);
   const dispatch = useDispatch();
 
   return (
@@ -68,7 +70,7 @@ export default function EventFormSummary() {
               Budget
             </dt>
             <dd className="text-base font-semibold text-gray-800 mt-1">
-              {rupee(f.budget)}
+              {f.budget || "—"}
             </dd>
           </div>
 
@@ -104,14 +106,20 @@ export default function EventFormSummary() {
         </dl>
 
         {/* VENDORS COUNT */}
-        <div className="mt-5 text-sm text-gray-700 bg-white py-3 px-4 rounded-xl border">
-          <span className="font-semibold">Selected vendors:</span>{" "}
-          {selected.length ? (
-            <span className="text-gray-800 font-medium">
-              {selected.length} added
-            </span>
-          ) : (
-            <span className="text-gray-500">None yet</span>
+        <div className="mt-5 flex gap-3 flex-wrap">
+          <div className="flex-1 text-sm text-gray-700 bg-white py-3 px-4 rounded-xl border">
+            <span className="font-semibold">Service categories:</span>{" "}
+            {selected.length ? (
+              <span className="text-gray-800 font-medium">{selected.join(", ")}</span>
+            ) : (
+              <span className="text-gray-500">None selected</span>
+            )}
+          </div>
+          {vendorProfiles.length > 0 && (
+            <div className="text-sm text-gray-700 bg-[#fffbeb] py-3 px-4 rounded-xl border border-[#CCAB4A]">
+              <span className="font-semibold text-[#b45309]">Vendor profiles viewed:</span>{" "}
+              <span className="font-medium text-gray-800">{vendorProfiles.length}</span>
+            </div>
           )}
         </div>
       </div>
