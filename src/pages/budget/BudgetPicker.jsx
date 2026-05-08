@@ -1,202 +1,69 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import BasicSpeedDial from '../../components/BasicSpeedDial';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import BasicSpeedDial from "../../components/BasicSpeedDial";
+import ToolIntroWrapper from "../../components/ToolIntroWrapper";
+import ToolNav from "../../components/ToolNav";
 
-const eventTypes = [
-  {
-    id: 'birthday',
-    name: 'Birthday Party',
-    description: 'Plan the perfect birthday celebration',
-    icon: '🎂',
-    color: 'from-pink-500 to-rose-500'
-  },
-  {
-    id: 'anniversary',
-    name: 'Anniversary',
-    description: 'Celebrate your special milestone',
-    icon: '💕',
-    color: 'from-red-500 to-pink-500'
-  },
-  {
-    id: 'wedding',
-    name: 'Wedding',
-    description: 'Plan your dream wedding',
-    icon: '💒',
-    color: 'from-purple-500 to-indigo-500'
-  },
-  {
-    id: 'corporate',
-    name: 'Corporate Event',
-    description: 'Professional business events',
-    icon: '🏢',
-    color: 'from-blue-500 to-cyan-500'
-  },
-  {
-    id: 'party',
-    name: 'Party',
-    description: 'Fun and casual celebrations',
-    icon: '🎉',
-    color: 'from-yellow-500 to-orange-500'
-  },
-  {
-    id: 'custom',
-    name: 'Custom Budget',
-    description: 'Create a completely custom budget allocation from scratch',
-    icon: '⚙️',
-    color: 'from-gray-500 to-gray-600',
-    isCustom: true
-  }
+const font = "'Outfit', sans-serif";
+
+const INTRO = {
+  toolId: "budget",
+  icon: "💰",
+  title: "Budget Allocator",
+  tagline: "Every rupee, perfectly planned",
+  description: "Enter your total budget and let us show you the ideal split across vendors, venue, catering, and more — based on your event type.",
+  steps: [
+    { title: "Enter your total budget", desc: "How much are you willing to spend?" },
+    { title: "Pick your event type", desc: "Wedding, birthday, corporate — each has different priorities." },
+    { title: "See the smart split", desc: "We allocate across categories so nothing gets overspent." },
+  ],
+};
+
+const EVENT_TYPES = [
+  { id: "birthday", label: "Birthday Party", icon: "🎂", desc: "Intimate or grand — plan it right" },
+  { id: "anniversary", label: "Anniversary", icon: "💕", desc: "Make it unforgettable" },
+  { id: "wedding", label: "Wedding", icon: "💒", desc: "Your perfect day, perfectly planned" },
+  { id: "corporate", label: "Corporate Event", icon: "🏢", desc: "Professional and polished" },
+  { id: "party", label: "Party", icon: "🎉", desc: "Fun, casual, memorable" },
+  { id: "concert", label: "Concert / Show", icon: "🎵", desc: "Large-scale entertainment" },
 ];
 
 export default function BudgetPicker() {
   const navigate = useNavigate();
 
-  const handleEventSelect = (eventType) => {
-    if (eventType === 'custom') {
-      navigate('/budget-allocator', { state: { isCustom: true } });
-    } else {
-      navigate('/budget-allocator', { state: { eventType } });
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  const content = (
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <BasicSpeedDial />
+      <ToolNav title="Budget Allocator" />
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-12 py-10">
-        {/* Heading */}
-        <div className="text-center mb-6">
-          <h1
-            className="bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent 
-                       text-3xl sm:text-4xl lg:text-5xl font-bold mb-3"
-          >
-            Choose Budget Type
-          </h1>
-
-          <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-            Plan your event budget with our smart allocation tool.
-          </p>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "52px 24px 80px" }}>
+        <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Planning Tool</p>
+          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>What are you planning?</h1>
+          <p style={{ fontSize: 15, color: "#9B7450" }}>Select your event type and we'll help you allocate your budget smartly.</p>
+          <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
         </div>
 
-        {/* Event Cards */}
-        <div
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 
-                      gap-6 sm:gap-8 mt-10 mb-12 px-2 sm:px-4 md:px-8 lg:px-12"
-        >
-          {eventTypes.map((event) => (
-            <div
-              key={event.id}
-              onClick={() => handleEventSelect(event.id)}
-              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 
-                       cursor-pointer transform hover:-translate-y-2 group"
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="budget-grid">
+          {EVENT_TYPES.map(({ id, label, icon, desc }) => (
+            <button key={id}
+              onClick={() => navigate("/budget-allocator", { state: { eventType: id } })}
+              style={{ background: "#FFFCF5", borderRadius: 18, padding: "24px 20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              <div
-                className={`h-28 sm:h-32 bg-gradient-to-br ${event.color} 
-                          rounded-t-xl flex items-center justify-center`}
-              >
-                <span
-                  className="text-5xl sm:text-6xl group-hover:scale-110 
-                               transition-transform duration-300"
-                >
-                  {event.icon}
-                </span>
+              <span style={{ fontSize: 34 }}>{icon}</span>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 12, color: "#9B7450" }}>{desc}</div>
               </div>
-
-              <div className="p-5 sm:p-6">
-                <h3 className="text-lg sm:text-xl font-bold text-gray-800 mb-1">
-                  {event.name}
-                </h3>
-                <p className="text-gray-600 text-sm sm:text-base mb-3">
-                  {event.description}
-                </p>
-
-                <div className="flex items-center text-orange-500 font-semibold group-hover:text-orange-600">
-                  Start Planning
-                  <svg
-                    className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
-                  </svg>
-                </div>
-              </div>
-            </div>
+            </button>
           ))}
         </div>
-
-        {/* How It Works Section */}
-        <div className="mt-12 sm:mt-16 text-center px-4">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">
-            How It Works
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Step 1 */}
-            <div className="text-center px-4">
-              <div
-                className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full 
-                            flex items-center justify-center mx-auto mb-4"
-              >
-                <span className="text-xl sm:text-2xl font-bold text-orange-500">
-                  1
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                Choose Event Type
-              </h3>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Select from our pre-configured event types or create a custom
-                budget.
-              </p>
-            </div>
-
-            {/* Step 2 */}
-            <div className="text-center px-4">
-              <div
-                className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full 
-                            flex items-center justify-center mx-auto mb-4"
-              >
-                <span className="text-xl sm:text-2xl font-bold text-orange-500">
-                  2
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                Set Your Budget
-              </h3>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Enter your total budget and adjust category percentages as
-                needed.
-              </p>
-            </div>
-
-            {/* Step 3 */}
-            <div className="text-center px-4">
-              <div
-                className="w-14 h-14 sm:w-16 sm:h-16 bg-orange-100 rounded-full 
-                            flex items-center justify-center mx-auto mb-4"
-              >
-                <span className="text-xl sm:text-2xl font-bold text-orange-500">
-                  3
-                </span>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800 mb-1">
-                Export & Plan
-              </h3>
-              <p className="text-gray-600 text-sm sm:text-base">
-                Export your budget breakdown and use it for your event planning.
-              </p>
-            </div>
-          </div>
-        </div>
       </div>
+      <style>{`@media(max-width:640px){.budget-grid{grid-template-columns:repeat(2,1fr) !important;}}`}</style>
     </div>
   );
 
+  return <ToolIntroWrapper {...INTRO}>{content}</ToolIntroWrapper>;
 }

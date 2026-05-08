@@ -1,131 +1,73 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { CalendarDays, Briefcase, ArrowRight, CheckCircle2 } from "lucide-react";
-import axios from "axios";
+import BasicSpeedDial from "../../components/BasicSpeedDial";
+import ToolIntroWrapper from "../../components/ToolIntroWrapper";
+import ToolNav from "../../components/ToolNav";
+
+const font = "'Outfit', sans-serif";
+
+const INTRO = {
+  toolId: "timeline",
+  icon: "⏱️",
+  title: "Event Timeline",
+  tagline: "Every milestone, perfectly timed",
+  description: "Plan your event day-by-day with a visual timeline. Know exactly what needs to happen and when — so nothing catches you off guard.",
+  steps: [
+    { title: "Enter your event date", desc: "Set the target date for your event." },
+    { title: "Add milestones", desc: "Venue booking, vendor calls, invites — all tracked." },
+    { title: "Stay on schedule", desc: "Check off tasks as your event day approaches." },
+  ],
+};
+
+const EVENT_TYPES = [
+  { id: "birthday", label: "Birthday Party", icon: "🎂" },
+  { id: "wedding", label: "Wedding", icon: "💒" },
+  { id: "anniversary", label: "Anniversary", icon: "💕" },
+  { id: "corporate", label: "Corporate Event", icon: "🏢" },
+  { id: "party", label: "Party / Get-together", icon: "🎉" },
+  { id: "custom", label: "Custom Event", icon: "✨" },
+];
 
 export default function TimelinePicker() {
   const navigate = useNavigate();
 
-  const handleCreateTimeline = async (eventType) => {
-    try {
-      const token = localStorage.getItem("token"); // authConsumer ke liye agar token stored hai
-      const res = await axios.post(
-        "https://tendr-backend-75ag.onrender.com/api/timelines",
-        {
-          title: `My ${eventType} Timeline`,
-          description: `Auto-created ${eventType} timeline`,
-          eventType,
-          items: [],
-        },
-        {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        }
-      );
+  const content = (
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <BasicSpeedDial />
+      <ToolNav title="Event Timeline" />
 
-      console.log("Timeline created:", res.data);
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "52px 24px 80px" }}>
+        <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Planning Tool</p>
+          <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>What kind of event?</h1>
+          <p style={{ fontSize: 15, color: "#9B7450" }}>Pick your event type and we'll build the right timeline for you.</p>
+          <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
+        </div>
 
-      // timeline create hone ke baad uski details par redirect kar do
-      navigate(`/timeline/${res.data._id}`);
-    } catch (err) {
-      console.error("Error creating timeline:", err.response?.data || err.message);
-      alert("Failed to create timeline!");
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6">
-      <div className="flex flex-col items-center w-full max-w-5xl">
-        {/* Header */}
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-800">
-            <span className="bg-gradient-to-r from-amber-600 to-yellow-500 bg-clip-text text-transparent">
-              Choose Timeline Type
-            </span>
-          </h1>
-          <p className="mt-3 text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
-            Two simple paths. Same promise:{" "}
-            <span className="font-semibold">We curate, you celebrate.</span>
-          </p>
-          <div className="mt-6 w-16 h-1 bg-amber-600 mx-auto rounded-full" />
-        </header>
-
-        {/* Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-          {/* Timeline Type A */}
-          <div className="rounded-xl border bg-white p-8 shadow-md hover:shadow-lg transition flex flex-col">
-            <div className="flex items-center gap-3">
-              <span className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                <CalendarDays className="h-8 w-8 text-amber-700" />
-              </span>
-              <h2 className="text-xl font-semibold text-gray-800">
-                Timeline Type A
-              </h2>
-            </div>
-            <p className="mt-4 text-base text-gray-600 flex-grow">
-              Prebuilt Timelines for common events. Pick one and tweak as needed.
-            </p>
-
-            {/* mini steps */}
-            <ol className="mt-4 space-y-2 text-sm text-gray-600">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-700" /> Choose event
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-700" /> Get timeline
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-700" /> Make changes
-              </li>
-            </ol>
-
-            <button
-              onClick={() => handleCreateTimeline("wedding")}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 bg-amber-600 text-white text-base font-medium hover:bg-amber-700 transition w-full"
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="timeline-grid">
+          {EVENT_TYPES.map(({ id, label, icon }) => (
+            <button key={id}
+              onClick={() => navigate("/prebuilt-timeline")}
+              style={{ background: "#FFFCF5", borderRadius: 16, padding: "24px 16px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
             >
-              Continue <ArrowRight className="h-5 w-5" />
+              <span style={{ fontSize: 32 }}>{icon}</span>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{label}</span>
             </button>
-          </div>
+          ))}
+        </div>
 
-          {/* Timeline Type B */}
-          <div className="rounded-xl border bg-white p-8 shadow-md hover:shadow-lg transition flex flex-col">
-            <div className="flex items-center gap-3">
-              <span className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                <Briefcase className="h-8 w-8 text-amber-700" />
-              </span>
-              <h2 className="text-xl font-semibold text-gray-800">
-                Timeline Type B
-              </h2>
-            </div>
-            <p className="mt-4 text-base text-gray-600 flex-grow">
-              Create a custom timeline from scratch. Perfect for corporates,
-              offsites, or quick turnarounds.
-            </p>
-
-            {/* mini steps */}
-            <ol className="mt-4 space-y-2 text-sm text-gray-600">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-700" /> Choose custom
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-700" /> Add events
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-amber-700" /> Get instant
-                timeline
-              </li>
-            </ol>
-
-            <button
-              onClick={() => handleCreateTimeline("custom")}
-              className="mt-6 inline-flex items-center justify-center gap-2 rounded-md px-5 py-3 bg-amber-600 text-white text-base font-medium hover:bg-amber-700 transition w-full"
-            >
-              Continue <ArrowRight className="h-5 w-5" />
-            </button>
-          </div>
+        <div style={{ textAlign: "center", marginTop: 32 }}>
+          <button onClick={() => navigate("/timeline")}
+            style={{ background: "transparent", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>
+            Or build a custom timeline from scratch →
+          </button>
         </div>
       </div>
+      <style>{`@media(max-width:640px){.timeline-grid{grid-template-columns:repeat(2,1fr) !important;}}`}</style>
     </div>
   );
+
+  return <ToolIntroWrapper {...INTRO}>{content}</ToolIntroWrapper>;
 }

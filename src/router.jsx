@@ -41,6 +41,11 @@ import CheckboxPicker from './pages/checkbox/CheckboxPicker.jsx';
 import PrebuiltCheckbox from './pages/checkbox/PrebuiltCheckbox.jsx';
 import BudgetPicker from './pages/budget/BudgetPicker.jsx';
 import BudgetAllocator from './pages/budget/BudgetAllocator.jsx';
+import AftermoviePicker from './pages/aftermovie/AftermoviePicker.jsx';
+import AftermovieCustomizer from './pages/aftermovie/AftermovieCustomizer.jsx';
+import InvitationFlyerPicker from './pages/invitation/InvitationFlyerPicker.jsx';
+import TemplateGallery from './pages/invitation/TemplateGallery.jsx';
+import InvitationCustomizer from './pages/invitation/InvitationCustomizer.jsx';
 
 // only chat list for customers (no Conversation/ActiveChat components)
 import CustomerChatList from "./pages/customer/Chats";
@@ -326,6 +331,11 @@ const router = createBrowserRouter([
     element: <GiftHampersCakes />,
     errorElement: <ErrorPage />,
   },
+  { path: '/aftermovie', element: <AftermoviePicker />, errorElement: <ErrorPage /> },
+  { path: '/aftermovie/customize/:id', element: <AftermovieCustomizer />, errorElement: <ErrorPage /> },
+  { path: '/invitation', element: <InvitationFlyerPicker />, errorElement: <ErrorPage /> },
+  { path: '/invitation/templates/:id', element: <TemplateGallery />, errorElement: <ErrorPage /> },
+  { path: '/invitation/customize', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
 ]);
 
 
