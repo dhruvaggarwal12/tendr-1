@@ -7,7 +7,7 @@ import Footer from "../../components/Footer";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const TABS = ["All", "Upcoming", "Completed", "Cancelled"];
+const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
 
 const statusMap = {
   Upcoming:  ["submitted", "in_progress"],
@@ -37,7 +37,9 @@ export default function CustomerDashboard() {
 
   const [activeTab, setActiveTab] = useState("All");
   const [plans, setPlans] = useState([]);
+  const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [loadingChats, setLoadingChats] = useState(false);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -58,6 +60,20 @@ export default function CustomerDashboard() {
       .finally(() => setLoading(false));
   }, [token]);
 
+  // Fetch ongoing conversations
+  useEffect(() => {
+    if (!token) return;
+    setLoadingChats(true);
+    fetch(`${BASE_URL}/conversations`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((d) => setConversations(Array.isArray(d.conversations) ? d.conversations : []))
+      .catch(() => {})
+      .finally(() => setLoadingChats(false));
+  }, [token]);
+
   const filtered = activeTab === "All"
     ? plans
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
@@ -65,6 +81,7 @@ export default function CustomerDashboard() {
   const counts = {
     All: plans.length,
     Upcoming:  plans.filter((p) => statusMap.Upcoming.includes(p.status)).length,
+    Ongoing: conversations.length,
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
   };
@@ -141,8 +158,68 @@ export default function CustomerDashboard() {
             ))}
           </div>
 
+          {/* Ongoing chats tab */}
+          {activeTab === "Ongoing" ? (
+            loadingChats ? (
+              <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading chats...</div>
+            ) : conversations.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
+                <div style={{ fontSize: 40, marginBottom: 14 }}>💬</div>
+                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No ongoing chats</h4>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Start a chat with a vendor from the listings page.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {conversations.map((convo) => (
+                  <div key={convo._id}
+                    style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "20px 24px" }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                          <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>
+                            {convo.vendorId?.name || convo.vendorName || "Vendor Chat"}
+                          </span>
+                          {convo.chatApproved ? (
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>Active</span>
+                          ) : convo.chatRejected ? (
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "#fff5f5", color: "#c0392b", border: "1px solid #fca5a5" }}>Rejected</span>
+                          ) : (
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>Pending Approval</span>
+                          )}
+                          {convo.serviceType && (
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "rgba(196,122,46,0.08)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.2)" }}>{convo.serviceType}</span>
+                          )}
+                        </div>
+                        {convo.eventDetails && convo.eventDetails.eventName && (
+                          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#7A5535" }}>
+                            <span>📋 {convo.eventDetails.eventName}</span>
+                            {convo.eventDetails.date && <span>📅 {convo.eventDetails.date}</span>}
+                            {convo.eventDetails.location && <span>📍 {convo.eventDetails.location}</span>}
+                            {convo.eventDetails.guests && <span>👥 {convo.eventDetails.guests} guests</span>}
+                          </div>
+                        )}
+                        <div style={{ fontSize: 12, color: "#bbb", marginTop: 6 }}>
+                          Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}
+                        </div>
+                      </div>
+                      {convo.chatApproved && (
+                        <button
+                          onClick={() => navigate("/chat", { state: { vendor: convo.vendorId || { _id: convo.vendorId, name: convo.vendorName, approved: true } } })}
+                          style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+                        >
+                          Open Chat →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          ) : null}
+
           {/* Event cards */}
-          {loading ? (
+          {activeTab !== "Ongoing" && (loading ? (
             <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading your events...</div>
           ) : filtered.length === 0 ? (
             <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
@@ -199,7 +276,7 @@ export default function CustomerDashboard() {
                 </div>
               ))}
             </div>
-          )}
+          ))}
         </div>
       </div>
 
