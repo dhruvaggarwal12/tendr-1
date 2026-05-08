@@ -67,9 +67,9 @@ const Navbar = ({
     {
       label: "Planning Tools",
       items: [
-        { icon: "✅", label: "Checklist", href: "/checklist" },
+        { icon: "✅", label: "Checklist", href: "/checklist-picker" },
         { icon: "🕐", label: "Timeline", href: "/timeline-picker" },
-        { icon: "💰", label: "Budget Allocator", href: "/budget-allocator" },
+        { icon: "💰", label: "Budget Allocator", href: "/budget-picker" },
         { icon: "🎬", label: "Aftermovie", href: "/aftermovie" },
         { icon: "💌", label: "Invitation Flyers", href: "/invitation" },
       ],
