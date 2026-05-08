@@ -107,7 +107,7 @@ export default function Footer() {
           className="footer-bottom"
         >
           <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>
-            © 2025 Tendr. All rights reserved. Made with ♥ in Delhi NCR.
+            © 2026 Tendr. All rights reserved.
           </p>
           <div style={{ display: "flex", gap: 22 }}>
             {["Privacy Policy", "Terms of Service", "Sitemap"].map((item) => (
