@@ -86,98 +86,65 @@ const VendorList_ListingPage = ({
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 pt-2 pb-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-2 pb-4">
               {vendors.map((vendor, index) => {
                 const isSelected = compareSelected.some((v) => v._id === vendor._id);
+                const rating = vendor.avgReviewScore ?? vendor.rating;
 
                 return (
                   <div
                     key={vendor._id || index}
-                    className="group vendor-card bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"
+                    style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", overflow: "hidden", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif" }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.12)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}
                   >
-                    {/* Vendor Image */}
-                    <div className="relative">
-                      <div className="aspect-[16/10] w-full overflow-hidden bg-gray-50">
-                        <img
-                          src={vendor.image || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"}
-                          alt={vendor.name}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                          loading="lazy"
-                        />
-                      </div>
-
-                      {/* Verified badge */}
-                      {vendor.isVerified && (
-                        <div className="absolute top-2 right-2 rounded-full bg-green-500 text-white p-1.5 shadow">
-                          <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path
-                              fillRule="evenodd"
-                              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
+                    {/* Image */}
+                    <div style={{ height: 200, overflow: "hidden", position: "relative" }}>
+                      <img
+                        src={vendor.image || vendor.portfolioPhotos?.[0] || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"}
+                        alt={vendor.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.35s ease" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                        loading="lazy"
+                      />
+                      {/* Rating badge */}
+                      {rating != null && (
+                        <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                          ⭐ {Number(rating).toFixed(1)}
                         </div>
                       )}
                     </div>
 
-                    {/* Vendor Info */}
-                    <div className="p-3 sm:p-4">
-                      <h3 className="font-semibold text-sm sm:text-base text-gray-900 mb-1 line-clamp-1">
-                        {vendor.name}
-                      </h3>
-
-                      <p className="text-xs sm:text-sm text-gray-600 mb-2 line-clamp-1">
-                        {vendor.location}
-                      </p>
-
-                      {/* Verified badge */}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-full">
-                          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                            <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                          </svg>
-                          Verified Vendor
-                        </span>
-                        <span className="text-[11px] sm:text-xs text-gray-400">{vendor.serviceType}</span>
-                      </div>
-
-                      {/* Vendor stats — always shown, styled like Verified badge */}
-                      <div className="flex flex-wrap gap-1.5 mb-2">
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7a6527] bg-[#fffaea] border border-[#CCAB4A]/50 px-2.5 py-1 rounded-full">
-                          Experience: {vendor.yearsOfExperience ?? "—"}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7a6527] bg-[#fffaea] border border-[#CCAB4A]/50 px-2.5 py-1 rounded-full">
-                          Rating: {vendor.avgReviewScore ?? vendor.rating ?? "—"}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7a6527] bg-[#fffaea] border border-[#CCAB4A]/50 px-2.5 py-1 rounded-full">
-                          Team size: {vendor.teamSize ?? "—"}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-xs font-medium text-[#7a6527] bg-[#fffaea] border border-[#CCAB4A]/50 px-2.5 py-1 rounded-full">
-                          Response: {vendor.responseTime ?? vendor.avgResponseTime ?? "—"}
+                    {/* Info */}
+                    <div style={{ padding: "14px 16px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                        <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: 0, lineHeight: 1.3 }}>{vendor.name}</h3>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", whiteSpace: "nowrap", marginLeft: 6 }}>
+                          {vendor.serviceType}
                         </span>
                       </div>
 
-                      {/* Action buttons */}
-                      <div className="mt-4 flex gap-2">
+                      <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#9B7450", marginBottom: 14, flexWrap: "wrap" }}>
+                        {(vendor.city || vendor.address?.city || vendor.locations?.[0]) && (
+                          <span>📍 {vendor.city || vendor.address?.city || vendor.locations?.[0]}</span>
+                        )}
+                        {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
+                        {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
+                      </div>
+
+                      <div style={{ display: "flex", gap: 8 }}>
                         <button
                           onClick={() => handleCardClick(vendor._id)}
-                          className="flex-1 text-xs sm:text-sm px-3 py-1.5 rounded-full border border-gray-200 bg-white text-gray-700 hover:border-[#CCAB4A]/60 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A]/40 transition-colors"
+                          style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
                         >
                           View Profile
                         </button>
                         <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onToggleCompare?.(vendor);
-                          }}
-                          className={`flex-1 text-xs sm:text-sm px-3 py-1.5 rounded-full border transition-colors focus:outline-none focus:ring-2 focus:ring-[#CCAB4A]/40 ${
-                            isSelected
-                              ? "bg-[#CCAB4A] text-white border-[#CCAB4A]"
-                              : "bg-white text-gray-700 border-gray-200 hover:border-[#CCAB4A]/60"
-                          }`}
-                          aria-pressed={isSelected}
+                          onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
+                          style={{ width: 40, height: 40, borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "#fff", color: isSelected ? "#C47A2E" : "#6B3A1F", fontSize: 16, fontWeight: 700, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
                         >
-                          {isSelected ? "Added ✓" : "Add to Compare"}
+                          {isSelected ? "✓" : "+"}
                         </button>
                       </div>
                     </div>

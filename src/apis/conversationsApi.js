@@ -111,7 +111,7 @@ export async function fetchConversations({ signal } = {}) {
       signal,
     });
 
-    // If we’re here, res.ok === true
+    // If we're here, res.ok === true
     const json = await res.json().catch(() => ({}));
     // Accept either { conversations: [...] } or a raw array [...]
     if (Array.isArray(json)) return json;
@@ -212,22 +212,20 @@ export function mapConversationsToVendors(conversations = []) {
  */
 
 export async function getAllConversation({ signal, chatType }) {
-  const path = `/conversations/admin/all?chatType=${chatType}`;
+  // Map old chatType names to new admin endpoint
+  const typeMap = { vendor: 'vendor', support: 'support', event: 'concierge' };
+  const mappedType = typeMap[chatType] || chatType;
+  const path = `/admin/conversations?chatType=${mappedType}`;
 
   try {
-    const res = await tryFetch([path] , {
-      method: "GET",
-      signal
-    })
-
-    if(res.ok){
+    const res = await tryFetch([path], { method: "GET", signal });
+    if (res.ok) {
       const data = await res.json();
-      return data.conversations
+      return data.conversations;
     }
-
-    
+    return [];
   } catch (error) {
-    throw new Error("Failed to fetch all conversations: " + error.message);
+    return [];
   }
 }
 

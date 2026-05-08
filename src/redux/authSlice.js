@@ -129,9 +129,8 @@ const authSlice = createSlice({
         state.profile = null;
         localStorage.removeItem('tendr_token');
         localStorage.removeItem('tendr_user');
-        // Clear per-tab vendor selections and form data
-        sessionStorage.removeItem('compareSelected');
-        sessionStorage.removeItem('finalisedVendors');
+        // Clear form/session data but keep vendor selections in localStorage
+        // (they're user-scoped so they'll reload on next login)
         sessionStorage.removeItem('tendr_formData');
         sessionStorage.removeItem('tendr_session');
       })

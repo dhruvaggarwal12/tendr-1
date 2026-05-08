@@ -11,29 +11,42 @@ const loadFilters = () => {
   }
 };
 
-// Clean up any stale localStorage keys from the old implementation
-try { localStorage.removeItem("compareSelected"); localStorage.removeItem("finalisedVendors"); } catch {}
+// Get current user ID for scoped storage
+const getUserId = () => {
+  try {
+    const u = localStorage.getItem('tendr_user');
+    return u ? JSON.parse(u)._id : 'guest';
+  } catch { return 'guest'; }
+};
 
 const loadCompareSelected = () => {
   try {
-    const saved = sessionStorage.getItem("compareSelected");
+    const uid = getUserId();
+    const saved = localStorage.getItem(`compareSelected_${uid}`);
     return saved ? JSON.parse(saved) : [];
   } catch { return []; }
 };
 
 const saveCompareSelected = (arr) => {
-  try { sessionStorage.setItem("compareSelected", JSON.stringify(arr)); } catch {}
+  try {
+    const uid = getUserId();
+    localStorage.setItem(`compareSelected_${uid}`, JSON.stringify(arr));
+  } catch {}
 };
 
 const loadFinalisedVendors = () => {
   try {
-    const saved = sessionStorage.getItem("finalisedVendors");
+    const uid = getUserId();
+    const saved = localStorage.getItem(`finalisedVendors_${uid}`);
     return saved ? JSON.parse(saved) : {};
   } catch { return {}; }
 };
 
 const saveFinalisedVendors = (obj) => {
-  try { sessionStorage.setItem("finalisedVendors", JSON.stringify(obj)); } catch {}
+  try {
+    const uid = getUserId();
+    localStorage.setItem(`finalisedVendors_${uid}`, JSON.stringify(obj));
+  } catch {}
 };
 
 const initialState = {

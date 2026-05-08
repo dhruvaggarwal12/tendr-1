@@ -104,6 +104,15 @@ const VendorDetailsPage = () => {
     fetchVendorData();
   }, [id, vendorFromState]);
 
+  // Auto-add vendor to selected list when viewing their profile
+  useEffect(() => {
+    if (!vendor) return;
+    const alreadySelected = compareSelected.some((v) => v._id === vendor._id);
+    if (!alreadySelected) {
+      dispatch(addVendorToCompare(vendor));
+    }
+  }, [vendor?._id]);
+
   // ===== Helpers =====
   const rating = useMemo(() => {
     const r = Number(vendor?.avgReviewScore);
