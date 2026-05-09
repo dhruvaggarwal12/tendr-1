@@ -230,8 +230,10 @@ const VendorList_ListingPage = ({
               {(() => {
                 const v = quickViewVendor;
                 const rows = [
-                  v.totalEventsCompleted > 0 && { label: "Events done", value: v.totalEventsCompleted },
-                  v.maxConcurrentEvents > 0 && { label: "Can handle", value: `${v.maxConcurrentEvents} events at once` },
+                  v.totalEventsCompleted > 0   && { label: "Events completed", value: v.totalEventsCompleted },
+                  v.teamSize > 0               && { label: "Team size",  value: v.teamSize },
+                  v.yearsOfExperience > 0      && { label: "Experience", value: `${v.yearsOfExperience} years` },
+                  v.locations?.length > 0      && { label: "Serves",     value: v.locations.join(", ") },
                   // DJ
                   v.setup?.length        && { label: "Setup",        value: v.setup.join(", ") },
                   v.eventTypes?.length   && { label: "Event types",  value: v.eventTypes.join(", ") },
