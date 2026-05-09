@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
@@ -270,6 +270,8 @@ const AdminDashboard = () => {
   const [activeDropdown, setactiveDropdown] = useState("dashboard");
   const [selectedChat, setSelectedChat] = useState(null);
   const [currentConversation, setCurrentConversation] = useState([]);
+  const [adminMsgInput, setAdminMsgInput] = useState("");
+  const adminSocketRef = useRef(null);
   const [liveStats, setLiveStats] = useState(null);
   const [vendorApplications, setVendorApplications] = useState([]);
   const [eventPlans, setEventPlans] = useState([]);
@@ -357,10 +359,15 @@ const AdminDashboard = () => {
 
   const loadConversation = async (id) => {
     const convo = await getConversationMessages(id);
-    setCurrentConversation(convo);
+    setCurrentConversation(convo || []);
+    setAdminMsgInput("");
+    // Join the conversation room so admin receives real-time messages
+    if (adminSocketRef.current) {
+      adminSocketRef.current.emit('join_conversation', { conversationId: id });
+    }
   };
 
-  // Real-time socket connection for admin — listens for new chat requests
+  // Real-time socket connection for admin — send/receive messages + chat requests
   useEffect(() => {
     if (!token || !user?.isAdmin) return;
     const socket = io(BASE_URL, {
@@ -368,6 +375,7 @@ const AdminDashboard = () => {
       transports: ['websocket', 'polling'],
       withCredentials: true,
     });
+    adminSocketRef.current = socket;
 
     socket.on('connect', () => console.log('Admin socket connected:', socket.id));
     socket.on('connect_error', (e) => console.error('Admin socket error:', e.message));
@@ -380,7 +388,12 @@ const AdminDashboard = () => {
       });
     });
 
-    return () => socket.disconnect();
+    // Receive new messages in real-time and add to current conversation
+    socket.on('new_message', (msg) => {
+      setCurrentConversation((prev) => [...(prev || []), msg]);
+    });
+
+    return () => { socket.disconnect(); adminSocketRef.current = null; };
   }, [token, user]);
 
   if (!token || !user) return null;
@@ -1344,10 +1357,31 @@ const AdminDashboard = () => {
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       <input
                         type="text"
-                        placeholder="Type a message..."
+                        value={adminMsgInput}
+                        onChange={(e) => setAdminMsgInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && adminMsgInput.trim()) {
+                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
+                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                            setAdminMsgInput("");
+                          }
+                        }}
+                        placeholder="Type a message and press Enter or Send..."
                         className="flex-1 px-3 sm:px-4 py-2 rounded-full border border-[#CCAB4A] focus:outline-none text-sm"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                       />
-                      <button className="px-3 sm:px-4 py-2 bg-[#CCAB4A] text-white rounded-full font-semibold hover:opacity-90 transition text-sm">
+                      <button
+                        onClick={() => {
+                          if (!adminMsgInput.trim() || !selectedChat) return;
+                          const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
+                          if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                          setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                          setAdminMsgInput("");
+                        }}
+                        className="px-3 sm:px-4 py-2 bg-[#CCAB4A] text-white rounded-full font-semibold hover:opacity-90 transition text-sm"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                      >
                         Send
                       </button>
                     </div>
