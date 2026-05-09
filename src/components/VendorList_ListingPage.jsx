@@ -226,6 +226,50 @@ const VendorList_ListingPage = ({
                   ))}
               </div>
 
+              {/* Service-specific details */}
+              {(() => {
+                const v = quickViewVendor;
+                const rows = [
+                  v.totalEventsCompleted > 0 && { label: "Events done", value: v.totalEventsCompleted },
+                  v.maxConcurrentEvents > 0 && { label: "Can handle", value: `${v.maxConcurrentEvents} events at once` },
+                  // DJ
+                  v.setup?.length        && { label: "Setup",        value: v.setup.join(", ") },
+                  v.eventTypes?.length   && { label: "Event types",  value: v.eventTypes.join(", ") },
+                  v.lightsIncluded != null && { label: "Lights",     value: v.lightsIncluded ? "Included ✓" : "Not included" },
+                  // Decorator
+                  v.themes?.length              && { label: "Themes",          value: v.themes.join(", ") },
+                  v.typesOfDecoration?.length   && { label: "Decoration types",value: v.typesOfDecoration.join(", ") },
+                  v.venueCoverage?.length       && { label: "Venue coverage",  value: v.venueCoverage.join(", ") },
+                  // Caterer
+                  v.cuisine?.length             && { label: "Cuisine",         value: v.cuisine.join(", ") },
+                  v.serviceStyle?.length        && { label: "Service style",   value: v.serviceStyle.join(", ") },
+                  v.menuType?.length            && { label: "Menu type",       value: v.menuType.join(", ") },
+                  v.beveragesIncluded != null   && { label: "Beverages",       value: v.beveragesIncluded ? "Included ✓" : "Not included" },
+                  // Photographer
+                  v.services?.length            && { label: "Services",        value: v.services.join(", ") },
+                  v.photographyType?.length     && { label: "Style",           value: v.photographyType.join(", ") },
+                  v.hoursIncluded > 0           && { label: "Hours included",  value: `${v.hoursIncluded}h` },
+                  v.editingTimeDays > 0         && { label: "Editing time",    value: `${v.editingTimeDays} days` },
+                  v.photographersCount > 0      && { label: "Photographers",   value: v.photographersCount },
+                  v.videographersCount > 0      && { label: "Videographers",   value: v.videographersCount },
+                ].filter(Boolean);
+
+                if (!rows.length) return null;
+                return (
+                  <div style={{ marginBottom: 20 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Details</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      {rows.map(({ label, value }) => (
+                        <div key={label} style={{ background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "8px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>{label}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.35 }}>{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Portfolio thumbnails */}
               {quickViewVendor.portfolioPhotos?.length > 1 && (
                 <div style={{ marginBottom: 22 }}>

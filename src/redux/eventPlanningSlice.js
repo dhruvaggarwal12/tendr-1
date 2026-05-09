@@ -65,6 +65,7 @@
 
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { logout } from "./authSlice";
 
 const loadFormData = () => {
   try {
@@ -249,7 +250,28 @@ export const {
   resetEventPlanning,
 } = eventPlanningSlice.actions;
 
-export default eventPlanningSlice.reducer;
+const eventPlanningReducer = eventPlanningSlice.reducer;
+const eventPlanningWithLogout = (state, action) => {
+  if (action.type === logout.fulfilled.type) {
+    try {
+      localStorage.removeItem("eventPlanningFormData");
+      sessionStorage.removeItem("tendr_session");
+    } catch {}
+    return {
+      formData: { eventType: "", guests: "", budget: "", location: "", date: "" },
+      currentStep: 0,
+      showVendorScreen: false,
+      selectedVendors: [],
+      bookingType: "",
+      submitting: false,
+      submitError: null,
+      lastSubmission: null,
+    };
+  }
+  return eventPlanningReducer(state, action);
+};
+
+export default eventPlanningWithLogout;
 
 /** Selectors */
 export const selectEventPlanning = (state) => state.eventPlanning;

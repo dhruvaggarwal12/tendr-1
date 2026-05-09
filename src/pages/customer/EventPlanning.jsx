@@ -119,6 +119,8 @@ const EventPlanning = () => {
     bookingType,
     selectedVendors,
   } = useSelector((state) => state.eventPlanning);
+  const { token } = useSelector((state) => state.auth);
+  const [showAuthGate, setShowAuthGate] = useState(false);
 
   // pick bookingType from URL (?bookingType=you-do-it | let-us-do-it)
   useEffect(() => {
@@ -432,6 +434,7 @@ const EventPlanning = () => {
                 disabled={selectedVendors.length === 0}
                 onClick={() => {
                   if (selectedVendors.length === 0) return;
+                  if (!token) { setShowAuthGate(true); return; }
                   dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
                   navigate("/listings", { state: { selectedCategories: selectedVendors } });
                 }}
@@ -463,6 +466,62 @@ const EventPlanning = () => {
 
         </div>
       </div>
+
+      {/* ── Auth gate ── */}
+      {showAuthGate && (
+        <>
+          <div
+            onClick={() => setShowAuthGate(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 2000, backdropFilter: "blur(3px)" }}
+          />
+          <div style={{
+            position: "fixed", top: "50%", left: "50%",
+            transform: "translate(-50%,-50%)",
+            background: "#FFFCF5", borderRadius: 24,
+            boxShadow: "0 24px 64px rgba(139,69,19,0.2)",
+            border: "1.5px solid rgba(196,122,46,0.2)",
+            padding: "36px 32px", zIndex: 2001,
+            width: 360, maxWidth: "92vw",
+            fontFamily: "'Outfit', sans-serif",
+            textAlign: "center",
+            animation: "qv-fade 0.2s ease",
+          }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
+            <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>
+              Sign in to view listings
+            </h3>
+            <p style={{ fontSize: 14, color: "#7A5535", margin: "0 0 6px", lineHeight: 1.5 }}>
+              Your event details are saved. Sign in or create a free account to browse vendors.
+            </p>
+            <div style={{ display: "flex", gap: 8, flexDirection: "column", marginTop: 22 }}>
+              <button
+                onClick={() => {
+                  sessionStorage.setItem("auth_return", "/booking");
+                  navigate("/login");
+                }}
+                style={{ padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => {
+                  sessionStorage.setItem("auth_return", "/booking");
+                  navigate("/signup");
+                }}
+                style={{ padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+              >
+                Create Free Account
+              </button>
+              <button
+                onClick={() => setShowAuthGate(false)}
+                style={{ background: "none", border: "none", color: "#9B7450", fontSize: 13, cursor: "pointer", marginTop: 4, fontFamily: "'Outfit', sans-serif" }}
+              >
+                Go back
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     );
   }
 

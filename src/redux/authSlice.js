@@ -116,6 +116,12 @@ const authSlice = createSlice({
         state.token = action.payload.token;
         localStorage.setItem('tendr_token', action.payload.token);
         localStorage.setItem('tendr_user', JSON.stringify(action.payload.consumer));
+        // Redirect back to wherever the user was before being gated
+        const returnTo = sessionStorage.getItem('auth_return');
+        if (returnTo) {
+          sessionStorage.removeItem('auth_return');
+          setTimeout(() => window.location.replace(returnTo), 0);
+        }
       })
       .addCase(login.rejected, (state, action) => {
         state.loading = false;

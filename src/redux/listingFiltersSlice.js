@@ -1,5 +1,6 @@
 // redux/listingFiltersSlice.js
 import { createSlice } from "@reduxjs/toolkit";
+import { logout } from "./authSlice";
 
 const loadFilters = () => {
   try {
@@ -116,5 +117,18 @@ const listingFiltersSlice = createSlice({
   },
 });
 
+// Clear vendor selections when user logs out so the next user starts fresh
+const listingFiltersReducer = listingFiltersSlice.reducer;
+const listingFiltersWithLogout = (state, action) => {
+  if (action.type === logout.fulfilled.type) {
+    return {
+      ...state,
+      compareSelected: [],
+      finalisedVendors: {},
+    };
+  }
+  return listingFiltersReducer(state, action);
+};
+
 export const { setFilters, resetFilters, addVendorToCompare, removeVendorFromCompare, clearVendorCompare, setFinalisedVendor, clearFinalisedVendor } = listingFiltersSlice.actions;
-export default listingFiltersSlice.reducer;
+export default listingFiltersWithLogout;
