@@ -329,6 +329,7 @@ const EventPlanning = () => {
     const isYouDoIt = bookingType === "you-do-it";
 
     return (
+      <>
       <div
         className="min-h-screen w-full"
         style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}
@@ -522,6 +523,7 @@ const EventPlanning = () => {
           </div>
         </>
       )}
+      </>
     );
   }
 
