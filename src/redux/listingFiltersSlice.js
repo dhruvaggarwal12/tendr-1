@@ -1,6 +1,6 @@
 // redux/listingFiltersSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import { logout } from "./authSlice";
+import { logout, login, verifyOtpAction } from "./authSlice";
 
 const loadFilters = () => {
   try {
@@ -117,14 +117,22 @@ const listingFiltersSlice = createSlice({
   },
 });
 
-// Clear vendor selections when user logs out so the next user starts fresh
 const listingFiltersReducer = listingFiltersSlice.reducer;
 const listingFiltersWithLogout = (state, action) => {
+  // On logout: wipe in-memory state; localStorage keys are user-scoped so data is preserved
   if (action.type === logout.fulfilled.type) {
+    return { ...state, compareSelected: [], finalisedVendors: {} };
+  }
+  // On login/signup: reload from user-scoped localStorage — restores previous selections
+  // auth reducer runs first so tendr_user is already set by the time we run here
+  if (
+    action.type === login.fulfilled.type ||
+    action.type === verifyOtpAction.fulfilled.type
+  ) {
     return {
       ...state,
-      compareSelected: [],
-      finalisedVendors: {},
+      compareSelected: loadCompareSelected(),
+      finalisedVendors: loadFinalisedVendors(),
     };
   }
   return listingFiltersReducer(state, action);
