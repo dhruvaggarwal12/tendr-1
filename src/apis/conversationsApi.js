@@ -212,16 +212,23 @@ export function mapConversationsToVendors(conversations = []) {
  */
 
 export async function getAllConversation({ signal, chatType }) {
-  // Map old chatType names to new admin endpoint
   const typeMap = { vendor: 'vendor', support: 'support', event: 'concierge' };
   const mappedType = typeMap[chatType] || chatType;
   const path = `/admin/conversations?chatType=${mappedType}`;
 
+  // Use the correct token key (tendr_token, set on login)
+  const token = localStorage.getItem('tendr_token') || localStorage.getItem('jwt') || '';
+
   try {
-    const res = await tryFetch([path], { method: "GET", signal });
+    const res = await tryFetch([path], {
+      method: "GET",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: "include",
+      signal,
+    });
     if (res.ok) {
       const data = await res.json();
-      return data.conversations;
+      return data.conversations || [];
     }
     return [];
   } catch (error) {

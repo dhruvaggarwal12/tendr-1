@@ -65,6 +65,13 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
+      label: "Explore Vendors",
+      items: [
+        { icon: "⭐", label: "Top Rated Vendors", href: "/top-rated/Photographer" },
+        { icon: "📂", label: "Vendor Portfolio", href: "/listings" },
+      ],
+    },
+    {
       label: "Planning Tools",
       items: [
         { icon: "✅", label: "Checklist", href: "/checklist-picker" },

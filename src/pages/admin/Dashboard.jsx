@@ -654,16 +654,58 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {activeDropdown === "bookings" && (
+        {activeDropdown === "bookings" && (() => {
+          const BOOKING_TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
+          const BOOKING_STATUS = {
+            Upcoming:  ["submitted"],
+            Ongoing:   ["in_progress"],
+            Completed: ["completed"],
+            Cancelled: ["cancelled"],
+          };
+          const bookingTabKey = "admin_booking_tab";
+          const [bookingTab, setBookingTab] = React.useState("All");
+
+          const filteredPlans = bookingTab === "All"
+            ? eventPlans
+            : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
+
+          const statusBadgeStyle = (s) => ({
+            submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
+            in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
+            completed:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
+            cancelled:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" },
+          }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" });
+
+          return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
             <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
               Bookings
             </div>
 
-            {/* Real Event Plans from DB */}
-            {eventPlans.length > 0 && (
+            {/* Tabs */}
+            <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+              {BOOKING_TABS.map((tab) => {
+                const count = tab === "All" ? eventPlans.length : eventPlans.filter((p) => (BOOKING_STATUS[tab] || []).includes(p.status)).length;
+                return (
+                  <button key={tab} onClick={() => setBookingTab(tab)}
+                    style={{ padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
+                      borderColor: bookingTab === tab ? "#C47A2E" : "rgba(139,69,19,0.2)",
+                      background: bookingTab === tab ? "#C47A2E" : "#fff",
+                      color: bookingTab === tab ? "#fff" : "#6B3A1F",
+                    }}>
+                    {tab} <span style={{ marginLeft: 5, fontSize: 11, fontWeight: 700, background: bookingTab === tab ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: bookingTab === tab ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Event Plans Table */}
+            {filteredPlans.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>
+                No {bookingTab !== "All" ? bookingTab.toLowerCase() : ""} event plans yet.
+              </div>
+            ) : (
               <div className="mb-8">
-                <div className="text-xl font-semibold text-black mb-3">Event Plans ({eventPlans.length})</div>
                 <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-x-auto">
                   <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
                     <thead>
@@ -674,83 +716,46 @@ const AdminDashboard = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {eventPlans.map((plan, i) => (
-                        <tr key={plan._id} style={{ borderBottom: i < eventPlans.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
-                          <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: "#2C1A0E", whiteSpace: "nowrap" }}>{plan.customerId?.name || "—"}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventName}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventType}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.guests}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.budget}</td>
-                          <td style={{ padding: "10px 14px", fontSize: 12, color: "#5a3a1a" }}>{(plan.selectedServices || []).join(", ") || "—"}</td>
-                          <td style={{ padding: "10px 14px" }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: plan.bookingType === "you-do-it" ? "#eff6ff" : "#f5f3ff", color: plan.bookingType === "you-do-it" ? "#0369a1" : "#7c3aed", border: "1px solid currentColor" }}>
-                              {plan.bookingType}
-                            </span>
-                          </td>
-                          <td style={{ padding: "10px 14px" }}>
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>{plan.status}</span>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredPlans.map((plan, i) => {
+                        const badge = statusBadgeStyle(plan.status);
+                        return (
+                          <tr key={plan._id} style={{ borderBottom: i < filteredPlans.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
+                            <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: "#2C1A0E", whiteSpace: "nowrap" }}>{plan.customerId?.name || "—"}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", fontWeight: 600 }}>{plan.eventName}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventType}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.guests}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.budget}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 12, color: "#5a3a1a", maxWidth: 160 }}>
+                              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                                {(plan.selectedServices || []).map((s) => (
+                                  <span key={s} style={{ fontSize: 10, padding: "1px 6px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontWeight: 600 }}>{s}</span>
+                                ))}
+                                {!plan.selectedServices?.length && "—"}
+                              </div>
+                            </td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: plan.bookingType === "you-do-it" ? "#eff6ff" : "#f5f3ff", color: plan.bookingType === "you-do-it" ? "#0369a1" : "#7c3aed", border: "1px solid currentColor", whiteSpace: "nowrap" }}>
+                                {plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It"}
+                              </span>
+                            </td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`, textTransform: "capitalize" }}>
+                                {plan.status?.replace("_", " ")}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               </div>
             )}
-            {eventPlans.length === 0 && (
-              <div className="text-center py-12 text-gray-400">No event plans submitted yet. Plans appear here when customers complete a booking.</div>
-            )}
 
-            {/* Info Cards Upper */}
-            <div className="py-4">
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {stats_bookings.map((item) => (
-                  <div
-                    key={item.key}
-                    className="min-h-[160px] sm:min-h-[180px] w-full px-4 sm:px-6 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-4 sm:py-5 hover:shadow-md transition-shadow"
-                  >
-                    {/* Icon */}
-                    <div className="icon text-[#d08f4e]">{item.icon}</div>
-
-                    {/* Bottom Content */}
-                    <div className="content flex flex-col items-center gap-2">
-                      <div className="heading font-semibold text-sm sm:text-base lg:text-lg text-gray-500 leading-tight text-center">
-                        {item.label}
-                      </div>
-                      <div className="metric text-4xl sm:text-5xl md:text-6xl lg:text-[75px] font-bold text-[#CCAB4A] leading-tight">
-                        {item.value}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Info Cards Lower */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-10 mt-4 sm:mt-8">
-              {/* Booking by Category */}
-              <div className="min-h-[300px] sm:min-h-[350px] md:min-h-[400px] w-full px-4 sm:px-6 py-4 sm:py-5 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-start hover:shadow-md transition-shadow">
-                <div className="heading font-semibold text-lg sm:text-xl md:text-2xl text-black mb-2 sm:mb-4">
-                  Booking by Category
-                </div>
-                <div className="flex-1 flex items-center justify-center min-h-[250px]">
-                  <Doughnut_BookingCategory_AdminDashboard />
-                </div>
-              </div>
-
-              {/* Booking by City */}
-              <div className="min-h-[300px] sm:min-h-[350px] md:min-h-[400px] w-full px-4 sm:px-6 py-4 sm:py-5 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-start hover:shadow-md transition-shadow">
-                <div className="heading font-semibold text-lg sm:text-xl md:text-2xl text-black mb-2 sm:mb-4">
-                  Booking by City
-                </div>
-                <div className="flex-1 flex items-center justify-center min-h-[250px] text-gray-400">
-                  <Doughnut_BookingCity_AdminDashboard />
-                </div>
-              </div>
-            </div>
           </div>
-        )}
+          );
+        })()}
 
         {activeDropdown === "payments" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">

@@ -111,11 +111,13 @@ const Chat = () => {
     socketRef.current = socket;
 
     const vendorId = vendor?._id && vendor._id !== "concierge" ? vendor._id : undefined;
+    // Support chat from floating button sets from="support"
+    const socketChatType = (from === "support") ? "SUPPORT" : "VENDOR";
 
     // Wait for connection before emitting — socket.io is async
     socket.on("connect", () => {
       socket.emit("open_conversation", {
-        chatType: "VENDOR",
+        chatType: socketChatType,
         vendorId,
       });
     });
@@ -129,9 +131,11 @@ const Chat = () => {
     socket.on("chat_rejected", () => setVendorApprovedByAdmin(false));
 
     socket.on("new_message", (msg) => {
+      // Skip echoed user messages — already added locally when sent
+      if (msg.sender === "user") return;
       setMessages((prev) => [
         ...prev,
-        { text: msg.content, sender: msg.sender === "user" ? "user" : "vendor", ts: msg.createdAt || Date.now() },
+        { text: msg.content, sender: "vendor", ts: msg.createdAt || Date.now() },
       ]);
       setIsVendorTyping(false);
     });
@@ -258,22 +262,20 @@ const Chat = () => {
     setMessage("");
     setPendingAttachments([]);
 
-    // Send via socket if connected, otherwise show mock reply
+    // Send via socket if connected, otherwise show static reply
     if (socketRef.current && conversationId && trimmed) {
       socketRef.current.emit("send_message", {
         conversationId,
         sender: "user",
         content: trimmed,
       });
+      // No typing indicator — admin/vendor will reply when ready
     } else {
-      setIsVendorTyping(true);
-      setTimeout(() => {
-        setMessages((prev) => [
-          ...prev,
-          { text: "Thanks! Got your details" + (hasImages ? " and photos" : "") + ". I'll revert shortly.", sender: "vendor", ts: Date.now() },
-        ]);
-        setIsVendorTyping(false);
-      }, 1500);
+      // No socket — add a static acknowledgement only
+      setMessages((prev) => [
+        ...prev,
+        { text: "Message received. Our team will respond shortly.", sender: "vendor", ts: Date.now() },
+      ]);
     }
   };
 
@@ -634,29 +636,32 @@ const Chat = () => {
             Send
           </button>
 
-          <button
-            type="button"
-            onClick={handleFinalise}
-            style={{
-              flexShrink: 0,
-              padding: "10px 16px",
-              borderRadius: 100,
-              border: "none",
-              background: isThisVendorFinalised
-                ? "linear-gradient(135deg, #15803d, #22c55e)"
-                : "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-              color: "#fff",
-              fontSize: 13,
-              fontWeight: 700,
-              fontFamily: "'Outfit', sans-serif",
-              cursor: "pointer",
-              whiteSpace: "nowrap",
-              boxShadow: "0 3px 10px rgba(196,122,46,0.3)",
-              transition: "all 0.2s",
-            }}
-          >
-            {isThisVendorFinalised ? "Finalised ✓" : "Finalise Vendor"}
-          </button>
+          {/* Hide Finalise Vendor for support/concierge chats */}
+          {vendor._id !== "concierge" && from !== "support" && (
+            <button
+              type="button"
+              onClick={handleFinalise}
+              style={{
+                flexShrink: 0,
+                padding: "10px 16px",
+                borderRadius: 100,
+                border: "none",
+                background: isThisVendorFinalised
+                  ? "linear-gradient(135deg, #15803d, #22c55e)"
+                  : "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+                color: "#fff",
+                fontSize: 13,
+                fontWeight: 700,
+                fontFamily: "'Outfit', sans-serif",
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+                boxShadow: "0 3px 10px rgba(196,122,46,0.3)",
+                transition: "all 0.2s",
+              }}
+            >
+              {isThisVendorFinalised ? "Finalised ✓" : "Finalise Vendor"}
+            </button>
+          )}
         </form>
       </div>
 
