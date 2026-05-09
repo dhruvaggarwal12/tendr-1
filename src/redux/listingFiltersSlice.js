@@ -119,21 +119,29 @@ const listingFiltersSlice = createSlice({
 
 const listingFiltersReducer = listingFiltersSlice.reducer;
 const listingFiltersWithLogout = (state, action) => {
-  // On logout: wipe in-memory state; localStorage keys are user-scoped so data is preserved
+  // On logout: wipe in-memory state; user-scoped localStorage keys are kept as cache
   if (action.type === logout.fulfilled.type) {
     return { ...state, compareSelected: [], finalisedVendors: {} };
   }
-  // On login/signup: reload from user-scoped localStorage — restores previous selections
-  // auth reducer runs first so tendr_user is already set by the time we run here
+  // On login/signup: DB data is the source of truth (included in consumer payload).
+  // Fall back to user-scoped localStorage if DB data is absent.
+  // auth reducer runs first → tendr_user already set in localStorage by this point.
   if (
     action.type === login.fulfilled.type ||
     action.type === verifyOtpAction.fulfilled.type
   ) {
-    return {
-      ...state,
-      compareSelected: loadCompareSelected(),
-      finalisedVendors: loadFinalisedVendors(),
-    };
+    const dbSelections = action.payload?.consumer?.vendorSelections;
+    const compareSelected = dbSelections?.compareSelected?.length
+      ? dbSelections.compareSelected
+      : loadCompareSelected();
+    const finalisedVendors =
+      dbSelections?.finalisedVendors && Object.keys(dbSelections.finalisedVendors).length
+        ? dbSelections.finalisedVendors
+        : loadFinalisedVendors();
+    // Keep localStorage cache in sync
+    saveCompareSelected(compareSelected);
+    saveFinalisedVendors(finalisedVendors);
+    return { ...state, compareSelected, finalisedVendors };
   }
   return listingFiltersReducer(state, action);
 };
