@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
@@ -258,6 +258,7 @@ const sidebar_arr = [
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  const adminLocation = useLocation();
   const { user, token } = useSelector((state) => state.auth);
 
   // Redirect if not logged in or not admin
@@ -267,7 +268,10 @@ const AdminDashboard = () => {
   }, [token, user, navigate]);
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [activeDropdown, setactiveDropdown] = useState("dashboard");
+  const [activeDropdown, setactiveDropdown] = useState(() => {
+    const s = new URLSearchParams(adminLocation.search).get("section");
+    return s || "dashboard";
+  });
   const [selectedChat, setSelectedChat] = useState(null);
   const [currentConversation, setCurrentConversation] = useState([]);
   const [adminMsgInput, setAdminMsgInput] = useState("");

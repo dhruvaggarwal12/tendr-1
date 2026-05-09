@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
@@ -34,6 +34,7 @@ const statusBadge = (status) => {
 
 export default function CustomerDashboard() {
   const navigate  = useNavigate();
+  const location  = useLocation();
   const dispatch  = useDispatch();
   const { user, token } = useSelector((s) => s.auth);
 
@@ -49,7 +50,10 @@ export default function CustomerDashboard() {
     navigate("/booking");
   };
 
-  const [activeTab, setActiveTab] = useState("All");
+  const [activeTab, setActiveTab] = useState(() => {
+    const tab = new URLSearchParams(location.search).get("tab");
+    return TABS.includes(tab) ? tab : "All";
+  });
   const [plans, setPlans] = useState([]);
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(false);

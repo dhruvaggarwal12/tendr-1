@@ -18,9 +18,11 @@ const Navbar = ({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
   const [activeChatCount, setActiveChatCount] = useState(0);
+  const [adminCounts, setAdminCounts] = useState(null);
 
+  // Regular user — count active vendor chats
   useEffect(() => {
-    if (!token || !user) return;
+    if (!token || !user || user.isAdmin) return;
     fetch(`${BASE_URL}/conversations`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
@@ -30,6 +32,18 @@ const Navbar = ({
         const active = (data.conversations || []).filter((c) => c.chatApproved);
         setActiveChatCount(active.length);
       })
+      .catch(() => {});
+  }, [token, user]);
+
+  // Admin — fetch per-category pending counts
+  useEffect(() => {
+    if (!token || !user?.isAdmin) return;
+    fetch(`${BASE_URL}/admin/pending-counts`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data) setAdminCounts(data); })
       .catch(() => {});
   }, [token, user]);
 
@@ -411,9 +425,15 @@ const Navbar = ({
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
                       {user.name?.[0]?.toUpperCase() || "U"}
                     </div>
-                    {activeChatCount > 0 && (
+                    {/* Badge: user shows active chat count; admin shows total pending */}
+                    {!user?.isAdmin && activeChatCount > 0 && (
                       <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, background: "#ef4444", color: "#fff", borderRadius: 100, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff", lineHeight: 1 }}>
                         {activeChatCount > 9 ? "9+" : activeChatCount}
+                      </span>
+                    )}
+                    {user?.isAdmin && adminCounts && (adminCounts.chatRequests + adminCounts.vendorApps) > 0 && (
+                      <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, background: "#b45309", color: "#fff", borderRadius: 100, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff", lineHeight: 1 }}>
+                        {Math.min(adminCounts.chatRequests + adminCounts.vendorApps, 99)}
                       </span>
                     )}
                   </div>
@@ -423,33 +443,66 @@ const Navbar = ({
                 {showProfileMenu && (
                   <>
                     <div style={{ position: "fixed", inset: 0, zIndex: 998 }} onClick={() => setShowProfileMenu(false)} />
-                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 32px rgba(139,69,19,0.12)", border: "1px solid rgba(139,69,19,0.08)", minWidth: 180, padding: 6, zIndex: 999 }}>
+                    <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 32px rgba(139,69,19,0.12)", border: "1px solid rgba(139,69,19,0.08)", minWidth: 210, padding: 6, zIndex: 999 }}>
+                      {/* Name + email */}
                       <div style={{ padding: "8px 14px 10px", borderBottom: "1px solid rgba(139,69,19,0.08)", marginBottom: 4 }}>
                         <p style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{user.name}</p>
                         {user.email && <p style={{ fontSize: 11.5, color: "#9B7450", margin: "2px 0 0" }}>{user.email}</p>}
                       </div>
-                      {[
-                        { label: "Dashboard", path: "/dashboard" },
-                        {
-                          label: activeChatCount > 0
-                            ? `My Chats (${activeChatCount} active)`
-                            : "My Chats",
-                          path: "/dashboard",
-                          highlight: activeChatCount > 0,
-                        },
-                        ...(user.isAdmin ? [{ label: "Admin Dashboard", path: "/AdminDashboard" }] : []),
-                      ].map(({ label, path, highlight }) => (
-                        <button key={label} onClick={() => { navigate(path); setShowProfileMenu(false); }}
-                          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: highlight ? 600 : 500, color: highlight ? "#C47A2E" : "#3B2F2F", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
-                          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                        >
-                          {label}
-                          {highlight && (
-                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
-                          )}
-                        </button>
-                      ))}
+
+                      {user.isAdmin ? (
+                        /* ── Admin dropdown ── */
+                        <>
+                          <button onClick={() => { navigate("/AdminDashboard"); setShowProfileMenu(false); }}
+                            style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                          >Admin Dashboard</button>
+
+                          {/* Per-category counts */}
+                          <div style={{ padding: "2px 8px 6px" }}>
+                            {[
+                              { label: "Chat Requests", count: adminCounts?.chatRequests, section: "chatrequests", color: "#b45309" },
+                              { label: "Vendor Apps",   count: adminCounts?.vendorApps,   section: "vendors",      color: "#7c3aed" },
+                              { label: "Support",       count: adminCounts?.supportChats,  section: "chatsupport",  color: "#0369a1" },
+                              { label: "Concierge",     count: adminCounts?.conciergeChats,section: "chatconcierge",color: "#0369a1" },
+                            ].map(({ label, count, section, color }) => (
+                              <button key={label}
+                                onClick={() => { navigate(`/AdminDashboard?section=${section}`); setShowProfileMenu(false); }}
+                                style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "6px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
+                                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                              >
+                                <span style={{ fontSize: 12.5, color: "#6B3A1F" }}>↳ {label}</span>
+                                {count > 0 && (
+                                  <span style={{ fontSize: 11, fontWeight: 700, background: color, color: "#fff", borderRadius: 100, padding: "1px 7px", minWidth: 20, textAlign: "center" }}>
+                                    {count}
+                                  </span>
+                                )}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      ) : (
+                        /* ── Regular user dropdown ── */
+                        <>
+                          <button onClick={() => { navigate("/dashboard"); setShowProfileMenu(false); }}
+                            style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                          >Dashboard</button>
+
+                          <button onClick={() => { navigate("/dashboard?tab=Ongoing"); setShowProfileMenu(false); }}
+                            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: activeChatCount > 0 ? 600 : 500, color: activeChatCount > 0 ? "#C47A2E" : "#3B2F2F", cursor: "pointer", fontFamily: font }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                          >
+                            {activeChatCount > 0 ? `My Chats (${activeChatCount} active)` : "My Chats"}
+                            {activeChatCount > 0 && <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />}
+                          </button>
+                        </>
+                      )}
+
                       <div style={{ borderTop: "1px solid rgba(139,69,19,0.08)", marginTop: 4, paddingTop: 4 }}>
                         <button onClick={handleLogout}
                           style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#C0392B", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
