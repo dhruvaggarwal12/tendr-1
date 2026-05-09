@@ -280,6 +280,7 @@ const AdminDashboard = () => {
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [userList, setUserList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [bookingTab, setBookingTab] = useState("All");
 
   const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
 
@@ -670,26 +671,9 @@ const AdminDashboard = () => {
 
         {activeDropdown === "bookings" && (() => {
           const BOOKING_TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
-          const BOOKING_STATUS = {
-            Upcoming:  ["submitted"],
-            Ongoing:   ["in_progress"],
-            Completed: ["completed"],
-            Cancelled: ["cancelled"],
-          };
-          const bookingTabKey = "admin_booking_tab";
-          const [bookingTab, setBookingTab] = React.useState("All");
-
-          const filteredPlans = bookingTab === "All"
-            ? eventPlans
-            : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
-
-          const statusBadgeStyle = (s) => ({
-            submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
-            in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
-            completed:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-            cancelled:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" },
-          }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" });
-
+          const BOOKING_STATUS = { Upcoming: ["submitted"], Ongoing: ["in_progress"], Completed: ["completed"], Cancelled: ["cancelled"] };
+          const filteredPlans = bookingTab === "All" ? eventPlans : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
+          const statusBadgeStyle = (s) => ({ submitted: { bg: "#fffbeb", color: "#b45309", border: "#fde68a" }, in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" }, completed: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" }, cancelled: { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" } }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" });
           return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
             <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
@@ -1326,29 +1310,42 @@ const AdminDashboard = () => {
                       {/* Vendor */}
                       <div className="flex items-center gap-2">
                         <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                          {getInitials(selectedChat.vendorId.name)}
+                          {getInitials(selectedChat.vendorId?.name || selectedChat.vendorName || "V")}
                         </div>
                         <span className="font-semibold text-sm sm:text-lg">
-                          {selectedChat.vendorId.name}
+                          {selectedChat.vendorId?.name || selectedChat.vendorName}
                         </span>
                       </div>
                     </div>
 
+                    {/* Event details strip */}
+                    {selectedChat.eventDetails && Object.values(selectedChat.eventDetails).some(Boolean) && (
+                      <div style={{ background: "#fffaf3", borderBottom: "1px solid #fde9c4", padding: "8px 16px", display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#7a5c1e", fontFamily: "'Outfit', sans-serif" }}>
+                        {selectedChat.serviceType && <span><b>Service:</b> {selectedChat.serviceType}</span>}
+                        {selectedChat.eventDetails.eventName && <span><b>Event:</b> {selectedChat.eventDetails.eventName}</span>}
+                        {selectedChat.eventDetails.eventType && <span><b>Type:</b> {selectedChat.eventDetails.eventType}</span>}
+                        {selectedChat.eventDetails.date && <span><b>Date:</b> {selectedChat.eventDetails.date}</span>}
+                        {selectedChat.eventDetails.location && <span><b>City:</b> {selectedChat.eventDetails.location}</span>}
+                        {selectedChat.eventDetails.guests && <span><b>Guests:</b> {selectedChat.eventDetails.guests}</span>}
+                        {selectedChat.eventDetails.budget && <span><b>Budget:</b> {selectedChat.eventDetails.budget}</span>}
+                      </div>
+                    )}
+
                     {/* Messages */}
                     {currentConversation && currentConversation.length > 0 && (
-                      <div className="flex-1 p-3 sm:p-4 overflow-y-auto text-gray-600 flex flex-col space-y-2 sm:space-y-3">
+                      <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">
                         {currentConversation.map((msg, index) => (
-                          <div
-                            key={index}
-                            className={`${
-                              msg.sender === "user"
-                                ? "self-start bg-gray-100 text-gray-800"
-                                : "self-end bg-[#d08f4e] text-white"
-                            } px-3 py-2 rounded-xl w-fit text-sm max-w-[75%] break-words`}
-                            style={{ fontFamily: "'Outfit', sans-serif" }}
-                          >
-                            <span style={{ fontSize: 10, opacity: 0.6, display: "block", marginBottom: 2 }}>{msg.sender === "user" ? "Customer" : "Admin"}</span>
-                            {msg.content}
+                          <div key={index} style={{
+                            alignSelf: msg.sender === "user" ? "flex-start" : "flex-end",
+                            background: msg.sender === "user" ? "#f3f4f6" : "#d08f4e",
+                            color: msg.sender === "user" ? "#1f2937" : "#ffffff",
+                            padding: "8px 14px", borderRadius: 14, maxWidth: "75%",
+                            fontSize: 14, fontFamily: "'Outfit', sans-serif", wordBreak: "break-word", lineHeight: 1.5,
+                          }}>
+                            <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
+                              {msg.sender === "user" ? "Customer" : "Admin"}
+                            </span>
+                            {msg.content || msg.text || ""}
                           </div>
                         ))}
                       </div>
@@ -1460,7 +1457,19 @@ const AdminDashboard = () => {
                       </span>
                     </div>
 
-                    <div className="flex-1 p-3 sm:p-4 overflow-y-auto text-gray-600 flex flex-col space-y-2 sm:space-y-3">
+                    {/* Event details strip */}
+                    {selectedChat.eventDetails && Object.values(selectedChat.eventDetails).some(Boolean) && (
+                      <div style={{ background: "#fffaf3", borderBottom: "1px solid #fde9c4", padding: "8px 16px", display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#7a5c1e", fontFamily: "'Outfit', sans-serif" }}>
+                        {selectedChat.eventDetails.eventName && <span><b>Event:</b> {selectedChat.eventDetails.eventName}</span>}
+                        {selectedChat.eventDetails.eventType && <span><b>Type:</b> {selectedChat.eventDetails.eventType}</span>}
+                        {selectedChat.eventDetails.date && <span><b>Date:</b> {selectedChat.eventDetails.date}</span>}
+                        {selectedChat.eventDetails.location && <span><b>City:</b> {selectedChat.eventDetails.location}</span>}
+                        {selectedChat.eventDetails.guests && <span><b>Guests:</b> {selectedChat.eventDetails.guests}</span>}
+                        {selectedChat.eventDetails.budget && <span><b>Budget:</b> {selectedChat.eventDetails.budget}</span>}
+                      </div>
+                    )}
+
+                    <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">
                       {currentConversation && currentConversation.length > 0 && (
                         <div className="flex flex-col space-y-2 sm:space-y-3">
                           {currentConversation.map((msg, index) => (
@@ -1591,7 +1600,19 @@ const AdminDashboard = () => {
                       </span>
                     </div>
 
-                    <div className="flex-1 p-3 sm:p-4 overflow-y-auto text-gray-600 flex flex-col space-y-2 sm:space-y-3">
+                    {/* Event details strip */}
+                    {selectedChat.eventDetails && Object.values(selectedChat.eventDetails).some(Boolean) && (
+                      <div style={{ background: "#fffaf3", borderBottom: "1px solid #fde9c4", padding: "8px 16px", display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#7a5c1e", fontFamily: "'Outfit', sans-serif" }}>
+                        {selectedChat.eventDetails.eventName && <span><b>Event:</b> {selectedChat.eventDetails.eventName}</span>}
+                        {selectedChat.eventDetails.eventType && <span><b>Type:</b> {selectedChat.eventDetails.eventType}</span>}
+                        {selectedChat.eventDetails.date && <span><b>Date:</b> {selectedChat.eventDetails.date}</span>}
+                        {selectedChat.eventDetails.location && <span><b>City:</b> {selectedChat.eventDetails.location}</span>}
+                        {selectedChat.eventDetails.guests && <span><b>Guests:</b> {selectedChat.eventDetails.guests}</span>}
+                        {selectedChat.eventDetails.budget && <span><b>Budget:</b> {selectedChat.eventDetails.budget}</span>}
+                      </div>
+                    )}
+
+                    <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">
                       {currentConversation && currentConversation.length > 0 && (
                         <div className="flex flex-col space-y-2 sm:space-y-3">
                           {currentConversation.map((msg, index) => (
