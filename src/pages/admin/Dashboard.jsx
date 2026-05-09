@@ -388,8 +388,9 @@ const AdminDashboard = () => {
       });
     });
 
-    // Receive new messages in real-time and add to current conversation
+    // Receive new messages in real-time — skip own messages (already added locally)
     socket.on('new_message', (msg) => {
+      if (msg.sender === 'customer-care') return;
       setCurrentConversation((prev) => [...(prev || []), msg]);
     });
 
@@ -1463,12 +1464,22 @@ const AdminDashboard = () => {
                       {currentConversation && currentConversation.length > 0 && (
                         <div className="flex flex-col space-y-2 sm:space-y-3">
                           {currentConversation.map((msg, index) => (
-                            <div key={index}
-                              className={`${msg.sender === "user" ? "self-start bg-gray-100 text-gray-800" : "self-end bg-[#d08f4e] text-white"} px-3 py-2 rounded-xl w-fit text-sm max-w-[75%] break-words`}
-                              style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
-                              <span style={{ fontSize: 10, opacity: 0.6, display: "block", marginBottom: 2 }}>{msg.sender === "user" ? "Customer" : "Admin"}</span>
-                              {msg.content}
+                            <div key={index} style={{
+                              alignSelf: msg.sender === "user" ? "flex-start" : "flex-end",
+                              background: msg.sender === "user" ? "#f3f4f6" : "#d08f4e",
+                              color: msg.sender === "user" ? "#1f2937" : "#ffffff",
+                              padding: "8px 14px",
+                              borderRadius: 14,
+                              maxWidth: "75%",
+                              fontSize: 14,
+                              fontFamily: "'Outfit', sans-serif",
+                              wordBreak: "break-word",
+                              lineHeight: 1.5,
+                            }}>
+                              <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
+                                {msg.sender === "user" ? "Customer" : "Admin"}
+                              </span>
+                              {msg.content || msg.text || ""}
                             </div>
                           ))}
                         </div>
@@ -1584,12 +1595,22 @@ const AdminDashboard = () => {
                       {currentConversation && currentConversation.length > 0 && (
                         <div className="flex flex-col space-y-2 sm:space-y-3">
                           {currentConversation.map((msg, index) => (
-                            <div key={index}
-                              className={`${msg.sender === "user" ? "self-start bg-gray-100 text-gray-800" : "self-end bg-[#d08f4e] text-white"} px-3 py-2 rounded-xl w-fit text-sm max-w-[75%] break-words`}
-                              style={{ fontFamily: "'Outfit', sans-serif" }}
-                            >
-                              <span style={{ fontSize: 10, opacity: 0.6, display: "block", marginBottom: 2 }}>{msg.sender === "user" ? "Customer" : "Admin"}</span>
-                              {msg.content}
+                            <div key={index} style={{
+                              alignSelf: msg.sender === "user" ? "flex-start" : "flex-end",
+                              background: msg.sender === "user" ? "#f3f4f6" : "#d08f4e",
+                              color: msg.sender === "user" ? "#1f2937" : "#ffffff",
+                              padding: "8px 14px",
+                              borderRadius: 14,
+                              maxWidth: "75%",
+                              fontSize: 14,
+                              fontFamily: "'Outfit', sans-serif",
+                              wordBreak: "break-word",
+                              lineHeight: 1.5,
+                            }}>
+                              <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
+                                {msg.sender === "user" ? "Customer" : "Admin"}
+                              </span>
+                              {msg.content || msg.text || ""}
                             </div>
                           ))}
                         </div>
