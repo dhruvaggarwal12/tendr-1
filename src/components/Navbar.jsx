@@ -566,75 +566,51 @@ const Navbar = ({
           ))}
 
           {/* Mobile action row */}
-          <div
-            style={{
-              display: "flex",
-              gap: 10,
-              marginTop: 20,
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <a
-              href="https://wa.me/919211668427"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: "#25D366",
-                color: "#fff",
-                width: 42,
-                height: 42,
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                textDecoration: "none",
-                flexShrink: 0,
-                boxShadow: "0 2px 8px rgba(37,211,102,0.35)",
-              }}
-            >
+          <div style={{ display: "flex", gap: 10, marginTop: 20, alignItems: "center", flexWrap: "wrap" }}>
+            <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
+              style={{ background: "#25D366", color: "#fff", width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0, boxShadow: "0 2px 8px rgba(37,211,102,0.35)" }}>
               <FaWhatsapp size={19} />
             </a>
 
-            <span
-              title="Coming Soon"
-              style={{
-                color: "#bbb",
-                fontSize: 14,
-                fontWeight: 600,
-                letterSpacing: "0.02em",
-                padding: "10px 16px",
-                border: "1px solid #e5e7eb",
-                borderRadius: 9,
-                whiteSpace: "nowrap",
-                fontFamily: font,
-                cursor: "not-allowed",
-                userSelect: "none",
-              }}
-            >
-              🎁 Gift Hampers
-            </span>
-
-            <a
-              href="/login"
-              onClick={handleSignInClick}
-              title="My Profile"
-              style={{
-                width: 42,
-                height: 42,
-                borderRadius: "50%",
-                border: "2px solid rgba(139,69,19,0.22)",
-                background: "rgba(255,248,240,0.9)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#7A4A1E",
-                textDecoration: "none",
-                flexShrink: 0,
-              }}
-            >
-              <FaUserCircle size={21} />
-            </a>
+            {/* Auth section — mobile */}
+            {token && user ? (
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(196,122,46,0.07)", borderRadius: 10 }}>
+                  <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
+                    {user.name?.[0]?.toUpperCase() || "U"}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", fontFamily: font }}>{user.name}</div>
+                    {user.email && <div style={{ fontSize: 11, color: "#9B7450" }}>{user.email}</div>}
+                  </div>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <button onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}
+                    style={{ flex: 1, padding: "9px 14px", borderRadius: 8, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
+                    My Dashboard
+                  </button>
+                  {user.isAdmin && (
+                    <button onClick={() => { navigate("/AdminDashboard"); setMenuOpen(false); }}
+                      style={{ flex: 1, padding: "9px 14px", borderRadius: 8, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
+                      Admin
+                    </button>
+                  )}
+                  <button onClick={() => { handleLogout(); setMenuOpen(false); }}
+                    style={{ flex: 1, padding: "9px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
+                    Logout
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{ flex: 1, display: "flex", gap: 8 }}>
+                <a href="/login" style={{ flex: 1, padding: "11px", borderRadius: 9, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 14, fontWeight: 600, textDecoration: "none", textAlign: "center", fontFamily: font }}>
+                  Sign In
+                </a>
+                <a href="/signup" style={{ flex: 1, padding: "11px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+                  Sign Up
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -647,6 +623,9 @@ const Navbar = ({
         @media (max-width: 767px) {
           .desktop-nav { display: none !important; }
           .burger-btn-custom { display: flex !important; }
+        }
+        @media (max-width: 480px) {
+          .mobile-menu-content { padding: 6px 16px 20px !important; }
         }
       `}</style>
     </nav>
