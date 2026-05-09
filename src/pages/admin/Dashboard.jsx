@@ -1460,33 +1460,49 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="flex-1 p-3 sm:p-4 overflow-y-auto text-gray-600 flex flex-col space-y-2 sm:space-y-3">
-                      {currentConversation &&
-                        currentConversation.length > 0 && (
-                          <div className="flex flex-col space-y-2 sm:space-y-3">
-                            {currentConversation.map((msg, index) => (
-                              <p
-                                key={index}
-                                className={`${
-                                  msg.senderType === "USER"
-                                    ? "self-start bg-gray-100"
-                                    : "self-end bg-[#d08f4e] text-white"
-                                } px-3 py-2 rounded-lg w-fit text-sm`}
-                              >
-                                {msg.message}
-                              </p>
-                            ))}
-                          </div>
-                        )}
+                      {currentConversation && currentConversation.length > 0 && (
+                        <div className="flex flex-col space-y-2 sm:space-y-3">
+                          {currentConversation.map((msg, index) => (
+                            <div key={index}
+                              className={`${msg.sender === "user" ? "self-start bg-gray-100 text-gray-800" : "self-end bg-[#d08f4e] text-white"} px-3 py-2 rounded-xl w-fit text-sm max-w-[75%] break-words`}
+                              style={{ fontFamily: "'Outfit', sans-serif" }}
+                            >
+                              <span style={{ fontSize: 10, opacity: 0.6, display: "block", marginBottom: 2 }}>{msg.sender === "user" ? "Customer" : "Admin"}</span>
+                              {msg.content}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       <input
                         type="text"
-                        placeholder="Type a message..."
+                        value={adminMsgInput}
+                        onChange={(e) => setAdminMsgInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && adminMsgInput.trim()) {
+                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
+                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                            setAdminMsgInput("");
+                          }
+                        }}
+                        placeholder="Type a message and press Enter or Send..."
                         className="flex-1 px-3 sm:px-4 py-2 rounded-full border border-[#CCAB4A] focus:outline-none text-sm"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                       />
-
-                      <button className="px-3 sm:px-4 py-2 bg-[#CCAB4A] text-white rounded-full font-semibold hover:opacity-90 transition text-sm">
+                      <button
+                        onClick={() => {
+                          if (!adminMsgInput.trim() || !selectedChat) return;
+                          const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
+                          if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                          setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                          setAdminMsgInput("");
+                        }}
+                        className="px-3 sm:px-4 py-2 bg-[#CCAB4A] text-white rounded-full font-semibold hover:opacity-90 transition text-sm"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                      >
                         Send
                       </button>
                     </div>
@@ -1565,33 +1581,49 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="flex-1 p-3 sm:p-4 overflow-y-auto text-gray-600 flex flex-col space-y-2 sm:space-y-3">
-                      {currentConversation &&
-                        currentConversation.length > 0 && (
-                          <div className="flex flex-col space-y-2 sm:space-y-3">
-                            {currentConversation.map((msg, index) => (
-                              <p
-                                key={index}
-                                className={`${
-                                  msg.senderType === "USER"
-                                    ? "self-start bg-gray-100"
-                                    : "self-end bg-[#d08f4e] text-white"
-                                } px-3 py-2 rounded-lg w-fit text-sm`}
-                              >
-                                {msg.message}
-                              </p>
-                            ))}
-                          </div>
-                        )}
+                      {currentConversation && currentConversation.length > 0 && (
+                        <div className="flex flex-col space-y-2 sm:space-y-3">
+                          {currentConversation.map((msg, index) => (
+                            <div key={index}
+                              className={`${msg.sender === "user" ? "self-start bg-gray-100 text-gray-800" : "self-end bg-[#d08f4e] text-white"} px-3 py-2 rounded-xl w-fit text-sm max-w-[75%] break-words`}
+                              style={{ fontFamily: "'Outfit', sans-serif" }}
+                            >
+                              <span style={{ fontSize: 10, opacity: 0.6, display: "block", marginBottom: 2 }}>{msg.sender === "user" ? "Customer" : "Admin"}</span>
+                              {msg.content}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       <input
                         type="text"
-                        placeholder="Type a message..."
+                        value={adminMsgInput}
+                        onChange={(e) => setAdminMsgInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && adminMsgInput.trim()) {
+                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
+                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                            setAdminMsgInput("");
+                          }
+                        }}
+                        placeholder="Type a message and press Enter or Send..."
                         className="flex-1 px-3 sm:px-4 py-2 rounded-full border border-[#CCAB4A] focus:outline-none text-sm"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
                       />
-
-                      <button className="px-3 sm:px-4 py-2 bg-[#CCAB4A] text-white rounded-full font-semibold hover:opacity-90 transition text-sm">
+                      <button
+                        onClick={() => {
+                          if (!adminMsgInput.trim() || !selectedChat) return;
+                          const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
+                          if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                          setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                          setAdminMsgInput("");
+                        }}
+                        className="px-3 sm:px-4 py-2 bg-[#CCAB4A] text-white rounded-full font-semibold hover:opacity-90 transition text-sm"
+                        style={{ fontFamily: "'Outfit', sans-serif" }}
+                      >
                         Send
                       </button>
                     </div>
