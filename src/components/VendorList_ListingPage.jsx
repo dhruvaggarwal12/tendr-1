@@ -102,10 +102,6 @@ const VendorList_ListingPage = ({
                           ⭐ {Number(rating).toFixed(1)}
                         </div>
                       )}
-                      {/* Quick-peek hint */}
-                      <div style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 10, fontWeight: 600, padding: "3px 8px", borderRadius: 100, letterSpacing: "0.04em" }}>
-                        Click for quick view
-                      </div>
                     </div>
 
                     {/* Info */}
@@ -127,10 +123,10 @@ const VendorList_ListingPage = ({
 
                       <div style={{ display: "flex", gap: 8 }}>
                         <button
-                          onClick={(e) => handleViewProfile(e, vendor._id)}
+                          onClick={(e) => { e.stopPropagation(); setQuickViewVendor(vendor); }}
                           style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
                         >
-                          View Profile
+                          Quick View
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}

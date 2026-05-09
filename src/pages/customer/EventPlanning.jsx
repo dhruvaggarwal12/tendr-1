@@ -268,17 +268,8 @@ const EventPlanning = () => {
     }
   };
 
-  /**
-   * On Next:
-   * - If not last question → advance step.
-   * - On last question → always open vendor screen.
-   *   Then we branch UI by bookingType:
-   *   - you-do-it  → grid (existing)
-   *   - let-us-do-it → checklist screen (new)
-   */
-  const nextStep = () => {
+  const advance = () => {
     if (animating) return;
-    if (!formData[currentQuestion.id]) return;
     setAnimating(true);
     setTimeout(() => {
       if (currentStep < questions.length - 1) {
@@ -288,6 +279,26 @@ const EventPlanning = () => {
       }
       setAnimating(false);
     }, TRANSITION_MS);
+  };
+
+  /**
+   * On Next:
+   * - If not last question → advance step.
+   * - On last question → always open vendor screen.
+   *   Then we branch UI by bookingType:
+   *   - you-do-it  → grid (existing)
+   *   - let-us-do-it → checklist screen (new)
+   */
+  const nextStep = (valueOverride) => {
+    if (animating) return;
+    if (valueOverride === undefined && !formData[currentQuestion.id]) return;
+    advance();
+  };
+
+  // Called when user picks a select option or a date — saves value then auto-advances
+  const selectAndAdvance = (field, value) => {
+    dispatch(setFormData({ field, value }));
+    setTimeout(advance, 350);
   };
 
   const prevStep = () => {
@@ -544,10 +555,10 @@ const EventPlanning = () => {
               <input
                 type="date"
                 value={formData[currentQuestion.id] || ""}
-                onChange={(e) =>
-                  handleInputChange(currentQuestion.id, e.target.value)
-                }
-                onKeyDown={handleKeyDown}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val) selectAndAdvance(currentQuestion.id, val);
+                }}
                 className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#ff885d]
               rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#ff885d] transition-all duration-200"
               />
@@ -575,17 +586,11 @@ const EventPlanning = () => {
                     type="button"
                     key={index}
                     tabIndex={0}
-                    onClick={() => {
-                      handleInputChange(currentQuestion.id, option);
-                    }}
+                    onClick={() => selectAndAdvance(currentQuestion.id, option)}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        if (formData[currentQuestion.id]) {
-                          nextStep();
-                        } else {
-                          handleInputChange(currentQuestion.id, option);
-                        }
+                        selectAndAdvance(currentQuestion.id, option);
                       }
                     }}
                     className={`w-full text-lg sm:text-xl p-4 text-left rounded-2xl transition-all duration-200
