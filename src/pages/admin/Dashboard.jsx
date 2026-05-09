@@ -362,11 +362,20 @@ const AdminDashboard = () => {
     const convo = await getConversationMessages(id);
     setCurrentConversation(convo || []);
     setAdminMsgInput("");
-    // Join the conversation room so admin receives real-time messages
     if (adminSocketRef.current) {
       adminSocketRef.current.emit('join_conversation', { conversationId: id });
     }
   };
+
+  // Auto-refresh messages every 10s when a chat is selected
+  useEffect(() => {
+    if (!selectedChat?._id) return;
+    const interval = setInterval(async () => {
+      const convo = await getConversationMessages(selectedChat._id).catch(() => null);
+      if (convo) setCurrentConversation(convo);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [selectedChat?._id]);
 
   // Real-time socket connection for admin — send/receive messages + chat requests
   useEffect(() => {
@@ -1411,6 +1420,24 @@ const AdminDashboard = () => {
 
                     {/* Input Box */}
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
+                      {/* Image upload */}
+                      <label style={{ cursor: "pointer", flexShrink: 0, width: 36, height: 36, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb" }}>
+                        📎
+                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !selectedChat) return;
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            const content = `[img:${ev.target.result}]`;
+                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content };
+                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                          };
+                          reader.readAsDataURL(file);
+                          e.target.value = '';
+                        }} />
+                      </label>
+
                       <input
                         type="text"
                         value={adminMsgInput}
@@ -1546,7 +1573,9 @@ const AdminDashboard = () => {
                               <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
                                 {msg.sender === "user" ? "Customer" : "Admin"}
                               </span>
-                              {msg.content || msg.text || ""}
+                              {(msg.content || msg.text || "").startsWith("[img:") ? (
+                                <img src={(msg.content || msg.text).replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
+                              ) : (msg.content || msg.text || "")}
                             </div>
                           ))}
                         </div>
@@ -1554,6 +1583,24 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
+                      {/* Image upload */}
+                      <label style={{ cursor: "pointer", flexShrink: 0, width: 36, height: 36, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb" }}>
+                        📎
+                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !selectedChat) return;
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            const content = `[img:${ev.target.result}]`;
+                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content };
+                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                          };
+                          reader.readAsDataURL(file);
+                          e.target.value = '';
+                        }} />
+                      </label>
+
                       <input
                         type="text"
                         value={adminMsgInput}
@@ -1689,7 +1736,9 @@ const AdminDashboard = () => {
                               <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
                                 {msg.sender === "user" ? "Customer" : "Admin"}
                               </span>
-                              {msg.content || msg.text || ""}
+                              {(msg.content || msg.text || "").startsWith("[img:") ? (
+                                <img src={(msg.content || msg.text).replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
+                              ) : (msg.content || msg.text || "")}
                             </div>
                           ))}
                         </div>
@@ -1697,6 +1746,24 @@ const AdminDashboard = () => {
                     </div>
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
+                      {/* Image upload */}
+                      <label style={{ cursor: "pointer", flexShrink: 0, width: 36, height: 36, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb" }}>
+                        📎
+                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !selectedChat) return;
+                          const reader = new FileReader();
+                          reader.onload = (ev) => {
+                            const content = `[img:${ev.target.result}]`;
+                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content };
+                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                          };
+                          reader.readAsDataURL(file);
+                          e.target.value = '';
+                        }} />
+                      </label>
+
                       <input
                         type="text"
                         value={adminMsgInput}

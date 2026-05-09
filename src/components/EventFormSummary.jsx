@@ -34,16 +34,6 @@ export default function EventFormSummary() {
 
         {/* DETAILS GRID */}
         <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {/* Event Name */}
-          <div className="border rounded-xl p-4 bg-white">
-            <dt className="text-xs uppercase tracking-wide text-gray-500">
-              Event Name
-            </dt>
-            <dd className="text-base font-semibold text-gray-800 mt-1">
-              {f.eventName || "—"}
-            </dd>
-          </div>
-
           {/* Event Type */}
           <div className="border rounded-xl p-4 bg-white">
             <dt className="text-xs uppercase tracking-wide text-gray-500">

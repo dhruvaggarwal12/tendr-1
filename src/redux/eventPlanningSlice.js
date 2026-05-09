@@ -118,13 +118,11 @@ const savedSession = loadSession();
 
 const initialState = {
   formData: savedSession?.formData || {
-    eventName: "",
     eventType: "",
     guests: "",
     budget: "",
     location: "",
     date: "",
-    additionalInfo: "",
   },
   currentStep: savedSession?.currentStep || 0,
   showVendorScreen: savedSession?.showVendorScreen || false,
@@ -200,13 +198,11 @@ const eventPlanningSlice = createSlice({
       } catch {}
       return {
         formData: {
-          eventName: "",
           eventType: "",
           guests: "",
           budget: "",
           location: "",
           date: "",
-          additionalInfo: "",
         },
         currentStep: 0,
         showVendorScreen: false,

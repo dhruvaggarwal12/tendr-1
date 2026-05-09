@@ -122,9 +122,23 @@ const Chat = () => {
       });
     });
 
-    socket.on("conversation_opened", ({ _id, chatApproved: approved }) => {
+    socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
       setConversationId(_id);
       if (approved) setVendorApprovedByAdmin(true);
+      // Load message history from DB
+      try {
+        const res = await fetch(`${BASE_URL}/messages/${_id}/messages`, { credentials: "include" });
+        if (res.ok) {
+          const history = await res.json();
+          if (Array.isArray(history) && history.length > 0) {
+            setMessages(history.map(m => ({
+              text: m.content,
+              sender: m.sender === "user" ? "user" : "vendor",
+              ts: new Date(m.createdAt).getTime(),
+            })));
+          }
+        }
+      } catch {}
     });
 
     socket.on("chat_approved", () => setVendorApprovedByAdmin(true));
@@ -558,6 +572,28 @@ const Chat = () => {
       )}
 
       {/* Input bar */}
+      {/* Predefined questions — shown in support/concierge chats */}
+      {(vendor._id === "concierge" || from === "support") && vendorApproved && (
+        <div style={{ background: "#fffaf3", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", overflowX: "auto" }}>
+          <div style={{ display: "flex", gap: 8, maxWidth: 860, margin: "0 auto", flexWrap: "nowrap" }}>
+            {[
+              "How do I book a vendor?",
+              "What areas do you serve?",
+              "How does the approval process work?",
+              "Can I change my event details?",
+              "What is the refund policy?",
+              "How do I contact a vendor?",
+            ].map((q) => (
+              <button key={q} onClick={() => setMessage(q)}
+                style={{ whiteSpace: "nowrap", padding: "5px 12px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.3)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+              >{q}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div
         style={{
           position: "sticky",

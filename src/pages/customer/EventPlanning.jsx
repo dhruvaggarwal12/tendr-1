@@ -133,14 +133,6 @@ const EventPlanning = () => {
 
   const questions = [
     {
-      id: "eventName",
-      title: "What's the name of your event?",
-      subtitle: "Give your event a memorable name",
-      type: "text",
-      placeholder: "e.g., Sarah's Birthday Celebration",
-      icon: <Calendar className="w-8 h-8" />,
-    },
-    {
       id: "eventType",
       title: "What type of event are you planning?",
       subtitle: "This helps us suggest the right vendors",
@@ -194,14 +186,6 @@ const EventPlanning = () => {
       title: "When is your event?",
       subtitle: "Select your preferred date",
       type: "date",
-      icon: <Calendar className="w-8 h-8" />,
-    },
-    {
-      id: "additionalInfo",
-      title: "Any additional details?",
-      subtitle: "Tell us about your vision, theme, or special requirements",
-      type: "textarea",
-      placeholder: "e.g., Outdoor garden theme, live music preferred...",
       icon: <Calendar className="w-8 h-8" />,
     },
   ];
