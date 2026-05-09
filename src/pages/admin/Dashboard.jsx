@@ -1324,16 +1324,18 @@ const AdminDashboard = () => {
                     {currentConversation && currentConversation.length > 0 && (
                       <div className="flex-1 p-3 sm:p-4 overflow-y-auto text-gray-600 flex flex-col space-y-2 sm:space-y-3">
                         {currentConversation.map((msg, index) => (
-                          <p
+                          <div
                             key={index}
                             className={`${
-                              msg.senderType === "USER"
-                                ? "self-start bg-gray-100"
+                              msg.sender === "user"
+                                ? "self-start bg-gray-100 text-gray-800"
                                 : "self-end bg-[#d08f4e] text-white"
-                            } px-3 py-2 rounded-lg w-fit text-sm`}
+                            } px-3 py-2 rounded-xl w-fit text-sm max-w-[75%] break-words`}
+                            style={{ fontFamily: "'Outfit', sans-serif" }}
                           >
-                            {msg.message}
-                          </p>
+                            <span style={{ fontSize: 10, opacity: 0.6, display: "block", marginBottom: 2 }}>{msg.sender === "user" ? "Customer" : "Admin"}</span>
+                            {msg.content}
+                          </div>
                         ))}
                       </div>
                     )}

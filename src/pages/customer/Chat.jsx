@@ -210,8 +210,6 @@ const Chat = () => {
 
   const handleUserTyping = (e) => {
     setMessage(e.target.value);
-    clearTimeout(window.vendorTypingTimeout);
-    window.vendorTypingTimeout = setTimeout(() => { setIsVendorTyping(true); }, 1000);
   };
 
   const openFilePicker = () => fileInputRef.current?.click();
