@@ -812,11 +812,68 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {activeDropdown === "vendors" && (
+        {activeDropdown === "vendors" && (() => {
+          const [importResult, setImportResult] = React.useState(null);
+          const [importing, setImporting] = React.useState(false);
+
+          const handleImport = async (e) => {
+            const file = e.target.files?.[0];
+            if (!file) return;
+            setImporting(true); setImportResult(null);
+            const fd = new FormData(); fd.append('csv', file);
+            try {
+              const res = await fetch(`${BASE_URL}/admin/import/vendors`, {
+                method: 'POST', headers: { Authorization: `Bearer ${token}` },
+                credentials: 'include', body: fd,
+              });
+              const data = await res.json();
+              setImportResult(data);
+            } catch (err) {
+              setImportResult({ error: err.message });
+            } finally { setImporting(false); e.target.value = ''; }
+          };
+
+          return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            {/* Heading */}
-            <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
-              Vendors
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">Vendors</div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <a href={`${BASE_URL}/admin/import/template`} download
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>
+                  ⬇ Download CSV Template
+                </a>
+                <label style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: importing ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: importing ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: importing ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {importing ? "Importing..." : "⬆ Import from CSV"}
+                  <input type="file" accept=".csv" onChange={handleImport} style={{ display: "none" }} disabled={importing} />
+                </label>
+              </div>
+            </div>
+
+            {/* Import result */}
+            {importResult && (
+              <div style={{ background: importResult.error ? "#fff5f5" : importResult.failed > 0 ? "#fffbeb" : "#f0fdf4", border: `1px solid ${importResult.error ? "#fca5a5" : importResult.failed > 0 ? "#fde68a" : "#bbf7d0"}`, borderRadius: 12, padding: "14px 18px", marginBottom: 16, fontFamily: "'Outfit', sans-serif" }}>
+                {importResult.error ? (
+                  <p style={{ color: "#c0392b", margin: 0, fontWeight: 600 }}>Error: {importResult.error}</p>
+                ) : (
+                  <>
+                    <p style={{ color: importResult.failed > 0 ? "#b45309" : "#15803d", fontWeight: 700, margin: "0 0 8px" }}>{importResult.message}</p>
+                    {importResult.errors?.length > 0 && (
+                      <div>
+                        <p style={{ fontSize: 12, color: "#b45309", fontWeight: 600, margin: "0 0 6px" }}>Failed rows:</p>
+                        {importResult.errors.map((e, i) => (
+                          <div key={i} style={{ fontSize: 12, color: "#c0392b", marginBottom: 3 }}>Row {e.row} ({e.name}): {e.error}</div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* CSV format reminder */}
+            <div style={{ background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 16px", marginBottom: 20, fontSize: 12, color: "#7A5535", fontFamily: "'Outfit', sans-serif" }}>
+              <strong>How to import:</strong> Download the CSV template → fill it in Excel or Google Sheets → save as CSV → click "Import from CSV".
+              Service types: DJ, Decorator, Photographer, Caterer. Cities: Delhi, Noida, Greater Noida, Ghaziabad.
             </div>
 
             {/* Live Vendor Stats */}
@@ -1153,7 +1210,8 @@ const AdminDashboard = () => {
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {activeDropdown === "users" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
