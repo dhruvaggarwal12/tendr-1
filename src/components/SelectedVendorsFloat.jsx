@@ -10,9 +10,10 @@ export default function SelectedVendorsFloat() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const compareSelected = useSelector((state) => state.listingFilters.compareSelected);
+  const { token } = useSelector((state) => state.auth);
   const [open, setOpen] = useState(false);
 
-  if (compareSelected.length === 0) return null;
+  if (!token || compareSelected.length === 0) return null;
 
   const grouped = compareSelected.reduce((acc, v) => {
     const cat = v?.primaryService || v?.serviceType || "Other";

@@ -22,6 +22,7 @@ const VendorList_ListingPage = ({
   setSortOrder,
   compareSelected = [],
   onToggleCompare,
+  isLoggedIn = false,
 }) => {
   const navigate = useNavigate();
   const [quickViewVendor, setQuickViewVendor] = useState(null);
@@ -128,12 +129,14 @@ const VendorList_ListingPage = ({
                         >
                           Quick View
                         </button>
-                        <button
-                          onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
-                          style={{ width: 40, height: 40, borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "#fff", color: isSelected ? "#C47A2E" : "#6B3A1F", fontSize: 16, fontWeight: 700, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
-                        >
-                          {isSelected ? "✓" : "+"}
-                        </button>
+                        {isLoggedIn && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
+                            style={{ width: 40, height: 40, borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "#fff", color: isSelected ? "#C47A2E" : "#6B3A1F", fontSize: 16, fontWeight: 700, cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}
+                          >
+                            {isSelected ? "✓" : "+"}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -226,42 +229,63 @@ const VendorList_ListingPage = ({
                   ))}
               </div>
 
-              {/* Service-specific details */}
+              {/* ── About (base schema) ── */}
               {(() => {
                 const v = quickViewVendor;
-                const rows = [
-                  v.totalEventsCompleted > 0   && { label: "Events completed", value: v.totalEventsCompleted },
-                  v.teamSize > 0               && { label: "Team size",  value: v.teamSize },
-                  v.yearsOfExperience > 0      && { label: "Experience", value: `${v.yearsOfExperience} years` },
-                  v.locations?.length > 0      && { label: "Serves",     value: v.locations.join(", ") },
-                  // DJ
-                  v.setup?.length        && { label: "Setup",        value: v.setup.join(", ") },
-                  v.eventTypes?.length   && { label: "Event types",  value: v.eventTypes.join(", ") },
-                  v.lightsIncluded != null && { label: "Lights",     value: v.lightsIncluded ? "Included ✓" : "Not included" },
-                  // Decorator
-                  v.themes?.length              && { label: "Themes",          value: v.themes.join(", ") },
-                  v.typesOfDecoration?.length   && { label: "Decoration types",value: v.typesOfDecoration.join(", ") },
-                  v.venueCoverage?.length       && { label: "Venue coverage",  value: v.venueCoverage.join(", ") },
-                  // Caterer
-                  v.cuisine?.length             && { label: "Cuisine",         value: v.cuisine.join(", ") },
-                  v.serviceStyle?.length        && { label: "Service style",   value: v.serviceStyle.join(", ") },
-                  v.menuType?.length            && { label: "Menu type",       value: v.menuType.join(", ") },
-                  v.beveragesIncluded != null   && { label: "Beverages",       value: v.beveragesIncluded ? "Included ✓" : "Not included" },
-                  // Photographer
-                  v.services?.length            && { label: "Services",        value: v.services.join(", ") },
-                  v.photographyType?.length     && { label: "Style",           value: v.photographyType.join(", ") },
-                  v.hoursIncluded > 0           && { label: "Hours included",  value: `${v.hoursIncluded}h` },
-                  v.editingTimeDays > 0         && { label: "Editing time",    value: `${v.editingTimeDays} days` },
-                  v.photographersCount > 0      && { label: "Photographers",   value: v.photographersCount },
-                  v.videographersCount > 0      && { label: "Videographers",   value: v.videographersCount },
+                const base = [
+                  v.totalEventsCompleted > 0 && { label: "Events completed", value: v.totalEventsCompleted },
+                  v.teamSize > 0             && { label: "Team size",         value: v.teamSize },
+                  v.yearsOfExperience > 0    && { label: "Experience",        value: `${v.yearsOfExperience} years` },
+                  v.locations?.length > 0    && { label: "Serves",            value: v.locations.join(", ") },
                 ].filter(Boolean);
-
-                if (!rows.length) return null;
+                if (!base.length) return null;
                 return (
                   <div style={{ marginBottom: 20 }}>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Details</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>About</p>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      {rows.map(({ label, value }) => (
+                      {base.map(({ label, value }) => (
+                        <div key={label} style={{ background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "8px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>{label}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.35 }}>{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* ── Specialties (service-specific) ── */}
+              {(() => {
+                const v = quickViewVendor;
+                const specific = [
+                  // DJ
+                  v.setup?.length          && { label: "Setup",            value: v.setup.join(", ") },
+                  v.eventTypes?.length     && { label: "Event types",      value: v.eventTypes.join(", ") },
+                  v.lightsIncluded != null && { label: "Lights",           value: v.lightsIncluded ? "Included ✓" : "Not included" },
+                  // Decorator
+                  v.themes?.length             && { label: "Themes",           value: v.themes.join(", ") },
+                  v.typesOfDecoration?.length  && { label: "Decor types",      value: v.typesOfDecoration.join(", ") },
+                  v.venueCoverage?.length      && { label: "Venue coverage",   value: v.venueCoverage.join(", ") },
+                  // Caterer
+                  v.cuisine?.length            && { label: "Cuisine",          value: v.cuisine.join(", ") },
+                  v.serviceStyle?.length       && { label: "Service style",    value: v.serviceStyle.join(", ") },
+                  v.menuType?.length           && { label: "Menu type",        value: v.menuType.join(", ") },
+                  v.beveragesIncluded != null  && { label: "Beverages",        value: v.beveragesIncluded ? "Included ✓" : "Not included" },
+                  // Photographer
+                  v.services?.length           && { label: "Services",         value: v.services.join(", ") },
+                  v.photographyType?.length    && { label: "Style",            value: v.photographyType.join(", ") },
+                  v.hoursIncluded > 0          && { label: "Hours included",   value: `${v.hoursIncluded}h` },
+                  v.editingTimeDays > 0        && { label: "Editing time",     value: `${v.editingTimeDays} days` },
+                  v.photographersCount > 0     && { label: "Photographers",    value: v.photographersCount },
+                  v.videographersCount > 0     && { label: "Videographers",    value: v.videographersCount },
+                ].filter(Boolean);
+                if (!specific.length) return null;
+                return (
+                  <div style={{ marginBottom: 20 }}>
+                    <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "0 0 14px" }} />
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Specialties</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                      {specific.map(({ label, value }) => (
                         <div key={label} style={{ background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "8px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
                           <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>{label}</div>
                           <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.35 }}>{value}</div>

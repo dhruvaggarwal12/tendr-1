@@ -236,6 +236,7 @@ const VendorList = () => {
               <button
                 onClick={openSelectedModal}
                 disabled={compareSelected.length === 0}
+                style={{ display: token ? undefined : "none" }}
                 style={{
                   fontFamily: "'Outfit', sans-serif",
                   flexShrink: 0,
@@ -342,6 +343,7 @@ const VendorList = () => {
               setSortOrder={setSortOrder}
               compareSelected={compareSelected}
               onToggleCompare={toggleCompare}
+              isLoggedIn={!!token}
             />
 
             {!token && (
