@@ -497,7 +497,10 @@ const EventPlanning = () => {
             <div style={{ display: "flex", gap: 8, flexDirection: "column", marginTop: 22 }}>
               <button
                 onClick={() => {
-                  sessionStorage.setItem("auth_return", "/booking");
+                  // Save filters + categories so listings opens correctly after login
+                  dispatch(setFilters({ serviceType: selectedVendors[0] || "", eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
+                  sessionStorage.setItem("auth_return_categories", JSON.stringify(selectedVendors));
+                  sessionStorage.setItem("auth_return", "/listings");
                   navigate("/login");
                 }}
                 style={{ padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
@@ -506,7 +509,9 @@ const EventPlanning = () => {
               </button>
               <button
                 onClick={() => {
-                  sessionStorage.setItem("auth_return", "/booking");
+                  dispatch(setFilters({ serviceType: selectedVendors[0] || "", eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
+                  sessionStorage.setItem("auth_return_categories", JSON.stringify(selectedVendors));
+                  sessionStorage.setItem("auth_return", "/listings");
                   navigate("/signup");
                 }}
                 style={{ padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}

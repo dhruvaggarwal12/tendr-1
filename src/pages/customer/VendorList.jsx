@@ -41,8 +41,15 @@ const VendorList = () => {
     additionalInfo,
   } = useSelector((state) => state.eventPlanning.formData);
 
-  // Categories pre-selected on the service category page
-  const selectedCategories = location.state?.selectedCategories || [];
+  // Categories pre-selected on the service category page, or restored after auth-gate sign-in
+  const selectedCategories = (() => {
+    if (location.state?.selectedCategories?.length) return location.state.selectedCategories;
+    try {
+      const saved = sessionStorage.getItem("auth_return_categories");
+      if (saved) { sessionStorage.removeItem("auth_return_categories"); return JSON.parse(saved); }
+    } catch {}
+    return [];
+  })();
 
   const [vendorList, setVendorList] = useState([]);
   const [paginationInfo, setPaginationInfo] = useState({});
