@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
+import { resetEventPlanning, setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -33,7 +34,20 @@ const statusBadge = (status) => {
 
 export default function CustomerDashboard() {
   const navigate  = useNavigate();
+  const dispatch  = useDispatch();
   const { user, token } = useSelector((s) => s.auth);
+
+  const handleRebook = (plan) => {
+    dispatch(resetEventPlanning());
+    dispatch(setMultipleFormData({
+      eventType: plan.eventType || "",
+      guests:    plan.guests    || "",
+      budget:    plan.budget    || "",
+      location:  plan.location  || "",
+    }));
+    dispatch(setBookingType(plan.bookingType || "you-do-it"));
+    navigate("/booking");
+  };
 
   const [activeTab, setActiveTab] = useState("All");
   const [plans, setPlans] = useState([]);
@@ -269,8 +283,19 @@ export default function CustomerDashboard() {
                         </div>
                       )}
                     </div>
-                    <div style={{ fontSize: 11, color: "#bbb", whiteSpace: "nowrap" }}>
-                      {new Date(plan.createdAt).toLocaleDateString("en-IN")}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+                      <div style={{ fontSize: 11, color: "#bbb", whiteSpace: "nowrap" }}>
+                        {new Date(plan.createdAt).toLocaleDateString("en-IN")}
+                      </div>
+                      <button
+                        onClick={() => handleRebook(plan)}
+                        title="Copy this event's details into a new booking"
+                        style={{ fontSize: 12, fontWeight: 700, padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "background 0.15s" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.14)")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+                      >
+                        ↩ Re-book
+                      </button>
                     </div>
                   </div>
                 </div>

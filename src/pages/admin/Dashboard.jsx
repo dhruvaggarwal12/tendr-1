@@ -281,6 +281,8 @@ const AdminDashboard = () => {
   const [userList, setUserList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [bookingTab, setBookingTab] = useState("All");
+  const [importResult, setImportResult] = useState(null);
+  const [importing, setImporting] = useState(false);
 
   const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
 
@@ -583,7 +585,9 @@ const AdminDashboard = () => {
                               onClick={() => {
                                 fetch(`${BASE_URL}/admin/chat-requests/${req._id}/approve`, {
                                   method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                                }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatApproved: true } : r)));
+                                })
+                                  .then((r) => { if (r.ok) setChatRequests((prev) => prev.map((r2) => r2._id === req._id ? { ...r2, chatApproved: true, chatRejected: false } : r2)); })
+                                  .catch(() => {});
                               }}
                               style={{ padding: "7px 18px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
                             >
@@ -593,7 +597,9 @@ const AdminDashboard = () => {
                               onClick={() => {
                                 fetch(`${BASE_URL}/admin/chat-requests/${req._id}/reject`, {
                                   method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                                }).then(() => setChatRequests((prev) => prev.map((r) => r._id === req._id ? { ...r, chatRejected: true } : r)));
+                                })
+                                  .then((r) => { if (r.ok) setChatRequests((prev) => prev.map((r2) => r2._id === req._id ? { ...r2, chatRejected: true, chatApproved: false } : r2)); })
+                                  .catch(() => {});
                               }}
                               style={{ padding: "7px 18px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
                             >
@@ -680,7 +686,7 @@ const AdminDashboard = () => {
 
         {activeDropdown === "bookings" && (() => {
           const BOOKING_TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
-          const BOOKING_STATUS = { Upcoming: ["submitted"], Ongoing: ["in_progress"], Completed: ["completed"], Cancelled: ["cancelled"] };
+          const BOOKING_STATUS = { Upcoming: ["in_progress"], Ongoing: ["submitted", "draft"], Completed: ["completed"], Cancelled: ["cancelled"] };
           const filteredPlans = bookingTab === "All" ? eventPlans : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
           const statusBadgeStyle = (s) => ({ submitted: { bg: "#fffbeb", color: "#b45309", border: "#fde68a" }, in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" }, completed: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" }, cancelled: { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" } }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" });
           return (
@@ -822,9 +828,6 @@ const AdminDashboard = () => {
         )}
 
         {activeDropdown === "vendors" && (() => {
-          const [importResult, setImportResult] = React.useState(null);
-          const [importing, setImporting] = React.useState(false);
-
           const handleImport = async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;

@@ -4,6 +4,8 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 const Navbar = ({
   handleLogoClick,
   tendrLogo,
@@ -15,6 +17,21 @@ const Navbar = ({
   const { user, token } = useSelector((state) => state.auth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
+  const [activeChatCount, setActiveChatCount] = useState(0);
+
+  useEffect(() => {
+    if (!token || !user) return;
+    fetch(`${BASE_URL}/conversations`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.ok ? r.json() : { conversations: [] })
+      .then((data) => {
+        const active = (data.conversations || []).filter((c) => c.chatApproved);
+        setActiveChatCount(active.length);
+      })
+      .catch(() => {});
+  }, [token, user]);
 
   const handleLogout = () => {
     dispatch(logout());
@@ -386,12 +403,19 @@ const Navbar = ({
               <div ref={profileMenuRef} style={{ position: "relative", marginLeft: 10 }}>
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
+                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.12)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
                 >
-                  <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
-                    {user.name?.[0]?.toUpperCase() || "U"}
+                  <div style={{ position: "relative" }}>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 700 }}>
+                      {user.name?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    {activeChatCount > 0 && (
+                      <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, background: "#ef4444", color: "#fff", borderRadius: 100, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff", lineHeight: 1 }}>
+                        {activeChatCount > 9 ? "9+" : activeChatCount}
+                      </span>
+                    )}
                   </div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#3B2F2F", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</span>
                   <FaChevronDown size={9} style={{ color: "#9B7450", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
@@ -406,13 +430,25 @@ const Navbar = ({
                       </div>
                       {[
                         { label: "Dashboard", path: "/dashboard" },
+                        {
+                          label: activeChatCount > 0
+                            ? `My Chats (${activeChatCount} active)`
+                            : "My Chats",
+                          path: "/dashboard",
+                          highlight: activeChatCount > 0,
+                        },
                         ...(user.isAdmin ? [{ label: "Admin Dashboard", path: "/AdminDashboard" }] : []),
-                      ].map(({ label, path }) => (
+                      ].map(({ label, path, highlight }) => (
                         <button key={label} onClick={() => { navigate(path); setShowProfileMenu(false); }}
-                          style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#3B2F2F", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
+                          style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: highlight ? 600 : 500, color: highlight ? "#C47A2E" : "#3B2F2F", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
                           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
                           onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                        >{label}</button>
+                        >
+                          {label}
+                          {highlight && (
+                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />
+                          )}
+                        </button>
                       ))}
                       <div style={{ borderTop: "1px solid rgba(139,69,19,0.08)", marginTop: 4, paddingTop: 4 }}>
                         <button onClick={handleLogout}

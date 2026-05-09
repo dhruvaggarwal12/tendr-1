@@ -27,8 +27,8 @@ export default function SelectedVendorsFloat() {
         onClick={() => setOpen(true)}
         style={{
           position: "fixed",
-          bottom: 24,
-          left: 40,
+          bottom: 90,
+          left: 24,
           zIndex: 900,
           display: "inline-flex",
           alignItems: "center",

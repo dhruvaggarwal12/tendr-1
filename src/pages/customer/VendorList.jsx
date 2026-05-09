@@ -107,8 +107,18 @@ const VendorList = () => {
     navigate('/booking/review', { state: { booking: bookingDetails } });
   };
 
-  // Scroll to top on mount
-  useEffect(() => { window.scrollTo(0, 0); }, []);
+  // Restore saved scroll position (from vendor detail back-nav) or scroll to top
+  useEffect(() => {
+    const saved = sessionStorage.getItem("listings_scroll_y");
+    if (saved) {
+      sessionStorage.removeItem("listings_scroll_y");
+      const y = Number(saved);
+      // Double rAF ensures layout is complete before scrolling
+      requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" })));
+    } else {
+      window.scrollTo(0, 0);
+    }
+  }, []);
 
   // fetch on changes — one category at a time using Redux serviceType
   useEffect(() => {
