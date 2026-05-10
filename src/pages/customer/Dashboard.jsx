@@ -51,6 +51,31 @@ export default function CustomerDashboard() {
     navigate("/booking");
   };
 
+  const [changeReqState, setChangeReqState] = useState({}); // { [planId]: { open, message, submitting, done } }
+
+  const openChangeReq = (planId) =>
+    setChangeReqState(prev => ({ ...prev, [planId]: { open: true, message: "", submitting: false, done: false } }));
+
+  const submitChangeReq = async (planId) => {
+    const s = changeReqState[planId];
+    if (!s?.message?.trim()) return;
+    setChangeReqState(prev => ({ ...prev, [planId]: { ...prev[planId], submitting: true } }));
+    try {
+      const res = await fetch(`${BASE_URL}/event-plans/${planId}/change-request`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+        body: JSON.stringify({ message: s.message.trim() }),
+      });
+      if (res.ok) {
+        setChangeReqState(prev => ({ ...prev, [planId]: { open: true, message: s.message, submitting: false, done: true } }));
+        setPlans(prev => prev.map(p => p._id === planId ? { ...p, changeRequest: { hasRequest: true, message: s.message, status: "pending" } } : p));
+      }
+    } catch {
+      setChangeReqState(prev => ({ ...prev, [planId]: { ...prev[planId], submitting: false } }));
+    }
+  };
+
   const [activeTab, setActiveTab] = useState(() => {
     const tab = new URLSearchParams(location.search).get("tab");
     return TABS.includes(tab) ? tab : "All";
@@ -326,6 +351,74 @@ export default function CustomerDashboard() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Change request — only for Upcoming (in_progress) plans */}
+                  {plan.status === "in_progress" && (() => {
+                    const cr = plan.changeRequest;
+                    const s  = changeReqState[plan._id];
+                    // Already has a pending request
+                    if (cr?.hasRequest && cr?.status === "pending") {
+                      return (
+                        <div style={{ marginTop: 14, background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 10 }}>
+                          <span style={{ fontSize: 14 }}>⏳</span>
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#b45309" }}>Change request sent</div>
+                            {cr.message && <div style={{ fontSize: 12, color: "#7A5535", marginTop: 2, fontStyle: "italic" }}>"{cr.message}"</div>}
+                            <div style={{ fontSize: 11, color: "#bbb", marginTop: 2 }}>Waiting for Tendr team to respond</div>
+                          </div>
+                        </div>
+                      );
+                    }
+                    // Submitted successfully just now
+                    if (s?.done) {
+                      return (
+                        <div style={{ marginTop: 14, background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 12, padding: "12px 16px", fontSize: 13, fontWeight: 600, color: "#15803d" }}>
+                          ✓ Change request submitted. The Tendr team will get back to you shortly.
+                        </div>
+                      );
+                    }
+                    // Open input form
+                    if (s?.open) {
+                      return (
+                        <div style={{ marginTop: 14, background: "rgba(196,122,46,0.04)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "14px 16px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 8 }}>What would you like to change?</div>
+                          <textarea
+                            value={s.message}
+                            onChange={e => setChangeReqState(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], message: e.target.value } }))}
+                            rows={3}
+                            placeholder="e.g. Change the catering to 100 guests, update the date to 20 June..."
+                            style={{ width: "100%", padding: "10px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: font, color: "#2C1A0E", outline: "none", resize: "vertical", boxSizing: "border-box", lineHeight: 1.5 }}
+                          />
+                          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                            <button
+                              onClick={() => submitChangeReq(plan._id)}
+                              disabled={s.submitting || !s.message?.trim()}
+                              style={{ padding: "8px 20px", borderRadius: 9, border: "none", background: s.message?.trim() ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: s.message?.trim() ? "#fff" : "#aaa", fontSize: 13, fontWeight: 700, cursor: s.message?.trim() ? "pointer" : "not-allowed", fontFamily: font }}
+                            >
+                              {s.submitting ? "Sending…" : "Submit Request"}
+                            </button>
+                            <button
+                              onClick={() => setChangeReqState(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], open: false } }))}
+                              style={{ padding: "8px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+                    // Default: show button
+                    return (
+                      <button
+                        onClick={() => openChangeReq(plan._id)}
+                        style={{ marginTop: 14, width: "100%", padding: "10px", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        ⚠️ Make a Change Request
+                      </button>
+                    );
+                  })()}
                 </div>
               ))}
             </div>
