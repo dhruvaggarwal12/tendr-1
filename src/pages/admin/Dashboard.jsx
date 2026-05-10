@@ -692,6 +692,38 @@ const AdminDashboard = () => {
         {activeDropdown === "bookings" && (() => {
           const BOOKING_TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
           const BOOKING_STATUS = { Upcoming: ["in_progress"], Ongoing: ["submitted", "draft"], Completed: ["completed"], Cancelled: ["cancelled"] };
+
+          const buildWhatsAppSummary = (plan) => {
+            const name  = plan.customerId?.name || "there";
+            const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+            if (!phone) return null;
+            const services = (plan.selectedServices || []).map(s => `  • ${s}`).join("\n") || "  • Not specified";
+            const typeLabel = plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It";
+            const msg = [
+              `Hi ${name}! 👋`,
+              ``,
+              `Here is your *Tendr Booking Summary* 🎉`,
+              ``,
+              `*📋 Event Details*`,
+              `  • Type: ${plan.eventType || "—"}`,
+              `  • Date: ${plan.date || "—"}`,
+              `  • Location: ${plan.location || "—"}`,
+              `  • Guests: ${plan.guests || "—"}`,
+              `  • Budget: ${plan.budget || "—"}`,
+              ``,
+              `*✅ Services Selected*`,
+              services,
+              ``,
+              `*🎯 Booking Type:* ${typeLabel}`,
+              ``,
+              `To confirm your booking, please complete the payment at your earliest convenience. Our team will follow up with final pricing from each vendor shortly.`,
+              ``,
+              `For any queries, feel free to reach out to us on WhatsApp.`,
+              ``,
+              `— Team Tendr 🌟`,
+            ].join("\n");
+            return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
+          };
           const filteredPlans = bookingTab === "All" ? eventPlans : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
           const statusBadgeStyle = (s) => ({ submitted: { bg: "#fffbeb", color: "#b45309", border: "#fde68a" }, in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" }, completed: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" }, cancelled: { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" } }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" });
           return (
@@ -728,7 +760,7 @@ const AdminDashboard = () => {
                   <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
                     <thead>
                       <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
-                        {["Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Status"].map((h) => (
+                        {["Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Status", "Actions"].map((h) => (
                           <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
                         ))}
                       </tr>
@@ -761,6 +793,19 @@ const AdminDashboard = () => {
                               <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`, textTransform: "capitalize" }}>
                                 {plan.status?.replace("_", " ")}
                               </span>
+                            </td>
+                            <td style={{ padding: "10px 14px" }}>
+                              {(() => {
+                                const waUrl = buildWhatsAppSummary(plan);
+                                return waUrl ? (
+                                  <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                    📱 Send Summary
+                                  </a>
+                                ) : (
+                                  <span style={{ fontSize: 11, color: "#bbb" }}>No phone</span>
+                                );
+                              })()}
                             </td>
                           </tr>
                         );
