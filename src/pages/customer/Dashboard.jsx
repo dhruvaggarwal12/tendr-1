@@ -11,7 +11,8 @@ const font = "'Outfit', sans-serif";
 const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
 
 const statusMap = {
-  Upcoming:  ["submitted", "in_progress"],
+  Upcoming:  ["in_progress"],  // after payment confirmed by admin
+  Ongoing:   ["submitted", "draft"],  // awaiting payment
   Completed: ["completed"],
   Cancelled: ["cancelled"],
 };

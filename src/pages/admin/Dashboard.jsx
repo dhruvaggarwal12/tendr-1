@@ -487,14 +487,23 @@ const AdminDashboard = () => {
     setShowSummaryModal(true);
   };
 
-  const saveSummary = () => {
-    if (!selectedChat?._id) return;
+  const saveSummary = (text) => {
+    const summary = text !== undefined ? text : summaryDraft;
+    if (!selectedChat?._id || !summary) return;
     fetch(`${BASE_URL}/admin/conversations/${selectedChat._id}/summary`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       credentials: 'include',
-      body: JSON.stringify({ bookingSummary: summaryDraft }),
+      body: JSON.stringify({ bookingSummary: summary }),
     }).catch(() => {});
+  };
+
+  // "Done" — saves compiled summary, clears the pin panel
+  const handleSummaryDone = () => {
+    const text = buildSummaryDraft();
+    saveSummary(text);
+    setSummaryDraft(text);
+    setPinnedMsgs([]); // collapse the panel; pins remain in DB
   };
 
   const summaryWhatsAppUrl = () => {
@@ -782,6 +791,7 @@ const AdminDashboard = () => {
         {activeDropdown === "bookings" && (() => {
           const BOOKING_TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
           const BOOKING_STATUS = { Upcoming: ["in_progress"], Ongoing: ["submitted", "draft"], Completed: ["completed"], Cancelled: ["cancelled"] };
+          const pendingChanges = eventPlans.filter(p => p.status === "in_progress" && p.changeRequest?.hasRequest && p.changeRequest?.status === "pending").length;
 
           const buildWhatsAppSummary = (plan) => {
             const name  = plan.customerId?.name || "there";
@@ -828,12 +838,15 @@ const AdminDashboard = () => {
                 const count = tab === "All" ? eventPlans.length : eventPlans.filter((p) => (BOOKING_STATUS[tab] || []).includes(p.status)).length;
                 return (
                   <button key={tab} onClick={() => setBookingTab(tab)}
-                    style={{ padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
+                    style={{ position: "relative", padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
                       borderColor: bookingTab === tab ? "#C47A2E" : "rgba(139,69,19,0.2)",
                       background: bookingTab === tab ? "#C47A2E" : "#fff",
                       color: bookingTab === tab ? "#fff" : "#6B3A1F",
                     }}>
                     {tab} <span style={{ marginLeft: 5, fontSize: 11, fontWeight: 700, background: bookingTab === tab ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: bookingTab === tab ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
+                    {tab === "Upcoming" && pendingChanges > 0 && (
+                      <span style={{ position: "absolute", top: -4, right: -4, minWidth: 16, height: 16, background: "#ef4444", color: "#fff", borderRadius: 100, fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{pendingChanges}</span>
+                    )}
                   </button>
                 );
               })}
@@ -886,30 +899,49 @@ const AdminDashboard = () => {
                             </td>
                             <td style={{ padding: "10px 14px" }}>
                               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {(() => {
-                                  const waUrl = buildWhatsAppSummary(plan);
-                                  return waUrl ? (
-                                    <a href={waUrl} target="_blank" rel="noopener noreferrer"
-                                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                      📱 Send Summary
-                                    </a>
-                                  ) : (
-                                    <span style={{ fontSize: 11, color: "#bbb" }}>No phone</span>
-                                  );
-                                })()}
-                                {(() => {
-                                  // Show if any vendor/concierge conversation for this customer has a saved summary
+                                {/* Ongoing: show summary + WhatsApp + Mark Payment Done */}
+                                {(plan.status === "submitted" || plan.status === "draft") && (() => {
                                   const convoWithSummary = [...(recentChats || []), ...(adminChats || [])].find(
                                     c => c.customerId?._id === plan.customerId?._id && c.bookingSummary
                                   );
-                                  return convoWithSummary ? (
-                                    <button
-                                      onClick={() => { setSelectedChat(convoWithSummary); setSummaryDraft(convoWithSummary.bookingSummary); setShowSummaryModal(true); }}
-                                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                      📋 View Summary
-                                    </button>
-                                  ) : null;
+                                  const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+                                  return (
+                                    <>
+                                      {convoWithSummary && phone && (
+                                        <a href={`https://wa.me/91${phone}?text=${encodeURIComponent(convoWithSummary.bookingSummary)}`}
+                                          target="_blank" rel="noopener noreferrer"
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                          📱 Send on WhatsApp
+                                        </a>
+                                      )}
+                                      <button
+                                        onClick={() => {
+                                          fetch(`${BASE_URL}/admin/event-plans/${plan._id}/mark-payment`, {
+                                            method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                                          }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); }).catch(() => {});
+                                        }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                        💳 Mark Payment Done
+                                      </button>
+                                    </>
+                                  );
                                 })()}
+                                {/* Upcoming: show change request info + resolve */}
+                                {plan.status === "in_progress" && plan.changeRequest?.hasRequest && plan.changeRequest?.status === "pending" && (
+                                  <div style={{ background: "#fff5f5", border: "1.5px solid #fca5a5", borderRadius: 9, padding: "8px 10px", fontSize: 12 }}>
+                                    <div style={{ fontWeight: 700, color: "#c0392b", marginBottom: 4 }}>⚠️ Change Request</div>
+                                    {plan.changeRequest.message && <div style={{ color: "#7A5535", marginBottom: 6, fontStyle: "italic" }}>"{plan.changeRequest.message}"</div>}
+                                    <button
+                                      onClick={() => {
+                                        fetch(`${BASE_URL}/admin/event-plans/${plan._id}/resolve-change-request`, {
+                                          method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                                        }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, changeRequest: { ...p.changeRequest, hasRequest: false, status: 'resolved' } } : p)); }).catch(() => {});
+                                      }}
+                                      style={{ padding: "4px 10px", borderRadius: 7, border: "none", background: "#15803d", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                      ✓ Mark Resolved
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -1555,7 +1587,9 @@ const AdminDashboard = () => {
               {/* RIGHT - Chat Messages */}
               <div className="flex-1 flex flex-col">
                 {selectedChat ? (
-                  <>
+                  <div style={{ display: "flex", flex: 1, overflow: "hidden", height: "100%" }}>
+                  {/* Chat column */}
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                     {/* Header */}
                     <div className="p-3 sm:p-4 border-b border-[#F1E1A8] flex items-center justify-between flex-wrap gap-2">
                       {/* User */}
@@ -1605,13 +1639,11 @@ const AdminDashboard = () => {
                           const isPinned = currentPinned.some(m => m.content === msgText);
                           return (
                             <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
-                              {isUser && (
-                                <button onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
-                                  title={isPinned ? "Unpin" : "Pin this message"}
-                                  style={{ background: isPinned ? "rgba(196,122,46,0.15)" : "none", border: "none", cursor: "pointer", fontSize: 13, color: isPinned ? "#C47A2E" : "#ddd", padding: "4px 5px", borderRadius: 6, flexShrink: 0, marginTop: 4, lineHeight: 1 }}>
-                                  📌
-                                </button>
-                              )}
+                              <button onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
+                                title={isPinned ? "Unpin" : "Pin this message"}
+                                style={{ background: isPinned ? "rgba(196,122,46,0.15)" : "none", border: "none", cursor: "pointer", fontSize: 13, color: isPinned ? "#C47A2E" : "#ddd", padding: "4px 5px", borderRadius: 6, flexShrink: 0, marginTop: 4, lineHeight: 1 }}>
+                                📌
+                              </button>
                               <div style={{
                                 background: isUser ? "#f3f4f6" : "#d08f4e",
                                 color: isUser ? "#1f2937" : "#ffffff",
@@ -1630,17 +1662,6 @@ const AdminDashboard = () => {
                     )}
 
                     {/* Input Box */}
-                    {/* Saved summary strip */}
-                    {selectedChat.bookingSummary && activeDropdown !== "chatsupport" && (
-                      <div style={{ background: "rgba(196,122,46,0.07)", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>📋 Summary saved</span>
-                        <button onClick={openSummaryModal}
-                          style={{ fontSize: 12, color: "#C47A2E", background: "#fff", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
-                          View / Edit →
-                        </button>
-                      </div>
-                    )}
-
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       {/* Image upload */}
                       <label style={{ cursor: "pointer", flexShrink: 0, width: 36, height: 36, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb" }}>
@@ -1690,7 +1711,32 @@ const AdminDashboard = () => {
                         Send
                       </button>
                     </div>
-                  </>
+                  </div>
+
+                  {/* Summary sidebar panel — visible only to admin when messages are pinned */}
+                  {currentPinned.length > 0 && (
+                    <div style={{ width: 230, borderLeft: "1px solid rgba(196,122,46,0.15)", display: "flex", flexDirection: "column", background: "#fffbf5", flexShrink: 0 }}>
+                      <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", fontWeight: 700, fontSize: 13, color: "#2C1A0E", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span>📋 Summary</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>{currentPinned.length} pinned</span>
+                      </div>
+                      <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+                        {currentPinned.map((m, i) => (
+                          <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a", padding: "7px 10px", background: "#fff", borderRadius: 9, border: "1px solid rgba(196,122,46,0.12)", display: "flex", gap: 6, alignItems: "flex-start" }}>
+                            <span style={{ color: "#C47A2E", flexShrink: 0, marginTop: 1 }}>•</span>
+                            <span style={{ flex: 1, lineHeight: 1.45, wordBreak: "break-word" }}>{m.content}</span>
+                            <button onClick={() => unpinMessage(m.content)}
+                              style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, flexShrink: 0 }}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={handleSummaryDone}
+                        style={{ margin: "10px 12px 12px", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}>
+                        Done ✓
+                      </button>
+                    </div>
+                  )}
+                  </div>
                 ) : (
                   <div className="flex-1 flex items-center justify-center text-gray-400 text-sm sm:text-base">
                     Select a conversation to start monitoring
@@ -1747,7 +1793,8 @@ const AdminDashboard = () => {
               {/* RIGHT - Chat Window */}
               <div className="flex-1 flex flex-col">
                 {selectedChat ? (
-                  <>
+                  <div style={{ display: "flex", flex: 1, overflow: "hidden", height: "100%" }}>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                     <div className="p-3 sm:p-4 border-b border-[#F1E1A8] flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
@@ -1759,22 +1806,9 @@ const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span className="text-xs sm:text-sm text-gray-500">
-                          {formatTimeIST(selectedChat.updatedAt)}
-                        </span>
-                        <button
-                          onClick={openSummaryModal}
-                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: currentPinned.length > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff", color: currentPinned.length > 0 ? "#fff" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                        >
-                          📋 Build Summary
-                          {currentPinned.length > 0 && (
-                            <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: 100, padding: "1px 7px", fontSize: 11, fontWeight: 800 }}>
-                              {currentPinned.length} pinned
-                            </span>
-                          )}
-                        </button>
-                      </div>
+                      <span className="text-xs sm:text-sm text-gray-500">
+                        {formatTimeIST(selectedChat.updatedAt)}
+                      </span>
                     </div>
 
                     {/* Event details strip */}
@@ -1798,7 +1832,7 @@ const AdminDashboard = () => {
                             const isPinned = currentPinned.some(m => m.content === msgText);
                             return (
                               <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
-                                {isUser && activeDropdown !== "chatsupport" && (
+                                {activeDropdown !== "chatsupport" && (
                                   <button
                                     onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
                                     title={isPinned ? "Unpin" : "Pin this message"}
@@ -1824,17 +1858,6 @@ const AdminDashboard = () => {
                         </div>
                       )}
                     </div>
-
-                    {/* Saved summary strip */}
-                    {selectedChat.bookingSummary && activeDropdown !== "chatsupport" && (
-                      <div style={{ background: "rgba(196,122,46,0.07)", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>📋 Summary saved</span>
-                        <button onClick={openSummaryModal}
-                          style={{ fontSize: 12, color: "#C47A2E", background: "#fff", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
-                          View / Edit →
-                        </button>
-                      </div>
-                    )}
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       {/* Image upload */}
@@ -1885,7 +1908,31 @@ const AdminDashboard = () => {
                         Send
                       </button>
                     </div>
-                  </>
+                  </div>
+                  {/* Summary sidebar — only for concierge, not support */}
+                  {currentPinned.length > 0 && activeDropdown !== "chatsupport" && (
+                    <div style={{ width: 230, borderLeft: "1px solid rgba(196,122,46,0.15)", display: "flex", flexDirection: "column", background: "#fffbf5", flexShrink: 0 }}>
+                      <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", fontWeight: 700, fontSize: 13, color: "#2C1A0E", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span>📋 Summary</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>{currentPinned.length} pinned</span>
+                      </div>
+                      <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+                        {currentPinned.map((m, i) => (
+                          <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a", padding: "7px 10px", background: "#fff", borderRadius: 9, border: "1px solid rgba(196,122,46,0.12)", display: "flex", gap: 6, alignItems: "flex-start" }}>
+                            <span style={{ color: "#C47A2E", flexShrink: 0, marginTop: 1 }}>•</span>
+                            <span style={{ flex: 1, lineHeight: 1.45, wordBreak: "break-word" }}>{m.content}</span>
+                            <button onClick={() => unpinMessage(m.content)}
+                              style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, flexShrink: 0 }}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={handleSummaryDone}
+                        style={{ margin: "10px 12px 12px", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Done ✓
+                      </button>
+                    </div>
+                  )}
+                  </div>
                 ) : (
                   <div className="flex-1 flex items-center justify-center text-gray-400 text-sm sm:text-base">
                     Select a user to start chatting
@@ -1942,7 +1989,8 @@ const AdminDashboard = () => {
               {/* RIGHT - Chat Window */}
               <div className="flex-1 flex flex-col">
                 {selectedChat ? (
-                  <>
+                  <div style={{ display: "flex", flex: 1, overflow: "hidden", height: "100%" }}>
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                     <div className="p-3 sm:p-4 border-b border-[#F1E1A8] flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
                         <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
@@ -1954,22 +2002,9 @@ const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span className="text-xs sm:text-sm text-gray-500">
-                          {formatTimeIST(selectedChat.updatedAt)}
-                        </span>
-                        <button
-                          onClick={openSummaryModal}
-                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: currentPinned.length > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff", color: currentPinned.length > 0 ? "#fff" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                        >
-                          📋 Build Summary
-                          {currentPinned.length > 0 && (
-                            <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: 100, padding: "1px 7px", fontSize: 11, fontWeight: 800 }}>
-                              {currentPinned.length} pinned
-                            </span>
-                          )}
-                        </button>
-                      </div>
+                      <span className="text-xs sm:text-sm text-gray-500">
+                        {formatTimeIST(selectedChat.updatedAt)}
+                      </span>
                     </div>
 
                     {/* Event details strip */}
@@ -1993,7 +2028,7 @@ const AdminDashboard = () => {
                             const isPinned = currentPinned.some(m => m.content === msgText);
                             return (
                               <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
-                                {isUser && activeDropdown !== "chatsupport" && (
+                                {activeDropdown !== "chatsupport" && (
                                   <button
                                     onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
                                     title={isPinned ? "Unpin" : "Pin this message"}
@@ -2019,17 +2054,6 @@ const AdminDashboard = () => {
                         </div>
                       )}
                     </div>
-
-                    {/* Saved summary strip */}
-                    {selectedChat.bookingSummary && activeDropdown !== "chatsupport" && (
-                      <div style={{ background: "rgba(196,122,46,0.07)", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>📋 Summary saved</span>
-                        <button onClick={openSummaryModal}
-                          style={{ fontSize: 12, color: "#C47A2E", background: "#fff", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
-                          View / Edit →
-                        </button>
-                      </div>
-                    )}
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       {/* Image upload */}
@@ -2080,7 +2104,31 @@ const AdminDashboard = () => {
                         Send
                       </button>
                     </div>
-                  </>
+                  </div>
+                  {/* Summary sidebar — only for concierge, not support */}
+                  {currentPinned.length > 0 && activeDropdown !== "chatsupport" && (
+                    <div style={{ width: 230, borderLeft: "1px solid rgba(196,122,46,0.15)", display: "flex", flexDirection: "column", background: "#fffbf5", flexShrink: 0 }}>
+                      <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", fontWeight: 700, fontSize: 13, color: "#2C1A0E", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span>📋 Summary</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>{currentPinned.length} pinned</span>
+                      </div>
+                      <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+                        {currentPinned.map((m, i) => (
+                          <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a", padding: "7px 10px", background: "#fff", borderRadius: 9, border: "1px solid rgba(196,122,46,0.12)", display: "flex", gap: 6, alignItems: "flex-start" }}>
+                            <span style={{ color: "#C47A2E", flexShrink: 0, marginTop: 1 }}>•</span>
+                            <span style={{ flex: 1, lineHeight: 1.45, wordBreak: "break-word" }}>{m.content}</span>
+                            <button onClick={() => unpinMessage(m.content)}
+                              style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, flexShrink: 0 }}>✕</button>
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={handleSummaryDone}
+                        style={{ margin: "10px 12px 12px", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Done ✓
+                      </button>
+                    </div>
+                  )}
+                  </div>
                 ) : (
                   <div className="flex-1 flex items-center justify-center text-gray-400 text-sm sm:text-base">
                     Select a user to start chatting

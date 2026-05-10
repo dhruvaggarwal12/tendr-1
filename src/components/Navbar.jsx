@@ -462,10 +462,11 @@ const Navbar = ({
                           {/* Per-category counts */}
                           <div style={{ padding: "2px 8px 6px" }}>
                             {[
-                              { label: "Chat Requests", count: adminCounts?.chatRequests, section: "chatrequests", color: "#b45309" },
-                              { label: "Vendor Apps",   count: adminCounts?.vendorApps,   section: "vendors",      color: "#7c3aed" },
-                              { label: "Support",       count: adminCounts?.supportChats,  section: "chatsupport",  color: "#0369a1" },
-                              { label: "Concierge",     count: adminCounts?.conciergeChats,section: "chatconcierge",color: "#0369a1" },
+                              { label: "Chat Requests",   count: adminCounts?.chatRequests,  section: "chatrequests", color: "#b45309" },
+                              { label: "Vendor Apps",     count: adminCounts?.vendorApps,    section: "vendors",      color: "#7c3aed" },
+                              { label: "Support",         count: adminCounts?.supportChats,  section: "chatsupport",  color: "#0369a1" },
+                              { label: "Concierge",       count: adminCounts?.conciergeChats,section: "chatconcierge",color: "#0369a1" },
+                              { label: "Change Requests", count: adminCounts?.changeRequests, section: "bookings",    color: "#c0392b" },
                             ].map(({ label, count, section, color }) => (
                               <button key={label}
                                 onClick={() => { navigate(`/AdminDashboard?section=${section}`); setShowProfileMenu(false); }}
