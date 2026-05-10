@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
 const font = "'Outfit', sans-serif";
@@ -98,6 +99,8 @@ const buildPie = (categories) => {
 };
 
 export default function BudgetAllocator() {
+  const location = useLocation();
+  const routeEventType = location.state?.eventType; // passed from BudgetPicker
   const [eventKey, setEventKey] = useState("birthday");
   const [totalBudget, setTotalBudget] = useState(50000);
   const [categories, setCategories] = useState([]);
@@ -106,13 +109,15 @@ export default function BudgetAllocator() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem("tendr_budget_v2");
-      if (raw) {
+      if (raw && !routeEventType) {
         const d = JSON.parse(raw);
         setEventKey(d.eventKey || "birthday");
         setTotalBudget(d.totalBudget || 50000);
         setCategories(d.categories || initCategories(d.eventKey || "birthday", d.totalBudget || 50000));
       } else {
-        setCategories(initCategories("birthday", 50000));
+        const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
+        setEventKey(key);
+        setCategories(initCategories(key, 50000));
       }
     } catch { setCategories(initCategories("birthday", 50000)); }
     setLoaded(true);

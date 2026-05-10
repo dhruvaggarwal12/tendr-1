@@ -10,9 +10,23 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const { user, token } = useSelector((s) => s.auth);
   const [open, setOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
-  const [activeVendorChat, setActiveVendorChat] = useState(null); // { _id, vendorName }
+  const [activeVendorChat, setActiveVendorChat] = useState(null);
   const [vendorChats, setVendorChats] = useState([]);
-  const [badgeVisible, setBadgeVisible] = useState(true);
+  // Persist seen conversation IDs so badge stays gone after viewing
+  const [seenIds, setSeenIds] = useState(() => {
+    try { return new Set(JSON.parse(localStorage.getItem("chatBadgeSeenIds") || "[]")); }
+    catch { return new Set(); }
+  });
+
+  const markAllSeen = (chats) => {
+    setSeenIds(prev => {
+      const next = new Set([...prev, ...chats.map(c => c._id)]);
+      localStorage.setItem("chatBadgeSeenIds", JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  const unseenCount = vendorChats.filter(c => !seenIds.has(c._id)).length;
   const [path, setPath] = useState(() => router.state.location.pathname);
 
   // Track route changes in the SPA
@@ -52,6 +66,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleVendorChatClick = (convo) => {
     setOpen(false);
+    markAllSeen([convo]); // this one has been opened — remove from badge
     setActiveVendorChat({ _id: convo._id, vendorName: convo.vendorName || "Vendor" });
   };
 
@@ -63,7 +78,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const handleOpen = () => {
     if (!open) {
       fetchVendorChats();
-      setBadgeVisible(false); // user opened popup — hide badge until next refresh
+      markAllSeen(vendorChats); // mark current chats as seen → badge disappears
     }
     setOpen(!open);
   };
@@ -117,7 +132,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         Chat
-        {vendorChats.length > 0 && badgeVisible && (
+        {unseenCount > 0 && (
           <span style={{
             position: "absolute",
             top: -4,
@@ -134,7 +149,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             justifyContent: "center",
             border: "2px solid #fff",
           }}>
-            {vendorChats.length}
+            {unseenCount}
           </span>
         )}
       </button>

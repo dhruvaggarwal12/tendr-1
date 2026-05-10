@@ -313,7 +313,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/prebuilt-checklist',
-    element: <PrebuiltCheckbox />,
+    element: <Checkbox />,
     errorElement: <ErrorPage />
   },
   {
