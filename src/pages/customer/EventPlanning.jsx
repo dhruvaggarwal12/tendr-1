@@ -143,7 +143,6 @@ const EventPlanning = () => {
         "Get-together",
         "Birthday",
         "Office Party",
-        "Concert",
         "Anniversary",
         "Pre Wedding",
         "Rituals",
