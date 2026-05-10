@@ -1003,7 +1003,7 @@ const AdminDashboard = () => {
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                   {vendorApplications.map((app) => {
                     // ── Replace this URL when you have the Google Form link ──
-                    const GOOGLE_FORM_URL = "https://forms.google.com/your-form-link-here";
+                    const GOOGLE_FORM_URL = "https://forms.gle/9DLeMdJiMdLNsTmbA";
 
                     const statusStyle = {
                       pending:    { bg: "#fffbeb", color: "#b45309",  border: "#fde68a",  label: "Pending" },
