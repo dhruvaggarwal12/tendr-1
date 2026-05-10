@@ -221,15 +221,38 @@ export default function CustomerDashboard() {
                           Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}
                         </div>
                       </div>
-                      {convo.chatApproved && (
-                        <button
-                          onClick={() => navigate("/chat", { state: { vendor: convo.vendorId || { _id: convo.vendorId, name: convo.vendorName, approved: true } } })}
-                          style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
-                        >
-                          Open Chat →
-                        </button>
-                      )}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
+                        {convo.chatApproved && (
+                          <button
+                            onClick={() => navigate("/chat", { state: { vendor: convo.vendorId || { _id: convo.vendorId, name: convo.vendorName, approved: true } } })}
+                            style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+                          >
+                            Open Chat →
+                          </button>
+                        )}
+                      </div>
                     </div>
+
+                  {/* Booking summary card — inside the card, shown when admin compiled a summary */}
+                  {convo.bookingSummary && (
+                    <div style={{ marginTop: 14, background: "rgba(196,122,46,0.05)", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.2)", padding: "14px 18px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                        <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>📋 Booking Summary from Tendr</span>
+                        {convo.bookingSummaryAt && (
+                          <span style={{ fontSize: 11, color: "#bbb" }}>{new Date(convo.bookingSummaryAt).toLocaleDateString("en-IN")}</span>
+                        )}
+                      </div>
+                      <pre style={{ fontSize: 12.5, color: "#5a3a1a", fontFamily: font, whiteSpace: "pre-wrap", wordBreak: "break-word", margin: "0 0 12px", lineHeight: 1.6, maxHeight: 180, overflowY: "auto" }}>
+                        {convo.bookingSummary}
+                      </pre>
+                      <button
+                        onClick={() => navigate("/booking/review", { state: { fromSummary: true, conversationId: convo._id, summary: convo.bookingSummary } })}
+                        style={{ padding: "8px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
+                      >
+                        Review & Pay →
+                      </button>
+                    </div>
+                  )}
                   </div>
                 ))}
               </div>

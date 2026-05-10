@@ -288,6 +288,10 @@ const AdminDashboard = () => {
   const [importResult, setImportResult] = useState(null);
   const [importing, setImporting] = useState(false);
   const [registeringAppId, setRegisteringAppId] = useState(null);
+  // Chat summary feature
+  const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const [summaryDraft, setSummaryDraft] = useState("");
 
   const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
 
@@ -414,6 +418,81 @@ const AdminDashboard = () => {
     return () => { socket.disconnect(); adminSocketRef.current = null; };
   }, [token, user]);
 
+  // Pin a user message during chat
+  const pinMessage = (content) => {
+    if (!selectedChat?._id || !content?.trim()) return;
+    const cid = selectedChat._id;
+    setPinnedMsgs(prev => {
+      if (prev.find(m => m.content === content && m.conversationId === cid)) return prev;
+      return [...prev, { content, conversationId: cid }];
+    });
+    fetch(`${BASE_URL}/admin/conversations/${cid}/pin-message`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      credentials: 'include',
+      body: JSON.stringify({ content }),
+    }).catch(() => {});
+  };
+
+  const unpinMessage = (content) => {
+    if (!selectedChat?._id) return;
+    const cid = selectedChat._id;
+    setPinnedMsgs(prev => prev.filter(m => !(m.content === content && m.conversationId === cid)));
+  };
+
+  const currentPinned = pinnedMsgs.filter(m => m.conversationId === selectedChat?._id);
+
+  const buildSummaryDraft = () => {
+    const chat = selectedChat;
+    if (!chat) return "";
+    const name = chat.customerId?.name || "Customer";
+    const ed   = chat.eventDetails   || {};
+    const pinned = currentPinned;
+    const lines = [
+      `Hi ${name}! 👋`,
+      ``,
+      `Here's your *Tendr Event Summary* 📋`,
+      ``,
+      `*Event Details*`,
+      ed.eventType && `  • Type: ${ed.eventType}`,
+      ed.date      && `  • Date: ${ed.date}`,
+      ed.location  && `  • Location: ${ed.location}`,
+      ed.guests    && `  • Guests: ${ed.guests}`,
+      ed.budget    && `  • Budget: ${ed.budget}`,
+      ``,
+      `*Requirements & Confirmations* ✅`,
+      ...(pinned.length ? pinned.map(m => `  • ${m.content}`) : [`  • (No items pinned yet)`]),
+      ``,
+      `*Next Step:* Please proceed to review and complete your payment to confirm the booking.`,
+      ``,
+      `For any questions, feel free to reach out on WhatsApp.`,
+      ``,
+      `— Team Tendr 🌟`,
+    ].filter(Boolean);
+    return lines.join('\n');
+  };
+
+  const openSummaryModal = () => {
+    setSummaryDraft(buildSummaryDraft());
+    setShowSummaryModal(true);
+  };
+
+  const saveSummary = () => {
+    if (!selectedChat?._id) return;
+    fetch(`${BASE_URL}/admin/conversations/${selectedChat._id}/summary`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      credentials: 'include',
+      body: JSON.stringify({ bookingSummary: summaryDraft }),
+    }).catch(() => {});
+  };
+
+  const summaryWhatsAppUrl = () => {
+    const phone = (selectedChat?.customerId?.phoneNumber || '').replace(/[^0-9]/g, '');
+    if (!phone) return null;
+    return `https://wa.me/91${phone}?text=${encodeURIComponent(summaryDraft)}`;
+  };
+
   if (!token || !user) return null;
   if (!user.isAdmin) return (
     <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit', sans-serif", background: "#F8F4EF" }}>
@@ -426,6 +505,7 @@ const AdminDashboard = () => {
   );
 
   return (
+    <>
     <div className="flex flex-col h-screen">
       {/* Navbar */}
       <div className="navbar bg-white border-b-2 border-[#CCAB4A]">
@@ -1630,9 +1710,22 @@ const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <span className="text-xs sm:text-sm text-gray-500">
-                        {formatTimeIST(selectedChat.updatedAt)}
-                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span className="text-xs sm:text-sm text-gray-500">
+                          {formatTimeIST(selectedChat.updatedAt)}
+                        </span>
+                        <button
+                          onClick={openSummaryModal}
+                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: currentPinned.length > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff", color: currentPinned.length > 0 ? "#fff" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                        >
+                          📋 Build Summary
+                          {currentPinned.length > 0 && (
+                            <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: 100, padding: "1px 7px", fontSize: 11, fontWeight: 800 }}>
+                              {currentPinned.length} pinned
+                            </span>
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     {/* Event details strip */}
@@ -1650,27 +1743,35 @@ const AdminDashboard = () => {
                     <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">
                       {currentConversation && currentConversation.length > 0 && (
                         <div className="flex flex-col space-y-2 sm:space-y-3">
-                          {currentConversation.map((msg, index) => (
-                            <div key={index} style={{
-                              alignSelf: msg.sender === "user" ? "flex-start" : "flex-end",
-                              background: msg.sender === "user" ? "#f3f4f6" : "#d08f4e",
-                              color: msg.sender === "user" ? "#1f2937" : "#ffffff",
-                              padding: "8px 14px",
-                              borderRadius: 14,
-                              maxWidth: "75%",
-                              fontSize: 14,
-                              fontFamily: "'Outfit', sans-serif",
-                              wordBreak: "break-word",
-                              lineHeight: 1.5,
-                            }}>
-                              <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
-                                {msg.sender === "user" ? "Customer" : "Admin"}
-                              </span>
-                              {(msg.content || msg.text || "").startsWith("[img:") ? (
-                                <img src={(msg.content || msg.text).replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
-                              ) : (msg.content || msg.text || "")}
-                            </div>
-                          ))}
+                          {currentConversation.map((msg, index) => {
+                            const msgText = msg.content || msg.text || "";
+                            const isUser = msg.sender === "user";
+                            const isPinned = currentPinned.some(m => m.content === msgText);
+                            return (
+                              <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
+                                {isUser && (
+                                  <button
+                                    onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
+                                    title={isPinned ? "Unpin" : "Pin this message"}
+                                    style={{ background: isPinned ? "rgba(196,122,46,0.15)" : "none", border: "none", cursor: "pointer", fontSize: 13, color: isPinned ? "#C47A2E" : "#ddd", padding: "4px 5px", borderRadius: 6, flexShrink: 0, marginTop: 4, lineHeight: 1 }}
+                                  >📌</button>
+                                )}
+                                <div style={{
+                                  background: isUser ? "#f3f4f6" : "#d08f4e",
+                                  color: isUser ? "#1f2937" : "#ffffff",
+                                  padding: "8px 14px", borderRadius: 14, maxWidth: "75%",
+                                  fontSize: 14, fontFamily: "'Outfit', sans-serif", wordBreak: "break-word", lineHeight: 1.5,
+                                }}>
+                                  <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
+                                    {isUser ? "Customer" : "Admin"}
+                                  </span>
+                                  {msgText.startsWith("[img:") ? (
+                                    <img src={msgText.replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
+                                  ) : msgText}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -1793,9 +1894,22 @@ const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <span className="text-xs sm:text-sm text-gray-500">
-                        {formatTimeIST(selectedChat.updatedAt)}
-                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span className="text-xs sm:text-sm text-gray-500">
+                          {formatTimeIST(selectedChat.updatedAt)}
+                        </span>
+                        <button
+                          onClick={openSummaryModal}
+                          style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: currentPinned.length > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff", color: currentPinned.length > 0 ? "#fff" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                        >
+                          📋 Build Summary
+                          {currentPinned.length > 0 && (
+                            <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: 100, padding: "1px 7px", fontSize: 11, fontWeight: 800 }}>
+                              {currentPinned.length} pinned
+                            </span>
+                          )}
+                        </button>
+                      </div>
                     </div>
 
                     {/* Event details strip */}
@@ -1813,27 +1927,35 @@ const AdminDashboard = () => {
                     <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">
                       {currentConversation && currentConversation.length > 0 && (
                         <div className="flex flex-col space-y-2 sm:space-y-3">
-                          {currentConversation.map((msg, index) => (
-                            <div key={index} style={{
-                              alignSelf: msg.sender === "user" ? "flex-start" : "flex-end",
-                              background: msg.sender === "user" ? "#f3f4f6" : "#d08f4e",
-                              color: msg.sender === "user" ? "#1f2937" : "#ffffff",
-                              padding: "8px 14px",
-                              borderRadius: 14,
-                              maxWidth: "75%",
-                              fontSize: 14,
-                              fontFamily: "'Outfit', sans-serif",
-                              wordBreak: "break-word",
-                              lineHeight: 1.5,
-                            }}>
-                              <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
-                                {msg.sender === "user" ? "Customer" : "Admin"}
-                              </span>
-                              {(msg.content || msg.text || "").startsWith("[img:") ? (
-                                <img src={(msg.content || msg.text).replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
-                              ) : (msg.content || msg.text || "")}
-                            </div>
-                          ))}
+                          {currentConversation.map((msg, index) => {
+                            const msgText = msg.content || msg.text || "";
+                            const isUser = msg.sender === "user";
+                            const isPinned = currentPinned.some(m => m.content === msgText);
+                            return (
+                              <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
+                                {isUser && (
+                                  <button
+                                    onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
+                                    title={isPinned ? "Unpin" : "Pin this message"}
+                                    style={{ background: isPinned ? "rgba(196,122,46,0.15)" : "none", border: "none", cursor: "pointer", fontSize: 13, color: isPinned ? "#C47A2E" : "#ddd", padding: "4px 5px", borderRadius: 6, flexShrink: 0, marginTop: 4, lineHeight: 1 }}
+                                  >📌</button>
+                                )}
+                                <div style={{
+                                  background: isUser ? "#f3f4f6" : "#d08f4e",
+                                  color: isUser ? "#1f2937" : "#ffffff",
+                                  padding: "8px 14px", borderRadius: 14, maxWidth: "75%",
+                                  fontSize: 14, fontFamily: "'Outfit', sans-serif", wordBreak: "break-word", lineHeight: 1.5,
+                                }}>
+                                  <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
+                                    {isUser ? "Customer" : "Admin"}
+                                  </span>
+                                  {msgText.startsWith("[img:") ? (
+                                    <img src={msgText.replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
+                                  ) : msgText}
+                                </div>
+                              </div>
+                            );
+                          })}
                         </div>
                       )}
                     </div>
@@ -1899,6 +2021,89 @@ const AdminDashboard = () => {
         )}
       </div>
     </div>
+    {/* ── Booking Summary Modal ── */}
+    {showSummaryModal && selectedChat && (
+      <>
+        <div onClick={() => setShowSummaryModal(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 2000, backdropFilter: "blur(3px)" }} />
+        <div style={{
+          position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+          background: "#FFFCF5", borderRadius: 20, boxShadow: "0 24px 64px rgba(139,69,19,0.2)",
+          border: "1.5px solid rgba(196,122,46,0.2)", zIndex: 2001,
+          width: 540, maxWidth: "95vw", maxHeight: "88vh", display: "flex", flexDirection: "column",
+          fontFamily: "'Outfit', sans-serif",
+        }}>
+          {/* Header */}
+          <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>📋 Booking Summary</h3>
+              <p style={{ fontSize: 12, color: "#9B7450", margin: "4px 0 0" }}>
+                {currentPinned.length} pinned message{currentPinned.length !== 1 ? "s" : ""} · for {selectedChat.customerId?.name}
+              </p>
+            </div>
+            <div style={{ display: "flex", gap: 8 }}>
+              <button onClick={() => setSummaryDraft(buildSummaryDraft())}
+                style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                ↺ Rebuild
+              </button>
+              <button onClick={() => setShowSummaryModal(false)}
+                style={{ width: 30, height: 30, borderRadius: "50%", border: "none", background: "#f3f4f6", cursor: "pointer", fontSize: 16 }}>✕</button>
+            </div>
+          </div>
+
+          {/* Pinned messages list */}
+          {currentPinned.length > 0 && (
+            <div style={{ padding: "12px 24px 0", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>Pinned Messages</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 4, marginBottom: 12 }}>
+                {currentPinned.map((m, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(196,122,46,0.05)", borderRadius: 8, padding: "6px 10px" }}>
+                    <span style={{ color: "#C47A2E", fontSize: 12, flexShrink: 0, marginTop: 1 }}>📌</span>
+                    <span style={{ fontSize: 13, color: "#2C1A0E", flex: 1 }}>{m.content}</span>
+                    <button onClick={() => unpinMessage(m.content)}
+                      style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, flexShrink: 0 }}>✕</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Editable summary text */}
+          <div style={{ flex: 1, padding: "14px 24px", overflowY: "auto" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>WhatsApp Message Preview</p>
+            <textarea
+              value={summaryDraft}
+              onChange={e => setSummaryDraft(e.target.value)}
+              rows={14}
+              style={{ width: "100%", fontFamily: "'Outfit', sans-serif", fontSize: 13, border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 12, padding: "12px 14px", color: "#2C1A0E", outline: "none", resize: "vertical", lineHeight: 1.6, boxSizing: "border-box", background: "#fff" }}
+            />
+          </div>
+
+          {/* Actions */}
+          <div style={{ padding: "14px 24px 18px", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {(() => {
+              const waUrl = summaryWhatsAppUrl();
+              return waUrl ? (
+                <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={saveSummary}
+                  style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", borderRadius: 12, background: "#25D366", color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(37,211,102,0.3)" }}>
+                  📱 Send on WhatsApp
+                </a>
+              ) : (
+                <div style={{ flex: 1, padding: "12px", borderRadius: 12, background: "#f3f4f6", color: "#bbb", fontSize: 14, fontWeight: 600, textAlign: "center" }}>
+                  No phone number on record
+                </div>
+              );
+            })()}
+            <button onClick={() => { saveSummary(); setShowSummaryModal(false); }}
+              style={{ padding: "12px 20px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+              Save Summary
+            </button>
+          </div>
+        </div>
+      </>
+    )}
+    </>
   );
 };
 
