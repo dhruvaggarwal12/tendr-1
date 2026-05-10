@@ -287,6 +287,7 @@ const AdminDashboard = () => {
   const [bookingTab, setBookingTab] = useState("All");
   const [importResult, setImportResult] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [registeringAppId, setRegisteringAppId] = useState(null);
 
   const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
 
@@ -1083,7 +1084,7 @@ const AdminDashboard = () => {
                             </>
                           )}
 
-                          {/* STEP 3 — approved: WhatsApp approval message + mark registered */}
+                          {/* STEP 3 — approved: WhatsApp approval message + mark registered with service type */}
                           {app.status === "approved" && (
                             <>
                               <a
@@ -1093,9 +1094,49 @@ const AdminDashboard = () => {
                               >
                                 📱 Send Approval on WhatsApp
                               </a>
-                              <button onClick={() => updateStatus("registered")} style={btnStyle("#15803d", "#fff", null)}>
-                                ✓ Mark as Registered
-                              </button>
+
+                              {registeringAppId === app._id ? (
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "8px 10px", background: "#f0fdf4", borderRadius: 10, border: "1px solid #bbf7d0" }}>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: "#15803d" }}>Select service category:</span>
+                                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                    {["DJ", "Caterer", "Decorator", "Photographer"].map((type) => (
+                                      <button
+                                        key={type}
+                                        onClick={() => {
+                                          fetch(`${BASE_URL}/vendor-applications/${app._id}/status`, {
+                                            method: "PATCH",
+                                            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                            credentials: "include",
+                                            body: JSON.stringify({ status: "registered", serviceType: type }),
+                                          })
+                                            .then((r) => { if (r.ok) {
+                                              setVendorApplications((prev) => prev.map((a) => a._id === app._id ? { ...a, status: "registered", serviceType: type } : a));
+                                              setLiveStats((prev) => prev ? {
+                                                ...prev,
+                                                vendors: {
+                                                  ...prev.vendors,
+                                                  total: (prev.vendors?.total ?? 0) + 1,
+                                                  approved: (prev.vendors?.approved ?? 0) + 1,
+                                                },
+                                                applications: { ...prev.applications, registered: (prev.applications?.registered ?? 0) + 1 },
+                                              } : prev);
+                                            }})
+                                            .catch(() => {})
+                                            .finally(() => setRegisteringAppId(null));
+                                        }}
+                                        style={btnStyle("linear-gradient(135deg,#C47A2E,#CCAB4A)", "#fff", null)}
+                                      >
+                                        {type}
+                                      </button>
+                                    ))}
+                                    <button onClick={() => setRegisteringAppId(null)} style={btnStyle("#f3f4f6", "#6b7280", "#e5e7eb")}>Cancel</button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <button onClick={() => setRegisteringAppId(app._id)} style={btnStyle("#15803d", "#fff", null)}>
+                                  ✓ Mark as Registered
+                                </button>
+                              )}
                             </>
                           )}
 

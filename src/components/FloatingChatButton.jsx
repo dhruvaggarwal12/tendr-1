@@ -10,7 +10,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const { user, token } = useSelector((s) => s.auth);
   const [open, setOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
+  const [activeVendorChat, setActiveVendorChat] = useState(null); // { _id, vendorName }
   const [vendorChats, setVendorChats] = useState([]);
+  const [badgeVisible, setBadgeVisible] = useState(true);
   const [path, setPath] = useState(() => router.state.location.pathname);
 
   // Track route changes in the SPA
@@ -50,16 +52,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleVendorChatClick = (convo) => {
     setOpen(false);
-    router.navigate("/chat", {
-      state: {
-        vendor: {
-          _id: convo.vendorId?._id || convo.vendorId,
-          name: convo.vendorName || convo.vendorId?.name || "Vendor",
-          approved: true,
-        },
-        from: "vendor",
-      },
-    });
+    setActiveVendorChat({ _id: convo._id, vendorName: convo.vendorName || "Vendor" });
   };
 
   const handleBrowseVendors = () => {
@@ -68,13 +61,23 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   };
 
   const handleOpen = () => {
-    if (!open) fetchVendorChats(); // refresh on every open
+    if (!open) {
+      fetchVendorChats();
+      setBadgeVisible(false); // user opened popup — hide badge until next refresh
+    }
     setOpen(!open);
   };
 
   return (
     <>
       {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
+      {activeVendorChat && (
+        <MiniChatWidget
+          conversationId={activeVendorChat._id}
+          vendorName={activeVendorChat.vendorName}
+          onClose={() => setActiveVendorChat(null)}
+        />
+      )}
 
       {/* Floating button */}
       <button
@@ -114,7 +117,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         Chat
-        {vendorChats.length > 0 && (
+        {vendorChats.length > 0 && badgeVisible && (
           <span style={{
             position: "absolute",
             top: -4,
