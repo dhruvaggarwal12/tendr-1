@@ -418,6 +418,16 @@ const AdminDashboard = () => {
     return () => { socket.disconnect(); adminSocketRef.current = null; };
   }, [token, user]);
 
+  // Sync pinned messages from selectedChat when chat changes
+  useEffect(() => {
+    if (!selectedChat?._id) { setPinnedMsgs([]); return; }
+    const existing = (selectedChat.pinnedMessages || []).map(m => ({
+      content: m.content,
+      conversationId: selectedChat._id,
+    }));
+    setPinnedMsgs(existing);
+  }, [selectedChat?._id]);
+
   // Pin a user message during chat
   const pinMessage = (content) => {
     if (!selectedChat?._id || !content?.trim()) return;
@@ -875,17 +885,32 @@ const AdminDashboard = () => {
                               </span>
                             </td>
                             <td style={{ padding: "10px 14px" }}>
-                              {(() => {
-                                const waUrl = buildWhatsAppSummary(plan);
-                                return waUrl ? (
-                                  <a href={waUrl} target="_blank" rel="noopener noreferrer"
-                                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                    📱 Send Summary
-                                  </a>
-                                ) : (
-                                  <span style={{ fontSize: 11, color: "#bbb" }}>No phone</span>
-                                );
-                              })()}
+                              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                {(() => {
+                                  const waUrl = buildWhatsAppSummary(plan);
+                                  return waUrl ? (
+                                    <a href={waUrl} target="_blank" rel="noopener noreferrer"
+                                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                      📱 Send Summary
+                                    </a>
+                                  ) : (
+                                    <span style={{ fontSize: 11, color: "#bbb" }}>No phone</span>
+                                  );
+                                })()}
+                                {(() => {
+                                  // Show if any vendor/concierge conversation for this customer has a saved summary
+                                  const convoWithSummary = [...(recentChats || []), ...(adminChats || [])].find(
+                                    c => c.customerId?._id === plan.customerId?._id && c.bookingSummary
+                                  );
+                                  return convoWithSummary ? (
+                                    <button
+                                      onClick={() => { setSelectedChat(convoWithSummary); setSummaryDraft(convoWithSummary.bookingSummary); setShowSummaryModal(true); }}
+                                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                      📋 View Summary
+                                    </button>
+                                  ) : null;
+                                })()}
+                              </div>
                             </td>
                           </tr>
                         );
@@ -1574,24 +1599,48 @@ const AdminDashboard = () => {
                     {/* Messages */}
                     {currentConversation && currentConversation.length > 0 && (
                       <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">
-                        {currentConversation.map((msg, index) => (
-                          <div key={index} style={{
-                            alignSelf: msg.sender === "user" ? "flex-start" : "flex-end",
-                            background: msg.sender === "user" ? "#f3f4f6" : "#d08f4e",
-                            color: msg.sender === "user" ? "#1f2937" : "#ffffff",
-                            padding: "8px 14px", borderRadius: 14, maxWidth: "75%",
-                            fontSize: 14, fontFamily: "'Outfit', sans-serif", wordBreak: "break-word", lineHeight: 1.5,
-                          }}>
-                            <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
-                              {msg.sender === "user" ? "Customer" : "Admin"}
-                            </span>
-                            {msg.content || msg.text || ""}
-                          </div>
-                        ))}
+                        {currentConversation.map((msg, index) => {
+                          const msgText = msg.content || msg.text || "";
+                          const isUser = msg.sender === "user";
+                          const isPinned = currentPinned.some(m => m.content === msgText);
+                          return (
+                            <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
+                              {isUser && (
+                                <button onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
+                                  title={isPinned ? "Unpin" : "Pin this message"}
+                                  style={{ background: isPinned ? "rgba(196,122,46,0.15)" : "none", border: "none", cursor: "pointer", fontSize: 13, color: isPinned ? "#C47A2E" : "#ddd", padding: "4px 5px", borderRadius: 6, flexShrink: 0, marginTop: 4, lineHeight: 1 }}>
+                                  📌
+                                </button>
+                              )}
+                              <div style={{
+                                background: isUser ? "#f3f4f6" : "#d08f4e",
+                                color: isUser ? "#1f2937" : "#ffffff",
+                                padding: "8px 14px", borderRadius: 14, maxWidth: "75%",
+                                fontSize: 14, fontFamily: "'Outfit', sans-serif", wordBreak: "break-word", lineHeight: 1.5,
+                              }}>
+                                <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
+                                  {isUser ? "Customer" : "Admin"}
+                                </span>
+                                {msgText}
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
 
                     {/* Input Box */}
+                    {/* Saved summary strip */}
+                    {selectedChat.bookingSummary && activeDropdown !== "chatsupport" && (
+                      <div style={{ background: "rgba(196,122,46,0.07)", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>📋 Summary saved</span>
+                        <button onClick={openSummaryModal}
+                          style={{ fontSize: 12, color: "#C47A2E", background: "#fff", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
+                          View / Edit →
+                        </button>
+                      </div>
+                    )}
+
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       {/* Image upload */}
                       <label style={{ cursor: "pointer", flexShrink: 0, width: 36, height: 36, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb" }}>
@@ -1749,7 +1798,7 @@ const AdminDashboard = () => {
                             const isPinned = currentPinned.some(m => m.content === msgText);
                             return (
                               <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
-                                {isUser && (
+                                {isUser && activeDropdown !== "chatsupport" && (
                                   <button
                                     onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
                                     title={isPinned ? "Unpin" : "Pin this message"}
@@ -1775,6 +1824,17 @@ const AdminDashboard = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Saved summary strip */}
+                    {selectedChat.bookingSummary && activeDropdown !== "chatsupport" && (
+                      <div style={{ background: "rgba(196,122,46,0.07)", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>📋 Summary saved</span>
+                        <button onClick={openSummaryModal}
+                          style={{ fontSize: 12, color: "#C47A2E", background: "#fff", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
+                          View / Edit →
+                        </button>
+                      </div>
+                    )}
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       {/* Image upload */}
@@ -1933,7 +1993,7 @@ const AdminDashboard = () => {
                             const isPinned = currentPinned.some(m => m.content === msgText);
                             return (
                               <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
-                                {isUser && (
+                                {isUser && activeDropdown !== "chatsupport" && (
                                   <button
                                     onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
                                     title={isPinned ? "Unpin" : "Pin this message"}
@@ -1959,6 +2019,17 @@ const AdminDashboard = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Saved summary strip */}
+                    {selectedChat.bookingSummary && activeDropdown !== "chatsupport" && (
+                      <div style={{ background: "rgba(196,122,46,0.07)", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>📋 Summary saved</span>
+                        <button onClick={openSummaryModal}
+                          style={{ fontSize: 12, color: "#C47A2E", background: "#fff", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 7, padding: "4px 12px", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontWeight: 600 }}>
+                          View / Edit →
+                        </button>
+                      </div>
+                    )}
 
                     <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
                       {/* Image upload */}
