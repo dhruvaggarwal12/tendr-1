@@ -338,6 +338,16 @@ const VendorList = () => {
             </div>
           </div>
 
+          {/* What to do next hint */}
+          {token && (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
+              <span style={{ fontSize: 14 }}>💡</span>
+              <span style={{ fontSize: 13, color: "#7A5535" }}>
+                <b>How to proceed:</b> Click <b>Quick View</b> to preview a vendor, then <b>Save Vendor</b> to shortlist them. Once saved, open a chat to confirm pricing.
+              </span>
+            </div>
+          )}
+
           {/* Auth gate — blurs vendor list if not signed in */}
           <div style={{ position: "relative" }}>
             <VendorList_ListingPage

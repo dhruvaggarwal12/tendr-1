@@ -5,6 +5,7 @@ import ListingsNav from "../../components/ListingsNav";
 import CompareModal from "../../components/CompareModal";
 import Navbar from "../../components/Navbar";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
+import JourneyProgress from "../../components/JourneyProgress";
 
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -205,6 +206,7 @@ const VendorDetailsPage = () => {
       <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
         <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
       </nav>
+      <JourneyProgress active="Browse" />
       {/* Task bar */}
       <div className="border-b-[1px] border-[#CCAB4A]">
         <ListingsNav

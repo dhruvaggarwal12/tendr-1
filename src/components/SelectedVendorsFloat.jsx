@@ -13,6 +13,8 @@ export default function SelectedVendorsFloat() {
   const { token } = useSelector((state) => state.auth);
   const [open, setOpen] = useState(false);
 
+  // Now shown in Navbar below profile icon — hide the floating button
+  return null;
   if (!token || compareSelected.length === 0) return null;
 
   const grouped = compareSelected.reduce((acc, v) => {

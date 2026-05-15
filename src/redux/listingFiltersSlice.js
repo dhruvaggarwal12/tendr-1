@@ -1,6 +1,9 @@
 // redux/listingFiltersSlice.js
 import { createSlice } from "@reduxjs/toolkit";
-import { logout, login, verifyOtpAction } from "./authSlice";
+// Use string literals to avoid circular import with authSlice
+const LOGOUT_TYPE   = 'auth/logout/fulfilled';
+const LOGIN_TYPE    = 'auth/login/fulfilled';
+const VERIFY_TYPE   = 'auth/verifyOtp/fulfilled';
 
 const loadFilters = () => {
   try {
@@ -120,15 +123,15 @@ const listingFiltersSlice = createSlice({
 const listingFiltersReducer = listingFiltersSlice.reducer;
 const listingFiltersWithLogout = (state, action) => {
   // On logout: wipe in-memory state; user-scoped localStorage keys are kept as cache
-  if (action.type === logout.fulfilled.type) {
+  if (action.type === LOGOUT_TYPE) {
     return { ...state, compareSelected: [], finalisedVendors: {} };
   }
   // On login/signup: DB data is the source of truth (included in consumer payload).
   // Fall back to user-scoped localStorage if DB data is absent.
   // auth reducer runs first → tendr_user already set in localStorage by this point.
   if (
-    action.type === login.fulfilled.type ||
-    action.type === verifyOtpAction.fulfilled.type
+    action.type === LOGIN_TYPE ||
+    action.type === VERIFY_TYPE
   ) {
     const dbSelections = action.payload?.consumer?.vendorSelections;
     const compareSelected = dbSelections?.compareSelected?.length

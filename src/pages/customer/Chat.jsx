@@ -581,7 +581,29 @@ const Chat = () => {
       )}
 
       {/* Input bar */}
-      {/* Predefined questions — shown in support/concierge chats */}
+      {/* Quick replies — all vendor chats */}
+      {vendor._id !== "concierge" && from !== "support" && vendorApproved && (
+        <div style={{ background: "#fffaf3", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", overflowX: "auto" }}>
+          <div style={{ display: "flex", gap: 8, maxWidth: 860, margin: "0 auto", flexWrap: "nowrap" }}>
+            {[
+              "What packages do you offer?",
+              "What is your availability on my date?",
+              "Can you share pricing details?",
+              "Do you have experience with my event type?",
+              "What is included in your service?",
+              "Can we schedule a call?",
+            ].map((q) => (
+              <button key={q} onClick={() => setMessage(q)}
+                style={{ whiteSpace: "nowrap", padding: "5px 12px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.3)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+              >{q}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Predefined questions — support/concierge chats */}
       {(vendor._id === "concierge" || from === "support") && vendorApproved && (
         <div style={{ background: "#fffaf3", borderTop: "1px solid rgba(196,122,46,0.15)", padding: "8px 16px", overflowX: "auto" }}>
           <div style={{ display: "flex", gap: 8, maxWidth: 860, margin: "0 auto", flexWrap: "nowrap" }}>

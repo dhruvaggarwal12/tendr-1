@@ -1771,6 +1771,80 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
+                  {/* Admin quick-send sidebar — always shown for vendor/concierge chats */}
+                  <div style={{ width: 230, borderLeft: "1px solid rgba(196,122,46,0.15)", display: "flex", flexDirection: "column", background: "#fffbf5", flexShrink: 0, overflowY: "auto" }}>
+
+                    {/* Common quick replies */}
+                    <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Quick Replies</div>
+                      {[
+                        "Thank you for reaching out! We'll get back to you shortly.",
+                        "Could you please share your event date and guest count?",
+                        "We have availability on your date — let's discuss pricing.",
+                        "Our team will prepare a custom quote for you.",
+                        "Please confirm and we'll proceed with the booking.",
+                      ].map((msg, i) => (
+                        <button key={i} onClick={() => {
+                          if (!selectedChat?._id || !adminSocketRef.current) return;
+                          const m = { conversationId: selectedChat._id, sender: 'customer-care', content: msg };
+                          adminSocketRef.current.emit('send_message', m);
+                          setCurrentConversation((prev) => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
+                        }}
+                          style={{ display: "block", width: "100%", textAlign: "left", marginBottom: 4, padding: "5px 8px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.15)", background: "#fff", color: "#5a3a1a", fontSize: 11, cursor: "pointer", fontFamily: "'Outfit', sans-serif", lineHeight: 1.4 }}
+                          onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+                          onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                        >{msg}</button>
+                      ))}
+                    </div>
+
+                    {/* Package cards — send to customer */}
+                    {(() => {
+                      const svcType = selectedChat?.serviceType || selectedChat?.vendorId?.serviceType || "";
+                      const PACKAGES = {
+                        Caterer: [
+                          { tier: "Basic", guests: "20–40", items: ["Veg Menu", "2 Starters", "1 Main Course", "1 Dessert", "Basic Serving"] },
+                          { tier: "Standard", guests: "40–80", items: ["Veg/Non-Veg", "3 Starters", "2 Main Course", "2 Desserts", "Live Counter", "Professional Staff"] },
+                          { tier: "Premium", guests: "80+", items: ["Custom Menu", "4+ Starters", "3+ Main Course", "3+ Desserts", "Live Counters", "Fine Dining Setup"] },
+                        ],
+                        Photographer: [
+                          { tier: "Basic", guests: "20–40", items: ["2–3 Hours Coverage", "1 Photographer", "100+ Edited Photos", "Online Gallery"] },
+                          { tier: "Standard", guests: "40–80", items: ["4–6 Hours", "1 Photographer", "300+ Edited Photos", "Candid + Group", "Highlight Reel"] },
+                          { tier: "Premium", guests: "80+", items: ["Full Day Coverage", "2 Photographers", "500+ Edited Photos", "Candid + Group", "Highlight Reel", "Teaser Video"] },
+                        ],
+                        Decorator: [
+                          { tier: "Basic", guests: "20–40", items: ["Basic Backdrop", "Balloons Decor", "Table Decor", "Fairy Lights"] },
+                          { tier: "Standard", guests: "40–80", items: ["Themed Backdrop", "Balloon & Floral Decor", "Table & Entrance Decor", "Custom Signage", "Lighting Setup"] },
+                          { tier: "Premium", guests: "80+", items: ["Premium Theme Decor", "Floral & Balloon Design", "Stage & Entrance Decor", "Custom Installations", "Full Venue Styling"] },
+                        ],
+                      };
+                      const pkgs = PACKAGES[svcType];
+                      if (!pkgs) return null;
+                      return (
+                        <div style={{ padding: "10px 12px" }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Send Package</div>
+                          {pkgs.map(({ tier, guests, items }) => {
+                            const msgText = `*${svcType} — ${tier} Package* (Recommended for ${guests} guests)\n${items.map(i => `• ${i}`).join('\n')}`;
+                            return (
+                              <button key={tier} onClick={() => {
+                                if (!selectedChat?._id || !adminSocketRef.current) return;
+                                const m = { conversationId: selectedChat._id, sender: 'customer-care', content: msgText };
+                                adminSocketRef.current.emit('send_message', m);
+                                setCurrentConversation((prev) => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
+                              }}
+                                style={{ display: "block", width: "100%", textAlign: "left", marginBottom: 6, padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                                onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+                                onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                              >
+                                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", marginBottom: 2 }}>{tier} · {guests} guests</div>
+                                <div style={{ fontSize: 10, color: "#9B7450" }}>{items.slice(0, 2).join(', ')}...</div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+
                   {/* Summary sidebar panel — visible only to admin when messages are pinned */}
                   {currentPinned.length > 0 && (
                     <div style={{ width: 230, borderLeft: "1px solid rgba(196,122,46,0.15)", display: "flex", flexDirection: "column", background: "#fffbf5", flexShrink: 0 }}>

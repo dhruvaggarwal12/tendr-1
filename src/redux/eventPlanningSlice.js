@@ -65,7 +65,7 @@
 
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { logout } from "./authSlice";
+const LOGOUT_TYPE = 'auth/logout/fulfilled';
 
 const loadFormData = () => {
   try {
@@ -252,7 +252,7 @@ export const {
 
 const eventPlanningReducer = eventPlanningSlice.reducer;
 const eventPlanningWithLogout = (state, action) => {
-  if (action.type === logout.fulfilled.type) {
+  if (action.type === LOGOUT_TYPE) {
     try {
       localStorage.removeItem("eventPlanningFormData");
       sessionStorage.removeItem("tendr_session");
