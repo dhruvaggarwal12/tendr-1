@@ -558,91 +558,90 @@ const Home = () => {
         }
       `}</style>
 
-      {/* How Tendr Works */}
-      <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 60 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Your Journey</p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>How Tendr Works</h2>
-            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 520, margin: "0 auto" }}>From filling your event details to celebrating your perfect day — here's how the platform guides you through every step.</p>
-            <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
-          </div>
+      {/* How Tendr Works — horizontal animated */}
+      <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
 
-          {/* Steps — 5 steps in a flow */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 0 }} className="htw-flow">
-            {[
-              {
-                step: "1",
-                icon: "📋",
-                color: "#C47A2E",
-                title: "Share Your Event Details",
-                desc: "Fill a quick 5-question form — event type, date, location, number of guests and your budget. The whole thing takes under 2 minutes.",
-                tag: "Start here",
-              },
-              {
-                step: "2",
-                icon: "🔍",
-                color: "#7c3aed",
-                title: "Explore & Save Vendors",
-                desc: "Browse our curated list of DJs, caterers, decorators and photographers in your city. Click 'Quick View' to preview profiles and 'Save Vendor' to shortlist the ones you like.",
-                tag: "You Do It mode",
-              },
-              {
-                step: "3",
-                icon: "💬",
-                color: "#0369a1",
-                title: "Chat & Confirm Requirements",
-                desc: "Our team approves your chat request and connects you with each vendor. Discuss your exact requirements, share ideas, and get a confirmed price — all within the platform chat.",
-                tag: "Both modes",
-              },
-              {
-                step: "4",
-                icon: "💰",
-                color: "#b45309",
-                title: "Review the Full Quote",
-                desc: "Once all chats are done and vendors are finalised, open the Review & Pay page. See every vendor's confirmed price in one place, with a clear total. No surprises.",
-                tag: "Pricing locked in",
-              },
-              {
-                step: "5",
-                icon: "🎉",
-                color: "#15803d",
-                title: "Pay & Enjoy Your Event",
-                desc: "Complete your payment securely. Every vendor is confirmed, timings are set — all you have to do is show up and celebrate.",
-                tag: "You're done!",
-              },
-            ].map(({ step, icon, color, title, desc, tag }, i, arr) => (
-              <div key={step} style={{ display: "flex", gap: 0, alignItems: "stretch" }} className="htw-step-row">
-                {/* Left: step number + connector */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 64, flexShrink: 0 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg,${color},${color}bb)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, boxShadow: `0 4px 14px ${color}40`, zIndex: 1 }}>
+          {/* Heading */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55 }}
+            style={{ textAlign: "center", marginBottom: 56 }}
+          >
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Your Journey</p>
+            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>How Tendr Works</h2>
+            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>From your first idea to your perfect event — five simple steps.</p>
+          </motion.div>
+
+          {/* Steps row */}
+          <div style={{ position: "relative" }}>
+
+            {/* Animated connecting line */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.1, ease: "easeInOut", delay: 0.2 }}
+              style={{
+                position: "absolute", top: 36, left: "10%", right: "10%", height: 2,
+                background: "linear-gradient(90deg,#C47A2E,#CCAB4A,#7c3aed,#0369a1,#15803d)",
+                transformOrigin: "left", borderRadius: 100, opacity: 0.35,
+              }}
+              className="htw-line"
+            />
+
+            <div style={{ display: "flex", gap: 16 }} className="htw-row">
+              {[
+                { step: "1", icon: "📋", color: "#C47A2E", title: "Share Event Details",    desc: "Fill a quick form — event type, date, location, guests and budget. Under 2 minutes." },
+                { step: "2", icon: "🔍", color: "#7c3aed", title: "Explore & Save Vendors", desc: "Browse DJs, caterers, decorators and photographers. Save the ones you love." },
+                { step: "3", icon: "💬", color: "#0369a1", title: "Chat & Confirm",          desc: "Our team connects you with vendors. Discuss requirements and get confirmed pricing in chat." },
+                { step: "4", icon: "💰", color: "#b45309", title: "Review the Quote",        desc: "See all vendor prices in one place. Clear total, no surprises — before you pay." },
+                { step: "5", icon: "🎉", color: "#15803d", title: "Pay & Celebrate",         desc: "Complete payment securely. Vendors confirmed, timings set — just show up and enjoy." },
+              ].map(({ step, icon, color, title, desc }, i) => (
+                <motion.div
+                  key={step}
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.13 }}
+                  style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}
+                >
+                  {/* Icon circle */}
+                  <div style={{
+                    width: 72, height: 72, borderRadius: "50%",
+                    background: `linear-gradient(135deg,${color},${color}aa)`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 28, marginBottom: 16, position: "relative", zIndex: 1,
+                    boxShadow: `0 6px 20px ${color}35`,
+                    border: `3px solid #FFFCF5`,
+                  }}>
                     {icon}
                   </div>
-                  {i < arr.length - 1 && (
-                    <div style={{ width: 2, flex: 1, minHeight: 32, background: `linear-gradient(to bottom,${color}60,${arr[i+1].color}60)`, margin: "6px 0" }} />
-                  )}
-                </div>
 
-                {/* Right: content card */}
-                <div style={{ flex: 1, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.1)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "22px 26px", marginBottom: i < arr.length - 1 ? 12 : 0, marginLeft: 16 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: "0.08em" }}>Step {step}</span>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: `${color}14`, color, border: `1px solid ${color}40` }}>{tag}</span>
-                  </div>
-                  <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.3 }}>{title}</h3>
-                  <p style={{ fontSize: 14, color: "#7A5535", lineHeight: 1.7, margin: 0 }}>{desc}</p>
-                </div>
-              </div>
-            ))}
+                  {/* Step number */}
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color, marginBottom: 6, opacity: 0.8 }}>Step {step}</span>
+
+                  {/* Title */}
+                  <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.3 }}>{title}</h3>
+
+                  {/* Description */}
+                  <p style={{ fontSize: 13, color: "#7A5535", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+                </motion.div>
+              ))}
+            </div>
           </div>
-
         </div>
 
         <style>{`
-          @media (max-width: 640px) {
-            .htw-flow { gap: 0 !important; }
-            .htw-step-row > div:first-child { width: 44px !important; }
-            .htw-step-row > div:first-child > div:first-child { width: 40px !important; height: 40px !important; font-size: 18px !important; }
+          @media (max-width: 860px) {
+            .htw-row { flex-wrap: wrap !important; }
+            .htw-row > div { flex: 0 0 calc(33% - 12px) !important; min-width: 140px; }
+            .htw-line { display: none !important; }
+          }
+          @media (max-width: 540px) {
+            .htw-row > div { flex: 0 0 calc(50% - 8px) !important; }
           }
         `}</style>
       </section>
