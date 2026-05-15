@@ -418,14 +418,25 @@ const AdminDashboard = () => {
     return () => { socket.disconnect(); adminSocketRef.current = null; };
   }, [token, user]);
 
-  // Sync pinned messages from selectedChat when chat changes
+  const [pricingAmount, setPricingAmount] = useState("");
+  const [pricingVendorName, setPricingVendorName] = useState("");
+
+  // Sync pinned messages + pricing from selectedChat when chat changes
   useEffect(() => {
-    if (!selectedChat?._id) { setPinnedMsgs([]); return; }
+    if (!selectedChat?._id) { setPinnedMsgs([]); setPricingAmount(""); setPricingVendorName(""); return; }
     const existing = (selectedChat.pinnedMessages || []).map(m => ({
       content: m.content,
       conversationId: selectedChat._id,
     }));
     setPinnedMsgs(existing);
+    // Pre-fill pricing if already set
+    if (selectedChat.vendorPrice?.amount) {
+      setPricingAmount(String(selectedChat.vendorPrice.amount));
+      setPricingVendorName(selectedChat.vendorPrice.vendorName || "");
+    } else {
+      setPricingAmount("");
+      setPricingVendorName(selectedChat.vendorName || selectedChat.vendorId?.name || "");
+    }
   }, [selectedChat?._id]);
 
   // Pin a user message during chat
@@ -509,10 +520,25 @@ const AdminDashboard = () => {
     }).catch(() => {});
   };
 
-  // "Done" — saves to both Conversation and matching EventPlan, collapses panel
+  // "Done" — saves summary + pricing to Conversation and EventPlan
   const handleSummaryDone = () => {
     const text = buildSummaryDraft();
-    saveSummary(text); // saves to Conversation
+    saveSummary(text);
+
+    // Save pricing to the conversation
+    const amt = Number(pricingAmount);
+    if (amt > 0 && selectedChat?._id) {
+      fetch(`${BASE_URL}/admin/conversations/${selectedChat._id}/pricing`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        body: JSON.stringify({
+          amount: amt,
+          vendorName: pricingVendorName || selectedChat.vendorName || selectedChat.vendorId?.name || "",
+          service: selectedChat.serviceType || "",
+        }),
+      }).catch(() => {});
+    }
 
     // Also save to the matching EventPlan so admin Bookings can show it
     const plan = eventPlans.find(p =>
@@ -1762,6 +1788,32 @@ const AdminDashboard = () => {
                           </div>
                         ))}
                       </div>
+                      {/* Pricing input */}
+                      <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>💰 Agreed Price</div>
+                        <input
+                          placeholder="Vendor name"
+                          value={pricingVendorName}
+                          onChange={e => setPricingVendorName(e.target.value)}
+                          style={{ width: "100%", marginBottom: 6, padding: "6px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 12, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }}
+                        />
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "#9B7450", flexShrink: 0 }}>₹</span>
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={pricingAmount}
+                            onChange={e => setPricingAmount(e.target.value)}
+                            style={{ flex: 1, padding: "6px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", outline: "none" }}
+                          />
+                        </div>
+                        {pricingAmount > 0 && (
+                          <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600, marginTop: 5 }}>
+                            ₹{Number(pricingAmount).toLocaleString("en-IN")} — will appear on Review & Pay
+                          </div>
+                        )}
+                      </div>
+
                       <button onClick={handleSummaryDone}
                         style={{ margin: "10px 12px 12px", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}>
                         Done ✓

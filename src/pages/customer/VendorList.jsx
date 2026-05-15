@@ -243,11 +243,10 @@ const VendorList = () => {
               <button
                 onClick={openSelectedModal}
                 disabled={compareSelected.length === 0}
-                style={{ display: token ? undefined : "none" }}
                 style={{
+                  display: token ? "inline-flex" : "none",
                   fontFamily: "'Outfit', sans-serif",
                   flexShrink: 0,
-                  display: "inline-flex",
                   alignItems: "center",
                   gap: 8,
                   padding: "14px 32px",

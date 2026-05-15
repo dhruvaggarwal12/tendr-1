@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -69,11 +69,47 @@ const BookingReviewPage = () => {
 
   const vendorEntries = Object.entries(finalisedVendors);
 
+  // Fetch real prices from the customer's vendor conversations
+  const [priceMap, setPriceMap] = useState({}); // { vendorId: { amount, vendorName, service, confirmed } }
+  const [summaryMap, setSummaryMap] = useState({}); // { vendorId: bookingSummary }
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/conversations`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then(r => r.ok ? r.json() : { conversations: [] })
+      .then(data => {
+        const pm = {};
+        const sm = {};
+        (data.conversations || []).forEach(c => {
+          const vid = c.vendorId?._id || c.vendorId;
+          if (!vid) return;
+          const key = vid.toString();
+          if (c.vendorPrice?.amount > 0) {
+            pm[key] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
+          }
+          if (c.bookingSummary) sm[key] = c.bookingSummary;
+        });
+        setPriceMap(pm);
+        setSummaryMap(sm);
+      })
+      .catch(() => {});
+  }, [token]);
+
+  // Use real price if admin confirmed it, otherwise fall back to estimate
+  const getPrice = (vendor) => {
+    const vid = vendor?._id?.toString();
+    return priceMap[vid]?.amount || vendorPrice(vendor);
+  };
+  const isConfirmed = (vendor) => !!priceMap[vendor?._id?.toString()]?.confirmed;
+
   const prices = vendorEntries.reduce((acc, [key, v]) => {
-    acc[key] = vendorPrice(v);
+    acc[key] = getPrice(v);
     return acc;
   }, {});
   const totalPrice = Object.values(prices).reduce((a, b) => a + b, 0);
+  const allConfirmed = vendorEntries.every(([, v]) => isConfirmed(v));
 
   // Accordion: first vendor open by default
   const [openKeys, setOpenKeys] = useState(() =>
@@ -250,8 +286,12 @@ const BookingReviewPage = () => {
                       {!isLetUsDoIt && vendor.city && <span style={{ fontSize: 12, color: "#9B7450", marginLeft: 8 }}>{vendor.city}</span>}
                     </div>
                     <div style={{ textAlign: "right", marginRight: 8, flexShrink: 0 }}>
-                      <div style={{ fontSize: 11, color: "#9B7450", fontWeight: 500 }}>Estimated</div>
-                      <div style={{ fontSize: 17, fontWeight: 800, color: "#C47A2E" }}>{formatINR(price)}</div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: isConfirmed(vendor) ? "#15803d" : "#9B7450" }}>
+                        {isConfirmed(vendor) ? "✓ Confirmed" : "Estimated"}
+                      </div>
+                      <div style={{ fontSize: 17, fontWeight: 800, color: isConfirmed(vendor) ? "#15803d" : "#C47A2E" }}>
+                        {formatINR(price)}
+                      </div>
                     </div>
                     <ChevronIcon open={isOpen} />
                   </button>
@@ -280,14 +320,20 @@ const BookingReviewPage = () => {
                         </div>
                       )}
 
-                      {/* Chat notes placeholder */}
+                      {/* Chat summary / notes */}
                       <div style={{ padding: "12px 20px 4px" }}>
                         <div style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                          <span>💬</span> Notes from Chat
+                          <span>💬</span> Chat Summary
                         </div>
-                        <div style={{ background: "#fffaf3", border: "1.5px dashed rgba(196,122,46,0.25)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#bbb", fontStyle: "italic", minHeight: 46, display: "flex", alignItems: "center" }}>
-                          Chat notes with {vendor.name || "this vendor"} will appear here.
-                        </div>
+                        {summaryMap[vendor?._id?.toString()] ? (
+                          <div style={{ background: "#fffaf3", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#5a3a1a", whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 120, overflowY: "auto", lineHeight: 1.55 }}>
+                            {summaryMap[vendor?._id?.toString()]}
+                          </div>
+                        ) : (
+                          <div style={{ background: "#fffaf3", border: "1.5px dashed rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#bbb", fontStyle: "italic" }}>
+                            Chat summary will appear here once confirmed by Tendr.
+                          </div>
+                        )}
                       </div>
 
                       {/* Additional requirements textarea */}
@@ -354,10 +400,14 @@ const BookingReviewPage = () => {
                   </div>
                 ))}
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
-                  <span>Total Estimate</span>
-                  <span style={{ color: "#C47A2E" }}>{formatINR(totalPrice)}</span>
+                  <span>{allConfirmed ? "Total" : "Total Estimate"}</span>
+                  <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>{formatINR(totalPrice)}</span>
                 </div>
-                <p style={{ fontSize: 11, color: "#bbb", margin: 0 }}>*Prices are indicative. Final quote confirmed by each vendor.</p>
+                <p style={{ fontSize: 11, color: "#bbb", margin: 0 }}>
+                  {allConfirmed
+                    ? "✓ All prices confirmed by Tendr team."
+                    : "*Prices marked 'Estimated' are indicative — final quote confirmed in chat."}
+                </p>
               </div>
 
               <button
