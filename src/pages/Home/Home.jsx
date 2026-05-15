@@ -533,26 +533,31 @@ const Home = () => {
           </div>
         </div>
         {/* ── Marquee strip at bottom of hero ── */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#1C0E05", padding: "13px 0", overflow: "hidden", zIndex: 10 }}>
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          background: "rgba(196,122,46,0.12)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          borderTop: "1px solid rgba(196,122,46,0.25)",
+          padding: "11px 0", overflow: "hidden", zIndex: 10,
+        }}>
           <div style={{ display: "flex", width: "max-content", animation: "tendr-marquee 32s linear infinite" }}>
             {[
               "100+ Verified Vendors", "Delhi", "Noida", "Ghaziabad", "Greater Noida",
-              "Photography", "Catering", "DJ & Music", "Decoration", "Makeup & Mehndi",
+              "Photography", "Catering", "DJ & Music", "Decoration",
               "Pre-Wedding Events", "Birthday Parties", "Corporate Events",
-              "Free to Browse", "Trusted by 1000+ Families", "Instant Chat",
-              "Verified Reviews", "Same-Day Support",
+              "Free to Browse", "Instant Chat", "Verified Reviews", "Same-Day Support",
             ].concat([
               "100+ Verified Vendors", "Delhi", "Noida", "Ghaziabad", "Greater Noida",
-              "Photography", "Catering", "DJ & Music", "Decoration", "Makeup & Mehndi",
+              "Photography", "Catering", "DJ & Music", "Decoration",
               "Pre-Wedding Events", "Birthday Parties", "Corporate Events",
-              "Free to Browse", "Trusted by 1000+ Families", "Instant Chat",
-              "Verified Reviews", "Same-Day Support",
+              "Free to Browse", "Instant Chat", "Verified Reviews", "Same-Day Support",
             ]).map((item, i) => (
               <React.Fragment key={i}>
-                <span style={{ color: "#CCAB4A", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", whiteSpace: "nowrap", padding: "0 6px", textTransform: "uppercase" }}>
+                <span style={{ color: "#8B4513", fontSize: 12, fontWeight: 700, letterSpacing: "0.09em", whiteSpace: "nowrap", padding: "0 6px", textTransform: "uppercase" }}>
                   {item}
                 </span>
-                <span style={{ color: "rgba(204,171,74,0.35)", fontSize: 9, padding: "0 18px", lineHeight: "1.8" }}>✦</span>
+                <span style={{ color: "#C47A2E", fontSize: 10, padding: "0 16px", opacity: 0.5 }}>◆</span>
               </React.Fragment>
             ))}
           </div>
