@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import tendrLogo from "../../assets/logos/tendr.png";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { resetEventPlanning, setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
@@ -8,7 +9,7 @@ import { resetEventPlanning, setMultipleFormData, setBookingType } from "../../r
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled"];
+const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats"];
 
 const statusMap = {
   Upcoming:  ["in_progress"],  // after payment confirmed by admin
@@ -19,8 +20,9 @@ const statusMap = {
 
 const statusBadge = (status) => {
   const map = {
-    submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "Submitted" },
-    in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe", label: "In Progress" },
+    submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "In Process" },
+    draft:       { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "In Process" },
+    in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe", label: "Submitted" },
     completed:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0", label: "Completed" },
     cancelled:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5", label: "Cancelled" },
   };
@@ -124,11 +126,12 @@ export default function CustomerDashboard() {
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
   const counts = {
-    All: plans.length,
+    All:       plans.length,
     Upcoming:  plans.filter((p) => statusMap.Upcoming.includes(p.status)).length,
-    Ongoing: conversations.length,
+    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length,
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
+    Chats:     conversations.length,
   };
 
   return (
@@ -138,7 +141,7 @@ export default function CustomerDashboard() {
       {/* Sticky nav */}
       <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <span onClick={() => navigate("/")} style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", cursor: "pointer", letterSpacing: "-0.02em" }}>TENDR</span>
+          <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 40, cursor: "pointer", objectFit: "contain" }} />
           <div style={{ display: "flex", gap: 10 }}>
             <button onClick={() => navigate("/booking")} style={{ fontSize: 13, fontWeight: 600, color: "#fff", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontFamily: font }}>Plan New Event</button>
             <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: font }}>← Home</button>
@@ -203,69 +206,84 @@ export default function CustomerDashboard() {
             ))}
           </div>
 
-          {/* Ongoing chats tab */}
+          {/* Ongoing tab — shows event plan summary cards */}
           {activeTab === "Ongoing" ? (
-            loadingChats ? (
-              <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading chats...</div>
-            ) : conversations.length === 0 ? (
+            loading ? (
+              <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading...</div>
+            ) : filtered.length === 0 ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
-                <div style={{ fontSize: 40, marginBottom: 14 }}>💬</div>
-                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No ongoing chats</h4>
-                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Start a chat with a vendor from the listings page.</p>
+                <div style={{ fontSize: 40, marginBottom: 14 }}>📋</div>
+                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No ongoing bookings</h4>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Your submitted events will appear here.</p>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {conversations.map((convo) => (
-                  <div key={convo._id}
-                    style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "20px 24px" }}
-                  >
+                {filtered.map((plan) => (
+                  <div key={plan._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "20px 24px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>
-                            {convo.chatType === 'support'   ? "Tendr Support" :
-                             convo.chatType === 'concierge' ? "Tendr Concierge" :
-                             convo.vendorId?.name || convo.vendorName || "Chat"}
-                          </span>
-                          <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: convo.chatType === 'support' ? "#eff6ff" : "#f5f3ff", color: convo.chatType === 'support' ? "#0369a1" : "#7c3aed", border: "1px solid currentColor" }}>
-                            {convo.chatType === 'support' ? "Support" : "Event Planning"}
-                          </span>
+                          <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>{plan.eventType || "Event"}</span>
+                          {statusBadge(plan.status)}
                         </div>
-                        {convo.eventDetails && convo.eventDetails.eventName && (
-                          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#7A5535" }}>
-                            <span>📋 {convo.eventDetails.eventName}</span>
-                            {convo.eventDetails.date && <span>📅 {convo.eventDetails.date}</span>}
-                            {convo.eventDetails.location && <span>📍 {convo.eventDetails.location}</span>}
-                            {convo.eventDetails.guests && <span>👥 {convo.eventDetails.guests} guests</span>}
+                        <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#7A5535" }}>
+                          {plan.date     && <span>📅 {plan.date}</span>}
+                          {plan.location && <span>📍 {plan.location}</span>}
+                          {plan.guests   && <span>👥 {plan.guests} guests</span>}
+                          {plan.budget   && <span>💰 {plan.budget}</span>}
+                        </div>
+                        {plan.bookingSummary && (
+                          <div style={{ marginTop: 10, background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 120, overflowY: "auto", border: "1px solid rgba(196,122,46,0.12)" }}>
+                            <span style={{ fontWeight: 700, color: "#C47A2E" }}>📋 Summary: </span>{plan.bookingSummary}
                           </div>
                         )}
-                        <div style={{ fontSize: 12, color: "#bbb", marginTop: 6 }}>
-                          Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-                        <button
-                          onClick={() => navigate("/chat", {
-                            state: {
-                              vendor: { _id: "concierge", name: convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge", approved: true },
-                              from: convo.chatType === 'support' ? "support" : "concierge",
-                            }
-                          })}
-                          style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
-                        >
-                          Open Chat →
-                        </button>
                       </div>
                     </div>
-
                   </div>
                 ))}
               </div>
             )
           ) : null}
 
-          {/* Event cards */}
-          {activeTab !== "Ongoing" && (loading ? (
+          {/* Chats tab */}
+          {activeTab === "Chats" && (
+            loadingChats ? (
+              <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading chats...</div>
+            ) : conversations.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
+                <div style={{ fontSize: 40, marginBottom: 14 }}>💬</div>
+                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No active chats</h4>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Your Tendr team conversations will appear here.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {conversations.map((convo) => (
+                  <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                        <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>
+                          {convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge"}
+                        </span>
+                        <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: convo.chatType === 'support' ? "#eff6ff" : "#f5f3ff", color: convo.chatType === 'support' ? "#0369a1" : "#7c3aed", border: "1px solid currentColor" }}>
+                          {convo.chatType === 'support' ? "Support" : "Event Planning"}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: "#bbb" }}>Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}</div>
+                    </div>
+                    <button
+                      onClick={() => navigate("/chat", { state: { vendor: { _id: "concierge", name: convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge", approved: true }, from: convo.chatType === 'support' ? "support" : "concierge" } })}
+                      style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+                    >
+                      Open Chat →
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )
+          )}
+
+          {/* Event cards — all tabs except Ongoing and Chats */}
+          {activeTab !== "Ongoing" && activeTab !== "Chats" && (loading ? (
             <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading your events...</div>
           ) : filtered.length === 0 ? (
             <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>

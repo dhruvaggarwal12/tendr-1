@@ -671,15 +671,22 @@ const Chat = () => {
                 {chatCompleted ? "Completed ✓" : "Chat Completed"}
               </button>
 
-              {/* Review & Pay (was Finalise Vendor) — only enabled after Chat Completed */}
+              {/* Finalise Vendor — only enabled after Chat Completed */}
               <button
                 type="button"
-                onClick={handleFinalise}
+                onClick={() => {
+                  handleFinalise();
+                  if (chatCompleted) {
+                    navigate("/booking/review", {
+                      state: { vendor, from, formData, bookingType },
+                    });
+                  }
+                }}
                 disabled={!chatCompleted}
                 title={!chatCompleted ? "Mark chat as completed first" : ""}
                 style={{ flexShrink: 0, padding: "10px 16px", borderRadius: 100, border: "none", background: !chatCompleted ? "#e5e7eb" : isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !chatCompleted ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: !chatCompleted ? "not-allowed" : "pointer", whiteSpace: "nowrap", boxShadow: chatCompleted ? "0 3px 10px rgba(196,122,46,0.3)" : "none", transition: "all 0.2s" }}
               >
-                {isThisVendorFinalised ? "Reviewed ✓" : "Review & Pay"}
+                {isThisVendorFinalised ? "Finalised ✓" : "Finalise Vendor"}
               </button>
             </>
           )}

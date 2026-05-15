@@ -3,8 +3,69 @@ import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaUserCircle } from "react-
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
+import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Compact inline Saved Vendors button for the navbar — self-contained modal
+function SavedVendorsInline() {
+  const dispatch        = useDispatch();
+  const navigate        = useNavigate();
+  const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
+  const [open, setOpen] = React.useState(false);
+  const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
+
+  if (!compareSelected.length) return null;
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}
+        style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+      >
+        Saved Vendors
+        <span style={{ background: "#CCAB4A", color: "#fff", borderRadius: 100, padding: "1px 8px", fontSize: 12, fontWeight: 800 }}>{compareSelected.length}</span>
+      </button>
+
+      {open && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setOpen(false)}>
+          <div style={{ width: "92%", maxWidth: 560, background: "#fff", borderRadius: 20, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: "'Outfit', sans-serif" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Saved Vendors <span style={{ fontSize: 13, fontWeight: 500, color: "#9B7450" }}>({compareSelected.length})</span></h3>
+              <button onClick={() => setOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18 }}>×</button>
+            </div>
+            <div style={{ overflowY: "auto", padding: "12px 24px", flex: 1 }}>
+              {compareSelected.map((v) => (
+                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: "1.5px solid #f0e8dc", background: "#fffcf5", marginBottom: 8 }}>
+                  <img src={v.image || FALLBACK} alt={v.name} style={{ width: 52, height: 42, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
+                    {v.city && <div style={{ fontSize: 12, color: "#9B7450" }}>{v.city}</div>}
+                  </div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    <button onClick={() => { setOpen(false); navigate("/vendor/" + v._id); }}
+                      style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 8, border: "none", background: "#f5eedf", color: "#7A4A1E", cursor: "pointer" }}>View</button>
+                    <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
+                      style={{ fontSize: 14, padding: "3px 10px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 24px", borderTop: "1px solid #f0e8dc" }}>
+              <button onClick={() => { dispatch(clearVendorCompare()); setOpen(false); }}
+                style={{ fontSize: 13, fontWeight: 500, padding: "7px 16px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#555", cursor: "pointer" }}>Clear All</button>
+              <button onClick={() => { setOpen(false); navigate("/listings"); }}
+                style={{ fontSize: 13, fontWeight: 700, padding: "7px 22px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.35)" }}>Go to Listings</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
 
 const Navbar = ({
   handleLogoClick,
@@ -411,6 +472,9 @@ const Navbar = ({
             >
               <FaWhatsapp size={17} />
             </a>
+
+            {/* Saved Vendors inline button — shows when items are saved */}
+            {token && user && <SavedVendorsInline />}
 
             {/* Auth area */}
             {token && user ? (

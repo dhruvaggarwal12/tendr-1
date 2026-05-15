@@ -56,7 +56,7 @@ export default function SelectedVendorsFloat() {
           e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.45)";
         }}
       >
-        Selected Vendors
+        Saved Vendors
         <span
           style={{
             background: "rgba(255,255,255,0.3)",
@@ -107,7 +107,7 @@ export default function SelectedVendorsFloat() {
               }}
             >
               <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>
-                Selected Vendors
+                Saved Vendors
                 <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 500, color: "#9B7450" }}>
                   ({compareSelected.length})
                 </span>

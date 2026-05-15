@@ -436,7 +436,16 @@ const EventPlanning = () => {
                   if (selectedVendors.length === 0) return;
                   if (!token) { setShowAuthGate(true); return; }
                   dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                  navigate("/listings", { state: { selectedCategories: selectedVendors } });
+                  // Open Tendr Concierge chat for guidance, then customer can also browse listings
+                  navigate("/chat", {
+                    state: {
+                      vendor: { _id: "concierge", name: "Tendr Concierge", approved: true },
+                      from: "concierge",
+                      formData,
+                      selectedVendors,
+                      bookingType: "you-do-it",
+                    }
+                  });
                 }}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
@@ -538,7 +547,7 @@ const EventPlanning = () => {
    *  ======================= */
 
   return (
-    <div className="min-h-screen bg-[#ffeae2] flex items-center justify-center p-4 sm:p-6 md:p-10">
+    <div className="min-h-screen bg-[#F8F4EF] flex items-center justify-center p-4 sm:p-6 md:p-10">
       <BasicSpeedDial />
       <SelectedVendorsFloat />
       <div className="w-full max-w-xl sm:max-w-2xl">
@@ -551,10 +560,10 @@ const EventPlanning = () => {
             <span>{Math.round(progress)}% complete</span>
           </div>
 
-          <div className="w-full bg-[#ffddd0] rounded-full h-3 shadow-inner">
+          <div className="w-full bg-[#f3e8d4] rounded-full h-3 shadow-inner">
             <div
-              className="bg-[#f77648] rounded-full h-3 transition-all duration-500 ease-out shadow-2xl"
-              style={{ width: `${progress}%` }}
+              className="rounded-full h-3 transition-all duration-500 ease-out"
+              style={{ width: `${progress}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)" }}
             ></div>
           </div>
         </div>
@@ -570,7 +579,7 @@ const EventPlanning = () => {
         >
           {/* Upper Part */}
           <div className="flex items-center mb-6">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 bg-[#ff7a49] rounded-2xl flex items-center justify-center mr-4 text-white shadow-lg text-2xl">
+            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mr-4 text-white shadow-lg text-2xl" style={{background:"linear-gradient(135deg,#C47A2E,#CCAB4A)"}}>
               {currentQuestion.icon}
             </div>
 
@@ -595,8 +604,8 @@ const EventPlanning = () => {
                 }
                 onKeyDown={handleKeyDown}
                 placeholder={currentQuestion.placeholder}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#ff885d] rounded-2xl text-gray-800 placeholder-gray-400
-              focus:outline-none focus:ring-2 focus:ring-[#ff885d] focus:border-transparent transition-all duration-200"
+                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 placeholder-gray-400
+              focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:border-transparent transition-all duration-200"
                 autoFocus
               />
             )}
@@ -610,8 +619,8 @@ const EventPlanning = () => {
                 }
                 onKeyDown={handleKeyDown}
                 placeholder={currentQuestion.placeholder}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#ff885d] rounded-2xl
-              text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#ff885d] transition-all duration-200"
+                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A] rounded-2xl
+              text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
                 autoFocus
               />
             )}
@@ -624,8 +633,8 @@ const EventPlanning = () => {
                   const val = e.target.value;
                   if (val) selectAndAdvance(currentQuestion.id, val);
                 }}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#ff885d]
-              rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#ff885d] transition-all duration-200"
+                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A]
+              rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
               />
             )}
 
@@ -638,8 +647,8 @@ const EventPlanning = () => {
                 onKeyDown={handleTextareaKeyDown}
                 placeholder={currentQuestion.placeholder}
                 rows={4}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#ff885d] rounded-2xl
-              text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#ff885d] transition-all duration-200 resize-none"
+                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A] rounded-2xl
+              text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200 resize-none"
                 autoFocus
               />
             )}
@@ -659,12 +668,13 @@ const EventPlanning = () => {
                       }
                     }}
                     className={`w-full text-lg sm:text-xl p-4 text-left rounded-2xl transition-all duration-200
-                    border-2 focus:outline-none focus:ring-2 focus:ring-[#ff885d] focus:ring-offset-2
+                    border-2 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:ring-offset-2
                     ${
                       formData[currentQuestion.id] === option
-                        ? "bg-[#ffcdb9] border-[#ff885d] text-gray-800 shadow-md"
-                        : "bg-white border-[#ffc1ab] text-gray-700 hover:bg-[#fff1eb] hover:border-[#fa9e7d]"
+                        ? "border-[#C47A2E] text-gray-800 shadow-md"
+                        : "bg-white border-[#e5d4b3] text-gray-700 hover:border-[#CCAB4A]"
                     }`}
+                    style={formData[currentQuestion.id] === option ? {background:"rgba(196,122,46,0.1)"} : {}}
                   >
                     {option}
                   </button>

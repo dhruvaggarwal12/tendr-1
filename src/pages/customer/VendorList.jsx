@@ -262,7 +262,7 @@ const VendorList = () => {
                   boxShadow: compareSelected.length > 0 ? "0 4px 14px rgba(204,171,74,0.35)" : "none",
                 }}
               >
-                Selected Vendors
+                Saved Vendors
                 {compareSelected.length > 0 && (
                   <span style={{ background: "rgba(255,255,255,0.3)", borderRadius: 100, padding: "2px 9px", fontSize: 13, fontWeight: 800 }}>
                     {compareSelected.length}
@@ -459,7 +459,7 @@ const VendorList = () => {
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
               <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>
-                Selected Vendors
+                Saved Vendors
                 <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 500, color: "#9B7450" }}>
                   ({compareSelected.length} total)
                 </span>
