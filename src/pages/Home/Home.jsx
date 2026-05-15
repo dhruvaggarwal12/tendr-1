@@ -638,17 +638,6 @@ const Home = () => {
             ))}
           </div>
 
-          {/* CTA */}
-          <div style={{ textAlign: "center", marginTop: 52 }}>
-            <button
-              onClick={() => navigate("/booking")}
-              style={{ padding: "14px 44px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 20px rgba(196,122,46,0.35)", transition: "transform 0.2s, box-shadow 0.2s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.45)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.35)"; }}
-            >
-              Start Planning Your Event →
-            </button>
-          </div>
         </div>
 
         <style>{`
