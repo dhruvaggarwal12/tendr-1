@@ -4,6 +4,8 @@ import { useDispatch } from "react-redux";
 import { setBookingType, resetEventPlanning } from "../../redux/eventPlanningSlice";
 import { clearVendorCompare, clearFinalisedVendor } from "../../redux/listingFiltersSlice";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import Navbar from "../../components/Navbar";
+import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
 
@@ -57,18 +59,11 @@ export default function ChooseBooking() {
   };
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "48px 24px 80px",
-        fontFamily: font,
-      }}
-    >
+    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", fontFamily: font }}>
+      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
+        <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
+      </nav>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 24px 80px" }}>
       <BasicSpeedDial />
 
       {/* Header */}
@@ -173,6 +168,7 @@ export default function ChooseBooking() {
           .choose-booking-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
+      </div>{/* inner flex column */}
     </div>
   );
 }

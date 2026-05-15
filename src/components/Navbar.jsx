@@ -7,26 +7,31 @@ import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFil
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Compact inline Saved Vendors button for the navbar — self-contained modal
-function SavedVendorsInline() {
+// Saved Vendors — asStrip renders a small strip below profile icon; default is a pill
+function SavedVendorsInline({ asStrip = false }) {
   const dispatch        = useDispatch();
   const navigate        = useNavigate();
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
   const [open, setOpen] = React.useState(false);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
-
   if (!compareSelected.length) return null;
 
   return (
     <>
-      <button onClick={() => setOpen(true)}
-        style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
-        onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
-      >
-        Saved Vendors
-        <span style={{ background: "#CCAB4A", color: "#fff", borderRadius: 100, padding: "1px 8px", fontSize: 12, fontWeight: 800 }}>{compareSelected.length}</span>
-      </button>
+      {asStrip ? (
+        <button onClick={() => setOpen(true)}
+          style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, width: "100%", padding: "4px 10px", borderRadius: "0 0 100px 100px", border: "1.5px solid rgba(196,122,46,0.22)", borderTop: "none", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+          💛 Saved ({compareSelected.length})
+        </button>
+      ) : (
+        <button onClick={() => setOpen(true)}
+          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+          onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+          onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}>
+          Saved Vendors
+          <span style={{ background: "#CCAB4A", color: "#fff", borderRadius: 100, padding: "1px 8px", fontSize: 12, fontWeight: 800 }}>{compareSelected.length}</span>
+        </button>
+      )}
 
       {open && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
@@ -78,6 +83,7 @@ const Navbar = ({
   const { user, token } = useSelector((state) => state.auth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
+  const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
   const [activeChatCount, setActiveChatCount] = useState(0);
   const [adminCounts, setAdminCounts] = useState(null);
 
@@ -449,15 +455,13 @@ const Navbar = ({
               <FaWhatsapp size={17} />
             </a>
 
-            {/* Saved Vendors inline button — shows when items are saved */}
-            {token && user && <SavedVendorsInline />}
-
             {/* Auth area */}
             {token && user ? (
               <div ref={profileMenuRef} style={{ position: "relative", marginLeft: 10 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch" }}>
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
+                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: compareSelected.length > 0 && !user?.isAdmin ? "100px 100px 0 0" : 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.12)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
                 >
@@ -480,6 +484,13 @@ const Navbar = ({
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#3B2F2F", maxWidth: 90, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</span>
                   <FaChevronDown size={9} style={{ color: "#9B7450", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                 </button>
+
+                {/* Saved Vendors strip — directly below profile button */}
+                {!user?.isAdmin && compareSelected.length > 0 && (
+                  <SavedVendorsInline asStrip />
+                )}
+                </div>{/* end flex column */}
+
                 {showProfileMenu && (
                   <>
                     <div style={{ position: "fixed", inset: 0, zIndex: 998 }} onClick={() => setShowProfileMenu(false)} />

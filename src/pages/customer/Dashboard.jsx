@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import Navbar from "../../components/Navbar";
+import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 import tendrLogo from "../../assets/logos/tendr.png";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
@@ -144,16 +146,10 @@ export default function CustomerDashboard() {
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <BasicSpeedDial />
 
-      {/* Sticky nav */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 32px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 40, cursor: "pointer", objectFit: "contain" }} />
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={() => navigate("/booking")} style={{ fontSize: 13, fontWeight: 600, color: "#fff", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 8, padding: "7px 16px", cursor: "pointer", fontFamily: font }}>Plan New Event</button>
-            <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: font }}>← Home</button>
-          </div>
-        </div>
-      </div>
+      {/* Main Navbar */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
+        <Navbar tendrLogo={tendrLogoImg} handleLogoClick={() => navigate("/")} />
+      </nav>
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 32px 80px" }}>
 
