@@ -328,7 +328,7 @@ const Home = () => {
                 letterSpacing: "-0.02em",
               }}
             >
-              Plan, organize, and bring your entire party to life—
+              Plan, organize, and celebrate unforgettable moments —{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, #C47A2E, #DEB887)",
@@ -337,9 +337,9 @@ const Home = () => {
                   backgroundClip: "text",
                 }}
               >
-                without the chaos
+                effortlessly
               </span>
-              {" "}of managing everything on your own
+              {" "}and all in one place.
             </h1>
 
             <p
@@ -352,7 +352,7 @@ const Home = () => {
                 maxWidth: 480,
               }}
             >
-              From ideas to execution, handle every part of your celebration in one seamless flow with smart tools and trusted services.
+              From discovering ideas to managing vendors, budgets, guest lists, and bookings, Tendr helps you handle every part of your celebration without the usual stress.
             </p>
 
             <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
