@@ -560,72 +560,102 @@ const Home = () => {
 
       {/* ── How Tendr Works ── */}
       <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto" }}>
 
           {/* Heading */}
-          <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Simple Process</p>
+          <div style={{ textAlign: "center", marginBottom: 60 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Your Journey</p>
             <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>How Tendr Works</h2>
-            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>From your first idea to the perfect event — in three easy steps.</p>
+            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 520, margin: "0 auto" }}>From filling your event details to celebrating your perfect day — here's how the platform guides you through every step.</p>
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 
-          {/* Steps */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 28, position: "relative" }} className="how-it-works-grid">
-
-            {/* Connector line */}
-            <div style={{ position: "absolute", top: 44, left: "16.5%", right: "16.5%", height: 2, background: "linear-gradient(90deg,#CCAB4A,#C47A2E,#CCAB4A)", borderRadius: 100, zIndex: 0, opacity: 0.35 }} className="connector-line" />
-
+          {/* Steps — 5 steps in a flow */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }} className="htw-flow">
             {[
               {
-                step: "01",
+                step: "1",
                 icon: "📋",
-                title: "Tell Us About Your Event",
-                desc: "Fill in a quick form — event type, date, location, guests and budget. Takes under 2 minutes.",
+                color: "#C47A2E",
+                title: "Share Your Event Details",
+                desc: "Fill a quick 5-question form — event type, date, location, number of guests and your budget. The whole thing takes under 2 minutes.",
+                tag: "Start here",
               },
               {
-                step: "02",
+                step: "2",
+                icon: "🔍",
+                color: "#7c3aed",
+                title: "Explore & Save Vendors",
+                desc: "Browse our curated list of DJs, caterers, decorators and photographers in your city. Click 'Quick View' to preview profiles and 'Save Vendor' to shortlist the ones you like.",
+                tag: "You Do It mode",
+              },
+              {
+                step: "3",
                 icon: "💬",
-                title: "Chat With Our Team",
-                desc: "Our concierge connects you with the right vendors. We discuss requirements and confirm pricing in chat.",
+                color: "#0369a1",
+                title: "Chat & Confirm Requirements",
+                desc: "Our team approves your chat request and connects you with each vendor. Discuss your exact requirements, share ideas, and get a confirmed price — all within the platform chat.",
+                tag: "Both modes",
               },
               {
-                step: "03",
-                icon: "🎉",
-                title: "Review, Pay & Enjoy",
-                desc: "See the full price breakdown, confirm your vendors, complete payment — and simply show up on the day.",
+                step: "4",
+                icon: "💰",
+                color: "#b45309",
+                title: "Review the Full Quote",
+                desc: "Once all chats are done and vendors are finalised, open the Review & Pay page. See every vendor's confirmed price in one place, with a clear total. No surprises.",
+                tag: "Pricing locked in",
               },
-            ].map(({ step, icon, title, desc }) => (
-              <div key={step} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", padding: "32px 28px", display: "flex", flexDirection: "column", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, boxShadow: "0 4px 12px rgba(196,122,46,0.3)" }}>
+              {
+                step: "5",
+                icon: "🎉",
+                color: "#15803d",
+                title: "Pay & Enjoy Your Event",
+                desc: "Complete your payment securely. Every vendor is confirmed, timings are set — all you have to do is show up and celebrate.",
+                tag: "You're done!",
+              },
+            ].map(({ step, icon, color, title, desc, tag }, i, arr) => (
+              <div key={step} style={{ display: "flex", gap: 0, alignItems: "stretch" }} className="htw-step-row">
+                {/* Left: step number + connector */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", width: 64, flexShrink: 0 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: "50%", background: `linear-gradient(135deg,${color},${color}bb)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, boxShadow: `0 4px 14px ${color}40`, zIndex: 1 }}>
                     {icon}
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.08em" }}>STEP {step}</span>
+                  {i < arr.length - 1 && (
+                    <div style={{ width: 2, flex: 1, minHeight: 32, background: `linear-gradient(to bottom,${color}60,${arr[i+1].color}60)`, margin: "6px 0" }} />
+                  )}
                 </div>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px", lineHeight: 1.3 }}>{title}</h3>
-                <p style={{ fontSize: 14, color: "#7A5535", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+
+                {/* Right: content card */}
+                <div style={{ flex: 1, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.1)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "22px 26px", marginBottom: i < arr.length - 1 ? 12 : 0, marginLeft: 16 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 11, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: "0.08em" }}>Step {step}</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: `${color}14`, color, border: `1px solid ${color}40` }}>{tag}</span>
+                  </div>
+                  <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.3 }}>{title}</h3>
+                  <p style={{ fontSize: 14, color: "#7A5535", lineHeight: 1.7, margin: 0 }}>{desc}</p>
+                </div>
               </div>
             ))}
           </div>
 
           {/* CTA */}
-          <div style={{ textAlign: "center", marginTop: 48 }}>
+          <div style={{ textAlign: "center", marginTop: 52 }}>
             <button
               onClick={() => navigate("/booking")}
-              style={{ padding: "14px 40px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 20px rgba(196,122,46,0.35)", transition: "transform 0.2s, box-shadow 0.2s" }}
+              style={{ padding: "14px 44px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 20px rgba(196,122,46,0.35)", transition: "transform 0.2s, box-shadow 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.45)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.35)"; }}
             >
-              Start Planning →
+              Start Planning Your Event →
             </button>
           </div>
         </div>
 
         <style>{`
-          @media (max-width: 700px) {
-            .how-it-works-grid { grid-template-columns: 1fr !important; }
-            .connector-line { display: none; }
+          @media (max-width: 640px) {
+            .htw-flow { gap: 0 !important; }
+            .htw-step-row > div:first-child { width: 44px !important; }
+            .htw-step-row > div:first-child > div:first-child { width: 40px !important; height: 40px !important; font-size: 18px !important; }
           }
         `}</style>
       </section>
