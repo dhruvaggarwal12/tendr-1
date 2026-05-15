@@ -170,8 +170,22 @@ const Chat = () => {
 
   // Chat is enabled if vendor is pre-approved OR admin has approved the chat request
   const vendorApproved = vendor?.approved || vendorApprovedByAdmin || false;
+  const [chatCompleted, setChatCompleted] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const fileInputRef = useRef(null);
+
+  const handleCloseChat = async () => {
+    if (conversationId) {
+      try {
+        await fetch(`${BASE_URL}/conversations/${conversationId}/close`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${authToken}` },
+          credentials: 'include',
+        });
+      } catch {}
+    }
+    navigate(-1);
+  };
   const messagesEndRef = useRef(null);
 
   // Selected vendors modal
@@ -371,41 +385,6 @@ const Chat = () => {
             >
               <CheckCircle2 size={13} /> Finalised
             </span>
-          )}
-          {!isLetUsDoIt && compareSelected.length > 0 && (
-            <button
-              onClick={openSelectedModal}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 6,
-                padding: "6px 14px",
-                borderRadius: 100,
-                border: "none",
-                background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-                color: "#fff",
-                fontSize: 12,
-                fontWeight: 700,
-                fontFamily: "'Outfit', sans-serif",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                flexShrink: 0,
-                boxShadow: "0 2px 8px rgba(196,122,46,0.3)",
-              }}
-            >
-              Selected
-              <span
-                style={{
-                  background: "rgba(255,255,255,0.3)",
-                  borderRadius: 100,
-                  padding: "1px 7px",
-                  fontSize: 11,
-                  fontWeight: 800,
-                }}
-              >
-                {compareSelected.length}
-              </span>
-            </button>
           )}
         </div>
       </div>
@@ -670,31 +649,39 @@ const Chat = () => {
             Send
           </button>
 
-          {/* Hide Finalise Vendor for support/concierge chats */}
+          {/* Vendor chat action buttons */}
           {vendor._id !== "concierge" && from !== "support" && (
-            <button
-              type="button"
-              onClick={handleFinalise}
-              style={{
-                flexShrink: 0,
-                padding: "10px 16px",
-                borderRadius: 100,
-                border: "none",
-                background: isThisVendorFinalised
-                  ? "linear-gradient(135deg, #15803d, #22c55e)"
-                  : "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-                color: "#fff",
-                fontSize: 13,
-                fontWeight: 700,
-                fontFamily: "'Outfit', sans-serif",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-                boxShadow: "0 3px 10px rgba(196,122,46,0.3)",
-                transition: "all 0.2s",
-              }}
-            >
-              {isThisVendorFinalised ? "Finalised ✓" : "Finalise Vendor"}
-            </button>
+            <>
+              {/* Close Chat */}
+              <button
+                type="button"
+                onClick={handleCloseChat}
+                style={{ flexShrink: 0, padding: "9px 14px", borderRadius: 100, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", whiteSpace: "nowrap" }}
+              >
+                ✕ Close Chat
+              </button>
+
+              {/* Chat Completed */}
+              <button
+                type="button"
+                onClick={() => setChatCompleted(true)}
+                disabled={chatCompleted}
+                style={{ flexShrink: 0, padding: "9px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: chatCompleted ? "default" : "pointer", whiteSpace: "nowrap" }}
+              >
+                {chatCompleted ? "Completed ✓" : "Chat Completed"}
+              </button>
+
+              {/* Review & Pay (was Finalise Vendor) — only enabled after Chat Completed */}
+              <button
+                type="button"
+                onClick={handleFinalise}
+                disabled={!chatCompleted}
+                title={!chatCompleted ? "Mark chat as completed first" : ""}
+                style={{ flexShrink: 0, padding: "10px 16px", borderRadius: 100, border: "none", background: !chatCompleted ? "#e5e7eb" : isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !chatCompleted ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: !chatCompleted ? "not-allowed" : "pointer", whiteSpace: "nowrap", boxShadow: chatCompleted ? "0 3px 10px rgba(196,122,46,0.3)" : "none", transition: "all 0.2s" }}
+              >
+                {isThisVendorFinalised ? "Reviewed ✓" : "Review & Pay"}
+              </button>
+            </>
           )}
         </form>
       </div>

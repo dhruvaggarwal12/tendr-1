@@ -457,18 +457,29 @@ const AdminDashboard = () => {
     if (!chat) return "";
     const name = chat.customerId?.name || "Customer";
     const ed   = chat.eventDetails   || {};
+
+    // Merge conversation eventDetails with matching EventPlan for full data
+    const plan = eventPlans.find(p =>
+      p.customerId?._id?.toString() === chat.customerId?._id?.toString()
+    );
+    const eventType = ed.eventType || plan?.eventType;
+    const date      = ed.date      || plan?.date;
+    const location  = ed.location  || plan?.location;
+    const guests    = ed.guests    || plan?.guests;
+    const budget    = ed.budget    || plan?.budget;
+
     const pinned = currentPinned;
     const lines = [
       `Hi ${name}! 👋`,
       ``,
-      `Here's your *Tendr Event Summary* 📋`,
+      `Here is your *Tendr Event Summary* 📋`,
       ``,
       `*Event Details*`,
-      ed.eventType && `  • Type: ${ed.eventType}`,
-      ed.date      && `  • Date: ${ed.date}`,
-      ed.location  && `  • Location: ${ed.location}`,
-      ed.guests    && `  • Guests: ${ed.guests}`,
-      ed.budget    && `  • Budget: ${ed.budget}`,
+      eventType && `  • Type: ${eventType}`,
+      date      && `  • Date: ${date}`,
+      location  && `  • Location: ${location}`,
+      guests    && `  • Guests: ${guests}`,
+      budget    && `  • Budget: ${budget}`,
       ``,
       `*Requirements & Confirmations* ✅`,
       ...(pinned.length ? pinned.map(m => `  • ${m.content}`) : [`  • (No items pinned yet)`]),
@@ -498,12 +509,30 @@ const AdminDashboard = () => {
     }).catch(() => {});
   };
 
-  // "Done" — saves compiled summary, clears the pin panel
+  // "Done" — saves to both Conversation and matching EventPlan, collapses panel
   const handleSummaryDone = () => {
     const text = buildSummaryDraft();
-    saveSummary(text);
+    saveSummary(text); // saves to Conversation
+
+    // Also save to the matching EventPlan so admin Bookings can show it
+    const plan = eventPlans.find(p =>
+      p.customerId?._id?.toString() === selectedChat?.customerId?._id?.toString()
+    );
+    if (plan?._id) {
+      fetch(`${BASE_URL}/admin/event-plans/${plan._id}/summary`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        credentials: 'include',
+        body: JSON.stringify({ bookingSummary: text }),
+      })
+        .then(() => setEventPlans(prev => prev.map(p2 =>
+          p2._id === plan._id ? { ...p2, bookingSummary: text, bookingSummaryAt: new Date().toISOString() } : p2
+        )))
+        .catch(() => {});
+    }
+
     setSummaryDraft(text);
-    setPinnedMsgs([]); // collapse the panel; pins remain in DB
+    setPinnedMsgs([]);
   };
 
   const summaryWhatsAppUrl = () => {
@@ -825,7 +854,13 @@ const AdminDashboard = () => {
             return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
           };
           const filteredPlans = bookingTab === "All" ? eventPlans : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
-          const statusBadgeStyle = (s) => ({ submitted: { bg: "#fffbeb", color: "#b45309", border: "#fde68a" }, in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" }, completed: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" }, cancelled: { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" } }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a" });
+          const statusBadgeStyle = (s) => ({
+            submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "In Process" },
+            draft:       { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "In Process" },
+            in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe",  label: "Submitted"  },
+            completed:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0",  label: "Completed"  },
+            cancelled:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5",  label: "Cancelled"  },
+          }[s] || { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: s || "—" });
           return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
             <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
@@ -893,22 +928,19 @@ const AdminDashboard = () => {
                               </span>
                             </td>
                             <td style={{ padding: "10px 14px" }}>
-                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: badge.bg, color: badge.color, border: `1px solid ${badge.border}`, textTransform: "capitalize" }}>
-                                {plan.status?.replace("_", " ")}
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}>
+                                {badge.label}
                               </span>
                             </td>
                             <td style={{ padding: "10px 14px" }}>
                               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                 {/* Ongoing: show summary + WhatsApp + Mark Payment Done */}
                                 {(plan.status === "submitted" || plan.status === "draft") && (() => {
-                                  const convoWithSummary = [...(recentChats || []), ...(adminChats || [])].find(
-                                    c => c.customerId?._id === plan.customerId?._id && c.bookingSummary
-                                  );
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
                                   return (
                                     <>
-                                      {convoWithSummary && phone && (
-                                        <a href={`https://wa.me/91${phone}?text=${encodeURIComponent(convoWithSummary.bookingSummary)}`}
+                                      {plan.bookingSummary && phone && (
+                                        <a href={`https://wa.me/91${phone}?text=${encodeURIComponent(plan.bookingSummary)}`}
                                           target="_blank" rel="noopener noreferrer"
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                           📱 Send on WhatsApp
@@ -1806,9 +1838,23 @@ const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <span className="text-xs sm:text-sm text-gray-500">
-                        {formatTimeIST(selectedChat.updatedAt)}
-                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span className="text-xs sm:text-sm text-gray-500">
+                          {formatTimeIST(selectedChat.updatedAt)}
+                        </span>
+                        {activeDropdown !== "chatsupport" && (
+                          <button
+                            onClick={() => {
+                              fetch(`${BASE_URL}/admin/conversations/${selectedChat._id}/close`, {
+                                method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                              }).then(r => { if (r.ok) { setSelectedChat(null); setCurrentConversation([]); } }).catch(() => {});
+                            }}
+                            style={{ padding: "4px 12px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                          >
+                            ✕ Close Chat
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Event details strip */}
@@ -2002,9 +2048,23 @@ const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <span className="text-xs sm:text-sm text-gray-500">
-                        {formatTimeIST(selectedChat.updatedAt)}
-                      </span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <span className="text-xs sm:text-sm text-gray-500">
+                          {formatTimeIST(selectedChat.updatedAt)}
+                        </span>
+                        {activeDropdown !== "chatsupport" && (
+                          <button
+                            onClick={() => {
+                              fetch(`${BASE_URL}/admin/conversations/${selectedChat._id}/close`, {
+                                method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                              }).then(r => { if (r.ok) { setSelectedChat(null); setCurrentConversation([]); } }).catch(() => {});
+                            }}
+                            style={{ padding: "4px 12px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                          >
+                            ✕ Close Chat
+                          </button>
+                        )}
+                      </div>
                     </div>
 
                     {/* Event details strip */}
