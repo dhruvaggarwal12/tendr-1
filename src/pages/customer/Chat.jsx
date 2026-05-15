@@ -335,7 +335,7 @@ const Chat = () => {
     >
       <BasicSpeedDial />
 
-      <HamburgerNav />
+      <HamburgerNav title={vendor.name || "Chat"} showReviewPay={true} />
       {vendor._id !== "concierge" && from !== "support" && (
         <JourneyProgress active="Chat" />
       )}

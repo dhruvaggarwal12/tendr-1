@@ -7,6 +7,10 @@ import store from "./store";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FloatingChatButton from "./components/FloatingChatButton";
 
+// Scroll to top on every navigation
+router.subscribe(() => {
+  window.scrollTo({ top: 0, behavior: "instant" });
+});
 
 function App() {
   return (
