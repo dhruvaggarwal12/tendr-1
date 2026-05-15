@@ -12,6 +12,7 @@ import {
   clearVendorCompare,
 } from "../../redux/listingFiltersSlice";
 import ListingsNav from "../../components/ListingsNav";
+import JourneyProgress from "../../components/JourneyProgress";
 import CompareModal from "../../components/CompareModal";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
@@ -339,6 +340,35 @@ const Chat = () => {
         selectedCount={isLetUsDoIt ? 0 : compareSelected.length}
         showFinalisedBtn={!isLetUsDoIt}
       />
+      {vendor._id !== "concierge" && from !== "support" && (
+        <JourneyProgress active="Chat" />
+      )}
+
+      {/* Next steps hint — vendor chats only */}
+      {vendor._id !== "concierge" && from !== "support" && (
+        <div style={{ background: "rgba(196,122,46,0.06)", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "8px 24px", fontFamily: "'Outfit', sans-serif" }}>
+          <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginRight: 4 }}>Next steps:</span>
+            {[
+              { label: "Chat & Confirm",   done: false, active: !chatCompleted },
+              { label: "Mark Complete",    done: false, active: vendorApproved && !chatCompleted && false, current: !chatCompleted && messages.length > 0 },
+              { label: "Finalise Vendor",  done: isThisVendorFinalised, active: chatCompleted && !isThisVendorFinalised },
+              { label: "Review & Pay",     done: false, active: isThisVendorFinalised },
+            ].map(({ label, done, active }, i, arr) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{
+                  fontSize: 12, fontWeight: active || done ? 700 : 500,
+                  color: done ? "#15803d" : active ? "#C47A2E" : "#bbb",
+                  padding: "2px 0",
+                }}>
+                  {done ? "✓ " : ""}{label}
+                </span>
+                {i < arr.length - 1 && <span style={{ color: "rgba(196,122,46,0.3)", fontSize: 10 }}>›</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Vendor sub-header */}
       <div

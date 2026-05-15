@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { clearFinalisedVendor } from "../../redux/listingFiltersSlice";
 import ListingsNav from "../../components/ListingsNav";
+import JourneyProgress from "../../components/JourneyProgress";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
 const PRICE_RANGES = {
@@ -181,6 +182,7 @@ const BookingReviewPage = () => {
     <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
       <BasicSpeedDial />
       <ListingsNav showFinalisedBtn={false} hideTitle={true} />
+      <JourneyProgress active="Pay" />
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px", width: "100%", boxSizing: "border-box" }}>
 

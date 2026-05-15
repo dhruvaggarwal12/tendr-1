@@ -11,11 +11,16 @@ const FLOWS = [
   {
     type: "you-do-it",
     emoji: "🔍",
-    title: "You Do It",
-    subtitle: "Browse & choose vendors yourself",
-    description: "Fill in your event details, browse verified vendors by category, compare them side by side, and finalise who you want to hire.",
-    steps: ["Fill event form", "Browse vendor listings", "Compare & chat", "Finalise & book"],
-    cta: "Start Browsing",
+    title: "I'll Find My Vendors",
+    subtitle: "Browse, chat and book yourself — full control",
+    description: "You're in the driver's seat. Tell us about your event, browse our verified vendors in your city, chat with them to confirm pricing and requirements, then pay — all in one place.",
+    steps: [
+      "Fill event details (takes 2 minutes)",
+      "Browse & save vendors you like",
+      "Chat with vendors to confirm price",
+      "Finalise vendors & pay",
+    ],
+    cta: "Start Browsing Vendors",
     accentColor: "#C47A2E",
     bgAccent: "rgba(196,122,46,0.06)",
     borderColor: "rgba(196,122,46,0.25)",
@@ -23,11 +28,16 @@ const FLOWS = [
   {
     type: "let-us-do-it",
     emoji: "✨",
-    title: "Let Us Do It",
-    subtitle: "Tell us your needs, we handle the rest",
-    description: "Share your event requirements and budget. Our planning team will suggest the best options and coordinate everything for you.",
-    steps: ["Fill event form", "Tell us your needs", "We execute your event", "Review & confirm"],
-    cta: "Get Started",
+    title: "Tendr Plans It For Me",
+    subtitle: "Tell us what you need — we handle everything",
+    description: "Sit back and let our team do the work. Share your event requirements and budget. We find the right vendors, confirm pricing, and present you with a final plan to approve and pay.",
+    steps: [
+      "Fill event details (takes 2 minutes)",
+      "Chat with our team about requirements",
+      "We source & confirm the best vendors",
+      "Review the quote & pay",
+    ],
+    cta: "Let Tendr Handle It",
     accentColor: "#7A4A1E",
     bgAccent: "rgba(122,74,30,0.05)",
     borderColor: "rgba(122,74,30,0.18)",
@@ -70,7 +80,7 @@ export default function ChooseBooking() {
           How would you like to plan?
         </h1>
         <p style={{ fontSize: 16, color: "#9B7450", margin: 0 }}>
-          Two simple paths to your perfect event. Pick what works best for you.
+          Both start with the same quick form. Choose how involved you want to be.
         </p>
         <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "20px auto 0" }} />
       </div>

@@ -38,6 +38,7 @@ import EventFormSummary from "../../components/EventFormSummary.jsx";
 import { getVendors } from "../../apis/vendorApi.js";
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
+import JourneyProgress from "../../components/JourneyProgress";
 
 const EventPlanning = () => {
   const socketRef = useRef(null);
@@ -120,7 +121,6 @@ const EventPlanning = () => {
     selectedVendors,
   } = useSelector((state) => state.eventPlanning);
   const { token } = useSelector((state) => state.auth);
-  const [showAuthGate, setShowAuthGate] = useState(false);
 
   // pick bookingType from URL (?bookingType=you-do-it | let-us-do-it)
   useEffect(() => {
@@ -434,18 +434,8 @@ const EventPlanning = () => {
                 disabled={selectedVendors.length === 0}
                 onClick={() => {
                   if (selectedVendors.length === 0) return;
-                  if (!token) { setShowAuthGate(true); return; }
                   dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                  // Open Tendr Concierge chat for guidance, then customer can also browse listings
-                  navigate("/chat", {
-                    state: {
-                      vendor: { _id: "concierge", name: "Tendr Concierge", approved: true },
-                      from: "concierge",
-                      formData,
-                      selectedVendors,
-                      bookingType: "you-do-it",
-                    }
-                  });
+                  navigate("/listings", { state: { selectedCategories: selectedVendors } });
                 }}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
@@ -476,66 +466,6 @@ const EventPlanning = () => {
         </div>
       </div>
 
-      {/* ── Auth gate ── */}
-      {showAuthGate && (
-        <>
-          <div
-            onClick={() => setShowAuthGate(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 2000, backdropFilter: "blur(3px)" }}
-          />
-          <div style={{
-            position: "fixed", top: "50%", left: "50%",
-            transform: "translate(-50%,-50%)",
-            background: "#FFFCF5", borderRadius: 24,
-            boxShadow: "0 24px 64px rgba(139,69,19,0.2)",
-            border: "1.5px solid rgba(196,122,46,0.2)",
-            padding: "36px 32px", zIndex: 2001,
-            width: 360, maxWidth: "92vw",
-            fontFamily: "'Outfit', sans-serif",
-            textAlign: "center",
-            animation: "qv-fade 0.2s ease",
-          }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🔐</div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>
-              Sign in to view listings
-            </h3>
-            <p style={{ fontSize: 14, color: "#7A5535", margin: "0 0 6px", lineHeight: 1.5 }}>
-              Your event details are saved. Sign in or create a free account to browse vendors.
-            </p>
-            <div style={{ display: "flex", gap: 8, flexDirection: "column", marginTop: 22 }}>
-              <button
-                onClick={() => {
-                  // Save filters + categories so listings opens correctly after login
-                  dispatch(setFilters({ serviceType: selectedVendors[0] || "", eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                  sessionStorage.setItem("auth_return_categories", JSON.stringify(selectedVendors));
-                  sessionStorage.setItem("auth_return", "/listings");
-                  navigate("/login");
-                }}
-                style={{ padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => {
-                  dispatch(setFilters({ serviceType: selectedVendors[0] || "", eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                  sessionStorage.setItem("auth_return_categories", JSON.stringify(selectedVendors));
-                  sessionStorage.setItem("auth_return", "/listings");
-                  navigate("/signup");
-                }}
-                style={{ padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-              >
-                Create Free Account
-              </button>
-              <button
-                onClick={() => setShowAuthGate(false)}
-                style={{ background: "none", border: "none", color: "#9B7450", fontSize: 13, cursor: "pointer", marginTop: 4, fontFamily: "'Outfit', sans-serif" }}
-              >
-                Go back
-              </button>
-            </div>
-          </div>
-        </>
-      )}
       </>
     );
   }
@@ -547,9 +477,11 @@ const EventPlanning = () => {
    *  ======================= */
 
   return (
-    <div className="min-h-screen bg-[#F8F4EF] flex items-center justify-center p-4 sm:p-6 md:p-10">
+    <div className="min-h-screen bg-[#F8F4EF]">
+      <JourneyProgress active="Plan" />
       <BasicSpeedDial />
       <SelectedVendorsFloat />
+      <div className="flex items-center justify-center p-4 sm:p-6 md:p-10">
       <div className="w-full max-w-xl sm:max-w-2xl">
         {/* Progress Bar */}
         <div className="mb-8">
@@ -726,6 +658,7 @@ const EventPlanning = () => {
           </button>
         </div>
       </div>
+      </div>{/* closes flex wrapper */}
     </div>
   );
 

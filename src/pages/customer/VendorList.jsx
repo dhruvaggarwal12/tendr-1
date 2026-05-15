@@ -16,6 +16,7 @@ import { getVendors } from "../../apis/vendorApi";
 import CompareModal from "../../components/CompareModal";
 import Footer from "../../components/Footer.jsx";
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
+import JourneyProgress from "../../components/JourneyProgress";
 
 const font = "'Outfit', sans-serif";
 
@@ -210,6 +211,7 @@ const VendorList = () => {
     <div className="min-h-screen bg-gray-50">
       <BasicSpeedDial />
       <ListingsNav hasSelections={compareSelected.length > 0} />
+      <JourneyProgress active="Browse" />
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <div className="w-full lg:w-1/4 bg-white shadow-lg lg:shadow-none lg:border-r border-gray-200">
