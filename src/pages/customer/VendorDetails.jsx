@@ -3,7 +3,7 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 import ListingsNav from "../../components/ListingsNav";
 import CompareModal from "../../components/CompareModal";
-import Navbar from "../../components/Navbar";
+import HamburgerNav from "../../components/HamburgerNav";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import JourneyProgress from "../../components/JourneyProgress";
 
@@ -203,9 +203,7 @@ const VendorDetailsPage = () => {
     <div className="bg-white text-black">
       <BasicSpeedDial />
       {/* Main Navbar */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
-        <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
-      </nav>
+      <HamburgerNav />
       <JourneyProgress active="Browse" />
       {/* Task bar — only shows Review & Pay when vendors are finalised */}
       <div className="border-b-[1px] border-[#CCAB4A]">

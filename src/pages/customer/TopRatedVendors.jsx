@@ -5,7 +5,7 @@ import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSl
 import { addVendorToCompare, removeVendorFromCompare } from "../../redux/listingFiltersSlice";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
-import Navbar from "../../components/Navbar";
+import HamburgerNav from "../../components/HamburgerNav";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -187,9 +187,7 @@ export default function TopRatedVendors() {
       <SelectedVendorsFloat />
 
       {/* Main Navbar */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
-        <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
-      </nav>
+      <HamburgerNav />
       {/* Category filter bar */}
       <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 32px" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", height: 52, display: "flex", alignItems: "center", gap: 8 }}>

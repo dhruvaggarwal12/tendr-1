@@ -323,9 +323,9 @@ const Home = () => {
       {/* Hero Section */}
       <section
         style={{
-          height: "75vh",
-          minHeight: 520,
-          paddingTop: 76,
+          height: "82vh",
+          minHeight: 560,
+          paddingTop: 88,
           background: "linear-gradient(135deg, #FFF8EE 0%, #FFF3DC 60%, #FDE8C8 100%)",
           display: "flex",
           alignItems: "stretch",
@@ -639,18 +639,7 @@ const Home = () => {
       <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
 
-          {/* Heading */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.55 }}
-            style={{ textAlign: "center", marginBottom: 56 }}
-          >
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Your Journey</p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>How Tendr Works</h2>
-            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>From your first idea to your perfect event — five simple steps.</p>
-          </motion.div>
+          {/* No heading — steps speak for themselves */}
 
           {/* Steps row */}
           <div style={{ position: "relative" }}>

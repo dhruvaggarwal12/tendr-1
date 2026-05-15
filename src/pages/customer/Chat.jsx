@@ -13,6 +13,7 @@ import {
 } from "../../redux/listingFiltersSlice";
 import ListingsNav from "../../components/ListingsNav";
 import JourneyProgress from "../../components/JourneyProgress";
+import HamburgerNav from "../../components/HamburgerNav";
 import CompareModal from "../../components/CompareModal";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
@@ -334,12 +335,7 @@ const Chat = () => {
     >
       <BasicSpeedDial />
 
-      {/* Navbar */}
-      <ListingsNav
-        onOpenSelected={isLetUsDoIt ? undefined : openSelectedModal}
-        selectedCount={isLetUsDoIt ? 0 : compareSelected.length}
-        showFinalisedBtn={!isLetUsDoIt}
-      />
+      <HamburgerNav />
       {vendor._id !== "concierge" && from !== "support" && (
         <JourneyProgress active="Chat" />
       )}

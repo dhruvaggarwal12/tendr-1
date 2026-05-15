@@ -5,6 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { clearFinalisedVendor } from "../../redux/listingFiltersSlice";
 import ListingsNav from "../../components/ListingsNav";
+import HamburgerNav from "../../components/HamburgerNav";
 import JourneyProgress from "../../components/JourneyProgress";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
@@ -160,7 +161,7 @@ const BookingReviewPage = () => {
     return (
       <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
-        <ListingsNav showFinalisedBtn={false} hideTitle={true} />
+        <HamburgerNav />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, color: "#9B7450" }}>
           <div style={{ fontSize: 48 }}>📋</div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>No vendors finalised yet</h2>

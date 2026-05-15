@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import Navbar from "../../components/Navbar";
+import HamburgerNav from "../../components/HamburgerNav";
 import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 import tendrLogo from "../../assets/logos/tendr.png";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
@@ -147,9 +147,7 @@ export default function CustomerDashboard() {
       <BasicSpeedDial />
 
       {/* Main Navbar */}
-      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
-        <Navbar tendrLogo={tendrLogoImg} handleLogoClick={() => navigate("/")} />
-      </nav>
+      <HamburgerNav />
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 32px 80px" }}>
 

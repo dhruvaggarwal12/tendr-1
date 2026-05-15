@@ -2,7 +2,7 @@ import React from "react";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
-import Navbar from "../../components/Navbar";
+import HamburgerNav from "../../components/HamburgerNav";
 
 const font = "'Outfit', sans-serif";
 
@@ -20,9 +20,7 @@ export default function CancellationPolicy() {
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", minHeight: "100vh" }}>
 
-      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
-        <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
-      </nav>
+      <HamburgerNav />
 
       {/* Hero */}
       <div style={{ background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", padding: "72px 24px 60px", textAlign: "center" }}>

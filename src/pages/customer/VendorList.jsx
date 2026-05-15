@@ -17,7 +17,7 @@ import CompareModal from "../../components/CompareModal";
 import Footer from "../../components/Footer.jsx";
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import JourneyProgress from "../../components/JourneyProgress";
-import Navbar from "../../components/Navbar";
+import HamburgerNav from "../../components/HamburgerNav";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
@@ -212,9 +212,7 @@ const VendorList = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <BasicSpeedDial />
-      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
-        <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
-      </nav>
+      <HamburgerNav />
       <JourneyProgress active="Browse" />
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
@@ -338,14 +336,19 @@ const VendorList = () => {
           </div>
 
           {/* What to do next hint */}
-          {token && (
-            <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
-              <span style={{ fontSize: 14 }}>💡</span>
-              <span style={{ fontSize: 13, color: "#7A5535" }}>
-                <b>How to proceed:</b> Click <b>Quick View</b> to preview a vendor, then <b>Save Vendor</b> to shortlist them. Once saved, open a chat to confirm pricing.
-              </span>
-            </div>
-          )}
+          {token && (() => {
+            const [showHint, setShowHint] = React.useState(true);
+            if (!showHint) return null;
+            return (
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
+                <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
+                <span style={{ fontSize: 13, color: "#7A5535", flex: 1 }}>
+                  Click <b>Quick View</b> on any vendor to see their profile and <b>Request to Chat</b> directly — no need to save first. If you save a vendor, you can compare multiple vendors side by side before deciding.
+                </span>
+                <button onClick={() => setShowHint(false)} style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: 16, flexShrink: 0, padding: 0, lineHeight: 1 }}>✕</button>
+              </div>
+            );
+          })()} 
 
           {/* Auth gate — blurs vendor list if not signed in */}
           <div style={{ position: "relative" }}>
