@@ -245,6 +245,44 @@ export default function CustomerDashboard() {
                         )}
                       </div>
                     </div>
+
+                    {/* What happens next — progress timeline */}
+                    {(() => {
+                      const steps = [
+                        { label: "Plan Submitted",       done: true },
+                        { label: "Tendr Reviewing",      done: !!plan.bookingSummary },
+                        { label: "Vendors Confirmed",    done: !!plan.bookingSummary },
+                        { label: "Payment Pending",      done: false },
+                      ];
+                      const current = steps.findIndex(s => !s.done);
+                      return (
+                        <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>What happens next</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+                            {steps.map((s, si) => (
+                              <div key={si} style={{ display: "flex", alignItems: "center", flex: si < steps.length - 1 ? 1 : 0 }}>
+                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                                  <div style={{
+                                    width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0,
+                                    background: s.done ? "#C47A2E" : si === current ? "rgba(196,122,46,0.15)" : "#f3f4f6",
+                                    color: s.done ? "#fff" : si === current ? "#C47A2E" : "#bbb",
+                                    border: si === current ? "2px solid #C47A2E" : "2px solid transparent",
+                                  }}>
+                                    {s.done ? "✓" : si + 1}
+                                  </div>
+                                  <span style={{ fontSize: 10, fontWeight: 600, color: s.done ? "#C47A2E" : si === current ? "#2C1A0E" : "#bbb", whiteSpace: "nowrap", textAlign: "center" }}>
+                                    {s.label}
+                                  </span>
+                                </div>
+                                {si < steps.length - 1 && (
+                                  <div style={{ flex: 1, height: 2, background: s.done ? "#C47A2E" : "#f0e8da", margin: "0 4px", marginBottom: 16, borderRadius: 2 }} />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
                   </div>
                 ))}
               </div>

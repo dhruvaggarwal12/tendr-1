@@ -42,6 +42,49 @@ const CELEBRATION_PHOTOS = [
   },
 ];
 
+const FAQS = [
+  { q: "Is Tendr free to use?", a: "Browsing vendors, saving favourites and filling your event form is completely free. You only pay when you confirm your booking and proceed to payment." },
+  { q: "What is the difference between 'You Do It' and 'Let Us Do It'?", a: "'You Do It' lets you browse and shortlist vendors yourself, then chat with them to confirm pricing. 'Let Us Do It' means our concierge team selects the right vendors for your event and handles the coordination — you just review and approve." },
+  { q: "How do I know if vendors are trustworthy?", a: "Every vendor on Tendr goes through a manual verification process before being listed. They are checked for legitimacy, experience and service quality. You can also see their ratings, years of experience and portfolio before reaching out." },
+  { q: "When do I pay, and is my payment safe?", a: "Payment happens only after you have chatted with vendors, reviewed the full price breakdown and confirmed everything. We never charge before you are satisfied with the quote." },
+  { q: "What if I need to cancel my booking?", a: "You can raise a change request or cancellation directly from your dashboard. Our team will guide you through the process. Refer to our Cancellation Policy for details on refunds." },
+  { q: "How long does it take to get vendor quotes?", a: "Once your chat is approved, most vendors respond within a few hours. Price confirmation typically happens within 24–48 hours of starting the conversation." },
+  { q: "What cities does Tendr currently serve?", a: "We currently operate across Delhi, Noida, Greater Noida and Ghaziabad — covering all major event venues across the NCR region." },
+];
+
+function FaqSection() {
+  const [open, setOpen] = React.useState(null);
+  return (
+    <section style={{ background: "#F8F4EF", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Got Questions?</p>
+          <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.4rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>Frequently Asked Questions</h2>
+          <p style={{ fontSize: 15, color: "#9B7450" }}>Everything you need to know before you start planning.</p>
+          <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {FAQS.map(({ q, a }, i) => (
+            <div key={i}
+              style={{ background: "#fff", borderRadius: 14, border: `1.5px solid ${open === i ? "rgba(196,122,46,0.35)" : "rgba(196,122,46,0.12)"}`, overflow: "hidden", transition: "border-color 0.2s" }}>
+              <button
+                onClick={() => setOpen(open === i ? null : i)}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 22px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 12 }}
+              >
+                <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.4 }}>{q}</span>
+                <span style={{ fontSize: 20, color: "#C47A2E", flexShrink: 0, transform: open === i ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.25s ease", lineHeight: 1 }}>+</span>
+              </button>
+              <div style={{ maxHeight: open === i ? 300 : 0, overflow: "hidden", transition: "max-height 0.35s ease" }}>
+                <p style={{ margin: 0, padding: "0 22px 18px", fontSize: 14, color: "#7A5535", lineHeight: 1.7 }}>{a}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 const Home = () => {
   const navigate = useNavigate();
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
@@ -792,6 +835,9 @@ const Home = () => {
 
         <style>{`.partner-grid { } @media (max-width: 768px) { .partner-grid { grid-template-columns: 1fr !important; gap: 48px !important; } }`}</style>
       </section>
+
+      {/* ── FAQ ── */}
+      <FaqSection />
 
       {/* Footer */}
       <Footer />

@@ -410,6 +410,20 @@ const BookingReviewPage = () => {
                 </p>
               </div>
 
+              {/* Trust badges */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14, justifyContent: "center" }}>
+                {[
+                  { icon: "🔒", text: "Secure Payment" },
+                  { icon: "✅", text: "Verified Vendors" },
+                  { icon: "🔄", text: "Easy Cancellation" },
+                  { icon: "📞", text: "Support Available" },
+                ].map(({ icon, text }) => (
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                    <span style={{ fontSize: 13 }}>{icon}</span> {text}
+                  </div>
+                ))}
+              </div>
+
               <button
                 disabled={saving}
                 onClick={async () => {
