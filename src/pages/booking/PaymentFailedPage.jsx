@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
+import Navbar from "../../components/Navbar";
 
 const PaymentFailedPage = () => {
   const navigate = useNavigate();
@@ -46,6 +47,9 @@ const PaymentFailedPage = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#FFF6EF]">
+      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
+        <Navbar tendrLogo={logo} handleLogoClick={() => navigate("/")} />
+      </nav>
       {/* Main Container */}
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 py-10">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 flex flex-col items-center text-center">
@@ -75,10 +79,20 @@ const PaymentFailedPage = () => {
             {loading ? "Retrying..." : "Retry Payment"}
           </button>
 
+          <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", justifyContent: "center" }}>
+            <button onClick={() => navigate("/booking/review")}
+              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+              ← Back to Review
+            </button>
+            <button onClick={() => navigate("/dashboard")}
+              style={{ padding: "9px 20px", borderRadius: 10, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+              Go to Dashboard
+            </button>
+          </div>
           {/* Contact Support */}
-          <p className="text-sm text-gray-600 mt-6">
+          <p className="text-sm text-gray-600 mt-4">
             Need help?{" "}
-            <span className="text-[#2e1b0f] cursor-pointer hover:underline">
+            <span onClick={() => navigate("/contact-us")} className="text-[#2e1b0f] cursor-pointer hover:underline">
               Contact Support
             </span>
           </p>

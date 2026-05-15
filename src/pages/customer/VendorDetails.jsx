@@ -207,12 +207,13 @@ const VendorDetailsPage = () => {
         <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
       </nav>
       <JourneyProgress active="Browse" />
-      {/* Task bar */}
+      {/* Task bar — only shows Review & Pay when vendors are finalised */}
       <div className="border-b-[1px] border-[#CCAB4A]">
         <ListingsNav
           onOpenSelected={openSelectedModal}
-          selectedCount={compareSelected.length}
+          selectedCount={0}
           showFinalisedBtn={true}
+          hideTitle={true}
         />
       </div>
 

@@ -169,7 +169,12 @@ export default function CustomerDashboard() {
               )}
             </div>
           </div>
-          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "flex-end" }}>
+            <button onClick={() => navigate("/booking")}
+              style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 10, padding: "9px 20px", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+              + Plan New Event
+            </button>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {[
               { label: "Total Events", val: counts.All },
               { label: "Upcoming", val: counts.Upcoming },
@@ -180,7 +185,8 @@ export default function CustomerDashboard() {
                 <div style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>{label}</div>
               </div>
             ))}
-          </div>
+            </div>{/* end stats flex */}
+          </div>{/* end right column */}
         </div>
 
         {/* Events section */}
