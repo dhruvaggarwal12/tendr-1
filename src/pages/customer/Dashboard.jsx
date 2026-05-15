@@ -223,18 +223,13 @@ export default function CustomerDashboard() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
                           <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>
-                            {convo.vendorId?.name || convo.vendorName || "Vendor Chat"}
+                            {convo.chatType === 'support'   ? "Tendr Support" :
+                             convo.chatType === 'concierge' ? "Tendr Concierge" :
+                             convo.vendorId?.name || convo.vendorName || "Chat"}
                           </span>
-                          {convo.chatApproved ? (
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>Active</span>
-                          ) : convo.chatRejected ? (
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "#fff5f5", color: "#c0392b", border: "1px solid #fca5a5" }}>Rejected</span>
-                          ) : (
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>Pending Approval</span>
-                          )}
-                          {convo.serviceType && (
-                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: "rgba(196,122,46,0.08)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.2)" }}>{convo.serviceType}</span>
-                          )}
+                          <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 9px", borderRadius: 100, background: convo.chatType === 'support' ? "#eff6ff" : "#f5f3ff", color: convo.chatType === 'support' ? "#0369a1" : "#7c3aed", border: "1px solid currentColor" }}>
+                            {convo.chatType === 'support' ? "Support" : "Event Planning"}
+                          </span>
                         </div>
                         {convo.eventDetails && convo.eventDetails.eventName && (
                           <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#7A5535" }}>
@@ -249,14 +244,17 @@ export default function CustomerDashboard() {
                         </div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 8, alignItems: "flex-end" }}>
-                        {convo.chatApproved && (
-                          <button
-                            onClick={() => navigate("/chat", { state: { vendor: convo.vendorId || { _id: convo.vendorId, name: convo.vendorName, approved: true } } })}
-                            style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
-                          >
-                            Open Chat →
-                          </button>
-                        )}
+                        <button
+                          onClick={() => navigate("/chat", {
+                            state: {
+                              vendor: { _id: "concierge", name: convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge", approved: true },
+                              from: convo.chatType === 'support' ? "support" : "concierge",
+                            }
+                          })}
+                          style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+                        >
+                          Open Chat →
+                        </button>
                       </div>
                     </div>
 
