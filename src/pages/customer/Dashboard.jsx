@@ -125,13 +125,19 @@ export default function CustomerDashboard() {
     ? plans
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
+  // Concierge chats only relevant when customer has a You Do It plan
+  const hasYouDoItPlan = plans.some(p => p.bookingType === "you-do-it");
+  const visibleChats = conversations.filter(c =>
+    c.chatType === "support" || (c.chatType === "concierge" && hasYouDoItPlan)
+  );
+
   const counts = {
     All:       plans.length,
     Upcoming:  plans.filter((p) => statusMap.Upcoming.includes(p.status)).length,
     Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length,
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
-    Chats:     conversations.length,
+    Chats:     visibleChats.length,
   };
 
   return (
@@ -249,7 +255,7 @@ export default function CustomerDashboard() {
           {activeTab === "Chats" && (
             loadingChats ? (
               <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading chats...</div>
-            ) : conversations.length === 0 ? (
+            ) : visibleChats.length === 0 ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                 <div style={{ fontSize: 40, marginBottom: 14 }}>💬</div>
                 <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No active chats</h4>
@@ -257,7 +263,7 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {conversations.map((convo) => (
+                {visibleChats.map((convo) => (
                   <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
