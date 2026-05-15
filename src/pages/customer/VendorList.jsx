@@ -340,7 +340,7 @@ const VendorList = () => {
             <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
               <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
               <span style={{ fontSize: 13, color: "#7A5535", flex: 1 }}>
-                Click <b>Quick View</b> on any vendor to see their profile and <b>Request to Chat</b> directly — no need to save first. If you save a vendor, you can compare multiple vendors side by side before deciding.
+                Click <b>Quick View</b> on any vendor to see their profile and <b>Request to Chat</b> directly. Save vendors to compare multiple options side by side before deciding.
               </span>
               <button onClick={() => setShowHint(false)} style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: 16, flexShrink: 0, padding: 0, lineHeight: 1 }}>✕</button>
             </div>

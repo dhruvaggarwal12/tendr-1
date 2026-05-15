@@ -62,6 +62,7 @@ const ChevronIcon = ({ open }) => (
 const BookingReviewPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const token = useSelector((s) => s.auth.token);
 
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
@@ -122,7 +123,6 @@ const BookingReviewPage = () => {
 
   const [notes, setNotes] = useState({});
   const [saving, setSaving] = useState(false);
-  const token = useSelector((s) => s.auth.token);
   const selectedVendors = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const handleRemove = (serviceType) => dispatch(clearFinalisedVendor(serviceType));
 

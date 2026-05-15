@@ -9,40 +9,6 @@ import { FaChevronDown, FaTimes } from "react-icons/fa";
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
 
-// Inline progress strip — rendered at top of the nav
-function ProgressStrip({ active }) {
-  const activeIdx = STEPS.indexOf(active);
-  return (
-    <div style={{ display: "flex", alignItems: "center", padding: "6px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", background: "rgba(255,252,245,0.98)" }}>
-      {STEPS.map((step, i) => {
-        const isDone   = i < activeIdx;
-        const isActive = i === activeIdx;
-        return (
-          <React.Fragment key={step}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
-              <div style={{
-                width: 20, height: 20, borderRadius: "50%",
-                background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.12)" : "#f0ebe3",
-                border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 9, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#bbb",
-              }}>
-                {isDone ? "✓" : i + 1}
-              </div>
-              <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb" }}>
-                {step}
-              </span>
-            </div>
-            {i < STEPS.length - 1 && (
-              <div style={{ flex: 1, height: 1.5, background: isDone ? "#C47A2E" : "rgba(196,122,46,0.15)", margin: "0 8px", borderRadius: 2, opacity: isDone ? 0.7 : 1 }} />
-            )}
-          </React.Fragment>
-        );
-      })}
-    </div>
-  );
-}
-
 // title: shown in center; showReviewPay: Review & Pay button; active: journey step
 export default function HamburgerNav({ title = "", showReviewPay = false, active = "" }) {
   const navigate   = useNavigate();
@@ -86,20 +52,17 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   return (
     <>
-      {/* Compact sticky header — progress strip on top when active step provided */}
+      {/* Compact sticky header — progress bar in center when active prop given */}
       <div style={{
         position: "sticky", top: 0, zIndex: 50,
+        height: 54,
         background: "rgba(255,252,245,0.98)",
         backdropFilter: "blur(20px)",
-        boxShadow: "0 2px 10px rgba(139,69,19,0.05)",
-        fontFamily: font,
-      }}>
-      {active && <ProgressStrip active={active} />}
-      <div style={{
-        height: 54,
         borderBottom: "1px solid rgba(196,122,46,0.12)",
+        boxShadow: "0 2px 10px rgba(139,69,19,0.05)",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 16px",
+        fontFamily: font,
       }}>
         {/* Left: hamburger */}
         <button
@@ -109,12 +72,44 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           {[0,1,2].map(i => <div key={i} style={{ width: 14, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
         </button>
 
-        {/* Center: page title */}
-        <div style={{ flex: 1, textAlign: "center", padding: "0 8px" }}>
-          {title ? (
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block" }}>{title}</span>
+        {/* Center: progress bar when active, otherwise title or logo */}
+        <div style={{ flex: 1, padding: "0 10px", overflow: "hidden" }}>
+          {active ? (
+            // Inline compact progress bar
+            <div style={{ display: "flex", alignItems: "center" }}>
+              {STEPS.map((step, i) => {
+                const activeIdx = STEPS.indexOf(active);
+                const isDone   = i < activeIdx;
+                const isActive = i === activeIdx;
+                return (
+                  <React.Fragment key={step}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                      <div style={{
+                        width: 18, height: 18, borderRadius: "50%",
+                        background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.12)" : "#f0ebe3",
+                        border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid transparent",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#bbb",
+                      }}>
+                        {isDone ? "✓" : i + 1}
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb" }}>
+                        {step}
+                      </span>
+                    </div>
+                    {i < STEPS.length - 1 && (
+                      <div style={{ flex: 1, height: 1.5, background: isDone ? "#C47A2E" : "rgba(196,122,46,0.15)", margin: "0 6px", borderRadius: 2, minWidth: 8 }} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </div>
+          ) : title ? (
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block", textAlign: "center" }}>{title}</span>
           ) : (
-            <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 28, cursor: "pointer", objectFit: "contain" }} />
+            <div style={{ textAlign: "center" }}>
+              <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 28, cursor: "pointer", objectFit: "contain" }} />
+            </div>
           )}
         </div>
 
@@ -185,8 +180,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </button>
           )}
         </div>
-      </div>{/* end inner row */}
-      </div>{/* end sticky wrapper */}
+      </div>
 
       {/* Slide-in Drawer */}
       {drawerOpen && (
