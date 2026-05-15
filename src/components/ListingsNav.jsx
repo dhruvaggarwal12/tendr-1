@@ -175,7 +175,7 @@ const ListingsNav = ({
                 transition: "all 0.2s",
               }}
             >
-              {finalisedCount > 0 ? `Finalised (${finalisedCount})` : "Finalised Vendors"}
+              {finalisedCount > 0 ? `Review & Pay (${finalisedCount})` : "Review & Pay"}
             </button>
           )}
           <div style={{ position: "relative" }}>

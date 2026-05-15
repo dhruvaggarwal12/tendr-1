@@ -157,10 +157,11 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
-      label: "Explore Vendors",
+      label: "Vendors",
       items: [
-        { icon: "⭐", label: "Top Rated Vendors", href: "/top-rated/Photographer" },
-        { icon: "📂", label: "Vendor Portfolio", href: "/listings" },
+        { icon: "⭐", label: "Top Rated Vendors",            href: "/top-rated/Photographer" },
+        { icon: "📂", label: "Browse Vendors",               href: "/listings" },
+        { icon: "🤝", label: "Register as Vendor with Tendr", href: "/vendor/register" },
       ],
     },
     {
@@ -414,31 +415,6 @@ const Navbar = ({
             >
               🎁 Gift Hampers
             </span>
-
-            {divider}
-
-            {/* List Your Service */}
-            <a
-              href="/vendor/register"
-              style={{
-                color: "#6B3A1F",
-                fontSize: 14,
-                fontWeight: 600,
-                letterSpacing: "0.02em",
-                padding: "7px 12px",
-                borderRadius: 8,
-                textDecoration: "none",
-                transition: "background 0.2s",
-                whiteSpace: "nowrap",
-                lineHeight: 1,
-                display: "flex",
-                alignItems: "center",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              List Your Service
-            </a>
 
             {divider}
 
