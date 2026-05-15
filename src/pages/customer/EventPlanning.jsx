@@ -686,29 +686,36 @@ const EventPlanning = () => {
 
         {/* Navigation */}
         <div className="flex justify-between items-center w-full max-w-xl sm:max-w-2xl">
-          {/* PREVIOUS */}
-          <button
-            onClick={prevStep}
-            disabled={currentStep === 0 || animating}
-            className={`flex items-center text-base sm:text-lg px-4 sm:px-6 py-3 rounded-2xl transition-all duration-300
-            ${
-              currentStep === 0 || animating
-                ? "text-gray-400 cursor-not-allowed"
-                : "text-gray-600 hover:bg-white hover:text-black hover:scale-105 hover:-translate-y-1"
-            }`}
-          >
-            <ChevronLeft className="w-5 h-5 mr-2" />
-            Previous
-          </button>
+          {/* PREVIOUS / BACK TO HOME on first step */}
+          {currentStep === 0 ? (
+            <button
+              onClick={() => navigate("/")}
+              className="flex items-center text-base sm:text-lg px-4 sm:px-6 py-3 rounded-2xl transition-all duration-300 text-gray-600 hover:bg-white hover:text-black hover:scale-105 hover:-translate-y-1"
+            >
+              <ChevronLeft className="w-5 h-5 mr-2" />
+              Home
+            </button>
+          ) : (
+            <button
+              onClick={prevStep}
+              disabled={animating}
+              className={`flex items-center text-base sm:text-lg px-4 sm:px-6 py-3 rounded-2xl transition-all duration-300
+              ${animating ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:bg-white hover:text-black hover:scale-105 hover:-translate-y-1"}`}
+            >
+              <ChevronLeft className="w-5 h-5 mr-2" />
+              Previous
+            </button>
+          )}
 
           {/* NEXT */}
           <button
             onClick={nextStep}
             disabled={!formData[currentQuestion.id] || animating}
+            style={formData[currentQuestion.id] && !animating ? { background: "linear-gradient(135deg,#C47A2E,#CCAB4A)" } : {}}
             className={`flex items-center text-base sm:text-lg px-6 sm:px-8 py-3 rounded-2xl transition-all duration-300
             ${
               formData[currentQuestion.id] && !animating
-                ? "bg-[#ff7a49] text-white transform hover:scale-105 hover:-translate-y-1 shadow-lg"
+                ? "text-white transform hover:scale-105 hover:-translate-y-1 shadow-lg"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >
