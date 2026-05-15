@@ -287,6 +287,7 @@ const Home = () => {
           alignItems: "stretch",
           fontFamily: "'Outfit', sans-serif",
           overflow: "hidden",
+          position: "relative",
         }}
       >
         <div
@@ -531,9 +532,38 @@ const Home = () => {
             </div>
           </div>
         </div>
+        {/* ── Marquee strip at bottom of hero ── */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#1C0E05", padding: "13px 0", overflow: "hidden", zIndex: 10 }}>
+          <div style={{ display: "flex", width: "max-content", animation: "tendr-marquee 32s linear infinite" }}>
+            {[
+              "100+ Verified Vendors", "Delhi", "Noida", "Ghaziabad", "Greater Noida",
+              "Photography", "Catering", "DJ & Music", "Decoration", "Makeup & Mehndi",
+              "Pre-Wedding Events", "Birthday Parties", "Corporate Events",
+              "Free to Browse", "Trusted by 1000+ Families", "Instant Chat",
+              "Verified Reviews", "Same-Day Support",
+            ].concat([
+              "100+ Verified Vendors", "Delhi", "Noida", "Ghaziabad", "Greater Noida",
+              "Photography", "Catering", "DJ & Music", "Decoration", "Makeup & Mehndi",
+              "Pre-Wedding Events", "Birthday Parties", "Corporate Events",
+              "Free to Browse", "Trusted by 1000+ Families", "Instant Chat",
+              "Verified Reviews", "Same-Day Support",
+            ]).map((item, i) => (
+              <React.Fragment key={i}>
+                <span style={{ color: "#CCAB4A", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", whiteSpace: "nowrap", padding: "0 6px", textTransform: "uppercase" }}>
+                  {item}
+                </span>
+                <span style={{ color: "rgba(204,171,74,0.35)", fontSize: 9, padding: "0 18px", lineHeight: "1.8" }}>✦</span>
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
       </section>
 
       <style>{`
+        @keyframes tendr-marquee {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
         @keyframes heroFadeIn {
           from { opacity: 0; transform: scale(1.04); }
           to   { opacity: 1; transform: scale(1); }
@@ -578,7 +608,7 @@ const Home = () => {
           {/* Steps row */}
           <div style={{ position: "relative" }}>
 
-            {/* Animated connecting line */}
+            {/* Animated connecting line with glow pulse */}
             <motion.div
               initial={{ scaleX: 0 }}
               whileInView={{ scaleX: 1 }}
@@ -587,8 +617,10 @@ const Home = () => {
               style={{
                 position: "absolute", top: 36, left: "10%", right: "10%", height: 2,
                 background: "linear-gradient(90deg,#C47A2E,#CCAB4A,#7c3aed,#0369a1,#15803d)",
-                transformOrigin: "left", borderRadius: 100, opacity: 0.35,
+                transformOrigin: "left", borderRadius: 100,
               }}
+              animate={{ opacity: [0.3, 0.65, 0.3] }}
+              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
               className="htw-line"
             />
 
@@ -606,19 +638,24 @@ const Home = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.13 }}
-                  style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}
+                  whileHover={{ y: -6 }}
+                  style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", cursor: "default" }}
                 >
-                  {/* Icon circle */}
-                  <div style={{
-                    width: 72, height: 72, borderRadius: "50%",
-                    background: `linear-gradient(135deg,${color},${color}aa)`,
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 28, marginBottom: 16, position: "relative", zIndex: 1,
-                    boxShadow: `0 6px 20px ${color}35`,
-                    border: `3px solid #FFFCF5`,
-                  }}>
+                  {/* Icon circle with hover bounce */}
+                  <motion.div
+                    whileHover={{ scale: 1.18, rotate: [0, -8, 8, -4, 4, 0] }}
+                    transition={{ duration: 0.4 }}
+                    style={{
+                      width: 72, height: 72, borderRadius: "50%",
+                      background: `linear-gradient(135deg,${color},${color}aa)`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 28, marginBottom: 16, position: "relative", zIndex: 1,
+                      boxShadow: `0 6px 20px ${color}35`,
+                      border: `3px solid #FFFCF5`,
+                    }}
+                  >
                     {icon}
-                  </div>
+                  </motion.div>
 
                   {/* Step number */}
                   <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color, marginBottom: 6, opacity: 0.8 }}>Step {step}</span>
