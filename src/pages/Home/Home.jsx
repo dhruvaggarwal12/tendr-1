@@ -558,6 +558,78 @@ const Home = () => {
         }
       `}</style>
 
+      {/* ── How Tendr Works ── */}
+      <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+
+          {/* Heading */}
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Simple Process</p>
+            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>How Tendr Works</h2>
+            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>From your first idea to the perfect event — in three easy steps.</p>
+            <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
+          </div>
+
+          {/* Steps */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 28, position: "relative" }} className="how-it-works-grid">
+
+            {/* Connector line */}
+            <div style={{ position: "absolute", top: 44, left: "16.5%", right: "16.5%", height: 2, background: "linear-gradient(90deg,#CCAB4A,#C47A2E,#CCAB4A)", borderRadius: 100, zIndex: 0, opacity: 0.35 }} className="connector-line" />
+
+            {[
+              {
+                step: "01",
+                icon: "📋",
+                title: "Tell Us About Your Event",
+                desc: "Fill in a quick form — event type, date, location, guests and budget. Takes under 2 minutes.",
+              },
+              {
+                step: "02",
+                icon: "💬",
+                title: "Chat With Our Team",
+                desc: "Our concierge connects you with the right vendors. We discuss requirements and confirm pricing in chat.",
+              },
+              {
+                step: "03",
+                icon: "🎉",
+                title: "Review, Pay & Enjoy",
+                desc: "See the full price breakdown, confirm your vendors, complete payment — and simply show up on the day.",
+              },
+            ].map(({ step, icon, title, desc }) => (
+              <div key={step} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", padding: "32px 28px", display: "flex", flexDirection: "column", alignItems: "flex-start", position: "relative", zIndex: 1 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, boxShadow: "0 4px 12px rgba(196,122,46,0.3)" }}>
+                    {icon}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.08em" }}>STEP {step}</span>
+                </div>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px", lineHeight: 1.3 }}>{title}</h3>
+                <p style={{ fontSize: 14, color: "#7A5535", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* CTA */}
+          <div style={{ textAlign: "center", marginTop: 48 }}>
+            <button
+              onClick={() => navigate("/booking")}
+              style={{ padding: "14px 40px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 20px rgba(196,122,46,0.35)", transition: "transform 0.2s, box-shadow 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.45)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.35)"; }}
+            >
+              Start Planning →
+            </button>
+          </div>
+        </div>
+
+        <style>{`
+          @media (max-width: 700px) {
+            .how-it-works-grid { grid-template-columns: 1fr !important; }
+            .connector-line { display: none; }
+          }
+        `}</style>
+      </section>
+
       <JourneyFlow />
 
       {/* Events Portfolio Gallery */}
