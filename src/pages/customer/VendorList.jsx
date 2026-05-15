@@ -17,6 +17,8 @@ import CompareModal from "../../components/CompareModal";
 import Footer from "../../components/Footer.jsx";
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import JourneyProgress from "../../components/JourneyProgress";
+import Navbar from "../../components/Navbar";
+import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
 
@@ -210,6 +212,9 @@ const VendorList = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <BasicSpeedDial />
+      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
+        <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
+      </nav>
       <ListingsNav hasSelections={compareSelected.length > 0} />
       <JourneyProgress active="Browse" />
       <div className="flex flex-col lg:flex-row">

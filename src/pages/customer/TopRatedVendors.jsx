@@ -5,6 +5,8 @@ import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSl
 import { addVendorToCompare, removeVendorFromCompare } from "../../redux/listingFiltersSlice";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
+import Navbar from "../../components/Navbar";
+import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -184,11 +186,15 @@ export default function TopRatedVendors() {
       <BasicSpeedDial />
       <SelectedVendorsFloat />
 
-      {/* Sticky nav */}
-      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.97)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "0 32px", height: 62, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "7px 14px", cursor: "pointer", fontFamily: font }}>
-            ← Back to Home
+      {/* Main Navbar */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.98)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
+        <Navbar tendrLogo={tendrLogo} handleLogoClick={() => navigate("/")} />
+      </nav>
+      {/* Category filter bar */}
+      <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 32px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", height: 52, display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: font }}>
+            ← Home
           </button>
           <div style={{ display: "flex", gap: 8 }}>
             {Object.keys(CATEGORY_MAP).map((cat) => (
@@ -203,7 +209,7 @@ export default function TopRatedVendors() {
             ))}
           </div>
         </div>
-      </div>
+      </div>{/* end category bar */}
 
       {/* Header */}
       <div style={{ background: "linear-gradient(160deg, #FFF8F2, #F5E6CC)", padding: "52px 32px 40px", textAlign: "center" }}>
