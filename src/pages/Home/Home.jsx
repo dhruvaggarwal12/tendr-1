@@ -639,7 +639,12 @@ const Home = () => {
       <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
 
-          {/* No heading — steps speak for themselves */}
+          {/* Heading */}
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Your Journey</p>
+            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 10px" }}>How Tendr Works</h2>
+            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>Five simple steps from idea to celebration.</p>
+          </div>
 
           {/* Steps row */}
           <div style={{ position: "relative" }}>

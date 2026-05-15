@@ -39,6 +39,7 @@ import { getVendors } from "../../apis/vendorApi.js";
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import JourneyProgress from "../../components/JourneyProgress";
+import HamburgerNav from "../../components/HamburgerNav";
 
 const EventPlanning = () => {
   const socketRef = useRef(null);
@@ -272,6 +273,7 @@ const EventPlanning = () => {
   const advance = () => {
     if (animating) return;
     setAnimating(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
     setTimeout(() => {
       if (currentStep < questions.length - 1) {
         dispatch(goToNextStep());
@@ -478,10 +480,11 @@ const EventPlanning = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F4EF]">
+      <HamburgerNav />
       <JourneyProgress active="Plan" />
       <BasicSpeedDial />
       <SelectedVendorsFloat />
-      <div className="flex items-center justify-center p-4 sm:p-6 md:p-10">
+      <div className="flex items-center justify-center pt-8 pb-10 px-4 sm:px-6 md:px-10">
       <div className="w-full max-w-xl sm:max-w-2xl">
         {/* Progress Bar */}
         <div className="mb-8">
