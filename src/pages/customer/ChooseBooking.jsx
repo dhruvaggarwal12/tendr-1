@@ -51,7 +51,7 @@ export default function ChooseBooking() {
   const dispatch = useDispatch();
 
   const handleChoose = (type) => {
-    dispatch(resetEventPlanning());
+    // Don't reset form — preserve session data so returning users keep their details
     dispatch(clearVendorCompare());
     dispatch(clearFinalisedVendor());
     dispatch(setBookingType(type));

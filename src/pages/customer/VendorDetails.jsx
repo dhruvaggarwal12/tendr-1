@@ -474,17 +474,16 @@ const VendorDetailsPage = () => {
               )}
             </div>
 
-            {/* DO NOT CHANGE: Chat button */}
+            {/* Request to chat — not the floating button */}
             <button
-              onClick={() =>
-                navigate("/chat", {
-                  state: { vendor: vendor },
-                })
-              }
-              className="w-full mt-5 px-4 py-2 bg-[#CCAB4A] hover:bg-[#ab8f39] text-white rounded-xl text-base font-bold"
+              onClick={() => navigate("/chat", { state: { vendor: vendor } })}
+              className="w-full mt-5 px-4 py-3 bg-[#CCAB4A] hover:bg-[#ab8f39] text-white rounded-xl text-base font-bold"
             >
-              Chat with Vendor
+              Request to Chat with this Vendor
             </button>
+            <p style={{ fontSize: 12, color: "#9B7450", textAlign: "center", marginTop: 6, fontFamily: "'Outfit', sans-serif", lineHeight: 1.5 }}>
+              Submit a request — our team reviews and connects you within a few hours.
+            </p>
 
             {/* Add to Compare */}
             {vendor && (() => {
