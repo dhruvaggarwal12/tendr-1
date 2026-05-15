@@ -775,6 +775,18 @@ const AdminDashboard = () => {
                             📱 Notify on WhatsApp
                           </a>
                         )}
+                        {/* Delete — available for all request states */}
+                        <button
+                          onClick={() => {
+                            if (!window.confirm("Permanently delete this chat request and all its messages?")) return;
+                            fetch(`${BASE_URL}/admin/conversations/${req._id}`, {
+                              method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                            }).then(r => { if (r.ok) setChatRequests(prev => prev.filter(r2 => r2._id !== req._id)); }).catch(() => {});
+                          }}
+                          style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                        >
+                          🗑 Delete
+                        </button>
                       </div>
                     </div>
                   </div>
