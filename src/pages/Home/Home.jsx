@@ -323,8 +323,8 @@ const Home = () => {
       {/* Hero Section */}
       <section
         style={{
-          height: "88vh",
-          minHeight: 560,
+          height: "75vh",
+          minHeight: 520,
           paddingTop: 76,
           background: "linear-gradient(135deg, #FFF8EE 0%, #FFF3DC 60%, #FDE8C8 100%)",
           display: "flex",
