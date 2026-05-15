@@ -7,9 +7,44 @@ import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes } from "react-icons/fa";
 
 const font = "'Outfit', sans-serif";
+const STEPS = ["Plan", "Browse", "Chat", "Pay"];
 
-// title: shown in center; showReviewPay: show Review & Pay button if vendors finalised
-export default function HamburgerNav({ title = "", showReviewPay = false }) {
+// Inline progress strip — rendered at top of the nav
+function ProgressStrip({ active }) {
+  const activeIdx = STEPS.indexOf(active);
+  return (
+    <div style={{ display: "flex", alignItems: "center", padding: "6px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", background: "rgba(255,252,245,0.98)" }}>
+      {STEPS.map((step, i) => {
+        const isDone   = i < activeIdx;
+        const isActive = i === activeIdx;
+        return (
+          <React.Fragment key={step}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+              <div style={{
+                width: 20, height: 20, borderRadius: "50%",
+                background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.12)" : "#f0ebe3",
+                border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 9, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#bbb",
+              }}>
+                {isDone ? "✓" : i + 1}
+              </div>
+              <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb" }}>
+                {step}
+              </span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div style={{ flex: 1, height: 1.5, background: isDone ? "#C47A2E" : "rgba(196,122,46,0.15)", margin: "0 8px", borderRadius: 2, opacity: isDone ? 0.7 : 1 }} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+// title: shown in center; showReviewPay: Review & Pay button; active: journey step
+export default function HamburgerNav({ title = "", showReviewPay = false, active = "" }) {
   const navigate   = useNavigate();
   const dispatch   = useDispatch();
   const { user, token } = useSelector((s) => s.auth);
@@ -51,17 +86,20 @@ export default function HamburgerNav({ title = "", showReviewPay = false }) {
 
   return (
     <>
-      {/* Compact sticky header */}
+      {/* Compact sticky header — progress strip on top when active step provided */}
       <div style={{
         position: "sticky", top: 0, zIndex: 50,
-        height: 54,
         background: "rgba(255,252,245,0.98)",
         backdropFilter: "blur(20px)",
-        borderBottom: "1px solid rgba(196,122,46,0.12)",
         boxShadow: "0 2px 10px rgba(139,69,19,0.05)",
+        fontFamily: font,
+      }}>
+      {active && <ProgressStrip active={active} />}
+      <div style={{
+        height: 54,
+        borderBottom: "1px solid rgba(196,122,46,0.12)",
         display: "flex", alignItems: "center", justifyContent: "space-between",
         padding: "0 16px",
-        fontFamily: font,
       }}>
         {/* Left: hamburger */}
         <button
@@ -147,7 +185,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false }) {
             </button>
           )}
         </div>
-      </div>
+      </div>{/* end inner row */}
+      </div>{/* end sticky wrapper */}
 
       {/* Slide-in Drawer */}
       {drawerOpen && (

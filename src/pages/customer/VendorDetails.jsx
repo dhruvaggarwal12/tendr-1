@@ -203,8 +203,7 @@ const VendorDetailsPage = () => {
     <div className="bg-white text-black">
       <BasicSpeedDial />
       {/* Main Navbar */}
-      <HamburgerNav />
-      <JourneyProgress active="Browse" />
+      <HamburgerNav active="Browse" />
       {/* Task bar — only shows Review & Pay when vendors are finalised */}
       <div className="border-b-[1px] border-[#CCAB4A]">
         <ListingsNav

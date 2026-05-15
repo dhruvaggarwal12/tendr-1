@@ -213,8 +213,7 @@ const VendorList = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <BasicSpeedDial />
-      <HamburgerNav title="Vendor Listings" showReviewPay={true} />
-      <JourneyProgress active="Browse" />
+      <HamburgerNav title="Vendor Listings" showReviewPay={true} active="Browse" />
       <div className="flex flex-col lg:flex-row">
         {/* Sidebar */}
         <div className="w-full lg:w-1/4 bg-white shadow-lg lg:shadow-none lg:border-r border-gray-200">

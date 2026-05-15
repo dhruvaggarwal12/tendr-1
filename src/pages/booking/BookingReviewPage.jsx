@@ -161,7 +161,7 @@ const BookingReviewPage = () => {
     return (
       <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
-        <HamburgerNav title="Review & Pay" />
+        <HamburgerNav title="Review & Pay" active="Pay" />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, color: "#9B7450" }}>
           <div style={{ fontSize: 48 }}>📋</div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>No vendors finalised yet</h2>
@@ -182,8 +182,7 @@ const BookingReviewPage = () => {
   return (
     <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
       <BasicSpeedDial />
-      <HamburgerNav title="Review & Pay" />
-      <JourneyProgress active="Pay" />
+      <HamburgerNav title="Review & Pay" active="Pay" />
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px", width: "100%", boxSizing: "border-box" }}>
 

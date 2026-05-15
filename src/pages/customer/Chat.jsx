@@ -335,10 +335,7 @@ const Chat = () => {
     >
       <BasicSpeedDial />
 
-      <HamburgerNav title={vendor.name || "Chat"} showReviewPay={true} />
-      {vendor._id !== "concierge" && from !== "support" && (
-        <JourneyProgress active="Chat" />
-      )}
+      <HamburgerNav title={vendor.name || "Chat"} showReviewPay={true} active={vendor._id !== "concierge" && from !== "support" ? "Chat" : ""} />
 
       {/* Next steps hint — vendor chats only */}
       {vendor._id !== "concierge" && from !== "support" && (
