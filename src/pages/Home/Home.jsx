@@ -1,7 +1,6 @@
 // src/pages/Home/Home.jsx
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getVendors } from "../../apis/vendorApi";
 import "./Home.css";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import PlatformFlow from "../../components/PlatformFlow";
@@ -57,13 +56,6 @@ const Home = () => {
       navigate("/booking");
     }
   };
-
-  const [topVendors, setTopVendors] = useState([]);
-  useEffect(() => {
-    getVendors({ sortBy: "rankingScore", sortOrder: "desc", limit: 6 })
-      .then(d => setTopVendors(d.vendors || []))
-      .catch(() => {});
-  }, []);
 
   const [scrolled, setScrolled] = useState(false);
   const [heroIndex, setHeroIndex] = useState(0);
@@ -566,78 +558,7 @@ const Home = () => {
         }
       `}</style>
 
-      {/* ── Top Rated Vendors ── */}
-      <section style={{ background: "#F8F4EF", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Trusted by Delhi NCR</p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>Top Rated Vendors</h2>
-            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>Handpicked vendors with verified reviews across Delhi, Noida, Gurgaon and Greater Noida.</p>
-            <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
-          </div>
-
-          {topVendors.length > 0 ? (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="top-vendors-grid">
-              {topVendors.map(v => (
-                <div key={v._id}
-                  onClick={() => navigate(`/vendor/${v._id}`)}
-                  style={{ background: "#FFFCF5", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", overflow: "hidden", cursor: "pointer", transition: "transform 0.22s, box-shadow 0.22s" }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.13)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(139,69,19,0.07)"; }}
-                >
-                  <div style={{ height: 190, overflow: "hidden", position: "relative" }}>
-                    <img src={v.image || v.portfolioPhotos?.[0] || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"} alt={v.name}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.35s" }}
-                      onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.05)")}
-                      onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
-                    />
-                    {v.avgReviewScore > 0 && (
-                      <span style={{ position: "absolute", top: 12, right: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700 }}>
-                        ⭐ {Number(v.avgReviewScore).toFixed(1)}
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ padding: "14px 16px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
-                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{v.name}</h3>
-                      <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", flexShrink: 0, marginLeft: 6 }}>{v.serviceType}</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: "#9B7450", display: "flex", gap: 10 }}>
-                      {(v.city || v.address?.city || v.locations?.[0]) && <span>📍 {v.city || v.address?.city || v.locations?.[0]}</span>}
-                      {v.yearsOfExperience > 0 && <span>⏱ {v.yearsOfExperience}y exp</span>}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }} className="top-vendors-grid">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.1)", height: 260, overflow: "hidden" }}>
-                  <div style={{ height: 190, background: "linear-gradient(135deg,#f3e8d4,#f9f2e3)", animation: "pulse 1.5s infinite" }} />
-                  <div style={{ padding: 14 }}>
-                    <div style={{ height: 14, background: "#f3e8d4", borderRadius: 8, width: "65%", marginBottom: 8 }} />
-                    <div style={{ height: 11, background: "#f3e8d4", borderRadius: 8, width: "40%" }} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div style={{ textAlign: "center", marginTop: 40 }}>
-            <button onClick={() => navigate("/listings")}
-              style={{ padding: "12px 36px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.35)"; }}
-            >
-              Browse All Vendors →
-            </button>
-          </div>
-        </div>
-        <style>{`@media(max-width:900px){.top-vendors-grid{grid-template-columns:repeat(2,1fr)!important;}} @media(max-width:560px){.top-vendors-grid{grid-template-columns:1fr!important;}}`}</style>
-      </section>
-
-      {/* How Tendr Works — moved here, after vendors are seen */}
+      {/* How Tendr Works */}
       <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1140, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 60 }}>
