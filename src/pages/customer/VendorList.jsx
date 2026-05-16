@@ -213,7 +213,31 @@ const VendorList = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SEO title={vendorListTitle(serviceType, locationType)} description={vendorListDescription(serviceType, locationType)} path={serviceType || locationType ? `/listings?service=${serviceType || ""}&city=${locationType || ""}` : "/listings"} noIndex={!!(serviceType && locationType)} />
+      <SEO
+        title={vendorListTitle(serviceType, locationType)}
+        description={vendorListDescription(serviceType, locationType)}
+        path={serviceType || locationType ? `/listings?service=${serviceType || ""}&city=${locationType || ""}` : "/listings"}
+        noIndex={!!(serviceType && locationType)}
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: serviceType ? `${serviceType}s` : "All Vendors", path: "/listings" }]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": vendorListTitle(serviceType, locationType),
+          "description": vendorListDescription(serviceType, locationType),
+          "url": "https://tendr-1.vercel.app/listings",
+          "provider": { "@type": "Organization", "name": "Tendr", "url": "https://tendr-1.vercel.app" },
+          "about": {
+            "@type": "ItemList",
+            "name": "Event Vendor Categories on Tendr",
+            "itemListElement": [
+              { "@type": "ListItem", "position": 1, "name": "Birthday Decorators in Delhi NCR", "url": "https://tendr-1.vercel.app/top-rated/Decorator" },
+              { "@type": "ListItem", "position": 2, "name": "Event Caterers in Delhi NCR",      "url": "https://tendr-1.vercel.app/top-rated/Caterer" },
+              { "@type": "ListItem", "position": 3, "name": "Event Photographers in Delhi NCR", "url": "https://tendr-1.vercel.app/top-rated/Photographer" },
+              { "@type": "ListItem", "position": 4, "name": "DJs & Entertainment in Delhi NCR", "url": "https://tendr-1.vercel.app/top-rated/DJ" },
+            ],
+          },
+        }}
+      />
       <BasicSpeedDial />
       <HamburgerNav title="Vendor Listings" showReviewPay={true} active="Browse" />
       <div className="flex flex-col lg:flex-row">

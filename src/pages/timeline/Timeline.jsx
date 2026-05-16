@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
 const font = "'Outfit', sans-serif";
@@ -261,6 +262,12 @@ export default function Timeline() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
+      <SEO
+        title="Prebuilt Event Timeline — Ready-Made Schedules for Every Celebration"
+        description="Use Tendr's prebuilt event timelines for birthdays, anniversaries, corporate events and more. Download or follow a day-by-day milestone schedule to keep your celebration on track in Delhi NCR."
+        path="/prebuilt-timeline"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Timeline Planner", path: "/timeline-picker" }, { name: "Prebuilt Timeline", path: "/prebuilt-timeline" }]}
+      />
       <BasicSpeedDial />
 
       {/* Header */}

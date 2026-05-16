@@ -273,7 +273,7 @@ const VendorDetailsPage = () => {
           <div className="relative h-[400px] w-full rounded-l-xl overflow-hidden group cursor-pointer">
             <img
               src={coverImages.first}
-              alt="Main cover"
+              alt={vendor ? `${vendor.serviceType || "Event Vendor"} ${vendor.name} in ${vendorCity || "Delhi NCR"} — Portfolio | Tendr` : "Vendor portfolio cover"}
               className="h-full w-full object-cover"
               onLoad={() => setIsLoaded(true)}
             />
@@ -292,7 +292,7 @@ const VendorDetailsPage = () => {
                 >
                   <img
                     src={img}
-                    alt={"Gallery " + (idx + 2)}
+                    alt={vendor ? `${vendor.name} ${vendor.serviceType || "Portfolio"} photo ${idx + 2} | Tendr` : `Gallery photo ${idx + 2}`}
                     className="h-full w-full object-cover"
                     onLoad={() => setIsLoaded(true)}
                   />

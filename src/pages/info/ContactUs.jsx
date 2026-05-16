@@ -36,7 +36,35 @@ export default function ContactUs() {
 
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", minHeight: "100vh" }}>
-      <SEO title="Contact Us" description="Get in touch with the Tendr team. We are here to help you plan your perfect event across Delhi NCR." path="/contact-us" />
+      <SEO
+        title="Contact Tendr — Get Help Planning Your Event in Delhi NCR"
+        description="Get in touch with the Tendr team for help planning birthdays, anniversaries, corporate events and more across Delhi, Noida, Gurgaon and Ghaziabad. Email or chat with us today."
+        path="/contact-us"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Contact Us", path: "/contact-us" }]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "ContactPage",
+          "name": "Contact Tendr",
+          "url": "https://tendr-1.vercel.app/contact-us",
+          "description": "Contact the Tendr team for event planning support across Delhi NCR.",
+          "mainEntity": {
+            "@type": "Organization",
+            "@id": "https://tendr-1.vercel.app/#organization",
+            "name": "Tendr",
+            "contactPoint": [
+              {
+                "@type": "ContactPoint",
+                "contactType": "Customer Support",
+                "email": "contacttendr@gmail.com",
+                "telephone": "+919211668427",
+                "availableLanguage": ["English", "Hindi"],
+                "areaServed": "IN",
+                "hoursAvailable": { "@type": "OpeningHoursSpecification", "opens": "09:00", "closes": "21:00", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"] },
+              },
+            ],
+          },
+        }}
+      />
 
       <HamburgerNav />
 

@@ -142,7 +142,32 @@ export default function AboutUs() {
 
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", color: "#2C1A0E" }}>
-      <SEO title="About Tendr" description="Tendr is Delhi NCR's trusted event planning platform. We connect customers with verified caterers, DJs, photographers and decorators for every celebration." path="/about-us" />
+      <SEO
+        title="About Tendr — Delhi NCR's Trusted Event Planning Platform"
+        description="Tendr is Delhi NCR's trusted celebration and event planning platform. We connect customers with 500+ verified caterers, DJs, photographers and decorators for birthdays, anniversaries, corporate events and more."
+        path="/about-us"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "About Us", path: "/about-us" }]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "AboutPage",
+          "name": "About Tendr",
+          "url": "https://tendr-1.vercel.app/about-us",
+          "description": "Tendr is Delhi NCR's trusted celebration and event planning platform connecting customers with verified event vendors.",
+          "mainEntity": {
+            "@type": "Organization",
+            "@id": "https://tendr-1.vercel.app/#organization",
+            "name": "Tendr",
+            "url": "https://tendr-1.vercel.app",
+            "logo": { "@type": "ImageObject", "url": "https://tendr-1.vercel.app/tendr-icon.png" },
+            "description": "Tendr is Delhi NCR's trusted platform for birthday decoration, balloon decoration, anniversary decoration, surprise setup, baby shower, house party planning, corporate events and more.",
+            "email": "contacttendr@gmail.com",
+            "telephone": "+919211668427",
+            "areaServed": ["Delhi", "Noida", "Gurugram", "Ghaziabad", "Faridabad", "Greater Noida"],
+            "knowsAbout": ["Birthday Decoration", "Anniversary Decoration", "Balloon Decoration", "Corporate Event Planning", "Surprise Party Planning", "Baby Shower Decoration"],
+            "sameAs": ["https://www.instagram.com/tendr.in"],
+          },
+        }}
+      />
 
       <HamburgerNav />
 

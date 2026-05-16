@@ -1,6 +1,7 @@
 // src/pages/payment/PaymentProcessingPage.jsx
 import React, { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import SEO from "../../components/SEO";
 import axios from "axios";
 
 const PaymentProcessingPage = () => {
@@ -74,6 +75,7 @@ const PaymentProcessingPage = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FFF6EF]">
+      <SEO title="Processing Payment" description="Your Tendr payment is being processed." path="/booking/payment-processing" noIndex={true} />
       <h2 className="text-xl font-bold text-[#2e1b0f]">
         Processing your payment, please wait...
       </h2>

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
+import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -47,6 +48,7 @@ const PaymentFailedPage = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#FFF6EF]">
+      <SEO title="Payment Failed" description="Your Tendr payment could not be processed. Please try again." path="/booking/payment-failed" noIndex={true} />
       <HamburgerNav />
       {/* Main Container */}
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 py-10">

@@ -26,7 +26,13 @@ export default function RefundPolicy() {
 
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", minHeight: "100vh" }}>
-      <SEO title="Refund Policy" description="Tendr refund policy — understand how refunds work for event bookings on our platform." path="/refund-policy" noIndex={false} />
+      <SEO
+        title="Refund Policy"
+        description="Tendr refund policy — understand how refunds work for event bookings made through the Tendr platform across Delhi NCR."
+        path="/refund-policy"
+        noIndex={false}
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Refund Policy", path: "/refund-policy" }]}
+      />
 
       <HamburgerNav />
 

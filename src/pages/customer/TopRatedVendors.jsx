@@ -188,7 +188,44 @@ export default function TopRatedVendors() {
       <SelectedVendorsFloat />
 
       {/* Main Navbar */}
-      <SEO title={categoryTitle(category)} description={categoryDescription(category)} path={`/top-rated/${category || ""}`} breadcrumbs={[{name:"Home",path:"/"},{name:"Top Rated",path:"/listings"},{name:category||"Vendors",path:`/top-rated/${category||""}`}]} />
+      <SEO
+        title={categoryTitle(category)}
+        description={categoryDescription(category)}
+        path={`/top-rated/${category || ""}`}
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Browse Vendors", path: "/listings" }, { name: category || "Vendors", path: `/top-rated/${category || ""}` }]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": categoryTitle(category),
+          "description": categoryDescription(category),
+          "url": `https://tendr-1.vercel.app/top-rated/${category || ""}`,
+          "provider": { "@type": "Organization", "name": "Tendr", "url": "https://tendr-1.vercel.app" },
+          "about": vendors.length > 0 ? {
+            "@type": "ItemList",
+            "name": `Top Rated ${category || "Event Vendors"} in Delhi NCR`,
+            "numberOfItems": vendors.length,
+            "itemListElement": vendors.slice(0, 10).map((v, i) => ({
+              "@type": "ListItem",
+              "position": i + 1,
+              "name": v.name,
+              "url": `https://tendr-1.vercel.app/vendor/${v._id}`,
+              "item": {
+                "@type": "LocalBusiness",
+                "name": v.name,
+                "description": v.bio || `${v.serviceType || category} in ${v.city || "Delhi NCR"}`,
+                "image": v.image || v.portfolioPhotos?.[0],
+                "aggregateRating": v.avgReviewScore ? {
+                  "@type": "AggregateRating",
+                  "ratingValue": v.avgReviewScore.toFixed(1),
+                  "bestRating": "5",
+                  "worstRating": "1",
+                  "ratingCount": v.reviewCount || 1,
+                } : undefined,
+              },
+            })),
+          } : undefined,
+        }}
+      />
       <HamburgerNav />
       {/* Category filter bar */}
       <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 32px" }}>
@@ -240,7 +277,7 @@ export default function TopRatedVendors() {
                 >
                   {/* Image */}
                   <div style={{ height: 200, overflow: "hidden", position: "relative" }}>
-                    <img src={vendor.image || vendor.portfolioPhotos?.[0] || FALLBACK_IMG} alt={vendor.name}
+                    <img src={vendor.image || vendor.portfolioPhotos?.[0] || FALLBACK_IMG} alt={`${vendor.serviceType || "Event Vendor"} ${vendor.name} in ${vendor.city || "Delhi NCR"} | Tendr`}
                       style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(196,122,46,0.9)", color: "#fff", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 700 }}>
                       ⭐ {vendor.avgReviewScore?.toFixed(1) || "4.9"}

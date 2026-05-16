@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import axios from "axios";
+import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -67,6 +68,7 @@ const PaymentSuccessPage = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#FFF6EF]">
+      <SEO title="Payment Successful" description="Your Tendr booking payment was successful." path="/booking/payment-success" noIndex={true} />
       <HamburgerNav />
       {/* Main Container */}
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 py-10">

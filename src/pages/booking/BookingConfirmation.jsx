@@ -1,6 +1,7 @@
 // src/pages/confirmation/BookingConfirmationPage.jsx
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 
@@ -22,6 +23,7 @@ const BookingConfirmationPage = () => {
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#FFF6EF]">
+      <SEO title="Booking Confirmed" description="Your Tendr event booking is confirmed." path="/booking/confirmation" noIndex={true} />
       {/* Main Container */}
       <div className="flex-grow flex items-center justify-center px-4 sm:px-6 py-10">
         <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 text-center">

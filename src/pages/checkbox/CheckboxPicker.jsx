@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 import ToolNav from "../../components/ToolNav";
@@ -24,6 +25,12 @@ export default function CheckboxPicker() {
 
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <SEO
+        title="Event Checklist Planner — Choose Your Style"
+        description="Pick a prebuilt or custom event checklist for birthdays, anniversaries, corporate events and more. Free planning tool to track every vendor, task and deadline for your celebration in Delhi NCR."
+        path="/checklist-picker"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Checklist Planner", path: "/checklist-picker" }]}
+      />
       <BasicSpeedDial />
       <ToolNav title="Event Checklist" />
 

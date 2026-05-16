@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 import ToolNav from "../../components/ToolNav";
@@ -33,6 +34,12 @@ export default function TimelinePicker() {
 
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <SEO
+        title="Event Timeline Planner — Plan Your Celebration Schedule"
+        description="Create a day-by-day event timeline for birthdays, anniversaries, corporate events and more. Free planning tool to track milestones, vendor deadlines and key tasks for your celebration in Delhi NCR."
+        path="/timeline-picker"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Timeline Planner", path: "/timeline-picker" }]}
+      />
       <BasicSpeedDial />
       <ToolNav title="Event Timeline" />
 

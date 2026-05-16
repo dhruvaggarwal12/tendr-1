@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
 const font = "'Outfit', sans-serif";
@@ -148,6 +149,12 @@ export default function CheckBox() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
+      <SEO
+        title="Prebuilt Event Checklist — Ready-Made Task Lists for Every Celebration"
+        description="Download or use Tendr's prebuilt event checklists for birthdays, anniversaries, corporate events and weddings. Track vendors, logistics and every detail for a stress-free celebration in Delhi NCR."
+        path="/prebuilt-checklist"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Checklist Planner", path: "/checklist-picker" }, { name: "Prebuilt Checklist", path: "/prebuilt-checklist" }]}
+      />
       <BasicSpeedDial />
 
       {/* Header */}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
 const font = "'Outfit', sans-serif";
@@ -168,6 +169,12 @@ export default function BudgetAllocator() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
+      <SEO
+        title="Event Budget Allocator — Smart Spending Split for Your Event"
+        description="See the ideal budget split for your birthday, anniversary, corporate event or party across decoration, catering, photography and entertainment. Free budget planning tool by Tendr for Delhi NCR celebrations."
+        path="/budget-allocator"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Budget Planner", path: "/budget-picker" }, { name: "Budget Allocator", path: "/budget-allocator" }]}
+      />
       <BasicSpeedDial />
 
       {/* Header */}

@@ -1,4 +1,5 @@
 import React from "react";
+import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
@@ -19,7 +20,12 @@ export default function CancellationPolicy() {
 
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", minHeight: "100vh" }}>
-
+      <SEO
+        title="Cancellation Policy"
+        description="Tendr's vendor cancellation policy — understand penalties for repeated cancellations and how Tendr maintains reliability for customers and vendors across Delhi NCR."
+        path="/cancellation-policy"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Cancellation Policy", path: "/cancellation-policy" }]}
+      />
       <HamburgerNav />
 
       {/* Hero */}

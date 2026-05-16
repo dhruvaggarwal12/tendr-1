@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 import ToolNav from "../../components/ToolNav";
@@ -33,6 +34,12 @@ export default function BudgetPicker() {
 
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <SEO
+        title="Event Budget Planner — Smart Budget Split for Your Celebration"
+        description="Plan your event budget with Tendr's free budget allocator. Get a smart split across decoration, catering, photography and entertainment for birthdays, anniversaries and corporate events in Delhi NCR."
+        path="/budget-picker"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Budget Planner", path: "/budget-picker" }]}
+      />
       <BasicSpeedDial />
       <ToolNav title="Budget Allocator" />
 

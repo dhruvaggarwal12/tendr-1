@@ -2,6 +2,7 @@
 // src/pages/payment/PaymentSelectionPage.jsx
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import SEO from "../../components/SEO";
 import axios from "axios";
 
 const methods = [
@@ -59,6 +60,7 @@ export default function PaymentSelectionPage() {
 
   return (
     <div className="min-h-screen bg-[#fefcf6] flex flex-col justify-between">
+      <SEO title="Select Payment Method" description="Choose your payment method to complete your Tendr booking." path="/booking/payment" noIndex={true} />
       {/* Main Card */}
       <div className="flex flex-col items-center justify-center flex-grow py-10">
         <div className="bg-white shadow-lg rounded-2xl p-10 w-full max-w-6xl min-h-[600px]">
