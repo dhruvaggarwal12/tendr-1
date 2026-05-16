@@ -636,7 +636,7 @@ const Home = () => {
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Your Journey</p>
             <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 10px" }}>How Tendr Works</h2>
-            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>Five simple steps from idea to celebration.</p>
+            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>Five simple steps from idea to celebration — most events booked within 48 hours.</p>
           </div>
 
           {/* Steps row */}
@@ -660,12 +660,12 @@ const Home = () => {
 
             <div style={{ display: "flex", gap: 16 }} className="htw-row">
               {[
-                { step: "1", icon: "📋", color: "#C47A2E", title: "Share Event Details",    desc: "Fill a quick form — event type, date, location, guests and budget. Under 2 minutes." },
-                { step: "2", icon: "🔍", color: "#7c3aed", title: "Explore & Save Vendors", desc: "Browse DJs, caterers, decorators and photographers. Save the ones you love." },
-                { step: "3", icon: "💬", color: "#0369a1", title: "Chat & Confirm",          desc: "Our team connects you with vendors. Discuss requirements and get confirmed pricing in chat." },
-                { step: "4", icon: "💰", color: "#b45309", title: "Review the Quote",        desc: "See all vendor prices in one place. Clear total, no surprises — before you pay." },
-                { step: "5", icon: "🎉", color: "#15803d", title: "Pay & Celebrate",         desc: "Complete payment securely. Vendors confirmed, timings set — just show up and enjoy." },
-              ].map(({ step, icon, color, title, desc }, i) => (
+                { step: "1", icon: "📋", color: "#C47A2E", time: "~2 min",    title: "Share Event Details",       desc: "Click 'Plan Your Event' in the menu above. Fill in event type, date, location, guests and budget — takes under 2 minutes." },
+                { step: "2", icon: "🔍", color: "#7c3aed", time: "5–10 min",  title: "Explore & Shortlist",       desc: "Browse DJs, caterers, decorators and photographers. Shortlist the ones that match your budget and style." },
+                { step: "3", icon: "💬", color: "#0369a1", time: "24–48 hrs", title: "Chat & Get a Price",        desc: "Chat directly with vendors, discuss your requirements and get a confirmed price — before committing to anything." },
+                { step: "4", icon: "💰", color: "#b45309", time: "5 min",     title: "Review & Confirm",          desc: "See all your vendors and their prices in one clear summary. No hidden charges, no last-minute surprises." },
+                { step: "5", icon: "🎉", color: "#15803d", time: "Instant",   title: "Pay & Celebrate",           desc: "Pay securely through Tendr. Vendors confirmed, timings locked — just show up and enjoy your celebration." },
+              ].map(({ step, icon, color, time, title, desc }, i) => (
                 <motion.div
                   key={step}
                   initial={{ opacity: 0, y: 40 }}
@@ -675,7 +675,6 @@ const Home = () => {
                   whileHover={{ y: -6 }}
                   style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", cursor: "default" }}
                 >
-                  {/* Icon circle with hover bounce */}
                   <motion.div
                     whileHover={{ scale: 1.18, rotate: [0, -8, 8, -4, 4, 0] }}
                     transition={{ duration: 0.4 }}
@@ -683,7 +682,7 @@ const Home = () => {
                       width: 72, height: 72, borderRadius: "50%",
                       background: `linear-gradient(135deg,${color},${color}aa)`,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 28, marginBottom: 16, position: "relative", zIndex: 1,
+                      fontSize: 28, marginBottom: 12, position: "relative", zIndex: 1,
                       boxShadow: `0 6px 20px ${color}35`,
                       border: `3px solid #FFFCF5`,
                     }}
@@ -691,18 +690,42 @@ const Home = () => {
                     {icon}
                   </motion.div>
 
-                  {/* Step number */}
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color, marginBottom: 6, opacity: 0.8 }}>Step {step}</span>
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color, marginBottom: 4, opacity: 0.8 }}>Step {step}</span>
+                  <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.3 }}>{title}</h3>
 
-                  {/* Title */}
-                  <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.3 }}>{title}</h3>
+                  {/* Time badge */}
+                  <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color, background: `${color}14`, border: `1px solid ${color}30`, borderRadius: 100, padding: "2px 9px", marginBottom: 8 }}>⏱ {time}</span>
 
-                  {/* Description */}
                   <p style={{ fontSize: 13, color: "#7A5535", lineHeight: 1.65, margin: 0 }}>{desc}</p>
                 </motion.div>
               ))}
             </div>
           </div>
+
+          {/* Booking modes callout */}
+          <div style={{ margin: "40px auto 0", maxWidth: 680, background: "linear-gradient(135deg,rgba(196,122,46,0.07),rgba(204,171,74,0.07))", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 16, padding: "20px 28px", display: "flex", gap: 20, alignItems: "flex-start" }} className="htw-callout">
+            <div style={{ fontSize: 28, flexShrink: 0 }}>💡</div>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 5px" }}>Not sure how involved you want to be?</p>
+              <p style={{ fontSize: 13.5, color: "#7A5535", margin: 0, lineHeight: 1.65 }}>
+                Choose <strong style={{ color: "#C47A2E" }}>You Do It</strong> to browse and book vendors yourself at your own pace, or <strong style={{ color: "#C47A2E" }}>Let Us Do It</strong> and our team selects the best vendors for your event, coordinates everything and presents a full plan for your approval.
+              </p>
+            </div>
+          </div>
+
+          {/* Start Planning CTA */}
+          <div style={{ textAlign: "center", marginTop: 36 }}>
+            <motion.button
+              whileHover={{ scale: 1.04, boxShadow: "0 10px 32px rgba(196,122,46,0.45)" }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate("/booking")}
+              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, padding: "14px 44px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.35)", letterSpacing: "0.02em" }}
+            >
+              Start Planning Your Event →
+            </motion.button>
+            <p style={{ fontSize: 13, color: "#9B7450", marginTop: 10 }}>Free to browse · No commitment until you pay</p>
+          </div>
+
         </div>
 
         <style>{`
@@ -710,6 +733,7 @@ const Home = () => {
             .htw-row { flex-wrap: wrap !important; }
             .htw-row > div { flex: 0 0 calc(33% - 12px) !important; min-width: 140px; }
             .htw-line { display: none !important; }
+            .htw-callout { flex-direction: column !important; gap: 10px !important; }
           }
           @media (max-width: 540px) {
             .htw-row > div { flex: 0 0 calc(50% - 8px) !important; }
