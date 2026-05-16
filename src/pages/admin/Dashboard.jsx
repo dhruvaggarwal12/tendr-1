@@ -1871,14 +1871,42 @@ const AdminDashboard = () => {
                     })()}
                   </div>
 
-                  {/* Summary sidebar panel — visible only to admin when messages are pinned */}
-                  {currentPinned.length > 0 && (
+                  {/* Summary sidebar panel — always visible when a chat is selected */}
+                  {selectedChat && (
                     <div style={{ width: 230, borderLeft: "1px solid rgba(196,122,46,0.15)", display: "flex", flexDirection: "column", background: "#fffbf5", flexShrink: 0 }}>
+
+                      {/* Event details from customer */}
+                      {(() => {
+                        const ed = selectedChat.eventDetails || {};
+                        const plan = eventPlans.find(p => p.customerId?._id?.toString() === selectedChat.customerId?._id?.toString());
+                        const details = [
+                          { label: "Type",     val: ed.eventType  || plan?.eventType },
+                          { label: "Date",     val: ed.date       || plan?.date },
+                          { label: "Location", val: ed.location   || plan?.location },
+                          { label: "Guests",   val: ed.guests     || plan?.guests },
+                          { label: "Budget",   val: ed.budget     || plan?.budget },
+                        ].filter(d => d.val);
+                        if (!details.length) return null;
+                        return (
+                          <div style={{ padding: "10px 12px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>📅 Event Details</div>
+                            {details.map(({ label, val }) => (
+                              <div key={label} style={{ fontSize: 11.5, color: "#5a3a1a", marginBottom: 3 }}>
+                                <span style={{ fontWeight: 700, color: "#9B7450" }}>{label}: </span>{val}
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })()}
+
                       <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", fontWeight: 700, fontSize: 13, color: "#2C1A0E", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span>📋 Summary</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>{currentPinned.length} pinned</span>
+                        <span>📌 Pinned</span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>{currentPinned.length}</span>
                       </div>
                       <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
+                        {currentPinned.length === 0 && (
+                          <p style={{ fontSize: 12, color: "#bbb", fontStyle: "italic", margin: 0 }}>Click 📌 on any message to pin it here</p>
+                        )}
                         {currentPinned.map((m, i) => (
                           <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a", padding: "7px 10px", background: "#fff", borderRadius: 9, border: "1px solid rgba(196,122,46,0.12)", display: "flex", gap: 6, alignItems: "flex-start" }}>
                             <span style={{ color: "#C47A2E", flexShrink: 0, marginTop: 1 }}>•</span>

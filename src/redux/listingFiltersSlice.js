@@ -67,15 +67,19 @@ const saveFinalisedVendors = (obj) => {
   } catch {}
 };
 
+// loadFilters may have stale finalisedVendors — exclude it so the
+// dedicated loadFinalisedVendors() (with TTL) is always the source of truth
+const { finalisedVendors: _ignored, compareSelected: _ignored2, ...savedFilters } = loadFilters();
+
 const initialState = {
   eventType: "",
   serviceType: "",
   locationType: "",
   date: "",
   guestCount: 0,
+  ...savedFilters,
   compareSelected: loadCompareSelected(),
   finalisedVendors: loadFinalisedVendors(),
-  ...loadFilters(),
 };
 
 const listingFiltersSlice = createSlice({
@@ -83,9 +87,11 @@ const listingFiltersSlice = createSlice({
   initialState,
   reducers: {
     setFilters(state, action) {
-      const { compareSelected, ...rest } = action.payload;
+      const { compareSelected, finalisedVendors: _fv, ...rest } = action.payload;
       const newState = { ...state, ...rest };
-      localStorage.setItem("listingFilters", JSON.stringify({ ...newState, compareSelected: undefined }));
+      // Never save compareSelected or finalisedVendors here — they have their own storage
+      const { compareSelected: _cs, finalisedVendors: _fv2, ...toSave } = newState;
+      localStorage.setItem("listingFilters", JSON.stringify(toSave));
       return newState;
     },
     resetFilters(state) {

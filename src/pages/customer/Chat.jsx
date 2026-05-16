@@ -93,6 +93,7 @@ const Chat = () => {
   const finalisedVendors = useSelector((state) => state.listingFilters.finalisedVendors || {});
   const serviceTypeForGroup = useSelector((state) => state.listingFilters.serviceType);
   const reduxBookingType = useSelector((state) => state.eventPlanning.bookingType);
+  const reduxFormData = useSelector((state) => state.eventPlanning.formData || {});
   const currentUser = useSelector((state) => state.auth.user);
   const authToken = useSelector((state) => state.auth.token);
   const isLetUsDoIt = (bookingType || reduxBookingType) === "let-us-do-it";
@@ -121,6 +122,8 @@ const Chat = () => {
       socket.emit("open_conversation", {
         chatType: socketChatType,
         vendorId,
+        eventDetails: { ...reduxFormData, ...formData }, // merge Redux + prop formData
+        bookingType: bookingType || reduxBookingType,
       });
     });
 

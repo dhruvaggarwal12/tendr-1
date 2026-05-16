@@ -134,6 +134,35 @@ const BookingReviewPage = () => {
       .catch(() => {});
   }, [token]);
 
+  // Auto-refresh every 20s so admin price/pinned updates appear without reload
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(() => {
+      fetch(`${BASE_URL}/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      })
+        .then(r => r.ok ? r.json() : { conversations: [] })
+        .then(data => {
+          const pm = { ...priceMap };
+          const sm = { ...summaryMap };
+          const pinned = { ...pinnedMap };
+          (data.conversations || []).forEach(c => {
+            const vid = (c.vendorId?._id || c.vendorId)?.toString();
+            if (!vid) return;
+            if (c.vendorPrice?.amount > 0) pm[vid] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
+            if (c.bookingSummary) sm[vid] = c.bookingSummary;
+            if (c.pinnedMessages?.length) pinned[vid] = c.pinnedMessages.map(m => typeof m === "string" ? m : m.content || m.text || "");
+          });
+          setPriceMap({ ...pm });
+          setSummaryMap({ ...sm });
+          setPinnedMap({ ...pinned });
+        })
+        .catch(() => {});
+    }, 20000);
+    return () => clearInterval(interval);
+  }, [token, priceMap, summaryMap, pinnedMap]);
+
   const getPrice = (vendor) => {
     const vid = vendor?._id?.toString();
     return priceMap[vid]?.amount ?? null; // null = not yet set by admin
