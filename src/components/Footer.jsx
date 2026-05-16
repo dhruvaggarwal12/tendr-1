@@ -1,6 +1,7 @@
 import React from "react";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
+import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
 
@@ -17,9 +18,11 @@ export default function Footer() {
         >
           {/* Brand column */}
           <div>
-            <h1 style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", marginBottom: 12 }}>
-              TENDR
-            </h1>
+            <img
+              src={tendrLogo}
+              alt="Tendr"
+              style={{ height: 44, objectFit: "contain", marginBottom: 14 }}
+            />
             <p style={{ fontSize: 15, color: "#7A5535", lineHeight: 1.65, marginBottom: 22, maxWidth: 280 }}>
               Empowering your celebrations with curated planning and unforgettable experiences across Delhi NCR.
             </p>
