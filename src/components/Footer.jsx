@@ -45,11 +45,11 @@ export default function Footer() {
             {/* Social icons */}
             <div style={{ display: "flex", gap: 10, marginBottom: 28 }}>
               {[
-                { Icon: FaInstagram, href: "https://instagram.com", label: "Instagram" },
-                { Icon: FaFacebookF, href: "https://facebook.com", label: "Facebook" },
+                { Icon: FaInstagram, href: "https://www.instagram.com/justtendrit?igsh=ZzlxcDhqOXo0dzVu&utm_source=qr", label: "Instagram" },
+                { Icon: FaFacebookF, href: "https://www.facebook.com/share/1RENaQTgyj/?mibextid=wwXIfr", label: "Facebook" },
                 { Icon: FaWhatsapp, href: "https://wa.me/919211668427", label: "WhatsApp" },
-                { Icon: FaXTwitter, href: "https://twitter.com", label: "Twitter" },
-                { Icon: FaLinkedinIn, href: "https://linkedin.com", label: "LinkedIn" },
+                { Icon: FaXTwitter, href: "https://x.com/tendr293418?s=21", label: "Twitter" },
+                { Icon: FaLinkedinIn, href: "https://www.linkedin.com/company/justtendrit/", label: "LinkedIn" },
               ].map(({ Icon, href, label }) => (
                 <a
                   key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label}
@@ -75,19 +75,18 @@ export default function Footer() {
           {/* Services */}
           <FooterColumn title="Services" links={[
             { label: "Wedding Planning", href: "/booking" },
-            { label: "Photography", href: "/listing" },
-            { label: "Catering", href: "/listing" },
-            { label: "Decoration", href: "/listing" },
-            { label: "DJ & Entertainment", href: "/listing" },
+            { label: "Photography", href: "/listings" },
+            { label: "Catering", href: "/listings" },
+            { label: "Decoration", href: "/listings" },
+            { label: "DJ & Entertainment", href: "/listings" },
             { label: "Corporate Events", href: "/corporate" },
           ]} />
 
           {/* Company */}
           <FooterColumn title="Company" links={[
             { label: "About Us", href: "/about-us" },
-            { label: "Careers", href: "#" },
             { label: "Become a Vendor", href: "/vendor/register" },
-            { label: "Gift Hampers", href: null, disabled: true },
+            { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
             { label: "Invitation Flyers", href: "/invitation" },
           ]} />
 
@@ -96,8 +95,6 @@ export default function Footer() {
             { label: "Contact Us", href: "/contact-us" },
             { label: "Refund Policy", href: "/refund-policy" },
             { label: "Cancellation Policy", href: "/cancellation-policy" },
-            { label: "Privacy Policy", href: "#" },
-            { label: "Terms of Service", href: "#" },
           ]} />
         </div>
 
@@ -110,13 +107,11 @@ export default function Footer() {
             © 2026 Tendr. All rights reserved.
           </p>
           <div style={{ display: "flex", gap: 22 }}>
-            {["Privacy Policy", "Terms of Service", "Sitemap"].map((item) => (
-              <a key={item} href="#"
-                style={{ fontSize: 13, color: "#9B7450", textDecoration: "none", fontWeight: 500 }}
-                onMouseEnter={(e) => (e.currentTarget.style.color = "#C47A2E")}
-                onMouseLeave={(e) => (e.currentTarget.style.color = "#9B7450")}
-              >{item}</a>
-            ))}
+            <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer"
+              style={{ fontSize: 13, color: "#9B7450", textDecoration: "none", fontWeight: 500 }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = "#C47A2E")}
+              onMouseLeave={(e) => (e.currentTarget.style.color = "#9B7450")}
+            >Sitemap</a>
           </div>
         </div>
         <div style={{ height: 20 }} />

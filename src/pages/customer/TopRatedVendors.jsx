@@ -153,18 +153,24 @@ export default function TopRatedVendors() {
 
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState(null);
 
   const info = CATEGORY_MAP[category] || { label: `${category} Vendors`, color: "#C47A2E" };
 
+  const loadVendors = () => {
+    setLoading(true);
+    setFetchError(false);
+    fetch(`${BASE_URL}/vendors?serviceTypes=${category}&sortBy=rankingScore&limit=20`)
+      .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
+      .then((d) => setVendors(d.vendors || []))
+      .catch(() => setFetchError(true))
+      .finally(() => setLoading(false));
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
-    setLoading(true);
-    fetch(`${BASE_URL}/vendors?serviceTypes=${category}&sortBy=rankingScore&limit=20`)
-      .then((r) => r.json())
-      .then((d) => setVendors(d.vendors || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    loadVendors();
   }, [category]);
 
   const handleViewProfile = (vendor) => setSelectedVendor(vendor);
@@ -259,7 +265,25 @@ export default function TopRatedVendors() {
       {/* Vendor grid */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 32px 80px" }}>
         {loading ? (
-          <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontSize: 16 }}>Loading vendors...</div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.08)", overflow: "hidden" }}>
+                <div style={{ height: 200, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ height: 16, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", width: "65%" }} />
+                  <div style={{ height: 12, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", width: "45%" }} />
+                  <div style={{ height: 34, borderRadius: 10, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", marginTop: 4 }} />
+                </div>
+              </div>
+            ))}
+            <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+          </div>
+        ) : fetchError ? (
+          <div style={{ textAlign: "center", padding: "60px 0" }}>
+            <div style={{ fontSize: 40, marginBottom: 14 }}>⚠️</div>
+            <p style={{ color: "#9B7450", fontSize: 16, marginBottom: 18 }}>Couldn't load vendors. Please try again.</p>
+            <button onClick={loadVendors} style={{ padding: "10px 28px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Try Again</button>
+          </div>
         ) : vendors.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 0" }}>
             <div style={{ fontSize: 40, marginBottom: 14 }}>🔍</div>

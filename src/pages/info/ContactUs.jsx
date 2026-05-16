@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
@@ -12,12 +12,37 @@ export default function ContactUs() {
   const [focused, setFocused] = useState("");
   const [form, setForm] = useState({ name: "", email: "", message: "" });
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => setForm((p) => ({ ...p, [e.target.name]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSent(true);
+    setSending(true);
+    setError("");
+    try {
+      const res = await fetch("https://formsubmit.co/ajax/contacttendr@gmail.com", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          message: form.message,
+          _subject: `New message from ${form.name} via Tendr Contact Form`,
+          _captcha: "false",
+        }),
+      });
+      if (res.ok) {
+        setSent(true);
+      } else {
+        setError("Something went wrong. Please email us directly at contacttendr@gmail.com");
+      }
+    } catch {
+      setError("Network error. Please try again or email contacttendr@gmail.com");
+    } finally {
+      setSending(false);
+    }
   };
 
   const inputStyle = (field) => ({
@@ -131,8 +156,11 @@ export default function ContactUs() {
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B3A1F", marginBottom: 6 }}>Message</label>
                   <textarea name="message" rows={4} placeholder="How can we help you?" value={form.message} onChange={handleChange} onFocus={() => setFocused("message")} onBlur={() => setFocused("")} style={{ ...inputStyle("message"), resize: "vertical" }} required />
                 </div>
-                <button type="submit" style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-                  Send Message
+                {error && (
+                  <p style={{ fontSize: 13, color: "#c0392b", margin: "0 0 4px", background: "rgba(192,57,43,0.07)", padding: "10px 14px", borderRadius: 8 }}>{error}</p>
+                )}
+                <button type="submit" disabled={sending} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: sending ? "#d4a96a" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: sending ? "not-allowed" : "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)", transition: "background 0.2s" }}>
+                  {sending ? "Sending…" : "Send Message"}
                 </button>
               </form>
             </>

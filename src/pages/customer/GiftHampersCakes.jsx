@@ -804,7 +804,39 @@ const GiftHampersCakes = () => {
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-rose-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-rose-100" style={{ position: "relative" }}>
+
+      {/* ── Coming Soon overlay ── */}
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 9999,
+        backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)",
+        background: "rgba(255,248,240,0.72)",
+        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+        fontFamily: "'Outfit', sans-serif",
+        textAlign: "center", padding: "24px",
+      }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>🎁</div>
+        <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", padding: "5px 16px", borderRadius: 100, marginBottom: 20 }}>
+          Coming Soon
+        </div>
+        <h1 style={{ fontSize: "clamp(2rem,6vw,3.2rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px", lineHeight: 1.15 }}>
+          Gift Hampers & Cakes
+        </h1>
+        <p style={{ fontSize: 17, color: "#7A5535", maxWidth: 460, lineHeight: 1.65, margin: "0 0 32px" }}>
+          Curated gift hampers and customised cakes for every celebration — launching very soon across Delhi NCR.
+        </p>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
+          <a href="/" style={{ padding: "12px 28px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", textDecoration: "none", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+            ← Back to Home
+          </a>
+          <a href="https://wa.me/919211668427?text=Hi%20Tendr%2C%20I%27m%20interested%20in%20gift%20hampers%20and%20cakes" target="_blank" rel="noopener noreferrer"
+            style={{ padding: "12px 28px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", textDecoration: "none" }}>
+            Notify Me on WhatsApp
+          </a>
+        </div>
+        <p style={{ fontSize: 12, color: "#9B7450", marginTop: 24 }}>contacttendr@gmail.com · +91-9211668427</p>
+      </div>
+
       {/* Header */}
       <nav className="bg-white shadow-sm px-3 sm:px-6 py-3 sm:py-4 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
