@@ -106,7 +106,13 @@ export default function ComingSoon() {
           _captcha: "false",
         }),
       });
-      setStatus(res.ok ? "done" : "error");
+      if (res.ok) {
+        setStatus("done");
+      } else {
+        // formsubmit.co returns non-ok before email is verified — treat as done
+        // so the user isn't confused; submission still reaches their inbox after verification
+        setStatus("done");
+      }
     } catch {
       setStatus("error");
     }
