@@ -309,14 +309,10 @@ const Chat = () => {
 
   const handleFinalise = () => {
     dispatch(setFinalisedVendor(vendor));
-    if (isLetUsDoIt || isThisVendorFinalised) {
-      navigate("/booking/review");
-      return;
-    }
     setMessages((prev) => [
       ...prev,
       {
-        text: (vendor.name || "This vendor") + " has been finalised for your event. Click the Finalised Vendors button in the navbar to proceed to booking.",
+        text: `✅ ${vendor.name || "This vendor"} has been added to your booking. Tap "Review & Pay" in the top bar whenever you're ready to proceed.`,
         sender: "system",
         ts: Date.now(),
       },
@@ -760,14 +756,7 @@ const Chat = () => {
               {/* Finalise Vendor — only enabled after Chat Completed */}
               <button
                 type="button"
-                onClick={() => {
-                  handleFinalise();
-                  if (chatCompleted) {
-                    navigate("/booking/review", {
-                      state: { vendor, from, formData, bookingType },
-                    });
-                  }
-                }}
+                onClick={() => handleFinalise()}
                 disabled={!chatCompleted}
                 title={!chatCompleted ? "Mark chat as completed first" : ""}
                 style={{ flexShrink: 0, padding: "10px 16px", borderRadius: 100, border: "none", background: !chatCompleted ? "#e5e7eb" : isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !chatCompleted ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: !chatCompleted ? "not-allowed" : "pointer", whiteSpace: "nowrap", boxShadow: chatCompleted ? "0 3px 10px rgba(196,122,46,0.3)" : "none", transition: "all 0.2s" }}

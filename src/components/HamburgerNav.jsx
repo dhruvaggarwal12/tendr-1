@@ -18,9 +18,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const finalisedCount   = Object.keys(finalisedVendors).length;
 
-  const [drawerOpen,  setDrawerOpen]  = useState(false);
-  const [profileOpen, setProfileOpen] = useState(false);
-  const [savedOpen,   setSavedOpen]   = useState(false);
+  const [drawerOpen,    setDrawerOpen]    = useState(false);
+  const [profileOpen,   setProfileOpen]   = useState(false);
+  const [savedOpen,     setSavedOpen]     = useState(false);
+  const [reviewPopup,   setReviewPopup]   = useState(false);
   const profileRef = useRef(null);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
 
@@ -123,7 +124,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           {/* Review & Pay button — shows when vendors are finalised */}
           {(showReviewPay || finalisedCount > 0) && (
             <button
-              onClick={() => navigate("/booking/review")}
+              onClick={() => setReviewPopup(true)}
               style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
             >
               Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : ""}
@@ -342,6 +343,40 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       )}
 
       <style>{`@keyframes drawerSlideIn { from { transform: translateX(-100%) } to { transform: translateX(0) } }`}</style>
+
+      {/* Review & Pay popup */}
+      {reviewPopup && (
+        <>
+          <div onClick={() => setReviewPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 999, backdropFilter: "blur(3px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1000, background: "#FFFCF5", borderRadius: 20, padding: "32px 28px", width: "90%", maxWidth: 400, boxShadow: "0 20px 60px rgba(139,69,19,0.2)", fontFamily: font, textAlign: "center" }}>
+            <div style={{ fontSize: 40, marginBottom: 14 }}>🎉</div>
+            <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em" }}>Ready to confirm?</h2>
+            <p style={{ fontSize: 14, color: "#9B7450", lineHeight: 1.65, margin: "0 0 24px" }}>
+              Do you want to complete your booking, add more vendors, or go back home?
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button
+                onClick={() => { setReviewPopup(false); navigate("/booking/review"); }}
+                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
+              >
+                Continue to Payment →
+              </button>
+              <button
+                onClick={() => { setReviewPopup(false); navigate("/listings"); }}
+                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+              >
+                Add More Vendors
+              </button>
+              <button
+                onClick={() => { setReviewPopup(false); navigate("/"); }}
+                style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: font }}
+              >
+                Return to Home
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

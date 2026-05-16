@@ -126,12 +126,8 @@ export default function CustomerDashboard() {
     ? plans
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
-  // Show vendor chats + only approved support/concierge chats
-  const visibleChats = conversations.filter(c =>
-    (c.chatType === "vendor" && c.chatApproved) ||
-    (c.chatType === "support" && c.chatApproved) ||
-    (c.chatType === "concierge" && c.chatApproved)
-  );
+  // Show only chats that are actually approved/active
+  const visibleChats = conversations.filter(c => c.chatApproved === true);
 
   const counts = {
     All:       plans.length,
@@ -248,10 +244,33 @@ export default function CustomerDashboard() {
                           {plan.budget   && <span>💰 {plan.budget}</span>}
                         </div>
                         {plan.bookingSummary && (
-                          <div style={{ marginTop: 10, background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 120, overflowY: "auto", border: "1px solid rgba(196,122,46,0.12)" }}>
-                            <span style={{ fontWeight: 700, color: "#C47A2E" }}>📋 Summary: </span>{plan.bookingSummary}
+                          <div style={{ marginTop: 10, background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word", border: "1px solid rgba(196,122,46,0.12)" }}>
+                            <span style={{ fontWeight: 700, color: "#C47A2E" }}>📋 Booking Summary: </span>{plan.bookingSummary}
                           </div>
                         )}
+                        {/* Pinned messages from vendor chats */}
+                        {(() => {
+                          const planConvos = conversations.filter(c =>
+                            c.customerId?._id?.toString() === plan.customerId?.toString() ||
+                            c.customerId?.toString() === plan.customerId?.toString()
+                          );
+                          const allPinned = planConvos.flatMap(c => (c.pinnedMessages || []).map(m => ({
+                            text: typeof m === "string" ? m : m.content || m.text,
+                            vendor: c.vendorName || c.vendorId?.name || "Vendor",
+                          }))).filter(m => m.text);
+                          if (!allPinned.length) return null;
+                          return (
+                            <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 5 }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned from chats</span>
+                              {allPinned.map((m, mi) => (
+                                <div key={mi} style={{ background: "#fff", borderRadius: 8, padding: "7px 12px", fontSize: 12.5, color: "#5a3a1a", border: "1px solid rgba(196,122,46,0.15)", display: "flex", gap: 6 }}>
+                                  <span style={{ color: "#C47A2E", flexShrink: 0 }}>•</span>
+                                  <span style={{ flex: 1, lineHeight: 1.5 }}>{m.text} <span style={{ color: "#bbb", fontSize: 11 }}>({m.vendor})</span></span>
+                                </div>
+                              ))}
+                            </div>
+                          );
+                        })()}
                       </div>
                     </div>
 
@@ -305,18 +324,20 @@ export default function CustomerDashboard() {
                   <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                       <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
-                        {convo.chatType === 'vendor' ? (convo.vendorId?.name?.[0] || "V") : convo.chatType === 'support' ? "🤝" : "✨"}
+                        {convo.chatType === 'vendor' ? ((convo.vendorName || convo.vendorId?.name || "V")[0].toUpperCase()) : convo.chatType === 'support' ? "🤝" : "✨"}
                       </div>
                       <div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                           <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>
-                            {convo.chatType === 'vendor' ? (convo.vendorId?.name || "Vendor") : convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge"}
+                            {convo.chatType === 'vendor'
+                              ? (convo.vendorName || convo.vendorId?.name || "Vendor Chat")
+                              : convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge"}
                           </span>
                           <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100,
                             background: convo.chatType === 'vendor' ? "#f0fdf4" : convo.chatType === 'support' ? "#eff6ff" : "#f5f3ff",
                             color: convo.chatType === 'vendor' ? "#15803d" : convo.chatType === 'support' ? "#0369a1" : "#7c3aed",
                             border: "1px solid currentColor" }}>
-                            {convo.chatType === 'vendor' ? (convo.vendorId?.serviceType || "Vendor") : convo.chatType === 'support' ? "Support" : "Event Planning"}
+                            {convo.chatType === 'vendor' ? (convo.vendorServiceType || convo.vendorId?.serviceType || "Vendor") : convo.chatType === 'support' ? "Support" : "Event Planning"}
                           </span>
                         </div>
                         <div style={{ fontSize: 12, color: "#bbb" }}>Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}</div>

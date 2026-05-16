@@ -1815,25 +1815,33 @@ const AdminDashboard = () => {
 
                     {/* Package cards — send to customer */}
                     {(() => {
-                      const svcType = selectedChat?.serviceType || selectedChat?.vendorId?.serviceType || "";
+                      const svcType = selectedChat?.serviceType
+                        || selectedChat?.vendorId?.serviceType
+                        || selectedChat?.vendorServiceType
+                        || "";
                       const PACKAGES = {
                         Caterer: [
-                          { tier: "Basic", guests: "20–40", items: ["Veg Menu", "2 Starters", "1 Main Course", "1 Dessert", "Basic Serving"] },
+                          { tier: "Basic",    guests: "20–40", items: ["Veg Menu", "2 Starters", "1 Main Course", "1 Dessert", "Basic Serving"] },
                           { tier: "Standard", guests: "40–80", items: ["Veg/Non-Veg", "3 Starters", "2 Main Course", "2 Desserts", "Live Counter", "Professional Staff"] },
-                          { tier: "Premium", guests: "80+", items: ["Custom Menu", "4+ Starters", "3+ Main Course", "3+ Desserts", "Live Counters", "Fine Dining Setup"] },
+                          { tier: "Premium",  guests: "80+",   items: ["Custom Menu", "4+ Starters", "3+ Main Course", "3+ Desserts", "Live Counters", "Fine Dining Setup"] },
                         ],
                         Photographer: [
-                          { tier: "Basic", guests: "20–40", items: ["2–3 Hours Coverage", "1 Photographer", "100+ Edited Photos", "Online Gallery"] },
-                          { tier: "Standard", guests: "40–80", items: ["4–6 Hours", "1 Photographer", "300+ Edited Photos", "Candid + Group", "Highlight Reel"] },
-                          { tier: "Premium", guests: "80+", items: ["Full Day Coverage", "2 Photographers", "500+ Edited Photos", "Candid + Group", "Highlight Reel", "Teaser Video"] },
+                          { tier: "Basic",    guests: "20–40", items: ["2–3 Hrs Coverage", "1 Photographer", "100+ Edited Photos", "Online Gallery"] },
+                          { tier: "Standard", guests: "40–80", items: ["4–6 Hrs Coverage", "1 Photographer", "300+ Edited Photos", "Candid + Group", "Highlight Reel"] },
+                          { tier: "Premium",  guests: "80+",   items: ["Full Day Coverage", "2 Photographers", "500+ Photos", "Candid + Group", "Highlight Reel", "Teaser Video"] },
                         ],
                         Decorator: [
-                          { tier: "Basic", guests: "20–40", items: ["Basic Backdrop", "Balloons Decor", "Table Decor", "Fairy Lights"] },
-                          { tier: "Standard", guests: "40–80", items: ["Themed Backdrop", "Balloon & Floral Decor", "Table & Entrance Decor", "Custom Signage", "Lighting Setup"] },
-                          { tier: "Premium", guests: "80+", items: ["Premium Theme Decor", "Floral & Balloon Design", "Stage & Entrance Decor", "Custom Installations", "Full Venue Styling"] },
+                          { tier: "Basic",    guests: "20–40", items: ["Basic Backdrop", "Balloon Decor", "Table Decor", "Fairy Lights"] },
+                          { tier: "Standard", guests: "40–80", items: ["Themed Backdrop", "Balloon & Floral", "Table & Entrance Decor", "Custom Signage", "Lighting Setup"] },
+                          { tier: "Premium",  guests: "80+",   items: ["Premium Theme Decor", "Floral & Balloon Design", "Stage Setup", "Custom Installations", "Full Venue Styling"] },
+                        ],
+                        DJ: [
+                          { tier: "Basic",    guests: "20–40", items: ["3 Hrs Set", "1 DJ", "Basic Sound System", "Standard Lighting"] },
+                          { tier: "Standard", guests: "40–80", items: ["5 Hrs Set", "1 DJ", "Professional Sound", "LED Lighting", "Wireless Mic"] },
+                          { tier: "Premium",  guests: "80+",   items: ["Full Event Coverage", "1 DJ + Assistant", "Premium Sound System", "Dance Floor Lighting", "Wireless Mics", "Fog Machine"] },
                         ],
                       };
-                      const pkgs = PACKAGES[svcType];
+                      const pkgs = PACKAGES[svcType] || (Object.keys(PACKAGES).length ? null : null);
                       if (!pkgs) return null;
                       return (
                         <div style={{ padding: "10px 12px" }}>
