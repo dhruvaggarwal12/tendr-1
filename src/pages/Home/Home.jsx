@@ -443,7 +443,7 @@ const Home = () => {
 
             <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
               <button
-                onClick={handlePlanEvent}
+                onClick={() => navigate("/booking")}
                 style={{
                   background: "linear-gradient(135deg, #C47A2E 0%, #DEB887 100%)",
                   color: "#fff",
@@ -468,7 +468,7 @@ const Home = () => {
                   e.currentTarget.style.boxShadow = "0 4px 20px rgba(196,122,46,0.38)";
                 }}
               >
-                Plan Your Event
+                Plan Your Event →
               </button>
             </div>
           </div>
@@ -790,7 +790,7 @@ const Home = () => {
               onClick={() => navigate("/booking")}
               style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, padding: "14px 44px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.35)", letterSpacing: "0.02em" }}
             >
-              Start Planning Your Event →
+              Plan Your Event →
             </motion.button>
             <p style={{ fontSize: 13, color: "#9B7450", marginTop: 10 }}>Free to browse · No commitment until you pay</p>
           </div>

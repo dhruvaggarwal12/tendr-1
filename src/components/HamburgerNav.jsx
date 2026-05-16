@@ -47,7 +47,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Gift Hampers & Cakes",       href: "/gift-hampers-cakes",        icon: "🎁" },
     ]},
     { label: "Booking", items: [
-      { label: "Plan an Event",              href: "/booking",                   icon: "🥂" },
+      { label: "Plan Your Event",            href: "/booking",                   icon: "🥂" },
     ]},
     { label: "Company", items: [
       { label: "About Us",                   href: "/about-us",                  icon: "ℹ️" },

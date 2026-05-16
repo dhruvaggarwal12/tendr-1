@@ -185,7 +185,7 @@ const Navbar = ({
     {
       label: "Booking",
       items: [
-        { icon: "🥂", label: "Plan an Event", href: "/booking" },
+        { icon: "🥂", label: "Plan Your Event", href: "/booking" },
       ],
     },
   ];
