@@ -91,28 +91,25 @@ export default function ComingSoon() {
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", resize); };
   }, []);
 
+  const WEB3FORMS_KEY = "b6e1a881-5d38-4228-bfc4-379df27385c0";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email) return;
     setStatus("sending");
     try {
-      const res = await fetch("https://formsubmit.co/ajax/contacttendr@gmail.com", {
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
+          access_key: WEB3FORMS_KEY,
           email,
-          _subject: `Tendr Waitlist — ${email} wants to be notified at launch`,
+          subject: `Tendr Waitlist — ${email} wants to be notified at launch`,
           message: `New waitlist signup: ${email}`,
-          _captcha: "false",
         }),
       });
-      if (res.ok) {
-        setStatus("done");
-      } else {
-        // formsubmit.co returns non-ok before email is verified — treat as done
-        // so the user isn't confused; submission still reaches their inbox after verification
-        setStatus("done");
-      }
+      const data = await res.json();
+      setStatus(data.success ? "done" : "error");
     } catch {
       setStatus("error");
     }
