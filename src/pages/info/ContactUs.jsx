@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
@@ -35,6 +36,7 @@ export default function ContactUs() {
 
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", minHeight: "100vh" }}>
+      <SEO title="Contact Us" description="Get in touch with the Tendr team. We are here to help you plan your perfect event across Delhi NCR." path="/contact-us" />
 
       <HamburgerNav />
 

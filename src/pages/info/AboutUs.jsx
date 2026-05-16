@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
@@ -141,6 +142,7 @@ export default function AboutUs() {
 
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", color: "#2C1A0E" }}>
+      <SEO title="About Tendr" description="Tendr is Delhi NCR's trusted event planning platform. We connect customers with verified caterers, DJs, photographers and decorators for every celebration." path="/about-us" />
 
       <HamburgerNav />
 

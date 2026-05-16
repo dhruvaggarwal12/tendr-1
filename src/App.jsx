@@ -1,6 +1,7 @@
 // src/App.jsx
 import { RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
+import { HelmetProvider } from "react-helmet-async";
 import "./App.css";
 import router from "./router";
 import store from "./store";
@@ -14,10 +15,12 @@ router.subscribe(() => {
 
 function App() {
   return (
-    <ErrorBoundary>
-        <RouterProvider router={router} />
-        <FloatingChatButton />
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary>
+          <RouterProvider router={router} />
+          <FloatingChatButton />
+      </ErrorBoundary>
+    </HelmetProvider>
   );
 }
 export default App;

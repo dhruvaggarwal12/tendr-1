@@ -1,4 +1,5 @@
 import React from "react";
+import SEO from "../../components/SEO";
 import VendorRegistration from "./Registration";
 
 // Go straight to the registration form — no pre-steps needed

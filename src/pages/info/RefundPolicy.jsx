@@ -1,4 +1,5 @@
 import React from "react";
+import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
 import Footer from "../../components/Footer";
@@ -25,6 +26,7 @@ export default function RefundPolicy() {
 
   return (
     <div style={{ fontFamily: font, background: "#FFFCF5", minHeight: "100vh" }}>
+      <SEO title="Refund Policy" description="Tendr refund policy — understand how refunds work for event bookings on our platform." path="/refund-policy" noIndex={false} />
 
       <HamburgerNav />
 

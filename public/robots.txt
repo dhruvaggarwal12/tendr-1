@@ -1,0 +1,30 @@
+User-agent: *
+Allow: /
+
+# High-value pages — crawl freely
+Allow: /listings
+Allow: /top-rated/
+Allow: /vendor/register
+Allow: /about-us
+Allow: /contact-us
+Allow: /booking
+Allow: /checklist-picker
+Allow: /timeline-picker
+Allow: /budget-picker
+
+# Private / user-specific — block
+Disallow: /dashboard
+Disallow: /AdminDashboard
+Disallow: /chat
+Disallow: /booking/review
+Disallow: /booking/payment
+Disallow: /booking/payment-processing
+Disallow: /booking/payment-success
+Disallow: /booking/payment-failed
+Disallow: /booking/confirmation
+Disallow: /login
+Disallow: /signup
+Disallow: /otp
+Disallow: /vendor/status
+
+Sitemap: https://tendr-1.vercel.app/sitemap.xml

@@ -1,5 +1,6 @@
 // src/pages/Home/Home.jsx
 import React, { useEffect, useState } from "react";
+import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
@@ -299,6 +300,7 @@ const Home = () => {
 
   return (
     <div className="App">
+      <SEO title="Plan Your Event in Delhi NCR" description="Tendr connects you with 100+ verified caterers, DJs, photographers and decorators across Delhi, Noida, Gurgaon and Ghaziabad. Browse, chat and book — all in one place." path="/" />
       {/* Speed dial (floating) */}
       <div
         className={`sticky bottom-2 right-1 z-50 transform transition-all duration-500 ${
