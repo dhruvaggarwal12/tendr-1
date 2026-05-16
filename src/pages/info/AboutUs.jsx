@@ -292,7 +292,7 @@ export default function AboutUs() {
               transparent pricing, and real conversations before you commit.
             </p>
             <p style={{ fontSize: 16, color: "#7A5535", lineHeight: 1.78, margin: 0 }}>
-              Today we serve customers across Delhi, Noida, Greater Noida, and Ghaziabad
+              Today we serve customers across Delhi, Noida, Greater Noida, Ghaziabad, Gurgaon, and Faridabad
               — connecting them with the region's finest event professionals through
               technology that actually works.
             </p>
@@ -564,7 +564,7 @@ export default function AboutUs() {
           ))}
         </div>
         <p style={{ fontSize: 14, color: "#CCAB4A", fontWeight: 600, marginTop: 28 }}>
-          More cities coming soon ✦
+          Expanding across India — more cities coming soon ✦
         </p>
       </section>
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import SEO from '../../components/SEO';
 import './InvitationCustomizer.css';
 
 const InvitationCustomizer = () => {
@@ -477,6 +478,7 @@ const InvitationCustomizer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-red-50">
+      <SEO title="Customise Invitation" description="Customise your digital invitation on Tendr." path="/invitation/customize" noIndex={true} />
       {/* Header */}
       <div className="bg-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

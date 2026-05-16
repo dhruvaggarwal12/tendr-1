@@ -160,8 +160,28 @@ const VendorDetailsPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-2xl font-semibold text-gray-600">Loading vendor details...</div>
+      <div className="min-h-screen bg-[#FFFCF5]" style={{ fontFamily: "'Outfit', sans-serif" }}>
+        <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+        <div className="max-w-6xl mx-auto px-4 py-10">
+          {/* Gallery skeleton */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-8">
+            <div style={{ height: 400, borderRadius: 12, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+            <div className="grid grid-cols-2 gap-3">
+              {[0,1,2,3].map(i => (
+                <div key={i} style={{ height: 195, borderRadius: i === 1 ? "0 12px 0 0" : i === 3 ? "0 0 12px 0" : 0, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+              ))}
+            </div>
+          </div>
+          {/* Info skeleton */}
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            <div style={{ flex: 2, minWidth: 260, display: "flex", flexDirection: "column", gap: 14 }}>
+              {[200, 120, 80, 300, 300].map((w, i) => (
+                <div key={i} style={{ height: i === 0 ? 32 : i === 3 || i === 4 ? 18 : 20, width: w, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+              ))}
+            </div>
+            <div style={{ flex: 1, minWidth: 240, height: 280, borderRadius: 16, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+          </div>
+        </div>
       </div>
     );
   }
@@ -358,11 +378,13 @@ const VendorDetailsPage = () => {
             </div>
 
             {/* Description block */}
-            <p className="text-xl text-gray-700 mt-6">
-              We offer premium {serviceType?.toLowerCase() || "event"} services with an unwavering commitment to quality,
-              sophistication, and detail. From weddings to corporate gatherings, our team curates unforgettable
-              experiences end-to-end.
-            </p>
+            {vendor?.bio ? (
+              <p className="text-xl text-gray-700 mt-6">{vendor.bio}</p>
+            ) : (
+              <p className="text-xl text-gray-500 mt-6 italic">
+                This vendor hasn't added a bio yet. Chat with them directly to learn more about their services and experience.
+              </p>
+            )}
 
             {/* Contact & Service Areas */}
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">

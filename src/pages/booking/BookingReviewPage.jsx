@@ -73,9 +73,10 @@ const BookingReviewPage = () => {
 
   const vendorEntries = Object.entries(finalisedVendors);
 
-  // Fetch real prices from the customer's vendor conversations
-  const [priceMap, setPriceMap] = useState({}); // { vendorId: { amount, vendorName, service, confirmed } }
-  const [summaryMap, setSummaryMap] = useState({}); // { vendorId: bookingSummary }
+  // Fetch real prices, booking summary and pinned messages from vendor conversations
+  const [priceMap, setPriceMap] = useState({});
+  const [summaryMap, setSummaryMap] = useState({});
+  const [pinnedMap, setPinnedMap] = useState({}); // { vendorId: [pinnedMsg, ...] }
   useEffect(() => {
     if (!token) return;
     fetch(`${BASE_URL}/conversations`, {
@@ -86,6 +87,7 @@ const BookingReviewPage = () => {
       .then(data => {
         const pm = {};
         const sm = {};
+        const pinned = {};
         (data.conversations || []).forEach(c => {
           const vid = c.vendorId?._id || c.vendorId;
           if (!vid) return;
@@ -94,9 +96,11 @@ const BookingReviewPage = () => {
             pm[key] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
           }
           if (c.bookingSummary) sm[key] = c.bookingSummary;
+          if (c.pinnedMessages?.length) pinned[key] = c.pinnedMessages.map(m => typeof m === "string" ? m : m.content || m.text || JSON.stringify(m));
         });
         setPriceMap(pm);
         setSummaryMap(sm);
+        setPinnedMap(pinned);
       })
       .catch(() => {});
   }, [token]);
@@ -321,6 +325,43 @@ const BookingReviewPage = () => {
                               {fact}
                             </span>
                           ))}
+                        </div>
+                      )}
+
+                      {/* Event details from form — always shown */}
+                      {Object.entries(LABEL_MAP).some(([k]) => formData[k]) && (
+                        <div style={{ padding: "12px 20px 4px" }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                            <span>📋</span> Your Event Details
+                          </div>
+                          <div style={{ background: "#f8f4ef", border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 10, padding: "10px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                            {Object.entries(LABEL_MAP).map(([key, label]) => {
+                              const val = formData[key];
+                              if (!val && val !== 0) return null;
+                              return (
+                                <div key={key} style={{ display: "flex", gap: 8, fontSize: 12.5, color: "#2C1A0E" }}>
+                                  <span style={{ fontWeight: 600, color: "#9B7450", minWidth: 64 }}>{label}:</span>
+                                  <span>{val}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Pinned messages from chat */}
+                      {pinnedMap[vendor?._id?.toString()]?.length > 0 && (
+                        <div style={{ padding: "12px 20px 4px" }}>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                            <span>📌</span> Pinned from Chat
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                            {pinnedMap[vendor._id.toString()].map((msg, i) => (
+                              <div key={i} style={{ background: "#fffaf3", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "9px 13px", fontSize: 12.5, color: "#5a3a1a", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.55 }}>
+                                {msg}
+                              </div>
+                            ))}
+                          </div>
                         </div>
                       )}
 

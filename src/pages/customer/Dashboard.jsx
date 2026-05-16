@@ -14,17 +14,17 @@ const font = "'Outfit', sans-serif";
 const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats"];
 
 const statusMap = {
-  Upcoming:  ["in_progress"],  // after payment confirmed by admin
-  Ongoing:   ["submitted", "draft"],  // awaiting payment
+  Upcoming:  ["in_progress"],
+  Ongoing:   ["submitted", "draft"],
   Completed: ["completed"],
   Cancelled: ["cancelled"],
 };
 
 const statusBadge = (status) => {
   const map = {
-    submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "In Process" },
-    draft:       { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "In Process" },
-    in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe", label: "Submitted" },
+    submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "Planning in Progress" },
+    draft:       { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "Planning in Progress" },
+    in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe", label: "Confirmed — Upcoming" },
     completed:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0", label: "Completed" },
     cancelled:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5", label: "Cancelled" },
   };
@@ -215,7 +215,16 @@ export default function CustomerDashboard() {
           {/* Ongoing tab — shows event plan summary cards */}
           {activeTab === "Ongoing" ? (
             loading ? (
-              <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading...</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+                {[0,1,2].map(i => (
+                  <div key={i} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+                    <div style={{ height: 20, width: "40%", borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                    <div style={{ height: 14, width: "65%", borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                    <div style={{ height: 14, width: "50%", borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                  </div>
+                ))}
+              </div>
             ) : filtered.length === 0 ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                 <div style={{ fontSize: 40, marginBottom: 14 }}>📋</div>
@@ -248,11 +257,13 @@ export default function CustomerDashboard() {
 
                     {/* What happens next — progress timeline */}
                     {(() => {
+                      const isConfirmed = plan.status === "in_progress";
+                      const isPaid = plan.status === "completed";
                       const steps = [
-                        { label: "Plan Submitted",       done: true },
-                        { label: "Tendr Reviewing",      done: !!plan.bookingSummary },
-                        { label: "Vendors Confirmed",    done: !!plan.bookingSummary },
-                        { label: "Payment Pending",      done: false },
+                        { label: "Plan Submitted",    done: true },
+                        { label: "Tendr Reviewing",   done: !!plan.bookingSummary || isConfirmed || isPaid },
+                        { label: "Vendors Confirmed", done: isConfirmed || isPaid },
+                        { label: "Payment Done",      done: isPaid },
                       ];
                       const current = steps.findIndex(s => !s.done);
                       return (
@@ -292,12 +303,23 @@ export default function CustomerDashboard() {
           {/* Chats tab */}
           {activeTab === "Chats" && (
             loadingChats ? (
-              <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading chats...</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[0,1].map(i => (
+                  <div key={i} style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(139,69,19,0.1)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+                      <div style={{ height: 16, width: "35%", borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                      <div style={{ height: 12, width: "20%", borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                    </div>
+                    <div style={{ height: 34, width: 110, borderRadius: 10, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                  </div>
+                ))}
+              </div>
             ) : visibleChats.length === 0 ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                 <div style={{ fontSize: 40, marginBottom: 14 }}>💬</div>
-                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No active chats</h4>
-                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Your Tendr team conversations will appear here.</p>
+                <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No team chats yet</h4>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px" }}>When our team starts coordinating your event, conversations will appear here.</p>
+                <button onClick={() => navigate("/booking")} style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>Plan an Event →</button>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -328,7 +350,14 @@ export default function CustomerDashboard() {
 
           {/* Event cards — all tabs except Ongoing and Chats */}
           {activeTab !== "Ongoing" && activeTab !== "Chats" && (loading ? (
-            <div style={{ textAlign: "center", padding: "48px 0", color: "#9B7450", fontSize: 15 }}>Loading your events...</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
+                  <div style={{ height: 20, width: "40%", borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                  <div style={{ height: 14, width: "60%", borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                </div>
+              ))}
+            </div>
           ) : filtered.length === 0 ? (
             <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
               <div style={{ fontSize: 40, marginBottom: 14 }}>📅</div>

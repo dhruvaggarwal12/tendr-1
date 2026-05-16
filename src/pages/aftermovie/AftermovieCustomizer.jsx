@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import SEO from '../../components/SEO';
 import './AftermovieCustomizer.css';
 
 const AftermovieCustomizer = () => {
@@ -113,6 +114,7 @@ const AftermovieCustomizer = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      <SEO title="Aftermovie Customiser" description="Customise your event aftermovie on Tendr." path="/aftermovie/customize" noIndex={true} />
       {/* Header */}
       <div className="bg-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
