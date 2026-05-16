@@ -77,7 +77,6 @@ export default function Footer() {
 
           {/* Services */}
           <FooterColumn title="Services" links={[
-            { label: "Wedding Planning", href: "/booking" },
             { label: "Photography", href: "/listings" },
             { label: "Catering", href: "/listings" },
             { label: "Decoration", href: "/listings" },
@@ -91,7 +90,6 @@ export default function Footer() {
           <FooterColumn title="Company" links={[
             { label: "About Us", href: "/about-us" },
             { label: "Become a Vendor", href: "/vendor/register" },
-            { label: "Invitation Flyers", href: "/invitation" },
           ]} />
 
           {/* Support */}
@@ -111,11 +109,7 @@ export default function Footer() {
             © 2026 Tendr. All rights reserved.
           </p>
           <div style={{ display: "flex", gap: 22 }}>
-            <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer"
-              style={{ fontSize: 13, color: "#9B7450", textDecoration: "none", fontWeight: 500 }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = "#C47A2E")}
-              onMouseLeave={(e) => (e.currentTarget.style.color = "#9B7450")}
-            >Sitemap</a>
+            <span style={{ fontSize: 13, color: "#bbb" }}>Made with ♥ in Delhi NCR</span>
           </div>
         </div>
         <div style={{ height: 20 }} />
