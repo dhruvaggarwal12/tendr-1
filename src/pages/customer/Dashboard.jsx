@@ -108,18 +108,51 @@ export default function CustomerDashboard() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  // Fetch ongoing conversations
+  // Fetch conversations + individual conversation details for pinned messages
+  const fetchConversations = async () => {
+    if (!token) return;
+    try {
+      const r = await fetch(`${BASE_URL}/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      const d = await r.json();
+      const convList = d.conversations || [];
+
+      // For conversations where pinnedMessages might not be in list response,
+      // fetch each individually so pinned messages stay up to date
+      const enriched = await Promise.all(convList.map(async (c) => {
+        if (c.pinnedMessages?.length) return c; // already has pinned data
+        try {
+          const r2 = await fetch(`${BASE_URL}/conversations/${c._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+          });
+          if (!r2.ok) return c;
+          const full = await r2.json();
+          return {
+            ...c,
+            pinnedMessages: full.pinnedMessages || full.conversation?.pinnedMessages || [],
+          };
+        } catch { return c; }
+      }));
+
+      setConversations(enriched);
+    } catch {}
+  };
+
+  // Fetch ongoing conversations on load
   useEffect(() => {
     if (!token) return;
     setLoadingChats(true);
-    fetch(`${BASE_URL}/conversations`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
-      .then((r) => r.json())
-      .then((d) => setConversations(d.conversations || []))
-      .catch(() => {})
-      .finally(() => setLoadingChats(false));
+    fetchConversations().finally(() => setLoadingChats(false));
+  }, [token]);
+
+  // Re-fetch every 20s so pin/unpin changes from admin appear automatically
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(fetchConversations, 20000);
+    return () => clearInterval(interval);
   }, [token]);
 
   const filtered = activeTab === "All"

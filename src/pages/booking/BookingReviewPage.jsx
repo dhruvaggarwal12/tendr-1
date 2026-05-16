@@ -137,31 +137,55 @@ const BookingReviewPage = () => {
   // Auto-refresh every 20s so admin price/pinned updates appear without reload
   useEffect(() => {
     if (!token) return;
-    const interval = setInterval(() => {
-      fetch(`${BASE_URL}/conversations`, {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      })
-        .then(r => r.ok ? r.json() : { conversations: [] })
-        .then(data => {
-          const pm = { ...priceMap };
-          const sm = { ...summaryMap };
-          const pinned = { ...pinnedMap };
-          (data.conversations || []).forEach(c => {
-            const vid = (c.vendorId?._id || c.vendorId)?.toString();
-            if (!vid) return;
-            if (c.vendorPrice?.amount > 0) pm[vid] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
-            if (c.bookingSummary) sm[vid] = c.bookingSummary;
-            if (c.pinnedMessages?.length) pinned[vid] = c.pinnedMessages.map(m => typeof m === "string" ? m : m.content || m.text || "");
-          });
-          setPriceMap({ ...pm });
-          setSummaryMap({ ...sm });
-          setPinnedMap({ ...pinned });
-        })
-        .catch(() => {});
-    }, 20000);
+    const refresh = async () => {
+      try {
+        const r = await fetch(`${BASE_URL}/conversations`, {
+          headers: { Authorization: `Bearer ${token}` },
+          credentials: "include",
+        });
+        const data = r.ok ? await r.json() : { conversations: [] };
+        const convList = data.conversations || [];
+
+        const pm = {};
+        const sm = {};
+        const pinned = {};
+
+        // First pass — read list response
+        convList.forEach(c => {
+          const vid = (c.vendorId?._id || c.vendorId)?.toString();
+          if (!vid) return;
+          if (c.vendorPrice?.amount > 0) pm[vid] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
+          if (c.bookingSummary) sm[vid] = c.bookingSummary;
+          // Always reset pinned — use empty array if list says no pins
+          pinned[vid] = (c.pinnedMessages || []).map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
+        });
+
+        // Second pass — individual fetches to get authoritative pinnedMessages from DB
+        await Promise.allSettled(convList.map(async c => {
+          const vid = (c.vendorId?._id || c.vendorId)?.toString();
+          if (!vid) return;
+          try {
+            const r2 = await fetch(`${BASE_URL}/conversations/${c._id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              credentials: "include",
+            });
+            if (!r2.ok) return;
+            const full = await r2.json();
+            const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || [];
+            // Always overwrite with authoritative DB value (handles unpins too)
+            pinned[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
+          } catch {}
+        }));
+
+        setPriceMap(pm);
+        setSummaryMap(sm);
+        setPinnedMap(pinned);
+      } catch {}
+    };
+
+    const interval = setInterval(refresh, 20000);
     return () => clearInterval(interval);
-  }, [token, priceMap, summaryMap, pinnedMap]);
+  }, [token]);
 
   const getPrice = (vendor) => {
     const vid = vendor?._id?.toString();

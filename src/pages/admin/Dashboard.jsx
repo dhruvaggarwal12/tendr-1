@@ -506,25 +506,37 @@ const AdminDashboard = () => {
   const unpinMessage = (content) => {
     if (!selectedChat?._id) return;
     const cid = selectedChat._id;
-    // Update local state immediately
+
+    // 1. Update local state immediately
     setPinnedMsgs(prev => prev.filter(m => !(m.content === content && m.conversationId === cid)));
-    // Persist unpin to backend — try dedicated unpin endpoint, fall back to pin with remove flag
-    fetch(`${BASE_URL}/admin/conversations/${cid}/unpin-message`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      credentials: 'include',
-      body: JSON.stringify({ content }),
-    }).then(r => {
-      if (!r.ok) {
-        // Fallback: try DELETE on pin-message endpoint
-        return fetch(`${BASE_URL}/admin/conversations/${cid}/pin-message`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          credentials: 'include',
-          body: JSON.stringify({ content }),
-        });
-      }
-    }).catch(() => {});
+
+    // 2. Build updated pinned list without this message
+    const remaining = pinnedMsgs
+      .filter(m => m.conversationId === cid && m.content !== content)
+      .map(m => m.content);
+
+    // 3. Try all known unpin patterns — whichever the backend supports
+    const headers = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+    const opts = (method, body) => ({ method, headers, credentials: 'include', body: JSON.stringify(body) });
+
+    // Pattern A: dedicated unpin endpoint
+    fetch(`${BASE_URL}/admin/conversations/${cid}/unpin-message`, opts('PATCH', { content }))
+      .then(r => {
+        if (r.ok) return;
+        // Pattern B: DELETE on pin-message with content body
+        return fetch(`${BASE_URL}/admin/conversations/${cid}/pin-message`, opts('DELETE', { content }))
+          .then(r2 => {
+            if (r2.ok) return;
+            // Pattern C: pin endpoint with remove flag
+            return fetch(`${BASE_URL}/admin/conversations/${cid}/pin-message`, opts('PATCH', { content, remove: true }))
+              .then(r3 => {
+                if (r3.ok) return;
+                // Pattern D: replace entire pinnedMessages array on the conversation
+                return fetch(`${BASE_URL}/admin/conversations/${cid}`, opts('PATCH', { pinnedMessages: remaining }));
+              });
+          });
+      })
+      .catch(() => {});
   };
 
   const currentPinned = pinnedMsgs.filter(m => m.conversationId === selectedChat?._id);
