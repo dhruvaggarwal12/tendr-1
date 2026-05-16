@@ -84,15 +84,6 @@ export default function EventFormSummary() {
             </dd>
           </div>
 
-          {/* Additional Info */}
-          <div className="border rounded-xl p-4 sm:col-span-2 lg:col-span-3 bg-white">
-            <dt className="text-xs uppercase tracking-wide text-gray-500">
-              Additional Info
-            </dt>
-            <dd className="text-base text-gray-800 whitespace-pre-wrap mt-1">
-              {f.additionalInfo || "—"}
-            </dd>
-          </div>
         </dl>
 
         {/* VENDORS COUNT */}

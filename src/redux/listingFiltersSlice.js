@@ -38,18 +38,32 @@ const saveCompareSelected = (arr) => {
   } catch {}
 };
 
+const TTL_24H = 24 * 60 * 60 * 1000;
+
 const loadFinalisedVendors = () => {
   try {
     const uid = getUserId();
-    const saved = localStorage.getItem(`finalisedVendors_${uid}`);
-    return saved ? JSON.parse(saved) : {};
+    const raw = localStorage.getItem(`finalisedVendors_${uid}`);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    // Support both plain object (legacy) and TTL-wrapped format
+    if (parsed && parsed.__expiresAt) {
+      if (Date.now() > parsed.__expiresAt) {
+        localStorage.removeItem(`finalisedVendors_${uid}`);
+        return {};
+      }
+      const { __expiresAt, ...data } = parsed;
+      return data;
+    }
+    return parsed;
   } catch { return {}; }
 };
 
 const saveFinalisedVendors = (obj) => {
   try {
     const uid = getUserId();
-    localStorage.setItem(`finalisedVendors_${uid}`, JSON.stringify(obj));
+    const withTTL = { ...obj, __expiresAt: Date.now() + TTL_24H };
+    localStorage.setItem(`finalisedVendors_${uid}`, JSON.stringify(withTTL));
   } catch {}
 };
 

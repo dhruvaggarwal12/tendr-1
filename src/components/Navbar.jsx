@@ -84,6 +84,8 @@ const Navbar = ({
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
+  const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const finalisedCount = Object.keys(finalisedVendors).length;
   const [activeChatCount, setActiveChatCount] = useState(0);
   const [adminCounts, setAdminCounts] = useState(null);
 
@@ -454,6 +456,18 @@ const Navbar = ({
             >
               <FaWhatsapp size={17} />
             </a>
+
+            {/* Review & Pay — visible when vendors are finalised */}
+            {finalisedCount > 0 && (
+              <button
+                onClick={() => navigate("/booking/review")}
+                style={{ fontSize: 13, fontWeight: 700, padding: "7px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(196,122,46,0.35)", flexShrink: 0 }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+              >
+                Review & Pay ({finalisedCount})
+              </button>
+            )}
 
             {/* Auth area */}
             {token && user ? (

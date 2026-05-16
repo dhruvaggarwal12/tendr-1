@@ -480,11 +480,10 @@ const EventPlanning = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F4EF]">
-      <HamburgerNav />
-      <JourneyProgress active="Plan" />
+      <HamburgerNav active="Plan" />
       <BasicSpeedDial />
       <SelectedVendorsFloat />
-      <div className="flex items-center justify-center pt-8 pb-10 px-4 sm:px-6 md:px-10">
+      <div className="flex items-center justify-center pt-4 pb-10 px-4 sm:px-6 md:px-10">
       <div className="w-full max-w-xl sm:max-w-2xl">
         {/* Progress Bar */}
         <div className="mb-8">
@@ -564,10 +563,7 @@ const EventPlanning = () => {
               <input
                 type="date"
                 value={formData[currentQuestion.id] || ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val) selectAndAdvance(currentQuestion.id, val);
-                }}
+                onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
                 className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A]
               rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
               />
