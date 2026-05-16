@@ -130,7 +130,7 @@ export default function ComingSoon() {
         {/* Badge */}
         <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
           <span style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", padding: "6px 18px", borderRadius: 100, marginBottom: 28 }}>
-            Something Big Is Coming
+            We're Getting Ready
           </span>
         </motion.div>
 

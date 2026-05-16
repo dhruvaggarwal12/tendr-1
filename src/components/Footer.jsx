@@ -84,6 +84,7 @@ export default function Footer() {
             { label: "DJ & Entertainment", href: "/listings" },
             { label: "Corporate Events", href: "/corporate" },
             { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+            { label: "Invitation Flyers", href: "/invitation" },
           ]} />
 
           {/* Company */}
