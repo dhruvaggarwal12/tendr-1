@@ -1,5 +1,5 @@
 # Tendr — Celebration & Event Planning Platform
-# https://tendr-1.vercel.app
+# https://tendr.co.in
 
 User-agent: *
 Allow: /
@@ -45,4 +45,4 @@ Disallow: /listings?*guestCount=
 # Crawl rate hint (optional)
 Crawl-delay: 1
 
-Sitemap: https://tendr-1.vercel.app/sitemap.xml
+Sitemap: https://tendr.co.in/sitemap.xml

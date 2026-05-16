@@ -224,16 +224,16 @@ const VendorList = () => {
           "@type": "CollectionPage",
           "name": vendorListTitle(serviceType, locationType),
           "description": vendorListDescription(serviceType, locationType),
-          "url": "https://tendr-1.vercel.app/listings",
-          "provider": { "@type": "Organization", "name": "Tendr", "url": "https://tendr-1.vercel.app" },
+          "url": "https://tendr.co.in/listings",
+          "provider": { "@type": "Organization", "name": "Tendr", "url": "https://tendr.co.in" },
           "about": {
             "@type": "ItemList",
             "name": "Event Vendor Categories on Tendr",
             "itemListElement": [
-              { "@type": "ListItem", "position": 1, "name": "Birthday Decorators in Delhi NCR", "url": "https://tendr-1.vercel.app/top-rated/Decorator" },
-              { "@type": "ListItem", "position": 2, "name": "Event Caterers in Delhi NCR",      "url": "https://tendr-1.vercel.app/top-rated/Caterer" },
-              { "@type": "ListItem", "position": 3, "name": "Event Photographers in Delhi NCR", "url": "https://tendr-1.vercel.app/top-rated/Photographer" },
-              { "@type": "ListItem", "position": 4, "name": "DJs & Entertainment in Delhi NCR", "url": "https://tendr-1.vercel.app/top-rated/DJ" },
+              { "@type": "ListItem", "position": 1, "name": "Birthday Decorators in Delhi NCR", "url": "https://tendr.co.in/top-rated/Decorator" },
+              { "@type": "ListItem", "position": 2, "name": "Event Caterers in Delhi NCR",      "url": "https://tendr.co.in/top-rated/Caterer" },
+              { "@type": "ListItem", "position": 3, "name": "Event Photographers in Delhi NCR", "url": "https://tendr.co.in/top-rated/Photographer" },
+              { "@type": "ListItem", "position": 4, "name": "DJs & Entertainment in Delhi NCR", "url": "https://tendr.co.in/top-rated/DJ" },
             ],
           },
         }}

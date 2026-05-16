@@ -204,8 +204,8 @@ export default function TopRatedVendors() {
           "@type": "CollectionPage",
           "name": categoryTitle(category),
           "description": categoryDescription(category),
-          "url": `https://tendr-1.vercel.app/top-rated/${category || ""}`,
-          "provider": { "@type": "Organization", "name": "Tendr", "url": "https://tendr-1.vercel.app" },
+          "url": `https://tendr.co.in/top-rated/${category || ""}`,
+          "provider": { "@type": "Organization", "name": "Tendr", "url": "https://tendr.co.in" },
           "about": vendors.length > 0 ? {
             "@type": "ItemList",
             "name": `Top Rated ${category || "Event Vendors"} in Delhi NCR`,
@@ -214,7 +214,7 @@ export default function TopRatedVendors() {
               "@type": "ListItem",
               "position": i + 1,
               "name": v.name,
-              "url": `https://tendr-1.vercel.app/vendor/${v._id}`,
+              "url": `https://tendr.co.in/vendor/${v._id}`,
               "item": {
                 "@type": "LocalBusiness",
                 "name": v.name,

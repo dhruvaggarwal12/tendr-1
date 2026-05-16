@@ -70,11 +70,11 @@ export default function ContactUs() {
           "@context": "https://schema.org",
           "@type": "ContactPage",
           "name": "Contact Tendr",
-          "url": "https://tendr-1.vercel.app/contact-us",
+          "url": "https://tendr.co.in/contact-us",
           "description": "Contact the Tendr team for event planning support across Delhi NCR.",
           "mainEntity": {
             "@type": "Organization",
-            "@id": "https://tendr-1.vercel.app/#organization",
+            "@id": "https://tendr.co.in/#organization",
             "name": "Tendr",
             "contactPoint": [
               {

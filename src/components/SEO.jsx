@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-const BASE_URL = "https://tendr-1.vercel.app";
+const BASE_URL = "https://tendr.co.in";
 const DEFAULT_IMG = `${BASE_URL}/og-image.png`;
 const SITE_NAME = "Tendr";
 

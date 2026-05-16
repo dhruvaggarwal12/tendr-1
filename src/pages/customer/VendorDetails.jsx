@@ -207,7 +207,7 @@ const VendorDetailsPage = () => {
     "name": vendor.name,
     "description": vendorPageDescription(vendor),
     "image": vendor.portfolioPhotos?.[0] || vendor.image || "",
-    "url": `https://tendr-1.vercel.app/vendor/${vendor._id}`,
+    "url": `https://tendr.co.in/vendor/${vendor._id}`,
     "address": { "@type": "PostalAddress", "addressLocality": vendorCity, "addressCountry": "IN" },
     "areaServed": vendor.locations?.map(l => ({ "@type": "City", "name": l })) || [],
     ...(vendor.avgReviewScore > 0 ? {
