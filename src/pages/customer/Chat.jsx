@@ -491,7 +491,7 @@ const Chat = () => {
                             {optionLines.map((opt, i) => (
                               <button key={i}
                                 onClick={() => {
-                                  const reply = `I'd like to go with the ${tierNames[i]} package.`;
+                                  const reply = `I'd like to go with the ${tierNames[i]} package:\n\n${opt}`;
                                   setMessage(reply);
                                   setTimeout(() => {
                                     const btn = document.getElementById("chat-send-btn");

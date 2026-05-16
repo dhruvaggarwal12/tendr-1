@@ -85,11 +85,13 @@ const BookingReviewPage = () => {
       credentials: "include",
     })
       .then(r => r.ok ? r.json() : { conversations: [] })
-      .then(data => {
+      .then(async data => {
         const pm = {};
         const sm = {};
         const pinned = {};
-        (data.conversations || []).forEach(c => {
+        const convList = data.conversations || [];
+
+        convList.forEach(c => {
           const vid = c.vendorId?._id || c.vendorId;
           if (!vid) return;
           const key = vid.toString();
@@ -97,8 +99,34 @@ const BookingReviewPage = () => {
             pm[key] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
           }
           if (c.bookingSummary) sm[key] = c.bookingSummary;
-          if (c.pinnedMessages?.length) pinned[key] = c.pinnedMessages.map(m => typeof m === "string" ? m : m.content || m.text || JSON.stringify(m));
+          // Try pinned from list response first
+          if (c.pinnedMessages?.length) {
+            pinned[key] = c.pinnedMessages.map(m => typeof m === "string" ? m : m.content || m.text || "");
+          }
         });
+
+        // For conversations where pinned is still empty, fetch individual to get full pinnedMessages
+        const toFetch = convList.filter(c => {
+          const vid = (c.vendorId?._id || c.vendorId)?.toString();
+          return vid && !pinned[vid];
+        });
+
+        await Promise.allSettled(toFetch.map(c =>
+          fetch(`${BASE_URL}/conversations/${c._id}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+          })
+            .then(r => r.ok ? r.json() : null)
+            .then(full => {
+              if (!full) return;
+              const vid = (c.vendorId?._id || c.vendorId)?.toString();
+              if (!vid) return;
+              const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || [];
+              if (msgs.length) pinned[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "");
+            })
+            .catch(() => {})
+        ));
+
         setPriceMap(pm);
         setSummaryMap(sm);
         setPinnedMap(pinned);

@@ -45,6 +45,9 @@ const VendorList = () => {
     additionalInfo,
   } = useSelector((state) => state.eventPlanning.formData);
 
+  // Categories from event planning flow — persists in Redux
+  const planningSelectedVendors = useSelector((s) => s.eventPlanning.selectedVendors || []);
+
   // Categories pre-selected on the service category page, or restored after auth-gate sign-in
   const selectedCategories = (() => {
     if (location.state?.selectedCategories?.length) return location.state.selectedCategories;
@@ -52,6 +55,8 @@ const VendorList = () => {
       const saved = sessionStorage.getItem("auth_return_categories");
       if (saved) { sessionStorage.removeItem("auth_return_categories"); return JSON.parse(saved); }
     } catch {}
+    // Fall back to Redux selectedVendors from the planning flow
+    if (planningSelectedVendors.length) return planningSelectedVendors;
     return [];
   })();
 
