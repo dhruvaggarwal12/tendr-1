@@ -35,7 +35,7 @@ const CELEBRATION_PHOTOS = [
 
 const FAQS = [
   { q: "Is Tendr free to use?", a: "Browsing vendors, saving favourites and filling your event form is completely free. You only pay when you confirm your booking and proceed to payment." },
-  { q: "What is the difference between 'You Do It' and 'Let Us Do It'?", a: "'You Do It' lets you browse and shortlist vendors yourself, then chat with them to confirm pricing. 'Let Us Do It' means our concierge team selects the right vendors for your event and handles the coordination — you just review and approve." },
+  { q: "What is the difference between 'I'll Find My Vendors' and 'Tendr Plans It For Me'?", a: "'I'll Find My Vendors' lets you browse and shortlist vendors yourself, then chat with them to confirm pricing. 'Tendr Plans It For Me' means our concierge team selects the right vendors for your event and handles the coordination — you just review and approve." },
   { q: "How do I know if vendors are trustworthy?", a: "Every vendor on Tendr goes through a manual verification process before being listed. They are checked for legitimacy, experience and service quality. You can also see their ratings, years of experience and portfolio before reaching out." },
   { q: "When do I pay, and is my payment safe?", a: "Payment happens only after you have chatted with vendors, reviewed the full price breakdown and confirmed everything. We never charge before you are satisfied with the quote." },
   { q: "What if I need to cancel my booking?", a: "You can raise a change request or cancellation directly from your dashboard. Our team will guide you through the process. Refer to our Cancellation Policy for details on refunds." },
@@ -708,7 +708,7 @@ const Home = () => {
             <div>
               <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 5px" }}>Not sure how involved you want to be?</p>
               <p style={{ fontSize: 13.5, color: "#7A5535", margin: 0, lineHeight: 1.65 }}>
-                Choose <strong style={{ color: "#C47A2E" }}>You Do It</strong> to browse and book vendors yourself at your own pace, or <strong style={{ color: "#C47A2E" }}>Let Us Do It</strong> and our team selects the best vendors for your event, coordinates everything and presents a full plan for your approval.
+                Choose <strong style={{ color: "#C47A2E" }}>I'll Find My Vendors</strong> to browse and book vendors yourself at your own pace, or <strong style={{ color: "#C47A2E" }}>Tendr Plans It For Me</strong> and our team selects the best vendors for your event, coordinates everything and presents a full plan for your approval.
               </p>
             </div>
           </div>
