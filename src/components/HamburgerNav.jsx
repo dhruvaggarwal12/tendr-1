@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
-import { FaChevronDown, FaTimes } from "react-icons/fa";
+import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa";
 
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
@@ -34,19 +34,24 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Browse Vendors",             href: "/listings" },
-      { label: "Top Rated Vendors",          href: "/top-rated/Photographer" },
-      { label: "Register as Vendor",         href: "/vendor/register" },
+      { label: "Browse Vendors",             href: "/listings",                  icon: "📂" },
+      { label: "Top Rated Vendors",          href: "/top-rated/Photographer",    icon: "⭐" },
+      { label: "Register as Vendor",         href: "/vendor/register",           icon: "🤝" },
     ]},
     { label: "Planning Tools", items: [
-      { label: "Checklist",                  href: "/checklist-picker" },
-      { label: "Timeline",                   href: "/timeline-picker" },
-      { label: "Budget Allocator",           href: "/budget-picker" },
-      { label: "Aftermovie",                 href: "/aftermovie" },
-      { label: "Invitation Flyers",          href: "/invitation" },
+      { label: "Checklist",                  href: "/checklist-picker",          icon: "✅" },
+      { label: "Timeline",                   href: "/timeline-picker",           icon: "⏱" },
+      { label: "Budget Allocator",           href: "/budget-picker",             icon: "💰" },
+      { label: "Aftermovie",                 href: "/aftermovie",                icon: "🎬" },
+      { label: "Invitation Flyers",          href: "/invitation",                icon: "💌" },
+      { label: "Gift Hampers & Cakes",       href: "/gift-hampers-cakes",        icon: "🎁" },
     ]},
     { label: "Booking", items: [
-      { label: "Plan an Event",              href: "/booking" },
+      { label: "Plan an Event",              href: "/booking",                   icon: "🥂" },
+    ]},
+    { label: "Company", items: [
+      { label: "About Us",                   href: "/about-us",                  icon: "ℹ️" },
+      { label: "Contact Us",                 href: "/contact-us",                icon: "📞" },
     ]},
   ];
 
@@ -185,85 +190,120 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       {/* Slide-in Drawer */}
       {drawerOpen && (
         <>
-          <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 200 }} />
+          <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, backdropFilter: "blur(2px)" }} />
           <div style={{
-            position: "fixed", left: 0, top: 0, height: "100vh", width: 300,
+            position: "fixed", left: 0, top: 0, height: "100vh", width: 310,
             background: "#FFFCF5", zIndex: 201,
             display: "flex", flexDirection: "column",
-            animation: "drawerSlideIn 0.22s cubic-bezier(0.4,0,0.2,1)",
-            boxShadow: "6px 0 40px rgba(139,69,19,0.18)",
+            animation: "drawerSlideIn 0.24s cubic-bezier(0.4,0,0.2,1)",
+            boxShadow: "8px 0 48px rgba(139,69,19,0.22)",
             fontFamily: font,
             overflowY: "auto",
           }}>
             {/* Drawer header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px 14px", borderBottom: "1px solid rgba(196,122,46,0.1)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.04))" }}>
-              <img src={tendrLogo} alt="Tendr" onClick={() => { navigate("/"); close(); }} style={{ height: 34, cursor: "pointer" }} />
-              <button onClick={close} style={{ width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(196,122,46,0.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E" }}>
-                <FaTimes size={13} />
-              </button>
+            <div style={{ padding: "20px 20px 16px", background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", position: "relative", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <img src={tendrLogo} alt="Tendr" onClick={() => { navigate("/"); close(); }} style={{ height: 32, cursor: "pointer", filter: "brightness(1.1)" }} />
+                <button onClick={close} style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A" }}>
+                  <FaTimes size={12} />
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, letterSpacing: "0.03em" }}>We Curate, You Celebrate</p>
+
+              {/* User info in header */}
+              {token && user ? (
+                <div style={{ marginTop: 16, padding: "12px 14px", background: "rgba(255,255,255,0.07)", borderRadius: 12, border: "1px solid rgba(196,122,46,0.25)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
+                      {user.name?.[0]?.toUpperCase() || "U"}
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{user.name}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>{user.email}</div>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => { navigate("/dashboard"); close(); }}
+                      style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      Dashboard
+                    </button>
+                    <button onClick={() => { navigate("/dashboard?tab=Chats"); close(); }}
+                      style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      My Chats
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
+                  <button onClick={() => { navigate("/login"); close(); }}
+                    style={{ flex: 1, padding: "9px", borderRadius: 9, border: "1px solid rgba(196,122,46,0.4)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                    Sign In
+                  </button>
+                  <button onClick={() => { navigate("/signup"); close(); }}
+                    style={{ flex: 1, padding: "9px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    Sign Up
+                  </button>
+                </div>
+              )}
             </div>
 
-            {/* User info if logged in */}
-            {token && user && (
-              <div style={{ padding: "14px 20px", background: "rgba(196,122,46,0.04)", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 700, flexShrink: 0 }}>
-                    {user.name?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{user.name}</div>
-                    <div style={{ fontSize: 11, color: "#9B7450" }}>{user.email}</div>
-                  </div>
-                </div>
-                <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
-                  <button onClick={() => { navigate("/dashboard"); close(); }}
-                    style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                    Dashboard
-                  </button>
-                  <button onClick={() => { navigate("/dashboard?tab=Chats"); close(); }}
-                    style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "none", background: "rgba(196,122,46,0.08)", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                    My Chats
-                  </button>
-                </div>
-              </div>
-            )}
-
             {/* Nav sections */}
-            <div style={{ padding: "8px 0", flex: 1 }}>
-              {NAV_SECTIONS.map(sec => (
-                <div key={sec.label} style={{ marginBottom: 2 }}>
-                  <div style={{ fontSize: 10, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", padding: "10px 20px 5px" }}>{sec.label}</div>
+            <div style={{ padding: "12px 0", flex: 1 }}>
+              {NAV_SECTIONS.map((sec, si) => (
+                <div key={sec.label} style={{ marginBottom: 4 }}>
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", padding: "10px 20px 6px" }}>
+                    {sec.label}
+                  </div>
                   {sec.items.map(item => (
                     <button key={item.label}
                       onClick={() => { navigate(item.href); close(); }}
-                      style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "10px 20px", border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "10px 20px", border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.paddingLeft = "26px"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "20px"; }}
                     >
-                      {item.label}
+                      <span style={{ fontSize: 16, width: 22, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
+                      <span>{item.label}</span>
                     </button>
                   ))}
-                  <div style={{ height: 1, background: "rgba(196,122,46,0.06)", margin: "4px 20px" }} />
+                  {si < NAV_SECTIONS.length - 1 && (
+                    <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.12),transparent)", margin: "8px 20px" }} />
+                  )}
                 </div>
               ))}
             </div>
 
-            {/* Footer */}
-            {!token ? (
-              <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 8 }}>
-                <button onClick={() => { navigate("/login"); close(); }}
-                  style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Sign In</button>
-                <button onClick={() => { navigate("/signup"); close(); }}
-                  style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Sign Up</button>
+            {/* Social + Footer */}
+            <div style={{ padding: "14px 20px 20px", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+              {/* Social row */}
+              <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 14 }}>
+                {[
+                  { Icon: FaInstagram, href: "https://www.instagram.com/justtendrit?igsh=ZzlxcDhqOXo0dzVu&utm_source=qr" },
+                  { Icon: FaFacebookF, href: "https://www.facebook.com/share/1RENaQTgyj/?mibextid=wwXIfr" },
+                  { Icon: FaChevronDown, href: "https://wa.me/919211668427", isWA: true },
+                ].map(({ Icon, href, isWA }, i) => (
+                  <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+                    style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontSize: 14, textDecoration: "none", transition: "all 0.2s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#CCAB4A)"; e.currentTarget.style.color = "#fff"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.color = "#C47A2E"; }}
+                  >
+                    <Icon />
+                  </a>
+                ))}
+                <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
+                  style={{ width: 36, height: 36, borderRadius: "50%", background: "#25d366", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 16, textDecoration: "none" }}>
+                  💬
+                </a>
               </div>
-            ) : (
-              <div style={{ padding: "12px 20px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+
+              {/* Logout if logged in */}
+              {token && (
                 <button onClick={() => { dispatch(logout()); navigate("/"); close(); }}
-                  style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                  style={{ width: "100%", padding: "9px", borderRadius: 10, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, marginBottom: 10 }}>
                   Logout
                 </button>
-              </div>
-            )}
+              )}
+              <p style={{ fontSize: 11, color: "#bbb", textAlign: "center", margin: 0 }}>tendr.co.in · Delhi NCR</p>
+            </div>
           </div>
         </>
       )}

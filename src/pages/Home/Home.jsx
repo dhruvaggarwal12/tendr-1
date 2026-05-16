@@ -45,32 +45,81 @@ const FAQS = [
 
 function FaqSection() {
   const [open, setOpen] = React.useState(null);
+  const navigate = useNavigate();
   return (
-    <section style={{ background: "#F8F4EF", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
-      <div style={{ maxWidth: 760, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Got Questions?</p>
-          <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.4rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>Frequently Asked Questions</h2>
-          <p style={{ fontSize: 15, color: "#9B7450" }}>Everything you need to know before you start planning.</p>
-          <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
+    <section style={{ background: "linear-gradient(180deg,#FFF8F2 0%,#F5E6CC 100%)", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ maxWidth: 800, margin: "0 auto" }}>
+
+        {/* Heading */}
+        <div style={{ textAlign: "center", marginBottom: 52 }}>
+          <span style={{ display: "inline-block", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", padding: "5px 16px", borderRadius: 100, marginBottom: 16 }}>
+            Got Questions?
+          </span>
+          <h2 style={{ fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.15 }}>
+            Frequently Asked Questions
+          </h2>
+          <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 460, margin: "0 auto" }}>
+            Everything you need to know before you start planning your celebration.
+          </p>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+
+        {/* FAQ items */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {FAQS.map(({ q, a }, i) => (
             <div key={i}
-              style={{ background: "#fff", borderRadius: 14, border: `1.5px solid ${open === i ? "rgba(196,122,46,0.35)" : "rgba(196,122,46,0.12)"}`, overflow: "hidden", transition: "border-color 0.2s" }}>
+              style={{
+                background: "#fff",
+                borderRadius: 16,
+                border: `1.5px solid ${open === i ? "#C47A2E" : "rgba(196,122,46,0.14)"}`,
+                overflow: "hidden",
+                transition: "border-color 0.22s, box-shadow 0.22s",
+                boxShadow: open === i ? "0 6px 24px rgba(196,122,46,0.12)" : "0 2px 8px rgba(139,69,19,0.04)",
+              }}
+            >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
-                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 22px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 12 }}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", background: open === i ? "rgba(196,122,46,0.03)" : "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 16 }}
               >
-                <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.4 }}>{q}</span>
-                <span style={{ fontSize: 20, color: "#C47A2E", flexShrink: 0, transform: open === i ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.25s ease", lineHeight: 1 }}>+</span>
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 8, padding: "3px 8px", flexShrink: 0, marginTop: 2, letterSpacing: "0.04em" }}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
+                </div>
+                <div style={{
+                  width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
+                  background: open === i ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.1)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  transition: "all 0.25s",
+                }}>
+                  <span style={{ fontSize: 16, color: open === i ? "#fff" : "#C47A2E", fontWeight: 700, lineHeight: 1, transform: open === i ? "rotate(45deg)" : "rotate(0)", display: "inline-block", transition: "transform 0.25s ease" }}>+</span>
+                </div>
               </button>
-              <div style={{ maxHeight: open === i ? 300 : 0, overflow: "hidden", transition: "max-height 0.35s ease" }}>
-                <p style={{ margin: 0, padding: "0 22px 18px", fontSize: 14, color: "#7A5535", lineHeight: 1.7 }}>{a}</p>
+              <div style={{ maxHeight: open === i ? 400 : 0, overflow: "hidden", transition: "max-height 0.38s cubic-bezier(0.4,0,0.2,1)" }}>
+                <div style={{ borderLeft: "3px solid #C47A2E", margin: "0 24px 20px 58px", paddingLeft: 16 }}>
+                  <p style={{ margin: 0, fontSize: 14.5, color: "#7A5535", lineHeight: 1.75 }}>{a}</p>
+                </div>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Still have questions CTA */}
+        <div style={{ textAlign: "center", marginTop: 44, padding: "28px 24px", background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.06)" }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: "#2C1A0E", margin: "0 0 6px" }}>Still have questions?</p>
+          <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 18px" }}>Our team is happy to help you plan your perfect event.</p>
+          <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+            <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
+              style={{ padding: "10px 24px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
+              💬 WhatsApp Us
+            </a>
+            <button onClick={() => navigate("/contact-us")}
+              style={{ padding: "10px 24px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+              Contact Us →
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
   );
