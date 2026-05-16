@@ -22,18 +22,19 @@ export default function ContactUs() {
     setSending(true);
     setError("");
     try {
-      const res = await fetch("https://formsubmit.co/ajax/contacttendr@gmail.com", {
+      const res = await fetch("https://api.web3forms.com/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
+          access_key: "b6e1a881-5d38-4228-bfc4-379df27385c0",
           name: form.name,
           email: form.email,
           message: form.message,
-          _subject: `New message from ${form.name} via Tendr Contact Form`,
-          _captcha: "false",
+          subject: `New message from ${form.name} via Tendr Contact Form`,
         }),
       });
-      if (res.ok) {
+      const data = await res.json();
+      if (data.success) {
         setSent(true);
       } else {
         setError("Something went wrong. Please email us directly at contacttendr@gmail.com");
