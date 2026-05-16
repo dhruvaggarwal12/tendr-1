@@ -127,13 +127,8 @@ export default function ComingSoon() {
       {/* Content */}
       <div style={{ position: "relative", zIndex: 1, maxWidth: 680, width: "100%", textAlign: "center" }}>
 
-        {/* Logo */}
-        <motion.div initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
-          <img src={tendrLogo} alt="Tendr" style={{ height: 48, objectFit: "contain", marginBottom: 36, filter: "brightness(1.1)" }} />
-        </motion.div>
-
         {/* Badge */}
-        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
+        <motion.div initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5 }}>
           <span style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", padding: "6px 18px", borderRadius: 100, marginBottom: 28 }}>
             Something Big Is Coming
           </span>
@@ -141,36 +136,24 @@ export default function ComingSoon() {
 
         {/* Headline */}
         <motion.h1
-          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.3 }}
-          style={{ fontSize: "clamp(2.6rem, 7vw, 5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.05, margin: "0 0 18px" }}
+          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
+          style={{ fontSize: "clamp(2.6rem, 7vw, 5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.05, margin: "0 0 28px" }}
         >
-          We Curate.<br />
-          <span style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A,#E8C97A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            You Celebrate.
-          </span>
+          Coming Soon
         </motion.h1>
+
+        {/* Logo */}
+        <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.25 }} style={{ marginBottom: 28 }}>
+          <img src={tendrLogo} alt="Tendr" style={{ height: 52, objectFit: "contain", filter: "brightness(1.15)" }} />
+        </motion.div>
 
         {/* Subtext */}
         <motion.p
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.5 }}
-          style={{ fontSize: "clamp(15px,2.5vw,18px)", color: "rgba(255,255,255,0.55)", lineHeight: 1.7, margin: "0 auto 48px", maxWidth: 500 }}
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.4 }}
+          style={{ fontSize: "clamp(14px,2.2vw,17px)", color: "rgba(255,255,255,0.5)", lineHeight: 1.75, margin: "0 auto 48px", maxWidth: 540 }}
         >
-          Tendr is Delhi NCR's celebration planning platform — connecting you with verified decorators, caterers, photographers and DJs for every occasion.
+          Tendr is your all-in-one celebration planning platform to discover, organise, and bring every part of your event together — from decor, cakes, gifts, and experiences to vendors, kits, and event essentials.
         </motion.p>
-
-        {/* Countdown */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.6 }}
-          style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", gap: 16, marginBottom: 56 }}
-        >
-          <CountBlock value={days}    label="Days" />
-          <Divider />
-          <CountBlock value={hours}   label="Hours" />
-          <Divider />
-          <CountBlock value={minutes} label="Minutes" />
-          <Divider />
-          <CountBlock value={seconds} label="Seconds" />
-        </motion.div>
 
         {/* Waitlist form */}
         <motion.div
