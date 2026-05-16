@@ -401,28 +401,31 @@ const Navbar = ({
           {/* Secondary actions */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
 
-            {/* Gift Hampers — disabled */}
-            <span
-              title="Coming Soon"
+            {/* Gift Hampers & Cakes */}
+            <a
+              href="/gift-hampers-cakes"
               style={{
-                color: "#bbb",
+                color: "#C47A2E",
                 fontSize: 14,
                 fontWeight: 600,
                 letterSpacing: "0.02em",
                 padding: "7px 14px",
                 borderRadius: 8,
-                border: "1px solid #e5e7eb",
+                border: "1.5px solid rgba(196,122,46,0.3)",
+                background: "rgba(196,122,46,0.06)",
                 whiteSpace: "nowrap",
                 lineHeight: 1,
                 display: "flex",
                 alignItems: "center",
                 gap: 5,
-                cursor: "not-allowed",
-                userSelect: "none",
+                textDecoration: "none",
+                transition: "background 0.2s, border-color 0.2s",
               }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
             >
-              🎁 Gift Hampers
-            </span>
+              🎁 Gift Hampers & Cakes
+            </a>
 
             {divider}
 

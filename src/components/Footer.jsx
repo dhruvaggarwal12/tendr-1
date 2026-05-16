@@ -80,13 +80,13 @@ export default function Footer() {
             { label: "Decoration", href: "/listings" },
             { label: "DJ & Entertainment", href: "/listings" },
             { label: "Corporate Events", href: "/corporate" },
+            { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
           ]} />
 
           {/* Company */}
           <FooterColumn title="Company" links={[
             { label: "About Us", href: "/about-us" },
             { label: "Become a Vendor", href: "/vendor/register" },
-            { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
             { label: "Invitation Flyers", href: "/invitation" },
           ]} />
 

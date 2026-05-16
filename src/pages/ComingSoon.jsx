@@ -143,7 +143,7 @@ export default function ComingSoon() {
         </motion.h1>
 
         {/* Logo */}
-        <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.25 }} style={{ marginBottom: 28 }}>
+        <motion.div initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.6, delay: 0.25 }} style={{ marginBottom: 28, display: "flex", justifyContent: "center" }}>
           <img src={tendrLogo} alt="Tendr" style={{ height: 52, objectFit: "contain", filter: "brightness(1.15)" }} />
         </motion.div>
 

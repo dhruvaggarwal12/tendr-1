@@ -188,7 +188,7 @@ const Home = () => {
 
   const handleGiftHampersClick = (e) => {
     e.preventDefault();
-    // Gift Hampers disabled
+    navigate("/gift-hampers-cakes");
   };
 
   const handlePartnerClick = (e) => {
