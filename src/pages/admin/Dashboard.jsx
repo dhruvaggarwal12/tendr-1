@@ -293,7 +293,39 @@ const AdminDashboard = () => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryDraft, setSummaryDraft] = useState("");
 
-  const { recentChats, supportChats, adminChats } = useConversations({ enabled: !!token });
+  const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats } = useConversations({ enabled: !!token });
+
+  // 24-hour inactivity TTL — filter and auto-delete inactive conversations
+  const TTL_MS = 24 * 60 * 60 * 1000;
+  const isExpired = (c) => {
+    const last = c.updatedAt || c.lastMessageAt || c.createdAt;
+    return last && (Date.now() - new Date(last).getTime()) > TTL_MS;
+  };
+  const hoursLeft = (c) => {
+    const last = c.updatedAt || c.lastMessageAt || c.createdAt;
+    if (!last) return null;
+    const remaining = TTL_MS - (Date.now() - new Date(last).getTime());
+    return remaining > 0 ? Math.ceil(remaining / 3600000) : 0;
+  };
+
+  // Active (non-expired) chats
+  const recentChats  = rawRecentChats.filter(c => !isExpired(c));
+  const supportChats = rawSupportChats.filter(c => !isExpired(c));
+  const adminChats   = rawAdminChats.filter(c => !isExpired(c));
+
+  // Auto-delete expired conversations from DB when they're discovered
+  useEffect(() => {
+    if (!token || !user?.isAdmin) return;
+    const expired = [...rawRecentChats, ...rawSupportChats, ...rawAdminChats].filter(isExpired);
+    if (!expired.length) return;
+    expired.forEach(c => {
+      fetch(`${BASE_URL}/admin/conversations/${c._id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      }).catch(() => {});
+    });
+  }, [rawRecentChats, rawSupportChats, rawAdminChats, token]);
 
   // Fetch real stats from backend
   useEffect(() => {
@@ -327,7 +359,19 @@ const AdminDashboard = () => {
       credentials: "include",
     })
       .then((r) => r.json())
-      .then((data) => setChatRequests(data.conversations || []))
+      .then((data) => {
+        const all = data.conversations || [];
+        // Auto-delete expired chat requests (>24hr inactive)
+        const expired = all.filter(isExpired);
+        expired.forEach(c => {
+          fetch(`${BASE_URL}/admin/conversations/${c._id}`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+            credentials: "include",
+          }).catch(() => {});
+        });
+        setChatRequests(all.filter(c => !isExpired(c)));
+      })
       .catch(() => {});
 
     fetch(`${BASE_URL}/admin/vendor-stats`, {
@@ -724,6 +768,12 @@ const AdminDashboard = () => {
                             : { background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }) }}>
                             {req.chatApproved ? "Approved" : req.chatRejected ? "Rejected" : "Pending"}
                           </span>
+                          {/* Expiry countdown */}
+                          {(() => { const h = hoursLeft(req); return h !== null && h <= 6 ? (
+                            <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: h <= 2 ? "#fff5f5" : "#fffbeb", color: h <= 2 ? "#c0392b" : "#b45309", border: `1px solid ${h <= 2 ? "#fca5a5" : "#fde68a"}`, fontWeight: 600 }}>
+                              ⏳ {h === 0 ? "Expiring now" : `Expires in ${h}h`}
+                            </span>
+                          ) : null; })()}
                         </div>
 
                         {req.eventDetails && Object.values(req.eventDetails).some(Boolean) && (
@@ -1997,6 +2047,11 @@ const AdminDashboard = () => {
                       <span className="text-gray-500">
                         {formatTimeIST(c.updatedAt)}
                       </span>
+                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: h <= 2 ? "#c0392b" : "#b45309" }}>
+                          ⏳ {h === 0 ? "Expiring" : `${h}h left`}
+                        </span>
+                      ) : null; })()}
                     </div>
                   </div>
                 ))}
@@ -2207,6 +2262,11 @@ const AdminDashboard = () => {
                       <span className="text-gray-500">
                         {formatTimeIST(c.updatedAt)}
                       </span>
+                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: h <= 2 ? "#c0392b" : "#b45309" }}>
+                          ⏳ {h === 0 ? "Expiring" : `${h}h left`}
+                        </span>
+                      ) : null; })()}
                     </div>
                   </div>
                 ))}
