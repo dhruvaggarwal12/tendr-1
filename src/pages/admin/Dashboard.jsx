@@ -506,7 +506,25 @@ const AdminDashboard = () => {
   const unpinMessage = (content) => {
     if (!selectedChat?._id) return;
     const cid = selectedChat._id;
+    // Update local state immediately
     setPinnedMsgs(prev => prev.filter(m => !(m.content === content && m.conversationId === cid)));
+    // Persist unpin to backend — try dedicated unpin endpoint, fall back to pin with remove flag
+    fetch(`${BASE_URL}/admin/conversations/${cid}/unpin-message`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      credentials: 'include',
+      body: JSON.stringify({ content }),
+    }).then(r => {
+      if (!r.ok) {
+        // Fallback: try DELETE on pin-message endpoint
+        return fetch(`${BASE_URL}/admin/conversations/${cid}/pin-message`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          credentials: 'include',
+          body: JSON.stringify({ content }),
+        });
+      }
+    }).catch(() => {});
   };
 
   const currentPinned = pinnedMsgs.filter(m => m.conversationId === selectedChat?._id);
