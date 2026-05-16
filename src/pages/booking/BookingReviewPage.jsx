@@ -105,10 +105,9 @@ const BookingReviewPage = () => {
       .catch(() => {});
   }, [token]);
 
-  // Use real price if admin confirmed it, otherwise fall back to estimate
   const getPrice = (vendor) => {
     const vid = vendor?._id?.toString();
-    return priceMap[vid]?.amount || vendorPrice(vendor);
+    return priceMap[vid]?.amount ?? null; // null = not yet set by admin
   };
   const isConfirmed = (vendor) => !!priceMap[vendor?._id?.toString()]?.confirmed;
 
@@ -116,8 +115,9 @@ const BookingReviewPage = () => {
     acc[key] = getPrice(v);
     return acc;
   }, {});
-  const totalPrice = Object.values(prices).reduce((a, b) => a + b, 0);
+  const confirmedTotal = Object.values(prices).filter(p => p !== null).reduce((a, b) => a + b, 0);
   const allConfirmed = vendorEntries.every(([, v]) => isConfirmed(v));
+  const anyPriceUnset = vendorEntries.some(([, v]) => getPrice(v) === null);
 
   // Accordion: first vendor open by default
   const [openKeys, setOpenKeys] = useState(() =>
@@ -193,10 +193,21 @@ const BookingReviewPage = () => {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px", width: "100%", boxSizing: "border-box" }}>
 
         {/* Page title */}
-        <div style={{ marginBottom: 28 }}>
+        <div style={{ marginBottom: 20 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Review & Book</h1>
           <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Review your event details and finalised vendors before confirming.</p>
         </div>
+
+        {/* Price pending banner */}
+        {anyPriceUnset && (
+          <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 14, padding: "14px 20px", marginBottom: 24, display: "flex", gap: 12, alignItems: "flex-start" }}>
+            <span style={{ fontSize: 20, flexShrink: 0 }}>⏳</span>
+            <div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#b45309", margin: "0 0 3px" }}>Pricing in progress — sit tight!</p>
+              <p style={{ fontSize: 13, color: "#92400e", margin: 0 }}>Our team is confirming prices with your vendors. You'll be notified once all quotes are ready. You can review vendor details in the meantime.</p>
+            </div>
+          </div>
+        )}
 
         <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
 
@@ -294,12 +305,17 @@ const BookingReviewPage = () => {
                       {!isLetUsDoIt && vendor.city && <span style={{ fontSize: 12, color: "#9B7450", marginLeft: 8 }}>{vendor.city}</span>}
                     </div>
                     <div style={{ textAlign: "right", marginRight: 8, flexShrink: 0 }}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: isConfirmed(vendor) ? "#15803d" : "#9B7450" }}>
-                        {isConfirmed(vendor) ? "✓ Confirmed" : "Estimated"}
-                      </div>
-                      <div style={{ fontSize: 17, fontWeight: 800, color: isConfirmed(vendor) ? "#15803d" : "#C47A2E" }}>
-                        {formatINR(price)}
-                      </div>
+                      {price !== null ? (
+                        <>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#15803d" }}>✓ Price Confirmed</div>
+                          <div style={{ fontSize: 17, fontWeight: 800, color: "#15803d" }}>{formatINR(price)}</div>
+                        </>
+                      ) : (
+                        <>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#b45309" }}>⏳ Awaiting Quote</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: "#9B7450", fontStyle: "italic" }}>Yet to be updated</div>
+                        </>
+                      )}
                     </div>
                     <ChevronIcon open={isOpen} />
                   </button>
@@ -441,17 +457,23 @@ const BookingReviewPage = () => {
                 {vendorEntries.map(([serviceType, vendor]) => (
                   <div key={serviceType} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#5a3a1a" }}>
                     <span style={{ fontWeight: 500 }}>{isLetUsDoIt ? "Tendr" : (vendor.name || serviceType)}</span>
-                    <span style={{ fontWeight: 600 }}>{formatINR(prices[serviceType])}</span>
+                    <span style={{ fontWeight: 600, color: prices[serviceType] !== null ? "#2C1A0E" : "#bbb", fontStyle: prices[serviceType] === null ? "italic" : "normal" }}>
+                      {prices[serviceType] !== null ? formatINR(prices[serviceType]) : "Yet to be updated"}
+                    </span>
                   </div>
                 ))}
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
-                  <span>{allConfirmed ? "Total" : "Total Estimate"}</span>
-                  <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>{formatINR(totalPrice)}</span>
+                  <span>{allConfirmed ? "Total" : anyPriceUnset ? "Confirmed So Far" : "Total"}</span>
+                  <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
+                    {confirmedTotal > 0 ? formatINR(confirmedTotal) : "—"}
+                  </span>
                 </div>
-                <p style={{ fontSize: 11, color: "#bbb", margin: 0 }}>
+                <p style={{ fontSize: 11, color: "#9B7450", margin: 0 }}>
                   {allConfirmed
                     ? "✓ All prices confirmed by Tendr team."
-                    : "*Prices marked 'Estimated' are indicative — final quote confirmed in chat."}
+                    : anyPriceUnset
+                    ? "⏳ Some vendor quotes are still being confirmed. You'll be notified when all prices are ready."
+                    : "Prices confirmed in chat."}
                 </p>
               </div>
 
@@ -469,20 +491,26 @@ const BookingReviewPage = () => {
                 ))}
               </div>
 
-              <button
-                disabled={saving}
-                onClick={async () => {
-                  setSaving(true);
-                  const eventPlanId = await saveEventPlan();
-                  setSaving(false);
-                  navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: totalPrice, eventPlanId } });
-                }}
-                style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: saving ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: saving ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: saving ? "not-allowed" : "pointer", boxShadow: saving ? "none" : "0 4px 14px rgba(196,122,46,0.35)", transition: "opacity 0.2s" }}
-                onMouseEnter={(e) => { if (!saving) e.currentTarget.style.opacity = "0.9"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-              >
-                {saving ? "Saving..." : "Proceed to Payment"}
-              </button>
+              {anyPriceUnset ? (
+                <div style={{ width: "100%", padding: "14px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", textAlign: "center", border: "1.5px dashed #d1d5db" }}>
+                  ⏳ Waiting for all quotes to be confirmed
+                </div>
+              ) : (
+                <button
+                  disabled={saving}
+                  onClick={async () => {
+                    setSaving(true);
+                    const eventPlanId = await saveEventPlan();
+                    setSaving(false);
+                    navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: confirmedTotal, eventPlanId } });
+                  }}
+                  style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: saving ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: saving ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: saving ? "not-allowed" : "pointer", boxShadow: saving ? "none" : "0 4px 14px rgba(196,122,46,0.35)", transition: "opacity 0.2s" }}
+                  onMouseEnter={(e) => { if (!saving) e.currentTarget.style.opacity = "0.9"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+                >
+                  {saving ? "Saving..." : "Proceed to Payment"}
+                </button>
+              )}
             </div>
           </div>
         </div>
