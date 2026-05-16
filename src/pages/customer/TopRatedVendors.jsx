@@ -150,6 +150,7 @@ export default function TopRatedVendors() {
   const dispatch = useDispatch();
   const { category } = useParams();
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
+  const token = useSelector((s) => s.auth.token);
 
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -263,7 +264,7 @@ export default function TopRatedVendors() {
       </div>
 
       {/* Vendor grid */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 32px 80px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "40px 32px 80px", position: "relative" }}>
         {loading ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 24 }}>
             {Array.from({ length: 8 }).map((_, i) => (
@@ -322,17 +323,33 @@ export default function TopRatedVendors() {
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => handleViewProfile(vendor)}
                         style={{ flex: 1, padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
-                        View Profile
+                        Quick View
                       </button>
                       <button onClick={() => toggleCompare(vendor)}
-                        style={{ padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${isInCompare ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isInCompare ? "rgba(196,122,46,0.08)" : "#fff", color: isInCompare ? "#C47A2E" : "#6B3A1F", fontSize: 12, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
-                        {isInCompare ? "✓" : "+"}
+                        style={{ padding: "9px 14px", borderRadius: 10, border: `1.5px solid ${isInCompare ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isInCompare ? "rgba(196,122,46,0.1)" : "#fff", color: isInCompare ? "#C47A2E" : "#6B3A1F", fontSize: 12, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
+                        title={isInCompare ? "Saved" : "Save vendor"}>
+                        {isInCompare ? "♥ Saved" : "♡ Save"}
                       </button>
                     </div>
                   </div>
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Auth gate — blur if not signed in */}
+        {!token && !loading && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 50, backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)", background: "rgba(255,252,245,0.6)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ background: "#FFFCF5", borderRadius: 24, padding: "36px 32px", textAlign: "center", maxWidth: 380, boxShadow: "0 16px 48px rgba(139,69,19,0.18)", border: "1.5px solid rgba(196,122,46,0.2)" }}>
+              <div style={{ fontSize: 44, marginBottom: 14 }}>🔐</div>
+              <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>Sign in to view vendors</h3>
+              <p style={{ fontSize: 14, color: "#9B7450", lineHeight: 1.65, margin: "0 0 24px" }}>Create a free account to browse top-rated vendors, save your favourites and chat with them directly.</p>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => navigate("/signup")} style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Sign Up Free</button>
+                <button onClick={() => navigate("/login")} style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Sign In</button>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -474,7 +474,47 @@ const Chat = () => {
                     lineHeight: 1.5,
                   }}
                 >
-                  {!!msg.text && <p style={{ margin: 0, whiteSpace: "pre-line" }}>{msg.text}</p>}
+                  {!!msg.text && (() => {
+                    // MCQ package message — render with selectable option buttons
+                    if (msg.text.startsWith("[MCQ_PACKAGES:")) {
+                      const svcType = msg.text.match(/\[MCQ_PACKAGES:(.+?)\]/)?.[1] || "";
+                      const clean = msg.text.replace(/\[MCQ_PACKAGES:[^\]]+\]\n?/, "");
+                      const optionLines = ["1️⃣","2️⃣","3️⃣"].map((em, i) => {
+                        const start = clean.indexOf(em);
+                        const next = ["1️⃣","2️⃣","3️⃣"][i + 1];
+                        const end = next ? clean.indexOf(next) : clean.indexOf("\nReply with");
+                        return start >= 0 ? clean.slice(start, end > 0 ? end : undefined).trim() : null;
+                      }).filter(Boolean);
+                      const tierNames = ["Basic", "Standard", "Premium"];
+                      return (
+                        <div>
+                          <p style={{ margin: "0 0 10px", whiteSpace: "pre-line", fontWeight: 600 }}>
+                            {clean.split('\n').slice(0, 2).join('\n')}
+                          </p>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                            {optionLines.map((opt, i) => (
+                              <button key={i}
+                                onClick={() => {
+                                  const reply = `I'd like to go with the ${tierNames[i]} package.`;
+                                  setMessage(reply);
+                                  setTimeout(() => {
+                                    const btn = document.getElementById("chat-send-btn");
+                                    if (btn) btn.click();
+                                  }, 50);
+                                }}
+                                style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#2C1A0E", fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "pre-line", lineHeight: 1.5 }}
+                                onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+                                onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                              >
+                                {opt}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+                    return <p style={{ margin: 0, whiteSpace: "pre-line" }}>{msg.text}</p>;
+                  })()}
                   {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
                     <div
                       style={{
@@ -676,6 +716,7 @@ const Chat = () => {
           />
 
           <button
+            id="chat-send-btn"
             type="submit"
             disabled={!vendorApproved}
             style={{

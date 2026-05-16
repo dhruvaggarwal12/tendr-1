@@ -1838,24 +1838,26 @@ const AdminDashboard = () => {
                       return (
                         <div style={{ padding: "10px 12px" }}>
                           <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Send Package</div>
-                          {pkgs.map(({ tier, guests, items }) => {
-                            const msgText = `*${svcType} — ${tier} Package* (Recommended for ${guests} guests)\n${items.map(i => `• ${i}`).join('\n')}`;
-                            return (
-                              <button key={tier} onClick={() => {
-                                if (!selectedChat?._id || !adminSocketRef.current) return;
-                                const m = { conversationId: selectedChat._id, sender: 'customer-care', content: msgText };
-                                adminSocketRef.current.emit('send_message', m);
-                                setCurrentConversation((prev) => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
-                              }}
-                                style={{ display: "block", width: "100%", textAlign: "left", marginBottom: 6, padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-                                onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
-                                onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
-                              >
-                                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", marginBottom: 2 }}>{tier} · {guests} guests</div>
-                                <div style={{ fontSize: 10, color: "#9B7450" }}>{items.slice(0, 2).join(', ')}...</div>
-                              </button>
-                            );
-                          })}
+                          <button onClick={() => {
+                            if (!selectedChat?._id || !adminSocketRef.current) return;
+                            const lines = [
+                              `[MCQ_PACKAGES:${svcType}]`,
+                              `📦 *${svcType} Package Options*`,
+                              `\nPlease choose a package that suits your event:\n`,
+                              ...pkgs.map(({ tier, guests, items }, pi) =>
+                                `${['1️⃣','2️⃣','3️⃣'][pi]} *${tier}* (${guests} guests)\n${items.map(i => `   • ${i}`).join('\n')}`
+                              ),
+                              `\nReply with 1, 2, or 3 to select your package.`,
+                            ];
+                            const msgText = lines.join('\n');
+                            const m = { conversationId: selectedChat._id, sender: 'customer-care', content: msgText };
+                            adminSocketRef.current.emit('send_message', m);
+                            setCurrentConversation((prev) => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
+                          }}
+                            style={{ display: "block", width: "100%", textAlign: "center", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                          >
+                            📦 Send Package Options
+                          </button>
                         </div>
                       );
                     })()}
