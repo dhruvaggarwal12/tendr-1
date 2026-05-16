@@ -708,7 +708,7 @@ const Home = () => {
             <div>
               <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 5px" }}>Not sure how involved you want to be?</p>
               <p style={{ fontSize: 13.5, color: "#7A5535", margin: 0, lineHeight: 1.65 }}>
-                Choose <strong style={{ color: "#C47A2E" }}>I'll Find My Vendors</strong> to browse and book vendors yourself at your own pace, or <strong style={{ color: "#C47A2E" }}>Tendr Plans It For Me</strong> and our team selects the best vendors for your event, coordinates everything and presents a full plan for your approval.
+                Click on <strong style={{ color: "#C47A2E" }}>Plan Your Event</strong>, then choose <strong style={{ color: "#C47A2E" }}>I'll Find My Vendors</strong> to browse and book vendors yourself at your own pace, or <strong style={{ color: "#C47A2E" }}>Tendr Plans It For Me</strong> and our team selects the best vendors for your event, coordinates everything and presents a full plan for your approval.
               </p>
             </div>
           </div>
