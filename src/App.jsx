@@ -7,6 +7,10 @@ import router from "./router";
 import store from "./store";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FloatingChatButton from "./components/FloatingChatButton";
+import ComingSoon from "./pages/ComingSoon";
+
+const LIVE_DOMAINS = ["tendr.co.in", "www.tendr.co.in"];
+const isLiveDomain = LIVE_DOMAINS.includes(window.location.hostname);
 
 // Scroll to top on every navigation
 router.subscribe(() => {
@@ -14,6 +18,15 @@ router.subscribe(() => {
 });
 
 function App() {
+  // On tendr.co.in — lock entire app to Coming Soon, no routing possible
+  if (isLiveDomain) {
+    return (
+      <HelmetProvider>
+        <ComingSoon />
+      </HelmetProvider>
+    );
+  }
+
   return (
     <HelmetProvider>
       <ErrorBoundary>

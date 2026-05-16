@@ -1,10 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import Home from "./pages/Home/Home";
-import ComingSoon from "./pages/ComingSoon";
-
-const LIVE_DOMAINS = ["tendr.co.in", "www.tendr.co.in"];
-const isLiveDomain = LIVE_DOMAINS.includes(window.location.hostname);
 import Auth from "./pages/customer/Auth";
 import VendorRegistration from "./pages/vendor/Registration";
 import ApplicationStatus from "./pages/vendor/ApplicationStatus";
@@ -67,7 +63,7 @@ import BookingConfirmation from './pages/booking/BookingConfirmation';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: isLiveDomain ? <ComingSoon /> : <Home />,
+    element: <Home />,
     errorElement: <ErrorPage />
   },
   {
