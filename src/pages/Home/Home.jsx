@@ -620,33 +620,52 @@ const Home = () => {
       </section>
 
       {/* ── Marquee strip — right under hero text ── */}
-      <div style={{
-        background: "rgba(196,122,46,0.1)",
-        borderTop: "1px solid rgba(196,122,46,0.2)",
-        borderBottom: "1px solid rgba(196,122,46,0.2)",
-        padding: "11px 0", overflow: "hidden",
-      }}>
-        <div style={{ display: "flex", width: "max-content", animation: "tendr-marquee 32s linear infinite" }}>
-          {[
-            "100+ Verified Vendors", "Delhi", "Noida", "Ghaziabad", "Greater Noida",
-            "Photography", "Catering", "DJ & Music", "Decoration",
-            "Pre-Wedding Events", "Birthday Parties", "Corporate Events",
-            "Free to Browse", "Instant Chat", "Verified Reviews", "Same-Day Support",
-          ].concat([
-            "100+ Verified Vendors", "Delhi", "Noida", "Ghaziabad", "Greater Noida",
-            "Photography", "Catering", "DJ & Music", "Decoration",
-            "Pre-Wedding Events", "Birthday Parties", "Corporate Events",
-            "Free to Browse", "Instant Chat", "Verified Reviews", "Same-Day Support",
-          ]).map((item, i) => (
-            <React.Fragment key={i}>
-              <span style={{ color: "#8B4513", fontSize: 12, fontWeight: 700, letterSpacing: "0.09em", whiteSpace: "nowrap", padding: "0 6px", textTransform: "uppercase" }}>
-                {item}
-              </span>
-              <span style={{ color: "#C47A2E", fontSize: 10, padding: "0 16px", opacity: 0.5 }}>◆</span>
-            </React.Fragment>
-          ))}
-        </div>
-      </div>
+      {(() => {
+        const GROUPS = [
+          { icon: "🏙", label: "Cities", color: "#7A4A1E", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Faridabad", "Greater Noida"] },
+          { icon: "🎯", label: "Services", color: "#C47A2E", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup"] },
+          { icon: "🎉", label: "Events", color: "#8B4513", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
+          { icon: "✨", label: "Platform", color: "#C47A2E", items: ["Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
+        ];
+
+        const strip = [...GROUPS, ...GROUPS]; // duplicate for seamless loop
+
+        return (
+          <div style={{
+            background: "linear-gradient(90deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06),rgba(196,122,46,0.08))",
+            borderTop: "1px solid rgba(196,122,46,0.18)",
+            borderBottom: "1px solid rgba(196,122,46,0.18)",
+            padding: "10px 0", overflow: "hidden",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", width: "max-content", animation: "tendr-marquee 40s linear infinite" }}>
+              {strip.map((group, gi) => (
+                <React.Fragment key={gi}>
+                  {/* Group items with · between */}
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 0 }}>
+                    <span style={{ fontSize: 14, marginRight: 8 }}>{group.icon}</span>
+                    {group.items.map((item, ii) => (
+                      <React.Fragment key={ii}>
+                        <span style={{ color: group.color, fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", whiteSpace: "nowrap", textTransform: "uppercase" }}>
+                          {item}
+                        </span>
+                        {ii < group.items.length - 1 && (
+                          <span style={{ color: "rgba(196,122,46,0.4)", fontSize: 10, padding: "0 10px" }}>·</span>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </span>
+                  {/* | divider between groups */}
+                  <span style={{
+                    display: "inline-block", width: 1.5, height: 16,
+                    background: "linear-gradient(180deg,transparent,#C47A2E,transparent)",
+                    margin: "0 24px", opacity: 0.6, verticalAlign: "middle", flexShrink: 0,
+                  }} />
+                </React.Fragment>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       <style>{`
         @keyframes tendr-marquee {
