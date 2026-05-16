@@ -117,8 +117,7 @@ export default function CustomerDashboard() {
       credentials: "include",
     })
       .then((r) => r.json())
-      // Only show concierge/support chats in Ongoing — vendor chats are handled via the Chat page
-      .then((d) => setConversations((d.conversations || []).filter(c => c.chatType !== 'vendor')))
+      .then((d) => setConversations(d.conversations || []))
       .catch(() => {})
       .finally(() => setLoadingChats(false));
   }, [token]);
@@ -127,10 +126,11 @@ export default function CustomerDashboard() {
     ? plans
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
-  // Concierge chats only relevant when customer has a You Do It plan
-  const hasYouDoItPlan = plans.some(p => p.bookingType === "you-do-it");
+  // Show vendor chats + only approved support/concierge chats
   const visibleChats = conversations.filter(c =>
-    c.chatType === "support" || (c.chatType === "concierge" && hasYouDoItPlan)
+    (c.chatType === "vendor" && c.chatApproved) ||
+    (c.chatType === "support" && c.chatApproved) ||
+    (c.chatType === "concierge" && c.chatApproved)
   );
 
   const counts = {
@@ -139,7 +139,7 @@ export default function CustomerDashboard() {
     Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length,
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
-    Chats:     visibleChats.length,
+    Chats:     visibleChats.length + (conversations.filter(c => c.chatType === 'vendor' && c.chatApproved).length > 0 ? 0 : 0),
   };
 
   return (
@@ -255,45 +255,23 @@ export default function CustomerDashboard() {
                       </div>
                     </div>
 
-                    {/* What happens next — progress timeline */}
-                    {(() => {
-                      const isConfirmed = plan.status === "in_progress";
-                      const isPaid = plan.status === "completed";
-                      const steps = [
-                        { label: "Plan Submitted",    done: true },
-                        { label: "Tendr Reviewing",   done: !!plan.bookingSummary || isConfirmed || isPaid },
-                        { label: "Vendors Confirmed", done: isConfirmed || isPaid },
-                        { label: "Payment Done",      done: isPaid },
-                      ];
-                      const current = steps.findIndex(s => !s.done);
-                      return (
-                        <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>What happens next</div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
-                            {steps.map((s, si) => (
-                              <div key={si} style={{ display: "flex", alignItems: "center", flex: si < steps.length - 1 ? 1 : 0 }}>
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
-                                  <div style={{
-                                    width: 26, height: 26, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, flexShrink: 0,
-                                    background: s.done ? "#C47A2E" : si === current ? "rgba(196,122,46,0.15)" : "#f3f4f6",
-                                    color: s.done ? "#fff" : si === current ? "#C47A2E" : "#bbb",
-                                    border: si === current ? "2px solid #C47A2E" : "2px solid transparent",
-                                  }}>
-                                    {s.done ? "✓" : si + 1}
-                                  </div>
-                                  <span style={{ fontSize: 10, fontWeight: 600, color: s.done ? "#C47A2E" : si === current ? "#2C1A0E" : "#bbb", whiteSpace: "nowrap", textAlign: "center" }}>
-                                    {s.label}
-                                  </span>
-                                </div>
-                                {si < steps.length - 1 && (
-                                  <div style={{ flex: 1, height: 2, background: s.done ? "#C47A2E" : "#f0e8da", margin: "0 4px", marginBottom: 16, borderRadius: 2 }} />
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })()}
+                    {/* Re-order + Review & Pay actions */}
+                    <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <button
+                        onClick={() => handleRebook(plan)}
+                        style={{ padding: "8px 18px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                      >
+                        🔄 Re-order
+                      </button>
+                      {plan.status !== "completed" && (
+                        <button
+                          onClick={() => navigate("/booking/review")}
+                          style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
+                        >
+                          Review & Pay →
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -325,19 +303,33 @@ export default function CustomerDashboard() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {visibleChats.map((convo) => (
                   <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 10px rgba(139,69,19,0.05)", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                        <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>
-                          {convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge"}
-                        </span>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: convo.chatType === 'support' ? "#eff6ff" : "#f5f3ff", color: convo.chatType === 'support' ? "#0369a1" : "#7c3aed", border: "1px solid currentColor" }}>
-                          {convo.chatType === 'support' ? "Support" : "Event Planning"}
-                        </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                        {convo.chatType === 'vendor' ? (convo.vendorId?.name?.[0] || "V") : convo.chatType === 'support' ? "🤝" : "✨"}
                       </div>
-                      <div style={{ fontSize: 12, color: "#bbb" }}>Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}</div>
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                          <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>
+                            {convo.chatType === 'vendor' ? (convo.vendorId?.name || "Vendor") : convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge"}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100,
+                            background: convo.chatType === 'vendor' ? "#f0fdf4" : convo.chatType === 'support' ? "#eff6ff" : "#f5f3ff",
+                            color: convo.chatType === 'vendor' ? "#15803d" : convo.chatType === 'support' ? "#0369a1" : "#7c3aed",
+                            border: "1px solid currentColor" }}>
+                            {convo.chatType === 'vendor' ? (convo.vendorId?.serviceType || "Vendor") : convo.chatType === 'support' ? "Support" : "Event Planning"}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#bbb" }}>Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}</div>
+                      </div>
                     </div>
                     <button
-                      onClick={() => navigate("/chat", { state: { vendor: { _id: "concierge", name: convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge", approved: true }, from: convo.chatType === 'support' ? "support" : "concierge" } })}
+                      onClick={() => {
+                        if (convo.chatType === 'vendor') {
+                          navigate("/chat", { state: { chatId: convo._id, vendor: convo.vendorId, from: "vendor" } });
+                        } else {
+                          navigate("/chat", { state: { vendor: { _id: "concierge", name: convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge", approved: true }, from: convo.chatType === 'support' ? "support" : "concierge" } });
+                        }
+                      }}
                       style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
                     >
                       Open Chat →

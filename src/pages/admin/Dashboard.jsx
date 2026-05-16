@@ -354,19 +354,23 @@ const AdminDashboard = () => {
   }, [activeDropdown, token]);
 
   const handleDeleteUser = (userId) => {
-    if (!window.confirm('Delete this user? They will need to sign up again.')) return;
+    if (!window.confirm('Delete this user permanently? This removes them from the database and they will need to sign up again.')) return;
     fetch(`${BASE_URL}/admin/users/${userId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` },
       credentials: 'include',
     })
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error('Delete failed');
+        return r.json();
+      })
       .then(() => {
         setUserList((prev) => prev.filter((u) => u._id !== userId));
-        // Refresh stats count
         setLiveStats((prev) => prev ? { ...prev, users: { total: (prev.users?.total ?? 1) - 1 } } : prev);
       })
-      .catch(() => {});
+      .catch(() => {
+        window.alert('Failed to delete user. Please try again or check the backend.');
+      });
   };
 
   const loadConversation = async (id) => {

@@ -64,6 +64,7 @@ const BookingReviewPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const token = useSelector((s) => s.auth.token);
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
@@ -498,18 +499,52 @@ const BookingReviewPage = () => {
               ) : (
                 <button
                   disabled={saving}
-                  onClick={async () => {
-                    setSaving(true);
-                    const eventPlanId = await saveEventPlan();
-                    setSaving(false);
-                    navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: confirmedTotal, eventPlanId } });
-                  }}
-                  style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: saving ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: saving ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: saving ? "not-allowed" : "pointer", boxShadow: saving ? "none" : "0 4px 14px rgba(196,122,46,0.35)", transition: "opacity 0.2s" }}
-                  onMouseEnter={(e) => { if (!saving) e.currentTarget.style.opacity = "0.9"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
+                  onClick={() => setShowConfirmPopup(true)}
+                  style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
                 >
-                  {saving ? "Saving..." : "Proceed to Payment"}
+                  Proceed to Payment
                 </button>
+              )}
+
+              {/* Confirmation popup */}
+              {showConfirmPopup && (
+                <>
+                  <div onClick={() => setShowConfirmPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 999, backdropFilter: "blur(3px)" }} />
+                  <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1000, background: "#FFFCF5", borderRadius: 20, padding: "32px 28px", width: "90%", maxWidth: 420, boxShadow: "0 20px 60px rgba(139,69,19,0.2)", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
+                    <div style={{ fontSize: 40, marginBottom: 14 }}>🎉</div>
+                    <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em" }}>Ready to confirm?</h2>
+                    <p style={{ fontSize: 14, color: "#9B7450", lineHeight: 1.65, margin: "0 0 24px" }}>
+                      Do you want to complete this booking, or would you like to add more vendors first?
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <button
+                        disabled={saving}
+                        onClick={async () => {
+                          setSaving(true);
+                          const eventPlanId = await saveEventPlan();
+                          setSaving(false);
+                          setShowConfirmPopup(false);
+                          navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: confirmedTotal, eventPlanId } });
+                        }}
+                        style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
+                      >
+                        {saving ? "Saving…" : "Continue to Payment →"}
+                      </button>
+                      <button
+                        onClick={() => { setShowConfirmPopup(false); navigate("/listings"); }}
+                        style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                      >
+                        Add More Vendors
+                      </button>
+                      <button
+                        onClick={() => { setShowConfirmPopup(false); navigate("/"); }}
+                        style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                      >
+                        Return to Home
+                      </button>
+                    </div>
+                  </div>
+                </>
               )}
             </div>
           </div>
