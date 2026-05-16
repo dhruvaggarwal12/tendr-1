@@ -305,22 +305,29 @@ body {
 
 /* ── Hero split responsive ── */
 @media (max-width: 860px) {
+  /* Remove fixed height so hero shrinks to content on mobile */
+  section.hero-section-wrap {
+    height: auto !important;
+    min-height: unset !important;
+    padding-top: 64px !important;
+  }
   .hero-split {
     flex-direction: column !important;
+    min-height: unset !important;
   }
   .hero-split > div:first-child {
     flex: none !important;
     width: 100% !important;
-    padding: 32px 24px 28px !important;
+    padding: 28px 22px 32px !important;
     justify-content: flex-start !important;
     order: 2;
   }
   .hero-split > div:last-child {
     flex: none !important;
     width: 100% !important;
-    height: 52vw !important;
+    height: 56vw !important;
     min-height: 220px !important;
-    max-height: 380px !important;
+    max-height: 360px !important;
     position: relative !important;
     order: 1;
   }

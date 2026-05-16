@@ -98,61 +98,89 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
       <button
         onClick={handleOpen}
         aria-label="Chat"
+        className="floating-chat-btn"
         style={{
           position: "fixed",
-          bottom: 20,
+          bottom: 22,
           right: 20,
           zIndex: 900,
           display: "flex",
           alignItems: "center",
+          justifyContent: "center",
           gap: 8,
-          padding: "11px 20px",
           borderRadius: 100,
           border: "none",
           background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
           color: "#fff",
-          fontSize: 14,
-          fontWeight: 700,
           fontFamily: font,
           cursor: "pointer",
-          boxShadow: "0 4px 18px rgba(196,122,46,0.45)",
+          boxShadow: "0 6px 24px rgba(196,122,46,0.5)",
           transition: "transform 0.2s, box-shadow 0.2s",
+          position: "fixed",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-2px)";
-          e.currentTarget.style.boxShadow = "0 8px 24px rgba(196,122,46,0.55)";
+          e.currentTarget.style.transform = "translateY(-3px) scale(1.04)";
+          e.currentTarget.style.boxShadow = "0 10px 30px rgba(196,122,46,0.6)";
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "translateY(0)";
-          e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.45)";
+          e.currentTarget.style.transform = "translateY(0) scale(1)";
+          e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.5)";
         }}
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M21 12c0 4.418-4.03 8-9 8-1.071 0-2.097-.162-3.05-.464L3 21l1.55-4.05C4.2 15.97 4 14.999 4 14c0-4.418 4.03-8 9-8s8 3.582 8 6z"
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        Chat
+        <span className="chat-btn-text">Chat</span>
         {unseenCount > 0 && (
           <span style={{
             position: "absolute",
-            top: -4,
-            right: -4,
-            width: 18,
-            height: 18,
+            top: -5,
+            right: -5,
+            minWidth: 20,
+            height: 20,
             borderRadius: "50%",
             background: "#ef4444",
             color: "#fff",
             fontSize: 10,
-            fontWeight: 700,
+            fontWeight: 800,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            border: "2px solid #fff",
+            border: "2.5px solid #fff",
+            padding: "0 3px",
           }}>
             {unseenCount}
           </span>
         )}
       </button>
+      <style>{`
+        .floating-chat-btn {
+          padding: 13px 22px;
+          bottom: 22px;
+          right: 20px;
+        }
+        .chat-btn-text {
+          font-size: 14px;
+          font-weight: 700;
+        }
+        @media (max-width: 640px) {
+          .floating-chat-btn {
+            padding: 14px;
+            width: 52px;
+            height: 52px;
+            bottom: 18px;
+            right: 16px;
+          }
+          .chat-btn-text { display: none; }
+        }
+      `}
+        .chat-popup { animation: chatPop 0.18s cubic-bezier(0.4,0,0.2,1); }
+        @keyframes chatPop { from { opacity:0; transform: scale(0.92) translateY(10px); } to { opacity:1; transform: scale(1) translateY(0); } }
+        @media (max-width: 640px) {
+          .chat-popup { right: 12px !important; left: 12px !important; min-width: unset !important; max-width: unset !important; bottom: 78px !important; }
+        }
+      `}</style>
 
       {/* Popup menu */}
       {open && (
@@ -162,18 +190,19 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             onClick={() => setOpen(false)}
           />
           <div
+            className="chat-popup"
             style={{
               position: "fixed",
-              bottom: 72,
+              bottom: 82,
               right: 20,
               zIndex: 901,
               background: "#FFFCF5",
-              borderRadius: 16,
-              boxShadow: "0 8px 32px rgba(139,69,19,0.15)",
+              borderRadius: 20,
+              boxShadow: "0 12px 48px rgba(139,69,19,0.18)",
               border: "1px solid rgba(196,122,46,0.15)",
-              padding: 8,
-              minWidth: 240,
-              maxWidth: 280,
+              padding: 10,
+              minWidth: 260,
+              maxWidth: 300,
               fontFamily: font,
             }}
           >

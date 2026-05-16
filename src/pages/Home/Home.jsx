@@ -363,6 +363,7 @@ const Home = () => {
 
       {/* Hero Section */}
       <section
+        className="hero-section-wrap"
         style={{
           height: "92vh",
           minHeight: 600,
