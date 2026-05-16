@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import SEO from "../../components/SEO";
+import SEO, { vendorListTitle, vendorListDescription } from "../../components/SEO";
 import { setFilters, addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice.js";
 
 
@@ -213,7 +213,7 @@ const VendorList = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <SEO title="Browse Vendors in Delhi NCR" description="Find the best caterers, DJs, photographers and decorators for your event. 100+ verified vendors across Delhi, Noida, Gurgaon and Ghaziabad." path="/listings" />
+      <SEO title={vendorListTitle(serviceType, locationType)} description={vendorListDescription(serviceType, locationType)} path={serviceType || locationType ? `/listings?service=${serviceType || ""}&city=${locationType || ""}` : "/listings"} noIndex={!!(serviceType && locationType)} />
       <BasicSpeedDial />
       <HamburgerNav title="Vendor Listings" showReviewPay={true} active="Browse" />
       <div className="flex flex-col lg:flex-row">

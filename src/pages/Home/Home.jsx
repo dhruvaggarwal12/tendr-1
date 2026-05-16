@@ -300,7 +300,7 @@ const Home = () => {
 
   return (
     <div className="App">
-      <SEO title="Plan Your Event in Delhi NCR" description="Tendr connects you with 100+ verified caterers, DJs, photographers and decorators across Delhi, Noida, Gurgaon and Ghaziabad. Browse, chat and book — all in one place." path="/" />
+      <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Faridabad. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}
       <div
         className={`sticky bottom-2 right-1 z-50 transform transition-all duration-500 ${

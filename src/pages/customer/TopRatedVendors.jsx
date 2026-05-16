@@ -6,6 +6,7 @@ import { addVendorToCompare, removeVendorFromCompare } from "../../redux/listing
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import HamburgerNav from "../../components/HamburgerNav";
+import SEO, { categoryTitle, categoryDescription } from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -187,6 +188,7 @@ export default function TopRatedVendors() {
       <SelectedVendorsFloat />
 
       {/* Main Navbar */}
+      <SEO title={categoryTitle(category)} description={categoryDescription(category)} path={`/top-rated/${category || ""}`} breadcrumbs={[{name:"Home",path:"/"},{name:"Top Rated",path:"/listings"},{name:category||"Vendors",path:`/top-rated/${category||""}`}]} />
       <HamburgerNav />
       {/* Category filter bar */}
       <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 32px" }}>

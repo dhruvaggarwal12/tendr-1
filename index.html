@@ -1,74 +1,207 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/tendr-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Primary meta -->
-    <title>Tendr — Event Planning & Vendor Booking in Delhi NCR</title>
-    <meta name="description" content="Plan weddings, birthdays, corporate events and more across Delhi, Noida, Gurgaon and Ghaziabad. Browse 100+ verified DJs, caterers, photographers and decorators. Book with confidence on Tendr." />
-    <meta name="keywords" content="event planning Delhi NCR, wedding caterer Noida, DJ booking Ghaziabad, event decorator Greater Noida, photographer Delhi, Tendr event platform" />
+    <!-- Performance: preconnect critical origins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="dns-prefetch" href="//tendr-backend-75ag.onrender.com" />
+    <link rel="dns-prefetch" href="//images.unsplash.com" />
+
+    <!-- Primary SEO meta -->
+    <title>Tendr — Celebration & Event Planning Platform in Delhi NCR</title>
+    <meta name="description" content="Plan birthdays, anniversaries, house parties, baby showers, corporate events and more across Delhi, Noida, Gurgaon, Ghaziabad and Faridabad. Browse 100+ verified decorators, caterers, photographers and DJs. Compare, shortlist and book on Tendr." />
+    <meta name="keywords" content="event planning Delhi NCR, birthday decoration Noida, balloon decoration Gurgaon, anniversary celebration Delhi, house party planner Ghaziabad, baby shower planning, surprise party Delhi, corporate event planner NCR, Tendr celebrations, vendor booking Delhi, event vendors Noida, celebration planning platform" />
     <meta name="author" content="Tendr" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <link rel="canonical" href="https://tendr-1.vercel.app/" />
+
+    <!-- Geo targeting -->
+    <meta name="geo.region" content="IN-DL" />
+    <meta name="geo.placename" content="Delhi NCR, India" />
+    <meta name="geo.position" content="28.6139;77.2090" />
+    <meta name="ICBM" content="28.6139, 77.2090" />
 
     <!-- Open Graph / Facebook / WhatsApp -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://tendr-1.vercel.app/" />
-    <meta property="og:title" content="Tendr — Event Planning & Vendor Booking in Delhi NCR" />
-    <meta property="og:description" content="Plan your perfect event with verified caterers, DJs, photographers and decorators across Delhi NCR. Browse, chat and book — all in one place." />
+    <meta property="og:title" content="Tendr — Discover & Book Trusted Celebration Vendors in Delhi NCR" />
+    <meta property="og:description" content="Plan birthdays, anniversaries, house parties, baby showers, surprise setups and corporate events. Compare 100+ verified vendors across Delhi NCR and book instantly." />
     <meta property="og:image" content="https://tendr-1.vercel.app/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Tendr — Celebration and Event Planning Platform" />
     <meta property="og:site_name" content="Tendr" />
     <meta property="og:locale" content="en_IN" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Tendr — Event Planning in Delhi NCR" />
-    <meta name="twitter:description" content="Verified vendors for weddings, birthdays, corporate events across Delhi, Noida, Gurgaon and Ghaziabad." />
+    <meta name="twitter:site" content="@tendrapp" />
+    <meta name="twitter:title" content="Tendr — Book Trusted Celebration Vendors in Delhi NCR" />
+    <meta name="twitter:description" content="Birthdays, anniversaries, house parties, baby showers and more. 100+ verified vendors across Delhi, Noida, Gurgaon, Ghaziabad." />
     <meta name="twitter:image" content="https://tendr-1.vercel.app/og-image.png" />
+    <meta name="twitter:image:alt" content="Tendr celebration planning platform" />
 
-    <!-- Geo targeting -->
-    <meta name="geo.region" content="IN-DL" />
-    <meta name="geo.placename" content="Delhi NCR" />
-
-    <!-- Theme color -->
+    <!-- Mobile & PWA -->
     <meta name="theme-color" content="#C47A2E" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Tendr" />
+    <meta name="application-name" content="Tendr" />
+    <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- JSON-LD: LocalBusiness + EventPlanningService -->
+    <!-- JSON-LD: Organization -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "ProfessionalService",
+      "@type": "Organization",
+      "@id": "https://tendr-1.vercel.app/#organization",
       "name": "Tendr",
-      "description": "Event planning platform connecting customers with verified vendors — caterers, DJs, photographers, decorators — across Delhi NCR.",
+      "alternateName": "Tendr Celebrations",
+      "description": "Tendr is a modern celebration and event planning platform that helps people discover, compare, shortlist, plan and book trusted vendors for private and corporate celebrations across Delhi NCR.",
       "url": "https://tendr-1.vercel.app",
-      "logo": "https://tendr-1.vercel.app/tendr-icon.png",
-      "email": "contacttendr@gmail.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://tendr-1.vercel.app/tendr-icon.png",
+        "width": 512,
+        "height": 512
+      },
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "Customer Support",
+        "email": "contacttendr@gmail.com",
+        "availableLanguage": ["English", "Hindi"]
+      },
       "areaServed": [
-        { "@type": "City", "name": "Delhi" },
-        { "@type": "City", "name": "Noida" },
-        { "@type": "City", "name": "Greater Noida" },
-        { "@type": "City", "name": "Ghaziabad" }
+        { "@type": "City", "name": "Delhi", "sameAs": "https://en.wikipedia.org/wiki/Delhi" },
+        { "@type": "City", "name": "Noida", "sameAs": "https://en.wikipedia.org/wiki/Noida" },
+        { "@type": "City", "name": "Gurugram" },
+        { "@type": "City", "name": "Ghaziabad" },
+        { "@type": "City", "name": "Faridabad" },
+        { "@type": "City", "name": "Greater Noida" }
       ],
-      "serviceType": [
-        "Wedding Planning",
-        "Event Planning",
-        "Catering",
-        "Photography",
-        "DJ & Entertainment",
-        "Event Decoration"
-      ],
-      "priceRange": "₹₹",
-      "openingHours": "Mo-Su 09:00-21:00",
       "sameAs": []
     }
     </script>
 
+    <!-- JSON-LD: WebSite with SearchAction -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "@id": "https://tendr-1.vercel.app/#website",
+      "name": "Tendr",
+      "url": "https://tendr-1.vercel.app",
+      "description": "Celebration and event planning platform for Delhi NCR",
+      "publisher": { "@id": "https://tendr-1.vercel.app/#organization" },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://tendr-1.vercel.app/listings?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      }
+    }
+    </script>
+
+    <!-- JSON-LD: LocalBusiness / ProfessionalService -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": ["ProfessionalService", "EventPlanner"],
+      "@id": "https://tendr-1.vercel.app/#localbusiness",
+      "name": "Tendr — Event Planning Platform",
+      "description": "Tendr simplifies celebration planning by connecting users with trusted vendors for birthdays, anniversaries, house parties, baby showers, surprise setups, corporate events and more across Delhi NCR.",
+      "url": "https://tendr-1.vercel.app",
+      "logo": "https://tendr-1.vercel.app/tendr-icon.png",
+      "email": "contacttendr@gmail.com",
+      "priceRange": "₹₹",
+      "openingHours": "Mo-Su 09:00-21:00",
+      "currenciesAccepted": "INR",
+      "paymentAccepted": ["Cash", "Credit Card", "UPI"],
+      "address": {
+        "@type": "PostalAddress",
+        "addressRegion": "Delhi NCR",
+        "addressCountry": "IN"
+      },
+      "areaServed": [
+        { "@type": "City", "name": "Delhi" },
+        { "@type": "City", "name": "Noida" },
+        { "@type": "City", "name": "Gurugram" },
+        { "@type": "City", "name": "Ghaziabad" },
+        { "@type": "City", "name": "Faridabad" },
+        { "@type": "City", "name": "Greater Noida" }
+      ],
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Celebration & Event Services",
+        "itemListElement": [
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Birthday Party Planning & Decoration", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Anniversary Celebration Setup", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Balloon Decoration", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Surprise Party Planning", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Baby Shower Planning", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Corporate Event Planning", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Wedding Catering", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Event Photography", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "DJ & Entertainment", "areaServed": "Delhi NCR" } },
+          { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Romantic Room Setup", "areaServed": "Delhi NCR" } }
+        ]
+      }
+    }
+    </script>
+
+    <!-- JSON-LD: FAQ (matches visible FAQ section) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Tendr free to use?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Browsing vendors, saving favourites and filling your event form is completely free. You only pay when you confirm your booking and proceed to payment." }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between 'You Do It' and 'Let Us Do It' on Tendr?",
+          "acceptedAnswer": { "@type": "Answer", "text": "'You Do It' lets you browse and shortlist vendors yourself, then chat with them to confirm pricing. 'Let Us Do It' means our planning team selects the right vendors for your celebration and coordinates everything — you just review and approve." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I know if vendors are trustworthy on Tendr?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Every vendor on Tendr goes through a manual verification process before being listed. They are checked for legitimacy, experience and service quality. You can also see their ratings, years of experience and portfolio before reaching out." }
+        },
+        {
+          "@type": "Question",
+          "name": "When do I pay, and is my payment safe on Tendr?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Payment happens only after you have chatted with vendors, reviewed the full price breakdown and confirmed everything. We never charge before you are satisfied with the quote." }
+        },
+        {
+          "@type": "Question",
+          "name": "What cities does Tendr currently serve?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Tendr currently operates across Delhi, Noida, Greater Noida, Ghaziabad, Gurugram and Faridabad — covering all major event locations across the Delhi NCR region." }
+        },
+        {
+          "@type": "Question",
+          "name": "What types of celebrations can I plan on Tendr?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Tendr supports birthdays, anniversaries, balloon decorations, surprise parties, house parties, baby showers, office celebrations, farewell parties, festive celebrations, engagements, romantic room setups, corporate events and more." }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does it take to get vendor quotes on Tendr?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Once your chat is approved, most vendors respond within a few hours. Price confirmation typically happens within 24–48 hours of starting the conversation." }
+        }
+      ]
+    }
+    </script>
+
     <!-- Razorpay -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
   </head>
   <body>
     <div id="root"></div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import SEO, { vendorPageTitle, vendorPageDescription } from "../../components/SEO";
 
 import ListingsNav from "../../components/ListingsNav";
 import CompareModal from "../../components/CompareModal";
@@ -199,8 +200,42 @@ const VendorDetailsPage = () => {
     );
   }
 
+  const vendorCity = vendor?.city || vendor?.address?.city || vendor?.locations?.[0] || "";
+  const vendorSchema = vendor ? {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": vendor.name,
+    "description": vendorPageDescription(vendor),
+    "image": vendor.portfolioPhotos?.[0] || vendor.image || "",
+    "url": `https://tendr-1.vercel.app/vendor/${vendor._id}`,
+    "address": { "@type": "PostalAddress", "addressLocality": vendorCity, "addressCountry": "IN" },
+    "areaServed": vendor.locations?.map(l => ({ "@type": "City", "name": l })) || [],
+    ...(vendor.avgReviewScore > 0 ? {
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": vendor.avgReviewScore.toFixed(1),
+        "bestRating": "5",
+        "worstRating": "1",
+        "ratingCount": vendor.totalReviews || 1,
+      }
+    } : {}),
+    "knowsAbout": [vendor.serviceType, "Event Planning", "Celebrations", "Delhi NCR Events"],
+  } : null;
+
   return (
     <div className="bg-white text-black">
+      <SEO
+        title={vendorPageTitle(vendor)}
+        description={vendorPageDescription(vendor)}
+        path={`/vendor/${vendor?._id || ""}`}
+        image={vendor?.portfolioPhotos?.[0] || vendor?.image || undefined}
+        schema={vendorSchema}
+        breadcrumbs={[
+          { name: "Home", path: "/" },
+          { name: "Vendors", path: "/listings" },
+          { name: vendor?.name || "Vendor", path: `/vendor/${vendor?._id || ""}` },
+        ]}
+      />
       <BasicSpeedDial />
       {/* Main Navbar */}
       <HamburgerNav active="Browse" />

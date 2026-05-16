@@ -1,7 +1,10 @@
+# Tendr — Celebration & Event Planning Platform
+# https://tendr-1.vercel.app
+
 User-agent: *
 Allow: /
 
-# High-value pages — crawl freely
+# Public high-value pages — crawl freely
 Allow: /listings
 Allow: /top-rated/
 Allow: /vendor/register
@@ -11,8 +14,13 @@ Allow: /booking
 Allow: /checklist-picker
 Allow: /timeline-picker
 Allow: /budget-picker
+Allow: /checklist
+Allow: /prebuilt-timeline
+Allow: /budget-allocator
+Allow: /refund-policy
+Allow: /cancellation-policy
 
-# Private / user-specific — block
+# Block private / authenticated routes
 Disallow: /dashboard
 Disallow: /AdminDashboard
 Disallow: /chat
@@ -26,5 +34,15 @@ Disallow: /login
 Disallow: /signup
 Disallow: /otp
 Disallow: /vendor/status
+Disallow: /vendor/dashboard
+Disallow: /plan-event/form
+
+# Block duplicate/parameterised states that add no SEO value
+Disallow: /*?*sort=
+Disallow: /*?*page=
+Disallow: /listings?*guestCount=
+
+# Crawl rate hint (optional)
+Crawl-delay: 1
 
 Sitemap: https://tendr-1.vercel.app/sitemap.xml
