@@ -699,7 +699,7 @@ const Home = () => {
 
       {/* How Tendr Works — horizontal animated */}
       <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
-        <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1260, margin: "0 auto" }}>
 
           {/* Heading */}
           <div style={{ textAlign: "center", marginBottom: 48 }}>
@@ -727,13 +727,13 @@ const Home = () => {
               className="htw-line"
             />
 
-            <div style={{ display: "flex", gap: 16 }} className="htw-row">
+            <div style={{ display: "flex", gap: 20 }} className="htw-row">
               {[
-                { step: "1", icon: "📋", color: "#C47A2E", time: "~2 min",    title: "Share Event Details",       desc: "Click 'Plan Your Event' in the menu above. Fill in event type, date, location, guests and budget — takes under 2 minutes." },
-                { step: "2", icon: "🔍", color: "#7c3aed", time: "5–10 min",  title: "Explore & Shortlist",       desc: "Browse DJs, caterers, decorators and photographers. Shortlist the ones that match your budget and style." },
-                { step: "3", icon: "💬", color: "#0369a1", time: "24–48 hrs", title: "Chat & Get a Price",        desc: "Chat directly with vendors, discuss your requirements and get a confirmed price — before committing to anything." },
-                { step: "4", icon: "💰", color: "#b45309", time: "5 min",     title: "Review & Confirm",          desc: "See all your vendors and their prices in one clear summary. No hidden charges, no last-minute surprises." },
-                { step: "5", icon: "🎉", color: "#15803d", time: "Instant",   title: "Pay & Celebrate",           desc: "Pay securely through Tendr. Vendors confirmed, timings locked — just show up and enjoy your celebration." },
+                { step: "1", icon: "📋", color: "#C47A2E", time: "~2 min",    title: "Share Event Details",  desc: "Click 'Plan Your Event', fill in event type, date, location, guests and budget." },
+                { step: "2", icon: "🔍", color: "#7c3aed", time: "5–10 min",  title: "Explore & Shortlist",  desc: "Browse caterers, decorators, photographers and DJs. Shortlist your favourites." },
+                { step: "3", icon: "💬", color: "#0369a1", time: "24–48 hrs", title: "Chat & Get a Price",   desc: "Chat with vendors directly and get a confirmed price before committing." },
+                { step: "4", icon: "💰", color: "#b45309", time: "5 min",     title: "Review & Confirm",     desc: "See all vendors and prices in one clear summary — no hidden charges." },
+                { step: "5", icon: "🎉", color: "#15803d", time: "Instant",   title: "Pay & Celebrate",      desc: "Pay securely. Vendors confirmed, timings locked — just show up and enjoy." },
               ].map(({ step, icon, color, time, title, desc }, i) => (
                 <motion.div
                   key={step}
@@ -741,31 +741,35 @@ const Home = () => {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.13 }}
-                  whileHover={{ y: -6 }}
+                  whileHover={{ y: -5 }}
                   style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", cursor: "default" }}
                 >
+                  {/* Icon */}
                   <motion.div
-                    whileHover={{ scale: 1.18, rotate: [0, -8, 8, -4, 4, 0] }}
+                    whileHover={{ scale: 1.15, rotate: [0, -6, 6, -3, 3, 0] }}
                     transition={{ duration: 0.4 }}
                     style={{
-                      width: 72, height: 72, borderRadius: "50%",
+                      width: 64, height: 64, borderRadius: "50%",
                       background: `linear-gradient(135deg,${color},${color}aa)`,
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 28, marginBottom: 12, position: "relative", zIndex: 1,
-                      boxShadow: `0 6px 20px ${color}35`,
+                      fontSize: 26, marginBottom: 16, position: "relative", zIndex: 1,
+                      boxShadow: `0 6px 18px ${color}30`,
                       border: `3px solid #FFFCF5`,
                     }}
                   >
                     {icon}
                   </motion.div>
 
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color, marginBottom: 4, opacity: 0.8 }}>Step {step}</span>
-                  <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.3 }}>{title}</h3>
+                  {/* Step + time on one line */}
+                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color, marginBottom: 6, opacity: 0.85 }}>
+                    Step {step} · {time}
+                  </span>
 
-                  {/* Time badge */}
-                  <span style={{ display: "inline-block", fontSize: 10.5, fontWeight: 700, color, background: `${color}14`, border: `1px solid ${color}30`, borderRadius: 100, padding: "2px 9px", marginBottom: 8 }}>⏱ {time}</span>
+                  {/* Title */}
+                  <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.3 }}>{title}</h3>
 
-                  <p style={{ fontSize: 13, color: "#7A5535", lineHeight: 1.65, margin: 0 }}>{desc}</p>
+                  {/* Description — short */}
+                  <p style={{ fontSize: 12.5, color: "#9B7450", lineHeight: 1.6, margin: 0 }}>{desc}</p>
                 </motion.div>
               ))}
             </div>
