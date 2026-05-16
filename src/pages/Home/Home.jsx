@@ -11,6 +11,11 @@ import { easeIn, motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import corpo from "../../assets/ui/corpo.jpg";
+import heroCorporate from "../../assets/ui/hero-corporate.png";
+import heroHouseParty from "../../assets/ui/hero-house-party.png";
+import heroAnniversary from "../../assets/ui/hero-anniversary.png";
+import heroBirthday from "../../assets/ui/hero-birthday.png";
+import heroFestive from "../../assets/ui/hero-festive.png";
 import CorporateLogin from "../../components/corporateEventPlanning.jsx";
 import JourneyFlow from "../../components/JourneyFlow";
 
@@ -21,26 +26,11 @@ import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import { useSelector } from "react-redux";
 
 const CELEBRATION_PHOTOS = [
-  {
-    url: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=1100&q=85",
-    label: "Wedding Decor",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=1100&q=85",
-    label: "Wedding Ceremony",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1100&q=85",
-    label: "Golden Celebration",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=1100&q=85",
-    label: "Festive Moments",
-  },
-  {
-    url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=1100&q=85",
-    label: "Celebration Feast",
-  },
+  { url: heroBirthday,    label: "Birthday Celebration" },
+  { url: heroAnniversary, label: "Anniversary Decoration" },
+  { url: heroHouseParty,  label: "House Party" },
+  { url: heroFestive,     label: "Festive Celebration" },
+  { url: heroCorporate,   label: "Corporate Event" },
 ];
 
 const FAQS = [
