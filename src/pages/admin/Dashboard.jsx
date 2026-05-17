@@ -256,6 +256,50 @@ const sidebar_arr = [
   { label: "Chat-Concierge", icon: <MessagesSquare size={22} />,      key: "ChatConcierge" },
 ];
 
+// Simple inline markdown renderer — handles *bold*, _italic_, line breaks
+function RenderMessage({ text }) {
+  if (!text) return null;
+  const lines = text.split("\n");
+  return (
+    <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.6 }}>
+      {lines.map((line, li) => {
+        // Parse *bold* and _italic_ inline
+        const parts = [];
+        let remaining = line;
+        let key = 0;
+        while (remaining.length > 0) {
+          const boldMatch = remaining.match(/^\*([^*]+)\*/);
+          const italicMatch = remaining.match(/^_([^_]+)_/);
+          if (boldMatch) {
+            parts.push(<strong key={key++}>{boldMatch[1]}</strong>);
+            remaining = remaining.slice(boldMatch[0].length);
+          } else if (italicMatch) {
+            parts.push(<em key={key++}>{italicMatch[1]}</em>);
+            remaining = remaining.slice(italicMatch[0].length);
+          } else {
+            // grab until next * or _
+            const nextSpecial = remaining.search(/[*_]/);
+            const chunk = nextSpecial === -1 ? remaining : remaining.slice(0, nextSpecial);
+            if (chunk) parts.push(<span key={key++}>{chunk}</span>);
+            remaining = nextSpecial === -1 ? "" : remaining.slice(chunk.length);
+            if (nextSpecial !== -1 && (remaining[0] === "*" || remaining[0] === "_")) {
+              // orphan marker — just show it
+              parts.push(<span key={key++}>{remaining[0]}</span>);
+              remaining = remaining.slice(1);
+            }
+          }
+        }
+        return (
+          <span key={li}>
+            {parts.length ? parts : " "}
+            {li < lines.length - 1 && <br />}
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const adminLocation = useLocation();
@@ -1897,7 +1941,7 @@ const AdminDashboard = () => {
                                 <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
                                   {isUser ? "Customer" : "Admin"}
                                 </span>
-                                {msgText}
+                                <RenderMessage text={msgText} />
                               </div>
                             </div>
                           );
@@ -2255,7 +2299,7 @@ const AdminDashboard = () => {
                                   </span>
                                   {msgText.startsWith("[img:") ? (
                                     <img src={msgText.replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
-                                  ) : msgText}
+                                  ) : <RenderMessage text={msgText} />}
                                 </div>
                               </div>
                             );
@@ -2474,7 +2518,7 @@ const AdminDashboard = () => {
                                   </span>
                                   {msgText.startsWith("[img:") ? (
                                     <img src={msgText.replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
-                                  ) : msgText}
+                                  ) : <RenderMessage text={msgText} />}
                                 </div>
                               </div>
                             );

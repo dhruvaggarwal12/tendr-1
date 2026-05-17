@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Paperclip, X as XIcon, Image as ImageIcon, CheckCircle2 } from "lucide-react";
-import { getBotFlow, buildSummaryMessage } from "../../utils/chatbot";
+import { getBotFlow, buildSummaryMessage, buildAutoPackageMessage } from "../../utils/chatbot";
 import { useSelector, useDispatch } from "react-redux";
 import { io } from "socket.io-client";
 
@@ -126,16 +126,30 @@ const Chat = () => {
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
       setConversationId(_id);
       if (approved) setVendorApprovedByAdmin(true);
-      // After bot finishes: send summary as first message (admin sees full context)
+      // After bot finishes: send summary only for NEW conversations (no history yet)
+      // This prevents duplicates when resuming an existing conversation
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0) {
-        const botAns     = botAnswersRef.current;
-        const formAns    = { ...reduxFormData, ...formData };
-        const summaryMsg = buildSummaryMessage(formAns, botAns, vendor?.name, vendor?.serviceType);
-        socket.emit("send_message", {
-          conversationId: _id.toString(),
-          sender: "user",
-          content: summaryMsg,
-        });
+        // Wait for history load, then send summary + auto package MCQ if new
+        setTimeout(() => {
+          const currentMessages = messagesRef.current || [];
+          const alreadySent = currentMessages.some(m => m.text?.includes("Chat Request Details"));
+          if (!alreadySent) {
+            const botAns     = botAnswersRef.current;
+            const formAns    = { ...reduxFormData, ...formData };
+            const summaryMsg = buildSummaryMessage(formAns, botAns, vendor?.name, vendor?.serviceType);
+            // 1. Send event summary from customer side
+            socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: summaryMsg });
+            // 2. Auto-send package MCQ from vendor side
+            const packageMsg = buildAutoPackageMessage(vendor?.serviceType);
+            if (packageMsg) {
+              setTimeout(() => {
+                socket.emit("send_message", { conversationId: _id.toString(), sender: "customer-care", content: packageMsg });
+                // Show locally as bot message
+                setMessages(prev => [...prev, { text: packageMsg, sender: "vendor", ts: Date.now() }]);
+              }, 600);
+            }
+          }
+        }, 800);
       }
       // Mark support/concierge chats as explicitly opened by customer
       // so they appear in the dashboard Chats tab
@@ -206,6 +220,7 @@ const Chat = () => {
   // Refs so async socket callbacks can read latest values
   const botDoneRef    = useRef(false);
   const botAnswersRef = useRef({});
+  const messagesRef   = useRef([]);
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -248,6 +263,9 @@ const Chat = () => {
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
   };
+
+  // Keep ref in sync for async callbacks
+  useEffect(() => { messagesRef.current = messages; }, [messages]);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -641,6 +659,19 @@ const Chat = () => {
                                 {opt}
                               </button>
                             ))}
+                            {/* Skip option */}
+                            <button
+                              onClick={() => {
+                                setMessage("No specific package preference — please suggest what suits my event.");
+                                setTimeout(() => {
+                                  const btn = document.getElementById("chat-send-btn");
+                                  if (btn) btn.click();
+                                }, 50);
+                              }}
+                              style={{ textAlign: "center", padding: "8px 12px", borderRadius: 10, border: "1px dashed rgba(139,69,19,0.25)", background: "transparent", color: "#9B7450", fontSize: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                            >
+                              Skip → I'll discuss directly
+                            </button>
                           </div>
                         </div>
                       );

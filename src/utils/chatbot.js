@@ -141,34 +141,72 @@ export function getBotFlow(serviceType, chatMode) {
  */
 export function buildSummaryMessage(formAnswers, botAnswers, vendorName, serviceType) {
   const lines = [
-    `📋 *Chat Request Details*`,
-    ``,
+    `📋 Chat Request Details`,
+    `──────────────────────`,
     vendorName                    ? `👤 Vendor: ${vendorName}` : null,
     serviceType                   ? `🛠 Service: ${serviceType}` : null,
     ``,
-    `*From event form:*`,
-    formAnswers.eventType         ? `🎉 Event type: ${formAnswers.eventType}` : null,
-    formAnswers.date              ? `📅 Event date: ${formAnswers.date}` : null,
-    formAnswers.guests            ? `👥 Guests: ${formAnswers.guests}` : null,
-    formAnswers.budget            ? `💰 Budget: ${formAnswers.budget}` : null,
-    formAnswers.location          ? `📍 City: ${formAnswers.location}` : null,
+    `From event form:`,
+    formAnswers.eventType         ? `  🎉 Event type: ${formAnswers.eventType}` : null,
+    formAnswers.date              ? `  📅 Event date: ${formAnswers.date}` : null,
+    formAnswers.guests            ? `  👥 Guests: ${formAnswers.guests}` : null,
+    formAnswers.budget            ? `  💰 Budget: ${formAnswers.budget}` : null,
+    formAnswers.location          ? `  📍 City: ${formAnswers.location}` : null,
     ``,
-    `*Additional details:*`,
-    botAnswers.decorationType     ? `🎀 Decoration: ${botAnswers.decorationType}` : null,
-    botAnswers.venueType          ? `🏛 Venue type: ${botAnswers.venueType}` : null,
-    botAnswers.cateringType       ? `🍽 Catering: ${botAnswers.cateringType}` : null,
-    botAnswers.foodPreference     ? `🥗 Food: ${botAnswers.foodPreference}` : null,
-    botAnswers.photographyType    ? `📷 Coverage: ${botAnswers.photographyType}` : null,
-    botAnswers.albumRequired      ? `📕 Album: ${botAnswers.albumRequired}` : null,
-    botAnswers.coverage           ? `⏱ Hours: ${botAnswers.coverage}` : null,
-    botAnswers.musicVibe          ? `🎵 Music: ${botAnswers.musicVibe}` : null,
-    botAnswers.djHours            ? `⏰ DJ hours: ${botAnswers.djHours}` : null,
-    botAnswers.soundSetup         ? `🔊 Sound setup: ${botAnswers.soundSetup}` : null,
-    botAnswers.servicesNeeded     ? `🔧 Services: ${botAnswers.servicesNeeded}` : null,
-    botAnswers.budget             ? `💰 Budget: ${botAnswers.budget}` : null,
-    botAnswers.timeline           ? `🗓 Timeline: ${botAnswers.timeline}` : null,
-    botAnswers.queryType          ? `❓ Query: ${botAnswers.queryType}` : null,
-    botAnswers.venueAddress       ? `📌 Address: ${botAnswers.venueAddress}` : null,
+    `Additional details:`,
+    botAnswers.decorationType     ? `  🎀 Decoration: ${botAnswers.decorationType}` : null,
+    botAnswers.venueType          ? `  🏛 Venue type: ${botAnswers.venueType}` : null,
+    botAnswers.cateringType       ? `  🍽 Catering: ${botAnswers.cateringType}` : null,
+    botAnswers.foodPreference     ? `  🥗 Food: ${botAnswers.foodPreference}` : null,
+    botAnswers.photographyType    ? `  📷 Coverage: ${botAnswers.photographyType}` : null,
+    botAnswers.albumRequired      ? `  📕 Album: ${botAnswers.albumRequired}` : null,
+    botAnswers.coverage           ? `  ⏱ Hours: ${botAnswers.coverage}` : null,
+    botAnswers.musicVibe          ? `  🎵 Music: ${botAnswers.musicVibe}` : null,
+    botAnswers.djHours            ? `  ⏰ DJ hours: ${botAnswers.djHours}` : null,
+    botAnswers.soundSetup         ? `  🔊 Sound setup: ${botAnswers.soundSetup}` : null,
+    botAnswers.servicesNeeded     ? `  🔧 Services: ${botAnswers.servicesNeeded}` : null,
+    botAnswers.budget             ? `  💰 Budget: ${botAnswers.budget}` : null,
+    botAnswers.timeline           ? `  🗓 Timeline: ${botAnswers.timeline}` : null,
+    botAnswers.queryType          ? `  ❓ Query: ${botAnswers.queryType}` : null,
+    botAnswers.venueAddress       ? `  📌 Address: ${botAnswers.venueAddress}` : null,
   ].filter(Boolean);
   return lines.join("\n");
+}
+
+/** Build the auto package MCQ message for a service type */
+export function buildAutoPackageMessage(serviceType) {
+  const PACKAGES = {
+    Caterer:      [
+      { tier: "Basic",    desc: "Buffet · Up to 40 guests · Veg menu · Basic serving" },
+      { tier: "Standard", desc: "Live counters · Up to 80 guests · Veg/Non-Veg · Staff included" },
+      { tier: "Premium",  desc: "Custom menu · 80+ guests · Live counters · Fine dining setup" },
+    ],
+    Photographer: [
+      { tier: "Basic",    desc: "2-3 hrs coverage · 1 photographer · 100+ edited photos" },
+      { tier: "Standard", desc: "4-6 hrs · 1 photographer · 300+ photos · Highlight reel" },
+      { tier: "Premium",  desc: "Full day · 2 photographers · 500+ photos · Teaser video" },
+    ],
+    Decorator:    [
+      { tier: "Basic",    desc: "Balloon & fairy lights · Basic backdrop · Table decor" },
+      { tier: "Standard", desc: "Themed backdrop · Floral decor · Custom signage · Lighting" },
+      { tier: "Premium",  desc: "Full venue styling · Custom installations · Stage setup" },
+    ],
+    DJ:           [
+      { tier: "Basic",    desc: "3 hrs set · 1 DJ · Standard sound system" },
+      { tier: "Standard", desc: "5 hrs · 1 DJ · Pro sound · LED lighting · Wireless mic" },
+      { tier: "Premium",  desc: "Full night · DJ + assistant · Premium sound · Fog machine" },
+    ],
+  };
+  const pkgs = PACKAGES[serviceType];
+  if (!pkgs) return null;
+  const lines = [
+    `📦 Package Options for ${serviceType}`,
+    `──────────────────────────────────`,
+    `Please choose a package that suits your needs:`,
+    ``,
+    ...pkgs.map((p, i) => `${['1️⃣','2️⃣','3️⃣'][i]} ${p.tier}\n   ${p.desc}`),
+    ``,
+    `Reply with 1, 2 or 3 — or tap the option below.`,
+  ];
+  return `[MCQ_PACKAGES:${serviceType}]\n` + lines.join("\n");
 }
