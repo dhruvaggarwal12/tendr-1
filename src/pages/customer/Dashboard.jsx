@@ -115,8 +115,9 @@ export default function CustomerDashboard() {
     if (!token) navigate("/login");
   }, [token, navigate]);
 
-  // Fetch event plans
-  useEffect(() => {
+  // Fetch event plans — re-fetches on every mount so returning from payment
+  // shows updated status (submitted → in_progress) immediately
+  const fetchPlans = () => {
     if (!token) return;
     setLoading(true);
     fetch(`${BASE_URL}/event-plans`, {
@@ -127,6 +128,15 @@ export default function CustomerDashboard() {
       .then((d) => setPlans(Array.isArray(d.plans) ? d.plans : []))
       .catch(() => {})
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => { fetchPlans(); }, [token]);
+
+  // Also re-fetch every 15 seconds to catch status changes from admin
+  useEffect(() => {
+    if (!token) return;
+    const interval = setInterval(fetchPlans, 15000);
+    return () => clearInterval(interval);
   }, [token]);
 
   // Fetch conversations — always fetch individually for authoritative pinnedMessages

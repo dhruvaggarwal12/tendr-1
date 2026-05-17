@@ -62,21 +62,21 @@ const PaymentSuccessPage = () => {
             <p className="text-gray-800 mb-1">
               <strong>Booking ID:</strong> {booking._id}
             </p>
-            <p className="text-gray-800 mb-1">
-              <strong>Event:</strong> {bookingDetails.eventName}
-            </p>
-            <p className="text-gray-800 mb-1">
-              <strong>Date:</strong> {bookingDetails.schedule?.date}
-            </p>
-            <p className="text-gray-800 mb-1">
-              <strong>Time:</strong> {bookingDetails.schedule?.timeSlot}
-            </p>
-            <p className="text-gray-800 mb-1">
-              <strong>Plan:</strong> {bookingDetails.service}
-            </p>
-            <p className="text-gray-800">
-              <strong>Amount Paid:</strong> ₹{amount}
-            </p>
+            {bookingDetails?.eventName && (
+              <p className="text-gray-800 mb-1"><strong>Event:</strong> {bookingDetails.eventName}</p>
+            )}
+            {bookingDetails?.schedule?.date && (
+              <p className="text-gray-800 mb-1"><strong>Date:</strong> {bookingDetails.schedule.date}</p>
+            )}
+            {bookingDetails?.schedule?.timeSlot && (
+              <p className="text-gray-800 mb-1"><strong>Time:</strong> {bookingDetails.schedule.timeSlot}</p>
+            )}
+            {bookingDetails?.service && (
+              <p className="text-gray-800 mb-1"><strong>Plan:</strong> {bookingDetails.service}</p>
+            )}
+            {amount && (
+              <p className="text-gray-800"><strong>Amount Paid:</strong> ₹{amount}</p>
+            )}
           </div>
 
           {/* Referral Code */}

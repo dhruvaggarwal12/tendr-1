@@ -87,8 +87,9 @@ const PaymentProcessingPage = () => {
         ondismiss: () => navigate("/booking/review"),
       },
       prefill: {
-        name:  formData?.eventName || "",
-        email: "",
+        name:    formData?.eventName || "Customer",
+        email:   "",
+        contact: "9999999999", // dummy Indian number so Razorpay shows UPI option
       },
       theme:  { color: "#C47A2E" },
     };
