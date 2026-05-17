@@ -45,21 +45,9 @@ const PaymentProcessingPage = () => {
       description: formData?.eventType ? `${formData.eventType} — Tendr Booking` : "Event Booking",
       image:       logo,
       order_id:    orderId,
-      // Show all payment options — UPI, Cards, Net Banking, Wallets
-      // Do NOT restrict to a single method; let Razorpay show all available options
-      // Restricting caused "international payments not allowed" errors
-      config: {
-        display: {
-          blocks: {
-            upi: { name: "UPI", instruments: [{ method: "upi" }] },
-            card: { name: "Card", instruments: [{ method: "card" }] },
-            nb:   { name: "Net Banking", instruments: [{ method: "netbanking" }] },
-            wallet: { name: "Wallets", instruments: [{ method: "wallet" }] },
-          },
-          sequence: ["block.upi", "block.card", "block.nb", "block.wallet"],
-          preferences: { show_default_blocks: false },
-        },
-      },
+      // Let Razorpay show ALL available methods (UPI, Card, Net Banking, Wallet)
+      // No method restriction — standard checkout shows everything the account supports
+      // UPI appears by default for INR; use success@razorpay for test UPI
       handler: async (response) => {
         // Verify with backend
         try {
@@ -105,7 +93,14 @@ const PaymentProcessingPage = () => {
       theme:  { color: "#C47A2E" },
     };
     const rzp = new window.Razorpay(options);
-    rzp.on("payment.failed", () => {
+    rzp.on("payment.failed", (response) => {
+      const errCode = response?.error?.code || "";
+      const errDesc = response?.error?.description || "";
+      // International card error — show friendly message, don't navigate away
+      if (errCode === "BAD_REQUEST_ERROR" && errDesc.toLowerCase().includes("international")) {
+        alert("International cards are not supported in test mode.\n\nPlease use:\n• UPI: success@razorpay\n• Indian card: 4111 1111 1111 1111\n• Net Banking: select any bank → click Success");
+        return; // keep Razorpay open so they can try again
+      }
       setStatus("failed");
       navigate("/booking/payment-failed", { state: { ...state, orderId } });
     });
@@ -155,8 +150,10 @@ const PaymentProcessingPage = () => {
 
       {/* Test mode banner */}
       {isTestMode && (
-        <div style={{ background: "#1C1C1C", color: "#CCAB4A", padding: "10px 24px", textAlign: "center", fontSize: 13, fontWeight: 600, letterSpacing: "0.03em" }}>
-          🧪 TEST MODE — Use card <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>4111 1111 1111 1111</span> · Any expiry · Any CVV · OTP: <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>1234</span> · UPI: <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>success@razorpay</span>
+        <div style={{ background: "#1C1C1C", color: "#CCAB4A", padding: "12px 24px", textAlign: "center", fontSize: 13, fontWeight: 600, letterSpacing: "0.02em", lineHeight: 1.8 }}>
+          🧪 TEST MODE &nbsp;·&nbsp;
+          UPI: <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>success@razorpay</span>
+          &nbsp;·&nbsp; Card: <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>4111 1111 1111 1111</span> (domestic only) · Expiry: any · CVV: any · OTP: <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>1234</span>
         </div>
       )}
 
