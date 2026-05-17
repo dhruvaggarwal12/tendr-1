@@ -45,16 +45,18 @@ function SavedVendorsInline({ asStrip = false }) {
             <div style={{ overflowY: "auto", padding: "12px 24px", flex: 1 }}>
               {compareSelected.map((v) => (
                 <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: "1.5px solid #f0e8dc", background: "#fffcf5", marginBottom: 8 }}>
-                  <img src={v.image || FALLBACK} alt={v.name} style={{ width: 52, height: 42, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
+                  <img src={v.image || FALLBACK} alt={v.name} style={{ width: 46, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
-                    {v.city && <div style={{ fontSize: 12, color: "#9B7450" }}>{v.city}</div>}
+                    {(v.serviceType || v.city) && <div style={{ fontSize: 12, color: "#9B7450" }}>{v.serviceType || v.city}</div>}
                   </div>
-                  <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <button onClick={() => { setOpen(false); navigate("/vendor/" + v._id); }}
-                      style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 8, border: "none", background: "#f5eedf", color: "#7A4A1E", cursor: "pointer" }}>View</button>
+                      style={{ fontSize: 12, fontWeight: 600, padding: "5px 10px", borderRadius: 7, border: "none", background: "#f5eedf", color: "#7A4A1E", cursor: "pointer" }}>View</button>
+                    <button onClick={() => { setOpen(false); navigate("/chat", { state: { vendor: v, from: "vendor" } }); }}
+                      style={{ fontSize: 12, fontWeight: 700, padding: "5px 10px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer" }}>Chat</button>
                     <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
-                      style={{ fontSize: 14, padding: "3px 10px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>
+                      style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>
                   </div>
                 </div>
               ))}

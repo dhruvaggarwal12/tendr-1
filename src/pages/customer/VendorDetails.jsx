@@ -377,13 +377,9 @@ const VendorDetailsPage = () => {
               )}
             </div>
 
-            {/* Description block */}
-            {vendor?.bio ? (
+            {/* Description block — only show if bio exists */}
+            {vendor?.bio && (
               <p className="text-xl text-gray-700 mt-6">{vendor.bio}</p>
-            ) : (
-              <p className="text-xl text-gray-500 mt-6 italic">
-                This vendor hasn't added a bio yet. Chat with them directly to learn more about their services and experience.
-              </p>
             )}
 
             {/* Contact & Service Areas */}

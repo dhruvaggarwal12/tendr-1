@@ -83,6 +83,7 @@ const Chat = () => {
     selectedVendors,
     extraRequirements,
     extraRequirementsText,
+    chatId: existingChatId,   // set when navigating to an EXISTING conversation
   } = location.state || {};
 
   const fallbackVendor = { _id: "concierge", name: "Tendr Concierge", approved: true };
@@ -118,9 +119,17 @@ const Chat = () => {
     // Support chat from floating button sets from="support"
     const socketChatType = (from === "support") ? "SUPPORT" : "VENDOR";
 
-    // Store socket ready state — actual open_conversation emitted after bot finishes
     socket.on("connect", () => {
       socketRef._connected = true;
+      // For existing chats: emit immediately (skip bot)
+      if (isExistingChat) {
+        socket.emit("open_conversation", {
+          chatType: (from === "support") ? "SUPPORT" : "VENDOR",
+          vendorId: vendor?._id && vendor._id !== "concierge" ? vendor._id : undefined,
+          eventDetails: { ...reduxFormData, ...formData },
+          bookingType: bookingType || reduxBookingType,
+        });
+      }
     });
 
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
@@ -209,13 +218,15 @@ const Chat = () => {
   const [chatCompleted, setChatCompleted] = useState(false);
 
   // ── Bot state ──────────────────────────────────────────────────────────────
-  const botFlow   = getBotFlow(
+  // Skip bot entirely if navigating to an existing chat (chatId in state)
+  const isExistingChat = !!existingChatId;
+  const botFlow   = isExistingChat ? [] : getBotFlow(
     vendor?.serviceType,
     from === "support" ? "support" : (from === "concierge" || vendor?._id === "concierge") ? "concierge" : vendor?.serviceType
   );
   const [botStep,    setBotStep]    = useState(0);
   const [botAnswers, setBotAnswers] = useState({});
-  const [botDone,    setBotDone]    = useState(false);
+  const [botDone,    setBotDone]    = useState(isExistingChat); // pre-done for existing chats
   const botActive = !botDone && botFlow?.length > 0;
   // Refs so async socket callbacks can read latest values
   const botDoneRef    = useRef(false);

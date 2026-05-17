@@ -496,21 +496,14 @@ const BookingReviewPage = () => {
                         </div>
                       )}
 
-                      {/* Chat summary / notes */}
-                      <div style={{ padding: "12px 20px 4px" }}>
-                        <div style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                          <span>💬</span> Chat Summary
+                      {/* Only pinned messages — no chat summary */}
+                      {!pinnedMap[vendor?._id?.toString()]?.length && (
+                        <div style={{ padding: "10px 20px 4px" }}>
+                          <div style={{ background: "#fffaf3", border: "1.5px dashed rgba(196,122,46,0.15)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#ccc", fontStyle: "italic" }}>
+                            Pinned messages from chat will appear here once admin confirms details.
+                          </div>
                         </div>
-                        {summaryMap[vendor?._id?.toString()] ? (
-                          <div style={{ background: "#fffaf3", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#5a3a1a", whiteSpace: "pre-wrap", wordBreak: "break-word", maxHeight: 120, overflowY: "auto", lineHeight: 1.55 }}>
-                            {summaryMap[vendor?._id?.toString()]}
-                          </div>
-                        ) : (
-                          <div style={{ background: "#fffaf3", border: "1.5px dashed rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#bbb", fontStyle: "italic" }}>
-                            Chat summary will appear here once confirmed by Tendr.
-                          </div>
-                        )}
-                      </div>
+                      )}
 
                       {/* Additional requirements textarea */}
                       <div style={{ padding: "10px 20px 16px" }}>

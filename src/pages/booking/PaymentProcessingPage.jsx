@@ -45,11 +45,21 @@ const PaymentProcessingPage = () => {
       description: formData?.eventType ? `${formData.eventType} — Tendr Booking` : "Event Booking",
       image:       logo,
       order_id:    orderId,
-      // Open directly on the method the user selected
-      ...(paymentMethod === "upi"        && { method: { upi: true } }),
-      ...(paymentMethod === "card"       && { method: { card: true } }),
-      ...(paymentMethod === "netbanking" && { method: { netbanking: true } }),
-      ...(paymentMethod === "wallet"     && { method: { wallet: true } }),
+      // Show all payment options — UPI, Cards, Net Banking, Wallets
+      // Do NOT restrict to a single method; let Razorpay show all available options
+      // Restricting caused "international payments not allowed" errors
+      config: {
+        display: {
+          blocks: {
+            upi: { name: "UPI", instruments: [{ method: "upi" }] },
+            card: { name: "Card", instruments: [{ method: "card" }] },
+            nb:   { name: "Net Banking", instruments: [{ method: "netbanking" }] },
+            wallet: { name: "Wallets", instruments: [{ method: "wallet" }] },
+          },
+          sequence: ["block.upi", "block.card", "block.nb", "block.wallet"],
+          preferences: { show_default_blocks: false },
+        },
+      },
       handler: async (response) => {
         // Verify with backend
         try {
