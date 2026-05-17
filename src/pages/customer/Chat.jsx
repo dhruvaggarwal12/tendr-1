@@ -646,11 +646,28 @@ const Chat = () => {
                               <button key={i}
                                 onClick={() => {
                                   const reply = `I'd like to go with the ${tierNames[i]} package:\n\n${opt}`;
-                                  setMessage(reply);
-                                  setTimeout(() => {
-                                    const btn = document.getElementById("chat-send-btn");
-                                    if (btn) btn.click();
-                                  }, 50);
+                                  // Send directly via socket — bypasses approval gate
+                                  // so package selection works before admin approves
+                                  if (socketRef.current && conversationId) {
+                                    socketRef.current.emit("send_message", {
+                                      conversationId,
+                                      sender: "user",
+                                      content: reply,
+                                    });
+                                    setMessages(prev => [...prev, { text: reply, sender: "user", ts: Date.now() }]);
+                                  } else {
+                                    setMessage(reply);
+                                    setTimeout(() => { const btn = document.getElementById("chat-send-btn"); if (btn) btn.click(); }, 50);
+                                  }
+                                  // Save package selection to eventDetails so it shows in chat request
+                                  if (conversationId && authToken) {
+                                    fetch(`${BASE_URL}/conversations/${conversationId}/bot-summary`, {
+                                      method: "PATCH",
+                                      headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+                                      credentials: "include",
+                                      body: JSON.stringify({ eventDetails: { selectedPackage: `${tierNames[i]} Package` } }),
+                                    }).catch(() => {});
+                                  }
                                 }}
                                 style={{ textAlign: "left", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#2C1A0E", fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "pre-line", lineHeight: 1.5 }}
                                 onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
@@ -662,11 +679,22 @@ const Chat = () => {
                             {/* Skip option */}
                             <button
                               onClick={() => {
-                                setMessage("No specific package preference — please suggest what suits my event.");
-                                setTimeout(() => {
-                                  const btn = document.getElementById("chat-send-btn");
-                                  if (btn) btn.click();
-                                }, 50);
+                                const reply = "No specific package preference — please suggest what suits my event.";
+                                if (socketRef.current && conversationId) {
+                                  socketRef.current.emit("send_message", { conversationId, sender: "user", content: reply });
+                                  setMessages(prev => [...prev, { text: reply, sender: "user", ts: Date.now() }]);
+                                } else {
+                                  setMessage(reply);
+                                  setTimeout(() => { const btn = document.getElementById("chat-send-btn"); if (btn) btn.click(); }, 50);
+                                }
+                                if (conversationId && authToken) {
+                                  fetch(`${BASE_URL}/conversations/${conversationId}/bot-summary`, {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+                                    credentials: "include",
+                                    body: JSON.stringify({ eventDetails: { selectedPackage: "No preference — discuss directly" } }),
+                                  }).catch(() => {});
+                                }
                               }}
                               style={{ textAlign: "center", padding: "8px 12px", borderRadius: 10, border: "1px dashed rgba(139,69,19,0.25)", background: "transparent", color: "#9B7450", fontSize: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
                             >
