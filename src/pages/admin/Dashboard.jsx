@@ -1377,11 +1377,33 @@ const AdminDashboard = () => {
             } finally { setImporting(false); e.target.value = ''; }
           };
 
+          const [seeding, setSeeding] = useState(false);
+          const [seedResult, setSeedResult] = useState(null);
+          const handleSeedVendors = async () => {
+            if (!window.confirm('Create 4 test vendors (Decorator, Caterer, Photographer, DJ) with WhatsApp 9205656784?')) return;
+            setSeeding(true); setSeedResult(null);
+            try {
+              const res = await fetch(`${BASE_URL}/admin/seed-test-vendors`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                credentials: 'include',
+                body: JSON.stringify({ phone: '9205656784' }),
+              });
+              const data = await res.json();
+              setSeedResult(data);
+            } catch (err) { setSeedResult({ error: err.message }); }
+            finally { setSeeding(false); }
+          };
+
           return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
               <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">Vendors</div>
-              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <button onClick={handleSeedVendors} disabled={seeding}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "#2C1A0E", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {seeding ? "Creating..." : "🌱 Seed Test Vendors"}
+                </button>
                 <a href={`${BASE_URL}/admin/import/template`} download
                   style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>
                   ⬇ Download CSV Template
@@ -1392,6 +1414,14 @@ const AdminDashboard = () => {
                 </label>
               </div>
             </div>
+            {seedResult && (
+              <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 10, background: seedResult.error ? "#fff5f5" : "#f0fdf4", border: `1px solid ${seedResult.error ? "#fca5a5" : "#bbf7d0"}`, fontSize: 13, fontFamily: "'Outfit', sans-serif" }}>
+                {seedResult.error ? `❌ ${seedResult.error}` : (
+                  <>✅ {seedResult.message}<br/>
+                  {(seedResult.results || []).map(r => <span key={r.name} style={{ display: "block", marginLeft: 16 }}>• {r.name}: {r.status}</span>)}</>
+                )}
+              </div>
+            )}
 
             {/* Import result */}
             {importResult && (
