@@ -144,9 +144,23 @@ const Chat = () => {
         const flow     = botFlowRef.current || [];
         const cid      = _id.toString();
 
+        // 0. Send form details as opening context message
+        const formLines = [
+          "📋 Event Details (from booking form):",
+          formAns.eventType  ? `Event type: ${formAns.eventType}` : null,
+          formAns.date       ? `Date: ${formAns.date}` : null,
+          formAns.guests     ? `Guests: ${formAns.guests}` : null,
+          formAns.budget     ? `Budget: ${formAns.budget}` : null,
+          formAns.location   ? `City: ${formAns.location}` : null,
+        ].filter(Boolean).join("\n");
+
+        if (formLines.trim().length > 30) { // only send if form has data
+          socket.emit("send_message", { conversationId: cid, sender: "user", content: formLines });
+        }
+
         // Send each Q&A as individual messages so admin sees the full conversation
         // Delay each pair by 300ms so they arrive in order
-        let delay = 0;
+        let delay = formLines.trim().length > 30 ? 400 : 0;
         flow.forEach((step) => {
           const answer = botAns[step.key];
           if (!answer) return;
