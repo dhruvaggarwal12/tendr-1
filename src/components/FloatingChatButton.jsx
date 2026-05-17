@@ -72,7 +72,19 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleBrowseVendors = () => {
     setOpen(false);
-    router.navigate("/listings");
+    // Check if customer has filled the event form — if not, send them to booking flow first
+    const state = router.state?.location?.state;
+    const reduxState = router.state?.context;
+    // Read from localStorage to check if form was filled
+    try {
+      const filters = JSON.parse(localStorage.getItem("listingFilters") || "{}");
+      if (filters.serviceType || filters.eventType) {
+        router.navigate("/listings");
+        return;
+      }
+    } catch {}
+    // No form filled — direct to booking flow
+    router.navigate("/booking");
   };
 
   const handleOpen = () => {
@@ -298,8 +310,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             >
               <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>🔍</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Browse Vendors</div>
-                <div style={{ fontSize: 12, color: "#9B7450" }}>Find & chat with vendors</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Find Vendors</div>
+                <div style={{ fontSize: 12, color: "#9B7450" }}>Fill event details, then browse</div>
               </div>
             </button>
           </div>

@@ -1,7 +1,8 @@
 // src/pages/payment/PaymentSuccessPage.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { clearFinalisedVendor, clearVendorCompare } from "../../redux/listingFiltersSlice";
 import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
@@ -11,14 +12,17 @@ import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/
 const PaymentSuccessPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { bookingDetails, orderId, paymentId, amount } = state || {};
   const [booking, setBooking] = useState(null);
   const user = useSelector((s) => s.auth.user);
   const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
   const [referralCopied, setReferralCopied] = useState(false);
   useEffect(() => {
+    // Clear finalised vendors + saved vendors — booking is complete
+    dispatch(clearFinalisedVendor());
+    dispatch(clearVendorCompare());
     // EventPlan flow — payment already verified and EventPlan updated in verify-plan-payment
-    // No extra booking creation needed; use eventPlanId or paymentId as confirmation reference
     setBooking({
       _id: state?.eventPlanId || state?.orderId || state?.paymentId || "CONFIRMED",
       confirmed: true,

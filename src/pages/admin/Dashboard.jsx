@@ -245,15 +245,16 @@ const stats_users = [
 ];
 
 const sidebar_arr = [
-  { label: "Dashboard",      icon: <LayoutDashboard size={22} />,     key: "Dashboard" },
-  { label: "Chat Requests",  icon: <MessageCircle size={22} />,       key: "ChatRequests" },
-  { label: "Bookings",       icon: <CalendarFold size={22} />,        key: "Bookings" },
-  { label: "Vendors",        icon: <BriefcaseBusiness size={22} />,   key: "Vendors" },
-  { label: "Users",          icon: <UserRound size={22} />,           key: "Users" },
-  { label: "Payments",       icon: <BadgeIndianRupee size={22} />,    key: "Payments" },
-  { label: "Chat",           icon: <MessageCircle size={22} />,       key: "Chat" },
-  { label: "Chat-Support",   icon: <MessagesSquare size={22} />,      key: "ChatSupport" },
-  { label: "Chat-Concierge", icon: <MessagesSquare size={22} />,      key: "ChatConcierge" },
+  { label: "Dashboard",        icon: <LayoutDashboard size={22} />,   key: "Dashboard" },
+  { label: "Chat Requests",    icon: <MessageCircle size={22} />,     key: "ChatRequests" },
+  { label: "Bookings",         icon: <CalendarFold size={22} />,      key: "Bookings" },
+  { label: "Change Requests",  icon: <CalendarClock size={22} />,     key: "ChangeRequests" },
+  { label: "Vendors",          icon: <BriefcaseBusiness size={22} />, key: "Vendors" },
+  { label: "Users",            icon: <UserRound size={22} />,         key: "Users" },
+  { label: "Payments",         icon: <BadgeIndianRupee size={22} />,  key: "Payments" },
+  { label: "Chat",             icon: <MessageCircle size={22} />,     key: "Chat" },
+  { label: "Chat-Support",     icon: <MessagesSquare size={22} />,    key: "ChatSupport" },
+  { label: "Chat-Concierge",   icon: <MessagesSquare size={22} />,    key: "ChatConcierge" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks
@@ -1299,6 +1300,62 @@ const AdminDashboard = () => {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── Change Requests Tab ── */}
+        {activeDropdown === "changerequests" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+            <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e] my-4">
+              Change Requests
+            </div>
+            {(() => {
+              const pending = eventPlans.filter(p => p.changeRequest?.hasRequest && p.changeRequest?.status === "pending");
+              if (!pending.length) return (
+                <div style={{ textAlign: "center", padding: "56px 24px", background: "#fff", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
+                  <div style={{ fontSize: 40, marginBottom: 14 }}>✅</div>
+                  <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No pending change requests</h4>
+                  <p style={{ fontSize: 14, color: "#9B7450" }}>All confirmed bookings are up to date.</p>
+                </div>
+              );
+              return (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {pending.map(plan => (
+                    <div key={plan._id} style={{ background: "#fff", borderRadius: 16, border: "2px solid #fde68a", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "20px 24px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>{plan.eventName || plan.eventType}</span>
+                            <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 10px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>⚠️ Pending Change</span>
+                          </div>
+                          <div style={{ display: "flex", gap: 16, fontSize: 13, color: "#7A5535", flexWrap: "wrap" }}>
+                            <span>👤 {plan.customerId?.name || "Customer"}</span>
+                            {plan.date && <span>📅 {plan.date}</span>}
+                            {plan.location && <span>📍 {plan.location}</span>}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 12, color: "#bbb" }}>{plan.changeRequest?.requestedAt ? new Date(plan.changeRequest.requestedAt).toLocaleDateString("en-IN") : ""}</div>
+                      </div>
+                      {plan.changeRequest?.message && (
+                        <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#7A5535", fontStyle: "italic", marginBottom: 12 }}>
+                          "{plan.changeRequest.message}"
+                        </div>
+                      )}
+                      <button
+                        onClick={() => fetch(`${BASE_URL}/admin/event-plans/${plan._id}/resolve-change-request`, {
+                          method: "PATCH",
+                          headers: { Authorization: `Bearer ${token}` },
+                          credentials: "include",
+                        }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, changeRequest: { ...p.changeRequest, status: "resolved" } } : p)); })}
+                        style={{ padding: "8px 20px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                      >
+                        Mark Resolved ✓
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
 

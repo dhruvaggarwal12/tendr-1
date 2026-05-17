@@ -152,7 +152,7 @@ const Chat = () => {
             const packageMsg = buildAutoPackageMessage(vendor?.serviceType);
             if (packageMsg) {
               setTimeout(() => {
-                socket.emit("send_message", { conversationId: _id.toString(), sender: "customer-care", content: packageMsg });
+                socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: packageMsg });
                 // Show locally as bot message
                 setMessages(prev => [...prev, { text: packageMsg, sender: "vendor", ts: Date.now() }]);
               }, 600);

@@ -610,6 +610,42 @@ export default function CustomerDashboard() {
                     </div>
                   </div>
 
+                  {/* Pinned messages + agreed prices from vendor chats — Upcoming only */}
+                  {plan.status === "in_progress" && (() => {
+                    const planConvos = conversations.filter(c => c.chatType === "vendor" && c.chatApproved);
+                    const priceItems = planConvos.filter(c => c.vendorPrice?.amount > 0);
+                    const pinnedItems = planConvos.flatMap(c => (c.pinnedMessages || []).map(m => ({
+                      text: typeof m === "string" ? m : m.content || m.text,
+                      vendor: c.vendorName || c.vendorId?.name || "Vendor",
+                    }))).filter(m => m.text);
+                    if (!priceItems.length && !pinnedItems.length) return null;
+                    return (
+                      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                        {priceItems.length > 0 && (
+                          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "10px 14px" }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>💰 Agreed Prices</div>
+                            {priceItems.map((c, i) => (
+                              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
+                                <span>{c.vendorName || c.vendorId?.name || c.serviceType}</span>
+                                <span style={{ fontWeight: 700 }}>₹{Number(c.vendorPrice.amount).toLocaleString("en-IN")}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {pinnedItems.length > 0 && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned from chats</span>
+                            {pinnedItems.map((m, i) => (
+                              <div key={i} style={{ background: "#fff", borderRadius: 8, padding: "7px 12px", fontSize: 12.5, color: "#5a3a1a", border: "1px solid rgba(196,122,46,0.15)" }}>
+                                • {m.text} <span style={{ color: "#bbb", fontSize: 11 }}>({m.vendor})</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
+
                   {/* Change request — only for Upcoming (in_progress) plans */}
                   {plan.status === "in_progress" && (() => {
                     const cr = plan.changeRequest;
