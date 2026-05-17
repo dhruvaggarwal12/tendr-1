@@ -139,7 +139,14 @@ const Auth = () => {
         const loggedUser = result.payload?.consumer;
         navigate(loggedUser?.isAdmin ? "/AdminDashboard" : "/");
       } else {
-        setLocalError(result.payload || "Invalid phone number or password.");
+        const msg = result.payload || "";
+        if (msg.toLowerCase().includes("not found") || msg.includes("404")) {
+          setLocalError("No account found with this number. Please sign up to create your account.");
+        } else if (msg.toLowerCase().includes("password") || msg.toLowerCase().includes("invalid")) {
+          setLocalError("Incorrect password. Please try again.");
+        } else {
+          setLocalError(msg || "Login failed. Please check your details and try again.");
+        }
       }
     } catch {
       setLocalError("Login failed. Please try again.");

@@ -169,25 +169,25 @@ const Navbar = ({
     {
       label: "Vendors",
       items: [
-        { icon: "⭐", label: "Top Rated Vendors",            href: "/top-rated/Photographer" },
-        { icon: "📂", label: "Browse Vendors",               href: "/listings" },
-        { icon: "🤝", label: "Register as Vendor with Tendr", href: "/vendor/register" },
+        { label: "Top Rated Vendors",            href: "/top-rated/Photographer" },
+        { label: "Browse Vendors",               href: "/listings" },
+        { label: "Register as Vendor",           href: "/vendor/register" },
       ],
     },
     {
       label: "Planning Tools",
       items: [
-        { icon: "✅", label: "Checklist", href: "/checklist-picker" },
-        { icon: "🕐", label: "Timeline", href: "/timeline-picker" },
-        { icon: "💰", label: "Budget Allocator", href: "/budget-picker" },
-        { icon: "🎬", label: "Aftermovie", href: "/aftermovie" },
-        { icon: "💌", label: "Invitation Flyers", href: "/invitation" },
+        { label: "Checklist",          href: "/checklist-picker" },
+        { label: "Timeline",           href: "/timeline-picker" },
+        { label: "Budget Allocator",   href: "/budget-picker" },
+        { label: "Aftermovie",         href: "/aftermovie" },
+        { label: "Invitation Flyers",  href: "/invitation" },
       ],
     },
     {
       label: "Booking",
       items: [
-        { icon: "🥂", label: "Plan Your Event", href: "/booking" },
+        { label: "Plan Your Event", href: "/booking" },
       ],
     },
   ];
@@ -365,7 +365,7 @@ const Navbar = ({
                         onMouseLeave={hoverOff}
                       >
                         <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>
-                          {item.icon}
+                          
                         </span>
                         {item.label}
                       </a>
@@ -378,7 +378,7 @@ const Navbar = ({
                         onMouseLeave={hoverOff}
                       >
                         <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>
-                          {item.icon}
+                          
                         </span>
                         {item.label}
                       </button>
@@ -692,7 +692,7 @@ const Navbar = ({
                         fontFamily: font,
                       }}
                     >
-                      <span style={{ fontSize: 15 }}>{item.icon}</span>
+                      <span style={{ fontSize: 15 }}></span>
                       {item.label}
                     </a>
                   ) : (
@@ -716,7 +716,7 @@ const Navbar = ({
                         fontFamily: font,
                       }}
                     >
-                      <span style={{ fontSize: 15 }}>{item.icon}</span>
+                      <span style={{ fontSize: 15 }}></span>
                       {item.label}
                     </button>
                   )

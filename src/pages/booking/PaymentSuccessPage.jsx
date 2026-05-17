@@ -22,6 +22,27 @@ const PaymentSuccessPage = () => {
     // Clear finalised vendors + saved vendors — booking is complete
     dispatch(clearFinalisedVendor());
     dispatch(clearVendorCompare());
+    // Close active vendor conversations now that payment is done
+    const token = localStorage.getItem("tendr_token");
+    if (token) {
+      fetch(`${import.meta.env.VITE_BASE_URL}/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      })
+        .then(r => r.json())
+        .then(data => {
+          (data.conversations || [])
+            .filter(c => c.chatType === "vendor" && c.chatApproved)
+            .forEach(c => {
+              fetch(`${import.meta.env.VITE_BASE_URL}/conversations/${c._id}/close`, {
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: "include",
+              }).catch(() => {});
+            });
+        })
+        .catch(() => {});
+    }
     // EventPlan flow — payment already verified and EventPlan updated in verify-plan-payment
     setBooking({
       _id: state?.eventPlanId || state?.orderId || state?.paymentId || "CONFIRMED",

@@ -137,28 +137,21 @@ const Chat = () => {
       if (approved) setVendorApprovedByAdmin(true);
       // After bot finishes: send summary only for NEW conversations (no history yet)
       // This prevents duplicates when resuming an existing conversation
-      if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0) {
-        // Wait for history load, then send summary + auto package MCQ if new
-        setTimeout(() => {
-          const currentMessages = messagesRef.current || [];
-          const alreadySent = currentMessages.some(m => m.text?.includes("Chat Request Details"));
-          if (!alreadySent) {
-            const botAns     = botAnswersRef.current;
-            const formAns    = { ...reduxFormData, ...formData };
-            const summaryMsg = buildSummaryMessage(formAns, botAns, vendor?.name, vendor?.serviceType);
-            // 1. Send event summary from customer side
-            socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: summaryMsg });
-            // 2. Auto-send package MCQ from vendor side
-            const packageMsg = buildAutoPackageMessage(vendor?.serviceType);
-            if (packageMsg) {
-              setTimeout(() => {
-                socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: packageMsg });
-                // Show locally as bot message
-                setMessages(prev => [...prev, { text: packageMsg, sender: "vendor", ts: Date.now() }]);
-              }, 600);
-            }
-          }
-        }, 800);
+      if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
+        summarySentRef.current = true; // prevent duplicate sends on re-connect
+        const botAns  = botAnswersRef.current;
+        const formAns = { ...reduxFormData, ...formData };
+        const summaryMsg = buildSummaryMessage(formAns, botAns, vendor?.name, vendor?.serviceType);
+        // 1. Send summary
+        socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: summaryMsg });
+        // 2. Auto-send package options 700ms later
+        const packageMsg = buildAutoPackageMessage(vendor?.serviceType);
+        if (packageMsg) {
+          setTimeout(() => {
+            socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: packageMsg });
+            setMessages(prev => [...prev, { text: packageMsg, sender: "vendor", ts: Date.now() }]);
+          }, 700);
+        }
       }
       // Mark support/concierge chats as explicitly opened by customer
       // so they appear in the dashboard Chats tab
@@ -229,9 +222,10 @@ const Chat = () => {
   const [botDone,    setBotDone]    = useState(isExistingChat); // pre-done for existing chats
   const botActive = !botDone && botFlow?.length > 0;
   // Refs so async socket callbacks can read latest values
-  const botDoneRef    = useRef(false);
-  const botAnswersRef = useRef({});
-  const messagesRef   = useRef([]);
+  const botDoneRef         = useRef(false);
+  const botAnswersRef      = useRef({});
+  const messagesRef        = useRef([]);
+  const summarySentRef     = useRef(false); // tracks if summary was sent via socket (not local)
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -385,15 +379,8 @@ const Chat = () => {
       botDoneRef.current = true;
       const mergedDetails = { ...reduxFormData, ...formData, ...newAnswers };
 
-      // Show bot summary in local messages (includes form data)
-      const formAns = { ...reduxFormData, ...formData };
-      const summaryText = buildSummaryMessage(formAns, newAnswers, vendor?.name, vendor?.serviceType);
-      setMessages(prev => [...prev, {
-        text: summaryText,
-        sender: "vendor",
-        ts: Date.now(),
-        isBot: true,
-      }]);
+      // Summary will be sent via socket after conversation_opened — not shown locally here
+      // to avoid the alreadySent check blocking the socket send
 
       // Now emit open_conversation with all collected answers
       const socket = socketRef.current;

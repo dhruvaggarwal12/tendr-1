@@ -41,7 +41,7 @@ const Field = ({ label, required, error, children }) => (
 
 export default function VendorRegistration() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "" });
+  const [form, setForm] = useState({ name: "", phoneNumber: "", whatsappNumber: "", email: "", address: "", serviceType: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -63,6 +63,7 @@ export default function VendorRegistration() {
     if (!form.whatsappNumber.trim()) e.whatsappNumber = "WhatsApp number is required";
     else if (!/^[6-9]\d{9}$/.test(form.whatsappNumber)) e.whatsappNumber = "Enter a valid 10-digit number";
     if (!form.address.trim()) e.address = "Address is required";
+    if (!form.serviceType) e.serviceType = "Please select your service category";
     if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email";
     return e;
   };
@@ -94,8 +95,8 @@ export default function VendorRegistration() {
         return;
       }
       setSubmitted(true);
-    } catch {
-      setApiError("Network error. Please check your connection and try again.");
+    } catch (err) {
+      setApiError("Network error. Please check your connection and try again. If the issue persists, contact contacttendr@gmail.com");
     } finally {
       setLoading(false);
     }
@@ -170,6 +171,17 @@ export default function VendorRegistration() {
             </Field>
 
             <Field label="Address" required error={errors.address}>
+              <Field label="Service Category" required error={errors.serviceType}>
+                <select name="serviceType" value={form.serviceType} onChange={handleChange}
+                  style={{ ...inputStyle, cursor: "pointer", appearance: "auto" }}>
+                  <option value="">Select your service type</option>
+                  <option value="Decorator">Decorator / Event Stylist</option>
+                  <option value="Caterer">Caterer / Food Service</option>
+                  <option value="Photographer">Photographer / Videographer</option>
+                  <option value="DJ">DJ / Music & Entertainment</option>
+                </select>
+              </Field>
+
               <textarea name="address" placeholder="Your business / service address" value={form.address} onChange={handleChange}
                 onFocus={() => setFocused("address")} onBlur={() => setFocused("")} rows={3}
                 style={{ ...inputStyle, resize: "vertical", borderColor: borderColor("address") }} />
