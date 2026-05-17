@@ -108,7 +108,8 @@ export default function CustomerDashboard() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  // Fetch conversations + individual conversation details for pinned messages
+  // Fetch conversations — always fetch individually for authoritative pinnedMessages
+  // so pin AND unpin changes from admin appear within the next poll cycle
   const fetchConversations = async () => {
     if (!token) return;
     try {
@@ -119,10 +120,9 @@ export default function CustomerDashboard() {
       const d = await r.json();
       const convList = d.conversations || [];
 
-      // For conversations where pinnedMessages might not be in list response,
-      // fetch each individually so pinned messages stay up to date
+      // Always fetch each conversation individually to get the current pinnedMessages
+      // (do NOT skip if list already has them — list may be stale after an unpin)
       const enriched = await Promise.all(convList.map(async (c) => {
-        if (c.pinnedMessages?.length) return c; // already has pinned data
         try {
           const r2 = await fetch(`${BASE_URL}/conversations/${c._id}`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -132,7 +132,7 @@ export default function CustomerDashboard() {
           const full = await r2.json();
           return {
             ...c,
-            pinnedMessages: full.pinnedMessages || full.conversation?.pinnedMessages || [],
+            pinnedMessages: full.pinnedMessages ?? full.conversation?.pinnedMessages ?? [],
           };
         } catch { return c; }
       }));
@@ -159,8 +159,18 @@ export default function CustomerDashboard() {
     ? plans
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
-  // Show only chats that are actually approved/active
-  const visibleChats = conversations.filter(c => c.chatApproved === true);
+  // Support/concierge chats only appear after customer explicitly opens them
+  const openedSupportChats = (() => {
+    try { return new Set(JSON.parse(localStorage.getItem("openedSupportChats") || "[]")); }
+    catch { return new Set(); }
+  })();
+
+  const visibleChats = conversations.filter(c => {
+    if (!c.chatApproved) return false;
+    if (c.chatType === "vendor") return true;
+    // Support and concierge only show if customer explicitly opened them
+    return openedSupportChats.has(c._id);
+  });
 
   const counts = {
     All:       plans.length,

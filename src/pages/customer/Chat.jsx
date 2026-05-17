@@ -130,6 +130,16 @@ const Chat = () => {
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
       setConversationId(_id);
       if (approved) setVendorApprovedByAdmin(true);
+      // Mark support/concierge chats as explicitly opened by customer
+      // so they appear in the dashboard Chats tab
+      if (from === "support" || from === "concierge" || vendor?._id === "concierge") {
+        try {
+          const opened = JSON.parse(localStorage.getItem("openedSupportChats") || "[]");
+          if (!opened.includes(_id)) {
+            localStorage.setItem("openedSupportChats", JSON.stringify([...opened, _id]));
+          }
+        } catch {}
+      }
       // Load message history from DB
       try {
         const res = await fetch(`${BASE_URL}/messages/${_id}/messages`, { credentials: "include" });
