@@ -338,6 +338,8 @@ const AdminDashboard = () => {
   const [topVendorsReal, setTopVendorsReal] = useState([]);
   const [importResult, setImportResult] = useState(null);
   const [importing, setImporting] = useState(false);
+  const [seeding, setSeeding] = useState(false);
+  const [seedResult, setSeedResult] = useState(null);
   const [registeringAppId, setRegisteringAppId] = useState(null);
   // Chat summary feature
   const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
@@ -1377,8 +1379,6 @@ const AdminDashboard = () => {
             } finally { setImporting(false); e.target.value = ''; }
           };
 
-          const [seeding, setSeeding] = useState(false);
-          const [seedResult, setSeedResult] = useState(null);
           const handleSeedVendors = async () => {
             if (!window.confirm('Create 4 test vendors (Decorator, Caterer, Photographer, DJ) with WhatsApp 9205656784?')) return;
             setSeeding(true); setSeedResult(null);
