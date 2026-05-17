@@ -135,42 +135,52 @@ const Chat = () => {
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
       setConversationId(_id);
       if (approved) setVendorApprovedByAdmin(true);
+      // Add vendor to saved/compare list when chat starts
+      if (vendor?._id && vendor._id !== "concierge" && from !== "support") {
+        dispatch(addVendorToCompare(vendor));
+      }
       // After bot finishes: send summary only for NEW conversations (no history yet)
       // This prevents duplicates when resuming an existing conversation
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
         summarySentRef.current = true;
-        const botAns   = botAnswersRef.current;
-        const formAns  = { ...reduxFormData, ...formData };
-        const flow     = botFlowRef.current || [];
-        const cid      = _id.toString();
+        const botAns = botAnswersRef.current;
+        const formAns = { ...reduxFormData, ...formData };
+        const flow    = botFlowRef.current || [];
+        const cid     = _id.toString();
+        const svcType = vendor?.serviceType;
 
-        // Wait for history to load (1.2s), THEN send all messages
-        // This avoids race condition where messages sent before history load get lost
+        // Build ONE consolidated message: form details + Q&As + package options
+        // Single message avoids race conditions with history loading
+        const qaLines = flow
+          .filter(s => botAns[s.key])
+          .map(s => `Q: ${s.question}\nA: ${botAns[s.key]}`);
+
+        const packageMsg = buildAutoPackageMessage(svcType);
+        const pkgSection = packageMsg
+          ? "\n" + packageMsg.replace(/^\[MCQ_PACKAGES:[^\]]+\]\n?/, "")
+          : "";
+
+        const fullMsg = [
+          `[MCQ_PACKAGES:${svcType || "General"}]`,
+          `📋 Chat Request Details`,
+          `──────────────────`,
+          formAns.eventType ? `Event: ${formAns.eventType}` : null,
+          formAns.date      ? `Date: ${formAns.date}` : null,
+          formAns.guests    ? `Guests: ${formAns.guests}` : null,
+          formAns.budget    ? `Budget: ${formAns.budget}` : null,
+          formAns.location  ? `City: ${formAns.location}` : null,
+          qaLines.length ? `\nYour Answers:\n${qaLines.join("\n\n")}` : null,
+          pkgSection || null,
+        ].filter(Boolean).join("\n");
+
+        // Send after 400ms so history fetch doesn't overwrite it
         setTimeout(() => {
-          // 1. Each Q&A as individual messages
-          let delay = 0;
-          flow.forEach((step) => {
-            const answer = botAns[step.key];
-            if (!answer) return;
-            setTimeout(() => {
-              socket.emit("send_message", { conversationId: cid, sender: "customer-care", content: step.question });
-            }, delay);
-            delay += 250;
-            setTimeout(() => {
-              socket.emit("send_message", { conversationId: cid, sender: "user", content: answer });
-            }, delay);
-            delay += 250;
-          });
-
-          // 2. Package MCQ after all Q&As
-          const packageMsg = buildAutoPackageMessage(vendor?.serviceType);
+          socket.emit("send_message", { conversationId: cid, sender: "user", content: fullMsg });
+          // Show package MCQ locally if present
           if (packageMsg) {
-              setTimeout(() => {
-                socket.emit("send_message", { conversationId: cid, sender: "user", content: packageMsg });
-                setMessages(prev => [...prev, { text: packageMsg, sender: "vendor", ts: Date.now() }]);
-              }, delay + 300);
-            }
-        }, 1200); // wait 1.2s for history to load first
+            setMessages(prev => [...prev, { text: fullMsg, sender: "vendor", ts: Date.now() }]);
+          }
+        }, 400);
       }
       // Mark support/concierge chats as explicitly opened by customer
       // so they appear in the dashboard Chats tab
