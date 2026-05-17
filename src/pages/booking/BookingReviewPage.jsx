@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import SEO from "../../components/SEO";
+import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { clearFinalisedVendor } from "../../redux/listingFiltersSlice";
@@ -64,7 +65,29 @@ const BookingReviewPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const token = useSelector((s) => s.auth.token);
+  const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+
+  // Referral code state
+  const [referralInput, setReferralInput] = useState("");
+  const [referralState, setReferralState] = useState(null); // null | "valid" | "invalid" | "own"
+  const [appliedCode, setAppliedCode] = useState(null); // the validated code
+
+  const validateReferral = () => {
+    const raw = parseCode(referralInput);
+    if (!isValidFormat(raw)) { setReferralState("invalid"); return; }
+    // Prevent using your own code
+    const ownCode = currentUser?._id ? parseCode(generateReferralCode(currentUser._id)) : null;
+    if (ownCode && raw === ownCode) { setReferralState("own"); return; }
+    setAppliedCode(raw);
+    setReferralState("valid");
+  };
+
+  const removeReferral = () => {
+    setAppliedCode(null);
+    setReferralState(null);
+    setReferralInput("");
+  };
 
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
@@ -544,10 +567,24 @@ const BookingReviewPage = () => {
                     </span>
                   </div>
                 ))}
+
+                {/* Referral discount line */}
+                {appliedCode && confirmedTotal > 0 && (() => {
+                  const { discount } = applyDiscount(confirmedTotal);
+                  return (
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#15803d" }}>
+                      <span style={{ fontWeight: 600 }}>🎁 Referral Discount ({DISCOUNT_PERCENT}%)</span>
+                      <span style={{ fontWeight: 700 }}>− {formatINR(discount)}</span>
+                    </div>
+                  );
+                })()}
+
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
-                  <span>{allConfirmed ? "Total" : anyPriceUnset ? "Confirmed So Far" : "Total"}</span>
+                  <span>{anyPriceUnset ? "Confirmed So Far" : "Total"}</span>
                   <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
-                    {confirmedTotal > 0 ? formatINR(confirmedTotal) : "—"}
+                    {confirmedTotal > 0
+                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal).finalTotal : confirmedTotal)
+                      : "—"}
                   </span>
                 </div>
                 <p style={{ fontSize: 11, color: "#9B7450", margin: 0 }}>
@@ -557,6 +594,39 @@ const BookingReviewPage = () => {
                     ? "⏳ Some vendor quotes are still being confirmed. You'll be notified when all prices are ready."
                     : "Prices confirmed in chat."}
                 </p>
+              </div>
+
+              {/* Referral code input */}
+              <div style={{ marginBottom: 16 }}>
+                {appliedCode ? (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 10, padding: "10px 14px" }}>
+                    <div>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#15803d" }}>✓ Referral code applied — {DISCOUNT_PERCENT}% off!</span>
+                      <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2, fontFamily: "'Courier New', monospace" }}>{appliedCode}</div>
+                    </div>
+                    <button onClick={removeReferral} style={{ border: "none", background: "none", color: "#9B7450", fontSize: 13, cursor: "pointer", padding: "4px 8px" }}>✕ Remove</button>
+                  </div>
+                ) : (
+                  <div>
+                    <p style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", margin: "0 0 6px" }}>Have a referral code?</p>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        value={referralInput}
+                        onChange={e => { setReferralInput(e.target.value.toUpperCase()); setReferralState(null); }}
+                        placeholder="TNDR-XXXXXX"
+                        style={{ flex: 1, padding: "9px 12px", borderRadius: 9, border: `1.5px solid ${referralState === "invalid" || referralState === "own" ? "#fca5a5" : "rgba(196,122,46,0.25)"}`, fontSize: 14, fontFamily: "'Courier New', monospace", outline: "none", color: "#2C1A0E", textTransform: "uppercase" }}
+                        onFocus={e => (e.currentTarget.style.borderColor = "#C47A2E")}
+                        onBlur={e => (e.currentTarget.style.borderColor = referralState === "invalid" || referralState === "own" ? "#fca5a5" : "rgba(196,122,46,0.25)")}
+                      />
+                      <button onClick={validateReferral}
+                        style={{ padding: "9px 18px", borderRadius: 9, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+                        Apply
+                      </button>
+                    </div>
+                    {referralState === "invalid" && <p style={{ fontSize: 11, color: "#c0392b", margin: "4px 0 0" }}>Invalid referral code. Check and try again.</p>}
+                    {referralState === "own" && <p style={{ fontSize: 11, color: "#c0392b", margin: "4px 0 0" }}>You can't use your own referral code.</p>}
+                  </div>
+                )}
               </div>
 
               {/* Trust badges */}
@@ -605,7 +675,8 @@ const BookingReviewPage = () => {
                           const eventPlanId = await saveEventPlan();
                           setSaving(false);
                           setShowConfirmPopup(false);
-                          navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: confirmedTotal, eventPlanId } });
+                          const finalAmount = appliedCode ? applyDiscount(confirmedTotal).finalTotal : confirmedTotal;
+                          navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: finalAmount, referralCode: appliedCode || null, eventPlanId } });
                         }}
                         style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
                       >

@@ -1,17 +1,22 @@
 // src/pages/payment/PaymentSuccessPage.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import axios from "axios";
 import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
+import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 
 const PaymentSuccessPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { bookingDetails, orderId, paymentId, amount } = state || {};
   const [booking, setBooking] = useState(null);
+  const user = useSelector((s) => s.auth.user);
+  const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
+  const [referralCopied, setReferralCopied] = useState(false);
 
   const BACKEND_BASE_URL = "http://localhost:8080";
   useEffect(() => {
@@ -109,6 +114,24 @@ const PaymentSuccessPage = () => {
               <strong>Amount Paid:</strong> ₹{amount}
             </p>
           </div>
+
+          {/* Referral Code */}
+          {referralCode && (
+            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "20px 22px", marginBottom: 24, textAlign: "left" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>🎁 Share & Save — Your Referral Code</p>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
+                <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "0.1em", fontFamily: "'Courier New', monospace" }}>{referralCode}</span>
+                <button
+                  onClick={() => { navigator.clipboard.writeText(referralCode); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }}
+                  style={{ padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: referralCopied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                  {referralCopied ? "✓ Copied!" : "Copy"}
+                </button>
+              </div>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.55 }}>
+                Share this code with friends — they get {DISCOUNT_PERCENT}% off their first Tendr booking. Your code is always the same, saved to your dashboard.
+              </p>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4">
