@@ -138,19 +138,37 @@ const Chat = () => {
       // After bot finishes: send summary only for NEW conversations (no history yet)
       // This prevents duplicates when resuming an existing conversation
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
-        summarySentRef.current = true; // prevent duplicate sends on re-connect
-        const botAns  = botAnswersRef.current;
-        const formAns = { ...reduxFormData, ...formData };
-        const summaryMsg = buildSummaryMessage(formAns, botAns, vendor?.name, vendor?.serviceType);
-        // 1. Send summary
-        socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: summaryMsg });
-        // 2. Auto-send package options 700ms later
+        summarySentRef.current = true;
+        const botAns   = botAnswersRef.current;
+        const formAns  = { ...reduxFormData, ...formData };
+        const flow     = botFlowRef.current || [];
+        const cid      = _id.toString();
+
+        // Send each Q&A as individual messages so admin sees the full conversation
+        // Delay each pair by 300ms so they arrive in order
+        let delay = 0;
+        flow.forEach((step) => {
+          const answer = botAns[step.key];
+          if (!answer) return;
+          // Question from bot (vendor side)
+          setTimeout(() => {
+            socket.emit("send_message", { conversationId: cid, sender: "customer-care", content: step.question });
+          }, delay);
+          delay += 300;
+          // Customer's answer
+          setTimeout(() => {
+            socket.emit("send_message", { conversationId: cid, sender: "user", content: answer });
+          }, delay);
+          delay += 300;
+        });
+
+        // After all Q&As: send packages
         const packageMsg = buildAutoPackageMessage(vendor?.serviceType);
         if (packageMsg) {
           setTimeout(() => {
-            socket.emit("send_message", { conversationId: _id.toString(), sender: "user", content: packageMsg });
+            socket.emit("send_message", { conversationId: cid, sender: "user", content: packageMsg });
             setMessages(prev => [...prev, { text: packageMsg, sender: "vendor", ts: Date.now() }]);
-          }, 700);
+          }, delay + 300);
         }
       }
       // Mark support/concierge chats as explicitly opened by customer
@@ -224,6 +242,7 @@ const Chat = () => {
   // Refs so async socket callbacks can read latest values
   const botDoneRef         = useRef(false);
   const botAnswersRef      = useRef({});
+  const botFlowRef         = useRef(botFlow); // store flow for use in async callbacks
   const messagesRef        = useRef([]);
   const summarySentRef     = useRef(false); // tracks if summary was sent via socket (not local)
   const [pendingAttachments, setPendingAttachments] = useState([]);
