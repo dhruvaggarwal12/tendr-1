@@ -44,6 +44,25 @@ export default function CustomerDashboard() {
   const dispatch  = useDispatch();
   const { user, token } = useSelector((s) => s.auth);
 
+  const submitCancel = async (planId) => {
+    const s = cancelState[planId];
+    setCancelState(prev => ({ ...prev, [planId]: { ...prev[planId], submitting: true } }));
+    try {
+      const res = await fetch(`${BASE_URL}/event-plans/${planId}/cancel`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+        body: JSON.stringify({ reason: s?.reason?.trim() || "Cancelled by customer" }),
+      });
+      if (res.ok) {
+        setPlans(prev => prev.map(p => p._id === planId ? { ...p, status: "cancelled" } : p));
+        setCancelState(prev => ({ ...prev, [planId]: { open: false, done: true, submitting: false } }));
+      }
+    } catch {
+      setCancelState(prev => ({ ...prev, [planId]: { ...prev[planId], submitting: false } }));
+    }
+  };
+
   const handleRebook = (plan) => {
     dispatch(resetEventPlanning());
     dispatch(setMultipleFormData({
@@ -57,6 +76,7 @@ export default function CustomerDashboard() {
   };
 
   const [changeReqState, setChangeReqState] = useState({}); // { [planId]: { open, message, submitting, done } }
+  const [cancelState, setCancelState] = useState({}); // { [planId]: { open, reason, submitting, done } }
 
   const openChangeReq = (planId) =>
     setChangeReqState(prev => ({ ...prev, [planId]: { open: true, message: "", submitting: false, done: false } }));
@@ -644,6 +664,54 @@ export default function CustomerDashboard() {
                         onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                       >
                         ⚠️ Make a Change Request
+                      </button>
+                    );
+                  })()}
+
+                  {/* Cancel Booking — Upcoming plans only */}
+                  {plan.status === "in_progress" && (() => {
+                    const cs = cancelState[plan._id];
+                    if (cs?.done) return null; // already cancelled, row disappears
+                    if (cs?.open) {
+                      return (
+                        <div style={{ marginTop: 10, background: "#fff5f5", border: "1.5px solid #fca5a5", borderRadius: 12, padding: "14px 16px" }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#c0392b", marginBottom: 8 }}>Cancel this booking?</div>
+                          <p style={{ fontSize: 12, color: "#7A5535", margin: "0 0 10px", lineHeight: 1.5 }}>
+                            This action cannot be undone. Please refer to our Cancellation Policy for refund details.
+                          </p>
+                          <textarea
+                            value={cs.reason || ""}
+                            onChange={e => setCancelState(prev => ({ ...prev, [plan._id]: { ...prev[plan._id], reason: e.target.value } }))}
+                            rows={2}
+                            placeholder="Reason for cancellation (optional)"
+                            style={{ width: "100%", padding: "9px 12px", borderRadius: 8, border: "1.5px solid #fca5a5", fontSize: 12, fontFamily: font, outline: "none", resize: "none", boxSizing: "border-box", color: "#2C1A0E", background: "#fff" }}
+                          />
+                          <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                            <button
+                              onClick={() => submitCancel(plan._id)}
+                              disabled={cs.submitting}
+                              style={{ flex: 1, padding: "9px", borderRadius: 8, border: "none", background: "#c0392b", color: "#fff", fontSize: 13, fontWeight: 700, cursor: cs.submitting ? "not-allowed" : "pointer", fontFamily: font, opacity: cs.submitting ? 0.7 : 1 }}
+                            >
+                              {cs.submitting ? "Cancelling…" : "Confirm Cancellation"}
+                            </button>
+                            <button
+                              onClick={() => setCancelState(prev => ({ ...prev, [plan._id]: { open: false } }))}
+                              style={{ padding: "9px 16px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.1)", background: "#fff", color: "#555", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}
+                            >
+                              Keep Booking
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    }
+                    return (
+                      <button
+                        onClick={() => setCancelState(prev => ({ ...prev, [plan._id]: { open: true, reason: "", submitting: false } }))}
+                        style={{ marginTop: 8, width: "100%", padding: "9px", borderRadius: 10, border: "1.5px dashed #fca5a5", background: "transparent", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "background 0.15s" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(192,57,43,0.04)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                      >
+                        Cancel Booking
                       </button>
                     );
                   })()}

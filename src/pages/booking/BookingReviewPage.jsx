@@ -68,10 +68,10 @@ const BookingReviewPage = () => {
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
-  // Referral code state
-  const [referralInput, setReferralInput] = useState("");
-  const [referralState, setReferralState] = useState(null); // null | "valid" | "invalid" | "own"
-  const [appliedCode, setAppliedCode] = useState(null); // the validated code
+  // Referral code state — persisted to sessionStorage so navigating away and back doesn't lose it
+  const [referralInput, setReferralInput] = useState(() => sessionStorage.getItem("wr_referralInput") || "");
+  const [referralState, setReferralState] = useState(null);
+  const [appliedCode, setAppliedCode] = useState(() => sessionStorage.getItem("wr_appliedCode") || null);
 
   const validateReferral = () => {
     const raw = parseCode(referralInput);
@@ -231,7 +231,17 @@ const BookingReviewPage = () => {
   const toggleOpen = (key) =>
     setOpenKeys((prev) => ({ ...prev, [key]: !prev[key] }));
 
-  const [notes, setNotes] = useState({});
+  const [notes, setNotes] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem("wr_notes") || "{}"); } catch { return {}; }
+  });
+
+  // Persist referral + notes so coming back from chat doesn't lose progress
+  useEffect(() => {
+    if (appliedCode) sessionStorage.setItem("wr_appliedCode", appliedCode);
+    else sessionStorage.removeItem("wr_appliedCode");
+  }, [appliedCode]);
+  useEffect(() => { sessionStorage.setItem("wr_referralInput", referralInput); }, [referralInput]);
+  useEffect(() => { sessionStorage.setItem("wr_notes", JSON.stringify(notes)); }, [notes]);
   const [saving, setSaving] = useState(false);
   const selectedVendors = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const handleRemove = (serviceType) => dispatch(clearFinalisedVendor(serviceType));
@@ -684,6 +694,10 @@ const BookingReviewPage = () => {
                           }
                           setSaving(false);
                           setShowConfirmPopup(false);
+                          // Clear persisted review progress on proceeding to payment
+                          sessionStorage.removeItem("wr_appliedCode");
+                          sessionStorage.removeItem("wr_referralInput");
+                          sessionStorage.removeItem("wr_notes");
                           const finalAmount = appliedCode ? applyDiscount(confirmedTotal).finalTotal : confirmedTotal;
                           navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: finalAmount, referralCode: appliedCode || null, eventPlanId } });
                         }}
