@@ -20,7 +20,7 @@ const PaymentFailedPage = () => {
 
       // 🔹 Call backend retry API
       const res = await axios.post(
-        `${BACKEND_BASE_URL}/api/payments/${paymentId}/retry`,
+        `${BACKEND_BASE_URL}/payments/${paymentId}/retry`,
         {},
         { withCredentials: true }
       );

@@ -52,7 +52,7 @@ const PaymentProcessingPage = () => {
       handler: async (response) => {
         // Verify with backend
         try {
-          const res = await fetch(`${BASE_URL}/api/payments/verify-plan-payment`, {
+          const res = await fetch(`${BASE_URL}/payments/verify-plan-payment`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             credentials: "include",

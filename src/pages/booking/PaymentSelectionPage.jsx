@@ -1,6 +1,7 @@
 // src/pages/payment/PaymentSelectionPage.jsx
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 
@@ -24,7 +25,7 @@ export default function PaymentSelectionPage() {
   // Support both old (state.booking.amount) and new (state.totalAmount) formats
   const amount      = state?.totalAmount || state?.booking?.amount || 0;
   const eventPlanId = state?.eventPlanId || null;
-  const token       = localStorage.getItem("tendr_token");
+  const token = useSelector((s) => s.auth.token) || localStorage.getItem("tendr_token");
 
   const handleProceed = async () => {
     if (!amount || amount <= 0) {
@@ -34,7 +35,7 @@ export default function PaymentSelectionPage() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch(`${BASE_URL}/api/payments/create-plan-order`, {
+      const res = await fetch(`${BASE_URL}/payments/create-plan-order`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
