@@ -673,6 +673,15 @@ const BookingReviewPage = () => {
                         onClick={async () => {
                           setSaving(true);
                           const eventPlanId = await saveEventPlan();
+                          // Record referral code usage in backend
+                          if (appliedCode && token) {
+                            fetch(`${BASE_URL}/referrals/apply`, {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                              credentials: "include",
+                              body: JSON.stringify({ code: appliedCode, orderId: eventPlanId }),
+                            }).catch(() => {});
+                          }
                           setSaving(false);
                           setShowConfirmPopup(false);
                           const finalAmount = appliedCode ? applyDiscount(confirmedTotal).finalTotal : confirmedTotal;

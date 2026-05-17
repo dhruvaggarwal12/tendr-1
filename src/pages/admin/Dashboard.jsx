@@ -294,6 +294,24 @@ const AdminDashboard = () => {
   const [summaryDraft, setSummaryDraft] = useState("");
 
   const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats } = useConversations({ enabled: !!token });
+  const [deletedChatIds, setDeletedChatIds] = useState(new Set());
+
+  const handleDeleteChat = (e, chatId) => {
+    e.stopPropagation();
+    if (!window.confirm("Permanently delete this chat and all its messages?")) return;
+    fetch(`${BASE_URL}/admin/conversations/${chatId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    }).then(r => {
+      if (r.ok) {
+        setDeletedChatIds(prev => new Set([...prev, chatId]));
+        if (selectedChat?._id === chatId) setSelectedChat(null);
+      } else {
+        window.alert("Failed to delete chat. Please try again.");
+      }
+    }).catch(() => window.alert("Network error. Please try again."));
+  };
 
   // 24-hour inactivity TTL — filter and auto-delete inactive conversations
   const TTL_MS = 24 * 60 * 60 * 1000;
@@ -308,10 +326,10 @@ const AdminDashboard = () => {
     return remaining > 0 ? Math.ceil(remaining / 3600000) : 0;
   };
 
-  // Active (non-expired) chats
-  const recentChats  = rawRecentChats.filter(c => !isExpired(c));
-  const supportChats = rawSupportChats.filter(c => !isExpired(c));
-  const adminChats   = rawAdminChats.filter(c => !isExpired(c));
+  // Active (non-expired, non-deleted) chats
+  const recentChats  = rawRecentChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id));
+  const supportChats = rawSupportChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id));
+  const adminChats   = rawAdminChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id));
 
   // Auto-delete expired conversations from DB when they're discovered
   useEffect(() => {
@@ -1703,14 +1721,24 @@ const AdminDashboard = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-center sm:items-end text-xs sm:text-sm">
+                    <div className="flex flex-col items-center sm:items-end text-xs sm:text-sm gap-1">
                       <span className="text-gray-500">{c.time}</span>
-
                       {c.unread > 0 && (
                         <span className="mt-1 w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full bg-[#d08f4e] text-white text-xs font-semibold">
                           {c.unread}
                         </span>
                       )}
+                      {/* Expiry badge */}
+                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: h <= 2 ? "#c0392b" : "#b45309" }}>
+                          ⏳ {h === 0 ? "Expiring" : `${h}h left`}
+                        </span>
+                      ) : null; })()}
+                      {/* Delete button */}
+                      <button
+                        onClick={(e) => handleDeleteChat(e, c._id)}
+                        style={{ fontSize: 10, fontWeight: 700, color: "#c0392b", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 6, padding: "2px 7px", cursor: "pointer", marginTop: 2 }}
+                      >🗑</button>
                     </div>
                   </div>
                 ))}
@@ -2060,6 +2088,10 @@ const AdminDashboard = () => {
                           ⏳ {h === 0 ? "Expiring" : `${h}h left`}
                         </span>
                       ) : null; })()}
+                      <button
+                        onClick={(e) => handleDeleteChat(e, c._id)}
+                        style={{ fontSize: 10, fontWeight: 700, color: "#c0392b", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 6, padding: "2px 7px", cursor: "pointer", marginTop: 2 }}
+                      >🗑</button>
                     </div>
                   </div>
                 ))}
@@ -2275,6 +2307,10 @@ const AdminDashboard = () => {
                           ⏳ {h === 0 ? "Expiring" : `${h}h left`}
                         </span>
                       ) : null; })()}
+                      <button
+                        onClick={(e) => handleDeleteChat(e, c._id)}
+                        style={{ fontSize: 10, fontWeight: 700, color: "#c0392b", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 6, padding: "2px 7px", cursor: "pointer", marginTop: 2 }}
+                      >🗑</button>
                     </div>
                   </div>
                 ))}
