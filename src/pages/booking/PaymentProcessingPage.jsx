@@ -11,7 +11,7 @@ const font = "'Outfit', sans-serif";
 const PaymentProcessingPage = () => {
   const { state }  = useLocation();
   const navigate   = useNavigate();
-  const { orderId, amount, eventPlanId, formData } = state || {};
+  const { orderId, amount, eventPlanId, formData, paymentMethod } = state || {};
   const [status, setStatus] = useState("loading"); // loading | opening | notlive | success | failed
   const token = localStorage.getItem("tendr_token");
 
@@ -44,6 +44,11 @@ const PaymentProcessingPage = () => {
       description: formData?.eventType ? `${formData.eventType} — Tendr Booking` : "Event Booking",
       image:       logo,
       order_id:    orderId,
+      // Open directly on the method the user selected
+      ...(paymentMethod === "upi"        && { method: { upi: true } }),
+      ...(paymentMethod === "card"       && { method: { card: true } }),
+      ...(paymentMethod === "netbanking" && { method: { netbanking: true } }),
+      ...(paymentMethod === "wallet"     && { method: { wallet: true } }),
       handler: async (response) => {
         // Verify with backend
         try {

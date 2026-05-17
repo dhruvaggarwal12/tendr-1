@@ -49,15 +49,16 @@ export default function PaymentSelectionPage() {
       navigate("/booking/payment-processing", {
         state: {
           ...state,
-          orderId:  data.orderId,
-          amount:   data.amount || amount,
+          orderId:       data.orderId,
+          amount:        data.amount || amount,
+          paymentMethod: method,
         },
       });
     } catch (err) {
       console.error("create-plan-order error:", err);
       // Graceful fallback — payment not live yet
       navigate("/booking/payment-processing", {
-        state: { ...state, orderId: null, amount },
+        state: { ...state, orderId: null, amount, paymentMethod: method },
       });
     } finally {
       setLoading(false);
