@@ -15,7 +15,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 // Fetch vendor chats from project backend
 const fetchVendorChats = async () => {
   try {
-    const response = await fetch("http://localhost:8080/vendor/chats", {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vendor/chats`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -37,7 +37,7 @@ const fetchVendorChats = async () => {
 
 const fetchVendorBookings = async () => {
   try {
-    const response = await fetch("http://localhost:8080/vendor/bookings", {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vendor/bookings`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -59,7 +59,7 @@ const fetchVendorBookings = async () => {
 
 const fetchVendorStats = async () => {
   try {
-    const response = await fetch("http://localhost:8080/vendor/stats", {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vendor/stats`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

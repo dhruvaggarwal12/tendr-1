@@ -18,7 +18,7 @@ export default function PaymentSelectionPage() {
   const [method, setMethod] = useState("upi");
   const [loading, setLoading] = useState(false);
 
-  const BACKEND_BASE_URL = "http://localhost:8080";
+  const BACKEND_BASE_URL = import.meta.env.VITE_BASE_URL;
   const handleProceed = async () => {
     try {
       setLoading(true);

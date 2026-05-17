@@ -10,7 +10,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 
 // -------------------- Backend helpers --------------------
-const API_BASE = 'http://localhost:8080';
+const API_BASE = import.meta.env.VITE_BASE_URL;
 
 const fetchChatMessages = async (chatId) => {
   try {

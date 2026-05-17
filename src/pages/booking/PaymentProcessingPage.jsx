@@ -26,7 +26,7 @@ const PaymentProcessingPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [orderId, paymentId]);
 
-  const BACKEND_BASE_URL = "http://localhost:8080";
+  const BACKEND_BASE_URL = import.meta.env.VITE_BASE_URL;
   const openRazorpay = () => {
     const options = {
       key: "rzp_test_xxxxxxxx", // 🔹 apna Razorpay test/live key yaha daalo

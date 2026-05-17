@@ -7,7 +7,7 @@ import {
 } from "@hello-pangea/dnd";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 
-const BASE_URL = "https://tendr-backend-75ag.onrender.com";
+const BASE_URL = "https://tendr-backend-dhruv.onrender.com";
 
 // Hardcoded default tasks for different events
 const defaultTasks = {

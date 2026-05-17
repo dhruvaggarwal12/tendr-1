@@ -18,7 +18,7 @@ const PaymentSuccessPage = () => {
   const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
   const [referralCopied, setReferralCopied] = useState(false);
 
-  const BACKEND_BASE_URL = "http://localhost:8080";
+  const BACKEND_BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const createBooking = async () => {
       try {

@@ -13,7 +13,7 @@ const PaymentFailedPage = () => {
   const { orderId, bookingDetails, amount, paymentId } = state || {};
   const [loading, setLoading] = useState(false);
 
-  const BACKEND_BASE_URL = "http://localhost:8080";
+  const BACKEND_BASE_URL = import.meta.env.VITE_BASE_URL;
   const handleRetry = async () => {
     try {
       setLoading(true);

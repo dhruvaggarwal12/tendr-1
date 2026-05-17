@@ -9,7 +9,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // Fetch vendor chats from project backend
 const fetchAllVendorChats = async () => {
   try {
-    const response = await fetch("http://localhost:8080/vendor/chats", {
+    const response = await fetch(`${import.meta.env.VITE_BASE_URL}/vendor/chats`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
