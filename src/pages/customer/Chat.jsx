@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Paperclip, X as XIcon, Image as ImageIcon, CheckCircle2 } from "lucide-react";
+import { getBotFlow, buildSummaryMessage } from "../../utils/chatbot";
 import { useSelector, useDispatch } from "react-redux";
 import { io } from "socket.io-client";
 
@@ -117,19 +118,37 @@ const Chat = () => {
     // Support chat from floating button sets from="support"
     const socketChatType = (from === "support") ? "SUPPORT" : "VENDOR";
 
-    // Wait for connection before emitting — socket.io is async
+    // Store socket ready state — actual open_conversation emitted after bot finishes
     socket.on("connect", () => {
-      socket.emit("open_conversation", {
-        chatType: socketChatType,
-        vendorId,
-        eventDetails: { ...reduxFormData, ...formData }, // merge Redux + prop formData
-        bookingType: bookingType || reduxBookingType,
-      });
+      socketRef._connected = true;
     });
 
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
       setConversationId(_id);
       if (approved) setVendorApprovedByAdmin(true);
+      // After bot finishes: save answers + send summary message
+      if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0) {
+        const answers    = botAnswersRef.current;
+        const summaryMsg = buildSummaryMessage(answers, vendor?.name, vendor?.serviceType);
+        // 1. Send summary as first message (admin sees it in chat)
+        socket.emit("send_message", {
+          conversationId: _id.toString(),
+          sender: "user",
+          content: summaryMsg,
+        });
+        // 2. Persist eventDetails + bookingSummary to DB
+        if (authToken) {
+          fetch(`${BASE_URL}/conversations/${_id}/bot-summary`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
+            credentials: "include",
+            body: JSON.stringify({
+              eventDetails:   { ...reduxFormData, ...formData, ...answers },
+              bookingSummary: summaryMsg,
+            }),
+          }).catch(() => {});
+        }
+      }
       // Mark support/concierge chats as explicitly opened by customer
       // so they appear in the dashboard Chats tab
       if (from === "support" || from === "concierge" || vendor?._id === "concierge") {
@@ -186,6 +205,19 @@ const Chat = () => {
   // Chat is enabled if vendor is pre-approved OR admin has approved the chat request
   const vendorApproved = vendor?.approved || vendorApprovedByAdmin || false;
   const [chatCompleted, setChatCompleted] = useState(false);
+
+  // ── Bot state ──────────────────────────────────────────────────────────────
+  const botFlow   = getBotFlow(
+    vendor?.serviceType,
+    from === "support" ? "support" : (from === "concierge" || vendor?._id === "concierge") ? "concierge" : vendor?.serviceType
+  );
+  const [botStep,    setBotStep]    = useState(0);
+  const [botAnswers, setBotAnswers] = useState({});
+  const [botDone,    setBotDone]    = useState(false);
+  const botActive = !botDone && botFlow?.length > 0;
+  // Refs so async socket callbacks can read latest values
+  const botDoneRef    = useRef(false);
+  const botAnswersRef = useRef({});
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const fileInputRef = useRef(null);
 
@@ -320,6 +352,50 @@ const Chat = () => {
     }
   };
 
+  // ── Bot answer handler ────────────────────────────────────────────────────
+  const handleBotAnswer = (answer) => {
+    const step    = botFlow[botStep];
+    const newAnswers = { ...botAnswers, [step.key]: answer };
+    setBotAnswers(newAnswers);
+    botAnswersRef.current = newAnswers;
+
+    if (botStep + 1 < botFlow.length) {
+      // More questions — advance
+      setBotStep(prev => prev + 1);
+    } else {
+      // All questions done — open the conversation with full context
+      setBotDone(true);
+      botDoneRef.current = true;
+      const mergedDetails = { ...reduxFormData, ...formData, ...newAnswers };
+
+      // Show bot summary in local messages
+      const summaryText = buildSummaryMessage(newAnswers, vendor?.name, vendor?.serviceType);
+      setMessages(prev => [...prev, {
+        text: summaryText,
+        sender: "vendor",
+        ts: Date.now(),
+        isBot: true,
+      }]);
+
+      // Now emit open_conversation with all collected answers
+      const socket = socketRef.current;
+      if (!socket) return;
+      const vendorId = vendor?._id && vendor._id !== "concierge" ? vendor._id : undefined;
+      const emit = () => socket.emit("open_conversation", {
+        chatType: (from === "support") ? "SUPPORT" : "VENDOR",
+        vendorId,
+        eventDetails: mergedDetails,
+        bookingType:  bookingType || reduxBookingType,
+      });
+
+      if (socket.connected) {
+        emit();
+      } else {
+        socket.once("connect", emit);
+      }
+    }
+  };
+
   const handleFinalise = () => {
     dispatch(setFinalisedVendor(vendor));
     setMessages((prev) => [
@@ -444,6 +520,55 @@ const Chat = () => {
           <div style={{ textAlign: "center", fontSize: 12, color: "#aaa", marginBottom: 8 }}>
             Chatting with <b style={{ color: "#7A4A1E" }}>{vendor.name || "Vendor"}</b>
           </div>
+
+          {/* ── BOT QUESTIONS (before open_conversation is emitted) ── */}
+          {botActive && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Greeting */}
+              {botStep === 0 && (
+                <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                  <div style={{ maxWidth: "72%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a", lineHeight: 1.5 }}>
+                    👋 Hi! Before we connect you, I have a few quick questions to help us understand your needs. It'll only take a moment!
+                  </div>
+                </div>
+              )}
+              {/* Previously answered questions (show as chat history) */}
+              {botFlow.slice(0, botStep).map((step, i) => (
+                <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                    <div style={{ maxWidth: "72%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a" }}>
+                      {step.question}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <div style={{ maxWidth: "72%", background: "linear-gradient(135deg,#CCAB4A,#e8c96a)", borderRadius: "18px 18px 4px 18px", padding: "10px 14px", fontSize: 14, color: "#fff", fontWeight: 600 }}>
+                      {botAnswers[step.key]}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {/* Current question */}
+              {botStep < botFlow.length && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                    <div style={{ maxWidth: "80%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a", lineHeight: 1.5 }}>
+                      {botFlow[botStep].question}
+                    </div>
+                  </div>
+                  {/* Option buttons */}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingLeft: 8 }}>
+                    {botFlow[botStep].options.map(opt => (
+                      <button key={opt} onClick={() => handleBotAnswer(opt)}
+                        style={{ padding: "8px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
+                      >{opt}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {messages.map((msg, idx) => {
             if (msg.sender === "system") {
@@ -687,7 +812,7 @@ const Chat = () => {
           <button
             type="button"
             onClick={openFilePicker}
-            disabled={!vendorApproved}
+            disabled={botActive || !vendorApproved}
             style={{
               flexShrink: 0,
               width: 40,
@@ -707,10 +832,10 @@ const Chat = () => {
 
           <input
             type="text"
-            placeholder={vendorApproved ? "Write your message..." : "Waiting for admin to approve your chat request..."}
+            placeholder={botActive ? "Please answer the questions above first…" : vendorApproved ? "Write your message..." : "Waiting for admin to approve your chat request..."}
             value={message}
             onChange={handleUserTyping}
-            disabled={!vendorApproved}
+            disabled={botActive || !vendorApproved}
             style={{
               flex: 1,
               padding: "10px 16px",
@@ -727,7 +852,7 @@ const Chat = () => {
           <button
             id="chat-send-btn"
             type="submit"
-            disabled={!vendorApproved}
+            disabled={botActive || !vendorApproved}
             style={{
               flexShrink: 0,
               padding: "10px 20px",
