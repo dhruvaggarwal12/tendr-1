@@ -454,6 +454,13 @@ const AdminDashboard = () => {
       .then((data) => setVendorStats(data.vendors || []))
       .catch(() => {});
 
+    // Run 24hr inactivity cleanup on every dashboard load
+    fetch(`${BASE_URL}/admin/cleanup-inactive`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    }).catch(() => {});
+
     // Fetch real top vendors
     fetch(`${BASE_URL}/admin/top-vendors`, {
       headers: { Authorization: `Bearer ${token}` },

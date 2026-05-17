@@ -147,6 +147,13 @@ export default function CustomerDashboard() {
     if (!token) return;
     setLoadingChats(true);
     fetchConversations().finally(() => setLoadingChats(false));
+    // Trigger inactivity cleanup so cancelled plans show up correctly
+    // Uses a public-ish cleanup — only updates customer's own data via auth
+    fetch(`${BASE_URL}/conversations/cleanup-mine`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    }).catch(() => {});
   }, [token]);
 
   // Re-fetch every 20s so pin/unpin changes from admin appear automatically
