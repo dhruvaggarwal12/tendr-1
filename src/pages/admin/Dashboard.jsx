@@ -285,6 +285,12 @@ const AdminDashboard = () => {
   const [userList, setUserList] = useState([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [bookingTab, setBookingTab] = useState("All");
+  // Payments tab
+  const [paymentsList, setPaymentsList] = useState([]);
+  const [paymentStats, setPaymentStats] = useState(null);
+  const [loadingPayments, setLoadingPayments] = useState(false);
+  // Top vendors (real)
+  const [topVendorsReal, setTopVendorsReal] = useState([]);
   const [importResult, setImportResult] = useState(null);
   const [importing, setImporting] = useState(false);
   const [registeringAppId, setRegisteringAppId] = useState(null);
@@ -399,7 +405,39 @@ const AdminDashboard = () => {
       .then((r) => r.json())
       .then((data) => setVendorStats(data.vendors || []))
       .catch(() => {});
+
+    // Fetch real top vendors
+    fetch(`${BASE_URL}/admin/top-vendors`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setTopVendorsReal(data.topVendors || []))
+      .catch(() => {});
+
+    // Fetch payment stats for dashboard
+    fetch(`${BASE_URL}/admin/payments/stats`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setPaymentStats(data))
+      .catch(() => {});
   }, [token, user]);
+
+  // Fetch payments when Payments tab is active
+  useEffect(() => {
+    if (activeDropdown !== 'payments' || !token || !user?.isAdmin) return;
+    setLoadingPayments(true);
+    fetch(`${BASE_URL}/admin/payments`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then((r) => r.json())
+      .then((data) => setPaymentsList(data.payments || []))
+      .catch(() => {})
+      .finally(() => setLoadingPayments(false));
+  }, [activeDropdown, token, user]);
 
   // Fetch users when Users tab is active
   useEffect(() => {
@@ -887,10 +925,14 @@ const AdminDashboard = () => {
             <div className="py-4">
               <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                 {[
-                  { label: "Users Count", value: liveStats?.users?.total ?? "—", icon: stats_dashboard[0].icon },
-                  { label: "Vendor Count", value: liveStats?.vendors?.total ?? "—", icon: stats_dashboard[1].icon },
-                  { label: "Registered Vendors", value: liveStats?.applications?.registered ?? "—", icon: stats_dashboard[2].icon },
-                  { label: "Pending Applications", value: liveStats?.applications?.pending ?? "—", icon: stats_dashboard[3].icon },
+                  { label: "Users Count",            value: liveStats?.users?.total ?? "—",                 icon: stats_dashboard[0].icon },
+                  { label: "Vendor Count",           value: liveStats?.vendors?.total ?? "—",               icon: stats_dashboard[1].icon },
+                  { label: "Total Payments",         value: paymentStats?.total ?? "—",                     icon: <BadgeIndianRupee size={32} className="text-[#d08f4e]" /> },
+                  { label: "Total Revenue",          value: paymentStats?.totalRevenue != null ? `₹${Number(paymentStats.totalRevenue).toLocaleString("en-IN")}` : "—", icon: <IndianRupee size={32} className="text-[#d08f4e]" /> },
+                  { label: "Registered Vendors",     value: liveStats?.applications?.registered ?? "—",     icon: stats_dashboard[2].icon },
+                  { label: "Pending Applications",   value: liveStats?.applications?.pending ?? "—",         icon: stats_dashboard[3].icon },
+                  { label: "Payments This Month",    value: paymentStats?.thisMonth ?? "—",                  icon: <CalendarCheck2 size={32} className="text-[#d08f4e]" /> },
+                  { label: "Revenue This Month",     value: paymentStats?.monthRevenue != null ? `₹${Number(paymentStats.monthRevenue).toLocaleString("en-IN")}` : "—", icon: <CalendarClock size={32} className="text-[#d08f4e]" /> },
                 ].map((item, idx) => (
                   <div
                     key={idx}
@@ -1109,56 +1151,75 @@ const AdminDashboard = () => {
 
         {activeDropdown === "payments" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            {/* Heading */}
             <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
               Payments
             </div>
 
-            {/* Info Cards Upper */}
+            {/* Live stat cards */}
             <div className="py-4">
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                {stats_payments.map((item) => (
-                  <div
-                    key={item.key}
-                    className="min-h-[160px] sm:min-h-[180px] w-full px-4 sm:px-6 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-4 sm:py-5 hover:shadow-md transition-shadow"
-                  >
-                    {/* Icon */}
-                    <div className="icon text-[#d08f4e]">{item.icon}</div>
-
-                    {/* Bottom Content */}
-                    <div className="content flex flex-col items-center gap-2">
-                      <div className="heading font-semibold text-sm sm:text-base lg:text-lg text-gray-500 leading-tight text-center">
-                        {item.label}
-                      </div>
-                      <div className="metric text-4xl sm:text-5xl md:text-6xl lg:text-[75px] font-bold text-[#CCAB4A] leading-tight">
-                        {item.value}
-                      </div>
-                    </div>
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                {[
+                  { label: "Total Payments",      value: paymentStats?.total        ?? "—", icon: <BadgeIndianRupee size={28} className="text-[#d08f4e]" /> },
+                  { label: "This Month",           value: paymentStats?.thisMonth    ?? "—", icon: <CalendarCheck2  size={28} className="text-[#d08f4e]" /> },
+                  { label: "Total Revenue",        value: paymentStats?.totalRevenue != null ? `₹${Number(paymentStats.totalRevenue).toLocaleString("en-IN")}` : "—", icon: <IndianRupee size={28} className="text-[#d08f4e]" /> },
+                  { label: "Revenue This Month",   value: paymentStats?.monthRevenue != null ? `₹${Number(paymentStats.monthRevenue).toLocaleString("en-IN")}` : "—", icon: <CalendarClock size={28} className="text-[#d08f4e]" /> },
+                ].map(({ label, value, icon }) => (
+                  <div key={label} className="bg-white border-2 border-[#CCAB4A] rounded-[16px] p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
+                    {icon}
+                    <div className="text-gray-500 text-sm font-semibold">{label}</div>
+                    <div className="text-3xl font-bold text-[#CCAB4A]">{value}</div>
                   </div>
                 ))}
               </div>
-            </div>
 
-            {/* Info Cards Lower */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-10 mt-4 sm:mt-8">
-              {/* Booking by Category */}
-              <div className="min-h-[300px] sm:min-h-[350px] md:min-h-[400px] w-full px-4 sm:px-6 py-4 sm:py-5 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-start hover:shadow-md transition-shadow">
-                <div className="heading font-semibold text-lg sm:text-xl md:text-2xl text-black mb-2 sm:mb-4">
-                  Booking by Category
+              {/* Payments table */}
+              <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-hidden">
+                <div className="px-6 py-4 border-b border-[#F1E1A8] flex justify-between items-center">
+                  <h3 className="font-semibold text-lg text-black">All Transactions</h3>
+                  <span className="text-sm text-gray-500">{paymentsList.length} total</span>
                 </div>
-                <div className="flex-1 flex items-center justify-center min-h-[250px]">
-                  <Doughnut_BookingCategory_AdminDashboard />
-                </div>
-              </div>
-
-              {/* Booking by City */}
-              <div className="min-h-[300px] sm:min-h-[350px] md:min-h-[400px] w-full px-4 sm:px-6 py-4 sm:py-5 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-start hover:shadow-md transition-shadow">
-                <div className="heading font-semibold text-lg sm:text-xl md:text-2xl text-black mb-2 sm:mb-4">
-                  Booking by City
-                </div>
-                <div className="flex-1 flex items-center justify-center min-h-[250px] text-gray-400">
-                  <Doughnut_BookingCity_AdminDashboard />
-                </div>
+                {loadingPayments ? (
+                  <div className="py-12 text-center text-gray-400">Loading payments...</div>
+                ) : paymentsList.length === 0 ? (
+                  <div className="py-12 text-center">
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>💳</div>
+                    <p className="text-gray-500">No payments recorded yet.</p>
+                    <p className="text-gray-400 text-sm mt-1">Payments will appear here once customers complete checkout.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead className="bg-[#FFF8EE]">
+                        <tr>
+                          {["Customer", "Event Type", "Amount", "Method", "Status", "Date"].map(h => (
+                            <th key={h} className="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wide">{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100">
+                        {paymentsList.map((p) => (
+                          <tr key={p._id} className="hover:bg-[#FFFBEF] transition">
+                            <td className="px-4 py-3">
+                              <div className="font-semibold text-gray-900">{p.customer?.name || "—"}</div>
+                              <div className="text-xs text-gray-400">{p.customer?.phoneNumber || p.customer?.email || ""}</div>
+                            </td>
+                            <td className="px-4 py-3 text-gray-600">{p.eventType || p.type || "—"}</td>
+                            <td className="px-4 py-3 font-bold text-[#C47A2E]">₹{Number(p.amount || 0).toLocaleString("en-IN")}</td>
+                            <td className="px-4 py-3 text-gray-500 capitalize">{(p.method || "razorpay").toLowerCase()}</td>
+                            <td className="px-4 py-3">
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
+                                {p.status || "SUCCESS"}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-gray-400 text-xs">
+                              {p.date ? new Date(p.date).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1513,34 +1574,31 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Vendor list */}
+                  {/* Vendor list — real data */}
                   <div className="flex-1 flex flex-col justify-evenly space-y-3 sm:space-y-4">
-                    {topVendors.map((vendor, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-start group cursor-pointer"
-                      >
-                        {/* Left: medal + name */}
+                    {(topVendorsReal.length > 0 ? topVendorsReal : topVendors).map((vendor, index) => (
+                      <div key={index} className="flex justify-between items-start group cursor-pointer">
                         <div className="flex items-start gap-2 flex-1 min-w-0">
-                          <div className="text-xl sm:text-2xl leading-tight group-hover:text-2xl sm:group-hover:text-3xl transition-all duration-500 flex-shrink-0">
-                            {vendor.medal}
+                          <div className="text-xl sm:text-2xl leading-tight flex-shrink-0">
+                            {["🥇","🥈","🥉","4️⃣","5️⃣"][index] || "⭐"}
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="font-semibold text-base sm:text-lg leading-none break-words">
-                              {vendor.name}
+                              {vendor.name || "Unnamed"}
                             </span>
-                            <span className="text-xs sm:text-sm text-gray-500 mt-2">
-                              {vendor.city}
+                            <span className="text-xs sm:text-sm text-gray-500 mt-1">
+                              {vendor.city || vendor.serviceType || "—"}
                             </span>
                           </div>
                         </div>
-
-                        {/* Right: booking count */}
                         <div className="text-[#CCAB4A] font-bold text-lg sm:text-2xl leading-none flex-shrink-0 ml-2">
                           {vendor.bookings}
                         </div>
                       </div>
                     ))}
+                    {topVendorsReal.length === 0 && (
+                      <p className="text-gray-400 text-sm text-center py-4">Will populate after first paid bookings</p>
+                    )}
                   </div>
                 </div>
 
@@ -1556,34 +1614,34 @@ const AdminDashboard = () => {
                     </div>
                   </div>
 
-                  {/* Earner list */}
+                  {/* Earner list — real revenue data from top-vendors */}
                   <div className="flex-1 flex flex-col justify-evenly space-y-3 sm:space-y-4">
-                    {topEarners.map((earner, index) => (
-                      <div
-                        key={index}
-                        className="flex justify-between items-start group cursor-pointer"
-                      >
-                        {/* Left: medal + name */}
+                    {(topVendorsReal.length > 0
+                      ? [...topVendorsReal].sort((a, b) => (b.revenue || 0) - (a.revenue || 0))
+                      : topEarners
+                    ).map((earner, index) => (
+                      <div key={index} className="flex justify-between items-start group cursor-pointer">
                         <div className="flex items-start gap-2 flex-1 min-w-0">
-                          <div className="text-xl sm:text-2xl leading-tight group-hover:text-2xl sm:group-hover:text-3xl transition-all duration-500 flex-shrink-0">
-                            {earner.medal}
+                          <div className="text-xl sm:text-2xl leading-tight flex-shrink-0">
+                            {["🥇","🥈","🥉","4️⃣","5️⃣"][index] || "⭐"}
                           </div>
                           <div className="flex flex-col min-w-0">
                             <span className="font-semibold text-base sm:text-lg leading-none break-words">
-                              {earner.name}
+                              {earner.name || "Unnamed"}
                             </span>
-                            <span className="text-xs sm:text-sm text-gray-500 mt-2">
-                              {earner.city}
+                            <span className="text-xs sm:text-sm text-gray-500 mt-1">
+                              {earner.city || earner.serviceType || "—"}
                             </span>
                           </div>
                         </div>
-
-                        {/* Right: Earnings */}
                         <div className="text-[#CCAB4A] font-bold text-lg sm:text-2xl leading-none whitespace-nowrap flex-shrink-0 ml-2">
-                          {formatEarnings(earner.earnings)}
+                          {formatEarnings(earner.revenue || earner.earnings || 0)}
                         </div>
                       </div>
                     ))}
+                    {topVendorsReal.length === 0 && (
+                      <p className="text-gray-400 text-sm text-center py-4">Will populate after first paid bookings</p>
+                    )}
                   </div>
                 </div>
               </div>
