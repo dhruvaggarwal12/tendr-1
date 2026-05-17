@@ -160,6 +160,12 @@ export default function CustomerDashboard() {
     ? plans
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
+  // Vendor chats that haven't been converted to a full EventPlan yet —
+  // show them in Ongoing as "In Process" so customer knows chat is active
+  const pendingVendorChats = conversations.filter(c =>
+    c.chatType === "vendor" && !c.chatApproved
+  );
+
   // Support/concierge chats only appear after customer explicitly opens them
   const openedSupportChats = (() => {
     try { return new Set(JSON.parse(localStorage.getItem("openedSupportChats") || "[]")); }
@@ -167,19 +173,20 @@ export default function CustomerDashboard() {
   })();
 
   const visibleChats = conversations.filter(c => {
-    if (!c.chatApproved) return false;
+    // Vendor chats: show immediately once started (approved or pending)
     if (c.chatType === "vendor") return true;
-    // Support and concierge only show if customer explicitly opened them
+    // Support/concierge: only approved + explicitly opened
+    if (!c.chatApproved) return false;
     return openedSupportChats.has(c._id);
   });
 
   const counts = {
     All:       plans.length,
     Upcoming:  plans.filter((p) => statusMap.Upcoming.includes(p.status)).length,
-    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length,
+    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length + pendingVendorChats.length,
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
-    Chats:     visibleChats.length + (conversations.filter(c => c.chatType === 'vendor' && c.chatApproved).length > 0 ? 0 : 0),
+    Chats:     visibleChats.length,
   };
 
   return (
@@ -378,6 +385,51 @@ export default function CustomerDashboard() {
             )
           ) : null}
 
+          {/* Ongoing — pending vendor chats (awaiting admin approval) */}
+          {activeTab === "Ongoing" && !loading && pendingVendorChats.length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: filtered.length > 0 ? 16 : 0 }}>
+              {pendingVendorChats.map(convo => (
+                <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "18px 22px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
+                        {(convo.vendorName || convo.vendorId?.name || "V")[0]?.toUpperCase()}
+                      </div>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>
+                          {convo.vendorName || convo.vendorId?.name || "Vendor Chat"}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>
+                          {convo.serviceType || convo.vendorServiceType || "Vendor"} · Chat started {new Date(convo.createdAt).toLocaleDateString("en-IN")}
+                        </div>
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 12px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>
+                      ⏳ In Process — Awaiting Team Approval
+                    </span>
+                  </div>
+                  {/* Bot answers from eventDetails */}
+                  {convo.eventDetails && Object.values(convo.eventDetails).some(Boolean) && (
+                    <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(196,122,46,0.12)", display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {Object.entries(convo.eventDetails).filter(([,v]) => v).map(([key, val]) => (
+                        <span key={key} style={{ fontSize: 12, background: "#fff", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px", color: "#5a3a1a" }}>
+                          <b style={{ color: "#C47A2E", textTransform: "capitalize" }}>{key.replace(/([A-Z])/g," $1").trim()}:</b> {val}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+                    <button
+                      onClick={() => navigate("/chat", { state: { chatId: convo._id, vendor: convo.vendorId || { _id: convo.vendorId, name: convo.vendorName }, from: "vendor" } })}
+                      style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      Open Chat →
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {/* Chats tab */}
           {activeTab === "Chats" && (
             loadingChats ? (
@@ -421,7 +473,12 @@ export default function CustomerDashboard() {
                             {convo.chatType === 'vendor' ? (convo.vendorServiceType || convo.vendorId?.serviceType || "Vendor") : convo.chatType === 'support' ? "Support" : "Event Planning"}
                           </span>
                         </div>
-                        <div style={{ fontSize: 12, color: "#bbb" }}>Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
+                          <div style={{ fontSize: 12, color: "#bbb" }}>Started {new Date(convo.createdAt).toLocaleDateString("en-IN")}</div>
+                          {convo.chatType === 'vendor' && !convo.chatApproved && (
+                            <span style={{ fontSize: 10, fontWeight: 700, padding: "1px 8px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>Pending approval</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                     <button

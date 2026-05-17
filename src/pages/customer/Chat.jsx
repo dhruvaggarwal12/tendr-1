@@ -409,7 +409,7 @@ const Chat = () => {
     >
       <BasicSpeedDial />
 
-      <HamburgerNav showReviewPay={true} active={vendor._id !== "concierge" && from !== "support" ? "Chat" : ""} />
+      <HamburgerNav active={vendor._id !== "concierge" && from !== "support" ? "Chat" : ""} />
 
       {/* Next steps hint — vendor chats only */}
       {vendor._id !== "concierge" && from !== "support" && (

@@ -844,16 +844,29 @@ const AdminDashboard = () => {
                           ) : null; })()}
                         </div>
 
-                        {req.eventDetails && Object.values(req.eventDetails).some(Boolean) && (
-                          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#5a3a1a" }}>
-                            {req.eventDetails.eventName  && <span><b>Event:</b> {req.eventDetails.eventName}</span>}
-                            {req.eventDetails.eventType  && <span><b>Type:</b> {req.eventDetails.eventType}</span>}
-                            {req.eventDetails.date       && <span><b>Date:</b> {req.eventDetails.date}</span>}
-                            {req.eventDetails.location   && <span><b>City:</b> {req.eventDetails.location}</span>}
-                            {req.eventDetails.guests     && <span><b>Guests:</b> {req.eventDetails.guests}</span>}
-                            {req.eventDetails.budget     && <span><b>Budget:</b> {req.eventDetails.budget}</span>}
-                          </div>
-                        )}
+                        {req.eventDetails && Object.values(req.eventDetails).some(Boolean) && (() => {
+                          // Friendly labels for all possible eventDetails keys (form + bot answers)
+                          const labels = {
+                            eventName:"Event", eventType:"Type", date:"Date", time:"Time",
+                            location:"City", guests:"Guests", budget:"Budget",
+                            decorationType:"Decoration", venueType:"Venue Type",
+                            cateringType:"Catering", foodPreference:"Food",
+                            photographyType:"Coverage", albumRequired:"Album",
+                            coverage:"Hours", musicVibe:"Music", djHours:"DJ Hours",
+                            soundSetup:"Sound", servicesNeeded:"Services",
+                            timeline:"Timeline", venueAddress:"Address", queryType:"Query",
+                          };
+                          const entries = Object.entries(req.eventDetails).filter(([,v]) => v);
+                          return (
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6 }}>
+                              {entries.map(([key, val]) => (
+                                <span key={key} style={{ fontSize: 12, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px", color: "#5a3a1a" }}>
+                                  <b style={{ color: "#C47A2E" }}>{labels[key] || key}:</b> {val}
+                                </span>
+                              ))}
+                            </div>
+                          );
+                        })()}
                         <div style={{ fontSize: 12, color: "#9B7450", marginTop: 8 }}>
                           Requested: {new Date(req.createdAt).toLocaleString("en-IN")}
                         </div>

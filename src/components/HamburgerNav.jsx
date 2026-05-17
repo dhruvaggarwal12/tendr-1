@@ -121,8 +121,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
         {/* Right: Review & Pay + profile */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          {/* Review & Pay button — shows when vendors are finalised */}
-          {(showReviewPay || finalisedCount > 0) && (
+          {/* Review & Pay button — only shows after at least one vendor is finalised */}
+          {finalisedCount > 0 && (
             <button
               onClick={() => setReviewPopup(true)}
               style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
