@@ -1,3 +1,6 @@
+// COMMENTED OUT — Corporate pre-registration not yet live
+// Will be re-enabled when corporate onboarding is ready
+/* eslint-disable */
 import React, { useState } from "react";
 
 export default function PreRegisterForm({ onSuccess }) {
@@ -23,9 +26,7 @@ export default function PreRegisterForm({ onSuccess }) {
       return;
     }
 
-    // MOCK sending SMS/email (integrate MSG91 here)
-    console.log("Sending T&C to:", email, phoneNumber);
-    alert("Terms and conditions sent via SMS/email.");
+    // T&C notification — notification service not yet integrated
     onSuccess(data); // Proceed to full form
   };
 

@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import axios from "axios";
 import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
@@ -17,48 +16,13 @@ const PaymentSuccessPage = () => {
   const user = useSelector((s) => s.auth.user);
   const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
   const [referralCopied, setReferralCopied] = useState(false);
-
-  const BACKEND_BASE_URL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
-    const createBooking = async () => {
-      try {
-        // backend booking create
-        const res = await axios.post(
-          `${BACKEND_BASE_URL}/api/bookings`,
-          {
-            offerId: bookingDetails.offerId,
-            paymentId,
-            customerId: bookingDetails.customerId,
-            vendorId: bookingDetails.vendorId,
-            schedule: bookingDetails.schedule,
-            items: bookingDetails.addons || {},
-          },
-          { withCredentials: true }
-        );
-
-        setBooking(res.data);
-        // Navigate to booking confirmation after booking is created
-        navigate('/booking/confirmation', {
-          state: {
-            booking: res.data,
-            amount,
-          },
-        });
-      } catch (err) {
-        // Payment integration pending — show success page anyway
-        console.warn("Booking API unavailable (payment integration pending):", err?.message);
-        setBooking({ _id: state?.eventPlanId || "PENDING", confirmed: true });
-      }
-    };
-
-    // Show success if no bookingDetails (coming from our EventPlan flow)
-    if (!bookingDetails) {
-      setBooking({ _id: state?.eventPlanId || "CONFIRMED", confirmed: true });
-      return;
-    }
-    if (bookingDetails && paymentId) {
-      createBooking();
-    }
+    // EventPlan flow — payment already verified and EventPlan updated in verify-plan-payment
+    // No extra booking creation needed; use eventPlanId or paymentId as confirmation reference
+    setBooking({
+      _id: state?.eventPlanId || state?.orderId || state?.paymentId || "CONFIRMED",
+      confirmed: true,
+    });
   }, [bookingDetails, paymentId, navigate, state]);
 
   if (!booking) {

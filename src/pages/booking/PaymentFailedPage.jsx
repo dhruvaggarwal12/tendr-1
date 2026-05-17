@@ -1,106 +1,95 @@
 // src/pages/payment/PaymentFailedPage.jsx
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
 import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
 
+const font = "'Outfit', sans-serif";
+
 const PaymentFailedPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { orderId, bookingDetails, amount, paymentId } = state || {};
-  const [loading, setLoading] = useState(false);
+  const { orderId, bookingDetails, amount } = state || {};
+  const [retrying, setRetrying] = useState(false);
 
-  const BACKEND_BASE_URL = import.meta.env.VITE_BASE_URL;
-  const handleRetry = async () => {
-    try {
-      setLoading(true);
-
-      // 🔹 Call backend retry API
-      const res = await axios.post(
-        `${BACKEND_BASE_URL}/payments/${paymentId}/retry`,
-        {},
-        { withCredentials: true }
-      );
-
-      if (res.data && res.data.payment?.status === "SUCCESS") {
-        // 🔹 Direct success page
-        navigate("/booking/payment-success", {
-          state: {
-            orderId: res.data.order.id,
-            bookingDetails,
-            amount,
-            paymentId: res.data.payment._id,
-          },
-        });
-      } else {
-        alert("Retry failed. Please try again later.");
-      }
-    } catch (err) {
-      console.error("Retry error:", err);
-      alert("Something went wrong during retry.");
-    } finally {
-      setLoading(false);
-    }
+  const handleRetry = () => {
+    setRetrying(true);
+    // Navigate back to payment selection with the same booking state
+    navigate("/booking/payment", {
+      state: {
+        ...state,
+        orderId: null, // force fresh order creation
+      },
+    });
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-[#FFF6EF]">
+    <div style={{ minHeight: "100vh", background: "#FFF8F2", fontFamily: font, display: "flex", flexDirection: "column" }}>
       <SEO title="Payment Failed" description="Your Tendr payment could not be processed. Please try again." path="/booking/payment-failed" noIndex={true} />
       <HamburgerNav />
-      {/* Main Container */}
-      <div className="flex-grow flex items-center justify-center px-4 sm:px-6 py-10">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 flex flex-col items-center text-center">
-          {/* Logo */}
-          <img src={logo} alt="Tendr Logo" className="w-40 sm:w-48 mx-auto mb-6" />
 
-          {/* Icon */}
-          <div className="text-[#2e1b0f] text-6xl mb-4">❌</div>
+      <div style={{ flexGrow: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+        <div style={{ background: "#fff", borderRadius: 24, boxShadow: "0 8px 32px rgba(139,69,19,0.1)", width: "100%", maxWidth: 480, padding: "40px 36px", textAlign: "center" }}>
 
-          {/* Title */}
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#2e1b0f] mb-3">
+          <img src={logo} alt="Tendr" style={{ height: 44, objectFit: "contain", marginBottom: 24 }} />
+
+          <div style={{ fontSize: 52, marginBottom: 14 }}>❌</div>
+
+          <h2 style={{ fontSize: 24, fontWeight: 900, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "-0.01em" }}>
             Payment Failed
           </h2>
 
-          {/* Message */}
-          <p className="text-gray-700 text-base sm:text-lg font-medium mb-6">
-            Unfortunately, your payment could not be processed.  
-            Please check your details and try again.
+          <p style={{ fontSize: 15, color: "#6B5E52", lineHeight: 1.7, margin: "0 0 10px" }}>
+            Your payment could not be processed. This could be due to an incorrect card number, expired card, or insufficient funds.
           </p>
 
-          {/* Retry Button */}
-          <button
-            onClick={handleRetry}
-            disabled={loading}
-            className="w-full sm:w-60 bg-[#2e1b0f] text-white font-semibold py-3 px-6 rounded-xl hover:bg-[#2e1b0f]/80 transition disabled:opacity-50"
-          >
-            {loading ? "Retrying..." : "Retry Payment"}
-          </button>
+          {amount && (
+            <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 28px" }}>
+              Amount: <strong style={{ color: "#1C1C1C" }}>₹{Number(amount).toLocaleString("en-IN")}</strong>
+            </p>
+          )}
 
-          <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", justifyContent: "center" }}>
-            <button onClick={() => navigate("/booking/review")}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-              ← Back to Review
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+            <button
+              onClick={handleRetry}
+              disabled={retrying}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: retrying ? "not-allowed" : "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)", opacity: retrying ? 0.7 : 1 }}
+            >
+              {retrying ? "Redirecting…" : "Try Payment Again →"}
             </button>
-            <button onClick={() => navigate("/dashboard")}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-              Go to Dashboard
+
+            <button
+              onClick={() => navigate("/booking/review")}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+            >
+              ← Back to Review & Pay
+            </button>
+
+            <button
+              onClick={() => navigate("/")}
+              style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: font }}
+            >
+              Return to Home
             </button>
           </div>
-          {/* Contact Support */}
-          <p className="text-sm text-gray-600 mt-4">
+
+          <p style={{ fontSize: 13, color: "#9B7450" }}>
             Need help?{" "}
-            <span onClick={() => navigate("/contact-us")} className="text-[#2e1b0f] cursor-pointer hover:underline">
-              Contact Support
+            <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
+              style={{ color: "#C47A2E", fontWeight: 600, textDecoration: "none" }}>
+              WhatsApp Support
+            </a>
+            {" or "}
+            <span onClick={() => navigate("/contact-us")} style={{ color: "#C47A2E", fontWeight: 600, cursor: "pointer" }}>
+              Contact Us
             </span>
           </p>
         </div>
       </div>
 
-      {/* Footer */}
-      <Footer/>
+      <Footer />
     </div>
   );
 };
