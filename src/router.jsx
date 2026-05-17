@@ -1,5 +1,11 @@
 import { createBrowserRouter } from "react-router-dom";
 
+// ─── Wedding Stationery Sub-App ───────────────────────────────────────────────
+// Accessible at /wedding — standalone design + ordering system (localStorage only)
+// To DISABLE: comment out the { path: "/wedding/*", ... } route below
+import WeddingApp from "./wedding-stationery/WeddingApp";
+// ─────────────────────────────────────────────────────────────────────────────
+
 import Home from "./pages/Home/Home";
 import Auth from "./pages/customer/Auth";
 import VendorRegistration from "./pages/vendor/Registration";
@@ -336,6 +342,15 @@ const router = createBrowserRouter([
   { path: '/invitation', element: <InvitationFlyerPicker />, errorElement: <ErrorPage /> },
   { path: '/invitation/templates/:id', element: <TemplateGallery />, errorElement: <ErrorPage /> },
   { path: '/invitation/customize', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
+
+  // ── Wedding Stationery Sub-App (/wedding/*) ──────────────────────────────
+  // Remove this route to disable the sub-app completely
+  {
+    path: "/wedding/*",
+    element: <WeddingApp />,
+    errorElement: <ErrorPage />,
+  },
+  // ─────────────────────────────────────────────────────────────────────────
 ]);
 
 
