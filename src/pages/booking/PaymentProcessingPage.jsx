@@ -14,6 +14,7 @@ const PaymentProcessingPage = () => {
   const { orderId, amount, eventPlanId, formData, paymentMethod } = state || {};
   const [status, setStatus] = useState("loading"); // loading | opening | notlive | success | failed
   const token = localStorage.getItem("tendr_token");
+  const isTestMode = import.meta.env.VITE_RAZORPAY_KEY_ID?.startsWith("rzp_test_");
 
   useEffect(() => {
     // No orderId = backend not ready yet, show graceful message
@@ -141,11 +142,20 @@ const PaymentProcessingPage = () => {
     <div style={{ minHeight: "100vh", background: "#FFF8F2", fontFamily: font, display: "flex", flexDirection: "column" }}>
       <SEO title="Processing Payment" description="Your Tendr payment is being processed." path="/booking/payment-processing" noIndex={true} />
       <HamburgerNav title="Payment" active="Pay" />
+
+      {/* Test mode banner */}
+      {isTestMode && (
+        <div style={{ background: "#1C1C1C", color: "#CCAB4A", padding: "10px 24px", textAlign: "center", fontSize: 13, fontWeight: 600, letterSpacing: "0.03em" }}>
+          🧪 TEST MODE — Use card <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>4111 1111 1111 1111</span> · Any expiry · Any CVV · OTP: <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>1234</span> · UPI: <span style={{ fontFamily: "monospace", background: "rgba(204,171,74,0.15)", padding: "1px 8px", borderRadius: 4 }}>success@razorpay</span>
+        </div>
+      )}
+
       <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 16, animation: "pulse 1.5s infinite" }}>⏳</div>
           <h2 style={{ fontSize: 20, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>Opening secure payment…</h2>
           <p style={{ fontSize: 14, color: "#9B7450" }}>Please don't close this window.</p>
+          {isTestMode && <p style={{ fontSize: 12, color: "#C9A84C", marginTop: 8, fontWeight: 600 }}>Test mode — no real money charged</p>}
         </div>
       </div>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.5}}`}</style>
