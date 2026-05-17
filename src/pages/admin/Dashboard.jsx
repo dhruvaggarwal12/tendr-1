@@ -304,19 +304,23 @@ const AdminDashboard = () => {
 
   const handleDeleteChat = (e, chatId) => {
     e.stopPropagation();
-    if (!window.confirm("Permanently delete this chat and all its messages?")) return;
-    fetch(`${BASE_URL}/admin/conversations/${chatId}`, {
+    if (!window.confirm("Permanently delete this chat and all its messages from the database?")) return;
+    const id = chatId?.toString();
+    fetch(`${BASE_URL}/admin/conversations/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
-    }).then(r => {
-      if (r.ok) {
-        setDeletedChatIds(prev => new Set([...prev, chatId]));
-        if (selectedChat?._id === chatId) setSelectedChat(null);
-      } else {
-        window.alert("Failed to delete chat. Please try again.");
-      }
-    }).catch(() => window.alert("Network error. Please try again."));
+    })
+      .then(async r => {
+        if (r.ok) {
+          setDeletedChatIds(prev => new Set([...prev, id]));
+          if (selectedChat?._id?.toString() === id) setSelectedChat(null);
+        } else {
+          const data = await r.json().catch(() => ({}));
+          window.alert(`Delete failed: ${data.error || r.statusText}`);
+        }
+      })
+      .catch(() => window.alert("Network error — chat not deleted. Please check your connection."));
   };
 
   // 24-hour inactivity TTL — filter and auto-delete inactive conversations
@@ -332,10 +336,10 @@ const AdminDashboard = () => {
     return remaining > 0 ? Math.ceil(remaining / 3600000) : 0;
   };
 
-  // Active (non-expired, non-deleted) chats
-  const recentChats  = rawRecentChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id));
-  const supportChats = rawSupportChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id));
-  const adminChats   = rawAdminChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id));
+  // Active (non-expired, non-deleted) chats — always compare as strings
+  const recentChats  = rawRecentChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
+  const supportChats = rawSupportChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
+  const adminChats   = rawAdminChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
 
   // Auto-delete expired conversations from DB when they're discovered
   useEffect(() => {
@@ -896,10 +900,19 @@ const AdminDashboard = () => {
                         {/* Delete — available for all request states */}
                         <button
                           onClick={() => {
-                            if (!window.confirm("Permanently delete this chat request and all its messages?")) return;
+                            if (!window.confirm("Permanently delete this chat request and all its messages from the database?")) return;
                             fetch(`${BASE_URL}/admin/conversations/${req._id}`, {
                               method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                            }).then(r => { if (r.ok) setChatRequests(prev => prev.filter(r2 => r2._id !== req._id)); }).catch(() => {});
+                            })
+                              .then(async r => {
+                                if (r.ok) {
+                                  setChatRequests(prev => prev.filter(r2 => r2._id !== req._id));
+                                } else {
+                                  const data = await r.json().catch(() => ({}));
+                                  window.alert(`Delete failed: ${data.error || r.statusText}`);
+                                }
+                              })
+                              .catch(() => window.alert("Network error — request not deleted."));
                           }}
                           style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
                         >
