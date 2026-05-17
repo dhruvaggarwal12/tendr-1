@@ -6,7 +6,7 @@ export const STATIONERY_TYPES = [
     basePrice: 180,
     dimensions: { width: 148, height: 210, label: "A5" },
     emoji: "💌",
-    fields: ["coupleNames", "date", "time", "venue", "customMessage"],
+    fields: ["coupleNames", "date", "time", "venue", "customMessage", "rsvp"],
     deliveryDays: 10,
   },
   {
@@ -116,7 +116,7 @@ export const STATIONERY_TYPES = [
     basePrice: 110,
     dimensions: { width: 148, height: 210, label: "A5" },
     emoji: "🥂",
-    fields: ["coupleNames", "date", "time", "venue", "customMessage"],
+    fields: ["coupleNames", "date", "time", "venue", "customMessage", "rsvp"],
     deliveryDays: 9,
   },
   {
@@ -126,7 +126,7 @@ export const STATIONERY_TYPES = [
     basePrice: 95,
     dimensions: { width: 148, height: 210, label: "A5" },
     emoji: "👰",
-    fields: ["coupleNames", "date", "time", "venue", "customMessage"],
+    fields: ["coupleNames", "date", "time", "venue", "customMessage", "rsvp"],
     deliveryDays: 8,
   },
   {

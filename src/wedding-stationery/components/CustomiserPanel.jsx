@@ -22,14 +22,18 @@ export default function CustomiserPanel({ design, onChange, stationery }) {
 
   const setField = (key, val) => onChange({ ...design, fields: { ...design.fields, [key]: val } });
 
-  const FIELD_LIMITS = { coupleNames: 40, date: 30, time: 20, venue: 60, customMessage: 120 };
-  const FIELD_LABELS = { coupleNames: "Couple Names", date: "Date", time: "Time", venue: "Venue", customMessage: "Custom Message" };
+  const FIELD_LIMITS = { coupleNames: 40, date: 30, time: 20, venue: 60, customMessage: 80, rsvp: 40 };
+  const FIELD_LABELS = { coupleNames: "Couple Names (Name 1 & Name 2)", date: "Date", time: "Time", venue: "Venue", customMessage: "Join Us Line", rsvp: "RSVP Contact" };
   const FIELD_PLACEHOLDERS = {
     coupleNames: "Alexandra & William",
     date: "Saturday, 14 June 2025",
     time: "4:30 in the afternoon",
     venue: "The Grand Estate, Mumbai",
-    customMessage: "Together with their families...",
+    customMessage: "Join Us For a Special Celebration",
+    rsvp: "rsvp@example.com · +91 98765 43210",
+  };
+  const FIELD_HINTS = {
+    coupleNames: "First name shows at top, name after & shows in script",
   };
 
   return (
@@ -113,9 +117,14 @@ export default function CustomiserPanel({ design, onChange, stationery }) {
                 }}
               />
             )}
-            <p style={{ fontSize: 10, color: "#B8A898", textAlign: "right", margin: "3px 0 0" }}>
-              {(fields[fieldKey] || "").length}/{FIELD_LIMITS[fieldKey]}
-            </p>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 3 }}>
+              {FIELD_HINTS[fieldKey] ? (
+                <p style={{ fontSize: 10, color: "#C9A84C", margin: 0, fontStyle: "italic" }}>{FIELD_HINTS[fieldKey]}</p>
+              ) : <span />}
+              <p style={{ fontSize: 10, color: "#B8A898", margin: 0 }}>
+                {(fields[fieldKey] || "").length}/{FIELD_LIMITS[fieldKey]}
+              </p>
+            </div>
           </div>
         ))}
       </Section>

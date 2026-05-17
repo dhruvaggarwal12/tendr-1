@@ -10,7 +10,7 @@ import PricingEngine from "./PricingEngine";
 const DEFAULT_DESIGN = {
   palette: PALETTES[0],
   fontPairing: FONT_PAIRINGS[0],
-  fields: { coupleNames: "", date: "", time: "", venue: "", customMessage: "" },
+  fields: { coupleNames: "", date: "", time: "", venue: "", customMessage: "", rsvp: "" },
   showFloral: true,
   showMonogram: true,
   dividerStyle: "ornate",
