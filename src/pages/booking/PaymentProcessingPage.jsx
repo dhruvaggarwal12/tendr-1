@@ -47,7 +47,7 @@ const PaymentProcessingPage = () => {
       handler: async (response) => {
         // Verify with backend
         try {
-          const res = await fetch(`${BASE_URL}/api/payments/verify`, {
+          const res = await fetch(`${BASE_URL}/api/payments/verify-plan-payment`, {
             method: "POST",
             headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
             credentials: "include",
@@ -60,7 +60,7 @@ const PaymentProcessingPage = () => {
             }),
           });
           const data = await res.json();
-          if (res.ok && (data.success || data.payment?.status === "SUCCESS")) {
+          if (res.ok && data.success) {
             setStatus("success");
             navigate("/booking/payment-success", {
               state: { ...state, paymentId: response.razorpay_payment_id, orderId },
