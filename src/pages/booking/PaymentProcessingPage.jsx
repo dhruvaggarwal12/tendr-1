@@ -29,7 +29,7 @@ const PaymentProcessingPage = () => {
   const BACKEND_BASE_URL = import.meta.env.VITE_BASE_URL;
   const openRazorpay = () => {
     const options = {
-      key: "rzp_test_xxxxxxxx", // 🔹 apna Razorpay test/live key yaha daalo
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: amount * 100, // Razorpay needs amount in paisa
       currency: "INR",
       name: "Tendr",
