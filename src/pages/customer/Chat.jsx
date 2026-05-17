@@ -126,28 +126,16 @@ const Chat = () => {
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
       setConversationId(_id);
       if (approved) setVendorApprovedByAdmin(true);
-      // After bot finishes: save answers + send summary message
+      // After bot finishes: send summary as first message (admin sees full context)
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0) {
-        const answers    = botAnswersRef.current;
-        const summaryMsg = buildSummaryMessage(answers, vendor?.name, vendor?.serviceType);
-        // 1. Send summary as first message (admin sees it in chat)
+        const botAns     = botAnswersRef.current;
+        const formAns    = { ...reduxFormData, ...formData };
+        const summaryMsg = buildSummaryMessage(formAns, botAns, vendor?.name, vendor?.serviceType);
         socket.emit("send_message", {
           conversationId: _id.toString(),
           sender: "user",
           content: summaryMsg,
         });
-        // 2. Persist eventDetails + bookingSummary to DB
-        if (authToken) {
-          fetch(`${BASE_URL}/conversations/${_id}/bot-summary`, {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${authToken}` },
-            credentials: "include",
-            body: JSON.stringify({
-              eventDetails:   { ...reduxFormData, ...formData, ...answers },
-              bookingSummary: summaryMsg,
-            }),
-          }).catch(() => {});
-        }
       }
       // Mark support/concierge chats as explicitly opened by customer
       // so they appear in the dashboard Chats tab
@@ -368,8 +356,9 @@ const Chat = () => {
       botDoneRef.current = true;
       const mergedDetails = { ...reduxFormData, ...formData, ...newAnswers };
 
-      // Show bot summary in local messages
-      const summaryText = buildSummaryMessage(newAnswers, vendor?.name, vendor?.serviceType);
+      // Show bot summary in local messages (includes form data)
+      const formAns = { ...reduxFormData, ...formData };
+      const summaryText = buildSummaryMessage(formAns, newAnswers, vendor?.name, vendor?.serviceType);
       setMessages(prev => [...prev, {
         text: summaryText,
         sender: "vendor",
@@ -548,25 +537,34 @@ const Chat = () => {
                 </div>
               ))}
               {/* Current question */}
-              {botStep < botFlow.length && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                    <div style={{ maxWidth: "80%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a", lineHeight: 1.5 }}>
-                      {botFlow[botStep].question}
+              {botStep < botFlow.length && (() => {
+                const currentQ = botFlow[botStep];
+                const isText   = currentQ.type === "text";
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                      <div style={{ maxWidth: "80%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a", lineHeight: 1.5 }}>
+                        {currentQ.question}
+                      </div>
                     </div>
+                    {isText ? (
+                      // Free-text address input
+                      <BotTextInput onSubmit={handleBotAnswer} />
+                    ) : (
+                      // MCQ option buttons
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingLeft: 8 }}>
+                        {currentQ.options.map(opt => (
+                          <button key={opt} onClick={() => handleBotAnswer(opt)}
+                            style={{ padding: "8px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.15s" }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
+                          >{opt}</button>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  {/* Option buttons */}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, paddingLeft: 8 }}>
-                    {botFlow[botStep].options.map(opt => (
-                      <button key={opt} onClick={() => handleBotAnswer(opt)}
-                        style={{ padding: "8px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.15s" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
-                      >{opt}</button>
-                    ))}
-                  </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           )}
 
@@ -1011,5 +1009,30 @@ const Chat = () => {
     </div>
   );
 };
+
+// Small inline component for text-type bot questions (address)
+function BotTextInput({ onSubmit }) {
+  const [val, setVal] = React.useState("");
+  const font = "'Outfit', sans-serif";
+  return (
+    <div style={{ display: "flex", gap: 8, paddingLeft: 8, paddingRight: 8 }}>
+      <input
+        value={val}
+        onChange={e => setVal(e.target.value)}
+        onKeyDown={e => { if (e.key === "Enter" && val.trim()) onSubmit(val.trim()); }}
+        placeholder="Type your address and press Enter…"
+        autoFocus
+        style={{ flex: 1, padding: "10px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.4)", fontSize: 14, fontFamily: font, outline: "none", color: "#1a1a1a" }}
+      />
+      <button
+        onClick={() => { if (val.trim()) onSubmit(val.trim()); }}
+        disabled={!val.trim()}
+        style={{ padding: "10px 18px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: val.trim() ? "pointer" : "not-allowed", opacity: val.trim() ? 1 : 0.5, fontFamily: font, whiteSpace: "nowrap" }}
+      >
+        Send →
+      </button>
+    </div>
+  );
+}
 
 export default Chat;
