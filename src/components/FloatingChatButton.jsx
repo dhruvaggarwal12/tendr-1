@@ -221,7 +221,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           cursor: "pointer",
           boxShadow: "0 6px 24px rgba(196,122,46,0.5)",
           transition: "transform 0.2s, box-shadow 0.2s",
-          position: "fixed",
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-3px) scale(1.04)";

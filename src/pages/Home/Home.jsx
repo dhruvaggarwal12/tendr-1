@@ -725,7 +725,6 @@ const Home = () => {
                 transformOrigin: "left", borderRadius: 100,
               }}
               animate={{ opacity: [0.3, 0.65, 0.3] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
               className="htw-line"
             />
 

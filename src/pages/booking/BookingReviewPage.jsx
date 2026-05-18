@@ -622,7 +622,7 @@ const BookingReviewPage = () => {
                     </div>
                   )}
                 </div>
-                </div> {/* end category group wrapper */}
+                </div>
               );
             })}
 
