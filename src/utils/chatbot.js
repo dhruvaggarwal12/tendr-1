@@ -129,10 +129,30 @@ export const BOT_FLOWS = {
   ],
 };
 
-export function getBotFlow(serviceType, chatMode) {
-  if (chatMode === "concierge") return BOT_FLOWS.concierge;
-  if (chatMode === "support")   return BOT_FLOWS.support;
-  return BOT_FLOWS[serviceType] || BOT_FLOWS.concierge;
+/**
+ * Returns the bot question flow, automatically skipping questions
+ * whose answers are already known from the event planning form.
+ *
+ * @param {string} serviceType
+ * @param {string} chatMode
+ * @param {object} formData - Redux eventPlanning.formData (pre-filled answers to skip)
+ */
+export function getBotFlow(serviceType, chatMode, formData = {}) {
+  let flow;
+  if (chatMode === "concierge") flow = [...BOT_FLOWS.concierge];
+  else if (chatMode === "support")   flow = [...BOT_FLOWS.support];
+  else flow = [...(BOT_FLOWS[serviceType] || BOT_FLOWS.concierge)];
+
+  // If the event date is already set, skip the "When is your event?" timeline question
+  if (formData.date) {
+    flow = flow.filter(s => s.key !== "timeline");
+  }
+  // If budget is already set, skip the concierge budget question
+  if (formData.budget) {
+    flow = flow.filter(s => s.key !== "budget");
+  }
+
+  return flow;
 }
 
 /**

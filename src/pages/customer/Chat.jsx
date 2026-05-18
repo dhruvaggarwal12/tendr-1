@@ -248,9 +248,11 @@ const Chat = () => {
   // ── Bot state ──────────────────────────────────────────────────────────────
   // Skip bot entirely if navigating to an existing chat (chatId in state)
   const isExistingChat = !!existingChatId;
+  const mergedFormData = { ...reduxFormData, ...formData };
   const botFlow   = isExistingChat ? [] : getBotFlow(
     vendor?.serviceType,
-    from === "support" ? "support" : (from === "concierge" || vendor?._id === "concierge") ? "concierge" : vendor?.serviceType
+    from === "support" ? "support" : (from === "concierge" || vendor?._id === "concierge") ? "concierge" : vendor?.serviceType,
+    mergedFormData   // ← pass form data so already-answered questions are skipped
   );
   const [botStep,    setBotStep]    = useState(0);
   const [botAnswers, setBotAnswers] = useState({});

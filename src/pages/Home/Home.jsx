@@ -670,6 +670,47 @@ const Home = () => {
         );
       })()}
 
+      {/* ── Browse by Service shortcuts ── */}
+      <section style={{ background: "#FFFCF5", padding: "40px 24px 12px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 6px" }}>Quick Browse</p>
+          <h2 style={{ fontSize: "clamp(1.4rem, 3vw, 2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 20px", letterSpacing: "-0.01em" }}>
+            What are you looking for?
+          </h2>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14 }}>
+            {[
+              { icon: "🎵", label: "DJs & Music",        sub: "House parties · Corporate · Weddings", path: "/top-rated/DJ",           color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe" },
+              { icon: "🎨", label: "Decorators",         sub: "Balloons · Floral · Themed setups",    path: "/top-rated/Decorator",    color: "#C47A2E", bg: "#fffbeb", border: "#fde68a" },
+              { icon: "📸", label: "Photographers",      sub: "Candid · Traditional · Both",          path: "/top-rated/Photographer", color: "#0369a1", bg: "#eff6ff", border: "#bfdbfe" },
+              { icon: "🍽️", label: "Caterers",          sub: "Buffet · Live counters · All cuisines", path: "/top-rated/Caterer",      color: "#15803d", bg: "#f0fdf4", border: "#bbf7d0" },
+            ].map(({ icon, label, sub, path, color, bg, border }) => (
+              <button
+                key={label}
+                onClick={() => navigate(path)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 14,
+                  padding: "16px 18px", borderRadius: 16,
+                  border: `1.5px solid ${border}`,
+                  background: bg,
+                  cursor: "pointer", fontFamily: "'Outfit', sans-serif",
+                  textAlign: "left", transition: "transform 0.15s, box-shadow 0.15s",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.1)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 8px rgba(0,0,0,0.04)"; }}
+              >
+                <span style={{ fontSize: 32, lineHeight: 1, flexShrink: 0 }}>{icon}</span>
+                <div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: color, marginBottom: 2 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>{sub}</div>
+                </div>
+                <span style={{ marginLeft: "auto", fontSize: 16, color: color, opacity: 0.6, flexShrink: 0 }}>→</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <style>{`
         @keyframes tendr-marquee {
           from { transform: translateX(0); }

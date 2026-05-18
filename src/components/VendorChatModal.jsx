@@ -39,7 +39,7 @@ export default function VendorChatModal() {
   const isExistingChat = !!chatState?.isExisting;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
-  const botFlow = (!isExistingChat && vendor) ? getBotFlow(vendor.serviceType) : [];
+  const botFlow = (!isExistingChat && vendor) ? getBotFlow(vendor.serviceType, undefined, reduxFormData) : [];
   const [botStep, setBotStep] = useState(0);
   const [botAnswers, setBotAnswers] = useState({});
   const [botDone, setBotDone] = useState(isExistingChat || botFlow.length === 0);
@@ -70,7 +70,7 @@ export default function VendorChatModal() {
     setBotStep(0);
     setBotAnswers({});
     botAnswersRef.current = {};
-    const flow = existing ? [] : getBotFlow(chatState.vendor?.serviceType);
+    const flow = existing ? [] : getBotFlow(chatState.vendor?.serviceType, undefined, reduxFormData);
     const done = existing || flow.length === 0;
     setBotDone(done);
     botDoneRef.current = done;

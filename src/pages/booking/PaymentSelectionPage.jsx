@@ -15,10 +15,18 @@ const METHODS = [
   { id: "wallet",     label: "Wallets",             icon: "👛", hint: "Paytm, Amazon Pay, Mobikwik" },
 ];
 
+// Read last used payment method from localStorage
+function getSavedMethod() {
+  try { return JSON.parse(localStorage.getItem("tendr_last_payment") || "{}"); }
+  catch { return {}; }
+}
+
 export default function PaymentSelectionPage() {
   const navigate   = useNavigate();
   const { state }  = useLocation();
-  const [method,   setMethod]  = useState("upi");
+  const saved      = getSavedMethod();
+  const [method,   setMethod]  = useState(saved.method || "upi");
+  const [savedUpi, setSavedUpi] = useState(saved.upiId || "");
   const [loading,  setLoading] = useState(false);
   const [error,    setError]   = useState("");
 
@@ -32,6 +40,11 @@ export default function PaymentSelectionPage() {
       setError("No booking amount found. Please go back and try again.");
       return;
     }
+    // Save payment preference for next time
+    localStorage.setItem("tendr_last_payment", JSON.stringify({
+      method,
+      upiId: method === "upi" ? savedUpi : undefined,
+    }));
     setLoading(true);
     setError("");
     try {
@@ -53,13 +66,13 @@ export default function PaymentSelectionPage() {
           orderId:       data.orderId,
           amount:        data.amount || amount,
           paymentMethod: method,
+          prefillUpi:    method === "upi" ? savedUpi : undefined,
         },
       });
     } catch (err) {
       console.error("create-plan-order error:", err);
-      // Graceful fallback — payment not live yet
       navigate("/booking/payment-processing", {
-        state: { ...state, orderId: null, amount, paymentMethod: method },
+        state: { ...state, orderId: null, amount, paymentMethod: method, prefillUpi: method === "upi" ? savedUpi : undefined },
       });
     } finally {
       setLoading(false);
@@ -112,6 +125,27 @@ export default function PaymentSelectionPage() {
             </button>
           ))}
         </div>
+
+        {/* UPI ID pre-fill when UPI selected */}
+        {method === "upi" && (
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ fontSize: 13, fontWeight: 600, color: "#5a3a1a", display: "block", marginBottom: 6 }}>
+              UPI ID {savedUpi && <span style={{ fontSize: 11, color: "#15803d", fontWeight: 500 }}>● Saved from last time</span>}
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. yourname@upi"
+              value={savedUpi}
+              onChange={e => setSavedUpi(e.target.value)}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 14, fontFamily: font, outline: "none", boxSizing: "border-box", background: savedUpi ? "rgba(196,122,46,0.04)" : "#fff" }}
+            />
+            {savedUpi && (
+              <p style={{ fontSize: 11, color: "#9B7450", margin: "4px 0 0" }}>
+                This UPI ID will be saved for your next payment.
+              </p>
+            )}
+          </div>
+        )}
 
         {error && <p style={{ fontSize: 13, color: "#c0392b", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 8, padding: "10px 14px", marginBottom: 16 }}>{error}</p>}
 
