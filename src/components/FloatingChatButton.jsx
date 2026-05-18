@@ -9,7 +9,7 @@ const font = "'Outfit', sans-serif";
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
   const { user, token } = useSelector((s) => s.auth);
-  const { chatState, expandChat } = useChatOverlay();
+  const { chatState, expandChat, openExistingChat } = useChatOverlay();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
@@ -69,8 +69,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleVendorChatClick = (convo) => {
     setOpen(false);
-    markAllSeen([convo]); // this one has been opened — remove from badge
-    setActiveVendorChat({ _id: convo._id, vendorName: convo.vendorName || "Vendor" });
+    markAllSeen([convo]);
+    // Open via VendorChatModal (same experience as the main chat window)
+    openExistingChat(convo._id, {
+      _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId,
+      name: convo.vendorName || "Vendor",
+      serviceType: convo.serviceType,
+      approved: convo.chatApproved,
+    });
   };
 
   const handleBrowseVendors = () => {
@@ -106,13 +112,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   return (
     <>
       {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
-      {activeVendorChat && (
-        <MiniChatWidget
-          conversationId={activeVendorChat._id}
-          vendorName={activeVendorChat.vendorName}
-          onClose={() => setActiveVendorChat(null)}
-        />
-      )}
 
       {/* Floating button */}
       <button

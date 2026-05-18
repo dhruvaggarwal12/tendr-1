@@ -125,30 +125,18 @@ const VendorList_ListingPage = ({
                       </div>
 
                       <div style={{ display: "flex", gap: 8 }}>
-                        {/* Direct Chat button — saves 2 clicks vs Quick View → Request to Chat */}
-                        {isLoggedIn && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                            }}
-                            style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
-                          >
-                            💬 Chat
-                          </button>
-                        )}
                         <button
                           onClick={(e) => { e.stopPropagation(); setQuickViewVendor(vendor); }}
-                          style={{ padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+                          style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
                         >
-                          View
+                          Quick View
                         </button>
                         {isLoggedIn && (
                           <button
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
-                            style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "#fff", color: isSelected ? "#C47A2E" : "#6B3A1F", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap", fontFamily: font }}
+                            style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "#fff", color: isSelected ? "#C47A2E" : "#6B3A1F", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap", fontFamily: font }}
                           >
-                            {isSelected ? "✓" : "🔖"}
+                            {isSelected ? "Saved ✓" : "Save Vendor"}
                           </button>
                         )}
                       </div>

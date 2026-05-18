@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import SEO, { vendorPageTitle, vendorPageDescription } from "../../components/SEO";
 
@@ -128,6 +128,14 @@ const VendorDetailsPage = () => {
     }
     return { first, smalls };
   }, [vendor]);
+
+  const galleryRef = useRef(null);
+  const scrollGallery = (dir) => {
+    if (galleryRef.current) {
+      const w = galleryRef.current.offsetWidth * 0.55;
+      galleryRef.current.scrollBy({ left: dir * w, behavior: "smooth" });
+    }
+  };
 
   const primaryCity = vendor?.address?.city || vendor?.location || vendor?.locations?.[0] || "Location";
   const stateName = vendor?.address?.state || "";
@@ -332,33 +340,31 @@ const VendorDetailsPage = () => {
           </div>
         </div>
 
-        {/* ── Gallery — horizontal scroll ── */}
+        {/* ── Gallery — horizontal scroll with arrows ── */}
         <div style={{ position: "relative", marginBottom: 36 }}>
+          {/* Left arrow */}
+          <button
+            onClick={() => scrollGallery(-1)}
+            style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontWeight: 700 }}
+          >‹</button>
+
           <div
+            ref={galleryRef}
             style={{
               display: "flex",
               gap: 10,
               overflowX: "auto",
               scrollSnapType: "x mandatory",
               borderRadius: 20,
-              paddingBottom: 4,
-              scrollbarWidth: "none",          /* Firefox */
-              msOverflowStyle: "none",         /* IE */
+              scrollbarWidth: "none",
+              msOverflowStyle: "none",
             }}
           >
-            <style>{`.gallery-scroll::-webkit-scrollbar { display: none; }`}</style>
+            <style>{`#vendor-gallery::-webkit-scrollbar { display: none; }`}</style>
             {[coverImages.first, ...coverImages.smalls].map((img, idx) => (
               <div
                 key={idx}
-                style={{
-                  flex: "0 0 auto",
-                  width: "calc(55% - 4px)",
-                  minWidth: 260,
-                  height: 320,
-                  borderRadius: 16,
-                  overflow: "hidden",
-                  scrollSnapAlign: "start",
-                }}
+                style={{ flex: "0 0 auto", width: "calc(55% - 4px)", minWidth: 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start" }}
               >
                 <img
                   src={img}
@@ -369,10 +375,17 @@ const VendorDetailsPage = () => {
               </div>
             ))}
           </div>
-          {/* Scroll hint indicator */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 8 }}>
+
+          {/* Right arrow */}
+          <button
+            onClick={() => scrollGallery(1)}
+            style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontWeight: 700 }}
+          >›</button>
+
+          {/* Dot indicators */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 10 }}>
             {[0,1,2,3,4].map(i => (
-              <div key={i} style={{ width: i === 0 ? 18 : 6, height: 5, borderRadius: 100, background: i === 0 ? "#C47A2E" : "rgba(196,122,46,0.2)", transition: "width 0.2s" }} />
+              <div key={i} style={{ width: i === 0 ? 18 : 6, height: 5, borderRadius: 100, background: i === 0 ? "#C47A2E" : "rgba(196,122,46,0.2)" }} />
             ))}
           </div>
         </div>

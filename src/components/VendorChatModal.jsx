@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 import { getBotFlow } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
@@ -31,6 +32,7 @@ function BotTextInput({ onSubmit }) {
 export default function VendorChatModal() {
   const { chatState, minimizeChat, closeChat, setConversationId: setCtxConvoId } = useChatOverlay();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const currentUser = useSelector(s => s.auth.user);
   const authToken = useSelector(s => s.auth.token);
   const reduxFormData = useSelector(s => s.eventPlanning.formData || {});
@@ -63,9 +65,17 @@ export default function VendorChatModal() {
   // ── Minimise animation state ─────────────────────────────────────────────────
   const [minimizing, setMinimizing] = useState(false);
 
+  // Track previous vendor so we only reset when vendor ACTUALLY changes
+  const prevResetKeyRef = useRef(null);
+
   // ── Reset when vendor/mode changes ──────────────────────────────────────────
   useEffect(() => {
     if (!chatState) return;
+    const resetKey = `${chatState.vendor?._id}-${chatState.isExisting}`;
+    // Don't reset if same vendor + same mode (prevents progress loss on re-renders)
+    if (resetKey === prevResetKeyRef.current) return;
+    prevResetKeyRef.current = resetKey;
+
     const existing = !!chatState.isExisting;
     setBotStep(0);
     setBotAnswers({});
@@ -263,6 +273,46 @@ export default function VendorChatModal() {
     }
     if (text.startsWith("[FINALISED]")) {
       return <span style={{ color: "#15803d", fontWeight: 600 }}>{text.replace("[FINALISED] ", "")}</span>;
+    }
+    // MCQ packages — render as selectable option buttons
+    if (text.startsWith("[MCQ_PACKAGES:")) {
+      const clean = text.replace(/\[MCQ_PACKAGES:[^\]]+\]\n?/, "");
+      const tierNames = ["Basic", "Standard", "Premium"];
+      const optionLines = ["1️⃣","2️⃣","3️⃣"].map((em, i) => {
+        const start = clean.indexOf(em);
+        const next = ["1️⃣","2️⃣","3️⃣"][i + 1];
+        const end = next ? clean.indexOf(next) : clean.indexOf("\nReply with");
+        return start >= 0 ? clean.slice(start, end > 0 ? end : undefined).trim() : null;
+      }).filter(Boolean);
+      return (
+        <div>
+          <p style={{ margin: "0 0 8px", whiteSpace: "pre-line", fontWeight: 600, fontSize: 13 }}>
+            {clean.split('\n').slice(0, 2).join('\n')}
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+            {optionLines.map((opt, i) => (
+              <button key={i}
+                onClick={() => {
+                  const reply = `I'd like the ${tierNames[i]} package:\n\n${opt}`;
+                  setMessages(prev => [...prev, { text: reply, sender: "user", ts: Date.now() }]);
+                  socketRef.current?.emit("send_message", { conversationId, sender: "user", content: reply });
+                }}
+                style={{ textAlign: "left", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#2C1A0E", fontSize: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "pre-line", lineHeight: 1.4 }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+              >{opt}</button>
+            ))}
+            <button
+              onClick={() => {
+                const reply = "No specific package — please suggest what suits my event.";
+                setMessages(prev => [...prev, { text: reply, sender: "user", ts: Date.now() }]);
+                socketRef.current?.emit("send_message", { conversationId, sender: "user", content: reply });
+              }}
+              style={{ textAlign: "center", padding: "7px 12px", borderRadius: 10, border: "1px dashed rgba(139,69,19,0.25)", background: "transparent", color: "#9B7450", fontSize: 11, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+            >Skip → discuss directly</button>
+          </div>
+        </div>
+      );
     }
     return <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>;
   };
@@ -472,6 +522,15 @@ export default function VendorChatModal() {
                   ➤
                 </button>
               </div>
+              {/* Review & Pay — shows after vendor is finalised */}
+              {isThisVendorFinalised && (
+                <button
+                  onClick={() => { closeChat(); navigate("/booking/review"); }}
+                  style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)", marginBottom: 8 }}
+                >
+                  Review & Pay →
+                </button>
+              )}
               {/* Action buttons row — Chat Completed → Finalise Vendor */}
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                 <button
