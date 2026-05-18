@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import router from "../router";
 import { io } from "socket.io-client";
 import { getBotFlow } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
@@ -32,7 +32,6 @@ function BotTextInput({ onSubmit }) {
 export default function VendorChatModal() {
   const { chatState, minimizeChat, closeChat, setConversationId: setCtxConvoId } = useChatOverlay();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const currentUser = useSelector(s => s.auth.user);
   const authToken = useSelector(s => s.auth.token);
   const reduxFormData = useSelector(s => s.eventPlanning.formData || {});
@@ -525,7 +524,7 @@ export default function VendorChatModal() {
               {/* Review & Pay — shows after vendor is finalised */}
               {isThisVendorFinalised && (
                 <button
-                  onClick={() => { closeChat(); navigate("/booking/review"); }}
+                  onClick={() => { closeChat(); router.navigate("/booking/review"); }}
                   style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)", marginBottom: 8 }}
                 >
                   Review & Pay →
