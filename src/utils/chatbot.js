@@ -15,7 +15,7 @@
  *   type     — "mcq" (default) | "text"
  */
 
-const ADDRESS_STEP = {
+export const ADDRESS_STEP = {
   key:      "venueAddress",
   question: "What is your full event address or venue name?",
   type:     "text",

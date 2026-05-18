@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import router from "../router";
 import { io } from "socket.io-client";
-import { getBotFlow, OTHER_OPTION } from "../utils/chatbot";
+import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 
@@ -42,8 +42,24 @@ export default function VendorChatModal() {
   const isConcierge = !!chatState?.isConcierge;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
-  // Concierge chats have no bot — skip questions entirely
-  const botFlow = (!isExistingChat && !isConcierge && vendor) ? getBotFlow(vendor.serviceType, undefined, reduxFormData) : [];
+  const selectedVendorTypes = useSelector(s => s.eventPlanning.selectedVendors || []);
+
+  // Concierge bot: combine questions from all selected service categories
+  const conciergeFlow = React.useMemo(() => {
+    if (!isConcierge || isExistingChat) return [];
+    const combined = selectedVendorTypes.flatMap(type => {
+      const flow = BOT_FLOWS[type] || [];
+      // Skip timeline if date already filled, skip address (add one at end)
+      return flow.filter(s => s.key !== 'venueAddress' && (s.key !== 'timeline' || !reduxFormData.date));
+    });
+    // Add single address step at the end if not already there
+    return combined.length > 0 ? [...combined, ADDRESS_STEP] : [ADDRESS_STEP];
+  }, [selectedVendorTypes, isConcierge, isExistingChat, reduxFormData.date]);
+
+  const botFlow = isExistingChat ? []
+    : isConcierge ? conciergeFlow
+    : vendor ? getBotFlow(vendor.serviceType, undefined, reduxFormData)
+    : [];
   const [botStep, setBotStep] = useState(0);
   const [botAnswers, setBotAnswers] = useState({});
   const [botDone, setBotDone] = useState(isExistingChat || botFlow.length === 0);
@@ -562,8 +578,8 @@ export default function VendorChatModal() {
                   ➤
                 </button>
               </div>
-              {/* Review & Pay — shows after vendor is finalised (vendor chats only) */}
-              {isThisVendorFinalised && !isConcierge && (
+              {/* Review & Pay — shows after vendor/concierge is finalised */}
+              {isThisVendorFinalised && (
                 <>
                   <button
                     onClick={() => setShowReviewPopup(true)}
@@ -598,16 +614,16 @@ export default function VendorChatModal() {
                   )}
                 </>
               )}
-              {/* Hint for chat completion — vendor chats only */}
-              {!chatCompleted && !isConcierge && (
+              {/* Hint for chat completion */}
+              {!chatCompleted && (
                 <div style={{ borderLeft: "3px solid #C47A2E", paddingLeft: 10, marginBottom: 8, background: "rgba(196,122,46,0.05)", borderRadius: "0 8px 8px 0", padding: "6px 10px 6px 10px" }}>
                   <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600 }}>
-                    Mark chat as completed when you are done discussing
+                    Click on <b>Mark as Done</b> when your chat is done and the price is finalised
                   </p>
                 </div>
               )}
-              {/* Action buttons — vendor chats only (not concierge) */}
-              {!isConcierge && (
+              {/* Action buttons — Chat Completed + Finalise */}
+              {(
                 <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
                   <button
                     onClick={() => setChatCompleted(true)}

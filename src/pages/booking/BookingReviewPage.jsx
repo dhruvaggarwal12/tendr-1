@@ -387,18 +387,32 @@ const BookingReviewPage = () => {
             )}
           </div>
 
-          {/* ── RIGHT: Accordion vendor cards ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+          {/* ── RIGHT: Vendor cards grouped by service category ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
-            {normEntries.map(([serviceType, candidateArr]) => {
+            {normEntries.map(([serviceType, candidateArr], catIdx) => {
               const vendor = vendorEntries.find(([k]) => k === serviceType)?.[1] || candidateArr[0];
               const price = prices[serviceType];
               const isOpen = !!openKeys[serviceType];
               const multipleVendors = candidateArr.length > 1;
 
+              const SERVICE_ICONS = { DJ: "🎵", Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", GiftHamper: "🎁", Cake: "🎂", Makeup: "💄", Venue: "🏛️", Mehndi: "🖐️", Band: "🎶", Planner: "📋" };
               return (
+                <div key={serviceType} style={{ marginBottom: 20 }}>
+
+                  {/* Category partition + heading */}
+                  {catIdx > 0 && (
+                    <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 18px" }} />
+                  )}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                    <span style={{ fontSize: 20 }}>{SERVICE_ICONS[serviceType] || "🛎️"}</span>
+                    <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: 0, letterSpacing: "-0.01em" }}>{serviceType}</h3>
+                    <span style={{ fontSize: 12, color: "#9B7450", fontWeight: 500 }}>
+                      {candidateArr.length} vendor{candidateArr.length > 1 ? "s" : ""} finalised
+                    </span>
+                  </div>
+
                 <div
-                  key={serviceType}
                   style={{
                     background: "#fff",
                     borderRadius: 16,
@@ -608,6 +622,7 @@ const BookingReviewPage = () => {
                     </div>
                   )}
                 </div>
+                </div> {/* end category group wrapper */}
               );
             })}
 

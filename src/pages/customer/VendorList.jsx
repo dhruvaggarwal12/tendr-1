@@ -402,12 +402,12 @@ const VendorList = () => {
 
           {/* What to do next hint */}
           {token && showHint && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "8px 14px", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
-              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>💡</span>
-              <span style={{ fontSize: 13, color: "#7A5535", flex: 1 }}>
-                Click <b>Quick View</b> on any vendor to see their profile and <b>Request to Chat</b> directly. Save vendors to compare multiple options side by side before deciding.
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.35)", borderRadius: 14, padding: "14px 18px", marginBottom: 16, fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)" }}>
+              <span style={{ fontSize: 22, flexShrink: 0, marginTop: 1 }}>💡</span>
+              <span style={{ fontSize: 14, color: "#5a3a1a", flex: 1, lineHeight: 1.6, fontWeight: 500 }}>
+                Click <b style={{ color: "#C47A2E" }}>Quick View</b> on any vendor to see their profile, chat request and portfolio. <b style={{ color: "#C47A2E" }}>Compare</b> multiple vendors side by side before deciding. Finalise a vendor after your chat to proceed to payment.
               </span>
-              <button onClick={() => setShowHint(false)} style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: 16, flexShrink: 0, padding: 0, lineHeight: 1 }}>✕</button>
+              <button onClick={() => setShowHint(false)} style={{ background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: "50%", color: "#C47A2E", cursor: "pointer", fontSize: 14, flexShrink: 0, padding: 0, lineHeight: 1, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
           )}
 
