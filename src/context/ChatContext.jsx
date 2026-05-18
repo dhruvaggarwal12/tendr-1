@@ -14,6 +14,16 @@ export function ChatProvider({ children }) {
   const openExistingChat = (conversationId, vendor) =>
     setChatState({ vendor, conversationId, minimized: false, isExisting: true });
 
+  // Open Tendr Concierge chat (same window, no bot)
+  const openConciergeChat = (conversationId = null) =>
+    setChatState({
+      vendor: { _id: "concierge", name: "Tendr Concierge", serviceType: "Concierge", approved: true },
+      conversationId,
+      minimized: false,
+      isExisting: !!conversationId,
+      isConcierge: true,
+    });
+
   const setConversationId = (id) =>
     setChatState(prev => prev ? { ...prev, conversationId: id } : null);
 
@@ -26,7 +36,7 @@ export function ChatProvider({ children }) {
   const closeChat = () => setChatState(null);
 
   return (
-    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, setConversationId, minimizeChat, expandChat, closeChat }}>
+    <ChatContext.Provider value={{ chatState, openVendorChat, openExistingChat, openConciergeChat, setConversationId, minimizeChat, expandChat, closeChat }}>
       {children}
     </ChatContext.Provider>
   );
@@ -36,6 +46,7 @@ export const useChatOverlay = () => useContext(ChatContext) || {
   chatState: null,
   openVendorChat: () => {},
   openExistingChat: () => {},
+  openConciergeChat: () => {},
   setConversationId: () => {},
   minimizeChat: () => {},
   expandChat: () => {},

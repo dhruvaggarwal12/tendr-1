@@ -9,7 +9,7 @@ const font = "'Outfit', sans-serif";
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
   const { user, token } = useSelector((s) => s.auth);
-  const { chatState, expandChat, openExistingChat } = useChatOverlay();
+  const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
@@ -50,8 +50,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     })
       .then((r) => r.ok ? r.json() : { conversations: [] })
       .then((data) => {
+        // Include approved vendor chats + concierge/support chats
         const approved = (data.conversations || []).filter(
-          (c) => c.chatApproved && c.chatType === "vendor"
+          (c) => c.chatApproved && (c.chatType === "vendor" || c.chatType === "concierge" || c.chatType === "support")
         );
         setVendorChats(approved);
       })
@@ -64,7 +65,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleSupport = () => {
     setOpen(false);
-    setShowMiniChat(true);
+    openConciergeChat(); // opens same VendorChatModal in concierge mode
   };
 
   const handleActiveChats = () => {
@@ -160,14 +161,22 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                                       key={convo._id}
                       onClick={() => {
                         setShowActiveChats(false);
-                        // Pass fromActiveChats so VendorChatModal shows back button
-                        openExistingChat(convo._id, {
-                          _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId,
-                          name: convo.vendorName || "Vendor",
-                          serviceType: convo.serviceType,
-                          approved: convo.chatApproved,
-                          fromActiveChats: true,
-                        });
+                        if (convo.chatType === "concierge" || convo.chatType === "support") {
+                          // Open concierge chat with back-to-chats flag
+                          openConciergeChat(convo._id);
+                          // Dispatch custom event so back button works
+                          setTimeout(() => {
+                            document.dispatchEvent(new CustomEvent("tendr:set-from-active-chats"));
+                          }, 50);
+                        } else {
+                          openExistingChat(convo._id, {
+                            _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId,
+                            name: convo.vendorName || "Vendor",
+                            serviceType: convo.serviceType,
+                            approved: convo.chatApproved,
+                            fromActiveChats: true,
+                          });
+                        }
                       }}
                       style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", transition: "background 0.15s" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.04)")}

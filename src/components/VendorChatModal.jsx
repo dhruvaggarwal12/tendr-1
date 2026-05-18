@@ -39,9 +39,11 @@ export default function VendorChatModal() {
   const vendor = chatState?.vendor;
   const isExistingChat = !!chatState?.isExisting;
   const fromActiveChats = !!chatState?.vendor?.fromActiveChats;
+  const isConcierge = !!chatState?.isConcierge;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
-  const botFlow = (!isExistingChat && vendor) ? getBotFlow(vendor.serviceType, undefined, reduxFormData) : [];
+  // Concierge chats have no bot — skip questions entirely
+  const botFlow = (!isExistingChat && !isConcierge && vendor) ? getBotFlow(vendor.serviceType, undefined, reduxFormData) : [];
   const [botStep, setBotStep] = useState(0);
   const [botAnswers, setBotAnswers] = useState({});
   const [botDone, setBotDone] = useState(isExistingChat || botFlow.length === 0);
@@ -133,6 +135,13 @@ export default function VendorChatModal() {
     });
     socketRef.current = socket;
 
+    // New concierge chat: open immediately on connect (no bot)
+    if (isConcierge && !chatState.conversationId) {
+      socket.on("connect", () => {
+        socket.emit("open_conversation", { chatType: "concierge" });
+      });
+    }
+
     // Existing chat: join room directly
     if (isExistingChat && chatState.conversationId) {
       socket.on("connect", async () => {
@@ -212,13 +221,17 @@ export default function VendorChatModal() {
   }, [chatState?.vendor?._id, currentUser?._id]);
 
   const openConversation = useCallback((answers) => {
-    if (!socketRef.current || !vendor?._id) return;
-    socketRef.current.emit("open_conversation", {
-      chatType: "VENDOR",
-      vendorId: vendor._id,
-      eventDetails: { ...reduxFormData, ...answers },
-    });
-  }, [vendor?._id, reduxFormData]);
+    if (!socketRef.current) return;
+    if (isConcierge) {
+      socketRef.current.emit("open_conversation", { chatType: "concierge" });
+    } else if (vendor?._id && vendor._id !== "concierge") {
+      socketRef.current.emit("open_conversation", {
+        chatType: "VENDOR",
+        vendorId: vendor._id,
+        eventDetails: { ...reduxFormData, ...answers },
+      });
+    }
+  }, [vendor?._id, isConcierge, reduxFormData]);
 
   const handleBotAnswer = (answer) => {
     if (answer === OTHER_OPTION) {
@@ -391,7 +404,7 @@ export default function VendorChatModal() {
         }}
       >
         {/* ── Header ── */}
-        <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+        <div style={{ background: isConcierge ? "linear-gradient(135deg,#0369a1 0%,#0284c7 100%)" : "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           {/* Back to Active Chats button */}
           {fromActiveChats && (
             <button
@@ -549,8 +562,8 @@ export default function VendorChatModal() {
                   ➤
                 </button>
               </div>
-              {/* Review & Pay — shows after vendor is finalised */}
-              {isThisVendorFinalised && (
+              {/* Review & Pay — shows after vendor is finalised (vendor chats only) */}
+              {isThisVendorFinalised && !isConcierge && (
                 <>
                   <button
                     onClick={() => setShowReviewPopup(true)}
@@ -585,32 +598,34 @@ export default function VendorChatModal() {
                   )}
                 </>
               )}
-              {/* Hint for chat completion — left border callout */}
-              {!chatCompleted && (
+              {/* Hint for chat completion — vendor chats only */}
+              {!chatCompleted && !isConcierge && (
                 <div style={{ borderLeft: "3px solid #C47A2E", paddingLeft: 10, marginBottom: 8, background: "rgba(196,122,46,0.05)", borderRadius: "0 8px 8px 0", padding: "6px 10px 6px 10px" }}>
                   <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600 }}>
                     Mark chat as completed when you are done discussing
                   </p>
                 </div>
               )}
-              {/* Action buttons row — Chat Completed → Finalise Vendor */}
-              <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                <button
-                  onClick={() => setChatCompleted(true)}
-                  disabled={chatCompleted}
-                  style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: chatCompleted ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
-                >
-                  {chatCompleted ? "✓ Completed" : "Chat Completed"}
-                </button>
-                <button
-                  onClick={handleFinalise}
-                  disabled={!chatCompleted || isThisVendorFinalised}
-                  title={!chatCompleted ? "Mark chat as completed first" : ""}
-                  style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : !chatCompleted ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: (!chatCompleted && !isThisVendorFinalised) ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: (!chatCompleted && !isThisVendorFinalised) ? "not-allowed" : "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: (chatCompleted && !isThisVendorFinalised) ? "0 2px 8px rgba(196,122,46,0.35)" : "none" }}
-                >
-                  {isThisVendorFinalised ? "✓ Finalised" : "Finalise Vendor"}
-                </button>
-              </div>
+              {/* Action buttons — vendor chats only (not concierge) */}
+              {!isConcierge && (
+                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                  <button
+                    onClick={() => setChatCompleted(true)}
+                    disabled={chatCompleted}
+                    style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: chatCompleted ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+                  >
+                    {chatCompleted ? "✓ Completed" : "Chat Completed"}
+                  </button>
+                  <button
+                    onClick={handleFinalise}
+                    disabled={!chatCompleted || isThisVendorFinalised}
+                    title={!chatCompleted ? "Mark chat as completed first" : ""}
+                    style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : !chatCompleted ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: (!chatCompleted && !isThisVendorFinalised) ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: (!chatCompleted && !isThisVendorFinalised) ? "not-allowed" : "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: (chatCompleted && !isThisVendorFinalised) ? "0 2px 8px rgba(196,122,46,0.35)" : "none" }}
+                  >
+                    {isThisVendorFinalised ? "✓ Finalised" : "Finalise Vendor"}
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <div style={{ textAlign: "center", fontSize: 12, color: "#9B7450", padding: "4px 0" }}>

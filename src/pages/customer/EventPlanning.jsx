@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
+import { useChatOverlay } from "../../context/ChatContext";
 
 import {
   ChevronRight,
@@ -42,54 +43,9 @@ import JourneyProgress from "../../components/JourneyProgress";
 import HamburgerNav from "../../components/HamburgerNav";
 
 const EventPlanning = () => {
-  const socketRef = useRef(null);
+  // openChatWithSocket replaced by openConciergeChat — opens the same VendorChatModal window
   const openChatWithSocket = () => {
-    // Agar socket already connected nahi hai to connect karo
-    if (!socketRef.current) {
-      socketRef.current = io(import.meta.env.VITE_BASE_URL, {
-        query: {
-          userId: localStorage.getItem("userId") || "guest",
-          role: "user",
-          chatType: "EVENT",
-        }
-      });
-
-      // Socket connect hone ke baad event emit karna
-      socketRef.current.on("connect", () => {
-        console.log("Socket connected:", socketRef.current.id);
-
-        socketRef.current.emit("open_conversation", {
-          requestId: formData.eventName || `req_${Date.now()}`,
-          chatType: "EVENT",
-          extraRequirements,
-          extraRequirementsText,
-        });
-      });
-
-      // Backend se response suno
-      socketRef.current.on("conversation_opened", (conversation) => {
-        navigate("/chat", {
-          state: {
-            chatId: conversation._id,
-            chatType: "EVENT",
-            extraRequirements,
-            extraRequirementsText,
-          },
-          replace: true,
-        });
-      });
-
-      // Cleanup on unmount - optional if connection persists
-      // useEffect me return kar sakte ho agar chahiye
-    } else {
-      // Agar socket already connected hai to directly event emit kar do
-      socketRef.current.emit("open_conversation", {
-        requestId: formData.eventName || `req_${Date.now()}`,
-        chatType: "EVENT",
-        extraRequirements,
-        extraRequirementsText,
-      });
-    }
+    openConciergeChat(); // opens Tendr Concierge in the centered chat modal
   };
 
 
@@ -106,6 +62,7 @@ const EventPlanning = () => {
   };
   const navigate = useNavigate();
   const location = useLocation();
+  const { openConciergeChat } = useChatOverlay();
   const TRANSITION_MS = 350;
   const [activeModal, setActiveModal] = useState(null);
   const [extraRequirements, setExtraRequirements] = useState(false);

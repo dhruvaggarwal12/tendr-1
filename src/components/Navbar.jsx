@@ -462,11 +462,16 @@ const Navbar = ({
               <FaWhatsapp size={17} />
             </a>
 
+            {/* Compare Vendors — visible when vendors are saved for comparison */}
+            {!user?.isAdmin && compareSelected.length > 0 && (
+              <SavedVendorsInline asStrip={false} />
+            )}
+
             {/* Review & Pay — visible when vendors are finalised */}
             {finalisedCount > 0 && (
               <button
                 onClick={() => navigate("/booking/review")}
-                style={{ fontSize: 13, fontWeight: 700, padding: "7px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(196,122,46,0.35)", flexShrink: 0 }}
+                style={{ fontSize: 13, fontWeight: 700, padding: "7px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(21,128,61,0.3)", flexShrink: 0 }}
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >
@@ -504,10 +509,7 @@ const Navbar = ({
                   <FaChevronDown size={9} style={{ color: "#9B7450", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                 </button>
 
-                {/* Compare Vendors strip — directly below profile button */}
-                {!user?.isAdmin && compareSelected.length > 0 && (
-                  <SavedVendorsInline asStrip />
-                )}
+                {/* Compare Vendors strip removed — now shown as full button in navbar */}
                 </div>{/* end flex column */}
 
                 {showProfileMenu && (
