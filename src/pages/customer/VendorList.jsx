@@ -272,6 +272,29 @@ const VendorList = () => {
         <div className="flex-1 p-3 lg:p-4" style={{ position: "relative" }}>
           {/* Page header */}
           <div className="mb-1">
+            {/* Category tab switcher — shown when customer selected multiple service types */}
+            {planningSelectedVendors.length > 1 && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
+                {planningSelectedVendors.map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => dispatch(setFilters({ serviceType: cat }))}
+                    style={{
+                      padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 700,
+                      fontFamily: "'Outfit', sans-serif", cursor: "pointer", border: "1.5px solid",
+                      transition: "all 0.15s",
+                      borderColor: serviceType === cat ? "#C47A2E" : "rgba(196,122,46,0.25)",
+                      background: serviceType === cat ? "#C47A2E" : "#fff",
+                      color: serviceType === cat ? "#fff" : "#6B3A1F",
+                      boxShadow: serviceType === cat ? "0 3px 10px rgba(196,122,46,0.3)" : "none",
+                    }}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
                 {serviceType || "All"} Vendors

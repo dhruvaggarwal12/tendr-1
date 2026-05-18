@@ -123,7 +123,12 @@ const listingFiltersSlice = createSlice({
     setFinalisedVendor(state, action) {
       const vendor = action.payload;
       const key = vendor?.serviceType || "Other";
-      state.finalisedVendors = { ...state.finalisedVendors, [key]: vendor };
+      // Support multiple vendors per category — stored as an array
+      const existing = state.finalisedVendors[key];
+      let arr = Array.isArray(existing) ? existing : existing ? [existing] : [];
+      // Deduplicate by _id
+      if (!arr.find(v => v._id === vendor._id)) arr = [...arr, vendor];
+      state.finalisedVendors = { ...state.finalisedVendors, [key]: arr };
       saveFinalisedVendors(state.finalisedVendors);
     },
     clearFinalisedVendor(state, action) {

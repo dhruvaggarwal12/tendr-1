@@ -95,7 +95,31 @@ const BookingReviewPage = () => {
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
   const isLetUsDoIt = bookingType === "let-us-do-it";
 
-  const vendorEntries = Object.entries(finalisedVendors);
+  // Normalize finalisedVendors — values are now arrays of vendors per category
+  const normEntries = Object.entries(finalisedVendors).map(([cat, val]) => [
+    cat, Array.isArray(val) ? val : [val],
+  ]);
+
+  // Selected vendor per category (defaults to first in each category)
+  const [selectedPerCat, setSelectedPerCat] = useState(() => {
+    const init = {};
+    Object.entries(finalisedVendors).forEach(([cat, val]) => {
+      const arr = Array.isArray(val) ? val : [val];
+      if (arr[0]) init[cat] = arr[0]._id;
+    });
+    return init;
+  });
+  const selectVendorForCat = (cat, vendorId) =>
+    setSelectedPerCat(prev => ({ ...prev, [cat]: vendorId }));
+
+  // vendorEntries for backward-compat: use the SELECTED vendor per category
+  const vendorEntries = normEntries.map(([cat, arr]) => {
+    const selId = selectedPerCat[cat];
+    const selVendor = arr.find(v => v._id === selId) || arr[0];
+    return [cat, selVendor];
+  });
+
+  const [showContinuePopup, setShowContinuePopup] = useState(false);
 
   // Fetch real prices, booking summary and pinned messages from vendor conversations
   const [priceMap, setPriceMap] = useState({});
@@ -366,9 +390,11 @@ const BookingReviewPage = () => {
           {/* ── RIGHT: Accordion vendor cards ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
-            {vendorEntries.map(([serviceType, vendor]) => {
+            {normEntries.map(([serviceType, candidateArr]) => {
+              const vendor = vendorEntries.find(([k]) => k === serviceType)?.[1] || candidateArr[0];
               const price = prices[serviceType];
               const isOpen = !!openKeys[serviceType];
+              const multipleVendors = candidateArr.length > 1;
 
               return (
                 <div
@@ -382,6 +408,59 @@ const BookingReviewPage = () => {
                     transition: "box-shadow 0.2s",
                   }}
                 >
+                  {/* Multi-vendor selector — shown when category has more than 1 vendor */}
+                  {multipleVendors && (
+                    <div style={{ background: "rgba(196,122,46,0.04)", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "10px 18px" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                          Select 1 {serviceType}
+                        </span>
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>
+                          1 of {candidateArr.length} selected
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        {candidateArr.map((v) => {
+                          const vid = v._id;
+                          const isSelected = selectedPerCat[serviceType] === vid;
+                          const vPrice = priceMap[vid]?.amount;
+                          const vPins = pinnedMap[vid] || [];
+                          return (
+                            <div
+                              key={vid}
+                              onClick={() => selectVendorForCat(serviceType, vid)}
+                              style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: isSelected ? "rgba(196,122,46,0.06)" : "#fff", cursor: "pointer", transition: "all 0.15s" }}
+                            >
+                              {/* Radio button */}
+                              <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${isSelected ? "#C47A2E" : "#ddd"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
+                                {isSelected && <div style={{ width: 9, height: 9, borderRadius: "50%", background: "#C47A2E" }} />}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                  <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{v.name}</span>
+                                  {vPrice ? (
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>{formatINR(vPrice)}</span>
+                                  ) : (
+                                    <span style={{ fontSize: 11, color: "#bbb" }}>Price pending</span>
+                                  )}
+                                </div>
+                                {vPins.length > 0 && (
+                                  <div style={{ marginTop: 4 }}>
+                                    {vPins.slice(0, 2).map((p, pi) => (
+                                      <div key={pi} style={{ fontSize: 11, color: "#7A5535", display: "flex", gap: 4, lineHeight: 1.4 }}>
+                                        <span>📌</span><span>{p}</span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Accordion header — always visible */}
                   <button
                     onClick={() => toggleOpen(serviceType)}

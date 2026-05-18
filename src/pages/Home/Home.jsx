@@ -447,27 +447,27 @@ const Home = () => {
               <button
                 onClick={() => navigate("/booking")}
                 style={{
-                  background: "linear-gradient(135deg, #C47A2E 0%, #DEB887 100%)",
+                  background: "linear-gradient(135deg, #E8820C 0%, #CCAB4A 100%)",
                   color: "#fff",
-                  fontSize: 16,
-                  fontWeight: 700,
-                  letterSpacing: "0.03em",
-                  padding: "14px 36px",
-                  borderRadius: 12,
+                  fontSize: 20,
+                  fontWeight: 800,
+                  letterSpacing: "0.02em",
+                  padding: "18px 48px",
+                  borderRadius: 14,
                   border: "none",
                   cursor: "pointer",
-                  boxShadow: "0 4px 20px rgba(196,122,46,0.38)",
+                  boxShadow: "0 6px 28px rgba(232,130,12,0.55)",
                   transition: "transform 0.2s, box-shadow 0.2s",
                   fontFamily: "'Outfit', sans-serif",
                   whiteSpace: "nowrap",
                 }}
                 onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.5)";
+                  e.currentTarget.style.transform = "translateY(-3px)";
+                  e.currentTarget.style.boxShadow = "0 12px 36px rgba(232,130,12,0.65)";
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 4px 20px rgba(196,122,46,0.38)";
+                  e.currentTarget.style.boxShadow = "0 6px 28px rgba(232,130,12,0.55)";
                 }}
               >
                 Plan Your Event →

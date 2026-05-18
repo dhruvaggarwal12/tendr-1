@@ -2,14 +2,14 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import router from "../router";
 import { io } from "socket.io-client";
-import { getBotFlow } from "../utils/chatbot";
+import { getBotFlow, OTHER_OPTION } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-function BotTextInput({ onSubmit }) {
+function BotTextInput({ onSubmit, placeholder = "Type your answer…" }) {
   const [val, setVal] = useState("");
   return (
     <div style={{ display: "flex", gap: 8 }}>
@@ -18,7 +18,7 @@ function BotTextInput({ onSubmit }) {
         value={val}
         onChange={e => setVal(e.target.value)}
         onKeyDown={e => { if (e.key === "Enter" && val.trim()) { onSubmit(val.trim()); setVal(""); } }}
-        placeholder="Type your answer…"
+        placeholder={placeholder}
         style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", fontSize: 13, fontFamily: font, outline: "none", background: "#fff" }}
       />
       <button onClick={() => { if (val.trim()) { onSubmit(val.trim()); setVal(""); } }}
@@ -51,6 +51,7 @@ export default function VendorChatModal() {
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState("");
+  const [botOtherMode, setBotOtherMode] = useState(false); // "Other..." selected — show text input
   const [conversationId, setConversationId] = useState(null);
   const [approved, setApproved] = useState(false);
   const socketRef = useRef(null);
@@ -59,7 +60,12 @@ export default function VendorChatModal() {
   // ── Chat action state ────────────────────────────────────────────────────────
   const [chatCompleted, setChatCompleted] = useState(false);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
-  const isThisVendorFinalised = vendor?._id && finalisedVendors[vendor?.serviceType]?._id === vendor._id;
+  const isThisVendorFinalised = vendor?._id && (() => {
+    const entry = finalisedVendors[vendor?.serviceType];
+    if (!entry) return false;
+    const arr = Array.isArray(entry) ? entry : [entry];
+    return arr.some(v => v._id === vendor._id);
+  })();
 
   // ── Minimise animation state ─────────────────────────────────────────────────
   const [minimizing, setMinimizing] = useState(false);
@@ -213,6 +219,12 @@ export default function VendorChatModal() {
   }, [vendor?._id, reduxFormData]);
 
   const handleBotAnswer = (answer) => {
+    if (answer === OTHER_OPTION) {
+      // Don't advance — show a text input so user can describe their specific need
+      setBotOtherMode(true);
+      return;
+    }
+    setBotOtherMode(false);
     const step = botFlow[botStep];
     const newAnswers = { ...botAnswers, [step.key]: answer };
     setBotAnswers(newAnswers);
@@ -443,15 +455,18 @@ export default function VendorChatModal() {
                 return (
                   <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                     <div style={{ alignSelf: "flex-start", maxWidth: "82%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.5 }}>{cur.question}</div>
-                    {cur.type === "text"
-                      ? <BotTextInput onSubmit={handleBotAnswer} />
+                    {cur.type === "text" || botOtherMode
+                      ? <BotTextInput
+                          onSubmit={(val) => { setBotOtherMode(false); handleBotAnswer(val); }}
+                          placeholder={botOtherMode ? "Describe what you need…" : "Type your answer…"}
+                        />
                       : (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                           {cur.options.map(opt => (
                             <button key={opt} onClick={() => handleBotAnswer(opt)}
-                              style={{ padding: "8px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                              style={{ padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${opt === OTHER_OPTION ? "rgba(139,69,19,0.25)" : "rgba(196,122,46,0.4)"}`, background: opt === OTHER_OPTION ? "#f9f9f9" : "#fff", color: opt === OTHER_OPTION ? "#9B7450" : "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
                               onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = opt === OTHER_OPTION ? "#f9f9f9" : "#fff"; }}
                             >{opt}</button>
                           ))}
                         </div>
@@ -505,8 +520,8 @@ export default function VendorChatModal() {
             <>
               {/* Message row */}
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-                <label style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, cursor: "pointer", flexShrink: 0 }}>
-                  📎
+                <label title="Attach image" style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: "pointer", flexShrink: 0 }}>
+                  📌
                   <input type="file" accept="image/*" style={{ display: "none" }} onChange={sendImage} />
                 </label>
                 <input
@@ -529,6 +544,12 @@ export default function VendorChatModal() {
                 >
                   Review & Pay →
                 </button>
+              )}
+              {/* Hint for chat completion */}
+              {!chatCompleted && (
+                <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 6px", textAlign: "right" }}>
+                  Mark chat as completed when you are done discussing
+                </p>
               )}
               {/* Action buttons row — Chat Completed → Finalise Vendor */}
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>

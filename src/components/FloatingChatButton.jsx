@@ -13,7 +13,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
-  const [activeVendorChat, setActiveVendorChat] = useState(null);
+  const [showActiveChats, setShowActiveChats] = useState(false);
   const [vendorChats, setVendorChats] = useState([]);
   // Persist seen conversation IDs so badge stays gone after viewing
   const [seenIds, setSeenIds] = useState(() => {
@@ -67,6 +67,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     setShowMiniChat(true);
   };
 
+  const handleActiveChats = () => {
+    setOpen(false);
+    setShowActiveChats(true);
+  };
+
   const handleVendorChatClick = (convo) => {
     setOpen(false);
     markAllSeen([convo]);
@@ -112,6 +117,64 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   return (
     <>
       {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
+
+      {/* ── Active Chats panel — same size as VendorChatModal ── */}
+      {showActiveChats && (
+        <>
+          <div onClick={() => setShowActiveChats(false)} style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.38)", backdropFilter: "blur(2px)" }} />
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+              zIndex: 1201, width: "min(94vw,660px)", height: "min(86vh,700px)",
+              background: "#FFFCF5", borderRadius: 24,
+              boxShadow: "0 32px 80px rgba(44,26,14,0.22)",
+              border: "1.5px solid rgba(196,122,46,0.18)",
+              display: "flex", flexDirection: "column", fontFamily: font, overflow: "hidden",
+            }}
+          >
+            {/* Header */}
+            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ flex: 1, fontSize: 15, fontWeight: 800, color: "#fff" }}>💬 Active Chats</div>
+              <button onClick={() => setShowActiveChats(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            </div>
+            {/* Chat list */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+              {vendorChats.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>No active chats</div>
+                  <div style={{ fontSize: 13, color: "#9B7450" }}>Start a chat from any vendor profile.</div>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {vendorChats.map(convo => (
+                    <div
+                      key={convo._id}
+                      onClick={() => {
+                        setShowActiveChats(false);
+                        handleVendorChatClick(convo);
+                      }}
+                      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", transition: "background 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.04)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                    >
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 17, fontWeight: 800, flexShrink: 0 }}>
+                        {(convo.vendorName || "V")[0].toUpperCase()}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || "Vendor"}</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>{convo.serviceType || "Chat"}</div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", flexShrink: 0 }}>Active →</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Floating button */}
       <button
@@ -262,6 +325,32 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", padding: "8px 12px 4px" }}>
               Start a Chat
             </p>
+
+            {/* Active Chats */}
+            <button
+              onClick={handleActiveChats}
+              style={{
+                display: "flex", alignItems: "flex-start", gap: 12,
+                width: "100%", padding: "10px 12px", borderRadius: 10,
+                border: "none", background: "transparent", cursor: "pointer",
+                textAlign: "left", fontFamily: font, transition: "background 0.15s",
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.07)")}
+              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+            >
+              <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>💬</span>
+              <div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Active Chats</div>
+                  {vendorChats.length > 0 && (
+                    <span style={{ fontSize: 10, fontWeight: 800, background: "#22c55e", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{vendorChats.length}</span>
+                  )}
+                </div>
+                <div style={{ fontSize: 12, color: "#9B7450" }}>View all ongoing vendor chats</div>
+              </div>
+            </button>
+
+            <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
 
             {/* Chat Support */}
             <button

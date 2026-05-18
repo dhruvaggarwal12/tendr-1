@@ -985,7 +985,7 @@ const Chat = () => {
               opacity: vendorApproved ? 1 : 0.5,
             }}
           >
-            <Paperclip size={17} color="#7A4A1E" />
+            <span style={{ fontSize: 17 }}>📌</span>
           </button>
 
           <input

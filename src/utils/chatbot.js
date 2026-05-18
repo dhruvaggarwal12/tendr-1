@@ -21,13 +21,16 @@ const ADDRESS_STEP = {
   type:     "text",
 };
 
+// Sentinel value — when user picks this, show a free-text input
+export const OTHER_OPTION = "Other...";
+
 export const BOT_FLOWS = {
 
   Decorator: [
     {
       key:      "decorationType",
       question: "What type of decoration are you looking for?",
-      options:  ["Balloon Setup", "Floral & Fairy Lights", "Theme Decoration", "Full Venue Styling"],
+      options:  ["Balloon Setup", "Floral & Fairy Lights", "Theme Decoration", "Full Venue Styling", OTHER_OPTION],
     },
     {
       key:      "venueType",
@@ -46,7 +49,7 @@ export const BOT_FLOWS = {
     {
       key:      "cateringType",
       question: "What type of catering do you need?",
-      options:  ["Buffet Setup", "Live Counters", "Plated Meals", "Snacks & Drinks Only"],
+      options:  ["Buffet Setup", "Live Counters", "Plated Meals", "Snacks & Drinks Only", OTHER_OPTION],
     },
     {
       key:      "foodPreference",
@@ -84,7 +87,7 @@ export const BOT_FLOWS = {
     {
       key:      "musicVibe",
       question: "What music vibe are you looking for?",
-      options:  ["Bollywood", "EDM & Electronic", "Mix of Both", "Open to DJ's choice"],
+      options:  ["Bollywood", "EDM & Electronic", "Mix of Both", "Open to DJ's choice", OTHER_OPTION],
     },
     {
       key:      "djHours",

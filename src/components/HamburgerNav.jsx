@@ -89,9 +89,14 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 const activeIdx = STEPS.indexOf(active);
                 const isDone   = i < activeIdx;
                 const isActive = i === activeIdx;
+                // Browse step is clickable when it's already done (user has been there)
+                const isBrowseClickable = step === "Browse" && isDone;
                 return (
                   <React.Fragment key={step}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                    <div
+                      onClick={isBrowseClickable ? () => navigate("/listings") : undefined}
+                      style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, cursor: isBrowseClickable ? "pointer" : "default" }}
+                    >
                       <div style={{
                         width: 18, height: 18, borderRadius: "50%",
                         background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.12)" : "#f0ebe3",
@@ -101,7 +106,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       }}>
                         {isDone ? "✓" : i + 1}
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb" }}>
+                      <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb", textDecoration: isBrowseClickable ? "underline" : "none" }}>
                         {step}
                       </span>
                     </div>
