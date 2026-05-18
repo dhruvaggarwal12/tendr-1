@@ -370,7 +370,7 @@ export default function VendorChatModal() {
 
       {/* Modal window */}
       <div
-        className={minimizing ? "vcm-exit" : "vcm-enter"}
+        className={minimizing ? "vcm-exit" : "vcm-enter vcm-root"}
         onClick={e => e.stopPropagation()}
         style={{
           position: "fixed",

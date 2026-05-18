@@ -315,7 +315,7 @@ const VendorDetailsPage = () => {
         <ListingsNav onOpenSelected={openSelectedModal} selectedCount={compareSelected.length} showFinalisedBtn={true} hideTitle={true} />
       </div>
 
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
+      <div className="page-container" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
 
         {/* ── Hero Header ── */}
         <div style={{ padding: "28px 0 20px" }}>
@@ -350,6 +350,7 @@ const VendorDetailsPage = () => {
 
           <div
             ref={galleryRef}
+            className="vendor-gallery-scroll"
             style={{
               display: "flex",
               gap: 10,
@@ -391,13 +392,13 @@ const VendorDetailsPage = () => {
         </div>
 
         {/* ── Main two-column layout ── */}
-        <div style={{ display: "flex", gap: 36, alignItems: "flex-start", flexWrap: "wrap" }}>
+        <div className="vendor-main-layout" style={{ display: "flex", gap: 36, alignItems: "flex-start", flexWrap: "wrap" }}>
 
           {/* ════ LEFT: Full info ════ */}
           <div style={{ flex: "1 1 560px", minWidth: 0, display: "flex", flexDirection: "column", gap: 0 }}>
 
             {/* ── Stats Row ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 28 }}>
+            <div className="vendor-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 28 }}>
               {[
                 { icon: "⭐", value: rating.toFixed(1), label: "Rating", sub: "out of 5" },
                 { icon: "📅", value: yearsOfExperience ?? "—", label: "Years Active", sub: "experience" },
@@ -544,7 +545,7 @@ const VendorDetailsPage = () => {
           </div>
 
           {/* ════ RIGHT: Sticky Booking Card ════ */}
-          <div style={{ flex: "0 0 340px", position: "sticky", top: 80 }}>
+          <div className="vendor-booking-card" style={{ flex: "0 0 340px", position: "sticky", top: 80 }}>
             <div style={{ background: "#FFFCF5", borderRadius: 24, border: "1.5px solid rgba(196,122,46,0.22)", boxShadow: "0 8px 40px rgba(139,69,19,0.1)", overflow: "hidden" }}>
 
               {/* Card header */}

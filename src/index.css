@@ -4,3 +4,93 @@
 /* body {
   @apply font-kulfam;
 } */
+
+/* ─────────────────────────────────────────────
+   MOBILE RESPONSIVE OVERRIDES  (≤ 640px)
+───────────────────────────────────────────── */
+@media (max-width: 640px) {
+
+  /* ── Vendor Profile ── */
+  .vendor-gallery-scroll > div {
+    width: calc(85vw - 8px) !important;
+    min-width: unset !important;
+    height: 200px !important;
+  }
+
+  .vendor-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .vendor-main-layout {
+    flex-direction: column !important;
+  }
+
+  .vendor-booking-card {
+    flex: unset !important;
+    width: 100% !important;
+    position: static !important;
+  }
+
+  /* ── Booking Review Page ── */
+  .booking-review-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── VendorChatModal / active chats modal ── */
+  .vcm-root {
+    width: 100vw !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    transform: none !important;
+  }
+
+  /* ── ListingsNav second bar ── */
+  .listings-nav-inner {
+    padding: 0 12px !important;
+  }
+
+  /* ── FloatingChatButton ── */
+  .floating-chat-btn {
+    padding: 12px 16px !important;
+    bottom: 16px !important;
+    right: 14px !important;
+  }
+
+  /* ── HamburgerNav progress bar — smaller on mobile ── */
+  .htw-row {
+    flex-direction: column !important;
+    gap: 28px !important;
+  }
+
+  /* ── Home hero ── */
+  .hero-split > div:first-child {
+    padding: 36px 20px 28px !important;
+  }
+
+  /* ── General page padding ── */
+  .page-container {
+    padding-left: 14px !important;
+    padding-right: 14px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
+   TABLET OVERRIDES  (641px – 900px)
+───────────────────────────────────────────── */
+@media (min-width: 641px) and (max-width: 900px) {
+
+  .vendor-gallery-scroll > div {
+    width: calc(60vw - 8px) !important;
+    height: 240px !important;
+  }
+
+  .vendor-stats-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  .booking-review-grid {
+    grid-template-columns: 240px 1fr !important;
+  }
+}

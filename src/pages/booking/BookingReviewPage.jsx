@@ -348,7 +348,7 @@ const BookingReviewPage = () => {
           </div>
         )}
 
-        <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
+        <div className="booking-review-grid" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
 
           {/* ── LEFT: Event details (sticky) ── */}
           <div

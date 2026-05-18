@@ -562,6 +562,7 @@ const EventPlanning = () => {
               <input
                 type="date"
                 value={formData[currentQuestion.id] || ""}
+                min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
                 className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A]
               rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
