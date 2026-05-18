@@ -412,14 +412,38 @@ const VendorList = () => {
             </div>
           </div>
 
-          {/* What to do next hint */}
+          {/* What to do next hint — prominent banner */}
           {token && showHint && (
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 12, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.35)", borderRadius: 14, padding: "14px 18px", marginBottom: 16, fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)" }}>
-              <span style={{ fontSize: 22, flexShrink: 0, marginTop: 1 }}>💡</span>
-              <span style={{ fontSize: 14, color: "#5a3a1a", flex: 1, lineHeight: 1.6, fontWeight: 500 }}>
-                Click <b style={{ color: "#C47A2E" }}>Quick View</b> on any vendor to see their profile, chat request and portfolio. <b style={{ color: "#C47A2E" }}>Compare</b> multiple vendors side by side before deciding. Finalise a vendor after your chat to proceed to payment.
-              </span>
-              <button onClick={() => setShowHint(false)} style={{ background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: "50%", color: "#C47A2E", cursor: "pointer", fontSize: 14, flexShrink: 0, padding: 0, lineHeight: 1, width: 24, height: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            <div style={{
+              position: "relative",
+              background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 80%,#6B3A1F 100%)",
+              borderRadius: 16,
+              padding: "18px 20px",
+              marginBottom: 20,
+              fontFamily: "'Outfit', sans-serif",
+              boxShadow: "0 6px 24px rgba(44,26,14,0.22)",
+              overflow: "hidden",
+            }}>
+              {/* Decorative glow */}
+              <div style={{ position: "absolute", top: -20, right: 30, width: 120, height: 120, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.18) 0%,transparent 70%)", pointerEvents: "none" }} />
+
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{ width: 40, height: 40, borderRadius: 12, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>
+                  💡
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", margin: "0 0 5px", letterSpacing: "0.04em", textTransform: "uppercase" }}>
+                    How to book a vendor
+                  </p>
+                  <p style={{ fontSize: 14, color: "rgba(255,255,255,0.85)", margin: 0, lineHeight: 1.65 }}>
+                    Click <span style={{ background: "rgba(204,171,74,0.25)", color: "#CCAB4A", fontWeight: 800, padding: "1px 8px", borderRadius: 6, fontSize: 13 }}>Quick View</span> to see portfolio → <span style={{ background: "rgba(204,171,74,0.25)", color: "#CCAB4A", fontWeight: 800, padding: "1px 8px", borderRadius: 6, fontSize: 13 }}>Request to Chat</span> to start a conversation → finalise after price is agreed → <span style={{ background: "rgba(204,171,74,0.25)", color: "#CCAB4A", fontWeight: 800, padding: "1px 8px", borderRadius: 6, fontSize: 13 }}>Review & Pay</span>
+                  </p>
+                </div>
+                <button
+                  onClick={() => setShowHint(false)}
+                  style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: "50%", color: "rgba(255,255,255,0.6)", cursor: "pointer", fontSize: 13, flexShrink: 0, width: 26, height: 26, display: "flex", alignItems: "center", justifyContent: "center" }}
+                >✕</button>
+              </div>
             </div>
           )}
 
