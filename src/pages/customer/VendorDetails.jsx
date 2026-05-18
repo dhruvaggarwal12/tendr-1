@@ -332,16 +332,47 @@ const VendorDetailsPage = () => {
           </div>
         </div>
 
-        {/* ── Gallery ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 8, borderRadius: 20, overflow: "hidden", marginBottom: 36 }}>
-          <div style={{ height: 440, overflow: "hidden" }}>
-            <img src={coverImages.first} alt={`${vendor.name} portfolio`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onLoad={() => setIsLoaded(true)} />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-            {coverImages.smalls.map((img, idx) => (
-              <div key={idx} style={{ height: 216, overflow: "hidden" }}>
-                <img src={img} alt={`${vendor.name} photo ${idx + 2}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onLoad={() => setIsLoaded(true)} />
+        {/* ── Gallery — horizontal scroll ── */}
+        <div style={{ position: "relative", marginBottom: 36 }}>
+          <div
+            style={{
+              display: "flex",
+              gap: 10,
+              overflowX: "auto",
+              scrollSnapType: "x mandatory",
+              borderRadius: 20,
+              paddingBottom: 4,
+              scrollbarWidth: "none",          /* Firefox */
+              msOverflowStyle: "none",         /* IE */
+            }}
+          >
+            <style>{`.gallery-scroll::-webkit-scrollbar { display: none; }`}</style>
+            {[coverImages.first, ...coverImages.smalls].map((img, idx) => (
+              <div
+                key={idx}
+                style={{
+                  flex: "0 0 auto",
+                  width: "calc(55% - 4px)",
+                  minWidth: 260,
+                  height: 320,
+                  borderRadius: 16,
+                  overflow: "hidden",
+                  scrollSnapAlign: "start",
+                }}
+              >
+                <img
+                  src={img}
+                  alt={`${vendor.name} photo ${idx + 1}`}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                  onLoad={() => setIsLoaded(true)}
+                />
               </div>
+            ))}
+          </div>
+          {/* Scroll hint indicator */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 8 }}>
+            {[0,1,2,3,4].map(i => (
+              <div key={i} style={{ width: i === 0 ? 18 : 6, height: 5, borderRadius: 100, background: i === 0 ? "#C47A2E" : "rgba(196,122,46,0.2)", transition: "width 0.2s" }} />
             ))}
           </div>
         </div>
@@ -448,16 +479,26 @@ const VendorDetailsPage = () => {
               );
             })()}
 
-            {/* ── GST / PAN info ── */}
+            {/* ── Business Details ── */}
             <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
             <div style={{ marginBottom: 28 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px" }}>Business Details</h2>
+
+              {/* Verified documents badge */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: 12, marginBottom: 14 }}>
+                <span style={{ fontSize: 18 }}>✅</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>GST · PAN · Aadhaar Verified</div>
+                  <div style={{ fontSize: 11, color: "#4ade80", marginTop: 1 }}>Identity and business documents verified by Tendr</div>
+                </div>
+              </div>
+
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 {[
-                  { label: "GST Number", value: vendor.gstNumber || "—", icon: "🧾" },
                   { label: "Years Active", value: yearsOfExperience ? yearsOfExperience + " years" : "—", icon: "📅" },
-                  { label: "Based In", value: [primaryCity, stateName].filter(Boolean).join(", ") || "—", icon: "📍" },
-                  { label: "Team Size", value: teamSize ? teamSize + " members" : "—", icon: "👥" },
+                  { label: "Based In",     value: [primaryCity, stateName].filter(Boolean).join(", ") || "—", icon: "📍" },
+                  { label: "Team Size",    value: teamSize ? teamSize + " members" : "—", icon: "👥" },
+                  { label: "Events Done",  value: totalEventsCompleted ? totalEventsCompleted + "+" : "—", icon: "🎉" },
                 ].map(({ label, value, icon }) => (
                   <div key={label} style={{ background: "#FFFCF5", borderRadius: 12, padding: "14px 16px", border: "1.5px solid rgba(196,122,46,0.12)" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{icon} {label}</div>

@@ -30,8 +30,8 @@ const ListingsNav = ({
         style={{
           maxWidth: 1280,
           margin: "0 auto",
-          padding: "0 40px",
-          height: 64,
+          padding: "0 32px",
+          height: 52,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
@@ -50,29 +50,29 @@ const ListingsNav = ({
               fontFamily: "'Outfit', sans-serif",
               display: "inline-flex",
               alignItems: "center",
-              gap: 8,
-              padding: "10px 24px",
-              borderRadius: 10,
+              gap: 6,
+              padding: "7px 16px",
+              borderRadius: 8,
               fontWeight: 700,
-              fontSize: 15,
-              border: selectedCount === 0 ? "1.5px solid rgba(139,69,19,0.18)" : "none",
+              fontSize: 13,
+              border: selectedCount === 0 ? "1.5px solid rgba(139,69,19,0.18)" : "1.5px solid #CCAB4A",
               cursor: selectedCount === 0 ? "not-allowed" : "pointer",
-              background: selectedCount === 0 ? "transparent" : "#CCAB4A",
-              color: selectedCount === 0 ? "#bbb" : "#fff",
+              background: selectedCount === 0 ? "transparent" : "rgba(204,171,74,0.1)",
+              color: selectedCount === 0 ? "#bbb" : "#C47A2E",
               transition: "all 0.2s",
-              boxShadow: selectedCount > 0 ? "0 4px 14px rgba(204,171,74,0.35)" : "none",
               whiteSpace: "nowrap",
             }}
           >
-            Saved Vendors
+            🔖 Saved Vendors
             {selectedCount > 0 && (
               <span
                 style={{
-                  background: "rgba(255,255,255,0.3)",
+                  background: "#C47A2E",
                   borderRadius: 100,
-                  padding: "2px 9px",
-                  fontSize: 13,
+                  padding: "1px 7px",
+                  fontSize: 11,
                   fontWeight: 800,
+                  color: "#fff",
                 }}
               >
                 {selectedCount}
