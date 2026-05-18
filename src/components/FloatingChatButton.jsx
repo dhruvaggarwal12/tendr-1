@@ -388,50 +388,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             {/* Divider */}
             <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
 
-            {/* Ongoing accepted vendor chats — always shown */}
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", padding: "6px 12px 2px" }}>
-              Ongoing Chats
-            </p>
-            {vendorChats.length === 0 ? (
-              <p style={{ fontSize: 12, color: "#bbb", padding: "4px 12px 8px", fontFamily: font }}>
-                No active vendor chats yet
-              </p>
-            ) : (
-              vendorChats.map((convo) => (
-                <button
-                  key={convo._id}
-                  onClick={() => handleVendorChatClick(convo)}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    width: "100%", padding: "9px 12px", borderRadius: 10,
-                    border: "none", background: "transparent", cursor: "pointer",
-                    textAlign: "left", fontFamily: font, transition: "background 0.15s",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.07)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >
-                  <div style={{
-                    width: 32, height: 32, borderRadius: "50%",
-                    background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#fff", fontSize: 12, fontWeight: 700, flexShrink: 0,
-                  }}>
-                    {(convo.vendorName || "V")[0].toUpperCase()}
-                  </div>
-                  <div style={{ overflow: "hidden" }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                      {convo.vendorName || "Vendor"}
-                    </div>
-                    <div style={{ fontSize: 11, color: "#9B7450" }}>{convo.serviceType || "Chat"}</div>
-                  </div>
-                  <span style={{ marginLeft: "auto", fontSize: 11, color: "#22c55e", fontWeight: 600, flexShrink: 0 }}>Active</span>
-                </button>
-              ))
-            )}
-
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
-
             {/* Browse Vendors — always shown at bottom */}
             <button
               onClick={handleBrowseVendors}

@@ -38,7 +38,7 @@ const saveCompareSelected = (arr) => {
   } catch {}
 };
 
-const TTL_24H = 24 * 60 * 60 * 1000;
+const TTL_24H = 7 * 24 * 60 * 60 * 1000; // 7 days — so vendors stay after dashboard revisit
 
 const loadFinalisedVendors = () => {
   try {

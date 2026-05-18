@@ -47,6 +47,8 @@ const VendorList = () => {
 
   // Categories from event planning flow — persists in Redux
   const planningSelectedVendors = useSelector((s) => s.eventPlanning.selectedVendors || []);
+  const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const finalisedCount = Object.keys(finalisedVendors).length;
 
   // Categories pre-selected on the service category page, or restored after auth-gate sign-in
   const selectedCategories = (() => {
@@ -320,13 +322,21 @@ const VendorList = () => {
                   boxShadow: compareSelected.length > 0 ? "0 4px 14px rgba(204,171,74,0.35)" : "none",
                 }}
               >
-                Saved Vendors
+                Compare Vendors
                 {compareSelected.length > 0 && (
                   <span style={{ background: "rgba(255,255,255,0.3)", borderRadius: 100, padding: "2px 9px", fontSize: 13, fontWeight: 800 }}>
                     {compareSelected.length}
                   </span>
                 )}
               </button>
+              {/* Review & Pay — visible once at least one vendor is finalised */}
+              {finalisedCount > 0 && token && (
+                <button
+                  onClick={() => navigate("/booking/review")}
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700, padding: "12px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", cursor: "pointer", flexShrink: 0, boxShadow: "0 3px 12px rgba(21,128,61,0.35)", display: "flex", alignItems: "center", gap: 8 }}>
+                  Review & Pay ({finalisedCount}) →
+                </button>
+              )}
             </div>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>

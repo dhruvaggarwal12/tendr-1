@@ -45,6 +45,8 @@ export default function CustomerDashboard() {
   const dispatch  = useDispatch();
   const { user, token } = useSelector((s) => s.auth);
   const { openVendorChat, openExistingChat } = useChatOverlay();
+  const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const finalisedCount = Object.keys(finalisedVendors).length;
 
   // Delete a chat request/conversation permanently
   const [deletingChat, setDeletingChat] = useState(null); // conversationId being deleted
@@ -439,12 +441,21 @@ export default function CustomerDashboard() {
                         🔄 Re-order
                       </button>
                       {plan.status !== "completed" && (
-                        <button
-                          onClick={() => navigate("/booking/review")}
-                          style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
-                        >
-                          Review & Pay →
-                        </button>
+                        finalisedCount > 0 ? (
+                          <button
+                            onClick={() => navigate("/booking/review")}
+                            style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
+                          >
+                            Review & Pay →
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => navigate("/listings")}
+                            style={{ padding: "8px 18px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#6B3A1F", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                          >
+                            Select Vendors →
+                          </button>
+                        )
                       )}
                     </div>
                   </div>

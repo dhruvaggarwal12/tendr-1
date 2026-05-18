@@ -60,6 +60,7 @@ export default function VendorChatModal() {
 
   // ── Chat action state ────────────────────────────────────────────────────────
   const [chatCompleted, setChatCompleted] = useState(false);
+  const [showReviewPopup, setShowReviewPopup] = useState(false);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
   const isThisVendorFinalised = vendor?._id && (() => {
     const entry = finalisedVendors[vendor?.serviceType];
@@ -527,7 +528,7 @@ export default function VendorChatModal() {
         </div>
 
         {/* ── Input + action bar ── */}
-        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", flexShrink: 0, background: "#fff" }}>
+        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", flexShrink: 0, background: "#fff", position: "relative" }}>
           {(approved || isExistingChat) ? (
             <>
               {/* Message row */}
@@ -550,18 +551,47 @@ export default function VendorChatModal() {
               </div>
               {/* Review & Pay — shows after vendor is finalised */}
               {isThisVendorFinalised && (
-                <button
-                  onClick={() => { closeChat(); router.navigate("/booking/review"); }}
-                  style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)", marginBottom: 8 }}
-                >
-                  Review & Pay →
-                </button>
+                <>
+                  <button
+                    onClick={() => setShowReviewPopup(true)}
+                    style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)", marginBottom: 8 }}
+                  >
+                    Review & Pay →
+                  </button>
+                  {showReviewPopup && (
+                    <div style={{ position: "absolute", inset: 0, zIndex: 10, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 24 }}>
+                      <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "85%", maxWidth: 340, boxShadow: "0 16px 48px rgba(44,26,14,0.2)", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
+                        <div style={{ fontSize: 36, marginBottom: 10 }}>🎉</div>
+                        <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Ready to proceed?</h3>
+                        <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 20px", lineHeight: 1.6 }}>
+                          You can complete your booking now, or browse for more vendors first.
+                        </p>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                          <button onClick={() => { closeChat(); router.navigate("/booking/review"); }}
+                            style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                            Continue to Booking →
+                          </button>
+                          <button onClick={() => { closeChat(); router.navigate("/listings"); }}
+                            style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                            Browse More Vendors
+                          </button>
+                          <button onClick={() => setShowReviewPopup(false)}
+                            style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
-              {/* Hint for chat completion */}
+              {/* Hint for chat completion — left border callout */}
               {!chatCompleted && (
-                <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 6px", textAlign: "right" }}>
-                  Mark chat as completed when you are done discussing
-                </p>
+                <div style={{ borderLeft: "3px solid #C47A2E", paddingLeft: 10, marginBottom: 8, background: "rgba(196,122,46,0.05)", borderRadius: "0 8px 8px 0", padding: "6px 10px 6px 10px" }}>
+                  <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600 }}>
+                    Mark chat as completed when you are done discussing
+                  </p>
+                </div>
               )}
               {/* Action buttons row — Chat Completed → Finalise Vendor */}
               <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
