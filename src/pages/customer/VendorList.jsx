@@ -10,7 +10,7 @@ import FacebookIcon from "@mui/icons-material/Facebook";
 
 import ListingsNav from "../../components/ListingsNav";
 import PrimaryFilters_ListingPage from "../../components/PrimaryFilters_ListingPage";
-import SecondaryFilters_ListingPage from "../../components/SecondaryFilters_ListingPage";
+import SecondaryFilters_ListingPage, { applySecondaryFilters } from "../../components/SecondaryFilters_ListingPage";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
 import { useEffect, useState } from "react";
 import { getVendors } from "../../apis/vendorApi";
@@ -267,6 +267,18 @@ const VendorList = () => {
               />
             </div>
 
+            {/* Secondary filters — category specific */}
+            {serviceType && (
+              <div style={{ borderTop: "1px solid rgba(196,122,46,0.12)", paddingTop: 20 }}>
+                <h3 style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px" }}>
+                  {serviceType} Filters
+                </h3>
+                <SecondaryFilters_ListingPage
+                  serviceType={serviceType}
+                  onFiltersChange={(f) => setSecondaryFilters(f)}
+                />
+              </div>
+            )}
           </div>
         </div>
 
@@ -419,7 +431,7 @@ const VendorList = () => {
               date={date}
               locationType={locationType}
               guestCount={guestCount}
-              vendors={vendorList}
+              vendors={applySecondaryFilters(vendorList, secondaryFilters, serviceType)}
               paginationInfo={paginationInfo}
               handleShowMore={handleShowMore}
               isLoading={isLoading}
