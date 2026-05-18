@@ -8,7 +8,7 @@ import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Saved Vendors — asStrip renders a small strip below profile icon; default is a pill
+// Compare Vendors — asStrip renders a small strip below profile icon; default is a pill
 function SavedVendorsInline({ asStrip = false }) {
   const dispatch        = useDispatch();
   const navigate        = useNavigate();
@@ -23,14 +23,14 @@ function SavedVendorsInline({ asStrip = false }) {
       {asStrip ? (
         <button onClick={() => setOpen(true)}
           style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, width: "100%", padding: "4px 10px", borderRadius: "0 0 100px 100px", border: "1.5px solid rgba(196,122,46,0.22)", borderTop: "none", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
-          💛 Saved ({compareSelected.length})
+          🔀 Compare ({compareSelected.length})
         </button>
       ) : (
         <button onClick={() => setOpen(true)}
           style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}>
-          Saved Vendors
+          Compare Vendors
           <span style={{ background: "#CCAB4A", color: "#fff", borderRadius: 100, padding: "1px 8px", fontSize: 12, fontWeight: 800 }}>{compareSelected.length}</span>
         </button>
       )}
@@ -41,7 +41,7 @@ function SavedVendorsInline({ asStrip = false }) {
           <div style={{ width: "92%", maxWidth: 560, background: "#fff", borderRadius: 20, boxShadow: "0 20px 60px rgba(0,0,0,0.18)", maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: "'Outfit', sans-serif" }}
             onClick={(e) => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Saved Vendors <span style={{ fontSize: 13, fontWeight: 500, color: "#9B7450" }}>({compareSelected.length})</span></h3>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Compare Vendors <span style={{ fontSize: 13, fontWeight: 500, color: "#9B7450" }}>({compareSelected.length})</span></h3>
               <button onClick={() => setOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18 }}>×</button>
             </div>
             <div style={{ overflowY: "auto", padding: "12px 24px", flex: 1 }}>
@@ -504,7 +504,7 @@ const Navbar = ({
                   <FaChevronDown size={9} style={{ color: "#9B7450", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                 </button>
 
-                {/* Saved Vendors strip — directly below profile button */}
+                {/* Compare Vendors strip — directly below profile button */}
                 {!user?.isAdmin && compareSelected.length > 0 && (
                   <SavedVendorsInline asStrip />
                 )}

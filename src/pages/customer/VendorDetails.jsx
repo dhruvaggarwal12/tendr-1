@@ -598,7 +598,7 @@ const VendorDetailsPage = () => {
                       onClick={() => isSaved ? dispatch(removeVendorFromCompare(vendor._id)) : dispatch(addVendorToCompare(vendor))}
                       style={{ width: "100%", padding: "11px", borderRadius: 12, border: `1.5px solid ${isSaved ? "#C47A2E" : "rgba(139,69,19,0.22)"}`, background: isSaved ? "rgba(196,122,46,0.08)" : "transparent", color: isSaved ? "#C47A2E" : "#7A5535", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", transition: "all 0.18s" }}
                     >
-                      {isSaved ? "✓ Saved to List" : "🔖 Save Vendor"}
+                      {isSaved ? "✓ Comparing" : "🔀 Compare Vendors"}
                     </button>
                   );
                 })()}

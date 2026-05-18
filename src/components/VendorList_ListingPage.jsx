@@ -136,7 +136,7 @@ const VendorList_ListingPage = ({
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
                             style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "#fff", color: isSelected ? "#C47A2E" : "#6B3A1F", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap", fontFamily: font }}
                           >
-                            {isSelected ? "Saved ✓" : "Save Vendor"}
+                            {isSelected ? "Comparing ✓" : "Compare"}
                           </button>
                         )}
                       </div>

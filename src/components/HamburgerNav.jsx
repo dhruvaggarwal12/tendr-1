@@ -155,7 +155,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               {compareSelected.length > 0 && (
                 <button onClick={() => setSavedOpen(true)}
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, width: "100%", padding: "2px 8px", borderRadius: "0 0 100px 100px", border: "1.5px solid rgba(196,122,46,0.2)", borderTop: "none", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-                  💛 {compareSelected.length}
+                  🔀 {compareSelected.length}
                 </button>
               )}
 
@@ -323,7 +323,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           <div style={{ width: "92%", maxWidth: 540, background: "#fff", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Saved Vendors ({compareSelected.length})</h3>
+              <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Compare Vendors ({compareSelected.length})</h3>
               <button onClick={() => setSavedOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18 }}>×</button>
             </div>
             <div style={{ overflowY: "auto", padding: "12px 24px", flex: 1 }}>

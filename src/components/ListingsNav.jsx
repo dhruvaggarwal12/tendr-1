@@ -63,7 +63,7 @@ const ListingsNav = ({
               whiteSpace: "nowrap",
             }}
           >
-            🔖 Saved Vendors
+            🔀 Compare Vendors
             {selectedCount > 0 && (
               <span
                 style={{
