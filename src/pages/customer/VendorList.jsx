@@ -538,7 +538,7 @@ const VendorList = () => {
           >
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
               <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>
-                Saved Vendors
+                Compare Vendors
                 <span style={{ marginLeft: 8, fontSize: 13, fontWeight: 500, color: "#9B7450" }}>
                   ({compareSelected.length} total)
                 </span>

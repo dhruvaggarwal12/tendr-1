@@ -462,8 +462,8 @@ const Navbar = ({
               <FaWhatsapp size={17} />
             </a>
 
-            {/* Compare Vendors — visible when vendors are saved for comparison */}
-            {!user?.isAdmin && compareSelected.length > 0 && (
+            {/* Compare Vendors — visible when vendors are saved */}
+            {compareSelected.length > 0 && (
               <SavedVendorsInline asStrip={false} />
             )}
 
