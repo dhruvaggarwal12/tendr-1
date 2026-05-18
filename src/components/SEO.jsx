@@ -80,6 +80,18 @@ export function categoryDescription(category, city) {
   return map[category] || `Discover top-rated ${category} vendors in ${loc} for celebrations and events. Compare, shortlist and book through Tendr.`;
 }
 
+// City → geo coordinates map for per-page geo targeting
+const CITY_GEO = {
+  "Delhi":         { region: "IN-DL", position: "28.7041;77.1025",  icbm: "28.7041, 77.1025"  },
+  "New Delhi":     { region: "IN-DL", position: "28.6139;77.2090",  icbm: "28.6139, 77.2090"  },
+  "Noida":         { region: "IN-UP", position: "28.5355;77.3910",  icbm: "28.5355, 77.3910"  },
+  "Greater Noida": { region: "IN-UP", position: "28.4744;77.5040",  icbm: "28.4744, 77.5040"  },
+  "Ghaziabad":     { region: "IN-UP", position: "28.6692;77.4538",  icbm: "28.6692, 77.4538"  },
+  "Gurugram":      { region: "IN-HR", position: "28.4595;77.0266",  icbm: "28.4595, 77.0266"  },
+  "Gurgaon":       { region: "IN-HR", position: "28.4595;77.0266",  icbm: "28.4595, 77.0266"  },
+  "Faridabad":     { region: "IN-HR", position: "28.4089;77.3178",  icbm: "28.4089, 77.3178"  },
+};
+
 // Core SEO component
 export default function SEO({
   title,
@@ -89,12 +101,14 @@ export default function SEO({
   noIndex = false,
   schema = null,
   breadcrumbs = null,
+  city = null,           // pass vendor/listing city for geo targeting
 }) {
   const fullTitle = title
     ? (title.includes(SITE_NAME) ? title : `${title} | ${SITE_NAME}`)
     : `${SITE_NAME} — Celebration & Event Planning Platform in Delhi NCR`;
 
   const canonical = `${BASE_URL}${path}`;
+  const geo = city ? CITY_GEO[city] : null;
 
   const breadcrumbSchema = breadcrumbs ? {
     "@context": "https://schema.org",
@@ -114,25 +128,35 @@ export default function SEO({
       <meta name="description" content={description} />
       {noIndex
         ? <meta name="robots" content="noindex, nofollow" />
-        : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+        : <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
       }
       <link rel="canonical" href={canonical} />
 
+      {/* Per-city GEO targeting — overrides index.html defaults on vendor/listing pages */}
+      {geo && <meta name="geo.region"    content={geo.region} />}
+      {geo && <meta name="geo.placename" content={`${city}, Delhi NCR, India`} />}
+      {geo && <meta name="geo.position"  content={geo.position} />}
+      {geo && <meta name="ICBM"          content={geo.icbm} />}
+
       {/* Open Graph */}
-      <meta property="og:title"       content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:url"         content={canonical} />
-      <meta property="og:image"       content={image} />
-      <meta property="og:image:alt"   content={fullTitle} />
-      <meta property="og:type"        content="website" />
-      <meta property="og:site_name"   content={SITE_NAME} />
-      <meta property="og:locale"      content="en_IN" />
+      <meta property="og:title"        content={fullTitle} />
+      <meta property="og:description"  content={description} />
+      <meta property="og:url"          content={canonical} />
+      <meta property="og:image"        content={image} />
+      <meta property="og:image:alt"    content={fullTitle} />
+      <meta property="og:image:width"  content="1200" />
+      <meta property="og:image:height" content="630" />
+      <meta property="og:type"         content="website" />
+      <meta property="og:site_name"    content={SITE_NAME} />
+      <meta property="og:locale"       content="en_IN" />
 
       {/* Twitter */}
       <meta name="twitter:card"        content="summary_large_image" />
+      <meta name="twitter:site"        content="@tendr_in" />
       <meta name="twitter:title"       content={fullTitle} />
       <meta name="twitter:description" content={description} />
       <meta name="twitter:image"       content={image} />
+      <meta name="twitter:image:alt"   content={fullTitle} />
 
       {/* Breadcrumb schema */}
       {breadcrumbSchema && (

@@ -2,12 +2,15 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
+import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
   const { user, token } = useSelector((s) => s.auth);
+  const { chatState, expandChat } = useChatOverlay();
+  const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [activeVendorChat, setActiveVendorChat] = useState(null);
@@ -88,9 +91,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   };
 
   const handleOpen = () => {
+    // If there's a minimized chat, clicking the bubble re-opens it
+    if (hasMinimizedChat) {
+      expandChat();
+      return;
+    }
     if (!open) {
       fetchVendorChats();
-      markAllSeen(vendorChats); // mark current chats as seen → badge disappears
+      markAllSeen(vendorChats);
     }
     setOpen(!open);
   };
@@ -144,7 +152,29 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
         <span className="chat-btn-text">Chat</span>
-        {unseenCount > 0 && (
+        {/* Minimized vendor chat indicator */}
+        {hasMinimizedChat && (
+          <span style={{
+            position: "absolute",
+            top: -5,
+            right: -5,
+            minWidth: 20,
+            height: 20,
+            borderRadius: "50%",
+            background: "#22c55e",
+            color: "#fff",
+            fontSize: 10,
+            fontWeight: 800,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            border: "2.5px solid #fff",
+            animation: "chat-pulse 1.4s infinite",
+          }}>
+            💬
+          </span>
+        )}
+        {!hasMinimizedChat && unseenCount > 0 && (
           <span style={{
             position: "absolute",
             top: -5,
@@ -182,6 +212,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         @keyframes chatPop {
           from { opacity: 0; transform: scale(0.92) translateY(10px); }
           to   { opacity: 1; transform: scale(1)    translateY(0); }
+        }
+        @keyframes chat-pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.18); }
         }
         @media (max-width: 640px) {
           .floating-chat-btn {

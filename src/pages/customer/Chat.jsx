@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Paperclip, X as XIcon, Image as ImageIcon, CheckCircle2 } from "lucide-react";
-import { getBotFlow, buildSummaryMessage, buildAutoPackageMessage } from "../../utils/chatbot";
+import { getBotFlow, buildSummaryMessage } from "../../utils/chatbot";
 import { useSelector, useDispatch } from "react-redux";
 import { io } from "socket.io-client";
 
@@ -84,7 +84,9 @@ const Chat = () => {
     extraRequirements,
     extraRequirementsText,
     chatId: existingChatId,   // set when navigating to an EXISTING conversation
+    chatLocked: navChatLocked,  // true after payment — chat becomes read-only
   } = location.state || {};
+  const chatLocked = !!navChatLocked;
 
   const fallbackVendor = { _id: "concierge", name: "Tendr Concierge", approved: true };
   const vendor = navVendor || fallbackVendor;
@@ -121,15 +123,30 @@ const Chat = () => {
 
     socket.on("connect", () => {
       socketRef._connected = true;
-      // For existing chats: emit immediately (skip bot)
-      if (isExistingChat) {
-        socket.emit("open_conversation", {
-          chatType: (from === "support") ? "SUPPORT" : "VENDOR",
-          vendorId: vendor?._id && vendor._id !== "concierge" ? vendor._id : undefined,
-          eventDetails: { ...reduxFormData, ...formData },
-          bookingType: bookingType || reduxBookingType,
-        });
+      if (isExistingChat && existingChatId) {
+        // Existing chat: join room directly and load history — don't use open_conversation
+        socket.emit("join_conversation", { conversationId: existingChatId });
+        setConversationId(existingChatId);
+        // Mark approved if vendor.approved is set from navigation state
+        if (vendor?.approved) setVendorApprovedByAdmin(true);
+        // Load message history with auth token
+        fetch(`${BASE_URL}/messages/${existingChatId}/messages`, {
+          headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+          credentials: "include",
+        })
+          .then(r => r.ok ? r.json() : null)
+          .then(history => {
+            if (Array.isArray(history) && history.length > 0) {
+              setMessages(history.map(m => ({
+                text: m.content,
+                sender: m.sender === "user" ? "user" : "vendor",
+                ts: new Date(m.createdAt).getTime(),
+              })));
+            }
+          })
+          .catch(() => {});
       }
+      // Note: new vendor chats use open_conversation from handleBotAnswer, not here
     });
 
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
@@ -149,19 +166,13 @@ const Chat = () => {
         const cid     = _id.toString();
         const svcType = vendor?.serviceType;
 
-        // Build ONE consolidated message: form details + Q&As + package options
-        // Single message avoids race conditions with history loading
+        // Build consolidated message: form details + Q&As only
+        // Packages are shared by admin after approval, not automatically
         const qaLines = flow
           .filter(s => botAns[s.key])
           .map(s => `Q: ${s.question}\nA: ${botAns[s.key]}`);
 
-        const packageMsg = buildAutoPackageMessage(svcType);
-        const pkgSection = packageMsg
-          ? "\n" + packageMsg.replace(/^\[MCQ_PACKAGES:[^\]]+\]\n?/, "")
-          : "";
-
         const fullMsg = [
-          `[MCQ_PACKAGES:${svcType || "General"}]`,
           `📋 Chat Request Details`,
           `──────────────────`,
           formAns.eventType ? `Event: ${formAns.eventType}` : null,
@@ -170,16 +181,11 @@ const Chat = () => {
           formAns.budget    ? `Budget: ${formAns.budget}` : null,
           formAns.location  ? `City: ${formAns.location}` : null,
           qaLines.length ? `\nYour Answers:\n${qaLines.join("\n\n")}` : null,
-          pkgSection || null,
         ].filter(Boolean).join("\n");
 
         // Send after 400ms so history fetch doesn't overwrite it
         setTimeout(() => {
           socket.emit("send_message", { conversationId: cid, sender: "user", content: fullMsg });
-          // Show package MCQ locally if present
-          if (packageMsg) {
-            setMessages(prev => [...prev, { text: fullMsg, sender: "vendor", ts: Date.now() }]);
-          }
         }, 400);
       }
       // Mark support/concierge chats as explicitly opened by customer
@@ -376,20 +382,26 @@ const Chat = () => {
     setMessage("");
     setPendingAttachments([]);
 
-    // Send via socket if connected, otherwise show static reply
+    // Send text via socket
     if (socketRef.current && conversationId && trimmed) {
-      socketRef.current.emit("send_message", {
-        conversationId,
-        sender: "user",
-        content: trimmed,
-      });
-      // No typing indicator — admin/vendor will reply when ready
-    } else {
-      // No socket — add a static acknowledgement only
+      socketRef.current.emit("send_message", { conversationId, sender: "user", content: trimmed });
+    } else if (!conversationId) {
       setMessages((prev) => [
         ...prev,
         { text: "Message received. Our team will respond shortly.", sender: "vendor", ts: Date.now() },
       ]);
+    }
+
+    // Send images — read as base64 and emit via socket
+    if (hasImages && socketRef.current && conversationId) {
+      pendingAttachments.forEach((att) => {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          const content = `[img:${ev.target.result}]`;
+          socketRef.current?.emit("send_message", { conversationId, sender: "user", content });
+        };
+        reader.readAsDataURL(att.file);
+      });
     }
   };
 
@@ -433,6 +445,8 @@ const Chat = () => {
 
   const handleFinalise = () => {
     dispatch(setFinalisedVendor(vendor));
+
+    // Local confirmation message
     setMessages((prev) => [
       ...prev,
       {
@@ -441,7 +455,24 @@ const Chat = () => {
         ts: Date.now(),
       },
     ]);
+
+    // Notify admin via chat that customer has completed and finalised
+    if (socketRef.current && conversationId) {
+      const note = `[FINALISED] ✅ Customer has completed the chat and finalised ${vendor.name || "this vendor"}. Ready for payment.`;
+      socketRef.current.emit("send_message", {
+        conversationId,
+        sender: "customer-care",
+        content: note,
+      });
+    }
   };
+
+  // If no vendor in state (e.g. direct URL access), redirect to dashboard
+  // Vendor chats should now open via the VendorChatModal overlay
+  if (!navVendor && from !== "support" && from !== "concierge" && !existingChatId) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
 
   return (
     <div
@@ -559,6 +590,28 @@ const Chat = () => {
           {/* ── BOT QUESTIONS (before open_conversation is emitted) ── */}
           {botActive && (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {/* Event form details summary — shown if pre-filled from booking flow */}
+              {(() => {
+                const fd = { ...reduxFormData, ...formData };
+                const lines = [
+                  fd.eventType && `Event: ${fd.eventType}`,
+                  fd.date && `Date: ${fd.date}`,
+                  fd.guests && `Guests: ${fd.guests}`,
+                  fd.budget && `Budget: ${fd.budget}`,
+                  fd.location && `City: ${fd.location}`,
+                ].filter(Boolean);
+                if (!lines.length) return null;
+                return (
+                  <div style={{ background: "rgba(196,122,46,0.06)", borderRadius: 12, padding: "12px 16px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Your Event Details</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {lines.map((line, i) => (
+                        <span key={i} style={{ fontSize: 12.5, background: "#fff", borderRadius: 100, padding: "3px 12px", color: "#5a3a1a", border: "1px solid rgba(196,122,46,0.2)" }}>{line}</span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
               {/* Greeting */}
               {botStep === 0 && (
                 <div style={{ display: "flex", justifyContent: "flex-start" }}>
@@ -732,6 +785,15 @@ const Chat = () => {
                         </div>
                       );
                     }
+                    // Render inline image messages
+                    if (msg.text?.startsWith("[img:")) {
+                      const src = msg.text.replace("[img:", "").replace(/\]$/, "");
+                      return <img src={src} alt="shared" style={{ maxWidth: 260, borderRadius: 10, display: "block" }} />;
+                    }
+                    // System finalised message → green
+                    if (msg.text?.startsWith("[FINALISED]")) {
+                      return <p style={{ margin: 0, color: "#15803d", fontWeight: 600, fontSize: 12 }}>{msg.text.replace("[FINALISED] ", "")}</p>;
+                    }
                     return <p style={{ margin: 0, whiteSpace: "pre-line" }}>{msg.text}</p>;
                   })()}
                   {Array.isArray(msg.attachments) && msg.attachments.length > 0 && (
@@ -888,6 +950,15 @@ const Chat = () => {
           zIndex: 50,
         }}
       >
+        {/* Locked banner — shown after payment, chat is read-only */}
+        {chatLocked && vendorApproved ? (
+          <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 10, padding: "10px 16px", background: "#f0fdf4", borderRadius: 12, border: "1.5px solid #bbf7d0" }}>
+            <span style={{ fontSize: 16 }}>🔒</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#15803d", fontFamily: "'Outfit', sans-serif" }}>
+              Payment confirmed — this chat is now complete. Check your Upcoming tab for booking details.
+            </span>
+          </div>
+        ) : (
         <form
           onSubmit={handleSendMessage}
           style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", gap: 8 }}
@@ -989,6 +1060,7 @@ const Chat = () => {
             </>
           )}
         </form>
+        )}
       </div>
 
       {/* Compare Modal */}

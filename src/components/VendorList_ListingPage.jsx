@@ -1,6 +1,7 @@
 // src/components/VendorList_ListingPage.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useChatOverlay } from "../context/ChatContext";
 
 const font = "'Outfit', sans-serif";
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80";
@@ -25,6 +26,7 @@ const VendorList_ListingPage = ({
   isLoggedIn = false,
 }) => {
   const navigate = useNavigate();
+  const { openVendorChat } = useChatOverlay();
   const [quickViewVendor, setQuickViewVendor] = useState(null);
 
   const handleViewProfile = (e, vendorId) => {
@@ -329,13 +331,7 @@ const VendorList_ListingPage = ({
                 <button
                   onClick={() => {
                     closePanel();
-                    sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
-                    navigate("/chat", {
-                      state: {
-                        vendor: { _id: quickViewVendor._id, name: quickViewVendor.name, serviceType: quickViewVendor.serviceType, approved: false },
-                        from: "listing",
-                      },
-                    });
+                    openVendorChat({ _id: quickViewVendor._id, name: quickViewVendor.name, serviceType: quickViewVendor.serviceType });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >

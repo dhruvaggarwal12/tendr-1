@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaInstagram, FaFacebookF, FaLinkedinIn } from "react-icons/fa";
@@ -118,6 +119,13 @@ export default function ComingSoon() {
   const font = "'Outfit', sans-serif";
 
   return (
+    <>
+    <Helmet>
+      <title>Tendr — Birthday Decoration & Event Vendors in Delhi NCR | Coming Soon</title>
+      <meta name="description" content="Tendr is launching soon — Delhi NCR's platform to discover and book verified birthday decorators, party planners, caterers, photographers and DJs. Register your interest." />
+      <meta name="robots" content="noindex, follow" />
+      <link rel="canonical" href="https://tendr.co.in/" />
+    </Helmet>
     <div style={{ minHeight: "100vh", background: "linear-gradient(135deg, #0d0805 0%, #1a0e06 40%, #0f0b06 100%)", position: "relative", overflow: "hidden", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
 
       {/* Particle canvas */}
@@ -216,5 +224,6 @@ export default function ComingSoon() {
         <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>© 2026 Tendr · contacttendr@gmail.com</p>
       </div>
     </div>
+    </>
   );
 }

@@ -1016,14 +1016,25 @@ const AdminDashboard = () => {
                 ].map((item, idx) => (
                   <div
                     key={idx}
-                    className="min-h-[160px] sm:min-h-[180px] w-full px-4 sm:px-6 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-4 sm:py-5 hover:shadow-md transition-shadow"
+                    className="min-h-[160px] sm:min-h-[180px] w-full px-4 sm:px-6 rounded-[16px] sm:rounded-[20px] bg-white border-2 border-[#CCAB4A] flex flex-col justify-between py-4 sm:py-5 hover:shadow-md transition-shadow overflow-hidden"
                   >
                     <div className="icon text-[#d08f4e]">{item.icon}</div>
-                    <div className="content flex flex-col items-center gap-2">
-                      <div className="heading font-semibold text-sm sm:text-base lg:text-lg text-gray-500 leading-tight text-center">
+                    <div className="content flex flex-col items-center gap-2 w-full min-w-0">
+                      <div className="heading font-semibold text-sm sm:text-base text-gray-500 leading-tight text-center">
                         {item.label}
                       </div>
-                      <div className="metric text-4xl sm:text-5xl md:text-6xl lg:text-[75px] font-bold text-[#CCAB4A] leading-tight">
+                      <div
+                        className="metric font-bold text-[#CCAB4A] leading-tight text-center w-full"
+                        style={{
+                          fontSize: String(item.value).length > 7
+                            ? 'clamp(1.25rem, 3.5vw, 2rem)'
+                            : String(item.value).length > 4
+                            ? 'clamp(1.75rem, 4vw, 3rem)'
+                            : 'clamp(2.5rem, 6vw, 4.5rem)',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                        }}
+                      >
                         {item.value}
                       </div>
                     </div>
@@ -1244,10 +1255,16 @@ const AdminDashboard = () => {
                   { label: "Total Revenue",        value: paymentStats?.totalRevenue != null ? `₹${Number(paymentStats.totalRevenue).toLocaleString("en-IN")}` : "—", icon: <IndianRupee size={28} className="text-[#d08f4e]" /> },
                   { label: "Revenue This Month",   value: paymentStats?.monthRevenue != null ? `₹${Number(paymentStats.monthRevenue).toLocaleString("en-IN")}` : "—", icon: <CalendarClock size={28} className="text-[#d08f4e]" /> },
                 ].map(({ label, value, icon }) => (
-                  <div key={label} className="bg-white border-2 border-[#CCAB4A] rounded-[16px] p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
+                  <div key={label} className="bg-white border-2 border-[#CCAB4A] rounded-[16px] p-5 flex flex-col gap-3 hover:shadow-md transition-shadow overflow-hidden">
                     {icon}
                     <div className="text-gray-500 text-sm font-semibold">{label}</div>
-                    <div className="text-3xl font-bold text-[#CCAB4A]">{value}</div>
+                    <div
+                      className="font-bold text-[#CCAB4A] leading-tight"
+                      style={{
+                        fontSize: String(value).length > 7 ? 'clamp(1.1rem, 3vw, 1.6rem)' : 'clamp(1.5rem, 3.5vw, 1.875rem)',
+                        wordBreak: 'break-word',
+                      }}
+                    >{value}</div>
                   </div>
                 ))}
               </div>
@@ -1395,6 +1412,25 @@ const AdminDashboard = () => {
             finally { setSeeding(false); }
           };
 
+          const handleSeedShringaar = async () => {
+            if (!window.confirm(
+              'Add Shringaar Events as 3 vendors (DJ · Caterer · Decorator)?\n\n' +
+              'DJ → 8586060773  |  Caterer → 9899917826  |  Decor → 8586060775\n' +
+              'Password for all: Shringaar@2024\n\nSafe to run again — skips existing.'
+            )) return;
+            setSeeding(true); setSeedResult(null);
+            try {
+              const res = await fetch(`${BASE_URL}/admin/seed-shringaar-vendors`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                credentials: 'include',
+              });
+              const data = await res.json();
+              setSeedResult(data);
+            } catch (err) { setSeedResult({ error: err.message }); }
+            finally { setSeeding(false); }
+          };
+
           return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
@@ -1403,6 +1439,10 @@ const AdminDashboard = () => {
                 <button onClick={handleSeedVendors} disabled={seeding}
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "#2C1A0E", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
                   {seeding ? "Creating..." : "🌱 Seed Test Vendors"}
+                </button>
+                <button onClick={handleSeedShringaar} disabled={seeding}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {seeding ? "Creating..." : "🌸 Add Shringaar Events"}
                 </button>
                 <a href={`${BASE_URL}/admin/import/template`} download
                   style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>

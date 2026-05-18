@@ -222,7 +222,8 @@ const VendorList = () => {
         title={vendorListTitle(serviceType, locationType)}
         description={vendorListDescription(serviceType, locationType)}
         path={serviceType || locationType ? `/listings?service=${serviceType || ""}&city=${locationType || ""}` : "/listings"}
-        noIndex={!!(serviceType && locationType)}
+        city={locationType || null}
+        noIndex={false}
         breadcrumbs={[{ name: "Home", path: "/" }, { name: serviceType ? `${serviceType}s` : "All Vendors", path: "/listings" }]}
         schema={{
           "@context": "https://schema.org",

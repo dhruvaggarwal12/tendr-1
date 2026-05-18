@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useChatOverlay } from "../../../context/ChatContext";
 
 /**
  * Simple chat list for "you-do-it" flow.
@@ -46,10 +47,7 @@ export default function CustomerChatList() {
     };
   }, []);
 
-  const openVendorChat = (vendor) => {
-    const filters = {}; // read from store if you want
-    navigate("/chat", { state: { vendor, filters } });
-  };
+  const { openVendorChat } = useChatOverlay();
 
   return (
     <div className="max-w-3xl mx-auto p-4 mt-10">

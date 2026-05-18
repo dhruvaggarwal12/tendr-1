@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
+import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -11,6 +12,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 function SavedVendorsInline({ asStrip = false }) {
   const dispatch        = useDispatch();
   const navigate        = useNavigate();
+  const { openVendorChat } = useChatOverlay();
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
   const [open, setOpen] = React.useState(false);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
@@ -53,8 +55,6 @@ function SavedVendorsInline({ asStrip = false }) {
                   <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                     <button onClick={() => { setOpen(false); navigate("/vendor/" + v._id); }}
                       style={{ fontSize: 12, fontWeight: 600, padding: "5px 10px", borderRadius: 7, border: "none", background: "#f5eedf", color: "#7A4A1E", cursor: "pointer" }}>View</button>
-                    <button onClick={() => { setOpen(false); navigate("/chat", { state: { vendor: v, from: "vendor" } }); }}
-                      style={{ fontSize: 12, fontWeight: 700, padding: "5px 10px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer" }}>Chat</button>
                     <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
                       style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>
                   </div>

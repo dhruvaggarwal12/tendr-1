@@ -5,14 +5,8 @@ import SEO, { vendorPageTitle, vendorPageDescription } from "../../components/SE
 import ListingsNav from "../../components/ListingsNav";
 import CompareModal from "../../components/CompareModal";
 import HamburgerNav from "../../components/HamburgerNav";
-import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
-import JourneyProgress from "../../components/JourneyProgress";
 
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import InstagramIcon from "@mui/icons-material/Instagram";
-import FacebookIcon from "@mui/icons-material/Facebook";
-
-import { Heart, Share, Star, Hourglass, CheckCircle2, MapPin, Users, Trophy, Phone } from "lucide-react";
+import { Star, Hourglass, CheckCircle2, MapPin, Users } from "lucide-react";
 
 import main1 from "../../assets/vendor-details/main-1.avif";
 import main2 from "../../assets/vendor-details/main-2.avif";
@@ -24,6 +18,8 @@ import { getVendorById } from "../../apis/vendorApi";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import { useSelector, useDispatch } from "react-redux";
 import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice";
+import { useChatOverlay } from "../../context/ChatContext";
+import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
 
 const VendorDetailsPage = () => {
@@ -34,6 +30,7 @@ const VendorDetailsPage = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { openVendorChat } = useChatOverlay();
   const { id } = useParams();
   const location = useLocation();
 
@@ -108,12 +105,6 @@ const VendorDetailsPage = () => {
     fetchVendorData();
   }, [id, vendorFromState]);
 
-  // Auto-add vendor to selected list when viewing their profile
-  // The reducer handles deduplication so safe to always dispatch
-  useEffect(() => {
-    if (!vendor?._id) return;
-    dispatch(addVendorToCompare(vendor));
-  }, [vendor?._id]);
 
   // ===== Helpers =====
   const rating = useMemo(() => {
@@ -242,14 +233,68 @@ const VendorDetailsPage = () => {
     "knowsAbout": [vendor.serviceType, "Event Planning", "Celebrations", "Delhi NCR Events"],
   } : null;
 
+  const font = "'Outfit', sans-serif";
+
+  const CATEGORY_SECTIONS = {
+    Caterer: [
+      { key: "cuisine",           title: "Cuisine Types" },
+      { key: "serviceStyle",      title: "Service Style" },
+      { key: "menuType",          title: "Menu Type" },
+      { key: "beveragesIncluded", title: "Beverages Included", bool: true },
+    ],
+    Decorator: [
+      { key: "typesOfDecoration", title: "Types of Decoration" },
+      { key: "venueCoverage",     title: "Venue Coverage" },
+    ],
+    Photographer: [
+      { key: "services",          title: "Services Offered" },
+      { key: "photographyType",   title: "Photography Style" },
+      { key: "hoursIncluded",     title: "Hours Included", single: true },
+      { key: "editingTimeDays",   title: "Editing Time (days)", single: true },
+    ],
+    DJ: [
+      { key: "setup",             title: "Setup Type" },
+      { key: "lightsIncluded",    title: "Lights Included", bool: true },
+      { key: "eventTypes",        title: "Event Types" },
+    ],
+    GiftHamper: [
+      { key: "deliveryOptions",       title: "Delivery Options" },
+      { key: "panIndiaDelivery",      title: "Pan India Delivery", bool: true },
+      { key: "deliveryAreas",         title: "Delivery Areas" },
+      { key: "maxDeliveryCapacity",   title: "Max Delivery Capacity", single: true },
+    ],
+    Cake: [
+      { key: "availableSizes",    title: "Available Sizes" },
+      { key: "customFlavors",     title: "Custom Flavors" },
+      { key: "pricesNegotiable",  title: "Prices Negotiable", bool: true },
+      { key: "deliveryOptions",   title: "Delivery Options" },
+    ],
+  };
+
+  const normalised = serviceType?.toLowerCase();
+  const categoryKey = Object.keys(CATEGORY_SECTIONS).find(k => k.toLowerCase() === normalised);
+  const categorySections = CATEGORY_SECTIONS[categoryKey] || [];
+
+  // Category field icons
+  const FIELD_ICONS = {
+    cuisine: "🍽️", serviceStyle: "👨‍🍳", menuType: "📋", beveragesIncluded: "🥤",
+    typesOfDecoration: "🎨", venueCoverage: "🏛️", themes: "✨",
+    setup: "🎛️", lightsIncluded: "💡", eventTypes: "🎉",
+    services: "📸", photographyType: "🎞️", hoursIncluded: "⏱️", editingTimeDays: "✏️",
+    photographersCount: "👤", videographersCount: "🎥", socialMedia: "📱", album: "📔",
+    deliveryOptions: "🚚", panIndiaDelivery: "🇮🇳", deliveryAreas: "📍", maxDeliveryCapacity: "📦",
+    availableSizes: "📏", customFlavors: "🍰", pricesNegotiable: "💬",
+  };
+
   return (
-    <div className="bg-white text-black">
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO
         title={vendorPageTitle(vendor)}
         description={vendorPageDescription(vendor)}
         path={`/vendor/${vendor?._id || ""}`}
         image={vendor?.portfolioPhotos?.[0] || vendor?.image || undefined}
         schema={vendorSchema}
+        city={vendor?.address?.city || vendor?.locations?.[0] || null}
         breadcrumbs={[
           { name: "Home", path: "/" },
           { name: "Vendors", path: "/listings" },
@@ -257,310 +302,267 @@ const VendorDetailsPage = () => {
         ]}
       />
       <BasicSpeedDial />
-      {/* Main Navbar */}
       <HamburgerNav active="Browse" />
-      {/* Task bar — only shows Review & Pay when vendors are finalised */}
-      <div className="border-b-[1px] border-[#CCAB4A]">
-        <ListingsNav
-          onOpenSelected={openSelectedModal}
-          selectedCount={0}
-          showFinalisedBtn={true}
-          hideTitle={true}
-        />
+      <div style={{ borderBottom: "1px solid rgba(196,122,46,0.25)" }}>
+        <ListingsNav onOpenSelected={openSelectedModal} selectedCount={compareSelected.length} showFinalisedBtn={true} hideTitle={true} />
       </div>
 
-      {/* Page Content Container */}
-      <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Title, Share and Save */}
-        <div className="flex items-center justify-between py-7">
-          <div className="flex flex-col">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl break-words">
-              {vendor.name || "Vendor Name"}
-            </h1>
-            <div className="mt-2 flex items-center gap-2 text-gray-700">
-              <MapPin className="w-4 h-4" />
-              <span className="text-sm md:text-base">
-                Located in {primaryCity}
-                {stateName ? ", " + stateName : ""}
-              </span>
-            </div>
-          </div>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
 
+        {/* ── Hero Header ── */}
+        <div style={{ padding: "28px 0 20px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 14px", borderRadius: 100, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", letterSpacing: "0.06em", textTransform: "uppercase" }}>{serviceType}</span>
+            {isPhoneVerified && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle2 size={11} /> Phone Verified</span>}
+            {vendor?.isTopRated && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>🏆 Top Rated</span>}
+          </div>
+          <h1 style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", lineHeight: 1.1, letterSpacing: "-0.02em" }}>{vendor.name || "Vendor"}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14, color: "#7A5535" }}>
+              <MapPin size={14} color="#C47A2E" /> {primaryCity}{stateName ? ", " + stateName : ""}
+            </span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14, color: "#7A5535" }}>
+              <span style={{ display: "flex", gap: 1 }}>{ratingStars}</span>
+              <span style={{ fontWeight: 800, color: "#2C1A0E" }}>{rating.toFixed(1)}</span>
+              <span style={{ color: "#bbb", fontSize: 12 }}>average rating</span>
+            </span>
+            {yearsOfExperience != null && (
+              <span style={{ fontSize: 14, color: "#7A5535" }}>🗓️ {yearsOfExperience} yrs in business</span>
+            )}
+          </div>
         </div>
 
-        {/* Gallery */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          <div className="relative h-[400px] w-full rounded-l-xl overflow-hidden group cursor-pointer">
-            <img
-              src={coverImages.first}
-              alt={vendor ? `${vendor.serviceType || "Event Vendor"} ${vendor.name} in ${vendorCity || "Delhi NCR"} — Portfolio | Tendr` : "Vendor portfolio cover"}
-              className="h-full w-full object-cover"
-              onLoad={() => setIsLoaded(true)}
-            />
-            <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+        {/* ── Gallery ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "3fr 2fr", gap: 8, borderRadius: 20, overflow: "hidden", marginBottom: 36 }}>
+          <div style={{ height: 440, overflow: "hidden" }}>
+            <img src={coverImages.first} alt={`${vendor.name} portfolio`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onLoad={() => setIsLoaded(true)} />
           </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+            {coverImages.smalls.map((img, idx) => (
+              <div key={idx} style={{ height: 216, overflow: "hidden" }}>
+                <img src={img} alt={`${vendor.name} photo ${idx + 2}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} onLoad={() => setIsLoaded(true)} />
+              </div>
+            ))}
+          </div>
+        </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            {coverImages.smalls.map((img, idx) => {
-              let rounding = "";
-              if (idx === 1) rounding = "rounded-tr-xl";
-              if (idx === 3) rounding = "rounded-br-xl";
-              return (
-                <div
-                  key={idx}
-                  className={"relative h-[195px] w-full overflow-hidden group cursor-pointer " + rounding}
-                >
-                  <img
-                    src={img}
-                    alt={vendor ? `${vendor.name} ${vendor.serviceType || "Portfolio"} photo ${idx + 2} | Tendr` : `Gallery photo ${idx + 2}`}
-                    className="h-full w-full object-cover"
-                    onLoad={() => setIsLoaded(true)}
-                  />
-                  <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-30 transition-opacity duration-300"></div>
+        {/* ── Main two-column layout ── */}
+        <div style={{ display: "flex", gap: 36, alignItems: "flex-start", flexWrap: "wrap" }}>
+
+          {/* ════ LEFT: Full info ════ */}
+          <div style={{ flex: "1 1 560px", minWidth: 0, display: "flex", flexDirection: "column", gap: 0 }}>
+
+            {/* ── Stats Row ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 28 }}>
+              {[
+                { icon: "⭐", value: rating.toFixed(1), label: "Rating", sub: "out of 5" },
+                { icon: "📅", value: yearsOfExperience ?? "—", label: "Years Active", sub: "experience" },
+                { icon: "👥", value: teamSize ?? "—", label: "Team Size", sub: "professionals" },
+                { icon: "🎉", value: totalEventsCompleted ?? "—", label: "Events Done", sub: "completed" },
+              ].map(({ icon, value, label, sub }) => (
+                <div key={label} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.16)", padding: "18px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(44,26,14,0.04)" }}>
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: "#2C1A0E", lineHeight: 1 }}>{value}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginTop: 4 }}>{label}</div>
+                  <div style={{ fontSize: 10, color: "#bbb", marginTop: 1 }}>{sub}</div>
                 </div>
-              );
-            })}
-          </div>
-        </section>
-
-        {/* Top Meta & Booking */}
-        <div className="flex flex-col lg:flex-row justify-between gap-8 py-10">
-          {/* Left: Vendor Info */}
-          <div className="lg:w-2/3">
-            {/* Quick Facts Pill */}
-            <div className="inline-flex items-stretch min-h-16 text-black rounded-3xl border-[1px] border-[#CCAB4A] mt-2 overflow-hidden">
-              <div className="flex flex-col justify-center items-center px-6 py-3 gap-1 bg-white">
-                <span className="font-semibold text-lg">{rating.toFixed(1)}</span>
-                <div className="flex gap-[1px]">{ratingStars}</div>
-                <div className="text-xs text-gray-600 mt-1">Average rating</div>
-              </div>
-
-              <div className="w-px bg-[#CCAB4A]" />
-
-              <div className="flex flex-col justify-center items-center px-6 py-3">
-                <span className="font-semibold text-lg">{yearsOfExperience ?? "—"}</span>
-                <div className="text-xs text-gray-600">Years of experience</div>
-              </div>
-
-              <div className="w-px bg-[#CCAB4A]" />
-
-              <div className="flex flex-col justify-center items-center px-6 py-3">
-                <span className="font-semibold text-lg">{teamSize ?? "—"}</span>
-                <div className="text-xs text-gray-600">Team size</div>
-              </div>
-
-              <div className="w-px bg-[#CCAB4A]" />
-
-              <div className="flex flex-col justify-center items-center px-6 py-3">
-                <span className="font-semibold text-lg">{totalEventsCompleted ?? "—"}</span>
-                <div className="text-xs text-gray-600">Events completed</div>
-              </div>
+              ))}
             </div>
 
-            {/* Badges */}
-            <div className="mt-4 flex flex-wrap gap-2">
-              {isPhoneVerified && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full border border-emerald-500 text-emerald-700 bg-emerald-50">
-                  <CheckCircle2 className="w-3 h-3" /> Phone verified
-                </span>
-              )}
-
+            {/* ── Trust + Availability chips ── */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
               {maxConcurrentEvents != null && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full border border-amber-500 text-amber-700 bg-amber-50">
-                  <Users className="w-3 h-3" /> {maxConcurrentEvents} events concurrently
+                <span style={{ fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a", display: "flex", alignItems: "center", gap: 5 }}>
+                  <Users size={12} /> Handles up to {maxConcurrentEvents} events at once
                 </span>
               )}
-              {serviceType && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium px-3 py-1 rounded-full border border-[#CCAB4A] text-[#7a6527] bg-[#fffaea]">
-                  <Trophy className="w-3 h-3" /> {serviceType}
+              <span style={{ fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 100, background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", display: "flex", alignItems: "center", gap: 5 }}>
+                <Hourglass size={12} /> Responds within 1 hour
+              </span>
+              {vendor?.rankingScore > 0 && (
+                <span style={{ fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 100, background: "#f5f3ff", color: "#7c3aed", border: "1px solid #ddd6fe", display: "flex", alignItems: "center", gap: 5 }}>
+                  📊 Score: {vendor.rankingScore}/100
                 </span>
               )}
             </div>
 
-            {/* Description block — only show if bio exists */}
-            {vendor?.bio && (
-              <p className="text-xl text-gray-700 mt-6">{vendor.bio}</p>
+            {/* ── About ── */}
+            {vendor?.bio ? (
+              <>
+                <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+                <div style={{ marginBottom: 28 }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px" }}>About</h2>
+                  <p style={{ fontSize: 14.5, color: "#5a3a1a", lineHeight: 1.75, margin: 0 }}>{vendor.bio}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+                <div style={{ marginBottom: 28, background: "#FFFCF5", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>About {vendor.name}</h2>
+                  <p style={{ fontSize: 14, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>
+                    {vendor.name} is a {serviceType.toLowerCase()} service provider based in {primaryCity}{stateName ? ", " + stateName : ""}.
+                    With {yearsOfExperience ?? "several"} years of experience and {totalEventsCompleted ?? "many"} events completed,
+                    they bring expertise and professionalism to every event.
+                  </p>
+                </div>
+              </>
             )}
 
-            {/* Contact & Service Areas */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-[#CCAB4A] p-4">
-                <div className="font-semibold text-lg mb-2">Service Areas</div>
-                <div className="flex flex-wrap gap-2">
-                  {(vendor.locations || []).map((loc, i) => (
-                    <span key={i} className="text-sm px-3 py-1 rounded-full border border-gray-300 bg-white">
-                      {loc}
-                    </span>
-                  ))}
-                  {(!vendor.locations || vendor.locations.length === 0) && (
-                    <span className="text-sm text-gray-600">—</span>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Category-specific info */}
-            {(() => {
-              const CATEGORY_SECTIONS = {
-                Caterer: [
-                  { key: "cuisine",           title: "Cuisine Types" },
-                  { key: "serviceStyle",      title: "Service Type" },
-                  { key: "menuType",          title: "Menu Type" },
-                  { key: "beveragesIncluded", title: "Beverage Included", bool: true },
-                ],
-                Decorator: [
-                  { key: "typesOfDecoration", title: "Types of Decoration" },
-                  { key: "venueCoverage",     title: "Venue Coverage" },
-                ],
-                Photographer: [
-                  { key: "services",          title: "Which Services" },
-                  { key: "photographyType",   title: "Photography Type" },
-                  { key: "hoursIncluded",     title: "Hours Included", single: true },
-                  { key: "editingTimeDays",   title: "Editing Time (days)", single: true },
-                ],
-                DJ: [
-                  { key: "setup",             title: "Setup Type" },
-                  { key: "lightsIncluded",    title: "Lights Included?", bool: true },
-                  { key: "eventTypes",        title: "Event Type" },
-                ],
-                Makeup: [
-                  { key: "makeupStyles", title: "Makeup Styles" },
-                  { key: "makeupServices", title: "Services" },
-                  { key: "brands", title: "Brands" },
-                ],
-                Venue: [
-                  { key: "venueType", title: "Venue Type" },
-                  { key: "amenities", title: "Amenities" },
-                  { key: "capacityBands", title: "Capacity" },
-                ],
-                Mehndi: [
-                  { key: "mehndiStyles", title: "Mehndi Styles" },
-                  { key: "packageTypes", title: "Packages" },
-                ],
-                Band: [
-                  { key: "musicGenres", title: "Music Genres" },
-                  { key: "instruments", title: "Instruments" },
-                  { key: "bandServices", title: "Services" },
-                ],
-                Planner: [
-                  { key: "specialties", title: "Specialties" },
-                  { key: "plannerServices", title: "Services" },
-                ],
-              };
-              const normalised = serviceType?.toLowerCase();
-              const categoryKey = Object.keys(CATEGORY_SECTIONS).find(
-                (k) => k.toLowerCase() === normalised
-              );
-              const sections = CATEGORY_SECTIONS[categoryKey] || [];
-              return sections.map(({ key, title, bool, single }) => {
+            {/* ── What We Offer ── */}
+            {categorySections.length > 0 && (() => {
+              const rendered = categorySections.map(({ key, title, bool, single }) => {
                 const raw = vendor[key];
                 if (raw === undefined || raw === null) return null;
-
-                // Boolean field (Yes / No badge)
-                if (bool) return (
-                  <div key={key} className="mt-6">
-                    <div className="font-semibold text-lg mb-2">{title}</div>
-                    <span className={`text-sm px-3 py-1 rounded-full border font-medium ${raw ? "border-green-400 bg-green-50 text-green-700" : "border-gray-300 bg-white text-gray-500"}`}>
-                      {raw ? "Yes" : "No"}
-                    </span>
-                  </div>
-                );
-
-                // Single value field (number/string)
-                if (single) return (
-                  <div key={key} className="mt-6">
-                    <div className="font-semibold text-lg mb-2">{title}</div>
-                    <span className="text-sm px-3 py-1 rounded-full border border-[#CCAB4A] bg-[#fffaea] text-[#7a6527] font-medium">
-                      {raw}
-                    </span>
-                  </div>
-                );
-
-                // Array field (tags)
-                const values = Array.isArray(raw) ? raw : [raw];
+                const icon = FIELD_ICONS[key] || "•";
                 return (
-                  <div key={key} className="mt-6">
-                    <div className="font-semibold text-lg mb-2">{title}</div>
-                    <div className="flex flex-wrap gap-2">
-                      {values.length > 0 ? values.map((item, idx) => (
-                        <span key={idx} className="text-sm px-3 py-1 rounded-full border border-gray-300 bg-white">
-                          {item}
+                  <div key={key} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(196,122,46,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0, marginTop: 2 }}>{icon}</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>{title}</div>
+                      {bool ? (
+                        <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 12px", borderRadius: 100, borderColor: raw ? "#86efac" : "#e5e7eb", border: "1.5px solid", background: raw ? "#f0fdf4" : "#f9fafb", color: raw ? "#15803d" : "#6b7280" }}>
+                          {raw ? "✓ Included" : "✗ Not included"}
                         </span>
-                      )) : (
-                        <span className="text-sm text-gray-600">—</span>
+                      ) : single ? (
+                        <span style={{ fontSize: 12, fontWeight: 600, padding: "3px 12px", borderRadius: 100, background: "#fffbeb", border: "1.5px solid #fde68a", color: "#b45309" }}>{raw}</span>
+                      ) : (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                          {(Array.isArray(raw) ? raw : [raw]).map((item, idx) => (
+                            <span key={idx} style={{ fontSize: 12, fontWeight: 500, padding: "3px 12px", borderRadius: 100, background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.22)", color: "#5a3a1a" }}>{item}</span>
+                          ))}
+                        </div>
                       )}
                     </div>
                   </div>
                 );
-              });
-            })()}
+              }).filter(Boolean);
 
-            {/* Response Time */}
-            <div className="inline-flex items-center h-16 text-black font-semibold text-xl rounded-3xl border-[1px] border-[#CCAB4A] mt-6">
-              <div className="flex items-center gap-2 px-8 py-2 h-full">
-                <Hourglass className="w-5 h-5" />
-                <div className="text-xl font-medium pr-8">Response time</div>
-                <div className="h-10 w-px bg-[#CCAB4A]"></div>
-                <div className="text-xl ml-1 px-8">1 hour</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Booking Card */}
-          <div className="lg:w-1/3 bg-white p-5 rounded-2xl shadow-lg border border-[#CCAB4A]">
-            <h2 className="text-xl font-semibold">
-              {vendor.price ? ("Rs. " + vendor.price) : "Price to be updated"}
-            </h2>
-            <div className="text-base mt-2 text-gray-600 font-medium">Event Details</div>
-
-            <div className="bg-[#fffaea] mt-4 border border-[#CCAB4A] text-sm font-medium p-3 rounded-xl text-gray-800">
-              {infoLines.length > 0 ? (
-                infoLines.map((line, i) => (
-                  <div key={i} style={{ marginBottom: i < infoLines.length - 1 ? 4 : 0 }}>
-                    {line}
-                  </div>
-                ))
-              ) : (
-                <span className="text-gray-400">No event details provided.</span>
-              )}
-            </div>
-
-            {/* Request to chat — not the floating button */}
-            <button
-              onClick={() => navigate("/chat", { state: { vendor: vendor } })}
-              className="w-full mt-5 px-4 py-3 bg-[#CCAB4A] hover:bg-[#ab8f39] text-white rounded-xl text-base font-bold"
-            >
-              Request to Chat with this Vendor
-            </button>
-            <p style={{ fontSize: 12, color: "#9B7450", textAlign: "center", marginTop: 6, fontFamily: "'Outfit', sans-serif", lineHeight: 1.5 }}>
-              Submit a request — our team reviews and connects you within a few hours.
-            </p>
-
-            {/* Add to Compare */}
-            {vendor && (() => {
-              const isInCompare = compareSelected.some((v) => v._id === vendor._id);
+              if (!rendered.length) return null;
               return (
-                <button
-                  onClick={() => isInCompare ? dispatch(removeVendorFromCompare(vendor._id)) : dispatch(addVendorToCompare(vendor))}
-                  style={{
-                    width: "100%",
-                    marginTop: 10,
-                    padding: "9px 16px",
-                    borderRadius: 12,
-                    border: isInCompare ? "2px solid #C47A2E" : "2px solid rgba(139,69,19,0.22)",
-                    background: isInCompare ? "rgba(196,122,46,0.08)" : "transparent",
-                    color: isInCompare ? "#C47A2E" : "#7A5535",
-                    fontSize: 14,
-                    fontWeight: 700,
-                    fontFamily: "'Outfit', sans-serif",
-                    cursor: "pointer",
-                    transition: "all 0.18s",
-                  }}
-                >
-                  {isInCompare ? "Added to Compare ✓" : "Add to Compare"}
-                </button>
+                <div style={{ marginBottom: 28 }}>
+                  <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 20px" }}>What We Offer</h2>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>{rendered}</div>
+                </div>
               );
             })()}
+
+            {/* ── GST / PAN info ── */}
+            <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+            <div style={{ marginBottom: 28 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px" }}>Business Details</h2>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                {[
+                  { label: "GST Number", value: vendor.gstNumber || "—", icon: "🧾" },
+                  { label: "Years Active", value: yearsOfExperience ? yearsOfExperience + " years" : "—", icon: "📅" },
+                  { label: "Based In", value: [primaryCity, stateName].filter(Boolean).join(", ") || "—", icon: "📍" },
+                  { label: "Team Size", value: teamSize ? teamSize + " members" : "—", icon: "👥" },
+                ].map(({ label, value, icon }) => (
+                  <div key={label} style={{ background: "#FFFCF5", borderRadius: 12, padding: "14px 16px", border: "1.5px solid rgba(196,122,46,0.12)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{icon} {label}</div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* ── Service Areas + Map ── */}
+            {(vendor.locations || []).length > 0 && (
+              <>
+                <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+                <div style={{ marginBottom: 28 }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Service Areas</h2>
+                  <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px" }}>
+                    {vendor.name} serves {vendor.locations.length} {vendor.locations.length === 1 ? "city" : "cities"} — all locations are pinned on the map below.
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16 }}>
+                    {(vendor.locations || []).map((loc, i) => (
+                      <span key={i} style={{ fontSize: 13, fontWeight: 600, padding: "6px 14px", borderRadius: 100, background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.28)", color: "#5a3a1a", display: "flex", alignItems: "center", gap: 5 }}>
+                        <MapPin size={11} color="#C47A2E" /> {loc}
+                      </span>
+                    ))}
+                  </div>
+                  <ServiceAreaMap cities={vendor.locations || []} vendorName={vendor.name} />
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* ════ RIGHT: Sticky Booking Card ════ */}
+          <div style={{ flex: "0 0 340px", position: "sticky", top: 80 }}>
+            <div style={{ background: "#FFFCF5", borderRadius: 24, border: "1.5px solid rgba(196,122,46,0.22)", boxShadow: "0 8px 40px rgba(139,69,19,0.1)", overflow: "hidden" }}>
+
+              {/* Card header */}
+              <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "20px 22px" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Starting Price</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: "#fff" }}>
+                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Custom Quote"}
+                </div>
+                {!vendor.price && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>Shared after consultation with vendor</div>}
+              </div>
+
+              <div style={{ padding: "20px 22px" }}>
+
+                {/* Event Details */}
+                <div style={{ marginBottom: 18 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Your Event Details</div>
+                  {infoLines.length > 0 ? (
+                    <div style={{ background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
+                      {infoLines.map((line, i) => (
+                        <div key={i} style={{ fontSize: 13, color: "#5a3a1a", display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ color: "#C47A2E", fontWeight: 700, fontSize: 11 }}>•</span> {line}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div style={{ background: "rgba(196,122,46,0.04)", border: "1.5px dashed rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 14px", textAlign: "center" }}>
+                      <div style={{ fontSize: 20, marginBottom: 4 }}>📋</div>
+                      <div style={{ fontSize: 12, color: "#9B7450" }}>No event details yet</div>
+                      <a href="/booking" style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700, textDecoration: "none" }}>Fill the booking form →</a>
+                    </div>
+                  )}
+                </div>
+
+                {/* CTA */}
+                <button
+                  onClick={() => openVendorChat(vendor)}
+                  style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", marginBottom: 6 }}
+                >
+                  💬 Request to Chat
+                </button>
+                <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 14px", lineHeight: 1.5 }}>
+                  Our team reviews and connects you within a few hours
+                </p>
+
+                {/* Save */}
+                {(() => {
+                  const isSaved = compareSelected.some(v => v._id === vendor._id);
+                  return (
+                    <button
+                      onClick={() => isSaved ? dispatch(removeVendorFromCompare(vendor._id)) : dispatch(addVendorToCompare(vendor))}
+                      style={{ width: "100%", padding: "11px", borderRadius: 12, border: `1.5px solid ${isSaved ? "#C47A2E" : "rgba(139,69,19,0.22)"}`, background: isSaved ? "rgba(196,122,46,0.08)" : "transparent", color: isSaved ? "#C47A2E" : "#7A5535", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", transition: "all 0.18s" }}
+                    >
+                      {isSaved ? "✓ Saved to List" : "🔖 Save Vendor"}
+                    </button>
+                  );
+                })()}
+
+                {/* Quick facts */}
+                <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                  {[
+                    isPhoneVerified && { icon: "✅", text: "Phone number verified" },
+                    { icon: "⚡", text: "Responds within 1 hour" },
+                    totalEventsCompleted > 0 && { icon: "🎉", text: `${totalEventsCompleted} events completed` },
+                    maxConcurrentEvents && { icon: "📅", text: `Takes up to ${maxConcurrentEvents} events at once` },
+                  ].filter(Boolean).map((fact, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#7A5535", padding: "4px 0" }}>
+                      <span>{fact.icon}</span> {fact.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

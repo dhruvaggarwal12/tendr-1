@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
+import { useChatOverlay } from "../context/ChatContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa";
 
@@ -13,6 +14,7 @@ const STEPS = ["Plan", "Browse", "Chat", "Pay"];
 export default function HamburgerNav({ title = "", showReviewPay = false, active = "" }) {
   const navigate   = useNavigate();
   const dispatch   = useDispatch();
+  const { openVendorChat } = useChatOverlay();
   const { user, token } = useSelector((s) => s.auth);
   const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -332,11 +334,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       onClick={() => { setSavedOpen(false); navigate(`/vendor/${v._id}`); }}
                       style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>
                       View
-                    </button>
-                    <button
-                      onClick={() => { setSavedOpen(false); navigate("/chat", { state: { vendor: v, from: "vendor" } }); }}
-                      style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, fontWeight: 700 }}>
-                      Chat
                     </button>
                     <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
                       style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>

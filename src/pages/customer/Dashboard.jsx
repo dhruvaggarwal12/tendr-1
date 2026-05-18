@@ -8,6 +8,7 @@ import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { resetEventPlanning, setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -43,6 +44,26 @@ export default function CustomerDashboard() {
   const location  = useLocation();
   const dispatch  = useDispatch();
   const { user, token } = useSelector((s) => s.auth);
+  const { openVendorChat, openExistingChat } = useChatOverlay();
+
+  // Delete a chat request/conversation permanently
+  const [deletingChat, setDeletingChat] = useState(null); // conversationId being deleted
+  const handleDeleteChat = async (convoId) => {
+    if (!window.confirm("Delete this chat request? This cannot be undone.")) return;
+    setDeletingChat(convoId);
+    try {
+      const res = await fetch(`${BASE_URL}/conversations/${convoId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      if (res.ok) {
+        // Remove from local state immediately
+        setConversations(prev => prev.filter(c => c._id !== convoId));
+      }
+    } catch {}
+    setDeletingChat(null);
+  };
 
   const submitCancel = async (planId) => {
     const s = cancelState[planId];
@@ -197,10 +218,19 @@ export default function CustomerDashboard() {
     ? plans
     : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
+  // Vendor chats expire 24hrs after the customer's last message
+  const TWENTY_FOUR_HRS = 24 * 60 * 60 * 1000;
+  const isWithin24Hrs = (convo) => {
+    const ref = convo.lastCustomerMessageAt || convo.createdAt;
+    if (!ref) return true;
+    return (Date.now() - new Date(ref).getTime()) < TWENTY_FOUR_HRS;
+  };
+
   // Vendor chats that haven't been converted to a full EventPlan yet —
-  // show them in Ongoing as "In Process" so customer knows chat is active
+  // show them in Ongoing as "In Process" so customer knows chat is active.
+  // Hidden after 24hrs of no customer activity.
   const pendingVendorChats = conversations.filter(c =>
-    c.chatType === "vendor" && !c.chatApproved
+    c.chatType === "vendor" && !c.chatApproved && isWithin24Hrs(c)
   );
 
   // Support/concierge chats only appear after customer explicitly opens them
@@ -210,8 +240,8 @@ export default function CustomerDashboard() {
   })();
 
   const visibleChats = conversations.filter(c => {
-    // Vendor chats: show immediately once started (approved or pending)
-    if (c.chatType === "vendor") return true;
+    // Vendor chats: show for 24hrs from customer's last message
+    if (c.chatType === "vendor") return isWithin24Hrs(c);
     // Support/concierge: only approved + explicitly opened
     if (!c.chatApproved) return false;
     return openedSupportChats.has(c._id);
@@ -333,9 +363,9 @@ export default function CustomerDashboard() {
             ))}
           </div>
 
-          {/* Ongoing tab — shows event plan summary cards */}
+          {/* Ongoing tab — event plan cards + pending vendor chat cards in one unified block */}
           {activeTab === "Ongoing" ? (
-            loading ? (
+            (loading || loadingChats) ? (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
                 {[0,1,2].map(i => (
@@ -346,7 +376,7 @@ export default function CustomerDashboard() {
                   </div>
                 ))}
               </div>
-            ) : filtered.length === 0 ? (
+            ) : filtered.length === 0 && pendingVendorChats.length === 0 ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                 <div style={{ fontSize: 40, marginBottom: 14 }}>📋</div>
                 <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No ongoing bookings</h4>
@@ -354,6 +384,7 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {/* EventPlan cards (submitted/draft) */}
                 {filtered.map((plan) => (
                   <div key={plan._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "20px 24px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
@@ -418,14 +449,11 @@ export default function CustomerDashboard() {
                     </div>
                   </div>
                 ))}
-              </div>
-            )
-          ) : null}
 
-          {/* Ongoing — pending vendor chats (awaiting admin approval) */}
-          {activeTab === "Ongoing" && !loading && pendingVendorChats.length > 0 && (
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: filtered.length > 0 ? 16 : 0 }}>
-              {pendingVendorChats.map(convo => (
+                {/* Pending vendor chat cards (awaiting admin approval) */}
+                {pendingVendorChats.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: filtered.length > 0 ? 8 : 0 }}>
+                    {pendingVendorChats.map(convo => (
                 <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "18px 22px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -445,7 +473,7 @@ export default function CustomerDashboard() {
                       ⏳ In Process — Awaiting Team Approval
                     </span>
                   </div>
-                  {/* Bot answers from eventDetails */}
+                  {/* Event form details */}
                   {convo.eventDetails && Object.values(convo.eventDetails).some(Boolean) && (
                     <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(196,122,46,0.12)", display: "flex", flexWrap: "wrap", gap: 8 }}>
                       {Object.entries(convo.eventDetails).filter(([,v]) => v).map(([key, val]) => (
@@ -455,17 +483,41 @@ export default function CustomerDashboard() {
                       ))}
                     </div>
                   )}
-                  <div style={{ marginTop: 12, display: "flex", gap: 10 }}>
+                  {/* Pinned messages from this conversation */}
+                  {(convo.pinnedMessages || []).length > 0 && (
+                    <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned</span>
+                      {(convo.pinnedMessages || []).map((m, mi) => {
+                        const text = typeof m === "string" ? m : m.content || m.text;
+                        if (!text) return null;
+                        return (
+                          <div key={mi} style={{ background: "#fff", borderRadius: 8, padding: "6px 12px", fontSize: 12.5, color: "#5a3a1a", border: "1px solid rgba(196,122,46,0.15)" }}>
+                            • {text}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <div style={{ marginTop: 12, display: "flex", gap: 10, alignItems: "center" }}>
                     <button
-                      onClick={() => navigate("/chat", { state: { chatId: convo._id, vendor: convo.vendorId || { _id: convo.vendorId, name: convo.vendorName }, from: "vendor" } })}
+                      onClick={() => openExistingChat(convo._id, { _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId, name: convo.vendorName, serviceType: convo.serviceType, approved: convo.chatApproved })}
                       style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                       Open Chat →
+                    </button>
+                    <button
+                      onClick={() => handleDeleteChat(convo._id)}
+                      disabled={deletingChat === convo._id}
+                      style={{ padding: "8px 14px", borderRadius: 10, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, opacity: deletingChat === convo._id ? 0.6 : 1 }}>
+                      {deletingChat === convo._id ? "Deleting…" : "🗑️ Delete Request"}
                     </button>
                   </div>
                 </div>
               ))}
-            </div>
-          )}
+                  </div>
+                )}
+              </div>
+            )
+          ) : null}
 
           {/* Chats tab */}
           {activeTab === "Chats" && (
@@ -518,18 +570,36 @@ export default function CustomerDashboard() {
                         </div>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        if (convo.chatType === 'vendor') {
-                          navigate("/chat", { state: { chatId: convo._id, vendor: convo.vendorId, from: "vendor" } });
-                        } else {
-                          navigate("/chat", { state: { vendor: { _id: "concierge", name: convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge", approved: true }, from: convo.chatType === 'support' ? "support" : "concierge" } });
-                        }
-                      }}
-                      style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
-                    >
-                      Open Chat →
-                    </button>
+                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                      <button
+                        onClick={() => {
+                          if (convo.chatType === 'vendor') {
+                            openExistingChat(convo._id, {
+                              _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId,
+                              name: convo.vendorName || convo.vendorId?.name || "Vendor",
+                              serviceType: convo.serviceType || convo.vendorId?.serviceType,
+                              approved: convo.chatApproved,
+                            });
+                          } else {
+                            navigate("/chat", { state: { vendor: { _id: "concierge", name: convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge", approved: true }, from: convo.chatType === 'support' ? "support" : "concierge" } });
+                          }
+                        }}
+                        style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+                      >
+                        Open Chat →
+                      </button>
+                      {/* Only vendor chats can be deleted by the customer */}
+                      {convo.chatType === 'vendor' && (
+                        <button
+                          onClick={() => handleDeleteChat(convo._id)}
+                          disabled={deletingChat === convo._id}
+                          title="Delete this chat permanently"
+                          style={{ width: 34, height: 34, borderRadius: "50%", border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: deletingChat === convo._id ? 0.6 : 1 }}
+                        >
+                          {deletingChat === convo._id ? "…" : "🗑️"}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -610,38 +680,46 @@ export default function CustomerDashboard() {
                     </div>
                   </div>
 
-                  {/* Pinned messages + agreed prices from vendor chats — Upcoming only */}
+                  {/* Per-vendor boxes — one card per vendor with their price + pinned messages */}
                   {plan.status === "in_progress" && (() => {
                     const planConvos = conversations.filter(c => c.chatType === "vendor" && c.chatApproved);
-                    const priceItems = planConvos.filter(c => c.vendorPrice?.amount > 0);
-                    const pinnedItems = planConvos.flatMap(c => (c.pinnedMessages || []).map(m => ({
-                      text: typeof m === "string" ? m : m.content || m.text,
-                      vendor: c.vendorName || c.vendorId?.name || "Vendor",
-                    }))).filter(m => m.text);
-                    if (!priceItems.length && !pinnedItems.length) return null;
+                    const vendorCards = planConvos.map(c => {
+                      const hasPrice = c.vendorPrice?.amount > 0;
+                      const pins = (c.pinnedMessages || [])
+                        .map(m => typeof m === "string" ? m : m.content || m.text)
+                        .filter(Boolean);
+                      if (!hasPrice && !pins.length) return null;
+                      return { c, hasPrice, pins };
+                    }).filter(Boolean);
+                    if (!vendorCards.length) return null;
                     return (
-                      <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
-                        {priceItems.length > 0 && (
-                          <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 10, padding: "10px 14px" }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: "#15803d", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>💰 Agreed Prices</div>
-                            {priceItems.map((c, i) => (
-                              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
-                                <span>{c.vendorName || c.vendorId?.name || c.serviceType}</span>
-                                <span style={{ fontWeight: 700 }}>₹{Number(c.vendorPrice.amount).toLocaleString("en-IN")}</span>
+                      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+                        {vendorCards.map(({ c, hasPrice, pins }) => (
+                          <div key={c._id} style={{ borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", overflow: "hidden" }}>
+                            {/* Vendor name header */}
+                            <div style={{ background: "rgba(196,122,46,0.06)", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "8px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                              <span style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>
+                                {c.vendorName || c.serviceType || "Vendor"}
+                              </span>
+                              {hasPrice && (
+                                <span style={{ fontSize: 14, fontWeight: 900, color: "#15803d" }}>
+                                  ₹{Number(c.vendorPrice.amount).toLocaleString("en-IN")}
+                                </span>
+                              )}
+                            </div>
+                            {/* Pinned messages */}
+                            {pins.length > 0 && (
+                              <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 5, background: "#FFFCF5" }}>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned</span>
+                                {pins.map((text, i) => (
+                                  <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a", padding: "5px 10px", background: "#fff", borderRadius: 7, border: "1px solid rgba(196,122,46,0.13)" }}>
+                                    • {text}
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            )}
                           </div>
-                        )}
-                        {pinnedItems.length > 0 && (
-                          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned from chats</span>
-                            {pinnedItems.map((m, i) => (
-                              <div key={i} style={{ background: "#fff", borderRadius: 8, padding: "7px 12px", fontSize: 12.5, color: "#5a3a1a", border: "1px solid rgba(196,122,46,0.15)" }}>
-                                • {m.text} <span style={{ color: "#bbb", fontSize: 11 }}>({m.vendor})</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
+                        ))}
                       </div>
                     );
                   })()}

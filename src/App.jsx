@@ -7,6 +7,8 @@ import router from "./router";
 import store from "./store";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FloatingChatButton from "./components/FloatingChatButton";
+import VendorChatModal from "./components/VendorChatModal";
+import { ChatProvider } from "./context/ChatContext";
 import ComingSoon from "./pages/ComingSoon";
 
 const LIVE_DOMAINS = ["tendr.co.in", "www.tendr.co.in"];
@@ -30,8 +32,11 @@ function App() {
   return (
     <HelmetProvider>
       <ErrorBoundary>
+        <ChatProvider>
           <RouterProvider router={router} />
           <FloatingChatButton />
+          <VendorChatModal />
+        </ChatProvider>
       </ErrorBoundary>
     </HelmetProvider>
   );
