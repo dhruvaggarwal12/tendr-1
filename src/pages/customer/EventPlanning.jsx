@@ -336,9 +336,8 @@ const EventPlanning = () => {
         style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}
       >
         <BasicSpeedDial />
-        <div style={{ background: "#fff", boxShadow: "0 1px 8px rgba(139,69,19,0.08)" }}>
-          <MakeAGroup_Nav />
-        </div>
+        <HamburgerNav active="Browse" />
+
 
         <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-16 flex flex-col items-center">
 
