@@ -38,6 +38,7 @@ export default function VendorChatModal() {
 
   const vendor = chatState?.vendor;
   const isExistingChat = !!chatState?.isExisting;
+  const fromActiveChats = !!chatState?.vendor?.fromActiveChats;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
   const botFlow = (!isExistingChat && vendor) ? getBotFlow(vendor.serviceType, undefined, reduxFormData) : [];
@@ -390,6 +391,17 @@ export default function VendorChatModal() {
       >
         {/* ── Header ── */}
         <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+          {/* Back to Active Chats button */}
+          {fromActiveChats && (
+            <button
+              onClick={() => {
+                closeChat();
+                document.dispatchEvent(new CustomEvent("tendr:open-active-chats"));
+              }}
+              title="Back to all chats"
+              style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            >‹</button>
+          )}
           <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 17, flexShrink: 0 }}>
             {(vendor?.name || "V")[0].toUpperCase()}
           </div>

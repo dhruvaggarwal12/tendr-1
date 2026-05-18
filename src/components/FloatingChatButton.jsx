@@ -72,6 +72,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     setShowActiveChats(true);
   };
 
+  // Listen for VendorChatModal "back to active chats" event
+  useEffect(() => {
+    const handler = () => setShowActiveChats(true);
+    document.addEventListener("tendr:open-active-chats", handler);
+    return () => document.removeEventListener("tendr:open-active-chats", handler);
+  }, []);
+
   const handleVendorChatClick = (convo) => {
     setOpen(false);
     markAllSeen([convo]);
@@ -150,10 +157,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {vendorChats.map(convo => (
                     <div
-                      key={convo._id}
+                                      key={convo._id}
                       onClick={() => {
                         setShowActiveChats(false);
-                        handleVendorChatClick(convo);
+                        // Pass fromActiveChats so VendorChatModal shows back button
+                        openExistingChat(convo._id, {
+                          _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId,
+                          name: convo.vendorName || "Vendor",
+                          serviceType: convo.serviceType,
+                          approved: convo.chatApproved,
+                          fromActiveChats: true,
+                        });
                       }}
                       style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", transition: "background 0.15s" }}
                       onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.04)")}
@@ -213,7 +227,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"
             stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
-        <span className="chat-btn-text">Chat</span>
+        <span className="chat-btn-text">View Chats</span>
         {/* Minimized vendor chat indicator */}
         {hasMinimizedChat && (
           <span style={{
