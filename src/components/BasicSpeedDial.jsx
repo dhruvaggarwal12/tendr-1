@@ -18,23 +18,7 @@ const actions = [
 ];
 
 
+// Removed from all pages — planning tools accessible via the sidebar nav instead
 export default function BasicSpeedDial() {
-  const navigate = useNavigate();
-
-  return (
-    <SpeedDial
-      ariaLabel="SpeedDial basic"
-       sx={{ position: 'fixed', bottom: 90, right: 40,'& .MuiFab-primary': { backgroundColor: 'white', color:'black',             boxShadow: '0 4px 8px rgba(0,0,0,0.2)','&:hover': {backgroundColor: '#f0f0f0',},'&:focus': {outline: 'none',},},}}
-      icon={<img src={tendrLogo} alt="logo" className="w-10 h-10" />}
-    >
-      {actions.map((action) => (
-        <SpeedDialAction
-          key={action.name}
-          icon={action.icon}  
-          tooltipTitle={action.name}
-          onClick={() => navigate(action.path)}
-        />
-      ))}
-    </SpeedDial>
-  );
+  return null;
 }

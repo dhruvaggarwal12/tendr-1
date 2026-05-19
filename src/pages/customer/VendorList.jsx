@@ -68,7 +68,7 @@ const VendorList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [secondaryFilters, setSecondaryFilters] = useState({});
-  const [filtersOpen, setFiltersOpen] = useState(true);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState("rankingScore");
   const [sortOrder, setSortOrder] = useState("desc");
 
@@ -381,8 +381,8 @@ const VendorList = () => {
                 </select>
               </div>
 
-              {/* Filters button — right */}
-              <div style={{ position: "relative" }}>
+              {/* Filters button — right side, slightly inset */}
+              <div style={{ position: "relative", marginRight: 16 }}>
                 <button
                   onClick={() => setFiltersOpen(o => !o)}
                   style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 16px", borderRadius: 100, border: `1.5px solid ${filtersOpen ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: filtersOpen ? "rgba(196,122,46,0.07)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
