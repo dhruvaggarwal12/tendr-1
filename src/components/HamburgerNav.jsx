@@ -61,24 +61,24 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Browse Vendors",             href: "/listings",                  icon: "📂" },
-      { label: "Top Rated Vendors",          href: "/top-rated/Photographer",    icon: "⭐" },
-      { label: "Register as Vendor",         href: "/vendor/register",           icon: "🤝" },
+      { label: "Browse Vendors",       href: "/listings" },
+      { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
+      { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
     { label: "Planning Tools", items: [
-      { label: "Checklist",                  href: "/checklist-picker",          icon: "✅" },
-      { label: "Timeline",                   href: "/timeline-picker",           icon: "⏱" },
-      { label: "Budget Allocator",           href: "/budget-picker",             icon: "💰" },
-      { label: "Aftermovie",                 href: "/aftermovie",                icon: "🎬" },
-      { label: "Invitation Flyers",          href: "/invitation",                icon: "💌" },
-      { label: "Gift Hampers & Cakes",       href: "/gift-hampers-cakes",        icon: "🎁" },
+      { label: "Checklist",            href: "/checklist-picker" },
+      { label: "Timeline",             href: "/timeline-picker" },
+      { label: "Budget Allocator",     href: "/budget-picker" },
+      { label: "Aftermovie",           href: "/aftermovie" },
+      { label: "Invitation Flyers",    href: "/invitation" },
+      { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
     ]},
     { label: "Booking", items: [
-      { label: "Plan Your Event",            href: "/booking",                   icon: "🥂" },
+      { label: "Plan Your Event",      href: "/booking" },
     ]},
     { label: "Company", items: [
-      { label: "About Us",                   href: "/about-us",                  icon: "ℹ️" },
-      { label: "Contact Us",                 href: "/contact-us",                icon: "📞" },
+      { label: "About Us",             href: "/about-us" },
+      { label: "Contact Us",           href: "/contact-us" },
     ]},
   ];
 
@@ -92,16 +92,16 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         <aside style={{
           position: "fixed", left: 0, top: 0, zIndex: 200,
           width: SIDEBAR_W, height: "100vh",
-          background: "linear-gradient(180deg,#2C1A0E 0%,#1e1208 100%)",
+          background: "linear-gradient(180deg,#3D2410 0%,#2C1A0C 100%)",
           display: "flex", flexDirection: "column",
-          boxShadow: "4px 0 24px rgba(0,0,0,0.18)",
+          boxShadow: "4px 0 24px rgba(0,0,0,0.15)",
           overflowY: "auto", overflowX: "hidden",
           fontFamily: font,
         }}>
           {/* Logo */}
           <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
             <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 28, cursor: "pointer", filter: "brightness(1.1)", display: "block" }} />
-            <p style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", margin: "5px 0 0", letterSpacing: "0.04em" }}>We Curate, You Celebrate</p>
+            <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", margin: "5px 0 0", letterSpacing: "0.04em" }}>We Curate, You Celebrate</p>
           </div>
 
           {/* User info */}
@@ -113,7 +113,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
                 </div>
               </div>
               <div style={{ display: "flex", gap: 7 }}>
@@ -144,7 +144,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     <div style={{ width: 18, height: 18, borderRadius: "50%", background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.2)" : "transparent", border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#555", flexShrink: 0 }}>
                       {isDone ? "✓" : i + 1}
                     </div>
-                    <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? "#CCAB4A" : isDone ? "#C47A2E" : "rgba(255,255,255,0.5)", textDecoration: isBrowseClickable ? "underline" : "none" }}>{step}</span>
+                    <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? "#CCAB4A" : isDone ? "#D4905A" : "rgba(255,255,255,0.55)", textDecoration: isBrowseClickable ? "underline" : "none" }}>{step}</span>
                   </div>
                 );
               })}
@@ -155,14 +155,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           <div style={{ flex: 1, padding: "8px 0", overflowY: "auto" }}>
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
-                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(196,122,46,0.55)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
+                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
                 {sec.items.map(item => (
                   <button key={item.label} onClick={() => navigate(item.href)}
-                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "9px 18px", border: "none", background: "transparent", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.paddingLeft = "22px"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.75)"; e.currentTarget.style.paddingLeft = "18px"; }}
+                    style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "9px 18px", border: "none", background: "transparent", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.9)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.15)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.paddingLeft = "22px"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.9)"; e.currentTarget.style.paddingLeft = "18px"; }}
                   >
-                    <span style={{ fontSize: 14, width: 20, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
                     <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
                   </button>
                 ))}

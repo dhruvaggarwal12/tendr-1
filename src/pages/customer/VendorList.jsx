@@ -249,38 +249,60 @@ const VendorList = () => {
       <BasicSpeedDial />
       <HamburgerNav title="Vendor Listings" active="Browse" />
       <div className="flex flex-col lg:flex-row">
-        {/* Sidebar */}
-        <div className="w-full lg:w-1/4 bg-white shadow-lg lg:shadow-none lg:border-r border-gray-200">
-          <div className="p-4 lg:p-6">
-            <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 lg:mb-6">
-              Filters
-            </h2>
+        {/* Filters sidebar */}
+        {(() => {
+          const [filtersOpen, setFiltersOpen] = useState(true);
+          return (
+            <div className="w-full lg:w-1/4 bg-white shadow-lg lg:shadow-none lg:border-r border-gray-200">
+              {/* Filters toggle header */}
+              <button
+                onClick={() => setFiltersOpen(o => !o)}
+                style={{
+                  width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
+                  padding: "16px 20px", background: "none", border: "none",
+                  borderBottom: filtersOpen ? "1px solid rgba(196,122,46,0.12)" : "none",
+                  cursor: "pointer", fontFamily: "'Outfit', sans-serif",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Filters</span>
+                  {(secondaryFilters && Object.values(secondaryFilters).some(v => v !== undefined && (!Array.isArray(v) || v.length > 0))) && (
+                    <span style={{ fontSize: 10, fontWeight: 700, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "2px 7px" }}>Active</span>
+                  )}
+                </div>
+                <span style={{ fontSize: 18, color: "#C47A2E", transform: filtersOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>⌄</span>
+              </button>
 
-            {/* Primary filters */}
-            <div className="mb-6">
-              <h3 className="text-sm sm:text-base font-semibold text-gray-700 mb-3">
-                Primary Filters
-              </h3>
-              <PrimaryFilters_ListingPage
-                onSearch={handleSearch}
-                allowedServiceTypes={selectedCategories}
-              />
+              {filtersOpen && (
+                <div style={{ padding: "16px 20px" }}>
+                  {/* Primary filters */}
+                  <div style={{ marginBottom: 20 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>
+                      Service & Location
+                    </p>
+                    <PrimaryFilters_ListingPage
+                      onSearch={handleSearch}
+                      allowedServiceTypes={selectedCategories}
+                    />
+                  </div>
+
+                  {/* Secondary filters — category specific */}
+                  {serviceType && (
+                    <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 18 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>
+                        {serviceType} Filters
+                      </p>
+                      <SecondaryFilters_ListingPage
+                        serviceType={serviceType}
+                        onFiltersChange={(f) => setSecondaryFilters(f)}
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-
-            {/* Secondary filters — category specific */}
-            {serviceType && (
-              <div style={{ borderTop: "1px solid rgba(196,122,46,0.12)", paddingTop: 20 }}>
-                <h3 style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px" }}>
-                  {serviceType} Filters
-                </h3>
-                <SecondaryFilters_ListingPage
-                  serviceType={serviceType}
-                  onFiltersChange={(f) => setSecondaryFilters(f)}
-                />
-              </div>
-            )}
-          </div>
-        </div>
+          );
+        })()}
 
         {/* Main */}
         <div className="flex-1 p-3 lg:p-4" style={{ position: "relative" }}>
