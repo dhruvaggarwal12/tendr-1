@@ -440,6 +440,37 @@ export default function CustomerDashboard() {
                       </div>
                     )}
 
+                    {/* Pinned messages from all active vendor conversations */}
+                    {(() => {
+                      const allPinned = conversations
+                        .filter(c => c.chatType === "vendor")
+                        .flatMap(c => (c.pinnedMessages || [])
+                          .map(m => ({
+                            text: typeof m === "string" ? m : m.content || m.text,
+                            vendor: c.vendorName || "Vendor",
+                            service: c.serviceType || "",
+                          }))
+                        )
+                        .filter(m => m.text);
+                      if (!allPinned.length) return null;
+                      return (
+                        <div style={{ marginBottom: 14 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>
+                            📌 Pinned from Chats
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                            {allPinned.map((m, i) => (
+                              <div key={i} style={{ background: "#fff", borderRadius: 8, padding: "7px 12px", fontSize: 12.5, color: "#5a3a1a", border: "1px solid rgba(196,122,46,0.15)", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                                <span style={{ color: "#C47A2E", flexShrink: 0 }}>•</span>
+                                <span style={{ flex: 1 }}>{m.text}</span>
+                                <span style={{ fontSize: 11, color: "#bbb", flexShrink: 0 }}>({m.vendor})</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
                     <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                       <button onClick={() => navigate("/listings")}
                         style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}>
