@@ -249,59 +249,9 @@ const VendorList = () => {
       />
       <BasicSpeedDial />
       <HamburgerNav title="Vendor Listings" active="Browse" />
-      <div className="flex flex-col lg:flex-row">
-        {/* Filters sidebar */}
-        <div className="w-full lg:w-1/4 bg-white shadow-lg lg:shadow-none lg:border-r border-gray-200">
-          {/* Filters toggle header */}
-          <button
-            onClick={() => setFiltersOpen(o => !o)}
-            style={{
-              width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "16px 20px", background: "none", border: "none",
-              borderBottom: filtersOpen ? "1px solid rgba(196,122,46,0.12)" : "none",
-              cursor: "pointer", fontFamily: "'Outfit', sans-serif",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Filters</span>
-              {(secondaryFilters && Object.values(secondaryFilters).some(v => v !== undefined && (!Array.isArray(v) || v.length > 0))) && (
-                <span style={{ fontSize: 10, fontWeight: 700, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "2px 7px" }}>Active</span>
-              )}
-            </div>
-            <span style={{ fontSize: 18, color: "#C47A2E", display: "inline-block", transform: filtersOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>⌄</span>
-          </button>
-
-          {filtersOpen && (
-            <div style={{ padding: "16px 20px", overflowY: "auto", maxHeight: "calc(100vh - 80px)" }}>
-              {/* Primary filters */}
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>
-                  Service & Location
-                </p>
-                <PrimaryFilters_ListingPage
-                  onSearch={handleSearch}
-                  allowedServiceTypes={selectedCategories}
-                />
-              </div>
-
-              {/* Secondary filters — category specific */}
-              {serviceType && (
-                <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 18 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>
-                    {serviceType} Filters
-                  </p>
-                  <SecondaryFilters_ListingPage
-                    serviceType={serviceType}
-                    onFiltersChange={(f) => setSecondaryFilters(f)}
-                  />
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Main */}
-        <div className="flex-1 p-3 lg:p-4" style={{ position: "relative" }}>
+      <div>
+        {/* Full-width main content */}
+        <div className="p-3 lg:p-4" style={{ position: "relative" }}>
           {/* Page header */}
           <div className="mb-1">
             {/* Category tab switcher — shown when customer selected multiple service types */}
@@ -407,26 +357,83 @@ const VendorList = () => {
                 ))}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
-              <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
-              >
-                <option value="rankingScore">Best Match</option>
-                <option value="rating">Rating</option>
-                <option value="price">Price</option>
-                <option value="experience">Experience</option>
-              </select>
-              <select
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value)}
-                style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
-              >
-                <option value="desc">High to Low</option>
-                <option value="asc">Low to High</option>
-              </select>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
+              {/* Sort controls — left */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
+                >
+                  <option value="rankingScore">Best Match</option>
+                  <option value="rating">Rating</option>
+                  <option value="price">Price</option>
+                  <option value="experience">Experience</option>
+                </select>
+                <select
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
+                >
+                  <option value="desc">High to Low</option>
+                  <option value="asc">Low to High</option>
+                </select>
+              </div>
+
+              {/* Filters button — right */}
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => setFiltersOpen(o => !o)}
+                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 16px", borderRadius: 100, border: `1.5px solid ${filtersOpen ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: filtersOpen ? "rgba(196,122,46,0.07)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                >
+                  <span>⚙ Filters</span>
+                  {(secondaryFilters && Object.values(secondaryFilters).some(v => v !== undefined && (!Array.isArray(v) || v.length > 0))) && (
+                    <span style={{ fontSize: 10, fontWeight: 700, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>Active</span>
+                  )}
+                  <span style={{ display: "inline-block", transform: filtersOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", fontSize: 11 }}>⌄</span>
+                </button>
+
+                {/* Filters dropdown panel */}
+                {filtersOpen && (
+                  <>
+                    <div style={{ position: "fixed", inset: 0, zIndex: 99 }} onClick={() => setFiltersOpen(false)} />
+                    <div style={{
+                      position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 100,
+                      width: 320, maxHeight: "70vh", overflowY: "auto",
+                      background: "#fff", borderRadius: 16,
+                      border: "1.5px solid rgba(196,122,46,0.2)",
+                      boxShadow: "0 8px 32px rgba(44,26,14,0.14)",
+                      padding: "18px 20px",
+                      fontFamily: "'Outfit', sans-serif",
+                    }}>
+                      {/* Primary filters */}
+                      <div style={{ marginBottom: 18 }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>
+                          Service & Location
+                        </p>
+                        <PrimaryFilters_ListingPage
+                          onSearch={(params) => { handleSearch(params); setFiltersOpen(false); }}
+                          allowedServiceTypes={selectedCategories}
+                        />
+                      </div>
+
+                      {/* Secondary filters */}
+                      {serviceType && (
+                        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>
+                            {serviceType} Filters
+                          </p>
+                          <SecondaryFilters_ListingPage
+                            serviceType={serviceType}
+                            onFiltersChange={(f) => setSecondaryFilters(f)}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
           </div>
 

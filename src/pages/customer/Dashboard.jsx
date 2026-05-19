@@ -386,7 +386,7 @@ export default function CustomerDashboard() {
                   </div>
                 ))}
               </div>
-            ) : filtered.length === 0 && pendingVendorChats.length === 0 ? (
+            ) : filtered.length === 0 && pendingVendorChats.length === 0 && !showPlanningCard ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                 <div style={{ fontSize: 40, marginBottom: 14 }}>📋</div>
                 <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No ongoing bookings</h4>

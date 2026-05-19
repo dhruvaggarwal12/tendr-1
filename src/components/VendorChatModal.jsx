@@ -544,29 +544,6 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Question suggestions — shown when chat is active and messages area is mostly empty */}
-          {(approved || isExistingChat) && messages.length <= 1 && !messagesLoading && (
-            <div style={{ marginBottom: 12 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 8px" }}>Suggested questions</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                {[
-                  "What packages do you offer?",
-                  "What is your availability on my date?",
-                  "Can you share pricing details?",
-                  "Do you have experience with my event type?",
-                  "What is included in your service?",
-                  "Can we schedule a call?",
-                ].map(q => (
-                  <button key={q} onClick={() => sendText(q)}
-                    style={{ whiteSpace: "nowrap", padding: "5px 12px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.28)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
-                  >{q}</button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {/* Chat messages */}
           {(approved || isExistingChat) && messages.map((msg, i) => (
             <div key={i} style={{ alignSelf: msg.sender === "user" ? "flex-end" : msg.sender === "system" ? "center" : "flex-start", maxWidth: "80%" }}>
@@ -591,6 +568,21 @@ export default function VendorChatModal() {
 
         {/* ── Input + action bar ── */}
         <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", flexShrink: 0, background: "#fff", position: "relative" }}>
+          {/* Suggested questions — just above input when chat active + few messages */}
+          {(approved || isExistingChat) && messages.length <= 1 && !messagesLoading && (
+            <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", padding: "8px 14px 6px", background: "#fff" }}>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"].map(q => (
+                  <button key={q} onClick={() => sendText(q)}
+                    style={{ whiteSpace: "nowrap", padding: "4px 11px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#6B3A1F", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: font }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
+                  >{q}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {(approved || isExistingChat) ? (
             <>
               {/* Message row */}
