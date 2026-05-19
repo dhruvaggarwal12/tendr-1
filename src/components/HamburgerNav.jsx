@@ -10,11 +10,35 @@ import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
 
+const SIDEBAR_W = 220; // px
+
 // title: shown in center; showReviewPay: Review & Pay button; active: journey step
-export default function HamburgerNav({ title = "", showReviewPay = false, active = "" }) {
+// noSidebar: force drawer mode (use on form-filling pages like EventPlanning)
+export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false }) {
   const navigate   = useNavigate();
   const dispatch   = useDispatch();
   const { openVendorChat } = useChatOverlay();
+
+  // Track viewport width — sidebar only on desktop (≥1024px)
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" && window.innerWidth >= 1024);
+  useEffect(() => {
+    const handler = () => setIsDesktop(window.innerWidth >= 1024);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  // Fixed sidebar mode = desktop AND not explicitly disabled
+  const isSidebar = isDesktop && !noSidebar;
+
+  // Push body content right when sidebar is active
+  useEffect(() => {
+    if (isSidebar) {
+      document.body.style.marginLeft = `${SIDEBAR_W}px`;
+    } else {
+      document.body.style.marginLeft = "";
+    }
+    return () => { document.body.style.marginLeft = ""; };
+  }, [isSidebar]);
   const { user, token } = useSelector((s) => s.auth);
   const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -58,6 +82,150 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     ]},
   ];
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // SIDEBAR MODE (desktop ≥1024px, default)
+  // ─────────────────────────────────────────────────────────────────────────
+  if (isSidebar) {
+    return (
+      <>
+        {/* Fixed left sidebar */}
+        <aside style={{
+          position: "fixed", left: 0, top: 0, zIndex: 200,
+          width: SIDEBAR_W, height: "100vh",
+          background: "linear-gradient(180deg,#2C1A0E 0%,#1e1208 100%)",
+          display: "flex", flexDirection: "column",
+          boxShadow: "4px 0 24px rgba(0,0,0,0.18)",
+          overflowY: "auto", overflowX: "hidden",
+          fontFamily: font,
+        }}>
+          {/* Logo */}
+          <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+            <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 28, cursor: "pointer", filter: "brightness(1.1)", display: "block" }} />
+            <p style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", margin: "5px 0 0", letterSpacing: "0.04em" }}>We Curate, You Celebrate</p>
+          </div>
+
+          {/* User info */}
+          {token && user && (
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
+                  {user.name?.[0]?.toUpperCase() || "U"}
+                </div>
+                <div style={{ minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: 7 }}>
+                <button onClick={() => navigate("/dashboard")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
+                <button onClick={() => navigate("/dashboard?tab=Chats")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>My Chats</button>
+              </div>
+              {/* Review & Pay if vendors finalised */}
+              {finalisedCount > 0 && (
+                <button onClick={() => navigate("/booking/review")} style={{ width: "100%", marginTop: 7, padding: "7px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Review & Pay ({finalisedCount}) →
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Journey progress — shown when active step is provided */}
+          {active && (
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(196,122,46,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>Your Journey</p>
+              {STEPS.map((step, i) => {
+                const activeIdx = STEPS.indexOf(active);
+                const isDone = i < activeIdx;
+                const isActive = i === activeIdx;
+                const isBrowseClickable = step === "Browse" && isDone;
+                return (
+                  <div key={step} onClick={isBrowseClickable ? () => navigate("/listings") : undefined}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", cursor: isBrowseClickable ? "pointer" : "default", opacity: (!isDone && !isActive) ? 0.35 : 1 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.2)" : "transparent", border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#555", flexShrink: 0 }}>
+                      {isDone ? "✓" : i + 1}
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? "#CCAB4A" : isDone ? "#C47A2E" : "rgba(255,255,255,0.5)", textDecoration: isBrowseClickable ? "underline" : "none" }}>{step}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Nav sections */}
+          <div style={{ flex: 1, padding: "8px 0", overflowY: "auto" }}>
+            {NAV_SECTIONS.map((sec, si) => (
+              <div key={sec.label} style={{ marginBottom: 2 }}>
+                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(196,122,46,0.55)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
+                {sec.items.map(item => (
+                  <button key={item.label} onClick={() => navigate(item.href)}
+                    style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "9px 18px", border: "none", background: "transparent", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.paddingLeft = "22px"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.75)"; e.currentTarget.style.paddingLeft = "18px"; }}
+                  >
+                    <span style={{ fontSize: 14, width: 20, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
+                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+                  </button>
+                ))}
+                {si < NAV_SECTIONS.length - 1 && (
+                  <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "4px 18px" }} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom: logout */}
+          {token && user && (
+            <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+              <button onClick={() => { dispatch(logout()); navigate("/"); }}
+                style={{ width: "100%", padding: "8px", borderRadius: 8, border: "1px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.08)", color: "#e74c3c", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                Logout
+              </button>
+            </div>
+          )}
+        </aside>
+
+        {/* Top bar for progress/title — sits to the right of sidebar on desktop */}
+        {(active || title) && (
+          <div style={{
+            position: "sticky", top: 0, zIndex: 100,
+            height: 48, background: "rgba(255,252,245,0.97)",
+            backdropFilter: "blur(16px)",
+            borderBottom: "1px solid rgba(196,122,46,0.1)",
+            boxShadow: "0 1px 8px rgba(139,69,19,0.05)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "0 24px", fontFamily: font,
+          }}>
+            {active ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                {STEPS.map((step, i) => {
+                  const activeIdx = STEPS.indexOf(active);
+                  const isDone = i < activeIdx;
+                  const isActive = i === activeIdx;
+                  return (
+                    <React.Fragment key={step}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                        <div style={{ width: 18, height: 18, borderRadius: "50%", background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.12)" : "#f0ebe3", border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#bbb" }}>
+                          {isDone ? "✓" : i + 1}
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb" }}>{step}</span>
+                      </div>
+                      {i < STEPS.length - 1 && <div style={{ width: 20, height: 1.5, background: isDone ? "#C47A2E" : "rgba(196,122,46,0.15)", borderRadius: 2 }} />}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            ) : (
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{title}</span>
+            )}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // DRAWER MODE (mobile, or noSidebar=true)
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <>
       {/* Compact sticky header — progress bar in center when active prop given */}

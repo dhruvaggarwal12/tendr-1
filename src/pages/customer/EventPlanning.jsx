@@ -293,7 +293,7 @@ const EventPlanning = () => {
         style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}
       >
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" />
+        <HamburgerNav active="Browse" noSidebar />
 
 
         <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-16 flex flex-col items-center">

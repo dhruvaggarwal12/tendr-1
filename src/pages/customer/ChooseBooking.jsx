@@ -62,7 +62,7 @@ export default function ChooseBooking() {
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", fontFamily: font }}>
       <SEO title="Plan an Event" description="Start planning your perfect event. Choose how you want to work — browse and book vendors yourself or let Tendr handle everything for you." path="/booking" />
-      <HamburgerNav />
+      <HamburgerNav noSidebar />
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 24px 80px" }}>
       <BasicSpeedDial />
 
