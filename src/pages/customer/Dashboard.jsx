@@ -47,6 +47,10 @@ export default function CustomerDashboard() {
   const { openVendorChat, openExistingChat } = useChatOverlay();
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const finalisedCount = Object.keys(finalisedVendors).length;
+  // Event planning form data from Redux — used to show "planning in progress" card
+  const formData = useSelector((s) => s.eventPlanning.formData || {});
+  const selectedServices = useSelector((s) => s.eventPlanning.selectedVendors || []);
+  const bookingType = useSelector((s) => s.eventPlanning.bookingType);
 
   // Delete a chat request/conversation permanently
   const [deletingChat, setDeletingChat] = useState(null); // conversationId being deleted
@@ -228,14 +232,16 @@ export default function CustomerDashboard() {
     return (Date.now() - new Date(ref).getTime()) < TWENTY_FOUR_HRS;
   };
 
-  // Vendor chats to show in Ongoing:
-  // - Unapproved (pending): show for 24hrs after last customer message
-  // - Approved but no price agreed yet: always show (still in discussion phase)
-  const pendingVendorChats = conversations.filter(c => {
-    if (c.chatType !== "vendor") return false;
-    if (!c.chatApproved) return isWithin24Hrs(c);         // pending → 24hr rule
-    return !(c.vendorPrice?.amount > 0);                  // approved + no price → still ongoing
-  });
+  // Pending vendor chats (unapproved only) — shown in Ongoing tab
+  // Approved chats appear in Chats tab; here we only show pending requests
+  const pendingVendorChats = conversations.filter(c =>
+    c.chatType === "vendor" && !c.chatApproved && isWithin24Hrs(c)
+  );
+
+  // Show a "planning in progress" card if form data exists but no submitted EventPlan yet
+  const hasFormData = !!(formData.eventType || formData.date || formData.location);
+  const hasSubmittedPlan = plans.some(p => ["submitted","draft","in_progress"].includes(p.status));
+  const showPlanningCard = hasFormData && !hasSubmittedPlan;
 
   // Support/concierge chats only appear after customer explicitly opens them
   const openedSupportChats = (() => {
@@ -254,7 +260,7 @@ export default function CustomerDashboard() {
   const counts = {
     All:       plans.length,
     Upcoming:  plans.filter((p) => statusMap.Upcoming.includes(p.status)).length,
-    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length + pendingVendorChats.length,
+    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length + pendingVendorChats.length + (showPlanningCard ? 1 : 0),
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
     Chats:     visibleChats.length,
@@ -388,6 +394,65 @@ export default function CustomerDashboard() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+                {/* ── Planning in Progress card — shown as soon as form is filled ── */}
+                {showPlanningCard && (
+                  <div style={{ background: "linear-gradient(135deg,#FFFCF5,#fff9f0)", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.25)", boxShadow: "0 2px 12px rgba(196,122,46,0.08)", padding: "18px 22px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>✏️</div>
+                        <div>
+                          <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>
+                            {formData.eventType ? `${formData.eventType} Event` : "Event Planning in Progress"}
+                          </div>
+                          <div style={{ fontSize: 12, color: "#9B7450" }}>
+                            {bookingType === "let-us-do-it" ? "Let Us Do It — Concierge" : "You Do It — Self Service"}
+                          </div>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 12px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>
+                        Planning in Progress
+                      </span>
+                    </div>
+
+                    {/* Form details as pills */}
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 12 }}>
+                      {[
+                        formData.eventType && { icon: "🎉", text: formData.eventType },
+                        formData.date      && { icon: "📅", text: formData.date },
+                        formData.guests    && { icon: "👥", text: `${formData.guests} guests` },
+                        formData.budget    && { icon: "💰", text: formData.budget },
+                        formData.location  && { icon: "📍", text: formData.location },
+                      ].filter(Boolean).map(({ icon, text }) => (
+                        <span key={text} style={{ fontSize: 12, fontWeight: 600, background: "#fff", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 11px", color: "#5a3a1a" }}>
+                          {icon} {text}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Selected services */}
+                    {selectedServices.length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", alignSelf: "center" }}>Services:</span>
+                        {selectedServices.map(s => (
+                          <span key={s} style={{ fontSize: 12, fontWeight: 600, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px", color: "#C47A2E" }}>{s}</span>
+                        ))}
+                      </div>
+                    )}
+
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      <button onClick={() => navigate("/listings")}
+                        style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}>
+                        Browse Vendors →
+                      </button>
+                      <button onClick={() => navigate("/booking")}
+                        style={{ padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                        Edit Details
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* EventPlan cards (submitted/draft) */}
                 {filtered.map((plan) => (
                   <div key={plan._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "20px 24px" }}>
@@ -486,16 +551,29 @@ export default function CustomerDashboard() {
                       ⏳ In Process — Awaiting Team Approval
                     </span>
                   </div>
-                  {/* Event form details */}
-                  {convo.eventDetails && Object.values(convo.eventDetails).some(Boolean) && (
-                    <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(196,122,46,0.12)", display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {Object.entries(convo.eventDetails).filter(([,v]) => v).map(([key, val]) => (
-                        <span key={key} style={{ fontSize: 12, background: "#fff", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px", color: "#5a3a1a" }}>
-                          <b style={{ color: "#C47A2E", textTransform: "capitalize" }}>{key.replace(/([A-Z])/g," $1").trim()}:</b> {val}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {/* Event form details — from conversation OR fall back to Redux form data */}
+                  {(() => {
+                    const details = (convo.eventDetails && Object.values(convo.eventDetails).some(Boolean))
+                      ? convo.eventDetails
+                      : formData;
+                    const lines = [
+                      details.eventType && { k: "Event",    v: details.eventType },
+                      details.date      && { k: "Date",     v: details.date },
+                      details.guests    && { k: "Guests",   v: details.guests },
+                      details.budget    && { k: "Budget",   v: details.budget },
+                      details.location  && { k: "City",     v: details.location },
+                    ].filter(Boolean);
+                    if (!lines.length) return null;
+                    return (
+                      <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "10px 14px", border: "1px solid rgba(196,122,46,0.12)", display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 6 }}>
+                        {lines.map(({ k, v }) => (
+                          <span key={k} style={{ fontSize: 12, background: "#fff", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "2px 10px", color: "#5a3a1a" }}>
+                            <b style={{ color: "#C47A2E" }}>{k}:</b> {v}
+                          </span>
+                        ))}
+                      </div>
+                    );
+                  })()}
                   {/* Pinned messages from this conversation */}
                   {(convo.pinnedMessages || []).length > 0 && (
                     <div style={{ marginTop: 6, display: "flex", flexDirection: "column", gap: 4 }}>
