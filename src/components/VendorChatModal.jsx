@@ -69,6 +69,7 @@ export default function VendorChatModal() {
 
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const [text, setText] = useState("");
   const [botOtherMode, setBotOtherMode] = useState(false); // "Other..." selected — show text input
   const [conversationId, setConversationId] = useState(null);
@@ -165,6 +166,7 @@ export default function VendorChatModal() {
         socket.emit("join_conversation", { conversationId: cid });
         setConversationId(cid);
         if (vendor?.approved) setApproved(true);
+        setMessagesLoading(true);
         try {
           const res = await fetch(`${BASE_URL}/messages/${cid}/messages`, {
             headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
@@ -179,7 +181,7 @@ export default function VendorChatModal() {
               })));
             }
           }
-        } catch {}
+        } catch {} finally { setMessagesLoading(false); }
       });
     }
 
@@ -286,12 +288,12 @@ export default function VendorChatModal() {
     }]);
   };
 
-  const sendText = () => {
-    if (!approved || !text.trim() || !conversationId) return;
-    const content = text.trim();
+  const sendText = (override) => {
+    const content = typeof override === "string" ? override : text.trim();
+    if (!approved || !content || !conversationId) return;
     setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
     socketRef.current?.emit("send_message", { conversationId, sender: "user", content });
-    setText("");
+    if (!override) setText("");
   };
 
   const sendImage = (e) => {
@@ -542,6 +544,29 @@ export default function VendorChatModal() {
             </div>
           )}
 
+          {/* Question suggestions — shown when chat is active and messages area is mostly empty */}
+          {(approved || isExistingChat) && messages.length <= 1 && !messagesLoading && (
+            <div style={{ marginBottom: 12 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", margin: "0 0 8px" }}>Suggested questions</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                {[
+                  "What packages do you offer?",
+                  "What is your availability on my date?",
+                  "Can you share pricing details?",
+                  "Do you have experience with my event type?",
+                  "What is included in your service?",
+                  "Can we schedule a call?",
+                ].map(q => (
+                  <button key={q} onClick={() => sendText(q)}
+                    style={{ whiteSpace: "nowrap", padding: "5px 12px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.28)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
+                  >{q}</button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Chat messages */}
           {(approved || isExistingChat) && messages.map((msg, i) => (
             <div key={i} style={{ alignSelf: msg.sender === "user" ? "flex-end" : msg.sender === "system" ? "center" : "flex-start", maxWidth: "80%" }}>
@@ -588,39 +613,12 @@ export default function VendorChatModal() {
               </div>
               {/* Review & Pay — shows after vendor/concierge is finalised */}
               {isThisVendorFinalised && (
-                <>
-                  <button
-                    onClick={() => setShowReviewPopup(true)}
-                    style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)", marginBottom: 8 }}
-                  >
-                    Review & Pay →
-                  </button>
-                  {showReviewPopup && (
-                    <div style={{ position: "absolute", inset: 0, zIndex: 10, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 24 }}>
-                      <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "85%", maxWidth: 340, boxShadow: "0 16px 48px rgba(44,26,14,0.2)", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
-                        <div style={{ fontSize: 36, marginBottom: 10 }}>🎉</div>
-                        <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Ready to proceed?</h3>
-                        <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 20px", lineHeight: 1.6 }}>
-                          You can complete your booking now, or browse for more vendors first.
-                        </p>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                          <button onClick={() => { closeChat(); router.navigate("/booking/review"); }}
-                            style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                            Continue to Booking →
-                          </button>
-                          <button onClick={() => { closeChat(); router.navigate("/listings"); }}
-                            style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                            Browse More Vendors
-                          </button>
-                          <button onClick={() => setShowReviewPopup(false)}
-                            style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </>
+                <button
+                  onClick={() => setShowReviewPopup(true)}
+                  style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)", marginBottom: 8 }}
+                >
+                  Review & Pay →
+                </button>
               )}
               {/* Hint for chat completion */}
               {!chatCompleted && (
@@ -657,6 +655,44 @@ export default function VendorChatModal() {
             </div>
           )}
         </div>
+
+        {/* ── Review & Pay popup — full modal overlay (not clipped by input bar) ── */}
+        {showReviewPopup && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 20, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 24 }}>
+            <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "85%", maxWidth: 340, boxShadow: "0 20px 60px rgba(44,26,14,0.25)", fontFamily: font, textAlign: "center" }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>🎉</div>
+              <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Ready to proceed?</h3>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 20px", lineHeight: 1.6 }}>
+                Complete your booking now, or browse more vendors first.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button onClick={() => { closeChat(); router.navigate("/booking/review"); }}
+                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Continue to Booking →
+                </button>
+                <button onClick={() => { closeChat(); router.navigate("/listings"); }}
+                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Browse More Vendors
+                </button>
+                <button onClick={() => setShowReviewPopup(false)}
+                  style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Messages loading spinner ── */}
+        {messagesLoading && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 15, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,252,245,0.85)" }}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+              <style>{`@keyframes vcm-spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
+              <div style={{ width: 36, height: 36, borderRadius: "50%", border: "3px solid rgba(196,122,46,0.2)", borderTopColor: "#C47A2E", animation: "vcm-spin 0.7s linear infinite" }} />
+              <span style={{ fontSize: 13, color: "#9B7450", fontFamily: font }}>Loading messages…</span>
+            </div>
+          </div>
+        )}
       </div>
     </>
   );

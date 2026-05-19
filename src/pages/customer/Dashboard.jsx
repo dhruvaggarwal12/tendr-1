@@ -228,12 +228,14 @@ export default function CustomerDashboard() {
     return (Date.now() - new Date(ref).getTime()) < TWENTY_FOUR_HRS;
   };
 
-  // Vendor chats that haven't been converted to a full EventPlan yet —
-  // show them in Ongoing as "In Process" so customer knows chat is active.
-  // Hidden after 24hrs of no customer activity.
-  const pendingVendorChats = conversations.filter(c =>
-    c.chatType === "vendor" && !c.chatApproved && isWithin24Hrs(c)
-  );
+  // Vendor chats to show in Ongoing:
+  // - Unapproved (pending): show for 24hrs after last customer message
+  // - Approved but no price agreed yet: always show (still in discussion phase)
+  const pendingVendorChats = conversations.filter(c => {
+    if (c.chatType !== "vendor") return false;
+    if (!c.chatApproved) return isWithin24Hrs(c);         // pending → 24hr rule
+    return !(c.vendorPrice?.amount > 0);                  // approved + no price → still ongoing
+  });
 
   // Support/concierge chats only appear after customer explicitly opens them
   const openedSupportChats = (() => {
