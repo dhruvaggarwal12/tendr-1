@@ -116,6 +116,7 @@ export default function VendorChatModal() {
     setConversationId(chatState.conversationId || null);
     setApproved(existing ? !!chatState.vendor?.approved : false);
     setChatCompleted(false);
+    setShowReviewPopup(false);
     setMinimizing(false);
   }, [chatState?.vendor?._id, chatState?.isExisting]);
 
@@ -272,9 +273,7 @@ export default function VendorChatModal() {
   };
 
   const handleFinalise = () => {
-    if (!vendor) return;
-    // Mark chat as completed automatically when finalising
-    setChatCompleted(true);
+    if (!chatCompleted || !vendor) return;
     dispatch(setFinalisedVendor(vendor));
     // Notify admin via chat
     if (socketRef.current && conversationId) {
@@ -585,20 +584,6 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Finalise button available even before approval (after bot done) */}
-          {botDone && !approved && !isExistingChat && (
-            <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "8px 14px", background: "#fffbeb", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ fontSize: 12, color: "#b45309", fontWeight: 500 }}>Want to add this vendor to your list while waiting?</span>
-              <button
-                onClick={handleFinalise}
-                disabled={isThisVendorFinalised}
-                style={{ padding: "6px 16px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "#f0fdf4" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isThisVendorFinalised ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: isThisVendorFinalised ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
-              >
-                {isThisVendorFinalised ? "✓ Added" : "Add to My List"}
-              </button>
-            </div>
-          )}
-
           {(approved || isExistingChat) ? (
             <>
               {/* Message row */}
@@ -648,8 +633,9 @@ export default function VendorChatModal() {
                   </button>
                   <button
                     onClick={handleFinalise}
-                    disabled={isThisVendorFinalised}
-                    style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: isThisVendorFinalised ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: !isThisVendorFinalised ? "0 2px 8px rgba(196,122,46,0.35)" : "none" }}
+                    disabled={!chatCompleted || isThisVendorFinalised}
+                    title={!chatCompleted ? "Mark chat as completed first" : ""}
+                    style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : !chatCompleted ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: (!chatCompleted && !isThisVendorFinalised) ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: (!chatCompleted && !isThisVendorFinalised) ? "not-allowed" : "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: (chatCompleted && !isThisVendorFinalised) ? "0 2px 8px rgba(196,122,46,0.35)" : "none" }}
                   >
                     {isThisVendorFinalised ? "✓ Finalised" : "Finalise Vendor"}
                   </button>
