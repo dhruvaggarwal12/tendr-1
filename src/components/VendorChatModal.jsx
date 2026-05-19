@@ -521,14 +521,22 @@ export default function VendorChatModal() {
 
           {/* Waiting state */}
           {botDone && !approved && (
-            <div style={{ textAlign: "center", padding: "48px 20px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <div style={{ textAlign: "center", padding: "40px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
               <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E22,#CCAB4A22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>⏳</div>
               <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>Request Sent!</div>
-              <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.65, maxWidth: 300 }}>
+              <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, maxWidth: 300 }}>
                 Our team is reviewing your request. We'll connect you with <strong>{vendor?.name}</strong> shortly.
               </div>
+              {/* Notification + next steps */}
+              <div style={{ background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 14, padding: "14px 18px", maxWidth: 320, textAlign: "left" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>📲 What happens next</div>
+                <div style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.7 }}>
+                  You will be <b>notified on WhatsApp</b> when your chat request is accepted.<br />
+                  Once approved, continue your chat from the <b>Active Chats</b> button at the bottom right.
+                </div>
+              </div>
               <button onClick={handleMinimize}
-                style={{ marginTop: 6, padding: "9px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                style={{ marginTop: 4, padding: "9px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                 Minimise & wait
               </button>
             </div>
