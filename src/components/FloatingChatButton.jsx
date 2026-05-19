@@ -110,11 +110,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   };
 
   const handleOpen = () => {
-    // If there's a minimized chat, clicking the bubble re-opens it
-    if (hasMinimizedChat) {
-      expandChat();
-      return;
-    }
+    // Always open the popup — user can resume minimized chat from inside
     if (!open) {
       fetchVendorChats();
       markAllSeen(vendorChats);
@@ -344,6 +340,27 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               fontFamily: font,
             }}
           >
+            {/* Resume minimized chat — shown at top when a chat is minimized */}
+            {hasMinimizedChat && chatState?.vendor && (
+              <>
+                <button
+                  onClick={() => { setOpen(false); expandChat(); }}
+                  style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "10px 12px", borderRadius: 10, border: "none", background: "rgba(21,128,61,0.07)", cursor: "pointer", textAlign: "left", fontFamily: font }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(21,128,61,0.12)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "rgba(21,128,61,0.07)")}
+                >
+                  <span style={{ fontSize: 18, flexShrink: 0 }}>💬</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#15803d" }}>
+                      Resume: {chatState.vendor.name || "Chat"}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>Tap to continue your minimized chat</div>
+                  </div>
+                </button>
+                <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
+              </>
+            )}
+
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", padding: "8px 12px 4px" }}>
               Start a Chat
             </p>
