@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import HamburgerNav from "../../components/HamburgerNav";
 
 const font = "'Outfit', sans-serif";
 
@@ -99,13 +101,34 @@ const buildPie = (categories) => {
   return `conic-gradient(${segs.join(", ")})`;
 };
 
+// Traffic light colour for a category based on spent vs allocated
+function trafficLight(spent, allocated) {
+  if (!allocated || spent === 0) return null;
+  const ratio = spent / allocated;
+  if (ratio > 1)    return { color: "#ef4444", bg: "rgba(239,68,68,0.08)",  label: "Over budget",  dot: "#ef4444" };
+  if (ratio >= 0.8) return { color: "#f59e0b", bg: "rgba(245,158,11,0.08)", label: "Nearly full",  dot: "#f59e0b" };
+  return              { color: "#22c55e", bg: "rgba(34,197,94,0.08)",  label: "On track",    dot: "#22c55e" };
+}
+
+// Map vendor serviceType → budget category name for auto-sync
+const VENDOR_TO_BUDGET = {
+  Caterer:      "Food & Catering",
+  Decorator:    "Decoration",
+  Photographer: "Photography",
+  DJ:           "DJ & Music",
+};
+
 export default function BudgetAllocator() {
   const location = useLocation();
-  const routeEventType = location.state?.eventType; // passed from BudgetPicker
+  const routeEventType = location.state?.eventType;
+  const finalisedVendors = useSelector(s => s.listingFilters?.finalisedVendors || {});
+  const conversations = useSelector(s => s.chat?.conversations || []);
+
   const [eventKey, setEventKey] = useState("birthday");
   const [totalBudget, setTotalBudget] = useState(50000);
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
 
   useEffect(() => {
     try {
@@ -155,6 +178,44 @@ export default function BudgetAllocator() {
   const deleteCategory = (id) =>
     setCategories(prev => prev.filter(c => c.id !== id));
 
+  // Sync actual spent from finalised vendor prices in Redux
+  const syncFromVendors = () => {
+    let synced = 0;
+    const updates = {};
+
+    Object.entries(finalisedVendors).forEach(([serviceType, vendorOrArr]) => {
+      const vendors = Array.isArray(vendorOrArr) ? vendorOrArr : [vendorOrArr];
+      const budgetCat = VENDOR_TO_BUDGET[serviceType];
+      if (!budgetCat) return;
+      vendors.forEach(v => {
+        if (!v) return;
+        // Try to find price from conversations via vendorId
+        const price = v.confirmedPrice || v.price || v.startingPrice || null;
+        if (price) {
+          updates[budgetCat] = (updates[budgetCat] || 0) + Number(price);
+          synced++;
+        }
+      });
+    });
+
+    if (Object.keys(updates).length === 0) {
+      setSyncMsg("No vendor prices found. Finalise a chat with a price first.");
+      setTimeout(() => setSyncMsg(""), 3000);
+      return;
+    }
+
+    setCategories(prev => prev.map(c => {
+      const match = Object.entries(updates).find(([name]) =>
+        c.name.toLowerCase().includes(name.toLowerCase()) ||
+        name.toLowerCase().includes(c.name.toLowerCase())
+      );
+      return match ? { ...c, spent: match[1] } : c;
+    }));
+
+    setSyncMsg(`Synced prices for ${synced} vendor${synced !== 1 ? "s" : ""}`);
+    setTimeout(() => setSyncMsg(""), 3000);
+  };
+
   const totalPct   = categories.reduce((s, c) => s + c.pct, 0);
   const totalAlloc = categories.reduce((s, c) => s + Math.round(totalBudget * c.pct / 100), 0);
   const totalSpent = categories.reduce((s, c) => s + c.spent, 0);
@@ -176,13 +237,25 @@ export default function BudgetAllocator() {
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Budget Planner", path: "/budget-picker" }, { name: "Budget Allocator", path: "/budget-allocator" }]}
       />
       <BasicSpeedDial />
+      <HamburgerNav title="Budget Allocator" />
 
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "32px 40px 28px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Planning Tool</div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, color: "#fff", margin: "0 0 6px", letterSpacing: "-0.02em" }}>Budget Allocator</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", margin: 0 }}>Plan and track your event spending</p>
+      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "28px 40px 24px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 5 }}>Planning Tool</div>
+            <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Budget Allocator</h1>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0 }}>Plan spend · track actuals · stay on budget</p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+            <button
+              onClick={syncFromVendors}
+              style={{ padding: "9px 18px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}
+            >
+              ⚡ Sync from Vendors
+            </button>
+            {syncMsg && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>{syncMsg}</span>}
+          </div>
         </div>
       </div>
 
@@ -269,12 +342,13 @@ export default function BudgetAllocator() {
                 <span />
               </div>
               {categories.map(c => {
-                const allocated = Math.round(totalBudget * c.pct / 100);
-                const spentPct  = allocated > 0 ? Math.min(100, (c.spent / allocated) * 100) : 0;
-                const overBudget = c.spent > allocated;
+                const allocated  = Math.round(totalBudget * c.pct / 100);
+                const spentPct   = allocated > 0 ? Math.min(100, (c.spent / allocated) * 100) : 0;
+                const tl         = trafficLight(c.spent, allocated);
                 return (
-                  <div key={c.id} style={{ borderBottom: "1px solid rgba(196,122,46,0.06)", padding: "12px 20px" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 100px 120px 32px", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                  <div key={c.id} style={{ borderBottom: "1px solid rgba(196,122,46,0.06)", padding: "12px 20px", background: tl ? tl.bg : "transparent", transition: "background 0.2s" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 100px 120px 28px", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                      {/* Name + traffic light dot */}
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                         <div style={{ width: 10, height: 10, borderRadius: 3, background: c.color, flexShrink: 0 }} />
                         <input
@@ -282,6 +356,9 @@ export default function BudgetAllocator() {
                           onChange={e => updateName(c.id, e.target.value)}
                           style={{ border: "none", outline: "none", fontSize: 13, fontWeight: 600, color: "#2C1A0E", fontFamily: font, background: "transparent", width: "100%", minWidth: 0 }}
                         />
+                        {tl && (
+                          <span title={tl.label} style={{ width: 9, height: 9, borderRadius: "50%", background: tl.dot, flexShrink: 0, boxShadow: `0 0 0 2px ${tl.dot}33` }} />
+                        )}
                       </div>
                       <input
                         type="number" min="0" max="100" value={c.pct}
@@ -293,19 +370,21 @@ export default function BudgetAllocator() {
                         type="number" min="0" value={c.spent}
                         onChange={e => updateSpent(c.id, e.target.value)}
                         placeholder="0"
-                        style={{ border: `1.5px solid ${overBudget ? "#fca5a5" : "rgba(196,122,46,0.2)"}`, borderRadius: 7, padding: "4px 8px", fontSize: 13, fontFamily: font, color: overBudget ? "#c0392b" : "#2C1A0E", outline: "none", width: "100%", background: overBudget ? "#fff5f5" : "#fff" }}
+                        style={{ border: `1.5px solid ${tl?.color ? tl.color + "66" : "rgba(196,122,46,0.2)"}`, borderRadius: 7, padding: "4px 8px", fontSize: 13, fontFamily: font, color: tl ? tl.color : "#2C1A0E", outline: "none", width: "100%", background: tl ? tl.bg : "#fff", fontWeight: tl ? 700 : 400 }}
                       />
                       <button onClick={() => deleteCategory(c.id)}
                         style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 14, padding: 0 }}>✕</button>
                     </div>
-                    {/* Spent progress bar */}
+                    {/* Progress bar + status label */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ flex: 1, height: 6, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${spentPct}%`, background: overBudget ? "#ef4444" : c.color, borderRadius: 100, transition: "width 0.3s" }} />
+                      <div style={{ flex: 1, height: 5, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${spentPct}%`, background: tl ? tl.dot : c.color, borderRadius: 100, transition: "width 0.3s" }} />
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: overBudget ? "#c0392b" : "#9B7450", whiteSpace: "nowrap" }}>
-                        {overBudget ? "Over budget" : `${Math.round(spentPct)}% used`}
-                      </span>
+                      {tl ? (
+                        <span style={{ fontSize: 11, fontWeight: 700, color: tl.color, whiteSpace: "nowrap" }}>{tl.label}</span>
+                      ) : (
+                        <span style={{ fontSize: 11, color: "#9B7450", whiteSpace: "nowrap" }}>No spend logged</span>
+                      )}
                     </div>
                   </div>
                 );

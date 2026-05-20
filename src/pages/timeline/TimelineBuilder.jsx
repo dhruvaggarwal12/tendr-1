@@ -20,6 +20,22 @@ export default function TimelineBuilder() {
     { id: "3", title: "Send invites", description: "WhatsApp and physical cards", checked: false },
   ]);
   const [preview, setPreview] = useState(false);
+  const [activeTab, setActiveTab] = useState("planning"); // "planning" | "dayof"
+
+  // Day Of schedule state — saved to localStorage
+  const [dayofSlots, setDayofSlots] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tendr_dayof") || "[]"); }
+    catch { return []; }
+  });
+
+  const addSlot = () => setDayofSlots(prev => [...prev, { id: Date.now().toString(), time: "", title: "", who: "", done: false }]);
+  const updateSlot = (id, field, val) => setDayofSlots(prev => prev.map(s => s.id === id ? { ...s, [field]: val } : s));
+  const toggleSlot = (id) => setDayofSlots(prev => prev.map(s => s.id === id ? { ...s, done: !s.done } : s));
+  const deleteSlot = (id) => setDayofSlots(prev => prev.filter(s => s.id !== id));
+
+  useEffect(() => {
+    localStorage.setItem("tendr_dayof", JSON.stringify(dayofSlots));
+  }, [dayofSlots]);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -56,31 +72,103 @@ export default function TimelineBuilder() {
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "36px 20px" }}>
 
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 28, flexWrap: "wrap" }}>
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 6px" }}>Planning Tool</p>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px" }}>
-              Event Timeline
-            </h1>
-            <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Drag to reorder · tick off as you go</p>
-          </div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-            <button
-              onClick={() => setPreview(v => !v)}
-              style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: preview ? "#C47A2E" : "transparent", color: preview ? "#fff" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
-            >
-              {preview ? "✏️ Edit" : "👁 Preview"}
-            </button>
-            {!preview && (
-              <button
-                onClick={addEvent}
-                style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
-              >
-                + Add Milestone
+        <div style={{ marginBottom: 24 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 6px" }}>Planning Tool</p>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 16px" }}>
+            Event Timeline
+          </h1>
+          {/* Tab switcher */}
+          <div style={{ display: "flex", gap: 8, borderBottom: "2px solid rgba(196,122,46,0.12)", paddingBottom: 0 }}>
+            {[["planning", "📋 Planning Timeline"], ["dayof", "🌅 Day Of Schedule"]].map(([key, label]) => (
+              <button key={key} onClick={() => setActiveTab(key)}
+                style={{ padding: "10px 20px", border: "none", background: "transparent", fontSize: 13.5, fontWeight: 700, fontFamily: font, cursor: "pointer", color: activeTab === key ? "#C47A2E" : "#9B7450",
+                  borderBottom: activeTab === key ? "2.5px solid #C47A2E" : "2.5px solid transparent", marginBottom: -2, transition: "all 0.15s" }}>
+                {label}
               </button>
-            )}
+            ))}
           </div>
         </div>
+
+        {/* ══ DAY OF SCHEDULE TAB ══ */}
+        {activeTab === "dayof" && (
+          <div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
+              <div>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Map out every moment of your event day — vendor arrivals, ceremonies, meals, speeches.</p>
+              </div>
+              <button onClick={addSlot} style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)", whiteSpace: "nowrap" }}>
+                + Add Time Slot
+              </button>
+            </div>
+
+            {dayofSlots.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 24px", background: "#FFFCF7", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🌅</div>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No slots yet</h3>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", maxWidth: 300, marginLeft: "auto", marginRight: "auto" }}>
+                  Add time slots for each part of your event day — photographer arrival, ceremony start, dinner, etc.
+                </p>
+                <button onClick={addSlot} style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  + Add First Slot
+                </button>
+              </div>
+            ) : (
+              <div style={{ position: "relative" }}>
+                {/* Vertical timeline line */}
+                <div style={{ position: "absolute", left: 52, top: 0, bottom: 0, width: 2, background: "linear-gradient(180deg,#C47A2E,#CCAB4A,rgba(196,122,46,0.1))", borderRadius: 2 }} />
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {dayofSlots.map((slot, idx) => (
+                    <div key={slot.id} style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+                      {/* Time + dot */}
+                      <div style={{ width: 52, flexShrink: 0, textAlign: "right", paddingTop: 14 }}>
+                        <input
+                          type="time" value={slot.time}
+                          onChange={e => updateSlot(slot.id, "time", e.target.value)}
+                          style={{ width: "100%", border: "none", outline: "none", fontSize: 12, fontWeight: 700, color: "#C47A2E", background: "transparent", fontFamily: font, textAlign: "right", cursor: "pointer" }}
+                        />
+                      </div>
+                      {/* Dot on line */}
+                      <div style={{ width: 14, height: 14, borderRadius: "50%", background: slot.done ? "#22c55e" : "#C47A2E", border: "2.5px solid #F8F4EF", flexShrink: 0, marginTop: 14, zIndex: 1, boxShadow: `0 0 0 3px ${slot.done ? "rgba(34,197,94,0.2)" : "rgba(196,122,46,0.2)"}` }} />
+                      {/* Card */}
+                      <div style={{ flex: 1, background: slot.done ? "rgba(34,197,94,0.04)" : "#FFFCF7", borderRadius: 12, padding: "12px 16px", border: `1.5px solid ${slot.done ? "rgba(34,197,94,0.25)" : "rgba(196,122,46,0.14)"}`, opacity: slot.done ? 0.7 : 1 }}>
+                        <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          <button onClick={() => toggleSlot(slot.id)}
+                            style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${slot.done ? "#22c55e" : "rgba(196,122,46,0.4)"}`, background: slot.done ? "#22c55e" : "#fff", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, flexShrink: 0, marginTop: 1 }}>
+                            {slot.done ? "✓" : ""}
+                          </button>
+                          <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                            <input
+                              value={slot.title} placeholder="e.g. Photographer arrives"
+                              onChange={e => updateSlot(slot.id, "title", e.target.value)}
+                              style={{ border: "none", outline: "none", fontSize: 14, fontWeight: 700, color: "#2C1A0E", fontFamily: font, background: "transparent", textDecoration: slot.done ? "line-through" : "none" }}
+                            />
+                            <input
+                              value={slot.who} placeholder="Who's responsible? (optional)"
+                              onChange={e => updateSlot(slot.id, "who", e.target.value)}
+                              style={{ border: "none", outline: "none", fontSize: 12, color: "#9B7450", fontFamily: font, background: "transparent" }}
+                            />
+                          </div>
+                          <button onClick={() => deleteSlot(slot.id)}
+                            style={{ fontSize: 13, padding: "2px 6px", borderRadius: 6, border: "1.5px solid rgba(239,68,68,0.15)", background: "transparent", color: "#ef4444", cursor: "pointer", flexShrink: 0 }}>✕</button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={addSlot}
+                  style={{ marginTop: 16, marginLeft: 82, padding: "10px 20px", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.35)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.05)")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                >
+                  + Add Another Slot
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ══ PLANNING TIMELINE TAB ══ */}
+        {activeTab === "planning" && <>
 
         {/* Progress bar */}
         {total > 0 && (
@@ -207,6 +295,7 @@ export default function TimelineBuilder() {
             + Add Another Milestone
           </button>
         )}
+        </> /* end planning tab */}
       </div>
 
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400&family=Outfit:wght@400;600;700;800;900&display=swap');`}</style>

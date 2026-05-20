@@ -185,16 +185,43 @@ export default function CheckBox() {
           </div>
         </div>
 
-        {/* Progress bar */}
-        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>Overall Progress</span>
-            <span style={{ fontSize: 22, fontWeight: 900, color: pct === 100 ? "#15803d" : "#C47A2E" }}>{pct}%</span>
+        {/* Progress ring */}
+        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)", display: "flex", alignItems: "center", gap: 24 }}>
+          {/* SVG ring */}
+          {(() => {
+            const r = 38, circ = 2 * Math.PI * r;
+            const dash = (pct / 100) * circ;
+            const ringColor = pct === 100 ? "#22c55e" : pct >= 60 ? "#C47A2E" : "#CCAB4A";
+            return (
+              <div style={{ flexShrink: 0, position: "relative", width: 100, height: 100 }}>
+                <svg width="100" height="100" viewBox="0 0 100 100">
+                  {/* Track */}
+                  <circle cx="50" cy="50" r={r} fill="none" stroke="#f3e8d4" strokeWidth="8" />
+                  {/* Progress */}
+                  <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="8"
+                    strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+                    style={{ transformOrigin: "50% 50%", transform: "rotate(-90deg)", transition: "stroke-dasharray 0.5s ease" }} />
+                </svg>
+                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: ringColor, lineHeight: 1 }}>{pct}%</span>
+                  {pct === 100 && <span style={{ fontSize: 16 }}>🎉</span>}
+                </div>
+              </div>
+            );
+          })()}
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>
+              {pct === 100 ? "All done — great work!" : "Overall Progress"}
+            </div>
+            <div style={{ fontSize: 14, color: "#9B7450", marginBottom: 10 }}>
+              {done} of {total} tasks completed
+            </div>
+            {/* Mini bar */}
+            <div style={{ height: 6, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s" }} />
+            </div>
+            <div style={{ fontSize: 11, color: "#9B7450", marginTop: 5 }}>{total - done} tasks remaining</div>
           </div>
-          <div style={{ height: 10, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s ease" }} />
-          </div>
-          <div style={{ fontSize: 12, color: "#9B7450", marginTop: 6 }}>{done} of {total} tasks completed</div>
         </div>
 
         {/* Categories */}
@@ -204,18 +231,36 @@ export default function CheckBox() {
           return (
             <div key={cat.id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", marginBottom: 16, boxShadow: "0 2px 12px rgba(139,69,19,0.06)", overflow: "hidden" }}>
               {/* Category header */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid rgba(196,122,46,0.1)", background: "rgba(196,122,46,0.04)" }}>
-                <input
-                  value={cat.name}
-                  onChange={e => updateCategoryName(cat.id, e.target.value)}
-                  style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", background: "transparent", border: "none", outline: "none", fontFamily: font, flex: 1 }}
-                />
-                <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: catDone === catTotal && catTotal > 0 ? "#15803d" : "#9B7450" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px", borderBottom: "1px solid rgba(196,122,46,0.1)", background: catDone === catTotal && catTotal > 0 ? "rgba(34,197,94,0.04)" : "rgba(196,122,46,0.04)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flex: 1, minWidth: 0 }}>
+                  {/* Mini ring */}
+                  {catTotal > 0 && (() => {
+                    const catPct = Math.round((catDone / catTotal) * 100);
+                    const r = 10, circ = 2 * Math.PI * r;
+                    const ringColor = catDone === catTotal ? "#22c55e" : "#C47A2E";
+                    return (
+                      <svg width="28" height="28" viewBox="0 0 28 28" style={{ flexShrink: 0 }}>
+                        <circle cx="14" cy="14" r={r} fill="none" stroke="#f3e8d4" strokeWidth="3.5" />
+                        <circle cx="14" cy="14" r={r} fill="none" stroke={ringColor} strokeWidth="3.5"
+                          strokeDasharray={`${(catPct / 100) * circ} ${circ}`} strokeLinecap="round"
+                          style={{ transformOrigin: "50% 50%", transform: "rotate(-90deg)", transition: "stroke-dasharray 0.4s" }} />
+                      </svg>
+                    );
+                  })()}
+                  <input
+                    value={cat.name}
+                    onChange={e => updateCategoryName(cat.id, e.target.value)}
+                    style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", background: "transparent", border: "none", outline: "none", fontFamily: font, flex: 1 }}
+                  />
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 9px", borderRadius: 20,
+                    background: catDone === catTotal && catTotal > 0 ? "rgba(34,197,94,0.12)" : "rgba(196,122,46,0.1)",
+                    color: catDone === catTotal && catTotal > 0 ? "#15803d" : "#C47A2E" }}>
                     {catDone}/{catTotal}
                   </span>
                   <button onClick={() => deleteCategory(cat.id)}
-                    style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: 16, padding: 0, lineHeight: 1 }}>✕</button>
+                    style={{ background: "none", border: "none", color: "#bbb", cursor: "pointer", fontSize: 15, padding: 0, lineHeight: 1 }}>✕</button>
                 </div>
               </div>
 
