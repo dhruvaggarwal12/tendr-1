@@ -2848,8 +2848,19 @@ const AdminDashboard = () => {
         {/* ── Gift Hampers Orders ── */}
         {activeDropdown === "GiftHampers" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
-              🎁 Gift Hamper Orders
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">🎁 Gift Hamper Orders</div>
+              <button
+                onClick={async () => {
+                  if (!window.confirm('Seed 5 sample gift hamper products + create vendor?')) return;
+                  const r = await fetch(`${BASE_URL}/admin/seed-gift-hamper-products`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                  const d = await r.json();
+                  alert(d.message + '\n' + (d.results || []).map(x => `• ${x.name}: ${x.status}`).join('\n'));
+                }}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+              >
+                🌱 Seed 5 Sample Products
+              </button>
             </div>
             {ghLoading ? (
               <p style={{ color: "#9B7450" }}>Loading orders…</p>
