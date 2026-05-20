@@ -703,118 +703,146 @@ const Home = () => {
         }
       `}</style>
 
-      {/* How Tendr Works — horizontal animated */}
-      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
-        <div style={{ maxWidth: 1260, margin: "0 auto" }}>
+      {/* How Tendr Works */}
+      <section style={{ background: "#2C1A0E", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {/* Heading */}
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Your Journey</p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 3.5vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 10px" }}>How Tendr Works</h2>
-            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 480, margin: "0 auto" }}>Five simple steps from idea to celebration — most events booked within 48 hours.</p>
-          </div>
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.55 }}
+            style={{ textAlign: "center", marginBottom: 56 }}
+          >
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 12 }}>Your Journey</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 400, color: "#fff", margin: "0 0 12px", letterSpacing: "0.02em" }}>
+              How Tendr Works
+            </h2>
+            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.5)", maxWidth: 400, margin: "0 auto" }}>
+              From idea to celebration in five steps.
+            </p>
+          </motion.div>
 
-          {/* Steps row */}
-          <div style={{ position: "relative" }}>
+          {/* Steps */}
+          <div style={{ display: "flex", gap: 16, alignItems: "stretch" }} className="htw-row">
+            {[
+              { n: "01", icon: "📋", title: "Tell Us About Your Event",  desc: "Event type, date, budget, guests — 2 minutes.",        time: "2 min"    },
+              { n: "02", icon: "🔍", title: "Browse & Shortlist",        desc: "Find verified caterers, decorators, photographers, DJs.", time: "5–10 min" },
+              { n: "03", icon: "💬", title: "Chat & Get a Price",        desc: "Direct chat. Real quote. No surprises.",               time: "24–48 hrs" },
+              { n: "04", icon: "✅", title: "Review & Confirm",          desc: "One summary page. All vendors. All prices.",            time: "5 min"    },
+              { n: "05", icon: "🎉", title: "Pay & Celebrate",           desc: "Pay securely. Show up and enjoy.",                     time: "Instant"  },
+            ].map(({ n, icon, title, desc, time }, i) => (
+              <motion.div
+                key={n}
+                initial={{ opacity: 0, y: 50, scale: 0.94 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1, type: "spring", stiffness: 120, damping: 14 }}
+                whileHover={{ y: -6, transition: { duration: 0.2 } }}
+                style={{
+                  flex: 1, background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(204,171,74,0.18)",
+                  borderRadius: 20, padding: "28px 22px 26px",
+                  display: "flex", flexDirection: "column", gap: 14,
+                  backdropFilter: "blur(8px)",
+                  cursor: "default",
+                  position: "relative", overflow: "hidden",
+                }}
+              >
+                {/* Step number — large background watermark */}
+                <span style={{
+                  position: "absolute", top: -8, right: 14,
+                  fontSize: 72, fontWeight: 900, color: "rgba(204,171,74,0.07)",
+                  lineHeight: 1, fontFamily: "'Outfit',sans-serif", pointerEvents: "none",
+                  userSelect: "none",
+                }}>
+                  {n}
+                </span>
 
-            {/* Animated connecting line with glow pulse */}
-            <motion.div
-              initial={{ scaleX: 0 }}
-              whileInView={{ scaleX: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 1.1, ease: "easeInOut", delay: 0.2 }}
-              style={{
-                position: "absolute", top: 36, left: "10%", right: "10%", height: 2,
-                background: "linear-gradient(90deg,#C47A2E,#CCAB4A,#7c3aed,#0369a1,#15803d)",
-                transformOrigin: "left", borderRadius: 100,
-              }}
-              animate={{ opacity: [0.3, 0.65, 0.3] }}
-              className="htw-line"
-            />
-
-            <div style={{ display: "flex", gap: 20 }} className="htw-row">
-              {[
-                { step: "1", icon: "📋", color: "#C47A2E", time: "~2 min",    title: "Share Event Details",  desc: "Click 'Plan Your Event', fill in event type, date, location, guests and budget." },
-                { step: "2", icon: "🔍", color: "#7c3aed", time: "5–10 min",  title: "Explore & Shortlist",  desc: "Browse caterers, decorators, photographers and DJs. Shortlist your favourites." },
-                { step: "3", icon: "💬", color: "#0369a1", time: "24–48 hrs", title: "Chat & Get a Price",   desc: "Chat with vendors directly and get a confirmed price before committing." },
-                { step: "4", icon: "💰", color: "#b45309", time: "5 min",     title: "Review & Confirm",     desc: "See all vendors and prices in one clear summary — no hidden charges." },
-                { step: "5", icon: "🎉", color: "#15803d", time: "Instant",   title: "Pay & Celebrate",      desc: "Pay securely. Vendors confirmed, timings locked — just show up and enjoy." },
-              ].map(({ step, icon, color, time, title, desc }, i) => (
+                {/* Icon */}
                 <motion.div
-                  key={step}
-                  initial={{ opacity: 0, y: 40 }}
-                  whileInView={{ opacity: 1, y: 0 }}
+                  initial={{ scale: 0, rotate: -20 }}
+                  whileInView={{ scale: 1, rotate: 0 }}
                   viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: i * 0.13 }}
-                  whileHover={{ y: -5 }}
-                  style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", cursor: "default" }}
+                  transition={{ type: "spring", stiffness: 200, damping: 12, delay: i * 0.1 + 0.15 }}
+                  whileHover={{ scale: 1.18, rotate: [0, -8, 8, -4, 0] }}
+                  style={{
+                    width: 52, height: 52, borderRadius: 14,
+                    background: "linear-gradient(135deg,rgba(204,171,74,0.22),rgba(196,122,46,0.14))",
+                    border: "1px solid rgba(204,171,74,0.3)",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 22, flexShrink: 0,
+                  }}
                 >
-                  {/* Icon */}
+                  {icon}
+                </motion.div>
+
+                {/* Step label */}
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A", opacity: 0.8 }}>
+                  Step {n} · {time}
+                </span>
+
+                {/* Title */}
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
+
+                {/* Desc */}
+                <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
+
+                {/* Connector arrow — after each card except last */}
+                {i < 4 && (
                   <motion.div
-                    whileHover={{ scale: 1.15, rotate: [0, -6, 6, -3, 3, 0] }}
-                    transition={{ duration: 0.4 }}
+                    initial={{ opacity: 0, x: -8 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1 + 0.4, duration: 0.3 }}
                     style={{
-                      width: 64, height: 64, borderRadius: "50%",
-                      background: `linear-gradient(135deg,${color},${color}aa)`,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 26, marginBottom: 16, position: "relative", zIndex: 1,
-                      boxShadow: `0 6px 18px ${color}30`,
-                      border: `3px solid #FFFCF5`,
+                      position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)",
+                      zIndex: 10, fontSize: 18, color: "rgba(204,171,74,0.5)",
                     }}
                   >
-                    {icon}
+                    ›
                   </motion.div>
-
-                  {/* Step + time on one line */}
-                  <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.08em", textTransform: "uppercase", color, marginBottom: 6, opacity: 0.85 }}>
-                    Step {step} · {time}
-                  </span>
-
-                  {/* Title */}
-                  <h3 style={{ fontSize: 14.5, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.3 }}>{title}</h3>
-
-                  {/* Description — short */}
-                  <p style={{ fontSize: 12.5, color: "#9B7450", lineHeight: 1.6, margin: 0 }}>{desc}</p>
-                </motion.div>
-              ))}
-            </div>
+                )}
+              </motion.div>
+            ))}
           </div>
 
-          {/* Booking modes callout */}
-          <div style={{ margin: "40px auto 0", maxWidth: 680, background: "linear-gradient(135deg,rgba(196,122,46,0.07),rgba(204,171,74,0.07))", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 16, padding: "20px 28px", display: "flex", gap: 20, alignItems: "flex-start" }} className="htw-callout">
-            <div style={{ fontSize: 28, flexShrink: 0 }}>💡</div>
-            <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 5px" }}>Not sure how involved you want to be?</p>
-              <p style={{ fontSize: 13.5, color: "#7A5535", margin: 0, lineHeight: 1.65 }}>
-                Click on <strong style={{ color: "#C47A2E" }}>Plan Your Event</strong>, then choose <strong style={{ color: "#C47A2E" }}>I'll Find My Vendors</strong> to browse and book vendors yourself at your own pace, or <strong style={{ color: "#C47A2E" }}>Tendr Plans It For Me</strong> and our team selects the best vendors for your event, coordinates everything and presents a full plan for your approval.
-              </p>
-            </div>
-          </div>
-
-          {/* Start Planning CTA */}
-          <div style={{ textAlign: "center", marginTop: 36 }}>
+          {/* Callout + CTA */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+            style={{ textAlign: "center", marginTop: 52 }}
+          >
+            <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.45)", marginBottom: 24, maxWidth: 520, margin: "0 auto 28px" }}>
+              Choose <strong style={{ color: "#CCAB4A" }}>I'll Find My Vendors</strong> to explore yourself, or{" "}
+              <strong style={{ color: "#CCAB4A" }}>Tendr Plans It For Me</strong> and we handle everything.
+            </p>
             <motion.button
-              whileHover={{ scale: 1.04, boxShadow: "0 10px 32px rgba(196,122,46,0.45)" }}
+              whileHover={{ scale: 1.04, boxShadow: "0 12px 36px rgba(204,171,74,0.4)" }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate("/booking")}
-              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, padding: "14px 44px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.35)", letterSpacing: "0.02em" }}
+              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, padding: "15px 48px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 20px rgba(204,171,74,0.3)", letterSpacing: "0.02em" }}
             >
               Plan Your Event →
             </motion.button>
-            <p style={{ fontSize: 13, color: "#9B7450", marginTop: 10 }}>Free to browse · No commitment until you pay</p>
-          </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.25)", marginTop: 12 }}>Free to browse · No commitment until you pay</p>
+          </motion.div>
 
         </div>
 
         <style>{`
           @media (max-width: 860px) {
             .htw-row { flex-wrap: wrap !important; }
-            .htw-row > div { flex: 0 0 calc(33% - 12px) !important; min-width: 140px; }
-            .htw-line { display: none !important; }
-            .htw-callout { flex-direction: column !important; gap: 10px !important; }
+            .htw-row > div { flex: 0 0 calc(33% - 10px) !important; }
           }
           @media (max-width: 540px) {
             .htw-row > div { flex: 0 0 calc(50% - 8px) !important; }
+          }
+          @media (max-width: 360px) {
+            .htw-row > div { flex: 0 0 100% !important; }
           }
         `}</style>
       </section>
@@ -823,93 +851,127 @@ const Home = () => {
 
       {/* ── Memories Section ── */}
       {(() => {
-        const BLANK_D = { coupleName: "", date: "", day: "", time: "", venue: "", rsvp: "" };
-        const PREVIEW = TEMPLATES.slice(0, 3); // first 3 templates as cards
+        const BLANK_D = { coupleName: "Rahul & Priya", date: "15th Dec 2025", day: "Saturday", time: "7 PM", venue: "The Grand Palace", rsvp: "+91 9XXXXXXXXX" };
+        const PREVIEW_TEMPLATES = [TEMPLATES[0], TEMPLATES[1], TEMPLATES[2]]; // Botanical, Royal Noir, Blush
         return (
-          <section style={{ background: "#FFFCF7", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif" }}>
-            <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-              {/* Header row */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
+          <section style={{ background: "linear-gradient(160deg,#1C0E05 0%,#2C1A0E 50%,#1A1008 100%)", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
+
+            {/* Subtle background texture dots */}
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(rgba(204,171,74,0.06) 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none" }} />
+
+            <div style={{ maxWidth: 1160, margin: "0 auto", position: "relative", zIndex: 1 }}>
+
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.55 }}
+                style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48, flexWrap: "wrap", gap: 20 }}
+              >
                 <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 8px" }}>Create &amp; Share</p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, letterSpacing: "0.01em" }}>
-                    Memories
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#CCAB4A", margin: "0 0 10px" }}>Create &amp; Share</p>
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.2rem,4.5vw,3.4rem)", fontWeight: 300, color: "#fff", margin: "0 0 10px", letterSpacing: "0.02em", fontStyle: "italic" }}>
+                    Beautiful Memories
                   </h2>
+                  <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", margin: 0, maxWidth: 340 }}>
+                    Design your invites &amp; stationery — customise and share in minutes.
+                  </p>
                 </div>
-                {/* Toggle buttons */}
-                <div style={{ display: "flex", gap: 10 }}>
+                {/* Buttons */}
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <button
                     onClick={() => navigate("/stationery")}
-                    style={{ padding: "10px 20px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}
+                    style={{ padding: "11px 24px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(204,171,74,0.3)", letterSpacing: "0.02em" }}
                   >
                     Wedding Stationery
                   </button>
                   <button
                     onClick={() => navigate("/invitation")}
-                    style={{ padding: "10px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
-                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
-                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                    style={{ padding: "11px 24px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.35)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(204,171,74,0.1)"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.6)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.35)"; }}
                   >
                     Invitation Flyers
                   </button>
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Cards row */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, alignItems: "start" }} className="memories-grid">
-                {PREVIEW.map(tpl => {
+              {/* Cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 20 }} className="memories-grid">
+
+                {PREVIEW_TEMPLATES.map((tpl, i) => {
                   const Renderer = RENDERERS[tpl.id];
                   return (
-                    <div
+                    <motion.div
                       key={tpl.id}
+                      initial={{ opacity: 0, y: 40 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 0.5, delay: i * 0.1 }}
                       onClick={() => navigate(`/stationery/${tpl.id}`)}
-                      style={{ background: tpl.palette?.bg || "#F8F4EF", borderRadius: 16, overflow: "hidden", cursor: "pointer", border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", transition: "all 0.2s" }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(139,69,19,0.14)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; }}
+                      style={{ borderRadius: 18, overflow: "hidden", cursor: "pointer", position: "relative", border: "1px solid rgba(204,171,74,0.15)", boxShadow: "0 8px 32px rgba(0,0,0,0.3)", transition: "transform 0.25s, box-shadow 0.25s", background: tpl.palette?.bg || "#F8F4EF" }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px) scale(1.01)"; e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,0.45)"; e.currentTarget.querySelector(".mem-overlay").style.opacity = "1"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.3)"; e.currentTarget.querySelector(".mem-overlay").style.opacity = "0"; }}
                     >
-                      {/* Thumbnail */}
-                      <div style={{ padding: "16px 16px 0", display: "flex", justifyContent: "center", overflow: "hidden" }}>
+                      {/* Template thumbnail */}
+                      <div style={{ display: "flex", justifyContent: "center", padding: "16px 12px 0", overflow: "hidden", background: tpl.palette?.bg || "#F8F4EF" }}>
                         <div style={{ pointerEvents: "none", flexShrink: 0 }}>
                           {Renderer && <Renderer d={BLANK_D} onChange={() => {}} mini={true} />}
                         </div>
                       </div>
-                      {/* Label */}
-                      <div style={{ padding: "12px 16px 16px", textAlign: "center" }}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{tpl.name}</div>
-                        <div style={{ fontSize: 11, color: "#9B7450" }}>{tpl.category}</div>
+
+                      {/* Label bar */}
+                      <div style={{ padding: "14px 16px 16px", background: "rgba(28,10,0,0.85)", backdropFilter: "blur(8px)" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 2 }}>{tpl.name}</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.08em" }}>{tpl.category}</div>
                       </div>
-                    </div>
+
+                      {/* Hover overlay with Customise button */}
+                      <div className="mem-overlay" style={{ position: "absolute", inset: 0, background: "rgba(28,10,0,0.62)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.22s", borderRadius: 18 }}>
+                        <div style={{ textAlign: "center" }}>
+                          <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", marginBottom: 10 }}>Customise This Design</div>
+                          <div style={{ display: "inline-block", padding: "9px 22px", borderRadius: 100, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700 }}>Open Editor →</div>
+                        </div>
+                      </div>
+                    </motion.div>
                   );
                 })}
 
-                {/* 4th card — blurred See All */}
-                <div
+                {/* See All card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 40 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: 0.3 }}
                   onClick={() => navigate("/stationery")}
-                  style={{ background: "#F0EBE3", borderRadius: 16, overflow: "hidden", cursor: "pointer", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 280, position: "relative", transition: "all 0.2s" }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.background = "#EDE6D8"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "#F0EBE3"; }}
+                  style={{ borderRadius: 18, cursor: "pointer", border: "1px solid rgba(204,171,74,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.3)", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 320, background: "rgba(204,171,74,0.06)", transition: "all 0.25s" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.background = "rgba(204,171,74,0.12)"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.5)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "rgba(204,171,74,0.06)"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.25)"; }}
                 >
-                  {/* Blurred preview of 4th template */}
+                  {/* Blurred 4th template behind */}
                   {(() => {
-                    const tpl4 = TEMPLATES[3];
-                    const R4 = RENDERERS[tpl4.id];
+                    const R4 = RENDERERS[TEMPLATES[3].id];
                     return R4 ? (
-                      <div style={{ position: "absolute", inset: 0, overflow: "hidden", filter: "blur(4px)", opacity: 0.5, display: "flex", justifyContent: "center", paddingTop: 16 }}>
-                        <div style={{ pointerEvents: "none" }}>
-                          <R4 d={BLANK_D} onChange={() => {}} mini={true} />
-                        </div>
+                      <div style={{ position: "absolute", inset: 0, display: "flex", justifyContent: "center", paddingTop: 16, filter: "blur(5px)", opacity: 0.18, overflow: "hidden" }}>
+                        <div style={{ pointerEvents: "none" }}><R4 d={BLANK_D} onChange={() => {}} mini={true} /></div>
                       </div>
                     ) : null;
                   })()}
-                  <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "20px" }}>
-                    <div style={{ fontSize: 32, marginBottom: 10 }}>→</div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>See All Designs</div>
-                    <div style={{ fontSize: 12, color: "#9B7450" }}>10 templates</div>
+                  <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "24px 20px" }}>
+                    <div style={{ width: 52, height: 52, borderRadius: "50%", background: "rgba(204,171,74,0.15)", border: "1.5px solid rgba(204,171,74,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, margin: "0 auto 16px" }}>→</div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 6 }}>See All Designs</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginBottom: 20 }}>10 templates to choose from</div>
+                    <div style={{ display: "inline-block", padding: "8px 20px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.5)", color: "#CCAB4A", fontSize: 12, fontWeight: 700 }}>Browse All →</div>
                   </div>
-                </div>
+                </motion.div>
+
               </div>
             </div>
-            <style>{`@media(max-width:860px){.memories-grid{grid-template-columns:repeat(2,1fr)!important;}} @media(max-width:480px){.memories-grid{grid-template-columns:1fr!important;}}`}</style>
+            <style>{`
+              @media(max-width:900px){.memories-grid{grid-template-columns:repeat(2,1fr)!important;gap:16px!important;}}
+              @media(max-width:480px){.memories-grid{grid-template-columns:1fr!important;}}
+            `}</style>
           </section>
         );
       })()}
