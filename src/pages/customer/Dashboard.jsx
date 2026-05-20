@@ -235,16 +235,21 @@ export default function CustomerDashboard() {
     return (Date.now() - new Date(ref).getTime()) < TWENTY_FOUR_HRS;
   };
 
-  // Pending vendor chats (unapproved only) — shown in Ongoing tab
-  // Approved chats appear in Chats tab; here we only show pending requests
-  const pendingVendorChats = conversations.filter(c =>
-    c.chatType === "vendor" && !c.chatApproved && isWithin24Hrs(c)
-  );
+  // Vendor chats shown in Ongoing:
+  // - Unapproved/pending: within 24hrs of last customer message
+  // - Approved + no price agreed yet: always show (still in discussion)
+  const pendingVendorChats = conversations.filter(c => {
+    if (c.chatType !== "vendor") return false;
+    if (!c.chatApproved) return isWithin24Hrs(c);   // pending → 24hr rule
+    return !(c.vendorPrice?.amount > 0);             // approved + no price = still negotiating
+  });
 
-  // Show a "planning in progress" card if form data exists but no submitted EventPlan yet
+  // Show "planning in progress" card when form has data, regardless of whether
+  // vendor chats exist — formData now persists 7 days via localStorage
   const hasFormData = !!(formData.eventType || formData.date || formData.location);
+  const hasActiveConversations = pendingVendorChats.length > 0;
   const hasSubmittedPlan = plans.some(p => ["submitted","draft","in_progress"].includes(p.status));
-  const showPlanningCard = hasFormData && !hasSubmittedPlan;
+  const showPlanningCard = (hasFormData || hasActiveConversations) && !hasSubmittedPlan;
 
   // Support/concierge chats only appear after customer explicitly opens them
   const openedSupportChats = (() => {

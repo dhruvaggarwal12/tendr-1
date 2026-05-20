@@ -98,21 +98,34 @@ export const submitEventPlan = createAsyncThunk(
   }
 );
 
+const SESSION_KEY = 'tendr_ep_session';
+const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days — persists across browser restarts
+
 const loadSession = () => {
   try {
-    const raw = sessionStorage.getItem('tendr_session');
-    return raw ? JSON.parse(raw) : null;
+    // Try localStorage first (persistent), fall back to sessionStorage (legacy)
+    const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem('tendr_session');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    // Check TTL
+    if (parsed.__savedAt && Date.now() - parsed.__savedAt > SESSION_TTL) {
+      localStorage.removeItem(SESSION_KEY);
+      return null;
+    }
+    return parsed;
   } catch { return null; }
 };
 const saveSession = (state) => {
   try {
-    sessionStorage.setItem('tendr_session', JSON.stringify({
+    const data = {
       formData: state.formData,
       bookingType: state.bookingType,
       currentStep: state.currentStep,
       showVendorScreen: state.showVendorScreen,
       selectedVendors: state.selectedVendors,
-    }));
+      __savedAt: Date.now(),
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(data));
   } catch {}
 };
 const savedSession = loadSession();
@@ -194,6 +207,7 @@ const eventPlanningSlice = createSlice({
     resetEventPlanning: () => {
       try {
         localStorage.removeItem("eventPlanningFormData");
+        localStorage.removeItem(SESSION_KEY);
         sessionStorage.removeItem("tendr_formData");
         sessionStorage.removeItem("tendr_session");
       } catch {}
@@ -255,6 +269,7 @@ const eventPlanningWithLogout = (state, action) => {
   if (action.type === LOGOUT_TYPE) {
     try {
       localStorage.removeItem("eventPlanningFormData");
+      localStorage.removeItem(SESSION_KEY);
       sessionStorage.removeItem("tendr_session");
     } catch {}
     return {
