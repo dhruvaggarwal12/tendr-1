@@ -72,6 +72,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Budget Allocator",     href: "/budget-picker" },
       { label: "Aftermovie",           href: "/aftermovie" },
       { label: "Invitation Flyers",    href: "/invitation" },
+      { label: "Wedding Stationery",   href: "/stationery" },
     ]},
     { label: "Gift & Hampers", items: [
       { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },

@@ -52,6 +52,8 @@ import AftermovieCustomizer from './pages/aftermovie/AftermovieCustomizer.jsx';
 import InvitationFlyerPicker from './pages/invitation/InvitationFlyerPicker.jsx';
 import TemplateGallery from './pages/invitation/TemplateGallery.jsx';
 import InvitationCustomizer from './pages/invitation/InvitationCustomizer.jsx';
+import WeddingStationery from './pages/stationery/WeddingStationery.jsx';
+import StationeryCustomizer from './pages/stationery/StationeryCustomizer.jsx';
 
 // only chat list for customers (no Conversation/ActiveChat components)
 import CustomerChatList from "./pages/customer/Chats";
@@ -342,6 +344,8 @@ const router = createBrowserRouter([
   { path: '/invitation', element: <InvitationFlyerPicker />, errorElement: <ErrorPage /> },
   { path: '/invitation/templates/:id', element: <TemplateGallery />, errorElement: <ErrorPage /> },
   { path: '/invitation/customize', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
+  { path: '/stationery', element: <WeddingStationery />, errorElement: <ErrorPage /> },
+  { path: '/stationery/:id', element: <StationeryCustomizer />, errorElement: <ErrorPage /> },
 
   // ── Wedding Stationery Sub-App (/wedding/*) ──────────────────────────────
   // Remove this route to disable the sub-app completely
