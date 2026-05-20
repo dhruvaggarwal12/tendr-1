@@ -488,7 +488,7 @@ const AdminDashboard = () => {
 
   // Fetch gift hamper orders when tab is active
   useEffect(() => {
-    if (activeDropdown !== 'GiftHampers' || !token || !user?.isAdmin) return;
+    if (activeDropdown !== 'gifthampers' || !token || !user?.isAdmin) return;
     setGhLoading(true);
     fetch(`${BASE_URL}/admin/gift-hamper-orders`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -2846,7 +2846,7 @@ const AdminDashboard = () => {
       </>
     )}
         {/* ── Gift Hampers Orders ── */}
-        {activeDropdown === "GiftHampers" && (
+        {activeDropdown === "gifthampers" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
               <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">🎁 Gift Hamper Orders</div>
