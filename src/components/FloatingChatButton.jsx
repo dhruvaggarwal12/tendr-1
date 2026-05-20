@@ -257,8 +257,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         {!hasMinimizedChat && unseenCount > 0 && (
           <span style={{
             position: "absolute",
-            top: -5,
-            right: -5,
+            top: -6,
+            right: -6,
             minWidth: 20,
             height: 20,
             borderRadius: "50%",
@@ -270,7 +270,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             alignItems: "center",
             justifyContent: "center",
             border: "2.5px solid #fff",
-            padding: "0 3px",
+            padding: "0 4px",
+            animation: "unseen-pulse 1.2s ease-in-out infinite",
           }}>
             {unseenCount}
           </span>
@@ -296,6 +297,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         @keyframes chat-pulse {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.18); }
+        }
+        @keyframes unseen-pulse {
+          0%   { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239,68,68,0.7); }
+          50%  { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+          100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
         @media (max-width: 640px) {
           .floating-chat-btn {

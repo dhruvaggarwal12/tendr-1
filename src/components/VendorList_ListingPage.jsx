@@ -90,53 +90,59 @@ const VendorList_ListingPage = ({
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.12)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}
                   >
-                    {/* Image */}
-                    <div style={{ height: 200, overflow: "hidden", position: "relative" }}>
+                    {/* Image — 60% of card */}
+                    <div style={{ height: 220, overflow: "hidden", position: "relative" }}>
                       <img
                         src={vendor.image || vendor.portfolioPhotos?.[0] || FALLBACK_IMG}
                         alt={vendor.name}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.35s ease" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.04)")}
+                        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
                         onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                         loading="lazy"
                       />
+                      {/* Gradient overlay */}
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.55) 0%, transparent 55%)", pointerEvents: "none" }} />
+                      {/* Rating badge */}
                       {rating != null && (
-                        <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
-                          ⭐ {Number(rating).toFixed(1)}
+                        <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", color: "#FFCC55", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                          ★ {Number(rating).toFixed(1)}
                         </div>
                       )}
+                      {/* Service type at bottom-left over image */}
+                      <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>
+                        {vendor.serviceType}
+                      </span>
                     </div>
 
                     {/* Info */}
-                    <div style={{ padding: "14px 16px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                        <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: 0, lineHeight: 1.3 }}>{vendor.name}</h3>
-                        <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", whiteSpace: "nowrap", marginLeft: 6 }}>
-                          {vendor.serviceType}
-                        </span>
-                      </div>
+                    <div style={{ padding: "14px 16px 16px" }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.3 }}>{vendor.name}</h3>
 
-                      <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#9B7450", marginBottom: 14, flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", gap: 10, fontSize: 12, color: "#9B7450", marginBottom: 14, flexWrap: "wrap" }}>
                         {(vendor.city || vendor.address?.city || vendor.locations?.[0]) && (
                           <span>📍 {vendor.city || vendor.address?.city || vendor.locations?.[0]}</span>
                         )}
                         {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
-                        {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
+                        {vendor.startingPrice && <span style={{ fontWeight: 700, color: "#C47A2E" }}>₹{Number(vendor.startingPrice).toLocaleString("en-IN")}+</span>}
                       </div>
 
                       <div style={{ display: "flex", gap: 8 }}>
+                        {/* Primary CTA */}
                         <button
                           onClick={(e) => { e.stopPropagation(); setQuickViewVendor(vendor); }}
-                          style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
+                          style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 12px rgba(196,122,46,0.35)", transition: "box-shadow 0.18s" }}
+                          onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 6px 18px rgba(196,122,46,0.5)")}
+                          onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(196,122,46,0.35)")}
                         >
-                          Quick View
+                          View Profile
                         </button>
+                        {/* Secondary CTA */}
                         {isLoggedIn && (
                           <button
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
-                            style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "#fff", color: isSelected ? "#C47A2E" : "#6B3A1F", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap", fontFamily: font }}
+                            style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.25)"}`, background: isSelected ? "rgba(196,122,46,0.08)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", flexShrink: 0, fontFamily: font, transition: "all 0.15s" }}
                           >
-                            {isSelected ? "Comparing ✓" : "Compare"}
+                            {isSelected ? "✓" : "+"}
                           </button>
                         )}
                       </div>

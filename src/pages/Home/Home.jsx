@@ -408,26 +408,28 @@ const Home = () => {
 
             <h1
               style={{
-                fontSize: "clamp(2rem, 3.2vw, 3.4rem)",
-                fontWeight: 800,
-                lineHeight: 1.18,
+                fontSize: "clamp(2.6rem, 5vw, 4.2rem)",
+                fontWeight: 300,
+                lineHeight: 1.15,
                 color: "#2C1A0E",
                 marginBottom: 24,
-                letterSpacing: "-0.02em",
+                letterSpacing: "0.01em",
+                fontFamily: "'Cormorant Garamond', Georgia, serif",
               }}
             >
-              Plan, organize, and celebrate unforgettable moments —{" "}
+              Plan, celebrate &amp;{" "}
               <span
                 style={{
                   background: "linear-gradient(135deg, #C47A2E, #DEB887)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
                   backgroundClip: "text",
+                  fontStyle: "italic",
                 }}
               >
-                effortlessly
+                remember
               </span>
-              {" "}and all in one place.
+              {" "}every moment.
             </h1>
 
             <p
@@ -700,7 +702,7 @@ const Home = () => {
       `}</style>
 
       {/* How Tendr Works — horizontal animated */}
-      <section style={{ background: "#FFFCF5", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 1260, margin: "0 auto" }}>
 
           {/* Heading */}
@@ -815,10 +817,62 @@ const Home = () => {
         `}</style>
       </section>
 
+      {/* ── Planning Tools Section ── */}
+      <section style={{ background: "#FFFCF7", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Free Tools</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.01em" }}>
+              Everything you need to plan
+            </h2>
+            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 460, margin: "0 auto" }}>
+              Free tools built for Indian celebrations — use them with or without booking vendors.
+            </p>
+            <div style={{ width: 48, height: 2, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }} className="tools-grid">
+            {[
+              { icon: "✅", label: "Checklist",          desc: "Never miss a task",             href: "/checklist-picker",     color: "#15803d" },
+              { icon: "🗓️", label: "Timeline",           desc: "Hour-by-hour schedule",         href: "/timeline-picker",      color: "#0369a1" },
+              { icon: "💰", label: "Budget Allocator",   desc: "Track every rupee",             href: "/budget-picker",        color: "#C47A2E" },
+              { icon: "🎬", label: "Aftermovie",         desc: "Create your reel highlight",    href: "/aftermovie",           color: "#7c3aed" },
+              { icon: "💌", label: "Invitation Flyers",  desc: "Share digitally in minutes",    href: "/invitation",           color: "#C4748A" },
+              { icon: "📜", label: "Wedding Stationery", desc: "10 beautiful designs",          href: "/stationery",           color: "#9B7BAD" },
+              { icon: "💳", label: "Payment Tracker",    desc: "Track advances & dues",         href: "/payment-tracker",      color: "#b45309" },
+              { icon: "👥", label: "Guest List",         desc: "Manage RSVPs & seating",        href: "/guest-list",           color: "#0891b2" },
+            ].map(({ icon, label, desc, href, color }) => (
+              <button
+                key={label}
+                onClick={() => navigate(href)}
+                style={{
+                  background: "#FFFCF5", borderRadius: 14, padding: "20px 16px",
+                  border: `1.5px solid rgba(201,168,76,0.15)`,
+                  borderLeft: `4px solid ${color}`,
+                  boxShadow: "0 3px 14px rgba(139,69,19,0.06)",
+                  cursor: "pointer", fontFamily: "'Outfit', sans-serif",
+                  display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8,
+                  textAlign: "left", transition: "all 0.18s",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(139,69,19,0.12)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.06)"; }}
+              >
+                <span style={{ fontSize: 26 }}>{icon}</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.4 }}>{desc}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+        <style>{`@media(max-width:640px){ .tools-grid{ grid-template-columns: repeat(2,1fr) !important; } }`}</style>
+      </section>
+
       <JourneyFlow />
 
       {/* Events Portfolio Gallery */}
-      <section style={{ background: "#FFFCF5", padding: "80px 24px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#F0EBE3", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Our Work</p>

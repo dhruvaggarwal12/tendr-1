@@ -542,6 +542,38 @@ const VendorDetailsPage = () => {
                 </div>
               </>
             )}
+            {/* ── Questions to Ask This Vendor ── */}
+            {(() => {
+              const QA = {
+                Photographer: ["What is your style — candid, traditional or both?", "How many hours of coverage does your package include?", "Do you have backup equipment on the day?", "How long after the event do we receive edited photos?", "Have you shot at our venue before?", "Will you personally be there, or send a second photographer?", "What happens if you fall sick on the day?", "Can we see a full wedding gallery, not just highlights?"],
+                Decorator: ["Can you do a walkthrough of our venue before quoting?", "Do you handle setup, breakdown and cleanup?", "Can you accommodate our colour scheme or theme ideas?", "What is your cancellation policy if we need to make changes?", "Do you provide artificial flowers, fresh flowers or both?", "Have you done decor at this venue before?", "What is the latest time you can finish setup before guests arrive?", "Do you have photos of past events at a similar budget?"],
+                Caterer: ["Is your quote per plate or a flat fee?", "Can we do a tasting before confirming?", "Do you handle service staff on the day?", "What is included — crockery, cutlery, chafing dishes?", "Are there vegetarian-only options available?", "How do you handle dietary restrictions or allergies?", "What is your minimum and maximum guest count?", "Is the kitchen set up on-site or is food brought pre-cooked?"],
+                DJ: ["Do you have a playlist planning session before the event?", "Can you take specific song requests from guests?", "What happens if your equipment fails during the event?", "Do you provide your own sound and lighting, or just the DJ service?", "How early do you arrive to set up?", "Have you performed at our venue size before?", "Do you MC the event or just play music?", "What is your overtime rate if the event runs longer?"],
+              };
+              const questions = QA[serviceType];
+              if (!questions) return null;
+              return (
+                <>
+                  <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+                  <div style={{ marginBottom: 28 }}>
+                    <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px" }}>
+                      Questions to Ask This {serviceType}
+                    </h2>
+                    <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.5 }}>
+                      Copy these into your chat to get the information you need before committing.
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {questions.map((q, i) => (
+                        <div key={i} style={{ display: "flex", gap: 10, padding: "11px 14px", borderRadius: 10, background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.12)", alignItems: "flex-start" }}>
+                          <span style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 6, padding: "2px 7px", flexShrink: 0, marginTop: 1, letterSpacing: "0.04em" }}>{String(i + 1).padStart(2, "0")}</span>
+                          <span style={{ fontSize: 13.5, color: "#2C1A0E", lineHeight: 1.5 }}>{q}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
 
           {/* ════ RIGHT: Sticky Booking Card ════ */}

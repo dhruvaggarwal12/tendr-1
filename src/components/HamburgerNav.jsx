@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
@@ -16,6 +16,7 @@ const SIDEBAR_W = 220; // px
 // noSidebar: force drawer mode (use on form-filling pages like EventPlanning)
 export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false }) {
   const navigate   = useNavigate();
+  const location   = useLocation();
   const dispatch   = useDispatch();
   const { openVendorChat } = useChatOverlay();
 
@@ -73,6 +74,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Aftermovie",           href: "/aftermovie" },
       { label: "Invitation Flyers",    href: "/invitation" },
       { label: "Wedding Stationery",   href: "/stationery" },
+      { label: "Payment Tracker",      href: "/payment-tracker" },
+      { label: "Guest List",           href: "/guest-list" },
     ]},
     { label: "Gift & Hampers", items: [
       { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
@@ -160,15 +163,27 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
-                {sec.items.map(item => (
-                  <button key={item.label} onClick={() => navigate(item.href)}
-                    style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "9px 18px", border: "none", background: "transparent", fontSize: 13, fontWeight: 500, color: "rgba(255,255,255,0.9)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.15)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.paddingLeft = "22px"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.9)"; e.currentTarget.style.paddingLeft = "18px"; }}
-                  >
-                    <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
-                  </button>
-                ))}
+                {sec.items.map(item => {
+                  const isActive = location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href));
+                  return (
+                    <button key={item.label} onClick={() => navigate(item.href)}
+                      style={{
+                        display: "flex", alignItems: "center", width: "100%", textAlign: "left",
+                        padding: "9px 18px 9px 14px", border: "none",
+                        background: isActive ? "rgba(196,122,46,0.18)" : "transparent",
+                        fontSize: 13,
+                        fontWeight: isActive ? 700 : 500,
+                        color: isActive ? "#FFCC66" : "rgba(255,255,255,0.85)",
+                        cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0,
+                        borderLeft: isActive ? "3px solid #C9A84C" : "3px solid transparent",
+                      }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                    >
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+                    </button>
+                  );
+                })}
                 {si < NAV_SECTIONS.length - 1 && (
                   <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "4px 18px" }} />
                 )}
