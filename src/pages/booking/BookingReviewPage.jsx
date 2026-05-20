@@ -673,8 +673,8 @@ const BookingReviewPage = () => {
                 ))}
 
                 {/* Referral discount line */}
-                {appliedCode && confirmedTotal > 0 && (() => {
-                  const { discount } = applyDiscount(confirmedTotal);
+                {appliedCode && (confirmedTotal + ghTotal) > 0 && (() => {
+                  const { discount } = applyDiscount(confirmedTotal + ghTotal);
                   return (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#15803d" }}>
                       <span style={{ fontWeight: 600 }}>🎁 Referral Discount ({DISCOUNT_PERCENT}%)</span>
@@ -683,11 +683,28 @@ const BookingReviewPage = () => {
                   );
                 })()}
 
+                {/* Vendor subtotal */}
+                {confirmedTotal > 0 && ghTotal > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535", marginBottom: 4 }}>
+                    <span>Vendors subtotal</span>
+                    <span style={{ fontWeight: 600 }}>{formatINR(confirmedTotal)}</span>
+                  </div>
+                )}
+
+                {/* Gift hampers in grand total line */}
+                {ghTotal > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535", marginBottom: 6 }}>
+                    <span>Gift Hampers subtotal</span>
+                    <span style={{ fontWeight: 600 }}>₹{ghTotal.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+
+                {/* Grand Total */}
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
-                  <span>{anyPriceUnset ? "Confirmed So Far" : "Total"}</span>
+                  <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
                   <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
-                    {confirmedTotal > 0
-                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal).finalTotal : confirmedTotal)
+                    {(confirmedTotal + ghTotal) > 0
+                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal))
                       : "—"}
                   </span>
                 </div>
@@ -815,7 +832,8 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
-                          const finalAmount = appliedCode ? applyDiscount(confirmedTotal).finalTotal : confirmedTotal;
+                          const grandTotal = confirmedTotal + ghTotal;
+                          const finalAmount = appliedCode ? applyDiscount(grandTotal).finalTotal : grandTotal;
                           navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: finalAmount, referralCode: appliedCode || null, eventPlanId } });
                         }}
                         style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
