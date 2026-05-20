@@ -2761,6 +2761,88 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+
+        {/* ── Gift Hampers Orders ── */}
+        {activeDropdown === "gifthampers" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">🎁 Gift Hamper Orders</div>
+              <button
+                onClick={async () => {
+                  if (!window.confirm('Seed 5 sample gift hamper products + create vendor?')) return;
+                  const r = await fetch(`${BASE_URL}/admin/seed-gift-hamper-products`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                  const d = await r.json();
+                  alert(d.message + '\n' + (d.results || []).map(x => `• ${x.name}: ${x.status}`).join('\n'));
+                }}
+                style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+              >
+                🌱 Seed 5 Sample Products
+              </button>
+            </div>
+            {ghLoading ? (
+              <p style={{ color: "#9B7450" }}>Loading orders…</p>
+            ) : ghOrders.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "60px 24px", background: "#fff", borderRadius: 16, border: "2px solid #F1E1A8" }}>
+                <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
+                <p style={{ color: "#9B7450", fontSize: 16 }}>No gift hamper orders yet</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {ghOrders.map(order => (
+                  <div key={order._id} style={{ background: "#fff", borderRadius: 14, border: "2px solid #F1E1A8", padding: "18px 20px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: 15, color: "#2C1A0E" }}>{order.customerName}</div>
+                        <div style={{ fontSize: 13, color: "#9B7450" }}>📞 {order.customerPhone}</div>
+                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>📦 {order.deliveryAddress}, {order.city}{order.pincode ? " - " + order.pincode : ""}</div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 18, fontWeight: 900, color: "#C47A2E" }}>₹{order.totalAmount.toLocaleString("en-IN")}</div>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 100, background: order.status === "confirmed" ? "#f0fdf4" : "#fffbeb", color: order.status === "confirmed" ? "#15803d" : "#b45309", border: "1px solid " + (order.status === "confirmed" ? "#bbf7d0" : "#fde68a") }}>
+                          {order.status}
+                        </span>
+                        <div style={{ fontSize: 11, color: "#bbb", marginTop: 2 }}>{new Date(order.createdAt).toLocaleDateString("en-IN")}</div>
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                      {order.items.map((item, idx) => (
+                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: 12, background: "#faf5ee", borderRadius: 10, padding: "8px 12px" }}>
+                          {item.imageUrl && <img src={item.imageUrl} alt={item.productName} style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{item.productName}</div>
+                            <div style={{ fontSize: 11, color: "#9B7450" }}>
+                              {item.productNumber && `#${item.productNumber} · `}
+                              Vendor: {item.vendorName || "—"} · Qty: {item.quantity} · ₹{item.pricePerUnit}/pc
+                            </div>
+                          </div>
+                          <div style={{ fontWeight: 700, color: "#C47A2E" }}>₹{item.subtotal.toLocaleString("en-IN")}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <select
+                      value={order.status}
+                      onChange={async (e) => {
+                        await fetch(`${BASE_URL}/admin/gift-hamper-orders/${order._id}`, {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                          credentials: "include",
+                          body: JSON.stringify({ status: e.target.value }),
+                        });
+                        setGhOrders(prev => prev.map(o => o._id === order._id ? { ...o, status: e.target.value } : o));
+                      }}
+                      style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid #F1E1A8", fontSize: 12, fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}
+                    >
+                      {["pending","confirmed","processing","delivered","cancelled"].map(s => (
+                        <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
       </div>
     </div>
     {/* ── Booking Summary Modal ── */}
@@ -2845,14 +2927,7 @@ const AdminDashboard = () => {
         </div>
       </>
     )}
-        {/* ── Gift Hampers Orders ── */}
-        {activeDropdown === "gifthampers" && (
-          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
-              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">🎁 Gift Hamper Orders</div>
-              <button
-                onClick={async () => {
-                  if (!window.confirm('Seed 5 sample gift hamper products + create vendor?')) return;
+
                   const r = await fetch(`${BASE_URL}/admin/seed-gift-hamper-products`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
                   const d = await r.json();
                   alert(d.message + '\n' + (d.results || []).map(x => `• ${x.name}: ${x.status}`).join('\n'));
