@@ -141,7 +141,7 @@ const Auth = () => {
       } else {
         const msg = result.payload || "";
         if (msg.toLowerCase().includes("not found") || msg.includes("404")) {
-          setLocalError("No account found with this number. Please sign up to create your account.");
+          setLocalError("You do not have an account, kindly sign up.");
         } else if (msg.toLowerCase().includes("password") || msg.toLowerCase().includes("invalid")) {
           setLocalError("Incorrect password. Please try again.");
         } else {
