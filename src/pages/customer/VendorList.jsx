@@ -220,7 +220,7 @@ const VendorList = () => {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: "100vh", background: "#F8F4EF" }}>
       <SEO
         title={vendorListTitle(serviceType, locationType)}
         description={vendorListDescription(serviceType, locationType)}

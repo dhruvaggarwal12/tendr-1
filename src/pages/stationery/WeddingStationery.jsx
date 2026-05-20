@@ -71,13 +71,13 @@ export default function WeddingStationery() {
                 }}
                 onClick={() => navigate(`/stationery/${tpl.id}`)}
               >
-                {/* Thumbnail */}
-                <div style={{ padding: 20, background: tpl.palette?.bg || "#F8F4EF", display: "flex", justifyContent: "center", alignItems: "flex-start", minHeight: 280, overflow: "hidden" }}>
-                  <div style={{ transform: `scale(0.42)`, transformOrigin: "top center", pointerEvents: "none" }}>
+                {/* Thumbnail — use mini=true for correct pixel dimensions, no overflow */}
+                <div style={{ background: tpl.palette?.bg || "#F8F4EF", display: "flex", justifyContent: "center", alignItems: "flex-start", padding: "18px 18px 0", overflow: "hidden" }}>
+                  <div style={{ pointerEvents: "none", flexShrink: 0 }}>
                     {Renderer ? (
-                      <Renderer d={BLANK} onChange={() => {}} mini={false} />
+                      <Renderer d={BLANK} onChange={() => {}} mini={true} />
                     ) : (
-                      <div style={{ width: 420, height: 600, background: "#EEE", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontFamily: font }}>Preview</div>
+                      <div style={{ width: 176, height: 252, background: "#EEE", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontSize: 12 }}>Preview</div>
                     )}
                   </div>
                 </div>

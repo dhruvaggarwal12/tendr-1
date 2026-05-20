@@ -216,6 +216,7 @@ const Auth = () => {
 
       {/* ── Right panel: form ── */}
       <div
+        className="auth-right-panel"
         style={{
           flex: 1,
           background: "#F8F4EF",
@@ -430,11 +431,12 @@ const Auth = () => {
 
       <style>{`
         @media (min-width: 860px) {
-          .auth-left-panel { display: block !important; }
+          .auth-left-panel { display: flex !important; }
           .auth-mobile-bg { display: none !important; }
         }
         @media (max-width: 859px) {
           .auth-mobile-bg { display: block !important; }
+          .auth-right-panel { padding: 24px 16px !important; }
         }
       `}</style>
     </div>
