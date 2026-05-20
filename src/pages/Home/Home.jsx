@@ -18,6 +18,8 @@ import heroBirthday from "../../assets/ui/hero-birthday.png";
 import heroFestive from "../../assets/ui/hero-festive.png";
 import CorporateLogin from "../../components/corporateEventPlanning.jsx";
 import JourneyFlow from "../../components/JourneyFlow";
+import { TEMPLATES } from "../stationery/templates";
+import { RENDERERS } from "../stationery/TemplateRenderer";
 
 // WhatsApp icon
 import { FaWhatsapp } from "react-icons/fa";
@@ -818,6 +820,99 @@ const Home = () => {
       </section>
 
       <JourneyFlow />
+
+      {/* ── Memories Section ── */}
+      {(() => {
+        const BLANK_D = { coupleName: "", date: "", day: "", time: "", venue: "", rsvp: "" };
+        const PREVIEW = TEMPLATES.slice(0, 3); // first 3 templates as cards
+        return (
+          <section style={{ background: "#FFFCF7", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+              {/* Header row */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 8px" }}>Create &amp; Share</p>
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, letterSpacing: "0.01em" }}>
+                    Memories
+                  </h2>
+                </div>
+                {/* Toggle buttons */}
+                <div style={{ display: "flex", gap: 10 }}>
+                  <button
+                    onClick={() => navigate("/stationery")}
+                    style={{ padding: "10px 20px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}
+                  >
+                    Wedding Stationery
+                  </button>
+                  <button
+                    onClick={() => navigate("/invitation")}
+                    style={{ padding: "10px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
+                    onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
+                    onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                  >
+                    Invitation Flyers
+                  </button>
+                </div>
+              </div>
+
+              {/* Cards row */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 20, alignItems: "start" }} className="memories-grid">
+                {PREVIEW.map(tpl => {
+                  const Renderer = RENDERERS[tpl.id];
+                  return (
+                    <div
+                      key={tpl.id}
+                      onClick={() => navigate(`/stationery/${tpl.id}`)}
+                      style={{ background: tpl.palette?.bg || "#F8F4EF", borderRadius: 16, overflow: "hidden", cursor: "pointer", border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", transition: "all 0.2s" }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(139,69,19,0.14)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; }}
+                    >
+                      {/* Thumbnail */}
+                      <div style={{ padding: "16px 16px 0", display: "flex", justifyContent: "center", overflow: "hidden" }}>
+                        <div style={{ pointerEvents: "none", flexShrink: 0 }}>
+                          {Renderer && <Renderer d={BLANK_D} onChange={() => {}} mini={true} />}
+                        </div>
+                      </div>
+                      {/* Label */}
+                      <div style={{ padding: "12px 16px 16px", textAlign: "center" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{tpl.name}</div>
+                        <div style={{ fontSize: 11, color: "#9B7450" }}>{tpl.category}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* 4th card — blurred See All */}
+                <div
+                  onClick={() => navigate("/stationery")}
+                  style={{ background: "#F0EBE3", borderRadius: 16, overflow: "hidden", cursor: "pointer", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: 280, position: "relative", transition: "all 0.2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.background = "#EDE6D8"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.background = "#F0EBE3"; }}
+                >
+                  {/* Blurred preview of 4th template */}
+                  {(() => {
+                    const tpl4 = TEMPLATES[3];
+                    const R4 = RENDERERS[tpl4.id];
+                    return R4 ? (
+                      <div style={{ position: "absolute", inset: 0, overflow: "hidden", filter: "blur(4px)", opacity: 0.5, display: "flex", justifyContent: "center", paddingTop: 16 }}>
+                        <div style={{ pointerEvents: "none" }}>
+                          <R4 d={BLANK_D} onChange={() => {}} mini={true} />
+                        </div>
+                      </div>
+                    ) : null;
+                  })()}
+                  <div style={{ position: "relative", zIndex: 2, textAlign: "center", padding: "20px" }}>
+                    <div style={{ fontSize: 32, marginBottom: 10 }}>→</div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>See All Designs</div>
+                    <div style={{ fontSize: 12, color: "#9B7450" }}>10 templates</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <style>{`@media(max-width:860px){.memories-grid{grid-template-columns:repeat(2,1fr)!important;}} @media(max-width:480px){.memories-grid{grid-template-columns:1fr!important;}}`}</style>
+          </section>
+        );
+      })()}
 
       {/* Events Portfolio Gallery */}
       <section style={{ background: "#F0EBE3", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>

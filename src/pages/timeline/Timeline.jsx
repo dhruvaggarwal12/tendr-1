@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import HamburgerNav from "../../components/HamburgerNav";
 
 const font = "'Outfit', sans-serif";
 
@@ -269,6 +270,7 @@ export default function Timeline() {
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Timeline Planner", path: "/timeline-picker" }, { name: "Prebuilt Timeline", path: "/prebuilt-timeline" }]}
       />
       <BasicSpeedDial />
+      <HamburgerNav title="Event Timeline" />
 
       {/* Header */}
       <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "32px 40px 28px" }}>

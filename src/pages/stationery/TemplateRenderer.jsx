@@ -27,8 +27,8 @@ function Div({ color = "#B8922A", sym = "✦" }) {
 }
 
 // ── 1. Botanical Sage ─────────────────────────────────────────────────────────
-export function BotanicalSage({ d, onChange: c, mini }) {
-  const p = { bg: "#F7F2E9", g: "#B8922A", dk: "#3B5048" };
+export function BotanicalSage({ d, onChange: c, mini, ov = {} }) {
+  const p = { bg: ov.bg||"#F7F2E9", g: ov.accent||"#B8922A", dk: ov.text||"#3B5048" };
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: p.bg, border: `${1.5 * s}px solid ${p.g}`, borderRadius: 3, padding: `${40 * s}px ${48 * s}px`, position: "relative", overflow: "hidden", fontFamily: "Georgia,serif", fontSize: `${13 * s}px`, transformOrigin: "top left" }}>
@@ -71,8 +71,8 @@ export function BotanicalSage({ d, onChange: c, mini }) {
 }
 
 // ── 2. Royal Noir ─────────────────────────────────────────────────────────────
-export function RoyalNoir({ d, onChange: c, mini }) {
-  const p = { bg: "#12100A", g: "#D4A843", t: "#F5E9C8" };
+export function RoyalNoir({ d, onChange: c, mini, ov = {} }) {
+  const p = { bg: ov.bg||"#12100A", g: ov.accent||"#D4A843", t: ov.text||"#F5E9C8" };
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: p.bg, border: `${1.5 * s}px solid ${p.g}`, borderRadius: 3, padding: `${44 * s}px ${50 * s}px`, position: "relative", overflow: "hidden", textAlign: "center" }}>
@@ -100,8 +100,8 @@ export function RoyalNoir({ d, onChange: c, mini }) {
 }
 
 // ── 3. Blush Romance ──────────────────────────────────────────────────────────
-export function BlushRomance({ d, onChange: c, mini }) {
-  const p = { bg: "#FDF0F2", g: "#C4748A", t: "#7B3F55" };
+export function BlushRomance({ d, onChange: c, mini, ov = {} }) {
+  const p = { bg: ov.bg||"#FDF0F2", g: ov.accent||"#C4748A", t: ov.text||"#7B3F55" };
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: p.bg, border: `${1.2 * s}px solid rgba(196,116,138,0.4)`, borderRadius: 3, padding: `${40 * s}px ${48 * s}px`, position: "relative", overflow: "hidden", textAlign: "center" }}>
@@ -127,10 +127,11 @@ export function BlushRomance({ d, onChange: c, mini }) {
 }
 
 // ── 4. Minimalist Linen ───────────────────────────────────────────────────────
-export function MinimalistLinen({ d, onChange: c, mini }) {
+export function MinimalistLinen({ d, onChange: c, mini, ov = {} }) {
   const s = mini ? 0.42 : 1;
+  const bg = ov.bg || "#FAFAF8"; const acc = ov.accent || "#1A1A1A";
   return (
-    <div style={{ width: 420 * s, minHeight: 600 * s, background: "#FAFAF8", border: `${1 * s}px solid #CCCCCC`, borderRadius: 2, padding: `${50 * s}px ${55 * s}px`, textAlign: "center", fontFamily: "'Outfit',sans-serif" }}>
+    <div style={{ width: 420 * s, minHeight: 600 * s, background: bg, border: `${1 * s}px solid #CCCCCC`, borderRadius: 2, padding: `${50 * s}px ${55 * s}px`, textAlign: "center", fontFamily: "'Outfit',sans-serif" }}>
       <div style={{ border: `${0.6 * s}px solid #E0E0E0`, position: "absolute", inset: `${12 * s}px`, borderRadius: 1, pointerEvents: "none" }} />
       <div style={{ height: `${1 * s}px`, background: "#1A1A1A", width: `${60 * s}px`, margin: `0 auto ${20 * s}px` }} />
       <p style={{ fontSize: `${9 * s}px`, letterSpacing: "0.3em", textTransform: "uppercase", color: "#888", margin: `0 0 ${16 * s}px` }}>Wedding Invitation</p>
@@ -149,8 +150,8 @@ export function MinimalistLinen({ d, onChange: c, mini }) {
 }
 
 // ── 5. Marble Gold ────────────────────────────────────────────────────────────
-export function MarbleGold({ d, onChange: c, mini }) {
-  const p = { g: "#C9A84C", t: "#2A2016" };
+export function MarbleGold({ d, onChange: c, mini, ov = {} }) {
+  const p = { g: ov.accent||"#C9A84C", t: ov.text||"#2A2016" };
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: "linear-gradient(145deg,#F2EDE6 0%,#EDE5DC 30%,#F4EFE8 60%,#E8DFD5 100%)", border: `${1.5 * s}px solid ${p.g}`, borderRadius: 3, padding: `${44 * s}px ${50 * s}px`, position: "relative", overflow: "hidden", textAlign: "center" }}>
@@ -181,8 +182,8 @@ export function MarbleGold({ d, onChange: c, mini }) {
 }
 
 // ── 6. Dusty Mauve ────────────────────────────────────────────────────────────
-export function DustyMauve({ d, onChange: c, mini }) {
-  const p = { bg: "#F5EEF4", g: "#9B7BAD", t: "#4A3050" };
+export function DustyMauve({ d, onChange: c, mini, ov = {} }) {
+  const p = { bg: ov.bg||"#F5EEF4", g: ov.accent||"#9B7BAD", t: ov.text||"#4A3050" };
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: p.bg, border: `${1.2 * s}px solid rgba(155,123,173,0.4)`, borderRadius: 3, padding: `${44 * s}px ${50 * s}px`, textAlign: "center", position: "relative", overflow: "hidden" }}>
@@ -207,8 +208,8 @@ export function DustyMauve({ d, onChange: c, mini }) {
 }
 
 // ── 7. Navy Celestial ─────────────────────────────────────────────────────────
-export function NavyCelestial({ d, onChange: c, mini }) {
-  const p = { bg: "#0D1B35", g: "#D4A843", t: "#F0E6CC" };
+export function NavyCelestial({ d, onChange: c, mini, ov = {} }) {
+  const p = { bg: ov.bg||"#0D1B35", g: ov.accent||"#D4A843", t: ov.text||"#F0E6CC" };
   const s = mini ? 0.42 : 1;
   const stars = [[50,40],[370,55],[80,550],[360,530],[200,25],[215,585],[30,300],[395,280],[120,75],[300,500]];
   return (
@@ -235,8 +236,8 @@ export function NavyCelestial({ d, onChange: c, mini }) {
 }
 
 // ── 8. Terracotta Boho ────────────────────────────────────────────────────────
-export function TerracottaBoho({ d, onChange: c, mini }) {
-  const p = { bg: "#F8EDE4", g: "#C27040", t: "#5C2E10" };
+export function TerracottaBoho({ d, onChange: c, mini, ov = {} }) {
+  const p = { bg: ov.bg||"#F8EDE4", g: ov.accent||"#C27040", t: ov.text||"#5C2E10" };
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: p.bg, border: `${1.5 * s}px solid rgba(194,112,64,0.4)`, borderRadius: 3, padding: `${44 * s}px ${50 * s}px`, textAlign: "center", position: "relative", overflow: "hidden" }}>
@@ -262,8 +263,8 @@ export function TerracottaBoho({ d, onChange: c, mini }) {
 }
 
 // ── 9. Vintage Garden (Menu Card) ─────────────────────────────────────────────
-export function VintageGarden({ d, onChange: c, mini }) {
-  const p = { bg: "#F7EDD8", g: "#7A6A3A", t: "#3D2E10" };
+export function VintageGarden({ d, onChange: c, mini, ov = {} }) {
+  const p = { bg: ov.bg||"#F7EDD8", g: ov.accent||"#7A6A3A", t: ov.text||"#3D2E10" };
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: p.bg, border: `${1.5 * s}px double rgba(122,106,58,0.6)`, borderRadius: 3, padding: `${44 * s}px ${50 * s}px`, textAlign: "center", position: "relative", overflow: "hidden" }}>
@@ -287,7 +288,7 @@ export function VintageGarden({ d, onChange: c, mini }) {
 }
 
 // ── 10. Modern Arch (Thank You Card) ─────────────────────────────────────────
-export function ModernArch({ d, onChange: c, mini }) {
+export function ModernArch({ d, onChange: c, mini, ov = {} }) {
   const s = mini ? 0.42 : 1;
   return (
     <div style={{ width: 420 * s, minHeight: 600 * s, background: "#FFF", border: `${1 * s}px solid #1A1A1A`, borderRadius: `${60 * s}px ${60 * s}px ${3 * s}px ${3 * s}px`, padding: `${50 * s}px ${50 * s}px ${44 * s}px`, textAlign: "center", position: "relative", overflow: "hidden" }}>

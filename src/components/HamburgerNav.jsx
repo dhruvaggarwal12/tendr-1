@@ -61,9 +61,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   const close = () => setDrawerOpen(false);
 
+  // Block Browse Vendors when filling the event form
+  const formFillPaths = ["/plan-event/form", "/booking"];
+  const isOnFormPage = formFillPaths.some(p => location.pathname.startsWith(p));
+
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Browse Vendors",       href: "/listings" },
+      { label: "Browse Vendors",       href: "/listings",                  blocked: isOnFormPage },
       { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
@@ -71,11 +75,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Checklist",            href: "/checklist-picker" },
       { label: "Timeline",             href: "/timeline-picker" },
       { label: "Budget Allocator",     href: "/budget-picker" },
-      { label: "Aftermovie",           href: "/aftermovie" },
-      { label: "Invitation Flyers",    href: "/invitation" },
-      { label: "Wedding Stationery",   href: "/stationery" },
       { label: "Payment Tracker",      href: "/payment-tracker" },
       { label: "Guest List",           href: "/guest-list" },
+    ]},
+    { label: "Memories", items: [
+      { label: "Wedding Stationery",   href: "/stationery" },
+      { label: "Invitation Flyers",    href: "/invitation" },
+      { label: "Aftermovie",           href: "/aftermovie" },
     ]},
     { label: "Gift & Hampers", items: [
       { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
@@ -164,23 +170,29 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               <div key={sec.label} style={{ marginBottom: 2 }}>
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
                 {sec.items.map(item => {
-                  const isActive = location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href));
+                  const isActive  = !item.blocked && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
+                  const isBlocked = !!item.blocked;
                   return (
-                    <button key={item.label} onClick={() => navigate(item.href)}
+                    <button key={item.label}
+                      onClick={() => !isBlocked && navigate(item.href)}
+                      title={isBlocked ? "Complete your event form first to browse vendors" : undefined}
                       style={{
-                        display: "flex", alignItems: "center", width: "100%", textAlign: "left",
+                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        width: "100%", textAlign: "left",
                         padding: "9px 18px 9px 14px", border: "none",
                         background: isActive ? "rgba(196,122,46,0.18)" : "transparent",
                         fontSize: 13,
                         fontWeight: isActive ? 700 : 500,
-                        color: isActive ? "#FFCC66" : "rgba(255,255,255,0.85)",
-                        cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0,
+                        color: isBlocked ? "rgba(255,255,255,0.25)" : isActive ? "#FFCC66" : "rgba(255,255,255,0.85)",
+                        cursor: isBlocked ? "not-allowed" : "pointer",
+                        fontFamily: font, transition: "all 0.15s", borderRadius: 0,
                         borderLeft: isActive ? "3px solid #C9A84C" : "3px solid transparent",
                       }}
-                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
-                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                      onMouseEnter={e => { if (!isActive && !isBlocked) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
+                      onMouseLeave={e => { if (!isActive && !isBlocked) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+                      {isBlocked && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", flexShrink: 0, marginLeft: 4 }}>🔒</span>}
                     </button>
                   );
                 })}

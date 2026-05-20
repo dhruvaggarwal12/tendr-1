@@ -14,11 +14,94 @@ const RSVP_COLORS = {
 const MEALS = ["Veg", "Non-Veg", "Jain", "Vegan", "No Preference"];
 const BLANK = { id: "", name: "", phone: "", rsvp: "pending", table: "", meal: "No Preference", gift: false, notes: "" };
 
+const EXAMPLE_GUESTS = [
+  { id: "e1", name: "Rahul Sharma",   phone: "9876543210", rsvp: "yes",     table: "2", meal: "Veg",     gift: true,  notes: "Bringing family of 3" },
+  { id: "e2", name: "Priya Kapoor",   phone: "9123456789", rsvp: "pending", table: "",  meal: "Veg",     gift: false, notes: "" },
+  { id: "e3", name: "Amit Verma",     phone: "9988776655", rsvp: "no",      table: "",  meal: "Non-Veg", gift: false, notes: "Can't make it — out of town" },
+  { id: "e4", name: "Neha Gupta",     phone: "9765432109", rsvp: "yes",     table: "1", meal: "Jain",    gift: true,  notes: "" },
+];
+
+function IntroScreen({ onStart }) {
+  return (
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
+      <HamburgerNav title="Guest List" />
+      <div style={{ maxWidth: 780, margin: "0 auto", padding: "48px 24px 80px" }}>
+        {/* Hero */}
+        <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>👥</div>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 14px" }}>
+            Guest List Manager
+          </h1>
+          <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 500, margin: "0 auto 28px", lineHeight: 1.65 }}>
+            Stop managing your guest list in WhatsApp notes. Track who's coming, who's not, what they'll eat, and whether they brought a gift — all in one place.
+          </p>
+          <button onClick={onStart} style={{ padding: "14px 36px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}>
+            Start Guest List →
+          </button>
+        </div>
+
+        {/* How it works */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, marginBottom: 44 }} className="gl-intro-grid">
+          {[
+            { icon: "➕", title: "Add guests by name & phone", desc: "Enter each guest. Phone number helps you reach out for reminders." },
+            { icon: "✅", title: "Track RSVPs with one tap", desc: "Click the RSVP badge to cycle between Attending, Pending, Not Coming." },
+            { icon: "🍽️", title: "Record meal preferences", desc: "Veg, Non-Veg, Jain, Vegan — share the count with your caterer." },
+            { icon: "📊", title: "Export to CSV", desc: "Download your full guest list as a spreadsheet any time." },
+          ].map(({ icon, title, desc }) => (
+            <div key={title} style={{ background: "#FFFCF7", borderRadius: 14, padding: "18px 18px", border: "1.5px solid rgba(196,122,46,0.14)", display: "flex", gap: 14, alignItems: "flex-start" }}>
+              <div style={{ fontSize: 24, flexShrink: 0 }}>{icon}</div>
+              <div><div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>{title}</div><div style={{ fontSize: 12.5, color: "#9B7450", lineHeight: 1.5 }}>{desc}</div></div>
+            </div>
+          ))}
+        </div>
+
+        {/* Example table */}
+        <p style={{ fontSize: 13, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>What it looks like</p>
+        <div style={{ background: "#FFFCF7", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.14)", overflow: "hidden", opacity: 0.88, pointerEvents: "none" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit',sans-serif", fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: "rgba(196,122,46,0.05)", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+                {["Name", "RSVP", "Table", "Meal", "Gift"].map(h => (
+                  <th key={h} style={{ textAlign: "left", padding: "11px 14px", fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em" }}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {EXAMPLE_GUESTS.map((g, i) => {
+                const sc = RSVP_COLORS[g.rsvp];
+                return (
+                  <tr key={g.id} style={{ borderBottom: "1px solid rgba(196,122,46,0.07)", background: i % 2 === 0 ? "#FFFCF7" : "#FDFAF5" }}>
+                    <td style={{ padding: "11px 14px", fontWeight: 700, color: "#2C1A0E" }}>{g.name}</td>
+                    <td style={{ padding: "11px 14px" }}><span style={{ fontSize: 11, fontWeight: 700, background: sc.bg, color: sc.text, padding: "3px 9px", borderRadius: 20 }}>{sc.label}</span></td>
+                    <td style={{ padding: "11px 14px", color: "#9B7450" }}>{g.table ? `Table ${g.table}` : "—"}</td>
+                    <td style={{ padding: "11px 14px", color: "#9B7450" }}>{g.meal}</td>
+                    <td style={{ padding: "11px 14px" }}><span style={{ fontSize: 16, opacity: g.gift ? 1 : 0.2 }}>🎁</span></td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 36 }}>
+          <button onClick={onStart} style={{ padding: "13px 36px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}>
+            Start Guest List →
+          </button>
+        </div>
+      </div>
+      <style>{`@media(max-width:520px){.gl-intro-grid{grid-template-columns:1fr!important;}}`}</style>
+    </div>
+  );
+}
+
 export default function GuestList() {
+  const [seen, setSeen] = useState(() => !!localStorage.getItem("gl_intro_seen"));
   const [guests, setGuests] = useState(() => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
     catch { return []; }
   });
+
+  if (!seen) return <IntroScreen onStart={() => { localStorage.setItem("gl_intro_seen","1"); setSeen(true); }} />;
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(BLANK);

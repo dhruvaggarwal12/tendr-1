@@ -37,12 +37,93 @@ function ProgressBar({ paid, total }) {
   );
 }
 
+const EXAMPLE_ENTRIES = [
+  { id: "ex1", vendorName: "Shutter Story Photography", serviceType: "Photographer", totalAmount: "45000", paidAmount: "15000", dueDate: "2025-12-01", notes: "Remaining due 3 days before event", status: "partial" },
+  { id: "ex2", vendorName: "DJ Arjun Events",           serviceType: "DJ",           totalAmount: "22000", paidAmount: "22000", dueDate: "",            notes: "Fully paid via UPI",             status: "paid"    },
+  { id: "ex3", vendorName: "Floral Dreams Decor",       serviceType: "Decorator",    totalAmount: "60000", paidAmount: "0",     dueDate: "2025-12-05", notes: "Advance pending",                status: "pending" },
+];
+
+function IntroScreen({ onStart }) {
+  return (
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
+      <HamburgerNav title="Payment Tracker" />
+      <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 24px 80px" }}>
+        {/* Hero */}
+        <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <div style={{ fontSize: 52, marginBottom: 16 }}>💳</div>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 14px" }}>
+            Payment Tracker
+          </h1>
+          <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 480, margin: "0 auto 28px", lineHeight: 1.65 }}>
+            Track every advance you pay to vendors — know exactly how much is due, to whom, and by when. Never get surprised at the last minute.
+          </p>
+          <button onClick={onStart} style={{ padding: "14px 36px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}>
+            Start Tracking →
+          </button>
+        </div>
+
+        {/* How it works */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, marginBottom: 44 }} className="pt-intro-grid">
+          {[
+            { icon: "➕", title: "Add a vendor", desc: "Enter their name, service type, and the total agreed amount." },
+            { icon: "💸", title: "Log payments", desc: "Enter how much you've paid as an advance. We track the balance automatically." },
+            { icon: "🔔", title: "See what's due", desc: "Red = over budget, Amber = nearly due, Green = on track. Always know your status." },
+          ].map(({ icon, title, desc }) => (
+            <div key={title} style={{ background: "#FFFCF7", borderRadius: 14, padding: "20px 18px", border: "1.5px solid rgba(196,122,46,0.14)", textAlign: "center" }}>
+              <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 6 }}>{title}</div>
+              <div style={{ fontSize: 12.5, color: "#9B7450", lineHeight: 1.5 }}>{desc}</div>
+            </div>
+          ))}
+        </div>
+
+        {/* Example preview */}
+        <div>
+          <p style={{ fontSize: 13, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 14 }}>What it looks like</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, opacity: 0.85, pointerEvents: "none" }}>
+            {EXAMPLE_ENTRIES.map(e => {
+              const total = Number(e.totalAmount), paid = Number(e.paidAmount);
+              const sc = STATUS_COLORS[e.status];
+              return (
+                <div key={e.id} style={{ background: "#FFFCF7", borderRadius: 14, padding: "16px 20px", border: "1.5px solid rgba(196,122,46,0.14)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                    <div>
+                      <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>{e.vendorName}</span>
+                      <span style={{ fontSize: 10, background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 8px", borderRadius: 20, marginLeft: 8, fontWeight: 700, textTransform: "uppercase" }}>{e.serviceType}</span>
+                    </div>
+                    <span style={{ fontSize: 11, fontWeight: 700, background: sc.bg, color: sc.text, padding: "3px 10px", borderRadius: 20 }}>{sc.label}</span>
+                  </div>
+                  <div style={{ display: "flex", gap: 20, marginTop: 10 }}>
+                    <div><div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase" }}>Total</div><div style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E" }}>{fmtINR(total)}</div></div>
+                    <div><div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase" }}>Paid</div><div style={{ fontSize: 16, fontWeight: 900, color: "#15803d" }}>{fmtINR(paid)}</div></div>
+                    <div><div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase" }}>Due</div><div style={{ fontSize: 16, fontWeight: 900, color: total - paid > 0 ? "#b45309" : "#15803d" }}>{fmtINR(total - paid)}</div></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: 36 }}>
+          <button onClick={onStart} style={{ padding: "13px 36px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}>
+            Start Tracking →
+          </button>
+        </div>
+      </div>
+      <style>{`@media(max-width:560px){.pt-intro-grid{grid-template-columns:1fr!important;}}`}</style>
+    </div>
+  );
+}
+
 export default function PaymentTracker() {
+  const [seen, setSeen] = useState(() => !!localStorage.getItem("pt_intro_seen"));
   const [entries, setEntries] = useState(() => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
     catch { return []; }
   });
   const [showForm, setShowForm] = useState(false);
+
+  if (!seen) return <IntroScreen onStart={() => { localStorage.setItem("pt_intro_seen","1"); setSeen(true); }} />;
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(BLANK);
   const [deleteConfirm, setDeleteConfirm] = useState(null);

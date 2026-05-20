@@ -170,19 +170,27 @@ const Navbar = ({
     {
       label: "Vendors",
       items: [
-        { label: "Top Rated Vendors",            href: "/top-rated/Photographer" },
-        { label: "Browse Vendors",               href: "/listings" },
-        { label: "Register as Vendor",           href: "/vendor/register" },
+        { label: "Top Rated Vendors",  href: "/top-rated/Photographer" },
+        { label: "Browse Vendors",     href: "/listings" },
+        { label: "Register as Vendor", href: "/vendor/register" },
       ],
     },
     {
       label: "Planning Tools",
       items: [
-        { label: "Checklist",          href: "/checklist-picker" },
-        { label: "Timeline",           href: "/timeline-picker" },
-        { label: "Budget Allocator",   href: "/budget-picker" },
-        { label: "Aftermovie",         href: "/aftermovie" },
+        { label: "Checklist",         href: "/checklist-picker" },
+        { label: "Timeline",          href: "/timeline-picker" },
+        { label: "Budget Allocator",  href: "/budget-picker" },
+        { label: "Payment Tracker",   href: "/payment-tracker" },
+        { label: "Guest List",        href: "/guest-list" },
+      ],
+    },
+    {
+      label: "Memories",
+      items: [
+        { label: "Wedding Stationery", href: "/stationery" },
         { label: "Invitation Flyers",  href: "/invitation" },
+        { label: "Aftermovie",         href: "/aftermovie" },
       ],
     },
     {
