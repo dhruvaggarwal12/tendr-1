@@ -3,6 +3,7 @@ import counterReducer from './redux/tendrSlice.js'
 import authReducer from './redux/authSlice.js'
 import eventPlanningReducer from './redux/eventPlanningSlice.js';
 import listingFiltersReducer from './redux/listingFiltersSlice.js';
+import giftHamperCartReducer from './redux/giftHamperCartSlice.js';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -46,6 +47,7 @@ export const store = configureStore({
     auth: authReducer,
     eventPlanning: eventPlanningReducer,
     listingFilters: listingFiltersReducer,
+    giftHamperCart: giftHamperCartReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(vendorSyncMiddleware),

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { selectCartItems, selectCartTotal, clearCart } from "../../redux/giftHamperCartSlice";
 import SEO from "../../components/SEO";
 import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
 
@@ -62,9 +63,14 @@ const ChevronIcon = ({ open }) => (
 );
 
 const BookingReviewPage = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const token = useSelector((s) => s.auth.token);
+  const navigate  = useNavigate();
+  const location  = useLocation();
+  const dispatch  = useDispatch();
+  const token     = useSelector((s) => s.auth.token);
+  const ghItems   = useSelector(selectCartItems);
+  const ghTotal   = useSelector(selectCartTotal);
+  const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
+  const isGHMode  = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
@@ -692,6 +698,29 @@ const BookingReviewPage = () => {
                     : "Prices confirmed in chat."}
                 </p>
               </div>
+
+              {/* Gift Hampers section — shown when cart has items */}
+              {ghItems.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 14px" }} />
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎁 Gift Hampers</div>
+                  {ghItems.map(item => (
+                    <div key={item.productId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a", marginBottom: 6 }}>
+                      <span style={{ fontWeight: 500 }}>{item.name} × {item.quantity}</span>
+                      <span style={{ fontWeight: 700, color: "#2C1A0E" }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 8, marginTop: 6 }}>
+                    <span>Gift Hampers Total</span>
+                    <span>₹{ghTotal.toLocaleString("en-IN")}</span>
+                  </div>
+                  {ghDelivery && (
+                    <div style={{ marginTop: 8, fontSize: 12, color: "#9B7450", background: "rgba(196,122,46,0.04)", borderRadius: 8, padding: "8px 10px" }}>
+                      📦 Deliver to: {ghDelivery.address}, {ghDelivery.city}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Referral code input */}
               <div style={{ marginBottom: 16 }}>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { selectCartItems, selectCartTotal } from "../../redux/giftHamperCartSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -13,7 +14,7 @@ import { useChatOverlay } from "../../context/ChatContext";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
-const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats"];
+const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats", "Gift Hampers"];
 
 const statusMap = {
   Upcoming:  ["in_progress"],
@@ -46,6 +47,8 @@ export default function CustomerDashboard() {
   const { user, token } = useSelector((s) => s.auth);
   const { openVendorChat, openExistingChat } = useChatOverlay();
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const ghCartItems = useSelector(selectCartItems);
+  const ghCartTotal = useSelector(selectCartTotal);
   const finalisedCount = Object.keys(finalisedVendors).length;
   // Event planning form data from Redux — used to show "planning in progress" card
   const formData = useSelector((s) => s.eventPlanning.formData || {});
@@ -264,6 +267,7 @@ export default function CustomerDashboard() {
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
     Chats:     visibleChats.length,
+    "Gift Hampers": ghCartItems.length,
   };
 
   return (
@@ -728,8 +732,49 @@ export default function CustomerDashboard() {
             )
           )}
 
-          {/* Event cards — all tabs except Ongoing and Chats */}
-          {activeTab !== "Ongoing" && activeTab !== "Chats" && (loading ? (
+          {/* Gift Hampers tab */}
+          {activeTab === "Gift Hampers" && (
+            <div>
+              {ghCartItems.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
+                  <div style={{ fontSize: 40, marginBottom: 14 }}>🎁</div>
+                  <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No gift hampers in cart</h4>
+                  <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px" }}>Browse our gift hampers collection and add items to your cart.</p>
+                  <button onClick={() => navigate("/gift-hampers-cakes")}
+                    style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
+                    Browse Gift Hampers →
+                  </button>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {ghCartItems.map(item => (
+                    <div key={item.productId} style={{ display: "flex", alignItems: "center", gap: 14, background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", padding: "14px 18px", boxShadow: "0 2px 8px rgba(196,122,46,0.06)" }}>
+                      <img src={item.imageUrl || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=80&q=60"} alt={item.name} style={{ width: 56, height: 56, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>{item.name}</div>
+                        {item.productNumber && <div style={{ fontSize: 11, color: "#bbb" }}>#{item.productNumber}</div>}
+                        <div style={{ fontSize: 13, color: "#9B7450", marginTop: 2 }}>Qty: {item.quantity} × ₹{item.pricePerUnit.toLocaleString("en-IN")}</div>
+                      </div>
+                      <div style={{ fontSize: 16, fontWeight: 900, color: "#C47A2E" }}>₹{item.subtotal.toLocaleString("en-IN")}</div>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", background: "#2C1A0E", borderRadius: 14, marginTop: 4 }}>
+                    <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.8)" }}>Total</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                      <span style={{ fontSize: 20, fontWeight: 900, color: "#CCAB4A" }}>₹{ghCartTotal.toLocaleString("en-IN")}</span>
+                      <button onClick={() => navigate("/gift-hampers-cakes")}
+                        style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                        View Cart →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Event cards — all tabs except Ongoing, Chats, Gift Hampers */}
+          {activeTab !== "Ongoing" && activeTab !== "Chats" && activeTab !== "Gift Hampers" && (loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[0,1,2].map(i => (
                 <div key={i} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", padding: "20px 24px", display: "flex", flexDirection: "column", gap: 12 }}>
