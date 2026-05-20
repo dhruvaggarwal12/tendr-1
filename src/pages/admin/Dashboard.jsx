@@ -2770,9 +2770,12 @@ const AdminDashboard = () => {
               <button
                 onClick={async () => {
                   if (!window.confirm('Seed 5 sample gift hamper products + create vendor?')) return;
-                  const r = await fetch(`${BASE_URL}/admin/seed-gift-hamper-products`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
-                  const d = await r.json();
-                  alert(d.message + '\n' + (d.results || []).map(x => `• ${x.name}: ${x.status}`).join('\n'));
+                  try {
+                    const r = await fetch(`${BASE_URL}/admin/seed-gift-hamper-products`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                    const d = await r.json();
+                    if (d.error) { alert('Error: ' + d.error); return; }
+                    alert((d.message || 'Done') + '\n' + (d.results || []).map(x => `• ${x.name}: ${x.status}`).join('\n'));
+                  } catch(e) { alert('Request failed: ' + e.message); }
                 }}
                 style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
               >
