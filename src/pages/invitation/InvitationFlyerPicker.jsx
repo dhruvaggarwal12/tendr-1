@@ -32,26 +32,18 @@ const EVENT_TYPES = [
 
 const InvitationFlyerPicker = () => {
   const navigate = useNavigate();
+  // Redirect directly to the customizer — skip the event type picker for now
+  React.useEffect(() => { navigate("/invitation/customize", { replace: true }); }, []);
+  return null;
 
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, position: "relative" }}>
       <SEO
         title="Digital Invitation Flyers — Create & Share Beautiful Event Invites | Tendr"
-        description="Create stunning digital invitations for birthdays, anniversaries, weddings and more. Pick a template, add your details and share instantly via WhatsApp or email. Coming soon on Tendr."
+        description="Create and customise beautiful digital invitations for birthdays, anniversaries, weddings and more."
         path="/invitation"
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Invitation Flyers", path: "/invitation" }]}
       />
-      {/* Coming Soon overlay */}
-      <div style={{ position: "fixed", inset: 0, zIndex: 9999, backdropFilter: "blur(10px)", WebkitBackdropFilter: "blur(10px)", background: "rgba(255,248,240,0.75)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: font, textAlign: "center", padding: 24 }}>
-        <div style={{ fontSize: 52, marginBottom: 14 }}>💌</div>
-        <span style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 800, letterSpacing: "0.15em", textTransform: "uppercase", padding: "5px 16px", borderRadius: 100, marginBottom: 18 }}>Coming Soon</span>
-        <h1 style={{ fontSize: "clamp(1.8rem,5vw,2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>Invitation Flyers</h1>
-        <p style={{ fontSize: 16, color: "#7A5535", maxWidth: 440, lineHeight: 1.7, margin: "0 auto 28px" }}>Create and share beautiful digital invitations for every occasion — launching very soon on Tendr.</p>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
-          <a href="/" style={{ padding: "12px 28px", borderRadius: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>← Back to Home</a>
-          <a href="https://wa.me/919211668427?text=Hi%20Tendr%2C%20I%27m%20interested%20in%20the%20Invitation%20Flyers%20feature" target="_blank" rel="noopener noreferrer" style={{ padding: "12px 28px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, textDecoration: "none" }}>Notify Me on WhatsApp</a>
-        </div>
-      </div>
       <BasicSpeedDial />
       <ToolNav title="Invitation Flyers" />
 
