@@ -88,6 +88,7 @@ const Navbar = ({
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const finalisedCount = Object.keys(finalisedVendors).length;
+  const ghCartCount = useSelector((s) => s.giftHamperCart?.items?.length || 0);
   const [activeChatCount, setActiveChatCount] = useState(0);
   const [adminCounts, setAdminCounts] = useState(null);
 
@@ -467,15 +468,15 @@ const Navbar = ({
               <SavedVendorsInline asStrip={false} />
             )}
 
-            {/* Review & Pay — visible when vendors are finalised */}
-            {finalisedCount > 0 && (
+            {/* Review & Pay — visible when vendors finalised OR gift hamper cart has items */}
+            {(finalisedCount > 0 || ghCartCount > 0) && (
               <button
                 onClick={() => navigate("/booking/review")}
                 style={{ fontSize: 13, fontWeight: 700, padding: "7px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(21,128,61,0.3)", flexShrink: 0 }}
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >
-                Review & Pay ({finalisedCount})
+                Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : ghCartCount > 0 ? `🎁` : ""}
               </button>
             )}
 

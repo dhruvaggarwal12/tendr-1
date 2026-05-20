@@ -307,15 +307,16 @@ const BookingReviewPage = () => {
     }
   };
 
-  if (vendorEntries.length === 0) {
+  // Only block if BOTH no vendors AND no gift hamper items
+  if (vendorEntries.length === 0 && ghItems.length === 0) {
     return (
       <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
         <HamburgerNav title="Review & Pay" active="Pay" />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, color: "#9B7450" }}>
           <div style={{ fontSize: 48 }}>📋</div>
-          <h2 style={{ fontSize: 22, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>No vendors finalised yet</h2>
-          <p style={{ fontSize: 15, margin: 0 }}>Go to a vendor chat and click "Finalise Vendor" to add them here.</p>
+          <h2 style={{ fontSize: 22, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Nothing to review yet</h2>
+          <p style={{ fontSize: 15, margin: 0 }}>Finalise a vendor or add gift hampers to your cart.</p>
           <button
             onClick={() => navigate(-1)}
             style={{ marginTop: 8, padding: "10px 28px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}

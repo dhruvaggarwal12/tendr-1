@@ -90,10 +90,18 @@ function ProductCard({ product, onAdd }) {
         </div>
 
         {/* Add to Cart */}
-        <button onClick={handleAdd}
-          style={{ marginTop: 6, padding: "10px", borderRadius: 12, border: "none", background: inCart ? "rgba(34,197,94,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: inCart ? "#15803d" : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: inCart ? "none" : "0 3px 10px rgba(196,122,46,0.3)" }}>
-          {inCart ? "✓ Update Cart" : "Add to Cart"}
-        </button>
+        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
+          <button onClick={handleAdd}
+            style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: "none", background: inCart ? "rgba(34,197,94,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: inCart ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: inCart ? "none" : "0 2px 8px rgba(196,122,46,0.28)", whiteSpace: "nowrap" }}>
+            {inCart ? "✓ In Cart" : "Add to Cart"}
+          </button>
+          {inCart && (
+            <button onClick={() => dispatch(removeFromCart(product._id))}
+              style={{ padding: "8px 10px", borderRadius: 10, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+              ✕
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
