@@ -41,30 +41,39 @@ const saveCompareSelected = (arr) => {
 const TTL_24H = 7 * 24 * 60 * 60 * 1000; // 7 days — so vendors stay after dashboard revisit
 
 const loadFinalisedVendors = () => {
-  try {
-    const uid = getUserId();
-    const raw = localStorage.getItem(`finalisedVendors_${uid}`);
-    if (!raw) return {};
-    const parsed = JSON.parse(raw);
-    // Support both plain object (legacy) and TTL-wrapped format
-    if (parsed && parsed.__expiresAt) {
-      if (Date.now() > parsed.__expiresAt) {
-        localStorage.removeItem(`finalisedVendors_${uid}`);
-        return {};
-      }
-      const { __expiresAt, ...data } = parsed;
-      return data;
-    }
-    return parsed;
-  } catch { return {}; }
+  // Try user-specific key first, fall back to simple key, then empty
+  const uid = getUserId();
+  return loadFinalisedVendorsFromKey(`finalisedVendors_${uid}`)
+      || loadFinalisedVendorsFromKey('tendr_finalised')
+      || {};
 };
 
 const saveFinalisedVendors = (obj) => {
   try {
     const uid = getUserId();
     const withTTL = { ...obj, __expiresAt: Date.now() + TTL_24H };
-    localStorage.setItem(`finalisedVendors_${uid}`, JSON.stringify(withTTL));
+    const encoded = JSON.stringify(withTTL);
+    // Save to both user-specific AND a simple fallback key for reliability
+    localStorage.setItem(`finalisedVendors_${uid}`, encoded);
+    localStorage.setItem('tendr_finalised', encoded);
   } catch {}
+};
+
+const loadFinalisedVendorsFromKey = (key) => {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed && parsed.__expiresAt) {
+      if (Date.now() > parsed.__expiresAt) {
+        localStorage.removeItem(key);
+        return null;
+      }
+      const { __expiresAt, ...data } = parsed;
+      return Object.keys(data).length > 0 ? data : null;
+    }
+    return parsed && Object.keys(parsed).length > 0 ? parsed : null;
+  } catch { return null; }
 };
 
 // loadFilters may have stale finalisedVendors — exclude it so the
@@ -149,6 +158,11 @@ const listingFiltersReducer = listingFiltersSlice.reducer;
 const listingFiltersWithLogout = (state, action) => {
   // On logout: wipe in-memory state; user-scoped localStorage keys are kept as cache
   if (action.type === LOGOUT_TYPE) {
+    // Clear both keys on logout
+    try {
+      localStorage.removeItem('tendr_finalised');
+      localStorage.removeItem(`finalisedVendors_${getUserId()}`);
+    } catch {}
     return { ...state, compareSelected: [], finalisedVendors: {} };
   }
   // On login/signup: DB data is the source of truth (included in consumer payload).
