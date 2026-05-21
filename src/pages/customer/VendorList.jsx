@@ -130,13 +130,47 @@ const VendorList = () => {
     navigate('/booking/review', { state: { booking: bookingDetails } });
   };
 
+  // Gate: redirect to /booking if user hasn't filled the event form
+  useEffect(() => {
+    // Allow through if they already have context from any source
+    const hasReduxContext = !!(
+      serviceType ||
+      formEventType ||
+      planningSelectedVendors.length > 0 ||
+      finalisedCount > 0 ||
+      location.state?.selectedCategories?.length
+    );
+    if (hasReduxContext) return;
+
+    // Check persisted session in localStorage
+    try {
+      const raw = localStorage.getItem("tendr_ep_session");
+      if (raw) {
+        const session = JSON.parse(raw);
+        const fd = session.formData || session;
+        if (fd.eventType || fd.budget) return; // valid saved form
+      }
+    } catch {}
+
+    // Check persisted finalisedVendors
+    try {
+      const fv = localStorage.getItem("tendr_finalised");
+      if (fv) {
+        const parsed = JSON.parse(fv);
+        if (parsed && Object.keys(parsed).some(k => k !== "__expiresAt")) return;
+      }
+    } catch {}
+
+    // Nothing found — send to booking flow
+    navigate("/booking", { replace: true });
+  }, []); // eslint-disable-line
+
   // Restore saved scroll position (from vendor detail back-nav) or scroll to top
   useEffect(() => {
     const saved = sessionStorage.getItem("listings_scroll_y");
     if (saved) {
       sessionStorage.removeItem("listings_scroll_y");
       const y = Number(saved);
-      // Double rAF ensures layout is complete before scrolling
       requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" })));
     } else {
       window.scrollTo(0, 0);
