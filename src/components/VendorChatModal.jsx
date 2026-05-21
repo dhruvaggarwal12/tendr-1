@@ -584,6 +584,71 @@ export default function VendorChatModal() {
             </div>
           )}
 
+          {/* ── Admin: Caterer Menu Sender ── */}
+          {currentUser?.isAdmin && (approved || isExistingChat) && vendor?.serviceType === "Caterer" && (() => {
+            const [menuOpen, setMenuOpen] = React.useState(false);
+            const cuisines = vendor?.cuisine?.length ? vendor.cuisine : ["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Desserts"];
+            const [selCuisines, setSelCuisines] = React.useState([]);
+            const [pkg, setPkg] = React.useState("");
+            const PACKAGES = [
+              { id: "basic",    label: "Basic",    desc: "Main course + 2 sides" },
+              { id: "standard", label: "Standard", desc: "Full menu + dessert" },
+              { id: "premium",  label: "Premium",  desc: "Live counters + full spread" },
+              { id: "skip",     label: "Skip packages — let them choose freely", desc: "" },
+            ];
+            const sendMenu = () => {
+              const cuisineList = selCuisines.length ? selCuisines.join(", ") : cuisines.join(", ");
+              let msg = `📋 *Menu from ${vendor.name}*\n\n`;
+              msg += `🍽️ *Available Cuisines:*\n${cuisineList.split(", ").map(c => `• ${c}`).join("\n")}\n\n`;
+              if (pkg && pkg !== "skip") {
+                const p = PACKAGES.find(x => x.id === pkg);
+                msg += `📦 *Package:* ${p?.label} — ${p?.desc}\n\n`;
+              } else if (pkg === "skip") {
+                msg += `✨ *Mix & Match:* Choose any cuisines you'd like!\n\n`;
+              }
+              msg += `Please reply with your preferences and we'll confirm the quote.`;
+              sendText(msg);
+              setMenuOpen(false);
+              setSelCuisines([]);
+              setPkg("");
+            };
+            return (
+              <div style={{ marginBottom: 8 }}>
+                <button onClick={() => setMenuOpen(o => !o)}
+                  style={{ width: "100%", padding: "8px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: menuOpen ? "rgba(196,122,46,0.06)" : "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                  🍽️ Send Menu to Customer {menuOpen ? "▲" : "▼"}
+                </button>
+                {menuOpen && (
+                  <div style={{ marginTop: 8, padding: "12px 14px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.15)" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Select cuisines to highlight</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+                      {cuisines.map(c => (
+                        <button key={c} onClick={() => setSelCuisines(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
+                          style={{ padding: "4px 10px", borderRadius: 20, border: `1.5px solid ${selCuisines.includes(c) ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: selCuisines.includes(c) ? "rgba(196,122,46,0.1)" : "#fff", color: selCuisines.includes(c) ? "#C47A2E" : "#6B3A1F", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Package</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 12 }}>
+                      {PACKAGES.map(p => (
+                        <button key={p.id} onClick={() => setPkg(p.id)}
+                          style={{ textAlign: "left", padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${pkg === p.id ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: pkg === p.id ? "rgba(196,122,46,0.07)" : "#fff", cursor: "pointer", fontFamily: font }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{p.label}</span>
+                          {p.desc && <span style={{ fontSize: 11, color: "#9B7450", marginLeft: 6 }}>{p.desc}</span>}
+                        </button>
+                      ))}
+                    </div>
+                    <button onClick={sendMenu}
+                      style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      Send Menu Message →
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           {(approved || isExistingChat) ? (
             <>
               {/* Message row */}

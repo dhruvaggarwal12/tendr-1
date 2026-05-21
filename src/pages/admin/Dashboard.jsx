@@ -1508,6 +1508,18 @@ const AdminDashboard = () => {
                     </span>
                   )}
                 </button>
+                <button onClick={async () => {
+                  if (!window.confirm('Set realistic starting prices for all vendors missing a price?\nDJ: ₹8k-25k  |  Caterer: ₹35k-90k  |  Decorator: ₹18k-60k  |  Photographer: ₹22k-75k')) return;
+                  setSeeding(true); setSeedResult(null);
+                  try {
+                    const r = await fetch(`${BASE_URL}/admin/set-vendor-prices`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                    setSeedResult(await r.json());
+                  } catch(e) { setSeedResult({ error: e.message }); }
+                  finally { setSeeding(false); }
+                }} disabled={seeding}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#b45309,#f59e0b)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {seeding ? "Setting..." : "💰 Set Vendor Prices"}
+                </button>
                 <button onClick={handleSeedNehaeventz} disabled={seeding}
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#7c3aed,#a855f7)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
                   {seeding ? "Creating..." : "🎪 Add Nehaeventz"}

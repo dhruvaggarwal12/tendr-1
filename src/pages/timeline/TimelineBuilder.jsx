@@ -1,8 +1,65 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import HamburgerNav from "../../components/HamburgerNav";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SEO from "../../components/SEO";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Detect service type from milestone title
+const SERVICE_KEYWORDS = {
+  Photographer: ["photographer", "photography", "videograph", "video", "photo", "reel", "candid"],
+  Caterer:      ["caterer", "catering", "food", "menu", "buffet", "cuisine"],
+  Decorator:    ["decorator", "decoration", "decor", "floral", "balloon", "theme"],
+  DJ:           ["dj", "music", "sound", "entertainment", "lights", "console"],
+};
+
+function detectService(title = "") {
+  const lower = title.toLowerCase();
+  for (const [svc, keywords] of Object.entries(SERVICE_KEYWORDS)) {
+    if (keywords.some(k => lower.includes(k))) return svc;
+  }
+  return null;
+}
+
+// Compact vendor suggestion card
+function VendorHint({ serviceType, navigate, token }) {
+  const [vendors, setVendors] = useState(null);
+  useEffect(() => {
+    fetch(`${BASE_URL}/vendors?serviceTypes[]=${serviceType}&limit=3`)
+      .then(r => r.ok ? r.json() : { vendors: [] })
+      .then(d => setVendors((d.vendors || []).slice(0, 3)))
+      .catch(() => setVendors([]));
+  }, [serviceType]);
+  if (!vendors) return null;
+  if (vendors.length === 0) return null;
+  return (
+    <div style={{ marginTop: 8, padding: "10px 12px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.14)" }}>
+      <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
+        {serviceType}s we work with
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        {vendors.map(v => (
+          <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 8, background: "#FFFCF7", border: "1px solid rgba(196,122,46,0.18)", cursor: "pointer" }}
+            onClick={() => {
+              if (!token) { navigate("/login"); return; }
+              navigate(`/vendor/${v._id}`);
+            }}>
+            <img src={v.image || v.portfolioPhotos?.[0] || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=60&q=60"} alt={v.name} style={{ width: 24, height: 24, borderRadius: 6, objectFit: "cover", flexShrink: 0 }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E" }}>{v.name}</span>
+            {v.price && <span style={{ fontSize: 10, color: "#C47A2E" }}>₹{(v.price/1000).toFixed(0)}k+</span>}
+          </div>
+        ))}
+        <button onClick={() => { if (!token) { navigate("/login"); return; } navigate("/listings"); }}
+          style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+          See All →
+        </button>
+      </div>
+    </div>
+  );
+}
 
 const font = "'Outfit', sans-serif";
 
@@ -14,6 +71,8 @@ const inputStyle = {
 };
 
 export default function TimelineBuilder() {
+  const navigate = useNavigate();
+  const { token } = useSelector(s => s.auth);
   const [events, setEvents] = useState([
     { id: "1", title: "Book venue", description: "Confirm availability and advance payment", checked: false },
     { id: "2", title: "Finalise vendors", description: "Photographer, caterer, decorator", checked: false },
@@ -203,6 +262,11 @@ export default function TimelineBuilder() {
                         {event.description && (
                           <div style={{ fontSize: 13, color: "#9B7450", marginTop: 3 }}>{event.description}</div>
                         )}
+                        {/* Show vendor suggestions for service-related milestones */}
+                        {!event.checked && (() => {
+                          const svc = detectService(event.title);
+                          return svc ? <VendorHint serviceType={svc} navigate={navigate} token={token} /> : null;
+                        })()}
                       </div>
                     </div>
                   </div>

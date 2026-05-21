@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { clearFinalisedVendor, clearVendorCompare } from "../../redux/listingFiltersSlice";
+import { resetEventPlanning } from "../../redux/eventPlanningSlice";
 import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
@@ -19,9 +20,17 @@ const PaymentSuccessPage = () => {
   const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
   const [referralCopied, setReferralCopied] = useState(false);
   useEffect(() => {
-    // Clear finalised vendors + saved vendors — booking is complete
+    // Clear ALL booking state — payment is complete, fresh start
     dispatch(clearFinalisedVendor());
     dispatch(clearVendorCompare());
+    dispatch(resetEventPlanning());
+    // Also wipe localStorage keys directly so 7-day TTL doesn't resurrect them
+    try {
+      localStorage.removeItem('tendr_finalised');
+      const uid = JSON.parse(localStorage.getItem('tendr_user') || '{}')._id || 'guest';
+      localStorage.removeItem(`finalisedVendors_${uid}`);
+      localStorage.removeItem('tendr_ep_session');
+    } catch {}
     // Close active vendor conversations now that payment is done
     const token = localStorage.getItem("tendr_token");
     if (token) {

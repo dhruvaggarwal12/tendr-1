@@ -1,9 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState, useEffect, useCallback } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Map budget category names → vendor serviceType
+const CATEGORY_TO_SERVICE = {
+  "food & catering": "Caterer", "catering": "Caterer", "food": "Caterer",
+  "decoration": "Decorator", "decor": "Decorator",
+  "photography": "Photographer", "photo": "Photographer", "videography": "Photographer",
+  "dj & music": "DJ", "entertainment": "DJ", "dj": "DJ", "music": "DJ",
+};
+
+function getServiceType(catName = "") {
+  const lower = catName.toLowerCase();
+  for (const [k, v] of Object.entries(CATEGORY_TO_SERVICE)) {
+    if (lower.includes(k)) return v;
+  }
+  return null;
+}
 
 const font = "'Outfit', sans-serif";
 
@@ -120,8 +138,32 @@ const VENDOR_TO_BUDGET = {
 
 export default function BudgetAllocator() {
   const location = useLocation();
+  const navigate  = useNavigate();
   const routeEventType = location.state?.eventType;
   const finalisedVendors = useSelector(s => s.listingFilters?.finalisedVendors || {});
+
+  // Vendor suggestion panel
+  const [vendorPanel, setVendorPanel]       = useState(null); // { catName, serviceType, budget }
+  const [panelVendors, setPanelVendors]     = useState([]);
+  const [panelLoading, setPanelLoading]     = useState(false);
+
+  const openVendorPanel = useCallback(async (catName, allocated) => {
+    const st = getServiceType(catName);
+    if (!st || allocated <= 0) return;
+    setVendorPanel({ catName, serviceType: st, budget: allocated });
+    setPanelLoading(true);
+    setPanelVendors([]);
+    try {
+      const res = await fetch(`${BASE_URL}/vendors?serviceTypes[]=${st}&limit=20`);
+      const data = await res.json();
+      const all = data.vendors || [];
+      // Filter by price ≤ budget (show all if no price set, but put priced ones first)
+      const priced = all.filter(v => v.price && v.price <= allocated);
+      const unpriced = all.filter(v => !v.price || v.price > allocated);
+      setPanelVendors([...priced, ...unpriced.slice(0, Math.max(0, 5 - priced.length))]);
+    } catch {}
+    finally { setPanelLoading(false); }
+  }, []);
   const conversations = useSelector(s => s.chat?.conversations || []);
 
   const [eventKey, setEventKey] = useState("birthday");
@@ -229,6 +271,7 @@ export default function BudgetAllocator() {
   ];
 
   return (
+    <>
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
       <SEO
         title="Event Budget Allocator — Smart Spending Split for Your Event"
@@ -375,7 +418,7 @@ export default function BudgetAllocator() {
                       <button onClick={() => deleteCategory(c.id)}
                         style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 14, padding: 0 }}>✕</button>
                     </div>
-                    {/* Progress bar + status label */}
+                    {/* Progress bar + status + See Vendors */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <div style={{ flex: 1, height: 5, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${spentPct}%`, background: tl ? tl.dot : c.color, borderRadius: 100, transition: "width 0.3s" }} />
@@ -384,6 +427,15 @@ export default function BudgetAllocator() {
                         <span style={{ fontSize: 11, fontWeight: 700, color: tl.color, whiteSpace: "nowrap" }}>{tl.label}</span>
                       ) : (
                         <span style={{ fontSize: 11, color: "#9B7450", whiteSpace: "nowrap" }}>No spend logged</span>
+                      )}
+                      {/* See vendors button — only for service categories we support */}
+                      {getServiceType(c.name) && allocated > 0 && (
+                        <button
+                          onClick={() => openVendorPanel(c.name, allocated)}
+                          style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.35)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
+                        >
+                          See Vendors →
+                        </button>
                       )}
                     </div>
                   </div>
@@ -403,5 +455,80 @@ export default function BudgetAllocator() {
         </div>
       </div>
     </div>
+
+    {/* ── Vendor suggestion panel ── */}
+
+    {vendorPanel && (
+      <>
+        <div onClick={() => setVendorPanel(null)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(28,10,0,0.45)", backdropFilter: "blur(3px)" }} />
+        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 401, width: "min(95vw,680px)", height: "min(88vh,700px)", background: "#FAF7F2", borderRadius: 20, boxShadow: "0 32px 80px rgba(28,10,0,0.22)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", flexDirection: "column", fontFamily: font, overflow: "hidden" }}>
+          {/* Header */}
+          <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFFCF7", flexShrink: 0 }}>
+            <div>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>
+                {vendorPanel.serviceType}s within your budget
+              </h3>
+              <p style={{ fontSize: 12, color: "#9B7450", margin: "3px 0 0" }}>
+                Budget for {vendorPanel.catName}: <strong style={{ color: "#C47A2E" }}>{formatINR(vendorPanel.budget)}</strong> — showing vendors at or under this range
+              </p>
+            </div>
+            <button onClick={() => setVendorPanel(null)} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(196,122,46,0.1)", border: "none", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          </div>
+
+          {/* Body */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>
+            {panelLoading ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {[1,2,3].map(i => (
+                  <div key={i} style={{ height: 80, borderRadius: 12, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                ))}
+              </div>
+            ) : panelVendors.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
+                <p style={{ fontSize: 14, color: "#9B7450" }}>No vendors found yet. Add vendors from the admin dashboard first.</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {panelVendors.map(v => {
+                  const fits = v.price && v.price <= vendorPanel.budget;
+                  return (
+                    <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, background: fits ? "rgba(21,128,61,0.04)" : "#FFFCF7", border: `1.5px solid ${fits ? "rgba(21,128,61,0.2)" : "rgba(196,122,46,0.14)"}` }}>
+                      <img src={v.image || v.portfolioPhotos?.[0] || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=100&q=60"} alt={v.name} style={{ width: 52, height: 52, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{v.name}</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>{v.serviceType} · {v.address?.city || v.city || ""}</div>
+                        {v.price ? (
+                          <div style={{ fontSize: 13, fontWeight: 700, color: fits ? "#15803d" : "#C47A2E", marginTop: 2 }}>
+                            ₹{Number(v.price).toLocaleString("en-IN")}
+                            {fits && <span style={{ fontSize: 10, background: "rgba(21,128,61,0.1)", color: "#15803d", padding: "1px 6px", borderRadius: 20, marginLeft: 6 }}>Within budget</span>}
+                            {!fits && <span style={{ fontSize: 10, color: "#9B7450", marginLeft: 6 }}>Over budget</span>}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Price on request</div>
+                        )}
+                      </div>
+                      <button onClick={() => { setVendorPanel(null); navigate(`/vendor/${v._id}`); }}
+                        style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+                        View
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          <div style={{ padding: "12px 20px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "#FFFCF7", flexShrink: 0 }}>
+            <button onClick={() => { setVendorPanel(null); navigate("/listings"); }}
+              style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              Browse All {vendorPanel.serviceType}s →
+            </button>
+          </div>
+        </div>
+        <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+      </>
+    )}
+    </>
   );
 }
