@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import AddVendorModal from "./AddVendorModal";
 import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
 
@@ -343,6 +344,8 @@ const AdminDashboard = () => {
   const [importing, setImporting] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [seedResult, setSeedResult] = useState(null);
+  const [showAddVendor, setShowAddVendor] = useState(false);
+  const [addedVendorCount, setAddedVendorCount] = useState(0);
   const [registeringAppId, setRegisteringAppId] = useState(null);
   // Chat summary feature
   const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
@@ -1450,9 +1453,29 @@ const AdminDashboard = () => {
 
           return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+
+            {/* Add Vendor Modal */}
+            {showAddVendor && (
+              <AddVendorModal
+                onClose={() => setShowAddVendor(false)}
+                onAdded={() => setAddedVendorCount(c => c + 1)}
+              />
+            )}
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
               <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">Vendors</div>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                {/* ── Add Vendor button ── */}
+                <button
+                  onClick={() => setShowAddVendor(true)}
+                  style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 10px rgba(196,122,46,0.3)", display: "flex", alignItems: "center", gap: 7 }}>
+                  ➕ Add Vendor
+                  {addedVendorCount > 0 && (
+                    <span style={{ background: "rgba(255,255,255,0.3)", borderRadius: 100, padding: "1px 8px", fontSize: 12, fontWeight: 800 }}>
+                      {addedVendorCount} added
+                    </span>
+                  )}
+                </button>
                 <button onClick={handleSeedVendors} disabled={seeding}
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "#2C1A0E", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
                   {seeding ? "Creating..." : "🌱 Seed Test Vendors"}
