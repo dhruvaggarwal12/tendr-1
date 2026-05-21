@@ -498,13 +498,21 @@ const VendorDetailsPage = () => {
             <div style={{ marginBottom: 28 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px" }}>Business Details</h2>
 
-              {/* Verified documents badge */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 16px", background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: 12, marginBottom: 14 }}>
-                <span style={{ fontSize: 18 }}>✅</span>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>GST · PAN · Aadhaar Verified</div>
-                  <div style={{ fontSize: 11, color: "#4ade80", marginTop: 1 }}>Identity and business documents verified by Tendr</div>
-                </div>
+              {/* Verified document badges */}
+              <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
+                {[
+                  { label: "GST Verified",    icon: "✓", color: "#15803d", bg: "#f0fdf4", border: "#86efac" },
+                  { label: "PAN Verified",     icon: "✓", color: "#0369a1", bg: "#f0f9ff", border: "#7dd3fc" },
+                  { label: "Aadhaar Verified", icon: "✓", color: "#7c3aed", bg: "#faf5ff", border: "#c4b5fd" },
+                ].map(({ label, icon, color, bg, border }) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", background: bg, border: `1.5px solid ${border}`, borderRadius: 10 }}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 900, color: "#fff", flexShrink: 0 }}>{icon}</div>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 800, color }}>{label}</div>
+                      <div style={{ fontSize: 10, color: color, opacity: 0.7 }}>Verified by Tendr</div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
