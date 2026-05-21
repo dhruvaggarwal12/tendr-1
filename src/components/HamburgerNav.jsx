@@ -79,7 +79,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Guest List",           href: "/guest-list" },
     ]},
     { label: "Memories", items: [
-      { label: "Wedding Stationery",   href: "/stationery" },
+      { label: "Wedding Stationery",   href: "/stationery", comingSoon: !user?.isAdmin },
       { label: "Invitation Flyers",    href: "/invitation" },
       { label: "Aftermovie",           href: "/aftermovie" },
     ]},
@@ -170,8 +170,17 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               <div key={sec.label} style={{ marginBottom: 2 }}>
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
                 {sec.items.map(item => {
-                  const isActive  = !item.blocked && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
+                  const isSoon    = !!item.comingSoon;
+                  const isActive  = !item.blocked && !isSoon && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
                   const isBlocked = !!item.blocked;
+                  if (isSoon) {
+                    return (
+                      <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 18px 9px 14px", borderLeft: "3px solid transparent" }}>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontFamily: font }}>{item.label}</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(204,171,74,0.15)", color: "#CCAB4A", padding: "2px 7px", borderRadius: 20, flexShrink: 0 }}>Soon</span>
+                      </div>
+                    );
+                  }
                   return (
                     <button key={item.label}
                       onClick={() => !isBlocked && navigate(item.href)}
@@ -461,15 +470,22 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     {sec.label}
                   </div>
                   {sec.items.map(item => (
-                    <button key={item.label}
-                      onClick={() => { navigate(item.href); close(); }}
-                      style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "10px 20px", border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.paddingLeft = "26px"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "20px"; }}
-                    >
-                      <span style={{ fontSize: 16, width: 22, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
-                      <span>{item.label}</span>
-                    </button>
+                    item.comingSoon ? (
+                      <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", opacity: 0.5 }}>
+                        <span style={{ fontSize: 14, color: "#9B7450", fontFamily: font }}>{item.label}</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20 }}>Coming Soon</span>
+                      </div>
+                    ) : (
+                      <button key={item.label}
+                        onClick={() => { navigate(item.href); close(); }}
+                        style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "10px 20px", border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.paddingLeft = "26px"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "20px"; }}
+                      >
+                        <span style={{ fontSize: 16, width: 22, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
+                        <span>{item.label}</span>
+                      </button>
+                    )
                   ))}
                   {si < NAV_SECTIONS.length - 1 && (
                     <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.12),transparent)", margin: "8px 20px" }} />

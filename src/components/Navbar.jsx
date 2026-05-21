@@ -188,7 +188,7 @@ const Navbar = ({
     {
       label: "Memories",
       items: [
-        { label: "Wedding Stationery", href: "/stationery" },
+        { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
         { label: "Invitation Flyers",  href: "/invitation" },
         { label: "Aftermovie",         href: "/aftermovie" },
       ],
@@ -365,7 +365,12 @@ const Navbar = ({
                   }}
                 >
                   {group.items.map((item) =>
-                    item.href ? (
+                    item.comingSoon ? (
+                      <div key={item.label} style={{ ...dropdownItemStyle, cursor: "default", opacity: 0.55, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span>{item.label}</span>
+                        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.12)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20, marginLeft: 8, whiteSpace: "nowrap" }}>Soon</span>
+                      </div>
+                    ) : item.href ? (
                       <a
                         key={item.label}
                         href={item.href}
@@ -374,7 +379,7 @@ const Navbar = ({
                         onMouseLeave={hoverOff}
                       >
                         <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>
-                          
+
                         </span>
                         {item.label}
                       </a>
@@ -387,7 +392,7 @@ const Navbar = ({
                         onMouseLeave={hoverOff}
                       >
                         <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>
-                          
+
                         </span>
                         {item.label}
                       </button>
@@ -685,22 +690,21 @@ const Navbar = ({
                 }}
               >
                 {group.items.map((item) =>
-                  item.href ? (
+                  item.comingSoon ? (
+                    <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", color: "#9B7450", fontSize: 14.5, opacity: 0.55, fontFamily: font }}>
+                      <span>{item.label}</span>
+                      <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20 }}>Coming Soon</span>
+                    </div>
+                  ) : item.href ? (
                     <a
                       key={item.label}
                       href={item.href}
                       onClick={() => setMenuOpen(false)}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "11px 14px",
-                        color: "#5C3317",
-                        textDecoration: "none",
-                        fontSize: 14.5,
-                        fontWeight: 500,
-                        letterSpacing: "0.01em",
-                        fontFamily: font,
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "11px 14px", color: "#5C3317",
+                        textDecoration: "none", fontSize: 14.5,
+                        fontWeight: 500, letterSpacing: "0.01em", fontFamily: font,
                       }}
                     >
                       <span style={{ fontSize: 15 }}></span>
@@ -711,20 +715,11 @@ const Navbar = ({
                       key={item.label}
                       onClick={item.onClick}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: "11px 14px",
-                        color: "#5C3317",
-                        fontSize: 14.5,
-                        fontWeight: 500,
-                        letterSpacing: "0.01em",
-                        background: "none",
-                        border: "none",
-                        width: "100%",
-                        textAlign: "left",
-                        cursor: "pointer",
-                        fontFamily: font,
+                        display: "flex", alignItems: "center", gap: 10,
+                        padding: "11px 14px", color: "#5C3317",
+                        fontSize: 14.5, fontWeight: 500, letterSpacing: "0.01em",
+                        background: "none", border: "none", width: "100%",
+                        textAlign: "left", cursor: "pointer", fontFamily: font,
                       }}
                     >
                       <span style={{ fontSize: 15 }}></span>

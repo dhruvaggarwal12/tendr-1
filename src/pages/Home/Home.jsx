@@ -134,6 +134,7 @@ const Home = () => {
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
   const formEventName = useSelector((s) => s.eventPlanning.formData.eventName);
   const showVendorScreen = useSelector((s) => s.eventPlanning.showVendorScreen);
+  const { user } = useSelector((s) => s.auth);
 
   const handlePlanEvent = () => {
     // If form already filled and service screen was shown, go back to service selection
@@ -841,8 +842,8 @@ const Home = () => {
 
       <JourneyFlow />
 
-      {/* ── Memories Section ── */}
-      {(() => {
+      {/* ── Memories Section — admin preview only ── */}
+      {user?.isAdmin && (() => {
         const BLANK_D = { coupleName: "Rahul & Priya", date: "15th Dec 2025", day: "Saturday", time: "7 PM", venue: "The Grand Palace", rsvp: "+91 9XXXXXXXXX" };
         const PREVIEW_TEMPLATES = [TEMPLATES[0], TEMPLATES[1], TEMPLATES[2]]; // Botanical, Royal Noir, Blush
         return (
