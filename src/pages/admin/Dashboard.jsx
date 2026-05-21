@@ -1461,6 +1461,26 @@ const AdminDashboard = () => {
             }
           };
 
+          const handleSeedSpicelab = async () => {
+            if (!window.confirm(
+              'Add Spicelab Caterers as 4 vendors (DJ · Caterer · Decorator · Photographer)?\n\n' +
+              'Phone: 9891941110  |  Password: SpiceLab@2024\n' +
+              'GST: 09AAPCM6125L1ZW  |  Address: Garden Galleria Mall, Noida\n\n' +
+              'Safe to run again — skips existing service types.'
+            )) return;
+            setSeeding(true); setSeedResult(null);
+            try {
+              const res = await fetch(`${BASE_URL}/admin/seed-spicelab`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                credentials: 'include',
+              });
+              const data = await res.json();
+              setSeedResult(data);
+            } catch (err) { setSeedResult({ error: err.message }); }
+            finally { setSeeding(false); }
+          };
+
           const handleSeedABC = async () => {
             if (!window.confirm(
               'Add ABC Caterer as 4 vendors (DJ · Caterer · Decorator · Photographer)?\n\n' +
@@ -1551,7 +1571,11 @@ const AdminDashboard = () => {
                 </button>
                 <button onClick={handleSeedABC} disabled={seeding}
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#15803d,#22c55e)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  {seeding ? "Creating..." : "🍽️ Add ABC Caterer (4 services)"}
+                  {seeding ? "Creating..." : "🍽️ Add ABC Caterer"}
+                </button>
+                <button onClick={handleSeedSpicelab} disabled={seeding}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#0369a1,#0ea5e9)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {seeding ? "Creating..." : "🌶️ Add Spicelab Caterers"}
                 </button>
                 <a href={`${BASE_URL}/admin/import/template`} download
                   style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>
@@ -1864,7 +1888,7 @@ const AdminDashboard = () => {
                                                 vendors: {
                                                   ...prev.vendors,
                                                   total: (prev.vendors?.total ?? 0) + 1,
-                                                  approved: (prev.vendors?.approved ?? 0) + 1,
+                                                  // approved count only increases when admin manually adds via Add Vendor button
                                                 },
                                                 applications: { ...prev.applications, registered: (prev.applications?.registered ?? 0) + 1 },
                                               } : prev);
