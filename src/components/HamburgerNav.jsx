@@ -61,13 +61,36 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   const close = () => setDrawerOpen(false);
 
-  // Block Browse Vendors when filling the event form
-  const formFillPaths = ["/plan-event/form", "/booking"];
-  const isOnFormPage = formFillPaths.some(p => location.pathname.startsWith(p));
+  const listingServiceType  = useSelector((s) => s.listingFilters.serviceType);
+  const formEventType       = useSelector((s) => s.eventPlanning.formData?.eventType);
+  const selectedVendors     = useSelector((s) => s.eventPlanning.selectedVendors || []);
+
+  // Smart Browse Vendors: go to listings if form is filled, otherwise go to form start
+  const hasFormContext = !!(
+    listingServiceType ||
+    formEventType ||
+    selectedVendors.length > 0 ||
+    finalisedCount > 0 ||
+    location.state?.selectedCategories?.length ||
+    (() => { try { const r = localStorage.getItem("tendr_ep_session"); if (r) { const d = JSON.parse(r); return !!(d.formData?.eventType || d.eventType); } } catch {} return false; })() ||
+    (() => { try { const r = localStorage.getItem("tendr_finalised"); if (r) { const d = JSON.parse(r); return Object.keys(d).some(k => k !== "__expiresAt"); } } catch {} return false; })()
+  );
+
+  // Pages where the user is deep in the vendor flow — always send to listings
+  const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/top-rated"];
+  const isOnVendorFlow = vendorFlowPaths.some(p => location.pathname.startsWith(p));
+
+  const handleBrowseVendors = () => {
+    if (isOnVendorFlow || hasFormContext) {
+      navigate("/listings");
+    } else {
+      navigate("/booking");
+    }
+  };
 
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Browse Vendors",       href: "/listings",                  blocked: isOnFormPage },
+      { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors },
       { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
@@ -171,8 +194,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
                 {sec.items.map(item => {
                   const isSoon    = !!item.comingSoon;
-                  const isActive  = !item.blocked && !isSoon && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
-                  const isBlocked = !!item.blocked;
+                  const isActive  = !isSoon && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
                   if (isSoon) {
                     return (
                       <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 18px 9px 14px", borderLeft: "3px solid transparent" }}>
@@ -183,25 +205,22 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   }
                   return (
                     <button key={item.label}
-                      onClick={() => !isBlocked && navigate(item.href)}
-                      title={isBlocked ? "Complete your event form first to browse vendors" : undefined}
+                      onClick={() => item.onClickOverride ? item.onClickOverride() : navigate(item.href)}
                       style={{
                         display: "flex", alignItems: "center", justifyContent: "space-between",
                         width: "100%", textAlign: "left",
                         padding: "9px 18px 9px 14px", border: "none",
                         background: isActive ? "rgba(196,122,46,0.18)" : "transparent",
-                        fontSize: 13,
-                        fontWeight: isActive ? 700 : 500,
-                        color: isBlocked ? "rgba(255,255,255,0.25)" : isActive ? "#FFCC66" : "rgba(255,255,255,0.85)",
-                        cursor: isBlocked ? "not-allowed" : "pointer",
+                        fontSize: 13, fontWeight: isActive ? 700 : 500,
+                        color: isActive ? "#FFCC66" : "rgba(255,255,255,0.85)",
+                        cursor: "pointer",
                         fontFamily: font, transition: "all 0.15s", borderRadius: 0,
                         borderLeft: isActive ? "3px solid #C9A84C" : "3px solid transparent",
                       }}
-                      onMouseEnter={e => { if (!isActive && !isBlocked) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
-                      onMouseLeave={e => { if (!isActive && !isBlocked) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                      onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
+                      onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
-                      {isBlocked && <span style={{ fontSize: 9, color: "rgba(255,255,255,0.25)", flexShrink: 0, marginLeft: 4 }}>🔒</span>}
                     </button>
                   );
                 })}
@@ -477,7 +496,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       </div>
                     ) : (
                       <button key={item.label}
-                        onClick={() => { navigate(item.href); close(); }}
+                        onClick={() => { if (item.onClickOverride) { item.onClickOverride(); close(); } else { navigate(item.href); close(); } }}
                         style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "10px 20px", border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.paddingLeft = "26px"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "20px"; }}
