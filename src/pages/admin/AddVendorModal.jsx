@@ -240,7 +240,7 @@ export default function AddVendorModal({ onClose, onAdded }) {
   const cat = CATEGORIES.find(c => c.id === category);
   return (
     <Overlay onClose={onClose} wide>
-      <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, flex: 1 }}>
 
         {/* Header */}
         <div style={{ padding: "18px 24px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", gap: 12, flexShrink: 0, background: "#FFFCF7" }}>
@@ -392,7 +392,8 @@ function Overlay({ children, onClose, wide = false }) {
       <div style={{
         position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
         zIndex: 501, width: wide ? "min(96vw, 820px)" : "min(92vw, 480px)",
-        maxHeight: "90vh", background: "#FAF7F2",
+        height: "min(92vh, 900px)",
+        background: "#FAF7F2",
         borderRadius: 20, boxShadow: "0 32px 80px rgba(28,10,0,0.22)",
         border: "1.5px solid rgba(196,122,46,0.2)",
         display: "flex", flexDirection: "column", overflow: "hidden",
