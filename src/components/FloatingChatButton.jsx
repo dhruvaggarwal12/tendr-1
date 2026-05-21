@@ -92,22 +92,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     });
   };
 
-  const handleBrowseVendors = () => {
-    setOpen(false);
-    // Check if customer has filled the event form — if not, send them to booking flow first
-    const state = router.state?.location?.state;
-    const reduxState = router.state?.context;
-    // Read from localStorage to check if form was filled
-    try {
-      const filters = JSON.parse(localStorage.getItem("listingFilters") || "{}");
-      if (filters.serviceType || filters.eventType) {
-        router.navigate("/listings");
-        return;
-      }
-    } catch {}
-    // No form filled — direct to booking flow
-    router.navigate("/booking");
-  };
 
   const handleOpen = () => {
     // Always open the popup — user can resume minimized chat from inside
@@ -367,9 +351,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               </>
             )}
 
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", padding: "8px 12px 4px" }}>
-              Start a Chat
-            </p>
 
             {/* Active Chats */}
             <button
@@ -416,27 +397,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               </div>
             </button>
 
-            {/* Divider */}
-            <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
-
-            {/* Browse Vendors — always shown at bottom */}
-            <button
-              onClick={handleBrowseVendors}
-              style={{
-                display: "flex", alignItems: "flex-start", gap: 12,
-                width: "100%", padding: "10px 12px", borderRadius: 10,
-                border: "none", background: "transparent", cursor: "pointer",
-                textAlign: "left", fontFamily: font, transition: "background 0.15s",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.07)")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>🔍</span>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Find Vendors</div>
-                <div style={{ fontSize: 12, color: "#9B7450" }}>Fill event details, then browse</div>
-              </div>
-            </button>
           </div>
         </>
       )}
