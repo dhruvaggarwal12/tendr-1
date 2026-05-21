@@ -81,7 +81,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const isOnVendorFlow = vendorFlowPaths.some(p => location.pathname.startsWith(p));
 
   const handleBrowseVendors = () => {
-    if (isOnVendorFlow || hasFormContext) {
+    // Admins always go straight to listings
+    if (user?.isAdmin || isOnVendorFlow || hasFormContext) {
       navigate("/listings");
     } else {
       navigate("/booking");

@@ -28,7 +28,7 @@ const VendorList = () => {
   const location = useLocation();
 
   const dispatch = useDispatch();
-  const { token } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
 
   const {
     eventType,
@@ -132,6 +132,9 @@ const VendorList = () => {
 
   // Gate: redirect to /booking if user hasn't filled the event form
   useEffect(() => {
+    // Admins bypass the gate — they need to browse vendors without filling a form
+    if (user?.isAdmin) return;
+
     // Allow through if they already have context from any source
     const hasReduxContext = !!(
       serviceType ||
