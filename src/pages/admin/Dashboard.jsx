@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AddVendorModal from "./AddVendorModal";
+import EditVendorModal from "./EditVendorModal";
 import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
 
@@ -347,6 +348,7 @@ const AdminDashboard = () => {
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [addedVendorCount, setAddedVendorCount] = useState(0);
   const [deletingVendorId, setDeletingVendorId] = useState(null);
+  const [editingVendor, setEditingVendor] = useState(null);
   const [registeringAppId, setRegisteringAppId] = useState(null);
   // Chat summary feature
   const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
@@ -1509,6 +1511,22 @@ const AdminDashboard = () => {
               />
             )}
 
+            {/* Edit Vendor Modal */}
+            {editingVendor && (
+              <EditVendorModal
+                vendor={editingVendor}
+                onClose={() => setEditingVendor(null)}
+                onSaved={(data) => {
+                  setSeedResult({ message: data.message });
+                  // Refresh vendor name in list
+                  setVendorStats(prev => prev.map(v =>
+                    v._id === editingVendor._id ? { ...v, name: data.vendor?.name || v.name } : v
+                  ));
+                  setSelectedVendor(null);
+                }}
+              />
+            )}
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
               <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">Vendors</div>
               <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
@@ -1616,17 +1634,28 @@ const AdminDashboard = () => {
                       onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 6px 20px rgba(204,171,74,0.25)")}
                       onMouseLeave={(e) => (e.currentTarget.style.boxShadow = "none")}
                     >
-                      {/* Delete button — top right corner */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDeleteVendor(v); }}
-                        disabled={deletingVendorId === v._id}
-                        title="Delete vendor"
-                        style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(239,68,68,0.25)", background: deletingVendorId === v._id ? "#f3f4f6" : "rgba(239,68,68,0.06)", color: "#ef4444", cursor: deletingVendorId === v._id ? "not-allowed" : "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.06)"; e.currentTarget.style.color = "#ef4444"; }}
-                      >
-                        {deletingVendorId === v._id ? "…" : "✕"}
-                      </button>
+                      {/* Action buttons — top right corner */}
+                      <div style={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 4 }}>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEditingVendor(v); }}
+                          title="Edit vendor"
+                          style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.color = "#C47A2E"; }}
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDeleteVendor(v); }}
+                          disabled={deletingVendorId === v._id}
+                          title="Delete vendor"
+                          style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(239,68,68,0.25)", background: deletingVendorId === v._id ? "#f3f4f6" : "rgba(239,68,68,0.06)", color: "#ef4444", cursor: deletingVendorId === v._id ? "not-allowed" : "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.06)"; e.currentTarget.style.color = "#ef4444"; }}
+                        >
+                          {deletingVendorId === v._id ? "…" : "✕"}
+                        </button>
+                      </div>
 
                       {/* Card content — click opens detail */}
                       <div onClick={() => setSelectedVendor(v)} style={{ cursor: "pointer" }}>
@@ -1689,15 +1718,23 @@ const AdminDashboard = () => {
                       <div style={{ fontSize: 13, color: "#5a3a1a", padding: "12px 14px", background: "#fffaf0", borderRadius: 10, border: "1px solid rgba(204,171,74,0.3)", marginBottom: 16 }}>
                         <b>Status:</b> {selectedVendor.status}
                       </div>
-                      <button
-                        onClick={() => handleDeleteVendor(selectedVendor)}
-                        disabled={deletingVendorId === selectedVendor._id}
-                        style={{ width: "100%", padding: "11px", borderRadius: 10, border: "1.5px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.05)", color: "#ef4444", fontSize: 14, fontWeight: 700, cursor: deletingVendorId === selectedVendor._id ? "not-allowed" : "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
-                        onMouseEnter={(e) => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
-                        onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.05)"; e.currentTarget.style.color = "#ef4444"; }}
-                      >
-                        {deletingVendorId === selectedVendor._id ? "Deleting…" : "🗑️ Delete This Vendor"}
-                      </button>
+                      <div style={{ display: "flex", gap: 10 }}>
+                        <button
+                          onClick={() => { setEditingVendor(selectedVendor); setSelectedVendor(null); }}
+                          style={{ flex: 1, padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
+                        >
+                          ✏️ Edit Vendor
+                        </button>
+                        <button
+                          onClick={() => handleDeleteVendor(selectedVendor)}
+                          disabled={deletingVendorId === selectedVendor._id}
+                          style={{ flex: 1, padding: "11px", borderRadius: 10, border: "1.5px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.05)", color: "#ef4444", fontSize: 14, fontWeight: 700, cursor: deletingVendorId === selectedVendor._id ? "not-allowed" : "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                          onMouseEnter={(e) => { e.currentTarget.style.background = "#ef4444"; e.currentTarget.style.color = "#fff"; }}
+                          onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(239,68,68,0.05)"; e.currentTarget.style.color = "#ef4444"; }}
+                        >
+                          {deletingVendorId === selectedVendor._id ? "Deleting…" : "🗑️ Delete"}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}

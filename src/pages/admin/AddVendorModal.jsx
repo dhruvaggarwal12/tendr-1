@@ -14,8 +14,10 @@ const DEC_THEMES   = ["Floral Focused", "Balloon Dominant", "Lighting Emphasis",
 const CAT_CUISINE  = ["North Indian", "South Indian", "Snacks", "Chinese Starters", "Punjabi", "Desserts", "Italian", "Other"];
 const CAT_STYLE    = ["Buffet", "Food Stations", "Live Counters", "Family Style"];
 const CAT_MENU     = ["Veg", "Non Veg", "Jain"];
-const PHOTO_SVC    = ["Photography Only", "Videography Only", "Both Photography & Videography"];
-const PHOTO_TYPES  = ["Candid", "Traditional", "Pre-Wedding", "Cinematic", "Documentary"];
+const PHOTO_SVC     = ["Photographer", "Videographer", "Both"];
+const PHOTO_TYPES   = ["Candid", "Drone", "Traditional", "Cinematic"];
+const PHOTO_HOURS   = ["2", "4", "8", "Full day"];
+const PHOTO_EDITING = ["2", "5", "7", "10+"];
 
 const CATEGORIES = [
   { id: "DJ",           label: "DJ",          icon: "🎧", color: "#7c3aed", desc: "Music, sound, lights" },
@@ -133,8 +135,8 @@ export default function AddVendorModal({ onClose, onAdded }) {
 
   const [photoSvc, setPhotoSvc]           = useState("");
   const [photoTypes, setPhotoTypes]       = useState([]);
-  const [photoHours, setPhotoHours]       = useState("8");
-  const [photoEditing, setPhotoEditing]   = useState("30");
+  const [photoHours, setPhotoHours]       = useState("");
+  const [photoEditing, setPhotoEditing]   = useState("");
   const [photoCount, setPhotoCount]       = useState("1");
   const [videoCount, setVideoCount]       = useState("0");
   const [photoSocial, setPhotoSocial]     = useState(false);
@@ -164,7 +166,7 @@ export default function AddVendorModal({ onClose, onAdded }) {
         cuisine: catCuisine, serviceStyle: catStyle, menuType: catMenu, beveragesIncluded: catBev,
         // Photographer
         services: photoSvc ? [photoSvc] : [], photographyType: photoTypes,
-        hoursIncluded: Number(photoHours), editingTimeDays: Number(photoEditing),
+        hoursIncluded: photoHours, editingTimeDays: photoEditing,
         photographersCount: Number(photoCount), videographersCount: Number(videoCount),
         socialMedia: photoSocial, album: photoAlbum,
       };
@@ -341,17 +343,55 @@ export default function AddVendorModal({ onClose, onAdded }) {
           {category === "Photographer" && (
             <>
               <SectionTitle>Photography Details</SectionTitle>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14, marginTop: 12, marginBottom: 20 }}>
-                <Field label="Services">
-                  <SelectInput value={photoSvc} onChange={setPhotoSvc} options={PHOTO_SVC} placeholder="Select service type" />
+              <div style={{ display: "flex", flexDirection: "column", gap: 18, marginTop: 12, marginBottom: 20 }}>
+
+                {/* Which services */}
+                <Field label="Which Services *">
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {PHOTO_SVC.map(opt => (
+                      <button key={opt} type="button" onClick={() => setPhotoSvc(opt)}
+                        style={{ flex: 1, padding: "10px 8px", borderRadius: 10, border: `2px solid ${photoSvc === opt ? "#15803d" : "rgba(196,122,46,0.22)"}`, background: photoSvc === opt ? "rgba(21,128,61,0.08)" : "#FDFCF8", color: photoSvc === opt ? "#15803d" : "#2C1A0E", fontSize: 13, fontWeight: photoSvc === opt ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.14s" }}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
                 </Field>
-                <Field label="Photography Type"><MultiCheck options={PHOTO_TYPES} value={photoTypes} onChange={setPhotoTypes} columns={3} /></Field>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 14 }}>
-                  <Field label="Hours Included"><TextInput value={photoHours} onChange={setPhotoHours} placeholder="8" type="number" /></Field>
-                  <Field label="Editing Days"><TextInput value={photoEditing} onChange={setPhotoEditing} placeholder="30" type="number" /></Field>
-                  <Field label="Photographers"><TextInput value={photoCount} onChange={setPhotoCount} placeholder="1" type="number" /></Field>
-                  <Field label="Videographers"><TextInput value={videoCount} onChange={setVideoCount} placeholder="0" type="number" /></Field>
+
+                {/* Photography type */}
+                <Field label="Photography Type">
+                  <MultiCheck options={PHOTO_TYPES} value={photoTypes} onChange={setPhotoTypes} columns={2} />
+                </Field>
+
+                {/* Hours included */}
+                <Field label="Hours Included">
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {PHOTO_HOURS.map(opt => (
+                      <button key={opt} type="button" onClick={() => setPhotoHours(opt)}
+                        style={{ flex: 1, padding: "9px 6px", borderRadius: 10, border: `2px solid ${photoHours === opt ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: photoHours === opt ? "rgba(196,122,46,0.08)" : "#FDFCF8", color: photoHours === opt ? "#C47A2E" : "#2C1A0E", fontSize: 13, fontWeight: photoHours === opt ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.14s" }}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+
+                {/* Editing time */}
+                <Field label="Editing Time (days)">
+                  <div style={{ display: "flex", gap: 8 }}>
+                    {PHOTO_EDITING.map(opt => (
+                      <button key={opt} type="button" onClick={() => setPhotoEditing(opt)}
+                        style={{ flex: 1, padding: "9px 6px", borderRadius: 10, border: `2px solid ${photoEditing === opt ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: photoEditing === opt ? "rgba(196,122,46,0.08)" : "#FDFCF8", color: photoEditing === opt ? "#C47A2E" : "#2C1A0E", fontSize: 13, fontWeight: photoEditing === opt ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.14s" }}>
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
+                </Field>
+
+                {/* Team count */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <Field label="No. of Photographers"><TextInput value={photoCount} onChange={setPhotoCount} placeholder="1" type="number" /></Field>
+                  <Field label="No. of Videographers"><TextInput value={videoCount} onChange={setVideoCount} placeholder="0" type="number" /></Field>
                 </div>
+
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <Toggle label="Social Media Reels" value={photoSocial} onChange={setPhotoSocial} />
                   <Toggle label="Photo Album Included" value={photoAlbum} onChange={setPhotoAlbum} />
