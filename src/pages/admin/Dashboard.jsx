@@ -1461,6 +1461,26 @@ const AdminDashboard = () => {
             }
           };
 
+          const handleSeedNehaeventz = async () => {
+            if (!window.confirm(
+              'Add Nehaeventz Event Planners as 3 vendors (DJ · Caterer · Decorator)?\n\n' +
+              'Phone: 9643267331  |  Password: Nehaeventz@2024\n' +
+              'Address: Sec 7 Main Market, Dwarka, Delhi\n\n' +
+              'Safe to run again — skips existing service types.'
+            )) return;
+            setSeeding(true); setSeedResult(null);
+            try {
+              const res = await fetch(`${BASE_URL}/admin/seed-nehaeventz`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                credentials: 'include',
+              });
+              const data = await res.json();
+              setSeedResult(data);
+            } catch (err) { setSeedResult({ error: err.message }); }
+            finally { setSeeding(false); }
+          };
+
           const handleSeedSpicelab = async () => {
             if (!window.confirm(
               'Add Spicelab Caterers as 4 vendors (DJ · Caterer · Decorator · Photographer)?\n\n' +
@@ -1576,6 +1596,10 @@ const AdminDashboard = () => {
                 <button onClick={handleSeedSpicelab} disabled={seeding}
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#0369a1,#0ea5e9)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
                   {seeding ? "Creating..." : "🌶️ Add Spicelab Caterers"}
+                </button>
+                <button onClick={handleSeedNehaeventz} disabled={seeding}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#7c3aed,#a855f7)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {seeding ? "Creating..." : "🎪 Add Nehaeventz"}
                 </button>
                 <a href={`${BASE_URL}/admin/import/template`} download
                   style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>
