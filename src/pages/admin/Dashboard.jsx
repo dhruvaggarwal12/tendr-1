@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AddVendorModal from "./AddVendorModal";
 import EditVendorModal from "./EditVendorModal";
+import CatererMenuEditor from "./CatererMenuEditor";
 import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
 
@@ -349,6 +350,7 @@ const AdminDashboard = () => {
   const [addedVendorCount, setAddedVendorCount] = useState(0);
   const [deletingVendorId, setDeletingVendorId] = useState(null);
   const [editingVendor, setEditingVendor] = useState(null);
+  const [menuVendor, setMenuVendor] = useState(null);
   const [registeringAppId, setRegisteringAppId] = useState(null);
   // Chat summary feature
   const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
@@ -1478,6 +1480,11 @@ const AdminDashboard = () => {
               />
             )}
 
+            {/* Caterer Menu Editor */}
+            {menuVendor && (
+              <CatererMenuEditor vendor={menuVendor} onClose={() => setMenuVendor(null)} />
+            )}
+
             {/* Edit Vendor Modal */}
             {editingVendor && (
               <EditVendorModal
@@ -1607,6 +1614,17 @@ const AdminDashboard = () => {
                     >
                       {/* Action buttons — top right corner */}
                       <div style={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 4 }}>
+                        {v.serviceType === "Caterer" && (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setMenuVendor(v); }}
+                            title="Manage Menu"
+                            style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(21,128,61,0.3)", background: "rgba(21,128,61,0.06)", color: "#15803d", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                            onMouseEnter={(e) => { e.currentTarget.style.background = "#15803d"; e.currentTarget.style.color = "#fff"; }}
+                            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(21,128,61,0.06)"; e.currentTarget.style.color = "#15803d"; }}
+                          >
+                            🍽️
+                          </button>
+                        )}
                         <button
                           onClick={(e) => { e.stopPropagation(); setEditingVendor(v); }}
                           title="Edit vendor"

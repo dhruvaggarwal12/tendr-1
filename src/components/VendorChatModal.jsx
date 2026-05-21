@@ -9,6 +9,160 @@ import { useChatOverlay } from "../context/ChatContext";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
+// ── Caterer menu: dishes per cuisine per course ───────────────────────────────
+const CATERER_DISHES = {
+  "North Indian": {
+    Starters: ["Paneer Tikka","Hara Bhara Kebab","Veg Seekh Kebab","Dahi Ke Sholay","Aloo Tikki","Veg Shammi Kebab","Dal Makhani Tikki"],
+    Mains:    ["Dal Makhani","Paneer Butter Masala","Shahi Paneer","Palak Paneer","Kadhai Paneer","Matar Paneer","Mixed Veg","Aloo Jeera","Navratan Korma"],
+    Breads:   ["Butter Naan","Tandoori Roti","Laccha Paratha","Kulcha","Puri","Missi Roti"],
+    Rice:     ["Steamed Rice","Jeera Rice","Veg Biryani","Veg Pulao","Matar Pulao"],
+    Desserts: ["Gulab Jamun","Gajar Ka Halwa","Kheer","Jalebi","Rasgulla","Rasmalai","Halwa"],
+    Beverages:["Sweet Lassi","Salted Lassi","Buttermilk","Sharbat"],
+  },
+  "South Indian": {
+    Starters: ["Medu Vada","Rava Idli","Mini Dosa","Veg Cutlet","Paniyaram","Uttapam"],
+    Mains:    ["Sambar","Rasam","Avial","Kootu","Pulissery","Kerala Veg Curry","Chettinad Masala"],
+    Breads:   ["Appam","Kerala Parotta","Idiyappam","Poori"],
+    Rice:     ["Steamed Rice","Tamarind Rice","Lemon Rice","Curd Rice","Bisi Bele Bath"],
+    Desserts: ["Payasam","Kesari","Pongal","Banana Halwa"],
+    Beverages:["Filter Coffee","Tender Coconut Water","Buttermilk"],
+  },
+  "Punjabi": {
+    Starters: ["Paneer Pakoda","Amritsari Aloo","Makki Roti Bites","Veg Tikka","Chole Tikki"],
+    Mains:    ["Sarson Da Saag","Chole Masala","Rajma Masala","Paneer Bhurji","Kadhi Pakoda","Dal Tadka"],
+    Breads:   ["Makki Di Roti","Butter Naan","Tandoori Paratha","Kulcha"],
+    Rice:     ["Jeera Rice","Veg Pulao","Veg Biryani"],
+    Desserts: ["Phirni","Pinni","Gajrela","Moong Dal Halwa"],
+    Beverages:["Mango Lassi","Sweet Lassi","Chaas"],
+  },
+  "Snacks": {
+    Starters: ["Pani Puri","Bhel Puri","Sev Puri","Dahi Puri","Samosa","Kachori","Vada Pav","Pav Bhaji","Dahi Vada"],
+    Mains:    [],
+    Breads:   [],
+    Rice:     [],
+    Desserts: ["Rabri Falooda","Kulfi","Chaat Papdi"],
+    Beverages:["Masala Chai","Cold Coffee","Nimbu Pani"],
+  },
+  "Chinese Starters": {
+    Starters: ["Veg Manchurian","Chilli Paneer","Veg Spring Roll","Crispy Corn","Chilli Mushroom","Veg Dimsums","Honey Chilli Potatoes","Chilli Baby Corn"],
+    Mains:    ["Hakka Noodles","Veg Fried Rice","Manchow Soup","Sweet Corn Soup","Hot & Sour Soup"],
+    Breads:   [],
+    Rice:     ["Veg Fried Rice","Schezwan Fried Rice","Burnt Garlic Fried Rice"],
+    Desserts: ["Toffee Banana","Date Pancake"],
+    Beverages:["Virgin Mojito","Lemonade"],
+  },
+  "Desserts": {
+    Starters: [],
+    Mains:    [],
+    Breads:   [],
+    Rice:     [],
+    Desserts: ["Gulab Jamun","Rasgulla","Rasmalai","Kheer","Gajar Halwa","Jalebi","Rabri","Kulfi","Phirni","Halwa","Fruit Custard","Ice Cream","Brownie","Pastry"],
+    Beverages:["Sharbat","Mocktail","Fruit Punch"],
+  },
+  "Italian": {
+    Starters: ["Bruschetta","Garlic Bread","Caprese Salad","Stuffed Mushrooms","Tomato Soup"],
+    Mains:    ["Pasta Arrabbiata","Pasta Alfredo","Penne Pesto","Veg Pizza","Veg Lasagna","Risotto"],
+    Breads:   ["Focaccia","Garlic Baguette","Ciabatta"],
+    Rice:     ["Risotto","Veg Pilaf"],
+    Desserts: ["Tiramisu","Panna Cotta","Gelato","Chocolate Mousse"],
+    Beverages:["Lemonade","Iced Tea","Sparkling Water"],
+  },
+  "Other": {
+    Starters: ["Veg Appetizer Platter","Seasonal Starters"],
+    Mains:    ["Chef Special","Seasonal Main Course"],
+    Breads:   ["Assorted Breads"],
+    Rice:     ["Steamed Rice","Special Rice"],
+    Desserts: ["Chef Special Dessert"],
+    Beverages:["Seasonal Beverages"],
+  },
+};
+
+const PACKAGE_LIMITS = {
+  Basic:    { Starters: 2, Mains: 2, Breads: 2, Rice: 1, Desserts: 1, Beverages: 0 },
+  Standard: { Starters: 4, Mains: 3, Breads: 3, Rice: 1, Desserts: 2, Beverages: 1 },
+  Premium:  { Starters: 99, Mains: 99, Breads: 99, Rice: 99, Desserts: 99, Beverages: 99 },
+  Free:     { Starters: 99, Mains: 99, Breads: 99, Rice: 99, Desserts: 99, Beverages: 99 },
+};
+
+const COURSE_ICONS = { Starters: "🥗", Mains: "🍛", Breads: "🫓", Rice: "🍚", Desserts: "🍮", Beverages: "🥤" };
+
+// ── Customer interactive menu card ────────────────────────────────────────────
+function MenuSelectCard({ payload, onSend }) {
+  const { vendorName, pkg, dishes } = payload;
+  const limits = PACKAGE_LIMITS[pkg] || PACKAGE_LIMITS.Free;
+  const [selected, setSelected] = useState({});
+  const [sent, setSent] = useState(false);
+
+  const toggle = (course, dish) => {
+    setSelected(prev => {
+      const cur = prev[course] || [];
+      if (cur.includes(dish)) return { ...prev, [course]: cur.filter(d => d !== dish) };
+      if (cur.length >= (limits[course] ?? 99)) return prev; // at limit
+      return { ...prev, [course]: [...cur, dish] };
+    });
+  };
+
+  const handleSend = () => {
+    const lines = [`My Menu Selection — ${pkg} Package\n`];
+    Object.entries(selected).forEach(([course, dishes]) => {
+      if (dishes.length) lines.push(`${COURSE_ICONS[course] || "•"} ${course}:\n${dishes.map(d => `  • ${d}`).join("\n")}`);
+    });
+    if (lines.length === 1) return;
+    onSend(lines.join("\n"));
+    setSent(true);
+  };
+
+  if (sent) return <span style={{ color: "#15803d", fontWeight: 600 }}>✓ Menu selection sent!</span>;
+
+  const coursesWithDishes = Object.entries(dishes).filter(([, d]) => d.length > 0);
+
+  return (
+    <div style={{ border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 12, overflow: "hidden", maxWidth: 340, fontFamily: font }}>
+      <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "10px 14px" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>📋 Menu from {vendorName}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>
+          Package: <span style={{ color: "#CCAB4A", fontWeight: 700 }}>{pkg}</span>
+          {pkg !== "Free" && " · select per course below"}
+        </div>
+      </div>
+      <div style={{ padding: "10px 12px", background: "#FFFCF7", maxHeight: 360, overflowY: "auto" }}>
+        {coursesWithDishes.map(([course, courseDishes]) => {
+          const limit = limits[course] ?? 99;
+          const selCount = (selected[course] || []).length;
+          return (
+            <div key={course} style={{ marginBottom: 12 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 5 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E" }}>{COURSE_ICONS[course]} {course}</span>
+                {pkg !== "Free" && <span style={{ fontSize: 10, color: selCount >= limit ? "#ef4444" : "#9B7450" }}>
+                  {selCount}/{limit === 99 ? "∞" : limit} selected
+                </span>}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                {courseDishes.map(dish => {
+                  const isSel = (selected[course] || []).includes(dish);
+                  const atLimit = selCount >= limit && !isSel;
+                  return (
+                    <button key={dish} onClick={() => !atLimit && toggle(course, dish)}
+                      style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: isSel ? 700 : 500, cursor: atLimit ? "not-allowed" : "pointer", fontFamily: font, border: `1.5px solid ${isSel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: isSel ? "rgba(196,122,46,0.12)" : "#fff", color: isSel ? "#C47A2E" : atLimit ? "#ccc" : "#2C1A0E", transition: "all 0.12s" }}>
+                      {isSel && "✓ "}{dish}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ padding: "8px 12px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "#FFFCF7" }}>
+        <button onClick={handleSend}
+          style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+          Send My Selection →
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function BotTextInput({ onSubmit, placeholder = "Type your answer…" }) {
   const [val, setVal] = useState("");
   return (
@@ -364,6 +518,22 @@ export default function VendorChatModal() {
         </div>
       );
     }
+    // Caterer interactive menu — customer selects dishes
+    if (text.startsWith("[CATERER_MENU:")) {
+      try {
+        const json = text.replace(/^\[CATERER_MENU:/, "").replace(/\]$/, "");
+        const payload = JSON.parse(json);
+        return (
+          <MenuSelectCard
+            payload={payload}
+            onSend={(selection) => {
+              setMessages(prev => [...prev, { text: selection, sender: "user", ts: Date.now() }]);
+              socketRef.current?.emit("send_message", { conversationId, sender: "user", content: selection });
+            }}
+          />
+        );
+      } catch { /* fall through to plain text */ }
+    }
     return <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>;
   };
 
@@ -589,64 +759,62 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* ── Admin: Caterer Menu Sender ── */}
+          {/* ── Admin: Send Caterer Menu ── */}
           {currentUser?.isAdmin && (approved || isExistingChat) && vendor?.serviceType === "Caterer" && (() => {
-            const [menuOpen, setMenuOpen] = React.useState(false);
-            const cuisines = vendor?.cuisine?.length ? vendor.cuisine : ["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Desserts"];
-            const [selCuisines, setSelCuisines] = React.useState([]);
-            const [pkg, setPkg] = React.useState("");
-            const PACKAGES = [
-              { id: "basic",    label: "Basic",    desc: "Main course + 2 sides" },
-              { id: "standard", label: "Standard", desc: "Full menu + dessert" },
-              { id: "premium",  label: "Premium",  desc: "Live counters + full spread" },
-              { id: "skip",     label: "Skip packages — let them choose freely", desc: "" },
+            const [open, setOpen]     = React.useState(false);
+            const [pkg, setPkg]       = React.useState("");
+
+            // Build dish map from vendor's registered cuisines only
+            const vendorCuisines = vendor?.cuisine?.length ? vendor.cuisine : ["North Indian"];
+            const dishMap = {};
+            vendorCuisines.forEach(cuisine => {
+              const src = CATERER_DISHES[cuisine] || {};
+              Object.entries(src).forEach(([course, dishes]) => {
+                if (dishes.length) {
+                  if (!dishMap[course]) dishMap[course] = [];
+                  dishes.forEach(d => { if (!dishMap[course].includes(d)) dishMap[course].push(d); });
+                }
+              });
+            });
+
+            const PKGS = [
+              { id: "Basic",    label: "Basic",    hint: `${PACKAGE_LIMITS.Basic.Starters} starters · ${PACKAGE_LIMITS.Basic.Mains} mains · ${PACKAGE_LIMITS.Basic.Desserts} desserts` },
+              { id: "Standard", label: "Standard", hint: `${PACKAGE_LIMITS.Standard.Starters} starters · ${PACKAGE_LIMITS.Standard.Mains} mains · ${PACKAGE_LIMITS.Standard.Desserts} desserts · ${PACKAGE_LIMITS.Standard.Beverages} bev` },
+              { id: "Premium",  label: "Premium",  hint: "Unlimited — full spread" },
+              { id: "Free",     label: "Skip packages — free selection", hint: "Customer picks freely" },
             ];
+
             const sendMenu = () => {
-              const cuisineList = selCuisines.length ? selCuisines.join(", ") : cuisines.join(", ");
-              let msg = `📋 *Menu from ${vendor.name}*\n\n`;
-              msg += `🍽️ *Available Cuisines:*\n${cuisineList.split(", ").map(c => `• ${c}`).join("\n")}\n\n`;
-              if (pkg && pkg !== "skip") {
-                const p = PACKAGES.find(x => x.id === pkg);
-                msg += `📦 *Package:* ${p?.label} — ${p?.desc}\n\n`;
-              } else if (pkg === "skip") {
-                msg += `✨ *Mix & Match:* Choose any cuisines you'd like!\n\n`;
-              }
-              msg += `Please reply with your preferences and we'll confirm the quote.`;
+              if (!pkg) return;
+              const payload = { vendorName: vendor.name, pkg, dishes: dishMap };
+              const msg = `[CATERER_MENU:${JSON.stringify(payload)}]`;
               sendText(msg);
-              setMenuOpen(false);
-              setSelCuisines([]);
+              setOpen(false);
               setPkg("");
             };
+
             return (
               <div style={{ marginBottom: 8 }}>
-                <button onClick={() => setMenuOpen(o => !o)}
-                  style={{ width: "100%", padding: "8px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: menuOpen ? "rgba(196,122,46,0.06)" : "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                  🍽️ Send Menu to Customer {menuOpen ? "▲" : "▼"}
+                <button onClick={() => setOpen(o => !o)}
+                  style={{ width: "100%", padding: "8px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: open ? "rgba(196,122,46,0.06)" : "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span>🍽️ Send Menu to Customer</span>
+                  <span style={{ fontSize: 10, opacity: 0.7 }}>{vendorCuisines.join(", ")} {open ? "▲" : "▼"}</span>
                 </button>
-                {menuOpen && (
-                  <div style={{ marginTop: 8, padding: "12px 14px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.15)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Select cuisines to highlight</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-                      {cuisines.map(c => (
-                        <button key={c} onClick={() => setSelCuisines(prev => prev.includes(c) ? prev.filter(x => x !== c) : [...prev, c])}
-                          style={{ padding: "4px 10px", borderRadius: 20, border: `1.5px solid ${selCuisines.includes(c) ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: selCuisines.includes(c) ? "rgba(196,122,46,0.1)" : "#fff", color: selCuisines.includes(c) ? "#C47A2E" : "#6B3A1F", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                          {c}
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Package</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 12 }}>
-                      {PACKAGES.map(p => (
+                {open && (
+                  <div style={{ marginTop: 6, padding: "10px 12px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.15)" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>Select package</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 10 }}>
+                      {PKGS.map(p => (
                         <button key={p.id} onClick={() => setPkg(p.id)}
-                          style={{ textAlign: "left", padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${pkg === p.id ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: pkg === p.id ? "rgba(196,122,46,0.07)" : "#fff", cursor: "pointer", fontFamily: font }}>
+                          style={{ textAlign: "left", padding: "7px 10px", borderRadius: 8, border: `1.5px solid ${pkg === p.id ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: pkg === p.id ? "rgba(196,122,46,0.08)" : "#fff", cursor: "pointer", fontFamily: font, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                           <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{p.label}</span>
-                          {p.desc && <span style={{ fontSize: 11, color: "#9B7450", marginLeft: 6 }}>{p.desc}</span>}
+                          <span style={{ fontSize: 10, color: "#9B7450" }}>{p.hint}</span>
                         </button>
                       ))}
                     </div>
-                    <button onClick={sendMenu}
-                      style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                      Send Menu Message →
+                    <button onClick={sendMenu} disabled={!pkg}
+                      style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: pkg ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: pkg ? "#fff" : "#9ca3af", fontSize: 13, fontWeight: 700, cursor: pkg ? "pointer" : "not-allowed", fontFamily: font }}>
+                      Send Menu →
                     </button>
                   </div>
                 )}
