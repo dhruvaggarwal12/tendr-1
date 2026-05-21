@@ -1419,21 +1419,6 @@ const AdminDashboard = () => {
             } finally { setImporting(false); e.target.value = ''; }
           };
 
-          const handleSeedVendors = async () => {
-            if (!window.confirm('Create 4 test vendors (Decorator, Caterer, Photographer, DJ) with WhatsApp 9205656784?')) return;
-            setSeeding(true); setSeedResult(null);
-            try {
-              const res = await fetch(`${BASE_URL}/admin/seed-test-vendors`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                credentials: 'include',
-                body: JSON.stringify({ phone: '9205656784' }),
-              });
-              const data = await res.json();
-              setSeedResult(data);
-            } catch (err) { setSeedResult({ error: err.message }); }
-            finally { setSeeding(false); }
-          };
 
           const handleDeleteVendor = async (vendor) => {
             if (!window.confirm(
@@ -1481,64 +1466,6 @@ const AdminDashboard = () => {
             finally { setSeeding(false); }
           };
 
-          const handleSeedSpicelab = async () => {
-            if (!window.confirm(
-              'Add Spicelab Caterers as 4 vendors (DJ · Caterer · Decorator · Photographer)?\n\n' +
-              'Phone: 9891941110  |  Password: SpiceLab@2024\n' +
-              'GST: 09AAPCM6125L1ZW  |  Address: Garden Galleria Mall, Noida\n\n' +
-              'Safe to run again — skips existing service types.'
-            )) return;
-            setSeeding(true); setSeedResult(null);
-            try {
-              const res = await fetch(`${BASE_URL}/admin/seed-spicelab`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                credentials: 'include',
-              });
-              const data = await res.json();
-              setSeedResult(data);
-            } catch (err) { setSeedResult({ error: err.message }); }
-            finally { setSeeding(false); }
-          };
-
-          const handleSeedABC = async () => {
-            if (!window.confirm(
-              'Add ABC Caterer as 4 vendors (DJ · Caterer · Decorator · Photographer)?\n\n' +
-              'Phone: 7291803198  |  Password: ABCCaterer@2024\n' +
-              'PAN: BXIPC2649P  |  Address: GC-M Gaur City Mall, Greater Noida\n\n' +
-              'Safe to run again — skips existing service types.'
-            )) return;
-            setSeeding(true); setSeedResult(null);
-            try {
-              const res = await fetch(`${BASE_URL}/admin/seed-abc-caterer`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                credentials: 'include',
-              });
-              const data = await res.json();
-              setSeedResult(data);
-            } catch (err) { setSeedResult({ error: err.message }); }
-            finally { setSeeding(false); }
-          };
-
-          const handleSeedShringaar = async () => {
-            if (!window.confirm(
-              'Add Shringaar Events as 3 vendors (DJ · Caterer · Decorator)?\n\n' +
-              'DJ → 8586060773  |  Caterer → 9899917826  |  Decor → 8586060775\n' +
-              'Password for all: Shringaar@2024\n\nSafe to run again — skips existing.'
-            )) return;
-            setSeeding(true); setSeedResult(null);
-            try {
-              const res = await fetch(`${BASE_URL}/admin/seed-shringaar-vendors`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                credentials: 'include',
-              });
-              const data = await res.json();
-              setSeedResult(data);
-            } catch (err) { setSeedResult({ error: err.message }); }
-            finally { setSeeding(false); }
-          };
 
           return (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
@@ -1580,22 +1507,6 @@ const AdminDashboard = () => {
                       {addedVendorCount} added
                     </span>
                   )}
-                </button>
-                <button onClick={handleSeedVendors} disabled={seeding}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "#2C1A0E", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  {seeding ? "Creating..." : "🌱 Seed Test Vendors"}
-                </button>
-                <button onClick={handleSeedShringaar} disabled={seeding}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  {seeding ? "Creating..." : "🌸 Add Shringaar Events"}
-                </button>
-                <button onClick={handleSeedABC} disabled={seeding}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#15803d,#22c55e)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  {seeding ? "Creating..." : "🍽️ Add ABC Caterer"}
-                </button>
-                <button onClick={handleSeedSpicelab} disabled={seeding}
-                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#0369a1,#0ea5e9)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  {seeding ? "Creating..." : "🌶️ Add Spicelab Caterers"}
                 </button>
                 <button onClick={handleSeedNehaeventz} disabled={seeding}
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#7c3aed,#a855f7)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
