@@ -418,8 +418,8 @@ export default function BudgetAllocator() {
                       <button onClick={() => deleteCategory(c.id)}
                         style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 14, padding: 0 }}>✕</button>
                     </div>
-                    {/* Progress bar + status + See Vendors */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    {/* Progress bar + status label */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: getServiceType(c.name) && allocated > 0 ? 10 : 0 }}>
                       <div style={{ flex: 1, height: 5, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${spentPct}%`, background: tl ? tl.dot : c.color, borderRadius: 100, transition: "width 0.3s" }} />
                       </div>
@@ -428,16 +428,28 @@ export default function BudgetAllocator() {
                       ) : (
                         <span style={{ fontSize: 11, color: "#9B7450", whiteSpace: "nowrap" }}>No spend logged</span>
                       )}
-                      {/* See vendors button — only for service categories we support */}
-                      {getServiceType(c.name) && allocated > 0 && (
-                        <button
-                          onClick={() => openVendorPanel(c.name, allocated)}
-                          style={{ fontSize: 10, fontWeight: 700, padding: "2px 9px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.35)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
-                        >
-                          See Vendors →
-                        </button>
-                      )}
                     </div>
+
+                    {/* See Perfect Vendors — full-width CTA for supported service categories */}
+                    {getServiceType(c.name) && allocated > 0 && (
+                      <button
+                        onClick={() => openVendorPanel(c.name, allocated)}
+                        style={{
+                          width: "100%", padding: "10px 16px", borderRadius: 10,
+                          background: `linear-gradient(135deg, ${c.color}18, ${c.color}08)`,
+                          border: `1.5px solid ${c.color}40`,
+                          color: c.color, fontSize: 13, fontWeight: 700,
+                          cursor: "pointer", fontFamily: font,
+                          display: "flex", alignItems: "center", justifyContent: "space-between",
+                          transition: "all 0.15s",
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = `${c.color}22`; e.currentTarget.style.borderColor = `${c.color}70`; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = `linear-gradient(135deg, ${c.color}18, ${c.color}08)`; e.currentTarget.style.borderColor = `${c.color}40`; }}
+                      >
+                        <span>✦ See {getServiceType(c.name)}s within {formatINR(allocated)}</span>
+                        <span style={{ fontSize: 16 }}>→</span>
+                      </button>
+                    )}
                   </div>
                 );
               })}

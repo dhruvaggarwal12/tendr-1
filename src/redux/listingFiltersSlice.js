@@ -146,10 +146,18 @@ const listingFiltersSlice = createSlice({
         const updated = { ...state.finalisedVendors };
         delete updated[key];
         state.finalisedVendors = updated;
+        saveFinalisedVendors(state.finalisedVendors);
       } else {
+        // Full clear — remove localStorage keys entirely instead of saving empty object
         state.finalisedVendors = {};
+        try {
+          localStorage.removeItem('tendr_finalised');
+          // Remove ALL user-scoped keys (handles guest + any logged-in user)
+          Object.keys(localStorage)
+            .filter(k => k.startsWith('finalisedVendors_'))
+            .forEach(k => localStorage.removeItem(k));
+        } catch {}
       }
-      saveFinalisedVendors(state.finalisedVendors);
     },
   },
 });
