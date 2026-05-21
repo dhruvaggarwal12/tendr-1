@@ -1432,6 +1432,26 @@ const AdminDashboard = () => {
             finally { setSeeding(false); }
           };
 
+          const handleSeedABC = async () => {
+            if (!window.confirm(
+              'Add ABC Caterer as 4 vendors (DJ · Caterer · Decorator · Photographer)?\n\n' +
+              'Phone: 7291803198  |  Password: ABCCaterer@2024\n' +
+              'PAN: BXIPC2649P  |  Address: GC-M Gaur City Mall, Greater Noida\n\n' +
+              'Safe to run again — skips existing service types.'
+            )) return;
+            setSeeding(true); setSeedResult(null);
+            try {
+              const res = await fetch(`${BASE_URL}/admin/seed-abc-caterer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                credentials: 'include',
+              });
+              const data = await res.json();
+              setSeedResult(data);
+            } catch (err) { setSeedResult({ error: err.message }); }
+            finally { setSeeding(false); }
+          };
+
           const handleSeedShringaar = async () => {
             if (!window.confirm(
               'Add Shringaar Events as 3 vendors (DJ · Caterer · Decorator)?\n\n' +
@@ -1483,6 +1503,10 @@ const AdminDashboard = () => {
                 <button onClick={handleSeedShringaar} disabled={seeding}
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
                   {seeding ? "Creating..." : "🌸 Add Shringaar Events"}
+                </button>
+                <button onClick={handleSeedABC} disabled={seeding}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#15803d,#22c55e)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {seeding ? "Creating..." : "🍽️ Add ABC Caterer (4 services)"}
                 </button>
                 <a href={`${BASE_URL}/admin/import/template`} download
                   style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>
