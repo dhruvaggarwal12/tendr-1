@@ -17,8 +17,8 @@ const font = "'Outfit', sans-serif";
 const TABS = ["All", "Upcoming", "Ongoing", "Completed", "Cancelled", "Chats", "Gift Hampers"];
 
 const statusMap = {
-  Upcoming:  ["in_progress"],
-  Ongoing:   ["submitted", "draft"],
+  Upcoming:  [],
+  Ongoing:   ["submitted", "draft", "in_progress"],
   Completed: ["completed"],
   Cancelled: ["cancelled"],
 };
@@ -27,7 +27,7 @@ const statusBadge = (status) => {
   const map = {
     submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "Planning in Progress" },
     draft:       { bg: "#fffbeb", color: "#b45309", border: "#fde68a", label: "Planning in Progress" },
-    in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe", label: "Confirmed — Upcoming" },
+    in_progress: { bg: "#fdf4ff", color: "#7c3aed", border: "#e9d5ff", label: "Payment Received · Pending Confirmation" },
     completed:   { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0", label: "Completed" },
     cancelled:   { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5", label: "Cancelled" },
   };
@@ -267,7 +267,7 @@ export default function CustomerDashboard() {
 
   const counts = {
     All:       plans.length,
-    Upcoming:  plans.filter((p) => statusMap.Upcoming.includes(p.status)).length,
+    Upcoming:  plans.filter((p) => p.status === "in_progress").length, // payment received, awaiting confirmation
     Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length + pendingVendorChats.length + (showPlanningCard ? 1 : 0),
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
@@ -308,7 +308,7 @@ export default function CustomerDashboard() {
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {[
               { label: "Total Events", val: counts.All },
-              { label: "Upcoming", val: counts.Upcoming },
+              { label: "Pending Confirmation", val: counts.Upcoming },
               { label: "Completed", val: counts.Completed },
             ].map(({ label, val }) => (
               <div key={label} style={{ textAlign: "center", background: "rgba(196,122,46,0.07)", borderRadius: 12, padding: "10px 18px", border: "1px solid rgba(196,122,46,0.15)" }}>
