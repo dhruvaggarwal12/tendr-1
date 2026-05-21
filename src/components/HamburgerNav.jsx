@@ -59,6 +59,30 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
+  // Check backend: if user has a paid EventPlan, silently clear Review & Pay state
+  useEffect(() => {
+    if (!token || !finalisedCount || user?.isAdmin) return;
+    const BASE = import.meta.env.VITE_BASE_URL;
+    fetch(`${BASE}/event-plans`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const plans = data.plans || data.eventPlans || (Array.isArray(data) ? data : []);
+        const hasPaid = plans.some(p => ["in_progress", "completed"].includes(p.status));
+        if (hasPaid) {
+          dispatch(clearFinalisedVendor());
+          try {
+            localStorage.removeItem("tendr_finalised");
+            Object.keys(localStorage).filter(k => k.startsWith("finalisedVendors_")).forEach(k => localStorage.removeItem(k));
+          } catch {}
+        }
+      })
+      .catch(() => {});
+  }, [token, finalisedCount]); // eslint-disable-line
+
   const close = () => setDrawerOpen(false);
 
   const listingServiceType  = useSelector((s) => s.listingFilters.serviceType);

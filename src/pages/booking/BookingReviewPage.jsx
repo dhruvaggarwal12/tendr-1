@@ -7,6 +7,7 @@ import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { clearFinalisedVendor } from "../../redux/listingFiltersSlice";
+import { resetEventPlanning } from "../../redux/eventPlanningSlice";
 import ListingsNav from "../../components/ListingsNav";
 import HamburgerNav from "../../components/HamburgerNav";
 import JourneyProgress from "../../components/JourneyProgress";
@@ -96,10 +97,36 @@ const BookingReviewPage = () => {
   };
 
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
-  const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
-  const formData = useSelector((s) => s.eventPlanning.formData || {});
-  const bookingType = useSelector((s) => s.eventPlanning.bookingType);
-  const isLetUsDoIt = bookingType === "let-us-do-it";
+  const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
+  const formData         = useSelector((s) => s.eventPlanning.formData || {});
+  const bookingType      = useSelector((s) => s.eventPlanning.bookingType);
+  const isLetUsDoIt      = bookingType === "let-us-do-it";
+
+  // On mount: check backend — if payment already done, clear local state + redirect away
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/event-plans`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (!data) return;
+        const plans = data.plans || data.eventPlans || (Array.isArray(data) ? data : []);
+        const hasPaid = plans.some(p => ["in_progress", "completed"].includes(p.status));
+        if (hasPaid) {
+          dispatch(clearFinalisedVendor());
+          dispatch(resetEventPlanning());
+          try {
+            localStorage.removeItem("tendr_finalised");
+            Object.keys(localStorage).filter(k => k.startsWith("finalisedVendors_")).forEach(k => localStorage.removeItem(k));
+            localStorage.removeItem("tendr_ep_session");
+          } catch {}
+          navigate("/dashboard", { replace: true });
+        }
+      })
+      .catch(() => {});
+  }, [token]); // eslint-disable-line
 
   // Normalize finalisedVendors — values are now arrays of vendors per category
   const normEntries = Object.entries(finalisedVendors).map(([cat, val]) => [
