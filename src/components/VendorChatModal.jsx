@@ -118,6 +118,11 @@ export default function VendorChatModal() {
     setChatCompleted(false);
     setShowReviewPopup(false);
     setMinimizing(false);
+
+    // Auto-add to Compare Vendors whenever a real vendor chat opens
+    if (chatState?.vendor?._id && chatState.vendor._id !== "concierge" && !chatState.isConcierge) {
+      dispatch(addVendorToCompare(chatState.vendor));
+    }
   }, [chatState?.vendor?._id, chatState?.isExisting]);
 
   // ── Auto-scroll ──────────────────────────────────────────────────────────────
