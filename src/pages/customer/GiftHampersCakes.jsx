@@ -302,12 +302,22 @@ const GiftHampersCakes = () => {
         </div>
       </div>
 
-      {/* Sticky cart bar */}
+      {/* Floating cart button — sits just above View Chats */}
       {cartCount > 0 && (
-        <div style={{ position: "sticky", top: 0, zIndex: 90, background: "linear-gradient(135deg,#15803d,#22c55e)", padding: "10px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", boxShadow: "0 2px 12px rgba(21,128,61,0.3)" }}>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>🛒 {cartCount} item{cartCount > 1 ? "s" : ""} in cart — ₹{cartTotal.toLocaleString("en-IN")}</span>
-          <button onClick={() => setShowCart(true)} style={{ padding: "7px 18px", borderRadius: 100, border: "2px solid rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>View Cart →</button>
-        </div>
+        <button
+          onClick={() => setShowCart(true)}
+          style={{
+            position: "fixed", bottom: 88, right: 16, zIndex: 901,
+            background: "linear-gradient(135deg,#15803d,#22c55e)",
+            color: "#fff", border: "none", borderRadius: 100,
+            padding: "11px 20px", fontFamily: font, fontSize: 13, fontWeight: 700,
+            cursor: "pointer", boxShadow: "0 4px 18px rgba(21,128,61,0.45)",
+            display: "flex", alignItems: "center", gap: 8,
+            whiteSpace: "nowrap",
+          }}
+        >
+          🛒 {cartCount} item{cartCount > 1 ? "s" : ""} — ₹{cartTotal.toLocaleString("en-IN")}
+        </button>
       )}
 
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 24px 80px" }}>
