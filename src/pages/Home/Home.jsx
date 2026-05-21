@@ -767,7 +767,7 @@ const Home = () => {
                   whileInView={{ scale: 1, rotate: 0 }}
                   viewport={{ once: true }}
                   transition={{ type: "spring", stiffness: 200, damping: 12, delay: i * 0.1 + 0.15 }}
-                  whileHover={{ scale: 1.18, rotate: [0, -8, 8, -4, 0] }}
+                  whileHover={{ scale: 1.18, rotate: 8 }}
                   style={{
                     width: 52, height: 52, borderRadius: 14,
                     background: "linear-gradient(135deg,rgba(204,171,74,0.2),rgba(196,122,46,0.12))",

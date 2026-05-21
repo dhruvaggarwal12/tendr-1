@@ -26,7 +26,7 @@ function SavedVendorsInline({ asStrip = false }) {
           🔀 Compare ({compareSelected.length})
         </button>
       ) : (
-        <button onClick={() => setOpen(true)}
+        <button onClick={() => navigate("/listings")}
           style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}>

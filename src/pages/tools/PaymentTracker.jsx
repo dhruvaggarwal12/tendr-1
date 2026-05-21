@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
@@ -122,11 +123,45 @@ export default function PaymentTracker() {
     catch { return []; }
   });
   const [showForm, setShowForm] = useState(false);
-
-  if (!seen) return <IntroScreen onStart={() => { localStorage.setItem("pt_intro_seen","1"); setSeen(true); }} />;
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(BLANK);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [syncMsg, setSyncMsg] = useState("");
+
+  // Auto-import finalized vendors from Redux
+  const finalisedVendors = useSelector(s => s.listingFilters?.finalisedVendors || {});
+
+  const handleSyncVendors = () => {
+    const toImport = [];
+    Object.entries(finalisedVendors).forEach(([serviceType, vendorOrArr]) => {
+      const vendors = Array.isArray(vendorOrArr) ? vendorOrArr : [vendorOrArr];
+      vendors.forEach(v => {
+        if (!v?._id) return;
+        const alreadyExists = entries.some(e => e.vendorName === v.name && e.serviceType === serviceType);
+        if (!alreadyExists) {
+          toImport.push({
+            id: `import_${v._id}_${Date.now()}`,
+            vendorName: v.name || "Unknown Vendor",
+            serviceType,
+            totalAmount: v.price ? String(v.price) : "",
+            paidAmount: "0",
+            dueDate: "",
+            notes: "Imported from finalised vendors",
+            status: "pending",
+          });
+        }
+      });
+    });
+    if (toImport.length === 0) {
+      setSyncMsg("No new vendors to import — all already tracked.");
+    } else {
+      setEntries(prev => [...prev, ...toImport]);
+      setSyncMsg(`Imported ${toImport.length} vendor${toImport.length > 1 ? "s" : ""}. Add the amounts.`);
+    }
+    setTimeout(() => setSyncMsg(""), 3000);
+  };
+
+  if (!seen) return <IntroScreen onStart={() => { localStorage.setItem("pt_intro_seen","1"); setSeen(true); }} />;
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
@@ -185,12 +220,23 @@ export default function PaymentTracker() {
             <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px" }}>Payment Tracker</h1>
             <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Track advances paid and amounts still due to each vendor.</p>
           </div>
-          <button
-            onClick={openAdd}
-            style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.35)", whiteSpace: "nowrap" }}
-          >
-            + Add Vendor
-          </button>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            {Object.keys(finalisedVendors).length > 0 && (
+              <button
+                onClick={handleSyncVendors}
+                style={{ padding: "11px 18px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+              >
+                ⚡ Import from Booking
+              </button>
+            )}
+            <button
+              onClick={openAdd}
+              style={{ padding: "11px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.35)", whiteSpace: "nowrap" }}
+            >
+              + Add Vendor
+            </button>
+          </div>
+          {syncMsg && <div style={{ width: "100%", marginTop: 8, fontSize: 13, color: "#15803d", fontWeight: 600 }}>✓ {syncMsg}</div>}
         </div>
 
         {/* Summary cards */}

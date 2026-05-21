@@ -173,21 +173,52 @@ export default function GuestList() {
         </div>
 
         {/* Stats row */}
-        {guests.length > 0 && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }} className="stat-grid">
-            {[
-              ["Total Invited", guests.length, "#2C1A0E", "#FEF9EC"],
-              ["Attending",     attending,      "#065F46", "#F0FDF4"],
-              ["Not Coming",    notComing,      "#991B1B", "#FEF2F2"],
-              ["Pending",       pending,        "#92400E", "#FFFBEB"],
-            ].map(([lbl, val, color, bg]) => (
-              <div key={lbl} style={{ background: bg, borderRadius: 12, padding: "14px 16px", border: `1px solid ${color}18` }}>
-                <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color, marginBottom: 4 }}>{lbl}</div>
-                <div style={{ fontSize: 24, fontWeight: 900, color }}>{val}</div>
+        {guests.length > 0 && (() => {
+          // Meal counts — only from confirmed attending guests
+          const attending_guests = guests.filter(g => g.rsvp === "yes");
+          const mealCounts = MEALS.reduce((acc, m) => {
+            const n = attending_guests.filter(g => g.meal === m).length;
+            if (n > 0) acc[m] = n;
+            return acc;
+          }, {});
+          return (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }} className="stat-grid">
+                {[
+                  ["Total Invited", guests.length, "#2C1A0E", "#FEF9EC"],
+                  ["Attending",     attending,      "#065F46", "#F0FDF4"],
+                  ["Not Coming",    notComing,      "#991B1B", "#FEF2F2"],
+                  ["Pending",       pending,        "#92400E", "#FFFBEB"],
+                ].map(([lbl, val, color, bg]) => (
+                  <div key={lbl} style={{ background: bg, borderRadius: 12, padding: "14px 16px", border: `1px solid ${color}18` }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color, marginBottom: 4 }}>{lbl}</div>
+                    <div style={{ fontSize: 24, fontWeight: 900, color }}>{val}</div>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        )}
+
+              {/* Meal count summary — for sharing with caterer */}
+              {attending > 0 && Object.keys(mealCounts).length > 0 && (
+                <div style={{ background: "#FFFCF7", borderRadius: 12, padding: "14px 18px", marginBottom: 20, border: "1.5px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "#C47A2E", flexShrink: 0 }}>🍽️ Meal Summary (attending only)</div>
+                  <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    {Object.entries(mealCounts).map(([meal, count]) => (
+                      <span key={meal} style={{ fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 20, background: "rgba(196,122,46,0.08)", color: "#2C1A0E", border: "1px solid rgba(196,122,46,0.18)" }}>
+                        {meal}: <strong style={{ color: "#C47A2E" }}>{count}</strong>
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => { const txt = Object.entries(mealCounts).map(([m,c]) => `${m}: ${c}`).join(", "); navigator.clipboard.writeText(`Meal counts (${attending} attending) — ${txt}`); }}
+                    style={{ marginLeft: "auto", padding: "5px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}
+                  >
+                    Copy for Caterer
+                  </button>
+                </div>
+              )}
+            </>
+          );
+        })()}
 
         {guests.length === 0 ? (
           <div style={{ textAlign: "center", padding: "72px 24px", background: "#FFFCF7", borderRadius: 20, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
