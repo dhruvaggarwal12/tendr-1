@@ -10,6 +10,8 @@ import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 
+const font = "'Outfit', sans-serif";
+
 const PaymentSuccessPage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
@@ -19,6 +21,24 @@ const PaymentSuccessPage = () => {
   const user = useSelector((s) => s.auth.user);
   const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
   const [referralCopied, setReferralCopied] = useState(false);
+
+  // Snapshot event + vendor data BEFORE it gets cleared in useEffect
+  const rawFinalised   = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const rawFormData    = useSelector((s) => s.eventPlanning.formData || {});
+  const [confirmedVendors] = useState(() => {
+    const vendors = [];
+    Object.entries(rawFinalised).forEach(([serviceType, vendorOrArr]) => {
+      const arr = Array.isArray(vendorOrArr) ? vendorOrArr : [vendorOrArr];
+      arr.forEach(v => { if (v?.name) vendors.push({ name: v.name, serviceType }); });
+    });
+    return vendors;
+  });
+  const [eventSummary] = useState(() => ({
+    eventType: rawFormData.eventType || bookingDetails?.eventName || "",
+    date:      rawFormData.date      || bookingDetails?.schedule?.date || "",
+    location:  rawFormData.location  || "",
+    guests:    rawFormData.guests    || "",
+  }));
   useEffect(() => {
     // Clear ALL booking state — payment is complete, fresh start
     dispatch(clearFinalisedVendor());
@@ -70,87 +90,112 @@ const PaymentSuccessPage = () => {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-[#FFF6EF]">
-      <SEO title="Payment Successful" description="Your Tendr booking payment was successful." path="/booking/payment-success" noIndex={true} />
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <SEO title="Booking Confirmed — Tendr" description="Your Tendr booking is confirmed." path="/booking/payment-success" noIndex={true} />
       <HamburgerNav />
-      {/* Main Container */}
-      <div className="flex-grow flex items-center justify-center px-4 sm:px-6 py-10">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg p-8 text-center">
-          {/* Logo */}
-          <img
-            src={logo}
-            alt="Tendr Logo"
-            className="w-40 sm:w-48 mx-auto mb-6"
-          />
 
-          {/* Title */}
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-green-700 mb-3">
-            🎉 Booking Confirmed!
-          </h2>
-          <p className="text-gray-700 text-base sm:text-lg mb-8">
-            Your payment was successful and your booking has been confirmed.
-          </p>
+      <div style={{ maxWidth: 580, margin: "0 auto", padding: "40px 20px 80px" }}>
 
-          {/* Booking Details */}
-          <div className="bg-orange-50 rounded-xl p-5 shadow-inner text-left mb-8">
-            <p className="text-gray-800 mb-1">
-              <strong>Booking ID:</strong> {booking._id}
-            </p>
-            {bookingDetails?.eventName && (
-              <p className="text-gray-800 mb-1"><strong>Event:</strong> {bookingDetails.eventName}</p>
-            )}
-            {bookingDetails?.schedule?.date && (
-              <p className="text-gray-800 mb-1"><strong>Date:</strong> {bookingDetails.schedule.date}</p>
-            )}
-            {bookingDetails?.schedule?.timeSlot && (
-              <p className="text-gray-800 mb-1"><strong>Time:</strong> {bookingDetails.schedule.timeSlot}</p>
-            )}
-            {bookingDetails?.service && (
-              <p className="text-gray-800 mb-1"><strong>Plan:</strong> {bookingDetails.service}</p>
-            )}
-            {amount && (
-              <p className="text-gray-800"><strong>Amount Paid:</strong> ₹{amount}</p>
-            )}
-          </div>
+        {/* ── Hero confirmation ── */}
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 32, margin: "0 auto 16px", boxShadow: "0 8px 28px rgba(21,128,61,0.3)" }}>✓</div>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,5vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "0.01em" }}>
+            Booking Confirmed!
+          </h1>
+          <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>Payment received · Your celebration is on its way</p>
+        </div>
 
-          {/* Referral Code */}
-          {referralCode && (
-            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "20px 22px", marginBottom: 24, textAlign: "left" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>🎁 Share & Save — Your Referral Code</p>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 8 }}>
-                <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "0.1em", fontFamily: "'Courier New', monospace" }}>{referralCode}</span>
-                <button
-                  onClick={() => { navigator.clipboard.writeText(referralCode); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }}
-                  style={{ padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: referralCopied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
-                  {referralCopied ? "✓ Copied!" : "Copy"}
-                </button>
+        {/* ── Event summary card ── */}
+        <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 20, padding: "24px 28px", marginBottom: 20, boxShadow: "0 8px 32px rgba(44,26,14,0.2)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 14 }}>Your Event</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+            {[
+              eventSummary.eventType && { icon: "🎉", label: "Event",    val: eventSummary.eventType },
+              eventSummary.date      && { icon: "📅", label: "Date",     val: eventSummary.date },
+              eventSummary.location  && { icon: "📍", label: "Location", val: eventSummary.location },
+              eventSummary.guests    && { icon: "👥", label: "Guests",   val: eventSummary.guests },
+              amount                 && { icon: "💳", label: "Paid",     val: `₹${Number(amount).toLocaleString("en-IN")}` },
+            ].filter(Boolean).map(({ icon, label, val }) => (
+              <div key={label} style={{ minWidth: 120 }}>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>{label}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{icon} {val}</div>
               </div>
-              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.55 }}>
-                Share this code with friends — they get {DISCOUNT_PERCENT}% off their first Tendr booking. Your code is always the same, saved to your dashboard.
-              </p>
-            </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              className="flex-1 bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 transition"
-              onClick={() => alert("Downloading Ticket...")}
-            >
-              Download Ticket
-            </button>
-            <button
-              className="flex-1 bg-[#2e1b0f] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#2e1b0f]/80 transition"
-              onClick={() => navigate("/dashboard")}
-            >
-              Go to Dashboard
-            </button>
+            ))}
           </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <Footer/>
+        {/* ── Confirmed vendors ── */}
+        {confirmedVendors.length > 0 && (
+          <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 22px", marginBottom: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Confirmed Vendors</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {confirmedVendors.map(({ name, serviceType }) => (
+                <div key={`${name}-${serviceType}`} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 800, flexShrink: 0 }}>
+                    {name[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{name}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>{serviceType}</div>
+                  </div>
+                  <span style={{ marginLeft: "auto", fontSize: 11, fontWeight: 700, color: "#15803d", background: "#f0fdf4", border: "1px solid #bbf7d0", padding: "2px 9px", borderRadius: 20 }}>✓ Confirmed</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── What happens next ── */}
+        <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 22px", marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>What happens next</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { icon: "📞", text: "Our team will contact you within 24 hours to confirm logistics and vendor timings." },
+              { icon: "💬", text: "Your confirmed vendors will be notified. Keep your dashboard open for updates." },
+              { icon: "🎉", text: "Just show up and celebrate — we handle the rest." },
+            ].map(({ icon, text }) => (
+              <div key={text} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span>
+                <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.6 }}>{text}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Referral code ── */}
+        {referralCode && (
+          <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "18px 22px", marginBottom: 20 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>🎁 Your Referral Code</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
+              <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "0.1em", fontFamily: "'Courier New', monospace" }}>{referralCode}</span>
+              <button onClick={() => { navigator.clipboard.writeText(referralCode); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }}
+                style={{ padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: referralCopied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                {referralCopied ? "✓ Copied!" : "Copy"}
+              </button>
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.55 }}>
+              Friends get {DISCOUNT_PERCENT}% off their first booking when they use your code.
+            </p>
+          </div>
+        )}
+
+        {/* ── Action buttons ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          <a
+            href="https://wa.me/919211668427?text=Hi%20Tendr%20team%2C%20I%20just%20completed%20my%20booking%20and%20need%20help."
+            target="_blank" rel="noopener noreferrer"
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "14px", borderRadius: 12, background: "#25D366", color: "#fff", fontSize: 15, fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 14px rgba(37,211,102,0.35)" }}
+          >
+            💬 Chat with Tendr Team on WhatsApp
+          </a>
+          <button onClick={() => navigate("/dashboard")}
+            style={{ padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+            Go to My Dashboard →
+          </button>
+        </div>
+
+      </div>
+      <Footer />
     </div>
   );
 };
