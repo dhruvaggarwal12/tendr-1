@@ -62,6 +62,10 @@ const VendorList = () => {
     return [];
   })();
 
+  // Budget context passed from Budget Allocator
+  const budgetCtx = (() => { try { return JSON.parse(sessionStorage.getItem("tendr_budget_ctx") || "null"); } catch { return null; } })();
+  const budgetMax = location.state?.budgetMax || budgetCtx?.maxBudget || null;
+
   const [showHint, setShowHint] = useState(true);
   const [vendorList, setVendorList] = useState([]);
   const [paginationInfo, setPaginationInfo] = useState({});
@@ -311,6 +315,18 @@ const VendorList = () => {
                     {cat}
                   </button>
                 ))}
+              </div>
+            )}
+
+            {/* Budget context banner from Budget Allocator */}
+            {budgetMax && (
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "8px 14px", borderRadius: 10, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", fontFamily: "'Outfit',sans-serif" }}>
+                <span style={{ fontSize: 14 }}>💰</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#5a3a1a" }}>
+                  Budget from allocator: <strong style={{ color: "#C47A2E" }}>₹{Number(budgetMax).toLocaleString("en-IN")}</strong> — vendors within this range shown first
+                </span>
+                <button onClick={() => sessionStorage.removeItem("tendr_budget_ctx")}
+                  style={{ marginLeft: "auto", background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 14 }}>✕</button>
               </div>
             )}
 

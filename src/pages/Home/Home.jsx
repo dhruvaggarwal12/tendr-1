@@ -20,7 +20,6 @@ import CorporateLogin from "../../components/corporateEventPlanning.jsx";
 import JourneyFlow from "../../components/JourneyFlow";
 import { TEMPLATES } from "../stationery/templates";
 import { RENDERERS } from "../stationery/TemplateRenderer";
-import OnboardingWelcome from "../../components/OnboardingWelcome";
 
 // WhatsApp icon
 import { FaWhatsapp } from "react-icons/fa";
@@ -136,8 +135,6 @@ const Home = () => {
   const formEventName = useSelector((s) => s.eventPlanning.formData.eventName);
   const showVendorScreen = useSelector((s) => s.eventPlanning.showVendorScreen);
   const { user } = useSelector((s) => s.auth);
-  // Admin: show welcome every time they land on home (for now — no localStorage gate)
-  const [showOnboarding, setShowOnboarding] = useState(() => !!user?.isAdmin);
 
   const handlePlanEvent = () => {
     // If form already filled and service screen was shown, go back to service selection
@@ -347,10 +344,6 @@ const Home = () => {
 
   return (
     <div className="App">
-      {/* Onboarding welcome — admin only, shows every time home loads */}
-      {showOnboarding && (
-        <OnboardingWelcome onClose={() => setShowOnboarding(false)} />
-      )}
       <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Faridabad. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}
       <div

@@ -82,9 +82,18 @@ export default function TimelineBuilder() {
   const [activeTab, setActiveTab] = useState("planning"); // "planning" | "dayof"
 
   // Day Of schedule state — saved to localStorage
+  const TTL_7D = 7 * 24 * 60 * 60 * 1000;
+
   const [dayofSlots, setDayofSlots] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("tendr_dayof") || "[]"); }
-    catch { return []; }
+    try {
+      const raw = localStorage.getItem("tendr_dayof");
+      if (!raw) return [];
+      const d = JSON.parse(raw);
+      // Handle both array (old) and {slots,__expiresAt} (new)
+      if (Array.isArray(d)) return d;
+      if (d.__expiresAt && Date.now() > d.__expiresAt) { localStorage.removeItem("tendr_dayof"); return []; }
+      return d.slots || [];
+    } catch { return []; }
   });
 
   const addSlot = () => setDayofSlots(prev => [...prev, { id: Date.now().toString(), time: "", title: "", who: "", done: false }]);
@@ -93,7 +102,7 @@ export default function TimelineBuilder() {
   const deleteSlot = (id) => setDayofSlots(prev => prev.filter(s => s.id !== id));
 
   useEffect(() => {
-    localStorage.setItem("tendr_dayof", JSON.stringify(dayofSlots));
+    localStorage.setItem("tendr_dayof", JSON.stringify({ slots: dayofSlots, __expiresAt: Date.now() + TTL_7D }));
   }, [dayofSlots]);
 
   const handleDragEnd = (result) => {

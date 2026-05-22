@@ -89,6 +89,22 @@ const EventPlanning = () => {
     } else {
       dispatch(setBookingType("you-do-it"));
     }
+
+    // Pre-fill budget from Budget Allocator context if available
+    try {
+      const ctx = JSON.parse(sessionStorage.getItem("tendr_budget_ctx") || "null");
+      if (ctx?.maxBudget) {
+        const budget = Number(ctx.maxBudget);
+        // Map to nearest budget option
+        let option = "Over ₹50,000";
+        if (budget < 1000)         option = "Under ₹1,000";
+        else if (budget < 5000)    option = "₹1,000 - ₹5,000";
+        else if (budget < 10000)   option = "₹5,000 - ₹10,000";
+        else if (budget < 25000)   option = "₹10,000 - ₹25,000";
+        else if (budget <= 50000)  option = "₹25,000 - ₹50,000";
+        dispatch(setFormData({ field: "budget", value: option }));
+      }
+    } catch {}
   }, [location.search, dispatch]);
 
   const questions = [

@@ -1,7 +1,91 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Map category names to service types
+const CATEGORY_TO_SERVICE = {
+  "photography": "Photographer", "photo": "Photographer", "videograph": "Photographer",
+  "decoration": "Decorator",    "decor": "Decorator",
+  "catering":   "Caterer",      "food": "Caterer", "caterer": "Caterer",
+  "dj":         "DJ",           "music": "DJ", "entertainment": "DJ",
+};
+function detectService(name = "") {
+  const lower = name.toLowerCase();
+  for (const [k, v] of Object.entries(CATEGORY_TO_SERVICE)) {
+    if (lower.includes(k)) return v;
+  }
+  return null;
+}
+
+// Vendor suggestion panel (reused from BudgetAllocator pattern)
+function VendorPanel({ serviceType, catName, onClose }) {
+  const navigate    = useNavigate();
+  const [vendors, setVendors]   = useState([]);
+  const [loading, setLoading]   = useState(true);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/vendors?serviceTypes[]=${serviceType}&limit=20`)
+      .then(r => r.ok ? r.json() : { vendors: [] })
+      .then(d => setVendors(d.vendors || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [serviceType]);
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(28,10,0,0.45)", backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 401, width: "min(95vw, 640px)", height: "min(88vh, 680px)", background: "#FAF7F2", borderRadius: 20, boxShadow: "0 32px 80px rgba(28,10,0,0.2)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", flexDirection: "column", fontFamily: font, overflow: "hidden" }}>
+        <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFFCF7", flexShrink: 0 }}>
+          <div>
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{serviceType}s for "{catName}"</h3>
+            <p style={{ fontSize: 12, color: "#9B7450", margin: "3px 0 0" }}>Vendors available for your event</p>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(196,122,46,0.1)", border: "none", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+        </div>
+        <div style={{ flex: 1, overflowY: "auto", padding: "14px 18px" }}>
+          {loading ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[1,2,3].map(i => <div key={i} style={{ height: 72, borderRadius: 12, background: "#EDE6D8", animation: "shimmer 1.4s infinite" }} />)}
+            </div>
+          ) : vendors.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 20px", color: "#9B7450" }}>
+              <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
+              <p>No vendors found yet. Add vendors from the admin dashboard.</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {vendors.map(v => (
+                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, background: "#FFFCF7", border: "1.5px solid rgba(196,122,46,0.12)" }}>
+                  <img src={v.image || v.portfolioPhotos?.[0] || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=80&q=60"} alt={v.name} style={{ width: 48, height: 48, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{v.name}</div>
+                    <div style={{ fontSize: 12, color: "#9B7450" }}>{v.serviceType} · {v.address?.city || ""}</div>
+                    {v.price && <div style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>₹{Number(v.price).toLocaleString("en-IN")}+</div>}
+                  </div>
+                  <button onClick={() => { onClose(); navigate(`/vendor/${v._id}`); }}
+                    style={{ padding: "8px 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    View
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{ padding: "12px 18px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "#FFFCF7", flexShrink: 0 }}>
+          <button onClick={() => { onClose(); navigate("/listings"); }}
+            style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            Browse All {serviceType}s →
+          </button>
+        </div>
+        <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+      </div>
+    </>
+  );
+}
 
 const font = "'Outfit', sans-serif";
 
@@ -83,17 +167,25 @@ const buildFromTemplate = (templateKey) => {
 };
 
 export default function CheckBox() {
+  const [vendorPanel, setVendorPanel] = useState(null); // { serviceType, catName }
   const [templateKey, setTemplateKey] = useState("birthday");
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
+
+  const TTL_7D = 7 * 24 * 60 * 60 * 1000;
 
   useEffect(() => {
     try {
       const raw = localStorage.getItem("tendr_checklist_v2");
       if (raw) {
         const saved = JSON.parse(raw);
-        setTemplateKey(saved.templateKey || "birthday");
-        setCategories(saved.categories || []);
+        if (saved.__expiresAt && Date.now() > saved.__expiresAt) {
+          localStorage.removeItem("tendr_checklist_v2");
+          setCategories(buildFromTemplate("birthday"));
+        } else {
+          setTemplateKey(saved.templateKey || "birthday");
+          setCategories(saved.categories || []);
+        }
       } else {
         setCategories(buildFromTemplate("birthday"));
       }
@@ -103,7 +195,7 @@ export default function CheckBox() {
 
   useEffect(() => {
     if (!loaded) return;
-    localStorage.setItem("tendr_checklist_v2", JSON.stringify({ templateKey, categories }));
+    localStorage.setItem("tendr_checklist_v2", JSON.stringify({ templateKey, categories, __expiresAt: Date.now() + TTL_7D }));
   }, [categories, templateKey, loaded]);
 
   const applyTemplate = (key) => {
@@ -158,6 +250,7 @@ export default function CheckBox() {
       />
       <BasicSpeedDial />
       <HamburgerNav title="Event Checklist" />
+      {vendorPanel && <VendorPanel serviceType={vendorPanel.serviceType} catName={vendorPanel.catName} onClose={() => setVendorPanel(null)} />}
 
       {/* Header */}
       <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "32px 40px 28px" }}>
@@ -255,7 +348,17 @@ export default function CheckBox() {
                     style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", background: "transparent", border: "none", outline: "none", fontFamily: font, flex: 1 }}
                   />
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                  {/* See Vendors button — only for service-related categories */}
+                  {(() => {
+                    const svc = detectService(cat.name);
+                    return svc ? (
+                      <button onClick={() => setVendorPanel({ serviceType: svc, catName: cat.name })}
+                        style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                        See Vendors →
+                      </button>
+                    ) : null;
+                  })()}
                   <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 9px", borderRadius: 20,
                     background: catDone === catTotal && catTotal > 0 ? "rgba(34,197,94,0.12)" : "rgba(196,122,46,0.1)",
                     color: catDone === catTotal && catTotal > 0 ? "#15803d" : "#C47A2E" }}>

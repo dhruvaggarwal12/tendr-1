@@ -172,26 +172,34 @@ export default function BudgetAllocator() {
   const [loaded, setLoaded] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
 
-  useEffect(() => {
+  const TTL_7D = 7 * 24 * 60 * 60 * 1000;
+  const loadBudget = () => {
     try {
       const raw = localStorage.getItem("tendr_budget_v2");
-      if (raw && !routeEventType) {
-        const d = JSON.parse(raw);
-        setEventKey(d.eventKey || "birthday");
-        setTotalBudget(d.totalBudget || 50000);
-        setCategories(d.categories || initCategories(d.eventKey || "birthday", d.totalBudget || 50000));
-      } else {
-        const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
-        setEventKey(key);
-        setCategories(initCategories(key, 50000));
-      }
-    } catch { setCategories(initCategories("birthday", 50000)); }
+      if (!raw) return null;
+      const d = JSON.parse(raw);
+      if (d.__expiresAt && Date.now() > d.__expiresAt) { localStorage.removeItem("tendr_budget_v2"); return null; }
+      return d;
+    } catch { return null; }
+  };
+
+  useEffect(() => {
+    const d = loadBudget();
+    if (d && !routeEventType) {
+      setEventKey(d.eventKey || "birthday");
+      setTotalBudget(d.totalBudget || 50000);
+      setCategories(d.categories || initCategories(d.eventKey || "birthday", d.totalBudget || 50000));
+    } else {
+      const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
+      setEventKey(key);
+      setCategories(initCategories(key, 50000));
+    }
     setLoaded(true);
   }, []);
 
   useEffect(() => {
     if (!loaded) return;
-    localStorage.setItem("tendr_budget_v2", JSON.stringify({ eventKey, totalBudget, categories }));
+    localStorage.setItem("tendr_budget_v2", JSON.stringify({ eventKey, totalBudget, categories, __expiresAt: Date.now() + TTL_7D }));
   }, [eventKey, totalBudget, categories, loaded]);
 
   const applyEventType = (key) => {
@@ -531,11 +539,23 @@ export default function BudgetAllocator() {
             )}
           </div>
 
-          <div style={{ padding: "12px 20px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "#FFFCF7", flexShrink: 0 }}>
-            <button onClick={() => { setVendorPanel(null); navigate("/listings"); }}
+          <div style={{ padding: "12px 20px 16px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "#FFFCF7", flexShrink: 0 }}>
+            <button onClick={() => {
+              // Store budget context so the form and vendor listing can use it
+              sessionStorage.setItem("tendr_budget_ctx", JSON.stringify({
+                serviceType: vendorPanel.serviceType,
+                maxBudget: vendorPanel.budget,
+                catName: vendorPanel.catName,
+              }));
+              setVendorPanel(null);
+              navigate("/listings", { state: { selectedCategories: [vendorPanel.serviceType], budgetMax: vendorPanel.budget } });
+            }}
               style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-              Browse All {vendorPanel.serviceType}s →
+              Browse All {vendorPanel.serviceType}s within {formatINR(vendorPanel.budget)} →
             </button>
+            <p style={{ textAlign: "center", fontSize: 11, color: "#9B7450", margin: "6px 0 0" }}>
+              Your budget for this category will be pre-filled in the event form
+            </p>
           </div>
         </div>
         <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
