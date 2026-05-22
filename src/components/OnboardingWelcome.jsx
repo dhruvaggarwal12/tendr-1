@@ -1,9 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-// Place the Tendr mascot PNG at: src/assets/ui/tendr-mascot.png
-// Import will gracefully fail and the img onError hides it
-let mascotImg = null;
-try { mascotImg = new URL("../assets/ui/tendr-mascot.png", import.meta.url).href; } catch (_) {}
+import mascotImg from "../assets/ui/tendr-mascot.png";
 
 const font = "'Outfit', sans-serif";
 const STORAGE_KEY = "tendr_onboarding_v1";
