@@ -3,176 +3,283 @@ import { useNavigate } from "react-router-dom";
 import mascotImg from "../assets/ui/tendr-mascot.png";
 
 const font = "'Outfit', sans-serif";
-const STORAGE_KEY = "tendr_onboarding_v1";
+export const ONBOARDING_KEY = "tendr_onboarding_v1";
 
-// ── Categories grouped by section ────────────────────────────────────────────
+// ── Category data ─────────────────────────────────────────────────────────────
 const SECTIONS = [
   {
     label: "Vendor Services",
     items: [
-      { id: "Photographer", icon: "📸", label: "Photography",  color: "#15803d" },
-      { id: "Decorator",    icon: "🎨", label: "Decoration",   color: "#b45309" },
-      { id: "Caterer",      icon: "🍽️", label: "Catering",     color: "#0369a1" },
-      { id: "DJ",           icon: "🎧", label: "DJ & Music",   color: "#7c3aed" },
+      { id: "Photographer", icon: "📸", label: "Photography",  color: "#15803d", route: "/listings" },
+      { id: "Decorator",    icon: "🎨", label: "Decoration",   color: "#b45309", route: "/listings" },
+      { id: "Caterer",      icon: "🍽️", label: "Catering",     color: "#0369a1", route: "/listings" },
+      { id: "DJ",           icon: "🎧", label: "DJ & Music",   color: "#7c3aed", route: "/listings" },
     ],
   },
   {
     label: "Memories",
     items: [
-      { id: "Stationery",  icon: "📜", label: "Wedding Stationery", color: "#9B7BAD" },
-      { id: "Invitation",  icon: "💌", label: "Invitation Flyers",  color: "#C4748A" },
+      { id: "Stationery",  icon: "📜", label: "Wedding Stationery", color: "#9B7BAD", route: "/stationery" },
+      { id: "Invitation",  icon: "💌", label: "Invitation Flyers",  color: "#C4748A", route: "/invitation" },
     ],
   },
   {
     label: "Gifting",
     items: [
-      { id: "GiftHampers", icon: "🎁", label: "Gift Hampers", color: "#be185d" },
+      { id: "GiftHampers", icon: "🎁", label: "Gift Hampers", color: "#be185d", route: "/gift-hampers-cakes" },
     ],
   },
 ];
 
-const ALL_ITEMS = SECTIONS.flatMap(s => s.items);
+export const ALL_ITEMS = SECTIONS.flatMap(s => s.items);
+const VENDOR_IDS = ["Photographer", "Decorator", "Caterer", "DJ"];
 
-// ── Smart route based on selection ───────────────────────────────────────────
-function getSmartRoute(selected) {
-  if (selected.length === 0) return null;
-
-  const onlyGift = selected.every(id => id === "GiftHampers");
-  if (onlyGift) return "/gift-hampers-cakes";
-
-  const onlyMemories = selected.every(id => id === "Stationery" || id === "Invitation");
-  if (onlyMemories) {
-    if (selected.length === 1) return selected[0] === "Stationery" ? "/stationery" : "/invitation";
-    return "/stationery"; // both memories → go to stationery (main one)
-  }
-
-  // Has vendor categories → start planning flow
-  return "/booking";
+// ── Check if event planning form is filled ────────────────────────────────────
+function hasFormFilled() {
+  try {
+    const raw = localStorage.getItem("tendr_ep_session");
+    if (raw) {
+      const d = JSON.parse(raw);
+      return !!(d.formData?.eventType || d.eventType);
+    }
+    const fv = localStorage.getItem("tendr_finalised");
+    if (fv) {
+      const d = JSON.parse(fv);
+      return Object.keys(d).some(k => k !== "__expiresAt");
+    }
+  } catch {}
+  return false;
 }
 
-// ── Mini chip item ────────────────────────────────────────────────────────────
-function CategoryChip({ item, selected, onToggle }) {
+// ── Category chip ─────────────────────────────────────────────────────────────
+function Chip({ item, selected, onToggle }) {
   const isSel = selected.includes(item.id);
   return (
     <button onClick={() => onToggle(item.id)}
       style={{
         display: "flex", alignItems: "center", gap: 6,
-        padding: "7px 12px", borderRadius: 100, cursor: "pointer",
+        padding: "8px 14px", borderRadius: 100, cursor: "pointer",
         border: `1.5px solid ${isSel ? item.color : "rgba(0,0,0,0.1)"}`,
         background: isSel ? `${item.color}14` : "#fff",
-        fontFamily: font, fontSize: 12.5, fontWeight: isSel ? 700 : 500,
+        fontFamily: font, fontSize: 13, fontWeight: isSel ? 700 : 500,
         color: isSel ? item.color : "#5a3a1a",
         transition: "all 0.15s",
         boxShadow: isSel ? `0 2px 8px ${item.color}22` : "none",
-      }}
-    >
-      <span style={{ fontSize: 14 }}>{item.icon}</span>
+      }}>
+      <span style={{ fontSize: 16 }}>{item.icon}</span>
       {item.label}
-      {isSel && <span style={{ fontSize: 10, fontWeight: 900 }}>✓</span>}
+      {isSel && <span style={{ fontSize: 10, fontWeight: 900, marginLeft: 2 }}>✓</span>}
     </button>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// ── Main ─────────────────────────────────────────────────────────────────────
 export default function OnboardingWelcome({ onClose }) {
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
+  const [step, setStep]       = useState("first-time"); // first-time | pick | start-with
   const [selected, setSelected] = useState([]);
+  const [startChoice, setStartChoice] = useState(null);
 
   const toggle = (id) => setSelected(prev =>
     prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
   );
 
-  const handleSubmit = () => {
-    if (selected.length === 0) return;
-
-    // Build checklist and save
+  // ── Save checklist + navigate ─────────────────────────────────────────────
+  const finalise = (categoryId) => {
     const items = selected.map(id => {
       const cat = ALL_ITEMS.find(c => c.id === id);
-      return { id: `ob_${id}`, label: `Book your ${cat.label}`, category: id, done: false, icon: cat.icon };
+      return { id: `ob_${id}`, label: cat.label, category: id, done: false, icon: cat.icon, route: cat.route };
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ items }));
-
-    const route = getSmartRoute(selected);
+    localStorage.setItem(ONBOARDING_KEY, JSON.stringify({ items }));
     onClose();
-    navigate(route);
+
+    const cat = ALL_ITEMS.find(c => c.id === categoryId);
+    if (!cat) return;
+
+    // Vendor category — check form
+    if (VENDOR_IDS.includes(categoryId)) {
+      if (hasFormFilled()) {
+        navigate("/listings", { state: { selectedCategories: [categoryId] } });
+      } else {
+        navigate("/booking");
+      }
+    } else {
+      navigate(cat.route);
+    }
   };
 
-  const hasVendorCategories = selected.some(id => ["Photographer","Decorator","Caterer","DJ"].includes(id));
-  const submitLabel = (() => {
-    if (selected.length === 0) return "Select something first";
-    const route = getSmartRoute(selected);
-    if (route === "/gift-hampers-cakes") return "Browse Gift Hampers →";
-    if (route === "/stationery") return "Open Stationery Studio →";
-    if (route === "/invitation") return "Open Invitation Flyers →";
-    return "Start Planning →";
-  })();
+  // ── On submit from picker ─────────────────────────────────────────────────
+  const handleSubmit = () => {
+    if (selected.length === 0) return;
+    const vendorSelected = selected.filter(id => VENDOR_IDS.includes(id));
+    const nonVendor = selected.filter(id => !VENDOR_IDS.includes(id));
 
+    // Only non-vendor (memories/gifting) — go directly
+    if (vendorSelected.length === 0) {
+      finalise(selected[0]); return;
+    }
+    // Single vendor category — go directly
+    if (vendorSelected.length === 1 && nonVendor.length === 0) {
+      finalise(vendorSelected[0]); return;
+    }
+    // Multiple — ask "start with what?"
+    setStep("start-with");
+  };
+
+  // ── STEP: first-time ──────────────────────────────────────────────────────
+  if (step === "first-time") return (
+    <Overlay onClose={onClose}>
+      <div style={{ textAlign: "center", padding: "36px 32px 32px" }}>
+        <img src={mascotImg} alt="" style={{ width: 110, objectFit: "contain", marginBottom: 10 }} />
+        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.7rem", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px" }}>
+          Welcome to Tendr! 🎉
+        </h2>
+        <p style={{ fontSize: 13.5, color: "#9B7450", margin: "0 0 28px", lineHeight: 1.6 }}>
+          Delhi NCR's celebration planning platform — vendors, tools, memories all in one place.
+        </p>
+        <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px" }}>
+          Is this your first time here?
+        </p>
+        <div style={{ display: "flex", gap: 12 }}>
+          <button onClick={() => setStep("pick")}
+            style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+            Yes, first time! 👋
+          </button>
+          <button onClick={onClose}
+            style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            Nope, I know my way →
+          </button>
+        </div>
+      </div>
+    </Overlay>
+  );
+
+  // ── STEP: pick categories ─────────────────────────────────────────────────
+  if (step === "pick") return (
+    <Overlay onClose={onClose}>
+      <div style={{ padding: "28px 28px 24px" }}>
+        <div style={{ textAlign: "center", marginBottom: 22 }}>
+          <img src={mascotImg} alt="" style={{ width: 80, objectFit: "contain", marginBottom: 8 }} />
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.5rem", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px" }}>
+            What are you planning? 🎉
+          </h2>
+          <p style={{ fontSize: 12.5, color: "#9B7450", margin: 0 }}>Select everything you need</p>
+        </div>
+
+        {SECTIONS.map(section => (
+          <div key={section.label} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
+              {section.label}
+            </div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+              {section.items.map(item => (
+                <Chip key={item.id} item={item} selected={selected} onToggle={toggle} />
+              ))}
+            </div>
+          </div>
+        ))}
+
+        <div style={{ marginTop: 20 }}>
+          <button onClick={handleSubmit} disabled={selected.length === 0}
+            style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: selected.length > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: selected.length > 0 ? "#fff" : "#9ca3af", fontSize: 14, fontWeight: 800, cursor: selected.length > 0 ? "pointer" : "not-allowed", fontFamily: font, boxShadow: selected.length > 0 ? "0 4px 14px rgba(196,122,46,0.3)" : "none" }}>
+            {selected.length > 0 ? `Start Planning — ${selected.length} selected →` : "Select something first"}
+          </button>
+        </div>
+      </div>
+    </Overlay>
+  );
+
+  // ── STEP: start-with ─────────────────────────────────────────────────────
+  if (step === "start-with") {
+    const vendorSelected = selected.filter(id => VENDOR_IDS.includes(id));
+    const nonVendor      = selected.filter(id => !VENDOR_IDS.includes(id));
+    return (
+      <Overlay onClose={onClose}>
+        <div style={{ padding: "32px 28px 28px" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>🗂️</div>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.5rem", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px" }}>
+              What do you want to start with?
+            </h2>
+            <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>
+              You can come back for the others from your checklist
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {vendorSelected.map(id => {
+              const cat = ALL_ITEMS.find(c => c.id === id);
+              return (
+                <button key={id} onClick={() => finalise(id)}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 18px", borderRadius: 14, border: `1.5px solid ${cat.color}30`, background: `${cat.color}08`, cursor: "pointer", fontFamily: font, textAlign: "left", transition: "all 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = `${cat.color}14`; e.currentTarget.style.borderColor = `${cat.color}60`; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = `${cat.color}08`; e.currentTarget.style.borderColor = `${cat.color}30`; }}
+                >
+                  <span style={{ fontSize: 26, flexShrink: 0 }}>{cat.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{cat.label}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>
+                      {hasFormFilled() ? "Go to vendor listing →" : "Fill event form first →"}
+                    </div>
+                  </div>
+                  <span style={{ marginLeft: "auto", fontSize: 18, color: cat.color }}>→</span>
+                </button>
+              );
+            })}
+
+            {/* Non-vendor options shown smaller */}
+            {nonVendor.length > 0 && (
+              <>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginTop: 4 }}>Or browse directly</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {nonVendor.map(id => {
+                    const cat = ALL_ITEMS.find(c => c.id === id);
+                    return (
+                      <button key={id} onClick={() => finalise(id)}
+                        style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, border: `1.5px solid ${cat.color}40`, background: `${cat.color}08`, cursor: "pointer", fontFamily: font, fontSize: 13, fontWeight: 600, color: cat.color }}>
+                        {cat.icon} {cat.label} →
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
+
+          <button onClick={() => setStep("pick")}
+            style={{ width: "100%", marginTop: 16, padding: "10px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            ← Change selection
+          </button>
+        </div>
+      </Overlay>
+    );
+  }
+
+  return null;
+}
+
+// ── Shared overlay wrapper ───────────────────────────────────────────────────
+function Overlay({ children, onClose }) {
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(28,10,0,0.6)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, padding: 20 }}>
-      <div style={{ background: "#FFFCF7", borderRadius: 24, width: "min(94vw, 480px)", maxHeight: "88vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(28,10,0,0.25)", border: "1.5px solid rgba(196,122,46,0.18)", position: "relative" }}>
-
-        {/* Close button */}
+      <div style={{ background: "#FFFCF7", borderRadius: 24, width: "min(94vw, 520px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(28,10,0,0.25)", border: "1.5px solid rgba(196,122,46,0.18)", position: "relative" }}>
         <button onClick={onClose}
           style={{ position: "absolute", top: 14, right: 14, zIndex: 10, width: 30, height: 30, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           ✕
         </button>
-
-        {/* Mascot + headline */}
-        <div style={{ textAlign: "center", padding: "28px 28px 0" }}>
-          <img
-            src={mascotImg}
-            alt="Tendr"
-            style={{ width: 110, height: 110, objectFit: "contain", marginBottom: 8 }}
-            onError={e => { e.target.style.display = "none"; }}
-          />
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.65rem", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px" }}>
-            What are you planning? 🎉
-          </h2>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 20px" }}>
-            Pick everything you need — we'll set up your checklist.
-          </p>
-        </div>
-
-        {/* Categorised sections */}
-        <div style={{ padding: "0 24px 20px" }}>
-          {SECTIONS.map(section => (
-            <div key={section.label} style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
-                {section.label}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                {section.items.map(item => (
-                  <CategoryChip key={item.id} item={item} selected={selected} onToggle={toggle} />
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Submit */}
-        <div style={{ padding: "0 24px 24px" }}>
-          <button onClick={handleSubmit} disabled={selected.length === 0}
-            style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: selected.length > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: selected.length > 0 ? "#fff" : "#9ca3af", fontSize: 14, fontWeight: 800, cursor: selected.length > 0 ? "pointer" : "not-allowed", fontFamily: font, boxShadow: selected.length > 0 ? "0 4px 16px rgba(196,122,46,0.3)" : "none", transition: "all 0.18s" }}>
-            {submitLabel}
-          </button>
-          {selected.length > 0 && (
-            <p style={{ textAlign: "center", fontSize: 11, color: "#9B7450", margin: "8px 0 0" }}>
-              {selected.length} item{selected.length > 1 ? "s" : ""} selected
-            </p>
-          )}
-        </div>
+        {children}
       </div>
     </div>
   );
 }
 
-// ── Hook to read onboarding checklist ────────────────────────────────────────
+// ── Hook to read/use checklist ───────────────────────────────────────────────
 export function useOnboardingChecklist() {
-  const raw   = (() => { try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; } })();
+  const raw   = (() => { try { return JSON.parse(localStorage.getItem(ONBOARDING_KEY) || "{}"); } catch { return {}; } })();
   const items = raw.items || [];
   const markDone = (categoryId) => {
     const updated = { ...raw, items: items.map(i => i.category === categoryId ? { ...i, done: true } : i) };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+    localStorage.setItem(ONBOARDING_KEY, JSON.stringify(updated));
   };
   return { items, markDone, total: items.length, done: items.filter(i => i.done).length };
 }

@@ -118,6 +118,30 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const checklistItems = onboardingData.items || [];
   const checklistDone  = checklistItems.filter(i => i.done).length;
 
+  const VENDOR_CATEGORY_IDS = ["Photographer", "Decorator", "Caterer", "DJ"];
+  const handleChecklistItemClick = (item) => {
+    if (VENDOR_CATEGORY_IDS.includes(item.category)) {
+      // Check if form is filled
+      let formFilled = false;
+      try {
+        const raw = localStorage.getItem("tendr_ep_session");
+        if (raw) { const d = JSON.parse(raw); formFilled = !!(d.formData?.eventType || d.eventType); }
+        if (!formFilled) {
+          const fv = localStorage.getItem("tendr_finalised");
+          if (fv) { const d = JSON.parse(fv); formFilled = Object.keys(d).some(k => k !== "__expiresAt"); }
+        }
+      } catch {}
+      navigate(formFilled ? "/listings" : "/booking",
+        formFilled ? { state: { selectedCategories: [item.category] } } : undefined);
+    } else if (item.category === "GiftHampers") {
+      navigate("/gift-hampers-cakes");
+    } else if (item.category === "Stationery") {
+      navigate("/stationery");
+    } else if (item.category === "Invitation") {
+      navigate("/invitation");
+    }
+  };
+
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
       { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors },
@@ -230,15 +254,20 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               <div style={{ height: 4, background: "rgba(255,255,255,0.12)", borderRadius: 100, overflow: "hidden", marginBottom: 8 }}>
                 <div style={{ height: "100%", width: `${checklistItems.length ? (checklistDone / checklistItems.length) * 100 : 0}%`, background: checklistDone === checklistItems.length ? "#22c55e" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s" }} />
               </div>
-              {/* Item list */}
+              {/* Item list — each item is clickable */}
               <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                 {checklistItems.map(item => (
-                  <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 11, flexShrink: 0 }}>{item.done ? "✅" : "⬜"}</span>
-                    <span style={{ fontSize: 11, color: item.done ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.8)", textDecoration: item.done ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <button key={item.id}
+                    onClick={() => handleChecklistItemClick(item)}
+                    style={{ display: "flex", alignItems: "center", gap: 6, background: "none", border: "none", cursor: "pointer", padding: "2px 0", textAlign: "left", width: "100%" }}
+                    onMouseEnter={e => { if (!item.done) e.currentTarget.style.opacity = "0.75"; }}
+                    onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+                  >
+                    <span style={{ fontSize: 12, flexShrink: 0 }}>{item.done ? "✅" : "⬜"}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: item.done ? 400 : 600, color: item.done ? "rgba(255,255,255,0.35)" : "rgba(255,255,255,0.85)", textDecoration: item.done ? "line-through" : "underline", textDecorationStyle: "dotted", textUnderlineOffset: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {item.icon} {item.label}
                     </span>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
