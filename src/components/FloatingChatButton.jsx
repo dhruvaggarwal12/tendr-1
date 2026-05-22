@@ -8,7 +8,9 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
-  const { user, token } = useSelector((s) => s.auth);
+  const { user, token }      = useSelector((s) => s.auth);
+  const selectedCategories   = useSelector((s) => s.eventPlanning.selectedVendors || []);
+  const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
@@ -126,6 +128,28 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               <div style={{ flex: 1, fontSize: 15, fontWeight: 800, color: "#fff" }}>💬 Active Chats</div>
               <button onClick={() => setShowActiveChats(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
+
+            {/* Vendor category checklist — only when user selected categories */}
+            {selectedCategories.length > 0 && (
+              <div style={{ background: "rgba(196,122,46,0.05)", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "10px 16px" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Your vendor checklist</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                  {selectedCategories.map(cat => {
+                    const done = !!finalisedVendors[cat];
+                    return (
+                      <div key={cat} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, background: done ? "#22c55e" : "rgba(255,255,255,0.12)", border: `1.5px solid ${done ? "#22c55e" : "rgba(255,255,255,0.25)"}`, color: "#fff" }}>
+                          {done ? "✓" : ""}
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: done ? 700 : 500, color: done ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)", textDecoration: done ? "none" : "none" }}>{cat}</span>
+                        {done && <span style={{ fontSize: 10, color: "#22c55e", marginLeft: "auto" }}>Finalised</span>}
+                        {!done && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginLeft: "auto" }}>Pending</span>}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
             {/* Chat list */}
             <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
               {vendorChats.length === 0 ? (

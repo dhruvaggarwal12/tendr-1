@@ -703,14 +703,22 @@ export default function VendorChatModal() {
               <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E22,#CCAB4A22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>⏳</div>
               <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>Request Sent!</div>
               <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, maxWidth: 300 }}>
-                Our team is reviewing your request. We'll connect you with <strong>{vendor?.name}</strong> shortly.
+                Your request to chat with <strong>{vendor?.name}</strong> has been submitted.
               </div>
-              {/* Notification + next steps */}
+              {/* Expectation + next steps */}
               <div style={{ background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 14, padding: "14px 18px", maxWidth: 320, textAlign: "left" }}>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>📲 What happens next</div>
-                <div style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.7 }}>
-                  You will be <b>notified on WhatsApp</b> when your chat request is accepted.<br />
-                  Once approved, continue your chat from the <b>Active Chats</b> button at the bottom right.
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    { icon: "⏱️", text: "You'll hear back within 2 hours" },
+                    { icon: "💬", text: "We'll notify you on WhatsApp when your chat is approved" },
+                    { icon: "✅", text: "Once approved, open it from Active Chats at the bottom right" },
+                  ].map(({ icon, text }) => (
+                    <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                      <span style={{ flexShrink: 0 }}>{icon}</span>
+                      <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{text}</span>
+                    </div>
+                  ))}
                 </div>
               </div>
               <button onClick={handleMinimize}
@@ -744,20 +752,30 @@ export default function VendorChatModal() {
 
         {/* ── Input + action bar ── */}
         <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", flexShrink: 0, background: "#fff", position: "relative" }}>
-          {/* Suggested questions — just above input when chat active + few messages */}
-          {(approved || isExistingChat) && messages.length <= 1 && !messagesLoading && (
-            <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", padding: "8px 14px 6px", background: "#fff" }}>
-              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"].map(q => (
-                  <button key={q} onClick={() => sendText(q)}
-                    style={{ whiteSpace: "nowrap", padding: "4px 11px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#6B3A1F", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: font }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
-                  >{q}</button>
-                ))}
+          {/* Suggested questions — always visible, vendor-type specific */}
+          {(approved || isExistingChat) && !messagesLoading && (() => {
+            const QA = {
+              Photographer: ["What is your style — candid or traditional?","How many hours are included?","Do you have backup equipment?","How long for edited photos?","Can we see a full gallery?"],
+              Decorator:    ["Can you visit the venue first?","Do you handle setup and cleanup?","Can you work with our colour theme?","What is your cancellation policy?","Do you provide fresh or artificial flowers?"],
+              Caterer:      ["Is your quote per plate or flat fee?","Can we do a tasting?","Do you handle serving staff?","What is included — crockery, chafing dishes?","What is your minimum guest count?"],
+              DJ:           ["Do you do a playlist session before the event?","Can you take guest requests?","What if equipment fails?","Do you provide sound and lighting both?","How early do you arrive to set up?"],
+            };
+            const questions = QA[vendor?.serviceType] || ["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"];
+            return (
+              <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", padding: "6px 12px 4px", background: "#FDFCF8" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 5 }}>Quick questions</div>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {questions.map(q => (
+                    <button key={q} onClick={() => sendText(q)}
+                      style={{ whiteSpace: "nowrap", padding: "4px 10px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "#fff", color: "#6B3A1F", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.12s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
+                    >{q}</button>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* ── Admin: Send Caterer Menu ── */}
           {currentUser?.isAdmin && (approved || isExistingChat) && vendor?.serviceType === "Caterer" && (() => {
