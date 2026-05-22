@@ -130,7 +130,7 @@ export default function OnboardingWelcome({ onClose }) {
   if (step === "first-time") return (
     <Overlay onClose={onClose}>
       <div style={{ textAlign: "center", padding: "36px 32px 32px" }}>
-        <img src={mascotImg} alt="" style={{ width: 110, objectFit: "contain", marginBottom: 10 }} />
+        <BowingMascot size={120} />
         <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.7rem", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px" }}>
           Welcome to Tendr! 🎉
         </h2>
@@ -159,7 +159,7 @@ export default function OnboardingWelcome({ onClose }) {
     <Overlay onClose={onClose}>
       <div style={{ padding: "28px 28px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: 22 }}>
-          <img src={mascotImg} alt="" style={{ width: 80, objectFit: "contain", marginBottom: 8 }} />
+          <BowingMascot size={80} />
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.5rem", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px" }}>
             What are you planning? 🎉
           </h2>
@@ -258,17 +258,58 @@ export default function OnboardingWelcome({ onClose }) {
   return null;
 }
 
+// ── Bowing mascot ────────────────────────────────────────────────────────────
+function BowingMascot({ size = 110 }) {
+  return (
+    <>
+      <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+        <img
+          src={mascotImg}
+          alt="Tendr mascot"
+          className="tendr-bow"
+          style={{
+            width: size,
+            objectFit: "contain",
+            transformOrigin: "bottom center",
+            display: "block",
+          }}
+        />
+      </div>
+      <style>{`
+        @keyframes tendr-bow {
+          0%   { transform: rotate(0deg);   }
+          10%  { transform: rotate(0deg);   }
+          30%  { transform: rotate(22deg);  }
+          50%  { transform: rotate(22deg);  }
+          68%  { transform: rotate(0deg);   }
+          78%  { transform: rotate(0deg);   }
+          88%  { transform: rotate(16deg);  }
+          96%  { transform: rotate(16deg);  }
+          100% { transform: rotate(0deg);   }
+        }
+        .tendr-bow {
+          animation: tendr-bow 2.8s ease-in-out 1 forwards;
+        }
+      `}</style>
+    </>
+  );
+}
+
 // ── Shared overlay wrapper ───────────────────────────────────────────────────
 function Overlay({ children, onClose }) {
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(28,10,0,0.6)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, padding: 20 }}>
-      <div style={{ background: "#FFFCF7", borderRadius: 24, width: "min(94vw, 520px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(28,10,0,0.25)", border: "1.5px solid rgba(196,122,46,0.18)", position: "relative" }}>
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(28,10,0,0.6)", backdropFilter: "blur(6px)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, padding: 20, animation: "fadeInBg 0.3s ease" }}>
+      <div style={{ background: "#FFFCF7", borderRadius: 24, width: "min(94vw, 520px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(28,10,0,0.25)", border: "1.5px solid rgba(196,122,46,0.18)", position: "relative", animation: "slideUpModal 0.35s cubic-bezier(0.34,1.56,0.64,1)" }}>
         <button onClick={onClose}
           style={{ position: "absolute", top: 14, right: 14, zIndex: 10, width: 30, height: 30, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
           ✕
         </button>
         {children}
       </div>
+      <style>{`
+        @keyframes fadeInBg { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUpModal { from { transform: translateY(40px) scale(0.95); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+      `}</style>
     </div>
   );
 }
