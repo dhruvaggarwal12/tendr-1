@@ -113,6 +113,11 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     }
   };
 
+  // Onboarding checklist from localStorage
+  const onboardingData = (() => { try { return JSON.parse(localStorage.getItem("tendr_onboarding_v1") || "{}"); } catch { return {}; } })();
+  const checklistItems = onboardingData.items || [];
+  const checklistDone  = checklistItems.filter(i => i.done).length;
+
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
       { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors },
@@ -209,6 +214,33 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* ── Onboarding checklist strip — shows above Browse Vendors ── */}
+          {checklistItems.length > 0 && (
+            <div style={{ margin: "6px 12px 4px", padding: "10px 12px", borderRadius: 12, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.2)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 7 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em" }}>Your Checklist</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: checklistDone === checklistItems.length ? "#22c55e" : "#CCAB4A" }}>
+                  {checklistDone}/{checklistItems.length}
+                </span>
+              </div>
+              {/* Mini progress bar */}
+              <div style={{ height: 4, background: "rgba(255,255,255,0.12)", borderRadius: 100, overflow: "hidden", marginBottom: 8 }}>
+                <div style={{ height: "100%", width: `${checklistItems.length ? (checklistDone / checklistItems.length) * 100 : 0}%`, background: checklistDone === checklistItems.length ? "#22c55e" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s" }} />
+              </div>
+              {/* Item list */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                {checklistItems.map(item => (
+                  <div key={item.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 11, flexShrink: 0 }}>{item.done ? "✅" : "⬜"}</span>
+                    <span style={{ fontSize: 11, color: item.done ? "rgba(255,255,255,0.4)" : "rgba(255,255,255,0.8)", textDecoration: item.done ? "line-through" : "none", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                      {item.icon} {item.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

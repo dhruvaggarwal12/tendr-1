@@ -298,11 +298,24 @@ export default function AddVendorModal({ onClose, onAdded }) {
           </div>
 
           {/* ── PHOTOS ── */}
-          <SectionTitle>Portfolio Photo URLs</SectionTitle>
+          <SectionTitle>Portfolio Photos</SectionTitle>
           <div style={{ marginTop: 12, marginBottom: 20 }}>
-            <Field label="One Cloudinary/image URL per line (max 10)">
-              <textarea value={f.portfolioPhotos} onChange={e => set("portfolioPhotos", e.target.value)} placeholder={"https://res.cloudinary.com/...\nhttps://res.cloudinary.com/..."} rows={4} style={{ ...inp, resize: "vertical", fontSize: 12 }} />
+            <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 10px" }}>
+              After creating the vendor, use the <strong>Edit</strong> button to upload photos directly from your device.
+            </p>
+            <Field label="Or paste image URLs now (one per line, max 10)">
+              <textarea value={f.portfolioPhotos} onChange={e => set("portfolioPhotos", e.target.value)} placeholder={"https://res.cloudinary.com/...\nhttps://res.cloudinary.com/..."} rows={3} style={{ ...inp, resize: "vertical", fontSize: 12 }} />
             </Field>
+            {/* Photo previews */}
+            {f.portfolioPhotos.trim() && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 10 }}>
+                {f.portfolioPhotos.split("\n").map(s => s.trim()).filter(Boolean).map((url, i) => (
+                  <div key={i} style={{ position: "relative", width: 72, height: 72 }}>
+                    <img src={url} alt="" onError={e => (e.target.style.display="none")} style={{ width: 72, height: 72, borderRadius: 8, objectFit: "cover", border: "1.5px solid rgba(196,122,46,0.2)" }} />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* ── CATEGORY SPECIFIC ── */}

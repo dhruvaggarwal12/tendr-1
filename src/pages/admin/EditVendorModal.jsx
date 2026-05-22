@@ -123,6 +123,40 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
   });
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
+  // Photo upload state
+  const [photos, setPhotos]       = useState(vendor.portfolioPhotos || []);
+  const [uploading, setUploading] = useState(false);
+  const [photoMsg, setPhotoMsg]   = useState("");
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true); setPhotoMsg("");
+    const fd = new FormData();
+    fd.append("photo", file);
+    try {
+      const BASE = import.meta.env.VITE_BASE_URL;
+      const res = await fetch(`${BASE}/admin/vendors/${vendor._id}/photos`, {
+        method: "POST", headers: { Authorization: `Bearer ${token}` },
+        credentials: "include", body: fd,
+      });
+      const data = await res.json();
+      if (res.ok) { setPhotos(prev => [...prev, data.url]); setPhotoMsg("Photo uploaded!"); }
+      else setPhotoMsg(data.error || "Upload failed.");
+    } catch (err) { setPhotoMsg(err.message); }
+    finally { setUploading(false); e.target.value = ""; setTimeout(() => setPhotoMsg(""), 2500); }
+  };
+
+  const handlePhotoDelete = async (url) => {
+    if (!window.confirm("Remove this photo?")) return;
+    const BASE = import.meta.env.VITE_BASE_URL;
+    const res = await fetch(`${BASE}/admin/vendors/${vendor._id}/photos`, {
+      method: "DELETE", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include", body: JSON.stringify({ url }),
+    });
+    if (res.ok) setPhotos(prev => prev.filter(p => p !== url));
+  };
+
   // DJ
   const [djSetup, setDjSetup]   = useState(vendor.setup || []);
   const [djLights, setDjLights] = useState(!!vendor.lightsIncluded);
@@ -240,11 +274,43 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
             <Field label="Max Concurrent"><TI value={f.maxConcurrentEvents} onChange={v => set("maxConcurrentEvents", v)} placeholder="5" type="number" /></Field>
           </div>
 
-          <SectionTitle>Portfolio Photo URLs</SectionTitle>
+          <SectionTitle>Portfolio Photos</SectionTitle>
           <div style={{ marginTop: 10, marginBottom: 16 }}>
-            <Field label="One URL per line (max 10)">
-              <textarea value={f.portfolioPhotos} onChange={e => set("portfolioPhotos", e.target.value)} rows={3} style={{ ...inp, resize: "vertical", fontSize: 12 }} />
-            </Field>
+            {/* Upload button */}
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <label style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: uploading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: uploading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: uploading ? "not-allowed" : "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}>
+                {uploading ? "Uploading…" : "📷 Upload Photo"}
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploading} style={{ display: "none" }} />
+              </label>
+              {photoMsg && <span style={{ fontSize: 12, color: photoMsg.includes("fail") || photoMsg.includes("Error") ? "#ef4444" : "#15803d", fontWeight: 600 }}>{photoMsg}</span>}
+              <span style={{ fontSize: 11, color: "#9B7450", marginLeft: "auto" }}>{photos.length}/10 photos</span>
+            </div>
+            {/* Photo grid */}
+            {photos.length > 0 ? (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 8 }}>
+                {photos.map((url, i) => (
+                  <div key={url} style={{ position: "relative", borderRadius: 10, overflow: "hidden", aspectRatio: "1", border: "1.5px solid rgba(196,122,46,0.18)" }}>
+                    <img src={url} alt={`Photo ${i+1}`} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                    <button onClick={() => handlePhotoDelete(url)}
+                      style={{ position: "absolute", top: 4, right: 4, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      ✕
+                    </button>
+                  </div>
+                ))}
+                {photos.length < 10 && (
+                  <label style={{ aspectRatio: "1", borderRadius: 10, border: "2px dashed rgba(196,122,46,0.3)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#C47A2E", fontSize: 11, fontWeight: 600, gap: 4 }}>
+                    <span style={{ fontSize: 22 }}>+</span> Add Photo
+                    <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
+                  </label>
+                )}
+              </div>
+            ) : (
+              <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "28px", border: "2px dashed rgba(196,122,46,0.25)", borderRadius: 12, cursor: "pointer", color: "#9B7450", gap: 8 }}>
+                <span style={{ fontSize: 32 }}>🖼️</span>
+                <span style={{ fontSize: 13, fontWeight: 600 }}>Click to upload first photo</span>
+                <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
+              </label>
+            )}
           </div>
 
           {/* ── Category-specific ── */}
