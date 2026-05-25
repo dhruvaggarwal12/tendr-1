@@ -88,6 +88,8 @@ const Navbar = ({
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const finalisedCount = Object.keys(finalisedVendors).length;
+  const formEventType = useSelector((s) => s.eventPlanning.formData?.eventType);
+  const browseDisabled = !!(token && !user?.isAdmin && !formEventType && finalisedCount === 0);
   const ghCartCount = useSelector((s) => s.giftHamperCart?.items?.length || 0);
   const [activeChatCount, setActiveChatCount] = useState(0);
   const [adminCounts, setAdminCounts] = useState(null);
@@ -171,7 +173,7 @@ const Navbar = ({
       label: "Vendors",
       items: [
         { label: "Top Rated Vendors",  href: "/top-rated/Photographer" },
-        { label: "Browse Vendors",     href: "/listings" },
+        { label: "Browse Vendors",     href: "/listings", disabled: browseDisabled },
         { label: "Register as Vendor", href: "/vendor/register" },
       ],
     },
@@ -370,6 +372,11 @@ const Navbar = ({
                         <span>{item.label}</span>
                         <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.12)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20, marginLeft: 8, whiteSpace: "nowrap" }}>Soon</span>
                       </div>
+                    ) : item.disabled ? (
+                      <div key={item.label} title="Fill your event details first" style={{ ...dropdownItemStyle, cursor: "not-allowed", opacity: 0.45, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span>{item.label}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", marginLeft: 8, whiteSpace: "nowrap" }}>fill form first</span>
+                      </div>
                     ) : item.href ? (
                       <a
                         key={item.label}
@@ -378,9 +385,6 @@ const Navbar = ({
                         onMouseEnter={hoverOn}
                         onMouseLeave={hoverOff}
                       >
-                        <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>
-
-                        </span>
                         {item.label}
                       </a>
                     ) : (
@@ -391,9 +395,6 @@ const Navbar = ({
                         onMouseEnter={hoverOn}
                         onMouseLeave={hoverOff}
                       >
-                        <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>
-
-                        </span>
                         {item.label}
                       </button>
                     )
@@ -684,6 +685,11 @@ const Navbar = ({
                       <span>{item.label}</span>
                       <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20 }}>Coming Soon</span>
                     </div>
+                  ) : item.disabled ? (
+                    <div key={item.label} title="Fill your event details first" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", color: "#9B7450", fontSize: 14.5, opacity: 0.45, cursor: "not-allowed", fontFamily: font }}>
+                      <span>{item.label}</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E" }}>fill form first</span>
+                    </div>
                   ) : item.href ? (
                     <a
                       key={item.label}
@@ -696,7 +702,6 @@ const Navbar = ({
                         fontWeight: 500, letterSpacing: "0.01em", fontFamily: font,
                       }}
                     >
-                      <span style={{ fontSize: 15 }}></span>
                       {item.label}
                     </a>
                   ) : (
@@ -711,7 +716,6 @@ const Navbar = ({
                         textAlign: "left", cursor: "pointer", fontFamily: font,
                       }}
                     >
-                      <span style={{ fontSize: 15 }}></span>
                       {item.label}
                     </button>
                   )

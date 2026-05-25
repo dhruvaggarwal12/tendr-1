@@ -164,6 +164,15 @@ export default function CustomerDashboard() {
 
   useEffect(() => { fetchPlans(); }, [token]);
 
+  // When a paid plan is detected, clear form data so the customer gets a fresh start
+  useEffect(() => {
+    const hasPaid = plans.some(p => p.status === "in_progress" || p.status === "completed");
+    if (hasPaid) {
+      dispatch(resetEventPlanning());
+      try { localStorage.removeItem("tendr_ep_session"); } catch {}
+    }
+  }, [plans]); // eslint-disable-line
+
   // Also re-fetch every 15 seconds to catch status changes from admin
   useEffect(() => {
     if (!token) return;

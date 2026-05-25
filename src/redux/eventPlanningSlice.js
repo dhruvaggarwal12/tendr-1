@@ -99,7 +99,7 @@ export const submitEventPlan = createAsyncThunk(
 );
 
 const SESSION_KEY = 'tendr_ep_session';
-const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days — persists across browser restarts
+const SESSION_TTL = 24 * 60 * 60 * 1000; // 24h inactivity — timer resets on every form interaction
 
 const loadSession = () => {
   try {

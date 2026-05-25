@@ -89,34 +89,29 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const formEventType       = useSelector((s) => s.eventPlanning.formData?.eventType);
   const selectedVendors     = useSelector((s) => s.eventPlanning.selectedVendors || []);
 
-  // Smart Browse Vendors: go to listings if form is filled, otherwise go to form start
-  const hasFormContext = !!(
-    listingServiceType ||
+  // Form is "filled" when at least eventType has been set
+  const isFormFilled = !!(
     formEventType ||
-    selectedVendors.length > 0 ||
     finalisedCount > 0 ||
-    location.state?.selectedCategories?.length ||
-    (() => { try { const r = localStorage.getItem("tendr_ep_session"); if (r) { const d = JSON.parse(r); return !!(d.formData?.eventType || d.eventType); } } catch {} return false; })() ||
-    (() => { try { const r = localStorage.getItem("tendr_finalised"); if (r) { const d = JSON.parse(r); return Object.keys(d).some(k => k !== "__expiresAt"); } } catch {} return false; })()
+    selectedVendors.length > 0 ||
+    (() => { try { const d = JSON.parse(localStorage.getItem("tendr_ep_session") || "{}"); return !!(d.formData?.eventType); } catch { return false; } })()
   );
+  // Disable Browse Vendors for logged-in non-admin customers who haven't filled the form
+  const browseDisabled = !!(token && !user?.isAdmin && !isFormFilled);
 
   // Pages where the user is deep in the vendor flow — always send to listings
   const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/top-rated"];
   const isOnVendorFlow = vendorFlowPaths.some(p => location.pathname.startsWith(p));
 
   const handleBrowseVendors = () => {
-    // Admins always go straight to listings
-    if (user?.isAdmin || isOnVendorFlow || hasFormContext) {
-      navigate("/listings");
-    } else {
-      navigate("/booking");
-    }
+    if (browseDisabled) { navigate("/booking"); return; }
+    navigate("/listings");
   };
 
 
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors },
+      { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors, disabled: browseDisabled },
       { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
@@ -246,13 +241,22 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               <div key={sec.label} style={{ marginBottom: 2 }}>
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
                 {sec.items.map(item => {
-                  const isSoon    = !!item.comingSoon;
-                  const isActive  = !isSoon && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
+                  const isSoon     = !!item.comingSoon;
+                  const isDisabled = !!item.disabled;
+                  const isActive   = !isSoon && !isDisabled && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
                   if (isSoon) {
                     return (
                       <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 18px 9px 14px", borderLeft: "3px solid transparent" }}>
                         <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontFamily: font }}>{item.label}</span>
                         <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(204,171,74,0.15)", color: "#CCAB4A", padding: "2px 7px", borderRadius: 20, flexShrink: 0 }}>Soon</span>
+                      </div>
+                    );
+                  }
+                  if (isDisabled) {
+                    return (
+                      <div key={item.label} title="Fill your event details first" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 18px 9px 14px", borderLeft: "3px solid transparent", opacity: 0.4, cursor: "not-allowed" }}>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: font }}>{item.label}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#CCAB4A", flexShrink: 0 }}>fill form first</span>
                       </div>
                     );
                   }
@@ -572,6 +576,11 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", opacity: 0.5 }}>
                         <span style={{ fontSize: 14, color: "#9B7450", fontFamily: font }}>{item.label}</span>
                         <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20 }}>Coming Soon</span>
+                      </div>
+                    ) : item.disabled ? (
+                      <div key={item.label} title="Fill your event details first" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "10px 20px", opacity: 0.4, cursor: "not-allowed" }}>
+                        <span style={{ fontSize: 14, color: "#9B7450", fontFamily: font }}>{item.label}</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E" }}>fill form first</span>
                       </div>
                     ) : (
                       <button key={item.label}
