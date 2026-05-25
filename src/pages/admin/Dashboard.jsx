@@ -2527,6 +2527,20 @@ const AdminDashboard = () => {
                           >
                             📦 Send Package Options
                           </button>
+                          {svcType === "Caterer" && (
+                            <button onClick={() => {
+                              if (!selectedChat?._id || !adminSocketRef.current) return;
+                              const payload = { pkg: "Free", cuisines: ["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Sweets","Italian"] };
+                              const msgText = `[FULL_MENU:${JSON.stringify(payload)}]`;
+                              const m = { conversationId: selectedChat._id, sender: 'customer-care', content: msgText };
+                              adminSocketRef.current.emit('send_message', m);
+                              setCurrentConversation((prev) => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
+                            }}
+                              style={{ display: "block", width: "100%", textAlign: "center", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", marginTop: 6 }}
+                            >
+                              🍽️ Send Menu
+                            </button>
+                          )}
                         </div>
                       );
                     })()}

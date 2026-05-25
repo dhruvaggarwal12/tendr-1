@@ -989,27 +989,15 @@ export default function VendorChatModal() {
           {/* ── Admin: Send Full Menu (Catering chats + Concierge with Caterer) ── */}
           {currentUser?.isAdmin && (approved || isExistingChat) &&
            (vendor?.serviceType === "Caterer" || (isConcierge && selectedVendorTypes.includes("Caterer"))) && (
-            <div style={{ marginBottom: 8, padding: "8px 10px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.15)" }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>🍽️ Send Full Menu</div>
-              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                {[
-                  { id: "Basic",    label: "Basic",    sub: `${PACKAGE_LIMITS.Basic.Starters}S · ${PACKAGE_LIMITS.Basic.Mains}M · ${PACKAGE_LIMITS.Basic.Desserts}D` },
-                  { id: "Standard", label: "Standard", sub: `${PACKAGE_LIMITS.Standard.Starters}S · ${PACKAGE_LIMITS.Standard.Mains}M · ${PACKAGE_LIMITS.Standard.Desserts}D` },
-                  { id: "Premium",  label: "Premium",  sub: "Unlimited" },
-                  { id: "Free",     label: "No Package", sub: "Free pick" },
-                ].map(p => (
-                  <button key={p.id}
-                    onClick={() => {
-                      const msg = `[FULL_MENU:${JSON.stringify({ pkg: p.id, cuisines: ALL_MENU_CUISINES })}]`;
-                      sendText(msg);
-                    }}
-                    style={{ flex: "1 1 calc(50% - 3px)", textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", background: "#fff", cursor: "pointer", fontFamily: font }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{p.label}</div>
-                    <div style={{ fontSize: 10, color: "#9B7450", marginTop: 1 }}>{p.sub}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <button
+              onClick={() => {
+                const msg = `[FULL_MENU:${JSON.stringify({ pkg: "Free", cuisines: ALL_MENU_CUISINES })}]`;
+                sendText(msg);
+              }}
+              style={{ display: "block", width: "100%", textAlign: "center", padding: "8px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, marginBottom: 8 }}
+            >
+              🍽️ Send Menu
+            </button>
           )}
 
           {(approved || isExistingChat) ? (
