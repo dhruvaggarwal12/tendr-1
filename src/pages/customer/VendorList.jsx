@@ -134,6 +134,13 @@ const VendorList = () => {
     navigate('/booking/review', { state: { booking: bookingDetails } });
   };
 
+  // Read ?serviceType=X from URL and apply as a filter (used by HamburgerNav "Browse" buttons)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const svcParam = params.get("serviceType");
+    if (svcParam) dispatch(setFilters({ serviceType: svcParam }));
+  }, []); // eslint-disable-line
+
   // Gate: redirect to /booking if user hasn't filled the event form
   useEffect(() => {
     // Admins bypass the gate — they need to browse vendors without filling a form

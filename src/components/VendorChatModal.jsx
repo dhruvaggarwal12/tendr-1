@@ -860,15 +860,35 @@ export default function VendorChatModal() {
                   ➤
                 </button>
               </div>
-              {/* Review & Pay — shows after vendor/concierge is finalised */}
-              {isThisVendorFinalised && (
-                <button
-                  onClick={() => setShowReviewPopup(true)}
-                  style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)", marginBottom: 8 }}
-                >
-                  Review & Pay →
-                </button>
-              )}
+              {/* Review & Pay + Book Other Vendors — shows after vendor/concierge is finalised */}
+              {isThisVendorFinalised && (() => {
+                const bookedCount = Object.keys(finalisedVendors).length;
+                const totalCount  = selectedVendorTypes.length;
+                return (
+                  <div style={{ marginBottom: 8 }}>
+                    <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                      <button
+                        onClick={() => setShowReviewPopup(true)}
+                        style={{ flex: 1, padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 13, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)" }}
+                      >
+                        Review & Pay →
+                      </button>
+                      <button
+                        onClick={() => { closeChat(); router.navigate("/listings"); }}
+                        style={{ flex: 1, padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}
+                      >
+                        Book Other Vendors
+                      </button>
+                    </div>
+                    {totalCount > 0 && (
+                      <div style={{ textAlign: "center", fontSize: 11, color: "#9B7450", fontWeight: 600 }}>
+                        {bookedCount}/{totalCount} vendors booked
+                        {bookedCount < totalCount && <span style={{ color: "#C47A2E" }}> — {totalCount - bookedCount} more to go</span>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
               {/* Hint for chat completion */}
               {!chatCompleted && (
                 <div style={{ borderLeft: "3px solid #C47A2E", paddingLeft: 10, marginBottom: 8, background: "rgba(196,122,46,0.05)", borderRadius: "0 8px 8px 0", padding: "6px 10px 6px 10px" }}>

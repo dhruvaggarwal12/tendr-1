@@ -191,6 +191,32 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
+          {/* Service category progress panel — shown when customer has selected services */}
+          {selectedVendors.length > 0 && (
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                {selectedVendors.map(svc => {
+                  const isBooked = !!finalisedVendors[svc];
+                  return (
+                    <div key={svc} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, background: isBooked ? "linear-gradient(135deg,#15803d,#22c55e)" : "rgba(255,255,255,0.1)", border: isBooked ? "none" : "1.5px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>
+                        {isBooked ? "✓" : ""}
+                      </div>
+                      <span style={{ flex: 1, fontSize: 12, color: isBooked ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.85)", fontWeight: isBooked ? 400 : 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: isBooked ? "line-through" : "none" }}>{svc}</span>
+                      {!isBooked && (
+                        <button onClick={() => navigate(`/listings?serviceType=${encodeURIComponent(svc)}`)}
+                          style={{ flexShrink: 0, padding: "3px 9px", borderRadius: 6, border: "none", background: "rgba(196,122,46,0.25)", color: "#CCAB4A", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                          Browse
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Journey progress — shown when active step is provided */}
           {active && (
             <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
@@ -507,6 +533,32 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 </div>
               )}
             </div>
+
+            {/* Service category progress panel — drawer */}
+            {selectedVendors.length > 0 && (
+              <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(196,122,46,0.12)", background: "rgba(196,122,46,0.04)" }}>
+                <p style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 7px" }}>My Services</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {selectedVendors.map(svc => {
+                    const isBooked = !!finalisedVendors[svc];
+                    return (
+                      <div key={svc} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, background: isBooked ? "#22c55e" : "rgba(196,122,46,0.15)", border: isBooked ? "none" : "1.5px solid rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>
+                          {isBooked ? "✓" : ""}
+                        </div>
+                        <span style={{ flex: 1, fontSize: 13, color: isBooked ? "#9B7450" : "#2C1A0E", fontWeight: isBooked ? 400 : 600, textDecoration: isBooked ? "line-through" : "none" }}>{svc}</span>
+                        {!isBooked && (
+                          <button onClick={() => { navigate(`/listings?serviceType=${encodeURIComponent(svc)}`); close(); }}
+                            style={{ flexShrink: 0, padding: "4px 11px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                            Browse
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Nav sections */}
             <div style={{ padding: "12px 0", flex: 1 }}>

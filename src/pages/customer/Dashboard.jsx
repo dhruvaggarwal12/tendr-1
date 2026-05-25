@@ -10,6 +10,7 @@ import Footer from "../../components/Footer";
 import { resetEventPlanning, setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { useChatOverlay } from "../../context/ChatContext";
+import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -107,6 +108,7 @@ export default function CustomerDashboard() {
 
   const [changeReqState, setChangeReqState] = useState({}); // { [planId]: { open, message, submitting, done } }
   const [cancelState, setCancelState] = useState({}); // { [planId]: { open, reason, submitting, done } }
+  const [pdfGenerating, setPdfGenerating] = useState(false);
 
   const openChangeReq = (planId) =>
     setChangeReqState(prev => ({ ...prev, [planId]: { open: true, message: "", submitting: false, done: false } }));
@@ -852,46 +854,34 @@ export default function CustomerDashboard() {
                     </div>
                   </div>
 
-                  {/* Per-vendor boxes — one card per vendor with their price + pinned messages */}
+                  {/* 4 download buttons — shown for Upcoming (in_progress) plans */}
                   {plan.status === "in_progress" && (() => {
-                    const planConvos = conversations.filter(c => c.chatType === "vendor" && c.chatApproved);
-                    const vendorCards = planConvos.map(c => {
-                      const hasPrice = c.vendorPrice?.amount > 0;
-                      const pins = (c.pinnedMessages || [])
-                        .map(m => typeof m === "string" ? m : m.content || m.text)
-                        .filter(Boolean);
-                      if (!hasPrice && !pins.length) return null;
-                      return { c, hasPrice, pins };
-                    }).filter(Boolean);
-                    if (!vendorCards.length) return null;
+                    const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
+                    const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({
+                      name: v.vendorName || v.name || "",
+                      serviceType: v.serviceType || "",
+                    })).filter(v => v.name);
                     return (
-                      <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-                        {vendorCards.map(({ c, hasPrice, pins }) => (
-                          <div key={c._id} style={{ borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", overflow: "hidden" }}>
-                            {/* Vendor name header */}
-                            <div style={{ background: "rgba(196,122,46,0.06)", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "8px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                              <span style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>
-                                {c.vendorName || c.serviceType || "Vendor"}
-                              </span>
-                              {hasPrice && (
-                                <span style={{ fontSize: 14, fontWeight: 900, color: "#15803d" }}>
-                                  ₹{Number(c.vendorPrice.amount).toLocaleString("en-IN")}
-                                </span>
-                              )}
-                            </div>
-                            {/* Pinned messages */}
-                            {pins.length > 0 && (
-                              <div style={{ padding: "10px 14px", display: "flex", flexDirection: "column", gap: 5, background: "#FFFCF5" }}>
-                                <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned</span>
-                                {pins.map((text, i) => (
-                                  <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a", padding: "5px 10px", background: "#fff", borderRadius: 7, border: "1px solid rgba(196,122,46,0.13)" }}>
-                                    • {text}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
+                      <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 14 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Your Documents</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: user?.name }); } finally { setPdfGenerating(false); } }}
+                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                            <span style={{ fontSize: 18 }}>🧾</span>Invoice
+                          </button>
+                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: {}, userName: user?.name, orderId: plan.orderId }); } finally { setPdfGenerating(false); } }}
+                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                            <span style={{ fontSize: 18 }}>📋</span>Details
+                          </button>
+                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { const stored = JSON.parse(localStorage.getItem("tendr_dayof") || "{}"); generateTimelinePDF({ slots: stored.slots || [], eventSummary, userName: user?.name }); } finally { setPdfGenerating(false); } }}
+                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                            <span style={{ fontSize: 18 }}>🗓</span>Timeline
+                          </button>
+                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateInvitationPDF({ eventSummary, confirmedVendors, userName: user?.name, giftHamperUrl: `${window.location.origin}/gift-hampers-cakes` }); } finally { setPdfGenerating(false); } }}
+                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
+                            <span style={{ fontSize: 18 }}>📬</span>Invitation
+                          </button>
+                        </div>
                       </div>
                     );
                   })()}

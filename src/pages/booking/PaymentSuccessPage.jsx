@@ -9,8 +9,8 @@ import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
-import { generateInvoicePDF, generateEventDetailsPDF } from "../../utils/pdfGenerator";
-import { writeChecklistToStorage, writeDayOfToStorage } from "../../utils/eventGenerators";
+import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
+import { writeDayOfToStorage } from "../../utils/eventGenerators";
 
 const font = "'Outfit', sans-serif";
 
@@ -25,8 +25,7 @@ const PaymentSuccessPage = () => {
   const [referralCopied, setReferralCopied] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState({}); // { vendorId: [msg, ...] }
   const [pdfGenerating, setPdfGenerating] = useState(false);
-  const [checklistReady, setChecklistReady] = useState(false);
-  const [timelineReady, setTimelineReady] = useState(false);
+  const [dayofSlots, setDayofSlots] = useState([]);
 
   // Snapshot event + vendor data BEFORE it gets cleared in useEffect
   const rawFinalised   = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -50,17 +49,12 @@ const PaymentSuccessPage = () => {
   useEffect(() => {
     const token = localStorage.getItem("tendr_token");
 
-    // Write checklist immediately from event type (no API needed)
-    writeChecklistToStorage(rawFormData.eventType || bookingDetails?.eventName || "");
-    setChecklistReady(true);
-
     if (!token) {
-      // Write timeline with defaults if no token
-      writeDayOfToStorage(
-        Object.entries(rawFinalised).flatMap(([svc, v]) => Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])),
-        ""
+      const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
+        Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
       );
-      setTimelineReady(true);
+      const slots = writeDayOfToStorage(vendors, "");
+      setDayofSlots(slots);
       return;
     }
 
@@ -97,12 +91,12 @@ const PaymentSuccessPage = () => {
         const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
           Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
         );
-        writeDayOfToStorage(vendors, eventTiming);
-        setTimelineReady(true);
+        const slots = writeDayOfToStorage(vendors, eventTiming);
+        setDayofSlots(slots);
       })
       .catch(() => {
-        writeDayOfToStorage([], "");
-        setTimelineReady(true);
+        const slots = writeDayOfToStorage([], "");
+        setDayofSlots(slots);
       });
   }, []);
 
@@ -246,86 +240,82 @@ const PaymentSuccessPage = () => {
           </div>
         )}
 
-        {/* ── Checklist & Timeline ── */}
-        {(checklistReady || timelineReady) && (
-          <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "18px 22px", marginBottom: 20 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Your Event Tools Are Ready</div>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 14px", lineHeight: 1.5 }}>
-              We've built a custom checklist and day-of schedule based on your booking.
-            </p>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              {checklistReady && (
-                <button
-                  onClick={() => navigate("/checklist")}
-                  style={{ flex: 1, minWidth: 130, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 10, border: "none", background: "#CCAB4A", color: "#2C1A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
-                >
-                  ✅ See Your Checklist
-                </button>
-              )}
-              {timelineReady && (
-                <button
-                  onClick={() => navigate("/timeline")}
-                  style={{ flex: 1, minWidth: 130, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.4)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
-                >
-                  🗓 See Your Day Schedule
-                </button>
-              )}
-            </div>
-          </div>
-        )}
-
         {/* ── Download documents ── */}
         <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 22px", marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Download Documents</div>
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Download Documents</div>
+          <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>All your event documents, ready to save or share.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+            {/* Invoice */}
             <button
               disabled={pdfGenerating}
               onClick={() => {
                 setPdfGenerating(true);
                 try {
-                  generateInvoicePDF({
-                    eventSummary,
-                    confirmedVendors,
-                    amount,
-                    orderId: state?.orderId,
-                    paymentId: state?.paymentId,
-                    userName: user?.name,
-                  });
-                } finally {
-                  setPdfGenerating(false);
-                }
+                  generateInvoicePDF({ eventSummary, confirmedVendors, amount, orderId: state?.orderId, paymentId: state?.paymentId, userName: user?.name });
+                } finally { setPdfGenerating(false); }
               }}
-              style={{ flex: 1, minWidth: 140, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
             >
-              🧾 Download Invoice
+              <span style={{ fontSize: 22 }}>🧾</span>
+              Invoice
             </button>
+            {/* Event Details */}
             <button
               disabled={pdfGenerating}
               onClick={() => {
                 setPdfGenerating(true);
-                // Build pinned map keyed by vendor id or name
                 const pinnedByKey = {};
                 confirmedVendors.forEach(v => {
                   const key = v._id || v.name;
                   pinnedByKey[key] = pinnedMessages[v._id] || pinnedMessages[v.name] || [];
                 });
                 try {
-                  generateEventDetailsPDF({
+                  generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: pinnedByKey, userName: user?.name, orderId: state?.orderId });
+                } finally { setPdfGenerating(false); }
+              }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+            >
+              <span style={{ fontSize: 22 }}>📋</span>
+              Event Details
+            </button>
+            {/* Timeline */}
+            <button
+              disabled={pdfGenerating}
+              onClick={() => {
+                setPdfGenerating(true);
+                try {
+                  const slots = dayofSlots.length > 0 ? dayofSlots : JSON.parse(localStorage.getItem("tendr_dayof") || '{}').slots || [];
+                  generateTimelinePDF({ slots, eventSummary, userName: user?.name });
+                } finally { setPdfGenerating(false); }
+              }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+            >
+              <span style={{ fontSize: 22 }}>🗓</span>
+              Day Timeline
+            </button>
+            {/* Invitation */}
+            <button
+              disabled={pdfGenerating}
+              onClick={async () => {
+                setPdfGenerating(true);
+                try {
+                  await generateInvitationPDF({
                     eventSummary,
                     confirmedVendors,
-                    pinnedMessages: pinnedByKey,
                     userName: user?.name,
-                    orderId: state?.orderId,
+                    giftHamperUrl: `${window.location.origin}/gift-hampers-cakes`,
                   });
-                } finally {
-                  setPdfGenerating(false);
-                }
+                } finally { setPdfGenerating(false); }
               }}
-              style={{ flex: 1, minWidth: 140, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
             >
-              📋 Download Event Details
+              <span style={{ fontSize: 22 }}>📬</span>
+              Invitation
             </button>
           </div>
+          {pdfGenerating && (
+            <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "10px 0 0" }}>Generating PDF…</p>
+          )}
         </div>
 
         {/* ── Action buttons ── */}

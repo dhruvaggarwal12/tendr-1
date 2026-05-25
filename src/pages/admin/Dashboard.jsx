@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { generateEventDetailsPDF } from "../../utils/pdfGenerator";
+import { generateEventDetailsPDF, generateInvoicePDF } from "../../utils/pdfGenerator";
 import AddVendorModal from "./AddVendorModal";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
@@ -46,6 +46,7 @@ import {
   MonitorX,
   UserPlus,
   Star,
+  FileText,
 } from "lucide-react";
 import useConversations from "../../hooks/useConversations";
 import { getConversationMessages } from "../../apis/conversationsApi";
@@ -261,6 +262,7 @@ const sidebar_arr = [
   { label: "Chat-Support",     icon: <MessagesSquare size={22} />,    key: "ChatSupport" },
   { label: "Chat-Concierge",   icon: <MessagesSquare size={22} />,    key: "ChatConcierge" },
   { label: "Gift Hampers",     icon: <span style={{ fontSize: 18 }}>🎁</span>, key: "GiftHampers" },
+  { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
 ];
 
@@ -359,6 +361,9 @@ const AdminDashboard = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
   const [viewingPhoto, setViewingPhoto] = useState(null); // full-screen photo URL
+  // PDF + pinned messages in bookings
+  const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [pinnedByPlan, setPinnedByPlan] = useState({}); // { [planId]: { loading, messages } }
 
   // Chat summary feature
   const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
@@ -1173,7 +1178,7 @@ const AdminDashboard = () => {
             return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
           };
 
-          const notifyEventDetailsWhatsApp = async (plan) => {
+          const notifyEventDetailsWhatsApp = async (plan, downloadOnly = false) => {
             // 1. Fetch pinned messages for this customer's conversations
             let pinnedByKey = {};
             try {
@@ -1214,9 +1219,11 @@ const AdminDashboard = () => {
               orderId: plan._id,
             });
 
-            // 3. Open WhatsApp with event details text
-            const url = buildEventDetailsWhatsApp(plan);
-            if (url) window.open(url, "_blank");
+            // 3. Open WhatsApp with event details text (unless downloadOnly)
+            if (!downloadOnly) {
+              const url = buildEventDetailsWhatsApp(plan);
+              if (url) window.open(url, "_blank");
+            }
           };
 
           const filteredPlans = bookingTab === "All" ? eventPlans : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
@@ -1324,30 +1331,82 @@ const AdminDashboard = () => {
                                     </>
                                   );
                                 })()}
-                                {/* in_progress (payment done): Notify on WhatsApp + Share Review Link */}
+                                {/* in_progress (payment done): Notify + PDF downloads */}
                                 {plan.status === "in_progress" && (() => {
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
-                                  const reviewUrl = `${window.location.origin}/review?planId=${plan._id}&name=${encodeURIComponent(plan.customerId?.name || "")}&event=${encodeURIComponent(plan.eventName || plan.eventType || "")}&vendors=${encodeURIComponent((plan.selectedServices || []).join(","))}`;
-                                  const reviewWhatsApp = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${plan.customerId?.name || "there"}! 🌟\n\nThank you for celebrating with Tendr!\n\nWe'd love to hear about your experience. It would mean a lot if you could rate your event:\n\n${reviewUrl}\n\nYour feedback helps us make every event better! 💛\n\n— Team Tendr`)}` : null;
+                                  const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
+                                  const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({ name: v.vendorName || v.name || "", serviceType: v.serviceType || "" })).filter(v => v.name);
                                   return (
                                     <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                                       {phone && (
-                                        <button
-                                          onClick={() => notifyEventDetailsWhatsApp(plan)}
+                                        <button onClick={() => notifyEventDetailsWhatsApp(plan)}
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                           📲 Notify on WhatsApp
                                         </button>
                                       )}
-                                      {reviewWhatsApp && (
-                                        <a href={reviewWhatsApp} target="_blank" rel="noopener noreferrer"
-                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
-                                          ⭐ Share Review Link
-                                        </a>
-                                      )}
+                                      <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name }); } finally { setPdfGenerating(false); } }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                        🧾 Invoice
+                                      </button>
+                                      <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await notifyEventDetailsWhatsApp(plan, true); } finally { setPdfGenerating(false); } }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                        📋 Event PDF
+                                      </button>
                                     </div>
                                   );
                                 })()}
-                                {/* Upcoming: show change request info + resolve */}
+                                {/* Review link — shown for ALL bookings */}
+                                {(() => {
+                                  const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+                                  const reviewUrl = `${window.location.origin}/review?planId=${plan._id}&name=${encodeURIComponent(plan.customerId?.name || "")}&event=${encodeURIComponent(plan.eventName || plan.eventType || "")}&vendors=${encodeURIComponent((plan.selectedServices || []).join(","))}`;
+                                  const reviewWhatsApp = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${plan.customerId?.name || "there"}! 🌟\n\nThank you for celebrating with Tendr!\n\nWe'd love to hear your experience. Please rate your event:\n\n${reviewUrl}\n\n— Team Tendr`)}` : null;
+                                  if (!reviewWhatsApp) return null;
+                                  return (
+                                    <a href={reviewWhatsApp} target="_blank" rel="noopener noreferrer"
+                                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
+                                      ⭐ Review Link
+                                    </a>
+                                  );
+                                })()}
+                                {/* Pinned messages toggle */}
+                                {(() => {
+                                  const ps = pinnedByPlan[plan._id];
+                                  if (!ps) {
+                                    return (
+                                      <button onClick={async () => {
+                                        setPinnedByPlan(prev => ({ ...prev, [plan._id]: { loading: true, messages: [] } }));
+                                        try {
+                                          const r = await fetch(`${BASE_URL}/conversations?customerId=${plan.customerId?._id || plan.customerId}`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
+                                          const d = await r.json();
+                                          const convList = (d.conversations || []).filter(c => c.chatType === "vendor");
+                                          const allPinned = [];
+                                          await Promise.allSettled(convList.map(async c => {
+                                            try {
+                                              const r2 = await fetch(`${BASE_URL}/conversations/${c._id}`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
+                                              const full = await r2.json();
+                                              const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || [];
+                                              msgs.forEach(m => { const text = typeof m === "string" ? m : m.content || m.text; if (text) allPinned.push({ text, vendor: c.vendorName || "Vendor" }); });
+                                            } catch {}
+                                          }));
+                                          setPinnedByPlan(prev => ({ ...prev, [plan._id]: { loading: false, messages: allPinned } }));
+                                        } catch { setPinnedByPlan(prev => ({ ...prev, [plan._id]: { loading: false, messages: [] } })); }
+                                      }} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 9px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                        📌 View Pinned
+                                      </button>
+                                    );
+                                  }
+                                  if (ps.loading) return <span style={{ fontSize: 11, color: "#9B7450" }}>Loading…</span>;
+                                  if (!ps.messages.length) return <span style={{ fontSize: 11, color: "#bbb" }}>No pinned msgs</span>;
+                                  return (
+                                    <div style={{ background: "#fffbeb", borderRadius: 8, padding: "7px 10px", display: "flex", flexDirection: "column", gap: 4, maxWidth: 220 }}>
+                                      <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned</div>
+                                      {ps.messages.map((m, mi) => (
+                                        <div key={mi} style={{ fontSize: 11, color: "#5a3a1a", lineHeight: 1.4 }}>• {m.text} <span style={{ color: "#bbb" }}>({m.vendor})</span></div>
+                                      ))}
+                                    </div>
+                                  );
+                                })()}
+                                {/* Change request info + resolve */}
                                 {plan.status === "in_progress" && plan.changeRequest?.hasRequest && plan.changeRequest?.status === "pending" && (
                                   <div style={{ background: "#fff5f5", border: "1.5px solid #fca5a5", borderRadius: 9, padding: "8px 10px", fontSize: 12 }}>
                                     <div style={{ fontWeight: 700, color: "#c0392b", marginBottom: 4 }}>⚠️ Change Request</div>
@@ -3081,6 +3140,71 @@ const AdminDashboard = () => {
             )}
           </div>
         )}
+
+        {/* ── Invoices ── */}
+        {activeDropdown === "invoices" && (() => {
+          const invoicePlans = eventPlans.filter(p => p.status === "in_progress" || p.status === "completed");
+          return (
+            <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e] my-4">
+                🧾 Invoices
+              </div>
+              <p style={{ fontSize: 14, color: "#9B7450", marginBottom: 20 }}>All confirmed and completed bookings — download invoice or event details PDF.</p>
+              {invoicePlans.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>No confirmed bookings yet.</div>
+              ) : (
+                <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-x-auto">
+                  <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
+                    <thead>
+                      <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
+                        {["Customer", "Event Type", "Date", "Amount", "Order ID", "Status", "Downloads"].map(h => (
+                          <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {invoicePlans.map((plan, i) => {
+                        const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
+                        const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({ name: v.vendorName || v.name || "", serviceType: v.serviceType || "" })).filter(v => v.name);
+                        return (
+                          <tr key={plan._id} style={{ borderBottom: i < invoicePlans.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
+                            <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 700, color: "#2C1A0E", whiteSpace: "nowrap" }}>{plan.customerId?.name || "—"}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventType || "—"}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date || "—"}</td>
+                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>
+                              {plan.totalAmount ? `₹${Number(plan.totalAmount).toLocaleString("en-IN")}` : "—"}
+                            </td>
+                            <td style={{ padding: "10px 14px", fontSize: 11, color: "#9B7450", fontFamily: "'Courier New', monospace" }}>{plan.orderId || plan._id?.slice(-8) || "—"}</td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100,
+                                background: plan.status === "completed" ? "#f0fdf4" : "#eff6ff",
+                                color: plan.status === "completed" ? "#15803d" : "#0369a1",
+                                border: `1px solid ${plan.status === "completed" ? "#bbf7d0" : "#bfdbfe"}` }}>
+                                {plan.status === "completed" ? "Completed" : "Confirmed"}
+                              </span>
+                            </td>
+                            <td style={{ padding: "10px 14px" }}>
+                              <div style={{ display: "flex", gap: 6 }}>
+                                <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name }); } finally { setPdfGenerating(false); } }}
+                                  style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                  🧾 Invoice
+                                </button>
+                                <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await notifyEventDetailsWhatsApp(plan, true); } finally { setPdfGenerating(false); } }}
+                                  style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                  📋 Event PDF
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── Reviews ── */}
         {activeDropdown === "reviews" && (() => {
