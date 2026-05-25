@@ -1274,14 +1274,13 @@ const AdminDashboard = () => {
                   <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
                     <thead>
                       <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
-                        {["Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Status", "Actions"].map((h) => (
+                        {["Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Actions"].map((h) => (
                           <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filteredPlans.map((plan, i) => {
-                        const badge = statusBadgeStyle(plan.status);
                         return (
                           <tr key={plan._id} style={{ borderBottom: i < filteredPlans.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
                             <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 600, color: "#2C1A0E", whiteSpace: "nowrap" }}>{plan.customerId?.name || "—"}</td>
@@ -1304,25 +1303,33 @@ const AdminDashboard = () => {
                               </span>
                             </td>
                             <td style={{ padding: "10px 14px" }}>
-                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100, background: badge.bg, color: badge.color, border: `1px solid ${badge.border}` }}>
-                                {badge.label}
-                              </span>
-                            </td>
-                            <td style={{ padding: "10px 14px" }}>
                               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {/* In Process (unpaid): Mark Payment Done only */}
-                                {(plan.status === "submitted" || plan.status === "draft") && (
-                                  <button
-                                    onClick={() => {
-                                      fetch(`${BASE_URL}/admin/event-plans/${plan._id}/mark-payment`, {
-                                        method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
-                                      }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); }).catch(() => {});
-                                    }}
-                                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                    💳 Mark Payment Done
-                                  </button>
-                                )}
-                                {/* Paid: separate WA buttons + invoice download */}
+                                {/* Unpaid: Event Details WA + View Pinned + Mark Payment Done */}
+                                {(plan.status === "submitted" || plan.status === "draft") && (() => {
+                                  const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+                                  return (
+                                    <>
+                                      <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                                        {phone && (
+                                          <button onClick={() => notifyEventDetailsWhatsApp(plan)}
+                                            style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                            📲 Event Details
+                                          </button>
+                                        )}
+                                        <button
+                                          onClick={() => {
+                                            fetch(`${BASE_URL}/admin/event-plans/${plan._id}/mark-payment`, {
+                                              method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                                            }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); }).catch(() => {});
+                                          }}
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                          💳 Mark Payment Done
+                                        </button>
+                                      </div>
+                                    </>
+                                  );
+                                })()}
+                                {/* Paid: Event Details PDF WA + Invitation WA + Invoice */}
                                 {plan.status === "in_progress" && (() => {
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
                                   const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
@@ -1363,8 +1370,8 @@ const AdminDashboard = () => {
                                     </a>
                                   );
                                 })()}
-                                {/* Pinned messages toggle */}
-                                {(() => {
+                                {/* Pinned messages — only shown before payment */}
+                                {(plan.status === "submitted" || plan.status === "draft") && (() => {
                                   const ps = pinnedByPlan[plan._id];
                                   if (!ps) {
                                     return (
