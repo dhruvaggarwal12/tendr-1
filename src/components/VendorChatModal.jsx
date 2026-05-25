@@ -181,7 +181,7 @@ function FullMenuCard({ payload, onSend }) {
   const [activeCuisine, setActiveCuisine] = React.useState(cuisines[0] || "North Indian");
   const [selected, setSelected] = React.useState({}); // { dishName: { course, cuisine } }
   const [step, setStep] = React.useState("select");    // "select" | "plates"
-  const [plates, setPlates] = React.useState({});
+  const [plates, setPlates] = React.useState(1);       // single count for all dishes
   const [sent, setSent] = React.useState(false);
 
   const countByCourse = React.useMemo(() => {
@@ -203,9 +203,6 @@ function FullMenuCard({ payload, onSend }) {
 
   const handleConfirmSelection = () => {
     if (totalSelected === 0) return;
-    const init = {};
-    Object.keys(selected).forEach(d => { init[d] = 1; });
-    setPlates(init);
     setStep("plates");
   };
 
@@ -216,13 +213,13 @@ function FullMenuCard({ payload, onSend }) {
       if (!byCuisine[cuisine][course]) byCuisine[cuisine][course] = [];
       byCuisine[cuisine][course].push(dish);
     });
-    const lines = [`🍽️ My Menu Selection${pkg !== "Free" ? ` — ${pkg} Package` : ""}\n`];
+    const lines = [`🍽️ My Menu Selection${pkg !== "Free" ? ` — ${pkg} Package` : ""} · ${plates} plates each\n`];
     Object.entries(byCuisine).forEach(([cuisine, courses]) => {
       lines.push(`\n${cuisine}:`);
       Object.entries(courses).forEach(([course, dishes]) => {
         const label = cuisine === "Sweets" && course === "Desserts" ? "Sweets" : course;
         lines.push(`  ${COURSE_ICONS[course] || "•"} ${label}:`);
-        dishes.forEach(d => lines.push(`    • ${d}${plates[d] ? ` — ${plates[d]} plates` : ""}`));
+        dishes.forEach(d => lines.push(`    • ${d}`));
       });
     });
     onSend(lines.join("\n"));
@@ -242,34 +239,37 @@ function FullMenuCard({ payload, onSend }) {
       <div style={{ border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 12, overflow: "hidden", maxWidth: 340, fontFamily: font }}>
         <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "10px 14px" }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>🍽️ Number of Plates</div>
-          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Set plates required per dish</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>Same count for all {totalSelected} selected dishes</div>
         </div>
-        <div style={{ padding: "8px 12px", background: "#FFFCF7", maxHeight: 320, overflowY: "auto" }}>
-          {selEntries.map(([dish, { course, cuisine }]) => {
-            const label = cuisine === "Sweets" && course === "Desserts" ? "Sweets" : course;
-            const p = plates[dish] || 1;
-            return (
-              <div key={dish} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 0", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
-                <div style={{ minWidth: 0, flex: 1 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dish}</div>
-                  <div style={{ fontSize: 10, color: "#9B7450" }}>{cuisine} · {label}</div>
-                </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginLeft: 10, flexShrink: 0 }}>
-                  <button onClick={() => setPlates(prev => ({ ...prev, [dish]: Math.max(1, (prev[dish] || 1) - 1) }))}
-                    style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>−</button>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", minWidth: 26, textAlign: "center" }}>{p}</span>
-                  <button onClick={() => setPlates(prev => ({ ...prev, [dish]: (prev[dish] || 1) + 1 }))}
-                    style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>+</button>
-                </div>
+        <div style={{ padding: "18px 16px", background: "#FFFCF7" }}>
+          {/* Single plate counter */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 20, marginBottom: 16 }}>
+            <button onClick={() => setPlates(p => Math.max(1, p - 1))}
+              style={{ width: 40, height: 40, borderRadius: "50%", border: "2px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>−</button>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ fontSize: 42, fontWeight: 900, color: "#2C1A0E", lineHeight: 1 }}>{plates}</div>
+              <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>plates each</div>
+            </div>
+            <button onClick={() => setPlates(p => p + 1)}
+              style={{ width: 40, height: 40, borderRadius: "50%", border: "2px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>+</button>
+          </div>
+          {/* Selected dishes summary */}
+          <div style={{ background: "rgba(196,122,46,0.06)", borderRadius: 8, padding: "8px 10px", maxHeight: 160, overflowY: "auto" }}>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{totalSelected} dishes selected</div>
+            {selEntries.map(([dish, { cuisine }]) => (
+              <div key={dish} style={{ fontSize: 11, color: "#2C1A0E", padding: "2px 0", display: "flex", gap: 6, alignItems: "center" }}>
+                <span style={{ color: "#C47A2E", fontWeight: 700 }}>•</span>
+                <span style={{ fontWeight: 600 }}>{dish}</span>
+                <span style={{ color: "#9B7450", fontSize: 10 }}>({cuisine})</span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
         <div style={{ padding: "8px 12px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "#FFFCF7", display: "flex", gap: 8 }}>
           <button onClick={() => setStep("select")}
             style={{ flex: 1, padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>← Back</button>
           <button onClick={handleSend}
-            style={{ flex: 2, padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Send My Order →</button>
+            style={{ flex: 2, padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}>Send My Order →</button>
         </div>
       </div>
     );
@@ -988,57 +988,29 @@ export default function VendorChatModal() {
 
           {/* ── Admin: Send Full Menu (Catering chats + Concierge with Caterer) ── */}
           {currentUser?.isAdmin && (approved || isExistingChat) &&
-           (vendor?.serviceType === "Caterer" || (isConcierge && selectedVendorTypes.includes("Caterer"))) && (() => {
-            const [open, setOpen] = React.useState(false);
-            const [pkg, setPkg]   = React.useState("");
-
-            const PKGS = [
-              { id: "Basic",    label: "Basic",    hint: `${PACKAGE_LIMITS.Basic.Starters} starters · ${PACKAGE_LIMITS.Basic.Mains} mains · ${PACKAGE_LIMITS.Basic.Desserts} sweets` },
-              { id: "Standard", label: "Standard", hint: `${PACKAGE_LIMITS.Standard.Starters} starters · ${PACKAGE_LIMITS.Standard.Mains} mains · ${PACKAGE_LIMITS.Standard.Desserts} sweets · ${PACKAGE_LIMITS.Standard.Beverages} bev` },
-              { id: "Premium",  label: "Premium",  hint: "Unlimited — full spread" },
-              { id: "Free",     label: "No Package — Free Selection", hint: "Customer picks freely" },
-            ];
-
-            const sendMenu = () => {
-              if (!pkg) return;
-              const payload = { pkg, cuisines: ALL_MENU_CUISINES };
-              const msg = `[FULL_MENU:${JSON.stringify(payload)}]`;
-              sendText(msg);
-              setOpen(false);
-              setPkg("");
-            };
-
-            return (
-              <div style={{ marginBottom: 8 }}>
-                <button onClick={() => setOpen(o => !o)}
-                  style={{ width: "100%", padding: "8px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: open ? "rgba(196,122,46,0.08)" : "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span>🍽️ Send Full Menu</span>
-                  <span style={{ fontSize: 10, opacity: 0.65 }}>7 cuisines {open ? "▲" : "▼"}</span>
-                </button>
-                {open && (
-                  <div style={{ marginTop: 6, padding: "10px 12px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.15)" }}>
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>Select Package</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 5, marginBottom: 10 }}>
-                      {PKGS.map(p => (
-                        <button key={p.id} onClick={() => setPkg(p.id)}
-                          style={{ textAlign: "left", padding: "8px 10px", borderRadius: 8, border: `1.5px solid ${pkg === p.id ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: pkg === p.id ? "rgba(196,122,46,0.08)" : "#fff", cursor: "pointer", fontFamily: font, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{p.label}</span>
-                          <span style={{ fontSize: 10, color: "#9B7450" }}>{p.hint}</span>
-                        </button>
-                      ))}
-                    </div>
-                    <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 8 }}>
-                      Cuisines: {ALL_MENU_CUISINES.join(" · ")}
-                    </div>
-                    <button onClick={sendMenu} disabled={!pkg}
-                      style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: pkg ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: pkg ? "#fff" : "#9ca3af", fontSize: 13, fontWeight: 700, cursor: pkg ? "pointer" : "not-allowed", fontFamily: font, boxShadow: pkg ? "0 2px 8px rgba(196,122,46,0.28)" : "none" }}>
-                      Send Menu to Customer →
-                    </button>
-                  </div>
-                )}
+           (vendor?.serviceType === "Caterer" || (isConcierge && selectedVendorTypes.includes("Caterer"))) && (
+            <div style={{ marginBottom: 8, padding: "8px 10px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.15)" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>🍽️ Send Full Menu</div>
+              <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                {[
+                  { id: "Basic",    label: "Basic",    sub: `${PACKAGE_LIMITS.Basic.Starters}S · ${PACKAGE_LIMITS.Basic.Mains}M · ${PACKAGE_LIMITS.Basic.Desserts}D` },
+                  { id: "Standard", label: "Standard", sub: `${PACKAGE_LIMITS.Standard.Starters}S · ${PACKAGE_LIMITS.Standard.Mains}M · ${PACKAGE_LIMITS.Standard.Desserts}D` },
+                  { id: "Premium",  label: "Premium",  sub: "Unlimited" },
+                  { id: "Free",     label: "No Package", sub: "Free pick" },
+                ].map(p => (
+                  <button key={p.id}
+                    onClick={() => {
+                      const msg = `[FULL_MENU:${JSON.stringify({ pkg: p.id, cuisines: ALL_MENU_CUISINES })}]`;
+                      sendText(msg);
+                    }}
+                    style={{ flex: "1 1 calc(50% - 3px)", textAlign: "left", padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.22)", background: "#fff", cursor: "pointer", fontFamily: font }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{p.label}</div>
+                    <div style={{ fontSize: 10, color: "#9B7450", marginTop: 1 }}>{p.sub}</div>
+                  </button>
+                ))}
               </div>
-            );
-          })()}
+            </div>
+          )}
 
           {(approved || isExistingChat) ? (
             <>
