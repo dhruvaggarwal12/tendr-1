@@ -15,6 +15,12 @@
  *   type     — "mcq" (default) | "text"
  */
 
+export const TIME_STEP = {
+  key:      "eventTiming",
+  question: "What time should the vendor arrive, and when does your event end? (e.g. 5:00 PM – 11:00 PM)",
+  type:     "text",
+};
+
 export const ADDRESS_STEP = {
   key:      "venueAddress",
   question: "What is your full event address or venue name?",
@@ -42,6 +48,7 @@ export const BOT_FLOWS = {
       question: "When is your event?",
       options:  ["This week", "This month", "1–3 months away", "Just exploring"],
     },
+    TIME_STEP,
     ADDRESS_STEP,
   ],
 
@@ -61,6 +68,7 @@ export const BOT_FLOWS = {
       question: "When is your event?",
       options:  ["This week", "This month", "1–3 months away", "Just exploring"],
     },
+    TIME_STEP,
     ADDRESS_STEP,
   ],
 
@@ -80,6 +88,7 @@ export const BOT_FLOWS = {
       question: "How many hours of coverage do you need?",
       options:  ["2–3 hours", "Half day (4–5 hrs)", "Full day", "Not sure yet"],
     },
+    TIME_STEP,
     ADDRESS_STEP,
   ],
 
@@ -99,6 +108,7 @@ export const BOT_FLOWS = {
       question: "Do you need a sound system & lighting setup too?",
       options:  ["Yes, full setup needed", "I have my own setup", "Just the DJ, no setup"],
     },
+    TIME_STEP,
     ADDRESS_STEP,
   ],
 
@@ -119,6 +129,7 @@ export const BOT_FLOWS = {
       question: "When is your event?",
       options:  ["This week", "This month", "1–3 months away", "Just exploring"],
     },
+    TIME_STEP,
     ADDRESS_STEP,
   ],
 
@@ -191,6 +202,7 @@ export function buildSummaryMessage(formAnswers, botAnswers, vendorName, service
     botAnswers.budget             ? `  💰 Budget: ${botAnswers.budget}` : null,
     botAnswers.timeline           ? `  🗓 Timeline: ${botAnswers.timeline}` : null,
     botAnswers.queryType          ? `  ❓ Query: ${botAnswers.queryType}` : null,
+    botAnswers.eventTiming        ? `  🕐 Timing: ${botAnswers.eventTiming}` : null,
     botAnswers.venueAddress       ? `  📌 Address: ${botAnswers.venueAddress}` : null,
   ].filter(Boolean);
   return lines.join("\n");

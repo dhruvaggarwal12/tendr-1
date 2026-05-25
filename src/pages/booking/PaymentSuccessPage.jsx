@@ -9,6 +9,7 @@ import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
+import { generateInvoicePDF, generateEventDetailsPDF } from "../../utils/pdfGenerator";
 
 const font = "'Outfit', sans-serif";
 
@@ -21,6 +22,8 @@ const PaymentSuccessPage = () => {
   const user = useSelector((s) => s.auth.user);
   const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
   const [referralCopied, setReferralCopied] = useState(false);
+  const [pinnedMessages, setPinnedMessages] = useState({}); // { vendorId: [msg, ...] }
+  const [pdfGenerating, setPdfGenerating] = useState(false);
 
   // Snapshot event + vendor data BEFORE it gets cleared in useEffect
   const rawFinalised   = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -39,6 +42,36 @@ const PaymentSuccessPage = () => {
     location:  rawFormData.location  || "",
     guests:    rawFormData.guests    || "",
   }));
+  // Fetch pinned messages from vendor conversations before they get cleared
+  useEffect(() => {
+    const token = localStorage.getItem("tendr_token");
+    if (!token) return;
+    fetch(`${import.meta.env.VITE_BASE_URL}/conversations`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then(r => r.json())
+      .then(async data => {
+        const convList = (data.conversations || []).filter(c => c.chatType === "vendor");
+        const pinned = {};
+        await Promise.allSettled(convList.map(async c => {
+          const vid = (c.vendorId?._id || c.vendorId)?.toString();
+          if (!vid) return;
+          try {
+            const r2 = await fetch(`${import.meta.env.VITE_BASE_URL}/conversations/${c._id}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              credentials: "include",
+            });
+            const full = await r2.json();
+            const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || c.pinnedMessages || [];
+            pinned[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
+          } catch {}
+        }));
+        setPinnedMessages(pinned);
+      })
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     // Clear ALL booking state — payment is complete, fresh start
     dispatch(clearFinalisedVendor());
@@ -178,6 +211,60 @@ const PaymentSuccessPage = () => {
             </p>
           </div>
         )}
+
+        {/* ── Download documents ── */}
+        <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 22px", marginBottom: 20 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>Download Documents</div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            <button
+              disabled={pdfGenerating}
+              onClick={() => {
+                setPdfGenerating(true);
+                try {
+                  generateInvoicePDF({
+                    eventSummary,
+                    confirmedVendors,
+                    amount,
+                    orderId: state?.orderId,
+                    paymentId: state?.paymentId,
+                    userName: user?.name,
+                  });
+                } finally {
+                  setPdfGenerating(false);
+                }
+              }}
+              style={{ flex: 1, minWidth: 140, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+            >
+              🧾 Download Invoice
+            </button>
+            <button
+              disabled={pdfGenerating}
+              onClick={() => {
+                setPdfGenerating(true);
+                // Build pinned map keyed by vendor id or name
+                const pinnedByKey = {};
+                confirmedVendors.forEach(v => {
+                  const key = v._id || v.name;
+                  pinnedByKey[key] = pinnedMessages[v._id] || pinnedMessages[v.name] || [];
+                });
+                try {
+                  generateEventDetailsPDF({
+                    eventSummary,
+                    confirmedVendors,
+                    pinnedMessages: pinnedByKey,
+                    userName: user?.name,
+                    orderId: state?.orderId,
+                  });
+                } finally {
+                  setPdfGenerating(false);
+                }
+              }}
+              style={{ flex: 1, minWidth: 140, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "12px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+            >
+              📋 Download Event Details
+            </button>
+          </div>
+        </div>
 
         {/* ── Action buttons ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>

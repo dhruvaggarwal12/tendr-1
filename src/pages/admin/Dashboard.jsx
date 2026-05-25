@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { generateEventDetailsPDF } from "../../utils/pdfGenerator";
 import AddVendorModal from "./AddVendorModal";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
@@ -1129,6 +1130,88 @@ const AdminDashboard = () => {
             ].join("\n");
             return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
           };
+          const buildEventDetailsWhatsApp = (plan) => {
+            const name  = plan.customerId?.name || "there";
+            const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+            if (!phone) return null;
+            const services = (plan.selectedServices || []).map(s => `  • ${s}`).join("\n") || "  • Not specified";
+            const typeLabel = plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It";
+            const msg = [
+              `Hi ${name}! 👋`,
+              ``,
+              `Your *Tendr Event Details* are confirmed! 🎉`,
+              ``,
+              `*📋 Event Details*`,
+              `  • Event: ${plan.eventName || plan.eventType || "—"}`,
+              `  • Type: ${plan.eventType || "—"}`,
+              `  • Date: ${plan.date || "—"}`,
+              `  • Location: ${plan.location || "—"}`,
+              `  • Guests: ${plan.guests || "—"}`,
+              `  • Budget: ${plan.budget || "—"}`,
+              ``,
+              `*✅ Confirmed Services*`,
+              services,
+              ``,
+              `*🎯 Booking Type:* ${typeLabel}`,
+              ``,
+              `*📌 Next Steps:*`,
+              `  • Our team will contact you within 24 hours.`,
+              `  • Vendors have been notified.`,
+              `  • Keep your Tendr dashboard updated for logistics.`,
+              ``,
+              `For any queries, feel free to reach out to us on WhatsApp.`,
+              ``,
+              `— Team Tendr 🌟`,
+            ].join("\n");
+            return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
+          };
+
+          const notifyEventDetailsWhatsApp = async (plan) => {
+            // 1. Fetch pinned messages for this customer's conversations
+            let pinnedByKey = {};
+            try {
+              const custId = (plan.customerId?._id || plan.customerId)?.toString();
+              const r = await fetch(`${BASE_URL}/conversations?customerId=${custId}`, {
+                headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+              });
+              const data = await r.json();
+              const convList = (data.conversations || []).filter(c => c.chatType === "vendor");
+              await Promise.allSettled(convList.map(async c => {
+                const vid = (c.vendorId?._id || c.vendorId)?.toString();
+                if (!vid) return;
+                try {
+                  const r2 = await fetch(`${BASE_URL}/conversations/${c._id}`, {
+                    headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                  });
+                  const full = await r2.json();
+                  const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || [];
+                  const vName = c.vendorId?.name || c.vendorName || vid;
+                  pinnedByKey[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
+                  pinnedByKey[vName] = pinnedByKey[vid];
+                } catch {}
+              }));
+            } catch {}
+
+            // 2. Generate and download event details PDF
+            const confirmedVendors = (plan.selectedServices || []).map(s => ({ name: s, serviceType: s, _id: s }));
+            generateEventDetailsPDF({
+              eventSummary: {
+                eventType: plan.eventType,
+                date: plan.date,
+                location: plan.location,
+                guests: plan.guests,
+              },
+              confirmedVendors,
+              pinnedMessages: pinnedByKey,
+              userName: plan.customerId?.name,
+              orderId: plan._id,
+            });
+
+            // 3. Open WhatsApp with event details text
+            const url = buildEventDetailsWhatsApp(plan);
+            if (url) window.open(url, "_blank");
+          };
+
           const filteredPlans = bookingTab === "All" ? eventPlans : eventPlans.filter((p) => (BOOKING_STATUS[bookingTab] || []).includes(p.status));
           const statusBadgeStyle = (s) => ({
             submitted:   { bg: "#fffbeb", color: "#b45309", border: "#fde68a",  label: "In Process" },
@@ -1233,6 +1316,17 @@ const AdminDashboard = () => {
                                       </button>
                                     </>
                                   );
+                                })()}
+                                {/* in_progress (payment done): Notify on WhatsApp */}
+                                {plan.status === "in_progress" && (() => {
+                                  const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+                                  return phone ? (
+                                    <button
+                                      onClick={() => notifyEventDetailsWhatsApp(plan)}
+                                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                      📲 Notify on WhatsApp
+                                    </button>
+                                  ) : null;
                                 })()}
                                 {/* Upcoming: show change request info + resolve */}
                                 {plan.status === "in_progress" && plan.changeRequest?.hasRequest && plan.changeRequest?.status === "pending" && (

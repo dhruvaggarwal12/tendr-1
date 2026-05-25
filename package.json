@@ -21,6 +21,7 @@
     "dotenv": "^17.2.1",
     "framer-motion": "^12.23.22",
     "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.511.0",
     "react": "^19.0.0",
     "react-calendar": "^6.0.0",
