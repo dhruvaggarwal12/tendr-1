@@ -45,6 +45,7 @@ import {
   MonitorCheck,
   MonitorX,
   UserPlus,
+  Star,
 } from "lucide-react";
 import useConversations from "../../hooks/useConversations";
 import { getConversationMessages } from "../../apis/conversationsApi";
@@ -260,6 +261,7 @@ const sidebar_arr = [
   { label: "Chat-Support",     icon: <MessagesSquare size={22} />,    key: "ChatSupport" },
   { label: "Chat-Concierge",   icon: <MessagesSquare size={22} />,    key: "ChatConcierge" },
   { label: "Gift Hampers",     icon: <span style={{ fontSize: 18 }}>🎁</span>, key: "GiftHampers" },
+  { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks
@@ -353,6 +355,11 @@ const AdminDashboard = () => {
   const [editingVendor, setEditingVendor] = useState(null);
   const [menuVendor, setMenuVendor] = useState(null);
   const [registeringAppId, setRegisteringAppId] = useState(null);
+  // Reviews
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
+  const [viewingPhoto, setViewingPhoto] = useState(null); // full-screen photo URL
+
   // Chat summary feature
   const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
   const [showSummaryModal, setShowSummaryModal] = useState(false);
@@ -1317,16 +1324,28 @@ const AdminDashboard = () => {
                                     </>
                                   );
                                 })()}
-                                {/* in_progress (payment done): Notify on WhatsApp */}
+                                {/* in_progress (payment done): Notify on WhatsApp + Share Review Link */}
                                 {plan.status === "in_progress" && (() => {
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
-                                  return phone ? (
-                                    <button
-                                      onClick={() => notifyEventDetailsWhatsApp(plan)}
-                                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                      📲 Notify on WhatsApp
-                                    </button>
-                                  ) : null;
+                                  const reviewUrl = `${window.location.origin}/review?planId=${plan._id}&name=${encodeURIComponent(plan.customerId?.name || "")}&event=${encodeURIComponent(plan.eventName || plan.eventType || "")}&vendors=${encodeURIComponent((plan.selectedServices || []).join(","))}`;
+                                  const reviewWhatsApp = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${plan.customerId?.name || "there"}! 🌟\n\nThank you for celebrating with Tendr!\n\nWe'd love to hear about your experience. It would mean a lot if you could rate your event:\n\n${reviewUrl}\n\nYour feedback helps us make every event better! 💛\n\n— Team Tendr`)}` : null;
+                                  return (
+                                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                                      {phone && (
+                                        <button
+                                          onClick={() => notifyEventDetailsWhatsApp(plan)}
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                          📲 Notify on WhatsApp
+                                        </button>
+                                      )}
+                                      {reviewWhatsApp && (
+                                        <a href={reviewWhatsApp} target="_blank" rel="noopener noreferrer"
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
+                                          ⭐ Share Review Link
+                                        </a>
+                                      )}
+                                    </div>
+                                  );
                                 })()}
                                 {/* Upcoming: show change request info + resolve */}
                                 {plan.status === "in_progress" && plan.changeRequest?.hasRequest && plan.changeRequest?.status === "pending" && (
@@ -3063,8 +3082,104 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* ── Reviews ── */}
+        {activeDropdown === "reviews" && (() => {
+          // Lazy-load reviews when section becomes active
+          if (!reviewsLoaded) {
+            fetch(`${BASE_URL}/admin/reviews`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+              .then(r => r.ok ? r.json() : { reviews: [] })
+              .then(d => { setReviews(d.reviews || []); setReviewsLoaded(true); })
+              .catch(() => setReviewsLoaded(true));
+          }
+
+          const stars = (n) => "★".repeat(n) + "☆".repeat(5 - n);
+
+          return (
+            <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e] my-4">
+                ⭐ Customer Reviews
+              </div>
+
+              {!reviewsLoaded ? (
+                <div style={{ textAlign: "center", padding: "60px 24px", color: "#9B7450" }}>Loading reviews…</div>
+              ) : reviews.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 24px", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>🌟</div>
+                  <p style={{ color: "#9B7450", fontSize: 16 }}>No reviews yet. Share the review link with customers after their event.</p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {reviews.map(r => (
+                    <div key={r._id} style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", padding: "20px 24px", boxShadow: "0 2px 12px rgba(44,26,14,0.05)" }}>
+                      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                          <div style={{ width: 42, height: 42, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 16, fontWeight: 800, flexShrink: 0 }}>
+                            {(r.customerName || "?")[0].toUpperCase()}
+                          </div>
+                          <div>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{r.customerName || "Anonymous"}</div>
+                            {r.eventType && <div style={{ fontSize: 12, color: "#9B7450" }}>{r.eventType}</div>}
+                          </div>
+                        </div>
+                        <div style={{ textAlign: "right" }}>
+                          <div style={{ fontSize: 18, color: "#CCAB4A", letterSpacing: 1 }}>{stars(r.overallRating || 0)}</div>
+                          <div style={{ fontSize: 10, color: "#9B7450", marginTop: 2 }}>
+                            {r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-IN") : ""}
+                          </div>
+                        </div>
+                      </div>
+
+                      {r.reviewText && (
+                        <p style={{ fontSize: 13.5, color: "#5a3a1a", lineHeight: 1.65, margin: "0 0 12px", fontStyle: "italic" }}>
+                          "{r.reviewText}"
+                        </p>
+                      )}
+
+                      {/* Per-vendor ratings */}
+                      {r.vendorRatings && Object.keys(r.vendorRatings).length > 0 && (
+                        <div style={{ marginBottom: 12, display: "flex", flexWrap: "wrap", gap: 8 }}>
+                          {Object.entries(r.vendorRatings).map(([vendor, rating]) => (
+                            <span key={vendor} style={{ fontSize: 11, padding: "3px 10px", borderRadius: 100, background: "rgba(196,122,46,0.08)", color: "#7A5535", border: "1px solid rgba(196,122,46,0.18)", fontWeight: 600 }}>
+                              {vendor}: {"★".repeat(rating)}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Photos */}
+                      {r.photos?.length > 0 && (
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>📸 Event Photos</div>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                            {r.photos.map((url, pi) => (
+                              <img
+                                key={pi} src={url} alt="" onClick={() => setViewingPhoto(url)}
+                                style={{ width: 80, height: 80, borderRadius: 10, objectFit: "cover", cursor: "pointer", border: "1.5px solid rgba(196,122,46,0.2)", transition: "transform 0.15s" }}
+                                onMouseEnter={e => e.target.style.transform = "scale(1.06)"}
+                                onMouseLeave={e => e.target.style.transform = "scale(1)"}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
       </div>
     </div>
+    {/* ── Photo viewer modal ── */}
+    {viewingPhoto && (
+      <>
+        <div onClick={() => setViewingPhoto(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", zIndex: 3000, cursor: "zoom-out" }} />
+        <img src={viewingPhoto} alt="" onClick={() => setViewingPhoto(null)}
+          style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", maxWidth: "90vw", maxHeight: "88vh", borderRadius: 12, zIndex: 3001, boxShadow: "0 24px 80px rgba(0,0,0,0.5)", cursor: "zoom-out" }} />
+      </>
+    )}
     {/* ── Booking Summary Modal ── */}
     {showSummaryModal && selectedChat && (
       <>

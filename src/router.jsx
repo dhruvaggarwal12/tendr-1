@@ -68,6 +68,7 @@ import PaymentProcessing from './pages/booking/PaymentProcessingPage';
 import PaymentSuccessPage from './pages/booking/PaymentSuccessPage';
 import PaymentFailedPage from './pages/booking/PaymentFailedPage';
 import BookingConfirmation from './pages/booking/BookingConfirmation';
+import ReviewForm from './pages/review/ReviewForm';
 
 
 const router = createBrowserRouter([
@@ -271,6 +272,11 @@ const router = createBrowserRouter([
     {
       path: "/booking/confirmation",
       element: <BookingConfirmation />
+    },
+    {
+      path: "/review",
+      element: <ReviewForm />,
+      errorElement: <ErrorPage />,
     },
 
   // Single form route (reads ?bookingType=you-do-it|let-us-do-it)

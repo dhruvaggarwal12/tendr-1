@@ -10,6 +10,7 @@ import Footer from "../../components/Footer";
 import HamburgerNav from "../../components/HamburgerNav";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { generateInvoicePDF, generateEventDetailsPDF } from "../../utils/pdfGenerator";
+import { writeChecklistToStorage, writeDayOfToStorage } from "../../utils/eventGenerators";
 
 const font = "'Outfit', sans-serif";
 
@@ -24,6 +25,8 @@ const PaymentSuccessPage = () => {
   const [referralCopied, setReferralCopied] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState({}); // { vendorId: [msg, ...] }
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [checklistReady, setChecklistReady] = useState(false);
+  const [timelineReady, setTimelineReady] = useState(false);
 
   // Snapshot event + vendor data BEFORE it gets cleared in useEffect
   const rawFinalised   = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -42,10 +45,25 @@ const PaymentSuccessPage = () => {
     location:  rawFormData.location  || "",
     guests:    rawFormData.guests    || "",
   }));
-  // Fetch pinned messages from vendor conversations before they get cleared
+  // Fetch pinned messages + eventTiming from vendor conversations before they get cleared
+  // Also writes pre-populated checklist + day-of schedule to localStorage
   useEffect(() => {
     const token = localStorage.getItem("tendr_token");
-    if (!token) return;
+
+    // Write checklist immediately from event type (no API needed)
+    writeChecklistToStorage(rawFormData.eventType || bookingDetails?.eventName || "");
+    setChecklistReady(true);
+
+    if (!token) {
+      // Write timeline with defaults if no token
+      writeDayOfToStorage(
+        Object.entries(rawFinalised).flatMap(([svc, v]) => Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])),
+        ""
+      );
+      setTimelineReady(true);
+      return;
+    }
+
     fetch(`${import.meta.env.VITE_BASE_URL}/conversations`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
@@ -54,6 +72,8 @@ const PaymentSuccessPage = () => {
       .then(async data => {
         const convList = (data.conversations || []).filter(c => c.chatType === "vendor");
         const pinned = {};
+        let eventTiming = "";
+
         await Promise.allSettled(convList.map(async c => {
           const vid = (c.vendorId?._id || c.vendorId)?.toString();
           if (!vid) return;
@@ -65,11 +85,25 @@ const PaymentSuccessPage = () => {
             const full = await r2.json();
             const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || c.pinnedMessages || [];
             pinned[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
+            // Grab eventTiming from botAnswers / eventDetails if available
+            const timing = full.botAnswers?.eventTiming || full.eventDetails?.eventTiming || full.conversation?.botAnswers?.eventTiming || "";
+            if (timing && !eventTiming) eventTiming = timing;
           } catch {}
         }));
+
         setPinnedMessages(pinned);
+
+        // Build vendor list for timeline
+        const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
+          Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
+        );
+        writeDayOfToStorage(vendors, eventTiming);
+        setTimelineReady(true);
       })
-      .catch(() => {});
+      .catch(() => {
+        writeDayOfToStorage([], "");
+        setTimelineReady(true);
+      });
   }, []);
 
   useEffect(() => {
@@ -209,6 +243,34 @@ const PaymentSuccessPage = () => {
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.55 }}>
               Friends get {DISCOUNT_PERCENT}% off their first booking when they use your code.
             </p>
+          </div>
+        )}
+
+        {/* ── Checklist & Timeline ── */}
+        {(checklistReady || timelineReady) && (
+          <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "18px 22px", marginBottom: 20 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Your Event Tools Are Ready</div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "0 0 14px", lineHeight: 1.5 }}>
+              We've built a custom checklist and day-of schedule based on your booking.
+            </p>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              {checklistReady && (
+                <button
+                  onClick={() => navigate("/checklist")}
+                  style={{ flex: 1, minWidth: 130, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 10, border: "none", background: "#CCAB4A", color: "#2C1A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                >
+                  ✅ See Your Checklist
+                </button>
+              )}
+              {timelineReady && (
+                <button
+                  onClick={() => navigate("/timeline")}
+                  style={{ flex: 1, minWidth: 130, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 16px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.4)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                >
+                  🗓 See Your Day Schedule
+                </button>
+              )}
+            </div>
           </div>
         )}
 
