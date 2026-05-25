@@ -246,10 +246,15 @@ export default function CustomerDashboard() {
     return !(c.vendorPrice?.amount > 0);             // approved + no price = still negotiating
   });
 
+  // Once payment is done (in_progress), vendor chat cards belong to that paid booking
+  // and must no longer show in the Ongoing tab.
+  const hasPaidPlan = plans.some(p => p.status === "in_progress" || p.status === "completed");
+  const ongoingVendorChats = hasPaidPlan ? [] : pendingVendorChats;
+
   // Show "planning in progress" card when form has data, regardless of whether
   // vendor chats exist — formData now persists 7 days via localStorage
   const hasFormData = !!(formData.eventType || formData.date || formData.location);
-  const hasActiveConversations = pendingVendorChats.length > 0;
+  const hasActiveConversations = ongoingVendorChats.length > 0;
   const hasSubmittedPlan = plans.some(p => ["submitted","draft","in_progress"].includes(p.status));
   const showPlanningCard = (hasFormData || hasActiveConversations) && !hasSubmittedPlan;
 
@@ -270,7 +275,7 @@ export default function CustomerDashboard() {
   const counts = {
     All:       plans.length,
     Upcoming:  plans.filter((p) => p.status === "in_progress").length, // payment received, awaiting confirmation
-    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length + pendingVendorChats.length + (showPlanningCard ? 1 : 0),
+    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length + ongoingVendorChats.length + (showPlanningCard ? 1 : 0),
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
     Chats:     visibleChats.length,
@@ -397,7 +402,7 @@ export default function CustomerDashboard() {
                   </div>
                 ))}
               </div>
-            ) : filtered.length === 0 && pendingVendorChats.length === 0 && !showPlanningCard ? (
+            ) : filtered.length === 0 && ongoingVendorChats.length === 0 && !showPlanningCard ? (
               <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                 <div style={{ fontSize: 40, marginBottom: 14 }}>📋</div>
                 <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No ongoing bookings</h4>
@@ -571,9 +576,9 @@ export default function CustomerDashboard() {
                 ))}
 
                 {/* Pending vendor chat cards (awaiting admin approval) */}
-                {pendingVendorChats.length > 0 && (
+                {ongoingVendorChats.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 12, marginTop: filtered.length > 0 ? 8 : 0 }}>
-                    {pendingVendorChats.map(convo => (
+                    {ongoingVendorChats.map(convo => (
                 <div key={convo._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", padding: "18px 22px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
