@@ -102,9 +102,12 @@ const BookingReviewPage = () => {
   const bookingType      = useSelector((s) => s.eventPlanning.bookingType);
   const isLetUsDoIt      = bookingType === "let-us-do-it";
 
-  // On mount: check backend — if payment already done, clear local state + redirect away
+  // On mount: if already paid and no new vendors selected, redirect to dashboard
   useEffect(() => {
     if (!token) return;
+    // If the user has vendors actively selected, let them proceed — don't block a new booking
+    const hasActiveVendors = Object.keys(finalisedVendors).length > 0;
+    if (hasActiveVendors) return;
     fetch(`${BASE_URL}/event-plans`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
@@ -115,13 +118,6 @@ const BookingReviewPage = () => {
         const plans = data.plans || data.eventPlans || (Array.isArray(data) ? data : []);
         const hasPaid = plans.some(p => ["in_progress", "completed"].includes(p.status));
         if (hasPaid) {
-          dispatch(clearFinalisedVendor());
-          dispatch(resetEventPlanning());
-          try {
-            localStorage.removeItem("tendr_finalised");
-            Object.keys(localStorage).filter(k => k.startsWith("finalisedVendors_")).forEach(k => localStorage.removeItem(k));
-            localStorage.removeItem("tendr_ep_session");
-          } catch {}
           navigate("/dashboard", { replace: true });
         }
       })

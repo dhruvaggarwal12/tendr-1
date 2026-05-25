@@ -769,7 +769,6 @@ const AdminDashboard = () => {
     }
 
     setSummaryDraft(text);
-    setPinnedMsgs([]);
   };
 
   const summaryWhatsAppUrl = () => {
