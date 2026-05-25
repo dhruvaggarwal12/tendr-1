@@ -262,7 +262,7 @@ const PaymentSuccessPage = () => {
             {/* Event Details */}
             <button
               disabled={pdfGenerating}
-              onClick={() => {
+              onClick={async () => {
                 setPdfGenerating(true);
                 const pinnedByKey = {};
                 confirmedVendors.forEach(v => {
@@ -270,7 +270,7 @@ const PaymentSuccessPage = () => {
                   pinnedByKey[key] = pinnedMessages[v._id] || pinnedMessages[v.name] || [];
                 });
                 try {
-                  generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: pinnedByKey, userName: user?.name, orderId: state?.orderId });
+                  await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: pinnedByKey, userName: user?.name, orderId: state?.orderId });
                 } finally { setPdfGenerating(false); }
               }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
@@ -281,11 +281,11 @@ const PaymentSuccessPage = () => {
             {/* Timeline */}
             <button
               disabled={pdfGenerating}
-              onClick={() => {
+              onClick={async () => {
                 setPdfGenerating(true);
                 try {
                   const slots = dayofSlots.length > 0 ? dayofSlots : JSON.parse(localStorage.getItem("tendr_dayof") || '{}').slots || [];
-                  generateTimelinePDF({ slots, eventSummary, userName: user?.name });
+                  await generateTimelinePDF({ slots, eventSummary, userName: user?.name });
                 } finally { setPdfGenerating(false); }
               }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}

@@ -1208,7 +1208,7 @@ const AdminDashboard = () => {
 
             // 2. Generate and download event details PDF
             const confirmedVendors = (plan.selectedServices || []).map(s => ({ name: s, serviceType: s, _id: s }));
-            generateEventDetailsPDF({
+            await generateEventDetailsPDF({
               eventSummary: {
                 eventType: plan.eventType,
                 date: plan.date,

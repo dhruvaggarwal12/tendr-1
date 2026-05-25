@@ -883,11 +883,11 @@ export default function CustomerDashboard() {
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>🧾</span>Invoice
                           </button>
-                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: {}, userName: user?.name, orderId: plan.orderId }); } finally { setPdfGenerating(false); } }}
+                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: {}, userName: user?.name, orderId: plan.orderId }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>📋</span>Details
                           </button>
-                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { const stored = JSON.parse(localStorage.getItem("tendr_dayof") || "{}"); generateTimelinePDF({ slots: stored.slots || [], eventSummary, userName: user?.name }); } finally { setPdfGenerating(false); } }}
+                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { const stored = JSON.parse(localStorage.getItem("tendr_dayof") || "{}"); await generateTimelinePDF({ slots: stored.slots || [], eventSummary, userName: user?.name }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>🗓</span>Timeline
                           </button>
