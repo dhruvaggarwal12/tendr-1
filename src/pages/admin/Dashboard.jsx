@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { generateEventDetailsPDF, generateInvoicePDF } from "../../utils/pdfGenerator";
+import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
 import AddVendorModal from "./AddVendorModal";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
@@ -336,6 +336,9 @@ const AdminDashboard = () => {
   const [chatRequests, setChatRequests] = useState([]);
   const [ghOrders, setGhOrders]         = useState([]);
   const [ghLoading, setGhLoading]       = useState(false);
+  const [selectedGhId, setSelectedGhId] = useState(null);
+  const [ghEdits, setGhEdits]           = useState({}); // { [orderId]: items[] }
+  const [ghSaving, setGhSaving]         = useState(false);
   const [vendorStats, setVendorStats] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [userList, setUserList] = useState([]);
@@ -1307,50 +1310,42 @@ const AdminDashboard = () => {
                             </td>
                             <td style={{ padding: "10px 14px" }}>
                               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                                {/* Ongoing: show summary + WhatsApp + Mark Payment Done */}
-                                {(plan.status === "submitted" || plan.status === "draft") && (() => {
-                                  const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
-                                  return (
-                                    <>
-                                      {plan.bookingSummary && phone && (
-                                        <a href={`https://wa.me/91${phone}?text=${encodeURIComponent(plan.bookingSummary)}`}
-                                          target="_blank" rel="noopener noreferrer"
-                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                          📱 Send on WhatsApp
-                                        </a>
-                                      )}
-                                      <button
-                                        onClick={() => {
-                                          fetch(`${BASE_URL}/admin/event-plans/${plan._id}/mark-payment`, {
-                                            method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
-                                          }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); }).catch(() => {});
-                                        }}
-                                        style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                        💳 Mark Payment Done
-                                      </button>
-                                    </>
-                                  );
-                                })()}
-                                {/* in_progress (payment done): Notify + PDF downloads */}
+                                {/* In Process (unpaid): Mark Payment Done only */}
+                                {(plan.status === "submitted" || plan.status === "draft") && (
+                                  <button
+                                    onClick={() => {
+                                      fetch(`${BASE_URL}/admin/event-plans/${plan._id}/mark-payment`, {
+                                        method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                                      }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'in_progress' } : p)); }).catch(() => {});
+                                    }}
+                                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                    💳 Mark Payment Done
+                                  </button>
+                                )}
+                                {/* Paid: separate WA buttons + invoice download */}
                                 {plan.status === "in_progress" && (() => {
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
                                   const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
                                   const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({ name: v.vendorName || v.name || "", serviceType: v.serviceType || "" })).filter(v => v.name);
+                                  const name = plan.customerId?.name || "there";
+                                  const inviteWA = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${name}! 🎉\n\nYour event invitation is ready!\n\nEvent: ${plan.eventType || ""} ${plan.date ? "on " + plan.date : ""}\n\nLog in to your Tendr dashboard to download your personalised invitation card.\n\ntendrito.com/dashboard\n\n— Team Tendr 💛`)}` : null;
                                   return (
                                     <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                                       {phone && (
                                         <button onClick={() => notifyEventDetailsWhatsApp(plan)}
-                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                          📲 Notify on WhatsApp
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                          📲 Event Details
                                         </button>
+                                      )}
+                                      {inviteWA && (
+                                        <a href={inviteWA} target="_blank" rel="noopener noreferrer"
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
+                                          📲 Invitation
+                                        </a>
                                       )}
                                       <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name }); } finally { setPdfGenerating(false); } }}
                                         style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                         🧾 Invoice
-                                      </button>
-                                      <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await notifyEventDetailsWhatsApp(plan, true); } finally { setPdfGenerating(false); } }}
-                                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                        📋 Event PDF
                                       </button>
                                     </div>
                                   );
@@ -3058,88 +3053,193 @@ const AdminDashboard = () => {
         )}
 
         {/* ── Gift Hampers Orders ── */}
-        {activeDropdown === "gifthampers" && (
-          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 8, marginTop: 16 }}>
-              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">🎁 Gift Hamper Orders</div>
-              <button
-                onClick={async () => {
-                  if (!window.confirm('Seed 5 sample gift hamper products + create vendor?')) return;
-                  try {
-                    const r = await fetch(`${BASE_URL}/admin/seed-gift-hamper-products`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
-                    const d = await r.json();
-                    if (d.error) { alert('Error: ' + d.error); return; }
-                    alert((d.message || 'Done') + '\n' + (d.results || []).map(x => `• ${x.name}: ${x.status}`).join('\n'));
-                  } catch(e) { alert('Request failed: ' + e.message); }
-                }}
-                style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
-              >
-                🌱 Seed 5 Sample Products
-              </button>
-            </div>
-            {ghLoading ? (
-              <p style={{ color: "#9B7450" }}>Loading orders…</p>
-            ) : ghOrders.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "60px 24px", background: "#fff", borderRadius: 16, border: "2px solid #F1E1A8" }}>
-                <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
-                <p style={{ color: "#9B7450", fontSize: 16 }}>No gift hamper orders yet</p>
+        {activeDropdown === "gifthampers" && (() => {
+          const selectedOrder = ghOrders.find(o => o._id === selectedGhId) || null;
+          const editItems = selectedGhId ? (ghEdits[selectedGhId] ?? selectedOrder?.items ?? []) : [];
+
+          const updateEditItem = (idx, field, value) => {
+            const base = ghEdits[selectedGhId] ?? (selectedOrder?.items?.map(i => ({ ...i })) ?? []);
+            const updated = base.map((item, i) => i === idx ? { ...item, [field]: value } : item);
+            setGhEdits(prev => ({ ...prev, [selectedGhId]: updated }));
+          };
+
+          const saveVendorAssignment = async () => {
+            if (!selectedGhId) return;
+            setGhSaving(true);
+            try {
+              const items = ghEdits[selectedGhId] ?? selectedOrder?.items ?? [];
+              const recalced = items.map(item => ({
+                ...item,
+                subtotal: (item.pricePerUnit || 0) * (Number(item.quantity) || 1),
+              }));
+              const newTotal = recalced.reduce((s, i) => s + (i.subtotal || 0), 0);
+              await fetch(`${BASE_URL}/admin/gift-hamper-orders/${selectedGhId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                credentials: "include",
+                body: JSON.stringify({ items: recalced, totalAmount: newTotal }),
+              });
+              setGhOrders(prev => prev.map(o => o._id === selectedGhId ? { ...o, items: recalced, totalAmount: newTotal } : o));
+              setGhEdits(prev => { const n = { ...prev }; delete n[selectedGhId]; return n; });
+              alert("Vendor details saved!");
+            } catch(e) { alert("Save failed: " + e.message); }
+            finally { setGhSaving(false); }
+          };
+
+          return (
+            <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 16, marginTop: 16 }}>
+                <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e]">🎁 Gift Hamper Orders</div>
+                <button
+                  onClick={async () => {
+                    if (!window.confirm('Seed 5 sample gift hamper products + create vendor?')) return;
+                    try {
+                      const r = await fetch(`${BASE_URL}/admin/seed-gift-hamper-products`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                      const d = await r.json();
+                      if (d.error) { alert('Error: ' + d.error); return; }
+                      alert((d.message || 'Done') + '\n' + (d.results || []).map(x => `• ${x.name}: ${x.status}`).join('\n'));
+                    } catch(e) { alert('Request failed: ' + e.message); }
+                  }}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                >
+                  🌱 Seed 5 Sample Products
+                </button>
               </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-                {ghOrders.map(order => (
-                  <div key={order._id} style={{ background: "#fff", borderRadius: 14, border: "2px solid #F1E1A8", padding: "18px 20px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
-                      <div>
-                        <div style={{ fontWeight: 800, fontSize: 15, color: "#2C1A0E" }}>{order.customerName}</div>
-                        <div style={{ fontSize: 13, color: "#9B7450" }}>📞 {order.customerPhone}</div>
-                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>📦 {order.deliveryAddress}, {order.city}{order.pincode ? " - " + order.pincode : ""}</div>
-                      </div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: 18, fontWeight: 900, color: "#C47A2E" }}>₹{order.totalAmount.toLocaleString("en-IN")}</div>
-                        <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 100, background: order.status === "confirmed" ? "#f0fdf4" : "#fffbeb", color: order.status === "confirmed" ? "#15803d" : "#b45309", border: "1px solid " + (order.status === "confirmed" ? "#bbf7d0" : "#fde68a") }}>
-                          {order.status}
-                        </span>
-                        <div style={{ fontSize: 11, color: "#bbb", marginTop: 2 }}>{new Date(order.createdAt).toLocaleDateString("en-IN")}</div>
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
-                      {order.items.map((item, idx) => (
-                        <div key={idx} style={{ display: "flex", alignItems: "center", gap: 12, background: "#faf5ee", borderRadius: 10, padding: "8px 12px" }}>
-                          {item.imageUrl && <img src={item.imageUrl} alt={item.productName} style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
-                          <div style={{ flex: 1 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{item.productName}</div>
-                            <div style={{ fontSize: 11, color: "#9B7450" }}>
-                              {item.productNumber && `#${item.productNumber} · `}
-                              Vendor: {item.vendorName || "—"} · Qty: {item.quantity} · ₹{item.pricePerUnit}/pc
+
+              {ghLoading ? (
+                <p style={{ color: "#9B7450" }}>Loading orders…</p>
+              ) : ghOrders.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 24px", background: "#fff", borderRadius: 16, border: "2px solid #F1E1A8" }}>
+                  <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
+                  <p style={{ color: "#9B7450", fontSize: 16 }}>No gift hamper orders yet</p>
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, alignItems: "start" }}>
+
+                  {/* ── Left: Bookings ── */}
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#7A5535", marginBottom: 10, letterSpacing: 0.5 }}>📋 BOOKINGS</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      {ghOrders.map(order => {
+                        const isSelected = order._id === selectedGhId;
+                        return (
+                          <div
+                            key={order._id}
+                            onClick={() => setSelectedGhId(isSelected ? null : order._id)}
+                            style={{ background: "#fff", borderRadius: 12, border: isSelected ? "2px solid #C47A2E" : "2px solid #F1E1A8", padding: "14px 16px", cursor: "pointer", transition: "border-color 0.15s", boxShadow: isSelected ? "0 2px 12px rgba(196,122,46,0.15)" : "none" }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8, marginBottom: 8 }}>
+                              <div>
+                                <div style={{ fontWeight: 800, fontSize: 14, color: "#2C1A0E" }}>{order.customerName}</div>
+                                <div style={{ fontSize: 12, color: "#9B7450" }}>📞 {order.customerPhone}</div>
+                                <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>📦 {order.deliveryAddress}, {order.city}{order.pincode ? " – " + order.pincode : ""}</div>
+                              </div>
+                              <div style={{ textAlign: "right", flexShrink: 0 }}>
+                                <div style={{ fontSize: 16, fontWeight: 900, color: "#C47A2E" }}>₹{order.totalAmount.toLocaleString("en-IN")}</div>
+                                <div style={{ fontSize: 10, color: "#bbb" }}>{new Date(order.createdAt).toLocaleDateString("en-IN")}</div>
+                              </div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 100,
+                                background: order.status === "delivered" ? "#f0fdf4" : order.status === "confirmed" ? "#eff6ff" : "#fffbeb",
+                                color: order.status === "delivered" ? "#15803d" : order.status === "confirmed" ? "#0369a1" : "#b45309",
+                                border: `1px solid ${order.status === "delivered" ? "#bbf7d0" : order.status === "confirmed" ? "#bfdbfe" : "#fde68a"}` }}>
+                                {order.status}
+                              </span>
+                              <select
+                                value={order.status}
+                                onClick={e => e.stopPropagation()}
+                                onChange={async (e) => {
+                                  e.stopPropagation();
+                                  await fetch(`${BASE_URL}/admin/gift-hamper-orders/${order._id}`, {
+                                    method: "PATCH",
+                                    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                    credentials: "include",
+                                    body: JSON.stringify({ status: e.target.value }),
+                                  });
+                                  setGhOrders(prev => prev.map(o => o._id === order._id ? { ...o, status: e.target.value } : o));
+                                }}
+                                style={{ padding: "4px 8px", borderRadius: 6, border: "1.5px solid #F1E1A8", fontSize: 11, fontFamily: "'Outfit', sans-serif", cursor: "pointer", background: "#fffcf5" }}
+                              >
+                                {["pending","confirmed","processing","delivered","cancelled"].map(s => (
+                                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                                ))}
+                              </select>
                             </div>
                           </div>
-                          <div style={{ fontWeight: 700, color: "#C47A2E" }}>₹{item.subtotal.toLocaleString("en-IN")}</div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
-                    <select
-                      value={order.status}
-                      onChange={async (e) => {
-                        await fetch(`${BASE_URL}/admin/gift-hamper-orders/${order._id}`, {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                          credentials: "include",
-                          body: JSON.stringify({ status: e.target.value }),
-                        });
-                        setGhOrders(prev => prev.map(o => o._id === order._id ? { ...o, status: e.target.value } : o));
-                      }}
-                      style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid #F1E1A8", fontSize: 12, fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}
-                    >
-                      {["pending","confirmed","processing","delivered","cancelled"].map(s => (
-                        <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
-                      ))}
-                    </select>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+
+                  {/* ── Right: Vendor assignment ── */}
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#7A5535", marginBottom: 10, letterSpacing: 0.5 }}>🏪 VENDOR ASSIGNMENT</div>
+                    {!selectedOrder ? (
+                      <div style={{ textAlign: "center", padding: "48px 24px", background: "#fff", borderRadius: 12, border: "2px dashed #F1E1A8" }}>
+                        <div style={{ fontSize: 28, marginBottom: 8 }}>👈</div>
+                        <p style={{ color: "#9B7450", fontSize: 13 }}>Select a booking to assign vendors & set quantities</p>
+                      </div>
+                    ) : (
+                      <div style={{ background: "#fff", borderRadius: 12, border: "2px solid #CCAB4A", padding: "16px 18px" }}>
+                        <div style={{ fontWeight: 700, fontSize: 14, color: "#2C1A0E", marginBottom: 4 }}>{selectedOrder.customerName}'s order</div>
+                        <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 14 }}>{editItems.length} item{editItems.length !== 1 ? "s" : ""}</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                          {editItems.map((item, idx) => (
+                            <div key={idx} style={{ background: "#faf5ee", borderRadius: 10, padding: "12px 14px", border: "1.5px solid #F1E1A8" }}>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+                                {item.imageUrl && <img src={item.imageUrl} alt={item.productName} style={{ width: 44, height: 44, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{item.productName}</div>
+                                  <div style={{ fontSize: 11, color: "#9B7450" }}>{item.productNumber && `#${item.productNumber} · `}₹{item.pricePerUnit}/pc</div>
+                                </div>
+                                <div style={{ fontWeight: 700, color: "#C47A2E", fontSize: 13, flexShrink: 0 }}>
+                                  ₹{((item.pricePerUnit || 0) * (Number(item.quantity) || 1)).toLocaleString("en-IN")}
+                                </div>
+                              </div>
+                              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 8 }}>
+                                <input
+                                  type="text"
+                                  placeholder="Vendor name"
+                                  value={item.vendorName || ""}
+                                  onChange={e => updateEditItem(idx, "vendorName", e.target.value)}
+                                  style={{ padding: "6px 10px", borderRadius: 8, border: "1.5px solid #F1E1A8", fontSize: 12, fontFamily: "'Outfit', sans-serif", outline: "none", background: "#fff" }}
+                                />
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <span style={{ fontSize: 11, color: "#9B7450", whiteSpace: "nowrap" }}>Qty:</span>
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={item.quantity || 1}
+                                    onChange={e => updateEditItem(idx, "quantity", Math.max(1, parseInt(e.target.value) || 1))}
+                                    style={{ width: 60, padding: "6px 8px", borderRadius: 8, border: "1.5px solid #F1E1A8", fontSize: 12, fontFamily: "'Outfit', sans-serif", outline: "none", background: "#fff", textAlign: "center" }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ marginTop: 14, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <div style={{ fontSize: 12, color: "#9B7450" }}>
+                            Updated total: <strong style={{ color: "#C47A2E" }}>₹{editItems.reduce((s, i) => s + (i.pricePerUnit || 0) * (Number(i.quantity) || 1), 0).toLocaleString("en-IN")}</strong>
+                          </div>
+                          <button
+                            disabled={ghSaving}
+                            onClick={saveVendorAssignment}
+                            style={{ padding: "8px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: ghSaving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}
+                          >
+                            {ghSaving ? "Saving…" : "💾 Save Changes"}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* ── Invoices ── */}
         {activeDropdown === "invoices" && (() => {

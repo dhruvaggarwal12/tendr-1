@@ -170,10 +170,10 @@ export function generateDayOfSchedule(confirmedVendors = [], eventTiming = "") {
   return slots.sort((a, b) => a.time.localeCompare(b.time));
 }
 
-/** Write day-of schedule to localStorage */
-export function writeDayOfToStorage(confirmedVendors = [], eventTiming = "") {
+/** Write day-of schedule to localStorage, including the event date for auto-tick */
+export function writeDayOfToStorage(confirmedVendors = [], eventTiming = "", eventDate = "") {
   const slots = generateDayOfSchedule(confirmedVendors, eventTiming);
-  const data = { slots, __expiresAt: Date.now() + TTL_7D };
+  const data = { slots, eventDate, __expiresAt: Date.now() + TTL_7D };
   try { localStorage.setItem("tendr_dayof", JSON.stringify(data)); } catch {}
   return slots;
 }

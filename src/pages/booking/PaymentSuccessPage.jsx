@@ -53,7 +53,7 @@ const PaymentSuccessPage = () => {
       const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
         Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
       );
-      const slots = writeDayOfToStorage(vendors, "");
+      const slots = writeDayOfToStorage(vendors, "", eventSummary.date);
       setDayofSlots(slots);
       return;
     }
@@ -91,11 +91,11 @@ const PaymentSuccessPage = () => {
         const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
           Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
         );
-        const slots = writeDayOfToStorage(vendors, eventTiming);
+        const slots = writeDayOfToStorage(vendors, eventTiming, eventSummary.date);
         setDayofSlots(slots);
       })
       .catch(() => {
-        const slots = writeDayOfToStorage([], "");
+        const slots = writeDayOfToStorage([], "", eventSummary.date);
         setDayofSlots(slots);
       });
   }, []);

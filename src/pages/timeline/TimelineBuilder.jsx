@@ -84,17 +84,57 @@ export default function TimelineBuilder() {
   // Day Of schedule state — saved to localStorage
   const TTL_7D = 7 * 24 * 60 * 60 * 1000;
 
+  const [eventDate, setEventDate] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tendr_dayof") || "{}").eventDate || ""; } catch { return ""; }
+  });
+
   const [dayofSlots, setDayofSlots] = useState(() => {
     try {
       const raw = localStorage.getItem("tendr_dayof");
       if (!raw) return [];
       const d = JSON.parse(raw);
-      // Handle both array (old) and {slots,__expiresAt} (new)
       if (Array.isArray(d)) return d;
       if (d.__expiresAt && Date.now() > d.__expiresAt) { localStorage.removeItem("tendr_dayof"); return []; }
       return d.slots || [];
     } catch { return []; }
   });
+
+  // Live clock — ticks every minute, drives countdown + auto-tick
+  const [now, setNow] = useState(() => new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 60_000);
+    return () => clearInterval(t);
+  }, []);
+
+  // Parse stored eventDate into a Date at midnight local time
+  const eventDateObj = (() => {
+    if (!eventDate) return null;
+    const parts = eventDate.match(/(\d{1,2})[\/\-\s](\d{1,2})[\/\-\s](\d{2,4})/);
+    if (parts) {
+      const [, d, m, y] = parts;
+      const year = y.length === 2 ? 2000 + parseInt(y) : parseInt(y);
+      return new Date(year, parseInt(m) - 1, parseInt(d));
+    }
+    const t = new Date(eventDate);
+    return isNaN(t) ? null : new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  })();
+
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const isEventDay = eventDateObj && eventDateObj.getTime() === todayMidnight.getTime();
+  const isEventPast = eventDateObj && eventDateObj.getTime() < todayMidnight.getTime();
+
+  // Countdown to event day (days remaining)
+  const daysToEvent = eventDateObj ? Math.round((eventDateObj.getTime() - todayMidnight.getTime()) / 86_400_000) : null;
+
+  // Auto-tick: on the event day, mark slots as done when their time has passed
+  useEffect(() => {
+    if (!isEventDay) return;
+    const currentHHMM = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+    setDayofSlots(prev => prev.map(s => {
+      if (s.done || !s.time) return s;
+      return s.time <= currentHHMM ? { ...s, done: true } : s;
+    }));
+  }, [now, isEventDay]);
 
   const addSlot = () => setDayofSlots(prev => [...prev, { id: Date.now().toString(), time: "", title: "", who: "", done: false }]);
   const updateSlot = (id, field, val) => setDayofSlots(prev => prev.map(s => s.id === id ? { ...s, [field]: val } : s));
@@ -102,8 +142,8 @@ export default function TimelineBuilder() {
   const deleteSlot = (id) => setDayofSlots(prev => prev.filter(s => s.id !== id));
 
   useEffect(() => {
-    localStorage.setItem("tendr_dayof", JSON.stringify({ slots: dayofSlots, __expiresAt: Date.now() + TTL_7D }));
-  }, [dayofSlots]);
+    localStorage.setItem("tendr_dayof", JSON.stringify({ slots: dayofSlots, eventDate, __expiresAt: Date.now() + TTL_7D }));
+  }, [dayofSlots, eventDate]);
 
   const handleDragEnd = (result) => {
     if (!result.destination) return;
@@ -160,6 +200,65 @@ export default function TimelineBuilder() {
         {/* ══ DAY OF SCHEDULE TAB ══ */}
         {activeTab === "dayof" && (
           <div>
+            {/* Event date input + countdown / event-day banner */}
+            <div style={{ marginBottom: 18 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450" }}>Event Date</label>
+                <input
+                  type="date"
+                  value={(() => {
+                    if (!eventDate) return "";
+                    const p = eventDate.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})/);
+                    if (p) return `${p[3]}-${String(p[2]).padStart(2,"0")}-${String(p[1]).padStart(2,"0")}`;
+                    const t = new Date(eventDate);
+                    if (!isNaN(t)) return t.toISOString().slice(0,10);
+                    return "";
+                  })()}
+                  onChange={e => {
+                    const iso = e.target.value; // "YYYY-MM-DD"
+                    if (!iso) { setEventDate(""); return; }
+                    const [y,m,d] = iso.split("-");
+                    setEventDate(`${d}/${m}/${y}`);
+                  }}
+                  style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", fontSize: 13, fontFamily: font, color: "#2C1A0E", outline: "none" }}
+                />
+              </div>
+
+              {/* Event day banner */}
+              {isEventDay && (
+                <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 14, padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 24 }}>🎉</span>
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A" }}>Today is your event day!</div>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Slots auto-tick as their time passes. Enjoy! 🥂</div>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: "#fff", fontFamily: "'Courier New', monospace" }}>
+                    {now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true })}
+                  </div>
+                </div>
+              )}
+
+              {/* Countdown — before event */}
+              {!isEventDay && !isEventPast && daysToEvent !== null && (
+                <div style={{ background: "rgba(196,122,46,0.07)", borderRadius: 12, padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, border: "1.5px solid rgba(196,122,46,0.18)" }}>
+                  <span style={{ fontSize: 22 }}>⏳</span>
+                  <div>
+                    <span style={{ fontSize: 20, fontWeight: 900, color: "#C47A2E" }}>{daysToEvent}</span>
+                    <span style={{ fontSize: 13, color: "#9B7450", marginLeft: 6 }}>day{daysToEvent !== 1 ? "s" : ""} until your event</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Event past */}
+              {isEventPast && (
+                <div style={{ background: "#f0fdf4", borderRadius: 12, padding: "10px 16px", fontSize: 13, color: "#15803d", fontWeight: 600, border: "1.5px solid #bbf7d0" }}>
+                  ✓ Event completed! Great celebration 🎊
+                </div>
+              )}
+            </div>
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20, flexWrap: "wrap", gap: 12 }}>
               <div>
                 <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Map out every moment of your event day — vendor arrivals, ceremonies, meals, speeches.</p>
