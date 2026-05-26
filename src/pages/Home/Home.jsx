@@ -704,6 +704,41 @@ const Home = () => {
         }
       `}</style>
 
+      {/* Coming Soon — Celebration Kit Banner */}
+      <section style={{ background: "#2C1A0E", padding: "28px 24px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 260 }}>
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(196,122,46,0.18)", border: "1.5px solid rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>🎁</div>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Coming Soon</span>
+                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#CCAB4A", display: "inline-block" }} />
+                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Under ₹2,000</span>
+              </div>
+              <p style={{ fontSize: 16, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.3 }}>
+                Tendr Celebration Kit — everything you need to host, delivered.
+              </p>
+              <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", margin: "4px 0 0" }}>
+                Balloons, fairy lights, confetti, table runners &amp; more — curated for your event theme.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", fontStyle: "italic" }}>Notify me when it's live</span>
+            <div style={{ display: "flex", gap: 8 }}>
+              <input
+                type="email"
+                placeholder="your@email.com"
+                style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 13, fontFamily: "'Outfit', sans-serif", outline: "none", width: 190 }}
+              />
+              <button style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+                Notify Me
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* How Tendr Works */}
       <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>

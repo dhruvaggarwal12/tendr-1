@@ -814,10 +814,22 @@ export default function CustomerDashboard() {
                 {activeTab === "All" ? "Start planning your first event with Tendr." : ""}
               </p>
               {activeTab === "All" && (
+                <>
                 <button onClick={() => navigate("/booking")}
                   style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
                   Plan an Event →
                 </button>
+                <div style={{ marginTop: 28, background: "linear-gradient(135deg,#2C1A0E,#3D2210)", borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", gap: 16, textAlign: "left", maxWidth: 400, margin: "28px auto 0" }}>
+                  <div style={{ width: 48, height: 48, borderRadius: 12, background: "rgba(196,122,46,0.2)", border: "1.5px solid rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>🎁</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 3 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "#CCAB4A" }}>Coming Soon</span>
+                    </div>
+                    <p style={{ fontSize: 13.5, fontWeight: 700, color: "#fff", margin: "0 0 2px" }}>Planning something small?</p>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: 0, lineHeight: 1.4 }}>Tendr Celebration Kits — under ₹2K, delivered to your door.</p>
+                  </div>
+                </div>
+                </>
               )}
             </div>
           ) : (

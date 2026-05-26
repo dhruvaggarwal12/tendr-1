@@ -13,6 +13,77 @@ const QUICK_QUESTIONS = [
   "I need help with my booking",
 ];
 
+const FAQ_KB = [
+  {
+    keywords: ["book", "booking", "how to book", "vendor booking"],
+    answer: "To book a vendor, complete the event planning form, browse available vendors, and start a chat. Once you agree on the price in chat, our team confirms and you proceed to payment. 🎉",
+  },
+  {
+    keywords: ["area", "serve", "city", "location", "where", "available"],
+    answer: "Tendr currently operates in Delhi NCR (Delhi, Gurgaon, Noida, Faridabad, Ghaziabad). We're expanding to more cities soon — stay tuned! 📍",
+  },
+  {
+    keywords: ["chat approval", "approve", "approval", "request"],
+    answer: "After you request a chat with a vendor, our team reviews and approves it within a few hours. You'll get a notification when the chat is ready. ✅",
+  },
+  {
+    keywords: ["refund", "cancel", "cancellation", "money back"],
+    answer: "Cancellations made 7+ days before the event receive a full refund. Within 7 days, a 20% cancellation fee applies. Contact us at contacttendr@gmail.com for specific cases. 💸",
+  },
+  {
+    keywords: ["payment", "pay", "price", "cost", "charge", "fee"],
+    answer: "Payment is made after all vendor prices are confirmed in chat by our team. We support UPI, cards, and net banking. The amount shown at checkout is the final amount. 💳",
+  },
+  {
+    keywords: ["caterer", "food", "menu", "catering"],
+    answer: "Our caterers offer customisable menus with North Indian, South Indian, Chinese, Punjabi, Italian, and more cuisines. Plate counts are set during booking. 🍽️",
+  },
+  {
+    keywords: ["decorator", "decor", "decoration", "theme"],
+    answer: "Tendr decorators offer themed setups, balloon decor, floral arrangements, LED backdrops, and custom setups for all event types. 🎨",
+  },
+  {
+    keywords: ["photographer", "photography", "photo", "video", "videographer"],
+    answer: "Our photographers cover full-day events, deliver edited photos within 7–10 days, and offer reels/highlight videos. Raw footage is available on request. 📸",
+  },
+  {
+    keywords: ["dj", "music", "sound", "anchor", "emcee"],
+    answer: "Tendr connects you with DJs and anchors for weddings, birthdays, and corporate events. Equipment, lights, and setup are included in most packages. 🎵",
+  },
+  {
+    keywords: ["makeup", "mehendi", "henna", "artist"],
+    answer: "Makeup artists and mehndi artists are available for bridal, pre-bridal, and regular event bookings. Both can come to your venue. 💄",
+  },
+  {
+    keywords: ["timeline", "schedule", "timeline pdf", "event timeline"],
+    answer: "After your event is confirmed, you can download a custom event timeline PDF from your dashboard under your upcoming events. 📋",
+  },
+  {
+    keywords: ["invoice", "receipt", "bill", "pdf", "document"],
+    answer: "Your event details PDF and timeline are available on your dashboard after payment. You can download them anytime from your upcoming events. 📄",
+  },
+  {
+    keywords: ["contact", "reach", "support", "help", "email", "phone", "number"],
+    answer: "Reach our support team at contacttendr@gmail.com or call/WhatsApp us at +91 9211668427. We're available 10 AM – 7 PM daily. 🤝",
+  },
+  {
+    keywords: ["celebration kit", "kit", "decoration kit", "party kit"],
+    answer: "Tendr Celebration Kits are coming soon! These are under ₹2,000 DIY kits with balloons, lights, confetti, and themed décor delivered to your door. 🎁",
+  },
+  {
+    keywords: ["concierge", "let us do it", "full service", "plan for me"],
+    answer: "With 'Let Us Do It', our concierge team handles all vendor coordination for you — just fill in your event details and we manage the rest. 🌟",
+  },
+];
+
+function getFAQAnswer(text) {
+  const lower = text.toLowerCase();
+  for (const item of FAQ_KB) {
+    if (item.keywords.some(kw => lower.includes(kw))) return item.answer;
+  }
+  return null;
+}
+
 // conversationId + vendorName → vendor chat mode (join existing approved conversation)
 // no props (default) → support chat mode
 export default function MiniChatWidget({ onClose, conversationId: existingConvoId, vendorName }) {
@@ -109,6 +180,14 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
     setMessages(prev => [...prev, { text, sender: "user", ts: Date.now() }]);
     socketRef.current?.emit("send_message", { conversationId: convoId, sender: "user", content: text });
     setInput("");
+    if (!isVendorChat) {
+      const faqAnswer = getFAQAnswer(text);
+      if (faqAnswer) {
+        setTimeout(() => {
+          setMessages(prev => [...prev, { text: faqAnswer, sender: "support", ts: Date.now() }]);
+        }, 600);
+      }
+    }
   };
 
   const handleImage = (e) => {

@@ -740,6 +740,22 @@ const BookingReviewPage = () => {
                 </p>
               </div>
 
+              {/* People Also Book — Celebration Kit upsell */}
+              <div style={{ margin: "14px 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.22)", background: "linear-gradient(135deg,#2C1A0E 0%,#3D2210 100%)", padding: "14px 16px", display: "flex", alignItems: "center", gap: 14 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 11, background: "rgba(196,122,46,0.18)", border: "1.5px solid rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎁</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "#CCAB4A" }}>People Also Book</span>
+                    <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>· Coming Soon</span>
+                  </div>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", margin: "0 0 1px" }}>Tendr Celebration Kit</p>
+                  <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", margin: 0 }}>Balloons, lights, décor &amp; more — under ₹2K, delivered.</p>
+                </div>
+                <div style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif" }}>
+                  Notify Me
+                </div>
+              </div>
+
               {/* Gift Hampers section — shown when cart has items */}
               {ghItems.length > 0 && (
                 <div style={{ marginBottom: 16 }}>

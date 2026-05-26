@@ -72,6 +72,26 @@ const VendorList_ListingPage = ({
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-2 pb-4">
+              {serviceType === "Decorator" && (
+                <div style={{ background: "linear-gradient(145deg,#2C1A0E,#3D2210)", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", overflow: "hidden", fontFamily: font, display: "flex", flexDirection: "column" }}>
+                  <div style={{ height: 220, background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.1))", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, position: "relative" }}>
+                    <div style={{ fontSize: 52 }}>🎁</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", background: "#CCAB4A", color: "#2C1A0E", padding: "3px 9px", borderRadius: 20 }}>Coming Soon</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", background: "rgba(255,255,255,0.12)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>Under ₹2K</span>
+                    </div>
+                  </div>
+                  <div style={{ padding: "14px 16px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <h3 style={{ fontSize: 15, fontWeight: 800, color: "#fff", margin: "0 0 4px" }}>Tendr Celebration Kit</h3>
+                    <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", margin: "0 0 10px", lineHeight: 1.45, flex: 1 }}>Balloons, fairy lights, confetti, table runners &amp; more — curated for your event theme. DIY, delivered.</p>
+                    <div style={{ display: "flex", gap: 6 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A" }}>✦ Decor</span>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>·</span>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)" }}>Pan India delivery</span>
+                    </div>
+                  </div>
+                </div>
+              )}
               {vendors.map((vendor, index) => {
                 const isSelected = compareSelected.some((v) => v._id === vendor._id);
                 const rating = vendor.avgReviewScore ?? vendor.rating;
