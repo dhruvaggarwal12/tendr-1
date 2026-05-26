@@ -32,16 +32,25 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   };
 
   const unseenCount = vendorChats.filter(c => !seenIds.has(c._id)).length;
-  const [path, setPath] = useState(() => router.state.location.pathname);
+  const [path, setPath]     = useState(() => router.state.location.pathname);
+  const [search, setSearch] = useState(() => router.state.location.search || "");
+  const [decorDismissed, setDecorDismissed] = useState(() => {
+    try { return sessionStorage.getItem("tendr_decor_tip_dismissed") === "1"; } catch { return false; }
+  });
 
   // Track route changes in the SPA
   useEffect(() => {
     const unsub = router.subscribe((state) => {
       setPath(state.location.pathname);
+      setSearch(state.location.search || "");
       setOpen(false);
     });
     return unsub;
   }, []);
+
+  const showDecorChip = !decorDismissed &&
+    path === "/listings" &&
+    search.toLowerCase().includes("servicetype=decorator");
 
   // Fetch approved vendor conversations
   const fetchVendorChats = useCallback(() => {
@@ -211,6 +220,33 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             </div>
           </div>
         </>
+      )}
+
+      {/* Decor Finder chip — above View Chats on Decorator listings */}
+      {showDecorChip && (
+        <div style={{
+          position: "fixed", bottom: 84, right: 20, zIndex: 900,
+          background: "#fff", borderRadius: 14, padding: "10px 14px",
+          boxShadow: "0 6px 24px rgba(44,26,14,0.14)",
+          border: "1.5px solid rgba(196,122,46,0.2)",
+          maxWidth: 240, fontFamily: font,
+          animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)",
+        }}>
+          <button
+            onClick={() => { setDecorDismissed(true); try { sessionStorage.setItem("tendr_decor_tip_dismissed", "1"); } catch {} }}
+            style={{ position: "absolute", top: 6, right: 8, background: "none", border: "none", fontSize: 12, color: "#bbb", cursor: "pointer", lineHeight: 1 }}>✕</button>
+          <div style={{ fontSize: 12.5, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.4, marginRight: 14 }}>
+            🎨 Not sure what décor you want?
+          </div>
+          <div style={{ fontSize: 11.5, color: "#9B7450", margin: "3px 0 8px", lineHeight: 1.4 }}>
+            Answer 5 questions → get your perfect theme
+          </div>
+          <button
+            onClick={() => { setDecorDismissed(true); try { sessionStorage.setItem("tendr_decor_tip_dismissed", "1"); } catch {}; router.navigate("/decor-finder"); }}
+            style={{ width: "100%", padding: "7px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            Try Decor Finder →
+          </button>
+        </div>
       )}
 
       {/* Floating button */}

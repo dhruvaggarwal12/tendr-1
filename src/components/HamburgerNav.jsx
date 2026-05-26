@@ -9,8 +9,32 @@ import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa
 
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
-
 const SIDEBAR_W = 220; // px
+
+const BASE_SPLITS = {
+  Caterer:      { pct: 40, emoji: "🍽️", label: "Catering" },
+  Decorator:    { pct: 25, emoji: "🎨", label: "Decoration" },
+  Photographer: { pct: 20, emoji: "📸", label: "Photography" },
+  DJ:           { pct: 15, emoji: "🎵", label: "DJ & Music" },
+  Anchor:       { pct: 10, emoji: "🎤", label: "Anchor" },
+  Transport:    { pct: 8,  emoji: "🚗", label: "Transport" },
+  Mehendi:      { pct: 8,  emoji: "🌿", label: "Mehendi" },
+  Makeup:       { pct: 12, emoji: "💄", label: "Makeup" },
+};
+
+function normalizeSplit(services, budget) {
+  const raw   = services.map(s => ({ s, pct: BASE_SPLITS[s]?.pct ?? 10 }));
+  const total = raw.reduce((a, b) => a + b.pct, 0);
+  return raw.map(r => ({
+    service: r.s,
+    pct:    Math.round((r.pct / total) * 100),
+    amount: Math.round((r.pct / total) * budget),
+    emoji:  BASE_SPLITS[r.s]?.emoji ?? "✦",
+    label:  BASE_SPLITS[r.s]?.label ?? r.s,
+  }));
+}
+
+function fmtINR(n) { return `₹${Number(n).toLocaleString("en-IN")}`; }
 
 // title: shown in center; showReviewPay: Review & Pay button; active: journey step
 // noSidebar: force drawer mode (use on form-filling pages like EventPlanning)
@@ -88,6 +112,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const listingServiceType  = useSelector((s) => s.listingFilters.serviceType);
   const formEventType       = useSelector((s) => s.eventPlanning.formData?.eventType);
   const selectedVendors     = useSelector((s) => s.eventPlanning.selectedVendors || []);
+  const formBudget          = useSelector((s) => Number(s.eventPlanning.formData?.budget) || 0);
 
   // Form is "filled" when at least eventType has been set
   const isFormFilled = !!(
@@ -121,6 +146,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Budget Allocator",     href: "/budget-picker" },
       { label: "Payment Tracker",      href: "/payment-tracker" },
       { label: "Guest List",           href: "/guest-list" },
+      { label: "🎨 Decor Finder",      href: "/decor-finder" },
     ]},
     { label: "Memories", items: [
       { label: "Wedding Stationery",   href: "/stationery", comingSoon: !user?.isAdmin },
@@ -224,6 +250,30 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Budget split mini widget — shown when services selected AND budget set */}
+          {selectedVendors.length > 0 && formBudget > 0 && (
+            <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Budget Split</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                {normalizeSplit(selectedVendors, formBudget).map(({ service, amount, pct, emoji, label }) => (
+                  <div key={service}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{emoji} {label}</span>
+                      <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700 }}>{fmtINR(amount)}</span>
+                    </div>
+                    <div style={{ height: 4, background: "rgba(196,122,46,0.15)", borderRadius: 4, overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 4 }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => navigate("/budget-picker")}
+                style={{ marginTop: 10, width: "100%", padding: "7px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                📊 Try Budget Allocator →
+              </button>
             </div>
           )}
 
@@ -576,6 +626,30 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     );
                   })}
                 </div>
+              </div>
+            )}
+
+            {/* Budget split mini widget — drawer */}
+            {selectedVendors.length > 0 && formBudget > 0 && (
+              <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "rgba(255,252,245,0.6)" }}>
+                <p style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 8px" }}>Budget Split</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  {normalizeSplit(selectedVendors, formBudget).map(({ service, amount, pct, emoji, label }) => (
+                    <div key={service}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                        <span style={{ fontSize: 12, color: "#2C1A0E", fontWeight: 600 }}>{emoji} {label}</span>
+                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>{fmtINR(amount)}</span>
+                      </div>
+                      <div style={{ height: 4, background: "rgba(196,122,46,0.12)", borderRadius: 4, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 4 }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => { navigate("/budget-picker"); close(); }}
+                  style={{ marginTop: 10, width: "100%", padding: "8px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  📊 Try Budget Allocator →
+                </button>
               </div>
             )}
 
