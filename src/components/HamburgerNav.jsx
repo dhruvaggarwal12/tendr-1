@@ -55,6 +55,20 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // Fixed sidebar mode = desktop AND not explicitly disabled
   const isSidebar = isDesktop && !noSidebar;
 
+  // All state declared before any useEffect that references them
+  const [sidebarOpen,   setSidebarOpen]   = useState(true);
+  const [drawerOpen,    setDrawerOpen]    = useState(false);
+  const [profileOpen,   setProfileOpen]   = useState(false);
+  const [savedOpen,     setSavedOpen]     = useState(false);
+  const [reviewPopup,   setReviewPopup]   = useState(false);
+  const profileRef = useRef(null);
+
+  const { user, token } = useSelector((s) => s.auth);
+  const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
+  const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const finalisedCount   = Object.keys(finalisedVendors).length;
+  const ghCartCount      = useSelector(s => s.giftHamperCart?.items?.length || 0);
+
   // Push body content right when sidebar is active and open
   useEffect(() => {
     if (isSidebar && sidebarOpen) {
@@ -64,18 +78,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     }
     return () => { document.body.style.marginLeft = ""; };
   }, [isSidebar, sidebarOpen]);
-  const { user, token } = useSelector((s) => s.auth);
-  const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
-  const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
-  const finalisedCount   = Object.keys(finalisedVendors).length;
-  const ghCartCount      = useSelector(s => s.giftHamperCart?.items?.length || 0);
-
-  const [drawerOpen,    setDrawerOpen]    = useState(false);
-  const [profileOpen,   setProfileOpen]   = useState(false);
-  const [sidebarOpen,   setSidebarOpen]   = useState(true);
-  const [savedOpen,     setSavedOpen]     = useState(false);
-  const [reviewPopup,   setReviewPopup]   = useState(false);
-  const profileRef = useRef(null);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
 
   useEffect(() => {
