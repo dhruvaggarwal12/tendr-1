@@ -179,6 +179,7 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
     if (!text.trim() || !convoId) return;
     setMessages(prev => [...prev, { text, sender: "user", ts: Date.now() }]);
     socketRef.current?.emit("send_message", { conversationId: convoId, sender: "user", content: text });
+    localStorage.setItem("tendr:lastMsgAt", Date.now().toString());
     setInput("");
     if (!isVendorChat) {
       const faqAnswer = getFAQAnswer(text);

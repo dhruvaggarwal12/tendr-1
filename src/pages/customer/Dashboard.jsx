@@ -373,6 +373,34 @@ export default function CustomerDashboard() {
           );
         })()}
 
+        {/* 12h silence reminder banner */}
+        {(() => {
+          const hasPending = plans.some(p => p.status === "submitted" || p.status === "draft");
+          const lastMsg = Number(localStorage.getItem("tendr:lastMsgAt") || 0);
+          const silentFor = Date.now() - lastMsg;
+          const show12hBanner = hasPending && (lastMsg === 0 || silentFor > 12 * 60 * 60 * 1000);
+          if (!show12hBanner) return null;
+          const pendingNames = plans.filter(p => p.status === "submitted" || p.status === "draft").map(p => p.eventName).join(", ");
+          return (
+            <div style={{ marginBottom: 18, borderRadius: 14, background: "linear-gradient(135deg,#2C1A0E,#3D2210)", border: "1.5px solid rgba(196,122,46,0.3)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 14 }}>
+              <div style={{ fontSize: 26, flexShrink: 0 }}>⏰</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 2 }}>Still planning your event?</div>
+                <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.45 }}>
+                  <strong style={{ color: "rgba(255,255,255,0.85)" }}>{pendingNames}</strong> — here's what's left to confirm.
+                  Chat with our team to finalise your vendors and pricing.
+                </div>
+              </div>
+              <button
+                onClick={() => { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); }}
+                style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", whiteSpace: "nowrap" }}
+              >
+                Open Chats →
+              </button>
+            </div>
+          );
+        })()}
+
         {/* Events section */}
         <div style={{ marginBottom: 20 }}>
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px", letterSpacing: "-0.01em" }}>Your Events</h3>

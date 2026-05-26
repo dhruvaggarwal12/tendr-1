@@ -27,6 +27,24 @@ const getServices = (v) => {
   return v?.serviceType ?? null;
 };
 
+// Speciality: pull the most descriptive discriminator-specific field
+const getSpeciality = (v) => {
+  // Decorator: themes
+  if (Array.isArray(v?.themes) && v.themes.length) return v.themes.slice(0, 3).join(", ");
+  // DJ: eventTypes
+  if (Array.isArray(v?.eventTypes) && v.eventTypes.length) return v.eventTypes.slice(0, 3).join(", ");
+  // Photographer: photographyType
+  if (Array.isArray(v?.photographyType) && v.photographyType.length) return v.photographyType.slice(0, 3).join(", ");
+  // Caterer: cuisine
+  if (Array.isArray(v?.cuisine) && v.cuisine.length) return v.cuisine.slice(0, 3).join(", ");
+  // Fallback: typesOfDecoration
+  if (Array.isArray(v?.typesOfDecoration) && v.typesOfDecoration.length) return v.typesOfDecoration.slice(0, 3).join(", ");
+  return null;
+};
+
+// Availability proxy: max concurrent events
+const getAvailability = (v) => v?.maxConcurrentEvents ?? null;
+
 const fmtINR = (n) => n != null ? `₹${Number(n).toLocaleString("en-IN")}` : null;
 
 // ── Win logic: returns index of winner, or null ───────────────────────────────
@@ -100,19 +118,22 @@ const ComparisonMatrix = ({ vendors = [] }) => {
   const colW = `${Math.floor(100 / n)}%`;
 
   // Stat data
-  const prices    = vendors.map(getPrice);
-  const ratings   = vendors.map(getRating);
-  const exps      = vendors.map(getExp);
-  const events    = vendors.map(getEvents);
-  const teams     = vendors.map(getTeam);
-  const locations = vendors.map(getLocation);
-  const services  = vendors.map(getServices);
+  const prices        = vendors.map(getPrice);
+  const ratings       = vendors.map(getRating);
+  const exps          = vendors.map(getExp);
+  const events        = vendors.map(getEvents);
+  const teams         = vendors.map(getTeam);
+  const locations     = vendors.map(getLocation);
+  const services      = vendors.map(getServices);
+  const specialities  = vendors.map(getSpeciality);
+  const availability  = vendors.map(getAvailability);
 
   // Winner indices
-  const bestPriceIdx   = winnerIndex(prices,  "low");
-  const bestRatingIdx  = winnerIndex(ratings, "high");
-  const bestExpIdx     = winnerIndex(exps,    "high");
-  const bestEventsIdx  = winnerIndex(events,  "high");
+  const bestPriceIdx   = winnerIndex(prices,       "low");
+  const bestRatingIdx  = winnerIndex(ratings,       "high");
+  const bestExpIdx     = winnerIndex(exps,          "high");
+  const bestEventsIdx  = winnerIndex(events,        "high");
+  const bestSlotsIdx   = winnerIndex(availability,  "high");
 
   return (
     <div style={{ fontFamily: font, overflowX: "auto" }}>
@@ -187,9 +208,11 @@ const ComparisonMatrix = ({ vendors = [] }) => {
         {/* ── Stat rows ── */}
         <tbody>
           <StatRow label="Location"     icon="📍" values={locations} winIdx={null} />
+          <StatRow label="Speciality"   icon="🌟" values={specialities} winIdx={null} />
           <StatRow label="Experience"   icon="⏱"  values={exps.map(e => e != null ? `${e} yrs` : null)} winIdx={bestExpIdx} />
           <StatRow label="Events Done"  icon="🎉" values={events.map(e => e != null ? `${e}+` : null)} winIdx={bestEventsIdx} />
           <StatRow label="Team Size"    icon="👥" values={teams.map(t => t != null ? `${t} people` : null)} winIdx={null} />
+          <StatRow label="Max Bookings" icon="📅" values={availability.map(a => a != null ? `${a} at once` : null)} winIdx={bestSlotsIdx} />
           <StatRow label="Services"     icon="✦"  values={services} winIdx={null} />
 
           {/* CTA row */}
@@ -199,16 +222,16 @@ const ComparisonMatrix = ({ vendors = [] }) => {
               <td key={v?._id || i} style={{ padding: "14px 14px 18px", background: "#FDFAF5", borderTop: "1px solid rgba(201,168,76,0.12)", verticalAlign: "top" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <button
-                    onClick={() => navigate(`/vendor/${v._id}`)}
-                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C9A84C,#D4B86A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(201,168,76,0.3)" }}
+                    onClick={() => openVendorChat(v)}
+                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
                   >
-                    View Profile
+                    Request Chat →
                   </button>
                   <button
-                    onClick={() => openVendorChat(v)}
-                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#C9A84C", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
+                    onClick={() => navigate(`/vendor/${v._id}`)}
+                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}
                   >
-                    Chat
+                    View Profile
                   </button>
                 </div>
               </td>

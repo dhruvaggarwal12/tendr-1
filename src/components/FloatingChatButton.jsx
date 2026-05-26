@@ -67,7 +67,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleSupport = () => {
     setOpen(false);
-    openConciergeChat(); // opens same VendorChatModal in concierge mode
+    setShowMiniChat(true); // opens MiniChatWidget with FAQ answers
   };
 
   const handleActiveChats = () => {
@@ -396,13 +396,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                     <span style={{ fontSize: 10, fontWeight: 800, background: "#22c55e", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{vendorChats.length}</span>
                   )}
                 </div>
-                <div style={{ fontSize: 12, color: "#9B7450" }}>View all ongoing vendor chats</div>
+                <div style={{ fontSize: 12, color: "#9B7450" }}>Vendors · Concierge · All chats</div>
               </div>
             </button>
 
             <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 12px" }} />
 
-            {/* Chat Support */}
+            {/* Tendr Support — FAQ chatbot */}
             <button
               onClick={handleSupport}
               style={{
@@ -416,8 +416,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             >
               <span style={{ fontSize: 20, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>🤝</span>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Chat with Tendr</div>
-                <div style={{ fontSize: 12, color: "#9B7450" }}>Concierge planning support</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E" }}>Tendr Support</div>
+                <div style={{ fontSize: 12, color: "#9B7450" }}>Quick answers · FAQ · Help</div>
               </div>
             </button>
 

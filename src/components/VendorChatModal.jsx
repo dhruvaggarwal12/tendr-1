@@ -646,6 +646,7 @@ export default function VendorChatModal() {
     if (!approved || !content || !conversationId) return;
     setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
     socketRef.current?.emit("send_message", { conversationId, sender: "user", content });
+    localStorage.setItem("tendr:lastMsgAt", Date.now().toString());
     if (!override) setText("");
   };
 
