@@ -211,6 +211,31 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             >‹</button>
           </div>
 
+          {/* Journey progress — shown when active prop is passed */}
+          {active && (
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.7)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Your Journey</p>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {STEPS.map((step, i) => {
+                  const activeIdx = STEPS.indexOf(active);
+                  const isDone   = i < activeIdx;
+                  const isActive = i === activeIdx;
+                  return (
+                    <React.Fragment key={step}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                        <div style={{ width: 22, height: 22, borderRadius: "50%", background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.2)" : "rgba(255,255,255,0.08)", border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid rgba(255,255,255,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "rgba(255,255,255,0.3)" }}>
+                          {isDone ? "✓" : i + 1}
+                        </div>
+                        <span style={{ fontSize: 9, fontWeight: isActive ? 700 : 400, color: isActive ? "#FFCC66" : isDone ? "#CCAB4A" : "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>{step}</span>
+                      </div>
+                      {i < STEPS.length - 1 && <div style={{ flex: 1, height: 1.5, background: isDone ? "#C47A2E" : "rgba(255,255,255,0.1)", margin: "0 4px 14px", borderRadius: 2 }} />}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* User info */}
           {token && user && (
             <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
@@ -235,28 +260,29 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
-          {/* Budget split mini widget */}
-          {isFormFilled && formData.budget && selectedVendors.length > 0 && (() => {
-            const rawBudget = parseInt(String(formData.budget).replace(/[^0-9]/g, "")) || 0;
-            if (!rawBudget) return null;
-            const splits = normalizeSplit(selectedVendors, rawBudget);
-            return (
-              <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-                <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 7px" }}>Budget Split</p>
-                {splits.map(s => (
-                  <div key={s.service} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                    <span style={{ fontSize: 12 }}>{s.emoji}</span>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", flex: 1 }}>{s.label}</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A" }}>{fmtINR(s.amount)}</span>
+          {/* My Services checklist */}
+          {selectedVendors.length > 0 && (
+            <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
+              {selectedVendors.map(svc => {
+                const isBooked = !!finalisedVendors[svc];
+                return (
+                  <div key={svc} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <div style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, background: isBooked ? "#22c55e" : "rgba(196,122,46,0.15)", border: isBooked ? "none" : "1.5px solid rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>
+                      {isBooked ? "✓" : ""}
+                    </div>
+                    <span style={{ flex: 1, fontSize: 12, color: isBooked ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.55)", fontWeight: isBooked ? 700 : 400 }}>{svc}</span>
+                    <button
+                      onClick={() => navigate(`/listings?serviceType=${encodeURIComponent(svc)}`)}
+                      style={{ flexShrink: 0, padding: "3px 10px", borderRadius: 6, border: "none", background: isBooked ? "rgba(34,197,94,0.18)" : "rgba(196,122,46,0.22)", color: isBooked ? "#4ade80" : "#CCAB4A", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                    >
+                      {isBooked ? "✓ Done" : "Browse →"}
+                    </button>
                   </div>
-                ))}
-                <button onClick={() => navigate("/budget-picker")}
-                  style={{ width: "100%", marginTop: 8, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.08)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center" }}>
-                  Try Budget Allocator →
-                </button>
-              </div>
-            );
-          })()}
+                );
+              })}
+            </div>
+          )}
 
           {/* Gift Hampers quick-link */}
           {token && user && (

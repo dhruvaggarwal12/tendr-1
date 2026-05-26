@@ -410,84 +410,41 @@ const Navbar = ({
             ))}
           </div>
 
-          {/* Divider — between primary nav and secondary actions */}
-          <div
-            style={{
-              width: 1,
-              height: 22,
-              background: "rgba(139,69,19,0.15)",
-              margin: "0 20px",
-              flexShrink: 0,
-            }}
-          />
+          {/* Divider */}
+          <div style={{ width: 1, height: 22, background: "rgba(139,69,19,0.15)", margin: "0 12px", flexShrink: 0 }} />
 
-          {/* Secondary actions */}
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-
-            {/* Gift Hampers & Cakes */}
+          {/* Always-visible: Gift Hampers + WhatsApp */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <a
               href="/gift-hampers-cakes"
-              style={{
-                color: "#C47A2E",
-                fontSize: 14,
-                fontWeight: 600,
-                letterSpacing: "0.02em",
-                padding: "7px 14px",
-                borderRadius: 8,
-                border: "1.5px solid rgba(196,122,46,0.3)",
-                background: "rgba(196,122,46,0.06)",
-                whiteSpace: "nowrap",
-                lineHeight: 1,
-                display: "flex",
-                alignItems: "center",
-                gap: 5,
-                textDecoration: "none",
-                transition: "background 0.2s, border-color 0.2s",
-              }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+              style={{ color: "#C47A2E", fontSize: 13, fontWeight: 600, padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4, textDecoration: "none", transition: "background 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.13)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; }}
             >
-              🎁 Gift Hampers & Cakes
+              🎁 Gift Hampers
             </a>
-
-            {divider}
-
-            {/* WhatsApp */}
             <a
               href="https://wa.me/919211668427"
               target="_blank"
               rel="noopener noreferrer"
-              style={{
-                background: "#25D366",
-                color: "#fff",
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "transform 0.2s, box-shadow 0.2s",
-                boxShadow: "0 2px 8px rgba(37,211,102,0.35)",
-                textDecoration: "none",
-                flexShrink: 0,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-2px) scale(1.06)";
-                e.currentTarget.style.boxShadow = "0 6px 16px rgba(37,211,102,0.45)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0) scale(1)";
-                e.currentTarget.style.boxShadow = "0 2px 8px rgba(37,211,102,0.35)";
-              }}
+              style={{ background: "#25D366", color: "#fff", width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.35)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              <FaWhatsapp size={17} />
+              <FaWhatsapp size={15} />
             </a>
+          </div>
 
-            {/* Review & Pay — visible when vendors are finalised or gift hampers in cart */}
+          {/* Divider before profile cluster */}
+          <div style={{ width: 1, height: 22, background: "rgba(139,69,19,0.15)", margin: "0 12px", flexShrink: 0 }} />
+
+          {/* Right cluster: conditional buttons + profile — always together */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+            {/* Review & Pay — visible when vendors finalised or gift hampers in cart */}
             {(finalisedCount > 0 || ghCartCount > 0) && (
               <a
                 href="/booking/review"
-                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font, boxShadow: "0 3px 10px rgba(21,128,61,0.3)" }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font, boxShadow: "0 3px 10px rgba(21,128,61,0.3)" }}
               >
                 Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : "🎁"}
               </a>
@@ -498,10 +455,9 @@ const Navbar = ({
               <SavedVendorsInline asStrip={false} />
             )}
 
-
             {/* Auth area */}
             {token && user ? (
-              <div ref={profileMenuRef} style={{ position: "relative", marginLeft: 10 }}>
+              <div ref={profileMenuRef} style={{ position: "relative" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch" }}>
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -599,7 +555,7 @@ const Navbar = ({
                 )}
               </div>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginLeft: 10 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <a href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#6B3A1F", padding: "7px 14px", borderRadius: 8, textDecoration: "none", border: "1.5px solid rgba(139,69,19,0.2)", transition: "background 0.2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
