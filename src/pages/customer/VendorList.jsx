@@ -141,20 +141,14 @@ const VendorList = () => {
     if (svcParam) dispatch(setFilters({ serviceType: svcParam }));
   }, []); // eslint-disable-line
 
-  // Gate: redirect to /booking if user hasn't filled the event form
+  // Gate: redirect to /booking if user hasn't filled ALL 5 event form fields
   useEffect(() => {
-    // Admins bypass the gate — they need to browse vendors without filling a form
     if (user?.isAdmin) return;
+    if (finalisedCount > 0) return;
+    if (location.state?.selectedCategories?.length) return;
 
-    // Allow through if they already have context from any source
-    const hasReduxContext = !!(
-      serviceType ||
-      formEventType ||
-      planningSelectedVendors.length > 0 ||
-      finalisedCount > 0 ||
-      location.state?.selectedCategories?.length
-    );
-    if (hasReduxContext) return;
+    // All 5 fields must be present in Redux
+    if (formEventType && locationType && date && guestCount && budget) return;
 
     // Check persisted session in localStorage
     try {
@@ -162,7 +156,7 @@ const VendorList = () => {
       if (raw) {
         const session = JSON.parse(raw);
         const fd = session.formData || session;
-        if (fd.eventType || fd.budget) return; // valid saved form
+        if (fd.eventType && fd.guests && fd.budget && fd.location && fd.date) return;
       }
     } catch {}
 
@@ -175,7 +169,6 @@ const VendorList = () => {
       }
     } catch {}
 
-    // Nothing found — send to booking flow
     navigate("/booking", { replace: true });
   }, []); // eslint-disable-line
 
@@ -302,28 +295,6 @@ const VendorList = () => {
         <div className="p-3 lg:p-4" style={{ position: "relative" }}>
           {/* Page header */}
           <div className="mb-1">
-            {/* Category tab switcher — shown when customer selected multiple service types */}
-            {planningSelectedVendors.length > 1 && (
-              <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-                {planningSelectedVendors.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => dispatch(setFilters({ serviceType: cat }))}
-                    style={{
-                      padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 700,
-                      fontFamily: "'Outfit', sans-serif", cursor: "pointer", border: "1.5px solid",
-                      transition: "all 0.15s",
-                      borderColor: serviceType === cat ? "#C47A2E" : "rgba(196,122,46,0.25)",
-                      background: serviceType === cat ? "#C47A2E" : "#fff",
-                      color: serviceType === cat ? "#fff" : "#6B3A1F",
-                      boxShadow: serviceType === cat ? "0 3px 10px rgba(196,122,46,0.3)" : "none",
-                    }}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            )}
 
             {/* Budget context banner from Budget Allocator */}
             {budgetMax && (
@@ -337,44 +308,36 @@ const VendorList = () => {
               </div>
             )}
 
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
                 {serviceType || "All"} Vendors
               </h1>
-              <button
-                onClick={openSelectedModal}
-                disabled={compareSelected.length === 0}
-                style={{
-                  display: token ? "inline-flex" : "none",
-                  fontFamily: "'Outfit', sans-serif",
-                  flexShrink: 0,
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "14px 32px",
-                  borderRadius: 10,
-                  fontWeight: 700,
-                  fontSize: 16,
-                  border: "none",
-                  cursor: compareSelected.length === 0 ? "not-allowed" : "pointer",
-                  background: compareSelected.length === 0 ? "#f3f4f6" : "#CCAB4A",
-                  color: compareSelected.length === 0 ? "#aaa" : "#fff",
-                  transition: "background 0.2s",
-                  boxShadow: compareSelected.length > 0 ? "0 4px 14px rgba(204,171,74,0.35)" : "none",
-                }}
-              >
-                Compare Vendors
-                {compareSelected.length > 0 && (
-                  <span style={{ background: "rgba(255,255,255,0.3)", borderRadius: 100, padding: "2px 9px", fontSize: 13, fontWeight: 800 }}>
+              {token && compareSelected.length > 0 && (
+                <button
+                  onClick={openSelectedModal}
+                  style={{
+                    marginLeft: "auto",
+                    fontFamily: "'Outfit', sans-serif",
+                    flexShrink: 0,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "8px 18px",
+                    borderRadius: 10,
+                    fontWeight: 700,
+                    fontSize: 14,
+                    border: "none",
+                    cursor: "pointer",
+                    background: "#CCAB4A",
+                    color: "#fff",
+                    transition: "background 0.2s",
+                    boxShadow: "0 4px 14px rgba(204,171,74,0.35)",
+                  }}
+                >
+                  Compare Vendors
+                  <span style={{ background: "rgba(255,255,255,0.3)", borderRadius: 100, padding: "2px 8px", fontSize: 12, fontWeight: 800 }}>
                     {compareSelected.length}
                   </span>
-                )}
-              </button>
-              {/* Review & Pay — visible once at least one vendor is finalised */}
-              {finalisedCount > 0 && token && (
-                <button
-                  onClick={() => navigate("/booking/review")}
-                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 700, padding: "12px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", cursor: "pointer", flexShrink: 0, boxShadow: "0 3px 12px rgba(21,128,61,0.35)", display: "flex", alignItems: "center", gap: 8 }}>
-                  Review & Pay ({finalisedCount}) →
                 </button>
               )}
             </div>

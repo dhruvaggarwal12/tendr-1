@@ -427,6 +427,7 @@ export default function VendorChatModal() {
   // ── Chat action state ────────────────────────────────────────────────────────
   const [chatCompleted, setChatCompleted] = useState(false);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
   const isThisVendorFinalised = vendor?._id && (() => {
     const entry = finalisedVendors[vendor?.serviceType];
@@ -962,7 +963,7 @@ export default function VendorChatModal() {
 
         {/* ── Input + action bar ── */}
         <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", flexShrink: 0, background: "#fff", position: "relative" }}>
-          {/* Suggested questions — always visible, vendor-type specific */}
+          {/* Suggested questions — hidden by default, toggled by arrow */}
           {(approved || isExistingChat) && !messagesLoading && (() => {
             const QA = {
               Photographer: ["What is your style — candid or traditional?","How many hours are included?","Do you have backup equipment?","How long for edited photos?","Can we see a full gallery?"],
@@ -972,17 +973,23 @@ export default function VendorChatModal() {
             };
             const questions = QA[vendor?.serviceType] || ["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"];
             return (
-              <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", padding: "6px 12px 4px", background: "#FDFCF8" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 5 }}>Quick questions</div>
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                  {questions.map(q => (
-                    <button key={q} onClick={() => sendText(q)}
-                      style={{ whiteSpace: "nowrap", padding: "4px 10px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "#fff", color: "#6B3A1F", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.12s" }}
-                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
-                    >{q}</button>
-                  ))}
-                </div>
+              <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", background: "#FDFCF8" }}>
+                <button onClick={() => setShowSuggestions(p => !p)}
+                  style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 12px", background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.08em", textTransform: "uppercase" }}>Quick questions</span>
+                  <span style={{ fontSize: 12, color: "#C47A2E", transition: "transform 0.2s", display: "inline-block", transform: showSuggestions ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+                </button>
+                {showSuggestions && (
+                  <div style={{ padding: "4px 12px 8px", display: "flex", gap: 5, flexWrap: "wrap" }}>
+                    {questions.map(q => (
+                      <button key={q} onClick={() => { sendText(q); setShowSuggestions(false); }}
+                        style={{ whiteSpace: "nowrap", padding: "4px 10px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "#fff", color: "#6B3A1F", fontSize: 11, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.12s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
+                      >{q}</button>
+                    ))}
+                  </div>
+                )}
               </div>
             );
           })()}
@@ -992,7 +999,9 @@ export default function VendorChatModal() {
            (vendor?.serviceType === "Caterer" || (isConcierge && selectedVendorTypes.includes("Caterer"))) && (
             <button
               onClick={() => {
-                const msg = `[FULL_MENU:${JSON.stringify({ pkg: "Free", cuisines: ALL_MENU_CUISINES })}]`;
+                const pkgMatch = [...messages].reverse().find(m => /I'd like the (Basic|Standard|Premium) package:/.test(m.text || ""));
+                const detectedPkg = pkgMatch ? pkgMatch.text.match(/I'd like the (Basic|Standard|Premium) package:/)[1] : "Free";
+                const msg = `[FULL_MENU:${JSON.stringify({ pkg: detectedPkg, cuisines: ALL_MENU_CUISINES })}]`;
                 sendText(msg);
               }}
               style={{ display: "block", width: "100%", textAlign: "center", padding: "8px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, marginBottom: 8 }}
@@ -1050,17 +1059,15 @@ export default function VendorChatModal() {
                   </div>
                 );
               })()}
-              {/* Hint for chat completion */}
-              {!chatCompleted && (
-                <div style={{ borderLeft: "3px solid #C47A2E", paddingLeft: 10, marginBottom: 8, background: "rgba(196,122,46,0.05)", borderRadius: "0 8px 8px 0", padding: "6px 10px 6px 10px" }}>
-                  <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600 }}>
-                    Click on <b>Mark as Done</b> when your chat is done and the price is finalised
-                  </p>
-                </div>
-              )}
-              {/* Action buttons — visible once bot is done (before or after approval) */}
+              {/* Action buttons row — hint on left, buttons on right */}
               {(
-                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
+                  {!chatCompleted ? (
+                    <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600, borderLeft: "3px solid #C47A2E", paddingLeft: 8, lineHeight: 1.4 }}>
+                      Click <b>Mark as Done</b> when price is finalised
+                    </p>
+                  ) : <span />}
+                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button
                     onClick={() => setChatCompleted(true)}
                     disabled={chatCompleted}
@@ -1076,6 +1083,7 @@ export default function VendorChatModal() {
                   >
                     {isThisVendorFinalised ? "✓ Finalised" : "Finalise Vendor"}
                   </button>
+                  </div>
                 </div>
               )}
             </>

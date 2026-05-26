@@ -88,8 +88,14 @@ const Navbar = ({
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const finalisedCount = Object.keys(finalisedVendors).length;
-  const formEventType = useSelector((s) => s.eventPlanning.formData?.eventType);
-  const browseDisabled = !!(token && !user?.isAdmin && !formEventType && finalisedCount === 0);
+  const formData = useSelector((s) => s.eventPlanning.formData || {});
+  const formEventType = formData.eventType;
+  const isFormFilled = !!(
+    (formData.eventType && formData.guests && formData.budget && formData.location && formData.date) ||
+    finalisedCount > 0 ||
+    (() => { try { const d = JSON.parse(localStorage.getItem("tendr_ep_session") || "{}"); const fd = d.formData || {}; return !!(fd.eventType && fd.guests && fd.budget && fd.location && fd.date); } catch { return false; } })()
+  );
+  const browseDisabled = !!(token && !user?.isAdmin && !isFormFilled);
   const ghCartCount = useSelector((s) => s.giftHamperCart?.items?.length || 0);
   const [activeChatCount, setActiveChatCount] = useState(0);
   const [adminCounts, setAdminCounts] = useState(null);
@@ -568,15 +574,6 @@ const Navbar = ({
                             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >Dashboard</button>
-
-                          <button onClick={() => { navigate("/dashboard?tab=Ongoing"); setShowProfileMenu(false); }}
-                            style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: activeChatCount > 0 ? 600 : 500, color: activeChatCount > 0 ? "#C47A2E" : "#3B2F2F", cursor: "pointer", fontFamily: font }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                          >
-                            {activeChatCount > 0 ? `My Chats (${activeChatCount} active)` : "My Chats"}
-                            {activeChatCount > 0 && <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444", flexShrink: 0 }} />}
-                          </button>
                         </>
                       )}
 

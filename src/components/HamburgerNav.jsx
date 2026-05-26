@@ -55,15 +55,15 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // Fixed sidebar mode = desktop AND not explicitly disabled
   const isSidebar = isDesktop && !noSidebar;
 
-  // Push body content right when sidebar is active
+  // Push body content right when sidebar is active and open
   useEffect(() => {
-    if (isSidebar) {
+    if (isSidebar && sidebarOpen) {
       document.body.style.marginLeft = `${SIDEBAR_W}px`;
     } else {
       document.body.style.marginLeft = "";
     }
     return () => { document.body.style.marginLeft = ""; };
-  }, [isSidebar]);
+  }, [isSidebar, sidebarOpen]);
   const { user, token } = useSelector((s) => s.auth);
   const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -72,6 +72,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   const [drawerOpen,    setDrawerOpen]    = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
+  const [sidebarOpen,   setSidebarOpen]   = useState(true);
   const [savedOpen,     setSavedOpen]     = useState(false);
   const [reviewPopup,   setReviewPopup]   = useState(false);
   const profileRef = useRef(null);
@@ -110,18 +111,23 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const close = () => setDrawerOpen(false);
 
   const listingServiceType  = useSelector((s) => s.listingFilters.serviceType);
-  const formEventType       = useSelector((s) => s.eventPlanning.formData?.eventType);
+  const formData            = useSelector((s) => s.eventPlanning.formData || {});
+  const formEventType       = formData.eventType;
   const selectedVendors     = useSelector((s) => s.eventPlanning.selectedVendors || []);
-  const formBudget          = useSelector((s) => Number(s.eventPlanning.formData?.budget) || 0);
 
-  // Form is "filled" when at least eventType has been set
+  // Form is fully filled only when ALL 5 fields are answered
   const isFormFilled = !!(
-    formEventType ||
+    (formData.eventType && formData.guests && formData.budget && formData.location && formData.date) ||
     finalisedCount > 0 ||
-    selectedVendors.length > 0 ||
-    (() => { try { const d = JSON.parse(localStorage.getItem("tendr_ep_session") || "{}"); return !!(d.formData?.eventType); } catch { return false; } })()
+    (() => {
+      try {
+        const d = JSON.parse(localStorage.getItem("tendr_ep_session") || "{}");
+        const fd = d.formData || {};
+        return !!(fd.eventType && fd.guests && fd.budget && fd.location && fd.date);
+      } catch { return false; }
+    })()
   );
-  // Disable Browse Vendors for logged-in non-admin customers who haven't filled the form
+  // Disable Browse Vendors for logged-in non-admin customers who haven't filled the whole form
   const browseDisabled = !!(token && !user?.isAdmin && !isFormFilled);
 
   // Pages where the user is deep in the vendor flow — always send to listings
@@ -171,7 +177,17 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   if (isSidebar) {
     return (
       <>
+        {/* Collapse arrow — shows when sidebar is closed */}
+        {!sidebarOpen && (
+          <button
+            onClick={() => setSidebarOpen(true)}
+            style={{ position: "fixed", left: 0, top: "50%", transform: "translateY(-50%)", zIndex: 201, width: 22, height: 48, background: "linear-gradient(180deg,#3D2410,#2C1A0C)", border: "none", borderRadius: "0 8px 8px 0", color: "#CCAB4A", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "3px 0 12px rgba(0,0,0,0.2)" }}
+            title="Open navigation"
+          >›</button>
+        )}
+
         {/* Fixed left sidebar */}
+        {sidebarOpen && (
         <aside style={{
           position: "fixed", left: 0, top: 0, zIndex: 200,
           width: SIDEBAR_W, height: "100vh",
@@ -181,15 +197,21 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           overflowY: "auto", overflowX: "hidden",
           fontFamily: font,
         }}>
-          {/* Logo */}
-          <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
-            <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 28, cursor: "pointer", filter: "brightness(1.1)", display: "block" }} />
-            <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", margin: "5px 0 0", letterSpacing: "0.04em" }}>We Curate, You Celebrate</p>
+          {/* Logo + collapse arrow */}
+          <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 28, cursor: "pointer", filter: "brightness(1.1)", display: "block" }} />
+              <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", margin: "5px 0 0", letterSpacing: "0.04em" }}>We Curate, You Celebrate</p>
+            </div>
+            <button onClick={() => setSidebarOpen(false)}
+              style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              title="Close navigation"
+            >‹</button>
           </div>
 
           {/* User info */}
           {token && user && (
-            <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+            <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
                 <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, fontWeight: 800, flexShrink: 0 }}>
                   {user.name?.[0]?.toUpperCase() || "U"}
@@ -201,7 +223,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               </div>
               <div style={{ display: "flex", gap: 7 }}>
                 <button onClick={() => navigate("/dashboard")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
-                <button onClick={() => navigate("/dashboard?tab=Chats")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>My Chats</button>
               </div>
               {/* Review & Pay if vendors finalised or gift hampers in cart */}
               {(finalisedCount > 0 || ghCartCount > 0) && (
@@ -212,9 +233,32 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
-          {/* Gift Hampers quick-link — always visible when logged in */}
+          {/* Budget split mini widget */}
+          {isFormFilled && formData.budget && selectedVendors.length > 0 && (() => {
+            const rawBudget = parseInt(String(formData.budget).replace(/[^0-9]/g, "")) || 0;
+            if (!rawBudget) return null;
+            const splits = normalizeSplit(selectedVendors, rawBudget);
+            return (
+              <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 7px" }}>Budget Split</p>
+                {splits.map(s => (
+                  <div key={s.service} style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                    <span style={{ fontSize: 12 }}>{s.emoji}</span>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)", flex: 1 }}>{s.label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A" }}>{fmtINR(s.amount)}</span>
+                  </div>
+                ))}
+                <button onClick={() => navigate("/budget-picker")}
+                  style={{ width: "100%", marginTop: 8, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.08)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center" }}>
+                  Try Budget Allocator →
+                </button>
+              </div>
+            );
+          })()}
+
+          {/* Gift Hampers quick-link */}
           {token && user && (
-            <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+            <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
               <button onClick={() => navigate("/gift-hampers-cakes")}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; }}
@@ -227,81 +271,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
-          {/* Service category progress panel — shown when customer has selected services */}
-          {selectedVendors.length > 0 && (
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
-              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                {selectedVendors.map(svc => {
-                  const isBooked = !!finalisedVendors[svc];
-                  return (
-                    <div key={svc} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <div style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, background: isBooked ? "linear-gradient(135deg,#15803d,#22c55e)" : "rgba(255,255,255,0.1)", border: isBooked ? "none" : "1.5px solid rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>
-                        {isBooked ? "✓" : ""}
-                      </div>
-                      <span style={{ flex: 1, fontSize: 12, color: isBooked ? "rgba(255,255,255,0.5)" : "rgba(255,255,255,0.85)", fontWeight: isBooked ? 400 : 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textDecoration: isBooked ? "line-through" : "none" }}>{svc}</span>
-                      {!isBooked && (
-                        <button onClick={() => navigate(`/listings?serviceType=${encodeURIComponent(svc)}`)}
-                          style={{ flexShrink: 0, padding: "3px 9px", borderRadius: 6, border: "none", background: "rgba(196,122,46,0.25)", color: "#CCAB4A", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                          Browse
-                        </button>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Budget split mini widget — shown when services selected AND budget set */}
-          {selectedVendors.length > 0 && formBudget > 0 && (
-            <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
-              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Budget Split</p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                {normalizeSplit(selectedVendors, formBudget).map(({ service, amount, pct, emoji, label }) => (
-                  <div key={service}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{emoji} {label}</span>
-                      <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700 }}>{fmtINR(amount)}</span>
-                    </div>
-                    <div style={{ height: 4, background: "rgba(196,122,46,0.15)", borderRadius: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 4 }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <button onClick={() => navigate("/budget-picker")}
-                style={{ marginTop: 10, width: "100%", padding: "7px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                📊 Try Budget Allocator →
-              </button>
-            </div>
-          )}
-
-          {/* Journey progress — shown when active step is provided */}
-          {active && (
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
-              <p style={{ fontSize: 9, fontWeight: 700, color: "rgba(196,122,46,0.6)", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>Your Journey</p>
-              {STEPS.map((step, i) => {
-                const activeIdx = STEPS.indexOf(active);
-                const isDone = i < activeIdx;
-                const isActive = i === activeIdx;
-                const isBrowseClickable = step === "Browse" && isDone;
-                return (
-                  <div key={step} onClick={isBrowseClickable ? () => navigate("/listings") : undefined}
-                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", cursor: isBrowseClickable ? "pointer" : "default", opacity: (!isDone && !isActive) ? 0.35 : 1 }}>
-                    <div style={{ width: 18, height: 18, borderRadius: "50%", background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.2)" : "transparent", border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#555", flexShrink: 0 }}>
-                      {isDone ? "✓" : i + 1}
-                    </div>
-                    <span style={{ fontSize: 12, fontWeight: isActive ? 700 : 400, color: isActive ? "#CCAB4A" : isDone ? "#D4905A" : "rgba(255,255,255,0.55)", textDecoration: isBrowseClickable ? "underline" : "none" }}>{step}</span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-
           {/* Nav sections */}
-          <div style={{ flex: 1, padding: "8px 0", overflowY: "auto" }}>
+          <div style={{ padding: "8px 0" }}>
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
@@ -355,7 +326,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Bottom: logout */}
           {token && user && (
-            <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+            <div style={{ padding: "12px 16px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
               <button onClick={() => { dispatch(logout()); navigate("/"); }}
                 style={{ width: "100%", padding: "8px", borderRadius: 8, border: "1px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.08)", color: "#e74c3c", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                 Logout
@@ -363,9 +334,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
         </aside>
+        )}
 
-        {/* Top bar for progress/title — sits to the right of sidebar on desktop */}
-        {(active || title) && (
+        {/* Top bar for title — sits to the right of sidebar on desktop */}
+        {title && (
           <div style={{
             position: "sticky", top: 0, zIndex: 100,
             height: 48, background: "rgba(255,252,245,0.97)",
@@ -375,28 +347,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "0 24px", fontFamily: font,
           }}>
-            {active ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                {STEPS.map((step, i) => {
-                  const activeIdx = STEPS.indexOf(active);
-                  const isDone = i < activeIdx;
-                  const isActive = i === activeIdx;
-                  return (
-                    <React.Fragment key={step}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
-                        <div style={{ width: 18, height: 18, borderRadius: "50%", background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.12)" : "#f0ebe3", border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#bbb" }}>
-                          {isDone ? "✓" : i + 1}
-                        </div>
-                        <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb" }}>{step}</span>
-                      </div>
-                      {i < STEPS.length - 1 && <div style={{ width: 20, height: 1.5, background: isDone ? "#C47A2E" : "rgba(196,122,46,0.15)", borderRadius: 2 }} />}
-                    </React.Fragment>
-                  );
-                })}
-              </div>
-            ) : (
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{title}</span>
-            )}
+            <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{title}</span>
           </div>
         )}
       </>
@@ -428,44 +379,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           {[0,1,2].map(i => <div key={i} style={{ width: 14, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
         </button>
 
-        {/* Center: progress bar when active, otherwise title or logo */}
+        {/* Center: title or logo */}
         <div style={{ flex: 1, padding: "0 10px", overflow: "hidden" }}>
-          {active ? (
-            // Inline compact progress bar
-            <div style={{ display: "flex", alignItems: "center" }}>
-              {STEPS.map((step, i) => {
-                const activeIdx = STEPS.indexOf(active);
-                const isDone   = i < activeIdx;
-                const isActive = i === activeIdx;
-                // Browse step is clickable when it's already done (user has been there)
-                const isBrowseClickable = step === "Browse" && isDone;
-                return (
-                  <React.Fragment key={step}>
-                    <div
-                      onClick={isBrowseClickable ? () => navigate("/listings") : undefined}
-                      style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0, cursor: isBrowseClickable ? "pointer" : "default" }}
-                    >
-                      <div style={{
-                        width: 18, height: 18, borderRadius: "50%",
-                        background: isDone ? "#C47A2E" : isActive ? "rgba(196,122,46,0.12)" : "#f0ebe3",
-                        border: isActive ? "2px solid #C47A2E" : isDone ? "2px solid #C47A2E" : "2px solid transparent",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 8, fontWeight: 800, color: isDone ? "#fff" : isActive ? "#C47A2E" : "#bbb",
-                      }}>
-                        {isDone ? "✓" : i + 1}
-                      </div>
-                      <span style={{ fontSize: 11, fontWeight: isActive ? 700 : 500, color: isActive ? "#2C1A0E" : isDone ? "#C47A2E" : "#bbb", textDecoration: isBrowseClickable ? "underline" : "none" }}>
-                        {step}
-                      </span>
-                    </div>
-                    {i < STEPS.length - 1 && (
-                      <div style={{ flex: 1, height: 1.5, background: isDone ? "#C47A2E" : "rgba(196,122,46,0.15)", margin: "0 6px", borderRadius: 2, minWidth: 8 }} />
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </div>
-          ) : title ? (
+          {title ? (
             <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block", textAlign: "center" }}>{title}</span>
           ) : (
             <div style={{ textAlign: "center" }}>
@@ -516,7 +432,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     </div>
                     {[
                       { label: "Dashboard",    path: "/dashboard" },
-                      { label: "My Chats",     path: "/dashboard?tab=Chats" },
                       ...(user.isAdmin ? [{ label: "Admin", path: "/AdminDashboard" }] : []),
                     ].map(({ label, path }) => (
                       <button key={label} onClick={() => { navigate(path); setProfileOpen(false); }}
@@ -583,10 +498,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                       Dashboard
                     </button>
-                    <button onClick={() => { navigate("/dashboard?tab=Chats"); close(); }}
-                      style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                      My Chats
-                    </button>
                   </div>
                 </div>
               ) : (
@@ -603,7 +514,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               )}
             </div>
 
-            {/* Service category progress panel — drawer */}
+            {/* My Services — drawer: tick when finalised but always show Browse */}
             {selectedVendors.length > 0 && (
               <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(196,122,46,0.12)", background: "rgba(196,122,46,0.04)" }}>
                 <p style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 7px" }}>My Services</p>
@@ -615,41 +526,15 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                         <div style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, background: isBooked ? "#22c55e" : "rgba(196,122,46,0.15)", border: isBooked ? "none" : "1.5px solid rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff", fontWeight: 800 }}>
                           {isBooked ? "✓" : ""}
                         </div>
-                        <span style={{ flex: 1, fontSize: 13, color: isBooked ? "#9B7450" : "#2C1A0E", fontWeight: isBooked ? 400 : 600, textDecoration: isBooked ? "line-through" : "none" }}>{svc}</span>
-                        {!isBooked && (
-                          <button onClick={() => { navigate(`/listings?serviceType=${encodeURIComponent(svc)}`); close(); }}
-                            style={{ flexShrink: 0, padding: "4px 11px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                            Browse
-                          </button>
-                        )}
+                        <span style={{ flex: 1, fontSize: 13, color: "#2C1A0E", fontWeight: 600 }}>{svc}</span>
+                        <button onClick={() => { navigate(`/listings?serviceType=${encodeURIComponent(svc)}`); close(); }}
+                          style={{ flexShrink: 0, padding: "4px 11px", borderRadius: 7, border: "none", background: isBooked ? "rgba(34,197,94,0.15)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isBooked ? "#15803d" : "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                          {isBooked ? "✓ Browse" : "Browse"}
+                        </button>
                       </div>
                     );
                   })}
                 </div>
-              </div>
-            )}
-
-            {/* Budget split mini widget — drawer */}
-            {selectedVendors.length > 0 && formBudget > 0 && (
-              <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "rgba(255,252,245,0.6)" }}>
-                <p style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 8px" }}>Budget Split</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                  {normalizeSplit(selectedVendors, formBudget).map(({ service, amount, pct, emoji, label }) => (
-                    <div key={service}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                        <span style={{ fontSize: 12, color: "#2C1A0E", fontWeight: 600 }}>{emoji} {label}</span>
-                        <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700 }}>{fmtINR(amount)}</span>
-                      </div>
-                      <div style={{ height: 4, background: "rgba(196,122,46,0.12)", borderRadius: 4, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 4 }} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={() => { navigate("/budget-picker"); close(); }}
-                  style={{ marginTop: 10, width: "100%", padding: "8px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  📊 Try Budget Allocator →
-                </button>
               </div>
             )}
 
