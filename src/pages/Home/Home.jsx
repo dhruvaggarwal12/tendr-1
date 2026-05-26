@@ -11,8 +11,7 @@ import { easeIn, motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import corpo from "../../assets/ui/corpo.jpg";
-// Replace partyBg with the actual kit photo once saved to src/assets/ui/celebration-kit.jpg
-import celebrationKit from "../../assets/ui/party-bg.jpeg";
+import celebrationKit from "../../assets/ui/celebration-kit.jpg";
 import heroCorporate from "../../assets/ui/hero-corporate.png";
 import heroHouseParty from "../../assets/ui/hero-house-party.png";
 import heroAnniversary from "../../assets/ui/hero-anniversary.png";
