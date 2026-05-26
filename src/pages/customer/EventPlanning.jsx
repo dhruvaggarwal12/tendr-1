@@ -41,7 +41,6 @@ import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import JourneyProgress from "../../components/JourneyProgress";
 import HamburgerNav from "../../components/HamburgerNav";
-import BudgetSplitModal from "../../components/BudgetSplitModal";
 
 const EventPlanning = () => {
   // openChatWithSocket replaced by openConciergeChat — opens the same VendorChatModal window
@@ -66,7 +65,6 @@ const EventPlanning = () => {
   const { openConciergeChat } = useChatOverlay();
   const TRANSITION_MS = 350;
   const [activeModal, setActiveModal] = useState(null);
-  const [showBudgetSplit, setShowBudgetSplit] = useState(false);
   const [extraRequirements, setExtraRequirements] = useState(false);
   const [showExtraReq, setShowExtraReq] = useState();
   const [extraRequirementsText, setExtraRequirementsText] = useState("");
@@ -410,7 +408,8 @@ const EventPlanning = () => {
                 disabled={selectedVendors.length === 0}
                 onClick={() => {
                   if (selectedVendors.length === 0) return;
-                  setShowBudgetSplit(true);
+                  dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
+                  navigate("/listings", { state: { selectedCategories: selectedVendors } });
                 }}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
@@ -441,27 +440,6 @@ const EventPlanning = () => {
         </div>
       </div>
 
-      <BudgetSplitModal
-        open={showBudgetSplit}
-        onClose={() => setShowBudgetSplit(false)}
-        budget={Number(formData?.budget) || 0}
-        initialServices={selectedVendors}
-        onContinue={(finalServices) => {
-          setShowBudgetSplit(false);
-          dispatch(setFilters({ serviceType: finalServices[0] || selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-          navigate("/listings", { state: { selectedCategories: finalServices.length > 0 ? finalServices : selectedVendors } });
-        }}
-        onBudgetAllocator={() => {
-          setShowBudgetSplit(false);
-          navigate("/budget-picker", {
-            state: {
-              prefillBudget: Number(formData?.budget) || 0,
-              prefillServices: selectedVendors,
-              eventType: formData?.eventType || "",
-            }
-          });
-        }}
-      />
       </>
     );
   }

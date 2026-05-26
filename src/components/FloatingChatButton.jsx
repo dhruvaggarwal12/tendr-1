@@ -11,6 +11,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const { user, token }      = useSelector((s) => s.auth);
   const selectedCategories   = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
@@ -50,7 +51,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const showDecorChip = !decorDismissed &&
     path === "/listings" &&
-    search.toLowerCase().includes("servicetype=decorator");
+    activeServiceType === "Decorator";
 
   // Fetch approved vendor conversations
   const fetchVendorChats = useCallback(() => {
