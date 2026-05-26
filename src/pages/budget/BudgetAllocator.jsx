@@ -139,8 +139,10 @@ const VENDOR_TO_BUDGET = {
 export default function BudgetAllocator() {
   const location = useLocation();
   const navigate  = useNavigate();
-  const routeEventType = location.state?.eventType;
-  const finalisedVendors = useSelector(s => s.listingFilters?.finalisedVendors || {});
+  const routeEventType    = location.state?.eventType;
+  const prefillBudget     = location.state?.prefillBudget;
+  const prefillServices   = location.state?.prefillServices; // array of vendor serviceType strings
+  const finalisedVendors  = useSelector(s => s.listingFilters?.finalisedVendors || {});
 
   // Vendor suggestion panel
   const [vendorPanel, setVendorPanel]       = useState(null); // { catName, serviceType, budget }
@@ -183,7 +185,38 @@ export default function BudgetAllocator() {
     } catch { return null; }
   };
 
+  // Map BudgetSplitModal service keys → BudgetAllocator category colours
+  const SERVICE_COLOR = {
+    Caterer: "#10B981", Decorator: "#8B5CF6", Photographer: "#3B82F6",
+    DJ: "#F59E0B", Anchor: "#EC4899", Transport: "#6B7280",
+    Mehendi: "#22d3ee", Makeup: "#f472b6",
+  };
+  const SERVICE_LABEL = {
+    Caterer: "Food & Catering", Decorator: "Decoration", Photographer: "Photography",
+    DJ: "DJ & Music", Anchor: "Anchor / Emcee", Transport: "Transport",
+    Mehendi: "Mehendi Artist", Makeup: "Makeup Artist",
+  };
+  const SERVICE_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15, Anchor: 10, Transport: 8, Mehendi: 8, Makeup: 12 };
+
   useEffect(() => {
+    // Pre-fill from BudgetSplitModal / EventPlanning navigate state
+    if (prefillServices?.length > 0) {
+      const raw   = prefillServices.map(s => ({ s, pct: SERVICE_PCT[s] ?? 10 }));
+      const total = raw.reduce((a, b) => a + b.pct, 0);
+      const cats  = raw.map((r, i) => ({
+        id:    `cat_${i}_${Date.now()}`,
+        name:  SERVICE_LABEL[r.s] ?? r.s,
+        pct:   Math.round((r.pct / total) * 100),
+        color: SERVICE_COLOR[r.s] ?? "#C47A2E",
+        spent: 0,
+      }));
+      const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
+      setEventKey(key);
+      setTotalBudget(prefillBudget > 0 ? prefillBudget : 50000);
+      setCategories(cats);
+      setLoaded(true);
+      return;
+    }
     const d = loadBudget();
     if (d && !routeEventType) {
       setEventKey(d.eventKey || "birthday");
@@ -192,7 +225,8 @@ export default function BudgetAllocator() {
     } else {
       const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
       setEventKey(key);
-      setCategories(initCategories(key, 50000));
+      setTotalBudget(prefillBudget > 0 ? prefillBudget : 50000);
+      setCategories(initCategories(key, prefillBudget > 0 ? prefillBudget : 50000));
     }
     setLoaded(true);
   }, []);

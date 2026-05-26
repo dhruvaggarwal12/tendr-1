@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
 import { useChatOverlay } from "../context/ChatContext";
@@ -8,6 +9,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
+  const navigate             = useNavigate();
   const { user, token }      = useSelector((s) => s.auth);
   const selectedCategories   = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -137,13 +139,23 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                   {selectedCategories.map(cat => {
                     const done = !!finalisedVendors[cat];
                     return (
-                      <div key={cat} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, background: done ? "#22c55e" : "rgba(255,255,255,0.12)", border: `1.5px solid ${done ? "#22c55e" : "rgba(255,255,255,0.25)"}`, color: "#fff" }}>
-                          {done ? "✓" : ""}
+                      <div key={cat}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, background: done ? "#22c55e" : "rgba(255,255,255,0.12)", border: `1.5px solid ${done ? "#22c55e" : "rgba(255,255,255,0.25)"}`, color: "#fff" }}>
+                            {done ? "✓" : ""}
+                          </div>
+                          <span style={{ fontSize: 12, fontWeight: done ? 700 : 500, color: done ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)" }}>{cat}</span>
+                          {done && <span style={{ fontSize: 10, color: "#22c55e", marginLeft: "auto" }}>Finalised</span>}
+                          {!done && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginLeft: "auto" }}>Pending</span>}
                         </div>
-                        <span style={{ fontSize: 12, fontWeight: done ? 700 : 500, color: done ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)", textDecoration: done ? "none" : "none" }}>{cat}</span>
-                        {done && <span style={{ fontSize: 10, color: "#22c55e", marginLeft: "auto" }}>Finalised</span>}
-                        {!done && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginLeft: "auto" }}>Pending</span>}
+                        {!done && (
+                          <button
+                            onClick={() => { setShowActiveChats(false); navigate(`/listings?serviceType=${encodeURIComponent(cat)}`); }}
+                            style={{ marginTop: 4, marginLeft: 26, fontSize: 10.5, color: "#CCAB4A", background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, textAlign: "left", textDecoration: "underline", fontStyle: "italic" }}
+                          >
+                            Haven't decided on {cat} yet? Compare vendors →
+                          </button>
+                        )}
                       </div>
                     );
                   })}

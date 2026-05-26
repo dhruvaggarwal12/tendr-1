@@ -28,6 +28,9 @@ const VendorList_ListingPage = ({
   const navigate = useNavigate();
   const { openVendorChat } = useChatOverlay();
   const [quickViewVendor, setQuickViewVendor] = useState(null);
+  const [showCompareTip, setShowCompareTip] = useState(() => {
+    try { return !sessionStorage.getItem("tendr_compare_tip_dismissed"); } catch { return true; }
+  });
 
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();
@@ -46,6 +49,23 @@ const VendorList_ListingPage = ({
   return (
     <div className="flex flex-col min-h-full">
       <div className="mx-auto w-full max-w-7xl px-3 sm:px-5">
+
+        {/* Compare pro tip banner — dismissible */}
+        {showCompareTip && (
+          <div style={{ display: "flex", alignItems: "center", gap: 12, background: "linear-gradient(135deg,#2C1A0E,#3D2210)", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "10px 16px", marginBottom: 14, marginTop: 4, fontFamily: font }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>💡</span>
+            <span style={{ flex: 1, fontSize: 13, color: "rgba(255,255,255,0.8)", lineHeight: 1.45 }}>
+              <strong style={{ color: "#CCAB4A" }}>Pro tip:</strong> Click the <strong style={{ color: "#CCAB4A" }}>+</strong> button on any vendor card to add them to the compare board — see price, rating, speciality side by side.
+            </span>
+            <button
+              onClick={() => { setShowCompareTip(false); try { sessionStorage.setItem("tendr_compare_tip_dismissed", "1"); } catch {} }}
+              style={{ flexShrink: 0, width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "none", color: "rgba(255,255,255,0.55)", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         <div className="vendor-list">
           {isLoading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 py-8">

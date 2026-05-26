@@ -704,39 +704,67 @@ const Home = () => {
         }
       `}</style>
 
-      {/* Coming Soon — Celebration Kit Banner */}
-      <section style={{ background: "#2C1A0E", padding: "28px 24px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, flex: 1, minWidth: 260 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(196,122,46,0.18)", border: "1.5px solid rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>🎁</div>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Coming Soon</span>
-                <span style={{ width: 4, height: 4, borderRadius: "50%", background: "#CCAB4A", display: "inline-block" }} />
-                <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "rgba(255,255,255,0.4)" }}>Under ₹2,000</span>
-              </div>
-              <p style={{ fontSize: 16, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.3 }}>
-                Tendr Celebration Kit — everything you need to host, delivered.
-              </p>
-              <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.55)", margin: "4px 0 0" }}>
-                Balloons, fairy lights, confetti, table runners &amp; more — curated for your event theme.
-              </p>
+      {/* Coming Soon — Celebration Kit Full Section */}
+      <section style={{ background: "linear-gradient(135deg,#1E0F06 0%,#2C1A0E 60%,#3D2210 100%)", padding: "64px 24px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
+        {/* Decorative glow */}
+        <div style={{ position: "absolute", top: -60, right: -60, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", gap: 48, flexWrap: "wrap" }}>
+
+          {/* Left — copy */}
+          <div style={{ flex: 1, minWidth: 280 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", animation: "kit-pulse 1.6s infinite" }} />
+              <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Coming Soon · Under ₹2,000</span>
             </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-            <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", fontStyle: "italic" }}>Notify me when it's live</span>
-            <div style={{ display: "flex", gap: 8 }}>
+
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#fff", margin: "0 0 14px", lineHeight: 1.2, letterSpacing: "0.01em" }}>
+              Tendr Celebration Kit
+            </h2>
+            <p style={{ fontSize: 15.5, color: "rgba(255,255,255,0.65)", margin: "0 0 24px", lineHeight: 1.65, maxWidth: 420 }}>
+              Balloons, fairy lights, confetti, table runners, number foils &amp; more — curated by theme, delivered to your door. No vendors, no calls. Just unbox and celebrate.
+            </p>
+
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+              {["🎈 Balloons", "✨ Fairy Lights", "🎊 Confetti", "🎀 Table Runner", "🔢 Number Foils"].map(tag => (
+                <span key={tag} style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 100, padding: "5px 12px" }}>{tag}</span>
+              ))}
+            </div>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <input
                 type="email"
                 placeholder="your@email.com"
-                style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 13, fontFamily: "'Outfit', sans-serif", outline: "none", width: 190 }}
+                style={{ flex: 1, minWidth: 180, padding: "11px 16px", borderRadius: 11, border: "1.5px solid rgba(196,122,46,0.4)", background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 13, fontFamily: "'Outfit', sans-serif", outline: "none" }}
               />
-              <button style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
-                Notify Me
+              <button style={{ padding: "11px 22px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", boxShadow: "0 4px 18px rgba(196,122,46,0.38)" }}>
+                Notify Me 🔔
               </button>
             </div>
           </div>
+
+          {/* Right — kit photo */}
+          <div style={{ flex: "0 0 auto", width: "clamp(260px,38%,420px)", position: "relative" }}>
+            <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.4)", border: "1.5px solid rgba(196,122,46,0.25)", background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.08))", aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <img
+                src="/src/assets/ui/celebration-kit.jpg"
+                alt="Tendr Celebration Kit"
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }}
+              />
+              {/* Fallback when image missing */}
+              <div style={{ display: "none", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, padding: 24, textAlign: "center" }}>
+                <div style={{ fontSize: 56 }}>🎁</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontStyle: "italic" }}>Save kit photo to<br/>src/assets/ui/celebration-kit.jpg</div>
+              </div>
+            </div>
+            {/* Price badge */}
+            <div style={{ position: "absolute", top: -14, right: -10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 900, fontSize: 15, borderRadius: 100, padding: "8px 18px", boxShadow: "0 6px 20px rgba(196,122,46,0.45)", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+              ₹999 – ₹1,499
+            </div>
+          </div>
         </div>
+        <style>{`@keyframes kit-pulse { 0%,100%{opacity:1}50%{opacity:0.4} }`}</style>
       </section>
 
       {/* How Tendr Works */}

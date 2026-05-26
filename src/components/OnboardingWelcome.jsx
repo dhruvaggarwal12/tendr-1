@@ -74,9 +74,15 @@ function Chip({ item, selected, onToggle }) {
 }
 
 // ── Main ─────────────────────────────────────────────────────────────────────
+const FREE_TOOLS = [
+  { icon: "📊", title: "Budget Allocator", desc: "Split your budget across services and track spending in real time.", route: "/budget-picker" },
+  { icon: "✅", title: "Event Checklist", desc: "Get a pre-built checklist for your event type — never miss a task.", route: "/prebuilt-checklist" },
+  { icon: "⚖️", title: "Compare Vendors", desc: "Add vendors to a comparison board and decide with all data visible.", route: "/listings" },
+];
+
 export default function OnboardingWelcome({ onClose }) {
   const navigate = useNavigate();
-  const [step, setStep]       = useState("first-time"); // first-time | pick | start-with
+  const [step, setStep]       = useState("first-time"); // first-time | tools | pick | start-with
   const [selected, setSelected] = useState([]);
   const [startChoice, setStartChoice] = useState(null);
 
@@ -141,13 +147,59 @@ export default function OnboardingWelcome({ onClose }) {
           Is this your first time here?
         </p>
         <div style={{ display: "flex", gap: 12 }}>
-          <button onClick={() => setStep("pick")}
+          <button onClick={() => setStep("tools")}
             style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
             Yes, first time! 👋
           </button>
           <button onClick={onClose}
             style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
             Nope, I know my way →
+          </button>
+        </div>
+      </div>
+    </Overlay>
+  );
+
+  // ── STEP: tools teaser ───────────────────────────────────────────────────
+  if (step === "tools") return (
+    <Overlay onClose={onClose}>
+      <div style={{ padding: "30px 28px 26px" }}>
+        <div style={{ textAlign: "center", marginBottom: 22 }}>
+          <div style={{ fontSize: 36, marginBottom: 8 }}>🎁</div>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.55rem", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px" }}>
+            Here's what Tendr gives you — free
+          </h2>
+          <p style={{ fontSize: 12.5, color: "#9B7450", margin: 0 }}>Planning tools built for Indian celebrations</p>
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 22 }}>
+          {FREE_TOOLS.map(tool => (
+            <div key={tool.title}
+              onClick={() => { onClose(); navigate(tool.route); }}
+              style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#FFFCF5", cursor: "pointer", transition: "all 0.15s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
+            >
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.1))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>
+                {tool.icon}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{tool.title}</div>
+                <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.45 }}>{tool.desc}</div>
+              </div>
+              <span style={{ fontSize: 16, color: "#C47A2E", flexShrink: 0, marginTop: 4 }}>→</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={() => setStep("pick")}
+            style={{ flex: 2, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+            Start Planning →
+          </button>
+          <button onClick={onClose}
+            style={{ flex: 1, padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.28)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            Skip
           </button>
         </div>
       </div>

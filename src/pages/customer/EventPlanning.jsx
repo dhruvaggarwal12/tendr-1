@@ -451,6 +451,16 @@ const EventPlanning = () => {
           dispatch(setFilters({ serviceType: finalServices[0] || selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
           navigate("/listings", { state: { selectedCategories: finalServices.length > 0 ? finalServices : selectedVendors } });
         }}
+        onBudgetAllocator={() => {
+          setShowBudgetSplit(false);
+          navigate("/budget-picker", {
+            state: {
+              prefillBudget: Number(formData?.budget) || 0,
+              prefillServices: selectedVendors,
+              eventType: formData?.eventType || "",
+            }
+          });
+        }}
       />
       </>
     );
