@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
-import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
+import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa";

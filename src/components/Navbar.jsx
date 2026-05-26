@@ -483,6 +483,16 @@ const Navbar = ({
               <FaWhatsapp size={17} />
             </a>
 
+            {/* Review & Pay — visible when vendors are finalised or gift hampers in cart */}
+            {(finalisedCount > 0 || ghCartCount > 0) && (
+              <a
+                href="/booking/review"
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font, boxShadow: "0 3px 10px rgba(21,128,61,0.3)" }}
+              >
+                Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : "🎁"}
+              </a>
+            )}
+
             {/* Compare Vendors — visible when vendors are saved */}
             {compareSelected.length > 0 && (
               <SavedVendorsInline asStrip={false} />
