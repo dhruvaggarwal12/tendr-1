@@ -11,6 +11,7 @@ import { easeIn, motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import corpo from "../../assets/ui/corpo.jpg";
+import celebrationKit from "../../assets/ui/celebration-kit.jpg";
 import heroCorporate from "../../assets/ui/hero-corporate.png";
 import heroHouseParty from "../../assets/ui/hero-house-party.png";
 import heroAnniversary from "../../assets/ui/hero-anniversary.png";
@@ -747,7 +748,7 @@ const Home = () => {
           <div style={{ flex: "0 0 auto", width: "clamp(260px,38%,420px)", position: "relative" }}>
             <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 24px 64px rgba(0,0,0,0.4)", border: "1.5px solid rgba(196,122,46,0.25)", background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.08))", aspectRatio: "4/3", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <img
-                src="/src/assets/ui/celebration-kit.jpg"
+                src={celebrationKit}
                 alt="Tendr Celebration Kit"
                 style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 onError={e => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling.style.display = "flex"; }}
