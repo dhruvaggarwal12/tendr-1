@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
 import { useChatOverlay } from "../context/ChatContext";
@@ -9,7 +8,6 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
-  const navigate             = useNavigate();
   const { user, token }      = useSelector((s) => s.auth);
   const selectedCategories   = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -150,7 +148,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                         </div>
                         {!done && (
                           <button
-                            onClick={() => { setShowActiveChats(false); navigate(`/listings?serviceType=${encodeURIComponent(cat)}`); }}
+                            onClick={() => { setShowActiveChats(false); router.navigate(`/listings?serviceType=${encodeURIComponent(cat)}`); }}
                             style={{ marginTop: 4, marginLeft: 26, fontSize: 10.5, color: "#CCAB4A", background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, textAlign: "left", textDecoration: "underline", fontStyle: "italic" }}
                           >
                             Haven't decided on {cat} yet? Compare vendors →
