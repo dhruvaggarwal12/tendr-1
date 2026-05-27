@@ -439,6 +439,14 @@ export default function VendorChatModal() {
   // ── Minimise animation state ─────────────────────────────────────────────────
   const [minimizing, setMinimizing] = useState(false);
 
+  // ── Mobile detection ─────────────────────────────────────────────────────────
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth <= 640);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
   // Track previous vendor so we only reset when vendor ACTUALLY changes
   const prevResetKeyRef = useRef(null);
 
@@ -793,15 +801,16 @@ export default function VendorChatModal() {
         onClick={e => e.stopPropagation()}
         style={{
           position: "fixed",
-          top: "50%", left: "50%",
-          transform: "translate(-50%, -50%)",
+          top:    isMobile ? 0 : "50%",
+          left:   isMobile ? 0 : "50%",
+          transform: isMobile ? "none" : "translate(-50%, -50%)",
           zIndex: 1201,
-          width: "min(94vw, 660px)",
-          height: "min(86vh, 700px)",
+          width:  isMobile ? "100%" : "min(94vw, 660px)",
+          height: isMobile ? "100%" : "min(86vh, 700px)",
           background: "#FFFCF5",
-          borderRadius: 24,
-          boxShadow: "0 32px 80px rgba(44,26,14,0.22), 0 4px 20px rgba(0,0,0,0.1)",
-          border: "1.5px solid rgba(196,122,46,0.18)",
+          borderRadius: isMobile ? 0 : 24,
+          boxShadow: isMobile ? "none" : "0 32px 80px rgba(44,26,14,0.22), 0 4px 20px rgba(0,0,0,0.1)",
+          border: isMobile ? "none" : "1.5px solid rgba(196,122,46,0.18)",
           display: "flex",
           flexDirection: "column",
           fontFamily: font,

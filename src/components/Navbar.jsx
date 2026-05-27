@@ -272,6 +272,7 @@ const Navbar = ({
     >
       {/* ── Main bar ── */}
       <div
+        className="navbar-main-bar"
         style={{
           maxWidth: 1280,
           margin: "0 auto",
@@ -689,6 +690,18 @@ const Navbar = ({
 
           {/* Mobile action row */}
           <div style={{ display: "flex", gap: 10, marginTop: 20, alignItems: "center", flexWrap: "wrap" }}>
+            {/* Review & Pay — mobile */}
+            {(finalisedCount > 0 || ghCartCount > 0) && (
+              <a href="/booking/review" onClick={() => setMenuOpen(false)}
+                style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "9px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font }}>
+                Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : "🎁"}
+              </a>
+            )}
+            {/* Gift Hampers — mobile */}
+            <a href="/gift-hampers-cakes" onClick={() => setMenuOpen(false)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font }}>
+              🎁 Gift Hampers
+            </a>
             <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
               style={{ background: "#25D366", color: "#fff", width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0, boxShadow: "0 2px 8px rgba(37,211,102,0.35)" }}>
               <FaWhatsapp size={19} />
@@ -748,6 +761,7 @@ const Navbar = ({
         }
         @media (max-width: 480px) {
           .mobile-menu-content { padding: 6px 16px 20px !important; }
+          .navbar-main-bar { padding: 0 16px !important; }
         }
       `}</style>
     </nav>

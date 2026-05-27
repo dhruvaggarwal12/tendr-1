@@ -333,6 +333,7 @@ const AdminDashboard = () => {
   const [liveStats, setLiveStats] = useState(null);
   const [vendorApplications, setVendorApplications] = useState([]);
   const [eventPlans, setEventPlans] = useState([]);
+  const [loadingPlans, setLoadingPlans] = useState(true);
   const [chatRequests, setChatRequests] = useState([]);
   const [ghOrders, setGhOrders]         = useState([]);
   const [ghLoading, setGhLoading]       = useState(false);
@@ -367,6 +368,24 @@ const AdminDashboard = () => {
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [pinnedByPlan, setPinnedByPlan] = useState({}); // { [planId]: { loading, messages } }
+
+  // Notified tracking — persisted to localStorage so it survives page refresh
+  const [notifiedAt, setNotifiedAt] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tendr_admin_notified") || "{}"); } catch { return {}; }
+  });
+  const markNotified = (planId) => {
+    const ts = Date.now();
+    const next = { ...notifiedAt, [planId]: ts };
+    setNotifiedAt(next);
+    try { localStorage.setItem("tendr_admin_notified", JSON.stringify(next)); } catch {}
+  };
+  const fmtNotifiedAge = (ts) => {
+    const mins = Math.floor((Date.now() - ts) / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)}d ago`;
+  };
 
   // Chat summary feature
   const [pinnedMsgs, setPinnedMsgs] = useState([]);   // [{ content, conversationId }]
@@ -453,8 +472,8 @@ const AdminDashboard = () => {
       credentials: "include",
     })
       .then((r) => r.json())
-      .then((data) => setEventPlans(data.plans || []))
-      .catch(() => {});
+      .then((data) => { setEventPlans(data.plans || []); setLoadingPlans(false); })
+      .catch(() => { setLoadingPlans(false); });
 
     fetch(`${BASE_URL}/admin/chat-requests`, {
       headers: { Authorization: `Bearer ${token}` },
@@ -1263,7 +1282,19 @@ const AdminDashboard = () => {
             </div>
 
             {/* Event Plans Table */}
-            {filteredPlans.length === 0 ? (
+            {loadingPlans ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <style>{`@keyframes adm-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+                {[0,1,2,3].map(i => (
+                  <div key={i} style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.2)", padding: "14px 20px", display: "flex", gap: 16, alignItems: "center" }}>
+                    <div style={{ flex: 2, height: 14, borderRadius: 6, background: "linear-gradient(90deg,#f5ede0 25%,#fdf8f2 50%,#f5ede0 75%)", backgroundSize: "200% 100%", animation: "adm-shimmer 1.4s infinite" }} />
+                    <div style={{ flex: 1, height: 14, borderRadius: 6, background: "linear-gradient(90deg,#f5ede0 25%,#fdf8f2 50%,#f5ede0 75%)", backgroundSize: "200% 100%", animation: "adm-shimmer 1.4s infinite" }} />
+                    <div style={{ flex: 1, height: 14, borderRadius: 6, background: "linear-gradient(90deg,#f5ede0 25%,#fdf8f2 50%,#f5ede0 75%)", backgroundSize: "200% 100%", animation: "adm-shimmer 1.4s infinite" }} />
+                    <div style={{ width: 60, height: 22, borderRadius: 100, background: "linear-gradient(90deg,#f5ede0 25%,#fdf8f2 50%,#f5ede0 75%)", backgroundSize: "200% 100%", animation: "adm-shimmer 1.4s infinite" }} />
+                  </div>
+                ))}
+              </div>
+            ) : filteredPlans.length === 0 ? (
               <div style={{ textAlign: "center", padding: "48px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>
                 No {bookingTab !== "All" ? bookingTab.toLowerCase() : ""} event plans yet.
               </div>
@@ -1336,13 +1367,21 @@ const AdminDashboard = () => {
                                   const name = plan.customerId?.name || "there";
                                   const dashboardLink = `${window.location.origin}/dashboard`;
                                   const sendWA = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${name}! 🎉\n\nYour event is planned!\n\nYou can download your Event Details and Invitation Flyer from your Tendr dashboard:\n\n${dashboardLink}\n\n— Team Tendr 💛`)}` : null;
+                                  const sentTs = notifiedAt[plan._id];
+                                  const isOverdue = sentTs && (Date.now() - sentTs) > 24 * 60 * 60 * 1000;
                                   return (
-                                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
                                       {sendWA && (
                                         <a href={sendWA} target="_blank" rel="noopener noreferrer"
+                                          onClick={() => markNotified(plan._id)}
                                           style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
-                                          📲 Send to Customer
+                                          📲 {sentTs ? "Resend" : "Send to Customer"}
                                         </a>
+                                      )}
+                                      {sentTs && (
+                                        <span style={{ fontSize: 10, fontWeight: 600, color: isOverdue ? "#c0392b" : "#15803d", background: isOverdue ? "#fff5f5" : "#f0fdf4", border: `1px solid ${isOverdue ? "#fca5a5" : "#bbf7d0"}`, borderRadius: 100, padding: "2px 8px", whiteSpace: "nowrap" }}>
+                                          {isOverdue ? `⚠️ Sent ${fmtNotifiedAge(sentTs)} — not opened?` : `✓ Sent ${fmtNotifiedAge(sentTs)}`}
+                                        </span>
                                       )}
                                       <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name }); } finally { setPdfGenerating(false); } }}
                                         style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
@@ -1469,7 +1508,15 @@ const AdminDashboard = () => {
                   <span className="text-sm text-gray-500">{paymentsList.length} total</span>
                 </div>
                 {loadingPayments ? (
-                  <div className="py-12 text-center text-gray-400">Loading payments...</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "12px 0" }}>
+                    {[0,1,2,3].map(i => (
+                      <div key={i} style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(204,171,74,0.2)", padding: "14px 20px", display: "flex", gap: 16, alignItems: "center" }}>
+                        <div style={{ flex: 2, height: 13, borderRadius: 6, background: "linear-gradient(90deg,#f5ede0 25%,#fdf8f2 50%,#f5ede0 75%)", backgroundSize: "200% 100%", animation: "adm-shimmer 1.4s infinite" }} />
+                        <div style={{ flex: 1, height: 13, borderRadius: 6, background: "linear-gradient(90deg,#f5ede0 25%,#fdf8f2 50%,#f5ede0 75%)", backgroundSize: "200% 100%", animation: "adm-shimmer 1.4s infinite" }} />
+                        <div style={{ width: 60, height: 20, borderRadius: 100, background: "linear-gradient(90deg,#f5ede0 25%,#fdf8f2 50%,#f5ede0 75%)", backgroundSize: "200% 100%", animation: "adm-shimmer 1.4s infinite" }} />
+                      </div>
+                    ))}
+                  </div>
                 ) : paymentsList.length === 0 ? (
                   <div className="py-12 text-center">
                     <div style={{ fontSize: 40, marginBottom: 12 }}>💳</div>
