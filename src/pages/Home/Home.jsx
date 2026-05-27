@@ -28,6 +28,89 @@ import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import { useSelector } from "react-redux";
 
+const HERO_FEATURES = [
+  {
+    tag: "Smart Planning Tools",
+    headline: "Checklists & timelines built for your event",
+    desc: "Stay on top of every task with personalised checklists and timelines designed around your event date.",
+    where: "Planning Tools → Checklist / Timeline",
+    href: "/checklist-picker",
+    emoji: "✅",
+  },
+  {
+    tag: "Budget Allocator",
+    headline: "Split your budget across every category",
+    desc: "Divide your total budget across catering, decor, photography, DJ and more — and track every rupee in real time.",
+    where: "Planning Tools → Budget Allocator",
+    href: "/budget-picker",
+    emoji: "💰",
+  },
+  {
+    tag: "Gift Hampers & Cakes",
+    headline: "Custom gift hampers delivered to your door",
+    desc: "Order personalised gift hampers, celebration cakes and curated kits for birthdays, anniversaries and every occasion.",
+    where: "Gift Hampers & Cakes",
+    href: "/gift-hampers-cakes",
+    emoji: "🎁",
+  },
+  {
+    tag: "Tendr Celebration Kit",
+    headline: "Everything you need — packed in one kit",
+    desc: "Curated decoration kits delivered to your doorstep so you can set the vibe in minutes, no vendor needed.",
+    where: "Home → Tendr Celebration Kit",
+    href: "/",
+    emoji: "🎊",
+  },
+  {
+    tag: "Wedding Stationery",
+    headline: "Design beautiful stationery for your wedding",
+    desc: "Create custom wedding invitations, menus and stationery with our ready-made designer templates.",
+    where: "Memories → Wedding Stationery",
+    href: "/stationery",
+    emoji: "💌",
+  },
+  {
+    tag: "Invitation Flyers",
+    headline: "Share stunning digital invite flyers instantly",
+    desc: "Pick a template, personalise the details and send your event invite via WhatsApp or Instagram in seconds.",
+    where: "Memories → Invitation Flyers",
+    href: "/invitation",
+    emoji: "📩",
+  },
+  {
+    tag: "Decor Finder",
+    headline: "Discover your perfect decoration theme",
+    desc: "Not sure what decor you want? Our quiz matches your personality and budget to the ideal decoration style.",
+    where: "Planning Tools → 🎨 Decor Finder",
+    href: "/decor-finder",
+    emoji: "🎨",
+  },
+  {
+    tag: "Aftermovie",
+    headline: "Turn your event memories into a cinematic reel",
+    desc: "Create a professional-style aftermovie from your photos and videos — a keepsake you will revisit forever.",
+    where: "Memories → Aftermovie",
+    href: "/aftermovie",
+    emoji: "🎬",
+  },
+  {
+    tag: "For Vendors",
+    headline: "Register your business & get booked on Tendr",
+    desc: "List your services on Delhi NCR's fastest-growing event platform and connect directly with verified customers.",
+    where: "Vendors → Register as Vendor",
+    href: "/vendor/register",
+    emoji: "🏪",
+  },
+  {
+    tag: "Guest List Manager",
+    headline: "Manage your guest list without the chaos",
+    desc: "Add guests, track RSVPs, assign tables and share your list — all from one simple tool.",
+    where: "Planning Tools → Guest List",
+    href: "/guest-list",
+    emoji: "👥",
+  },
+];
+
 const CELEBRATION_PHOTOS = [
   { url: heroBirthday,    label: "Birthday Celebration" },
   { url: heroAnniversary, label: "Anniversary Decoration" },
@@ -150,6 +233,8 @@ const Home = () => {
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPrev, setHeroPrev] = useState(null);
   const [heroFading, setHeroFading] = useState(false);
+  const [featureIdx, setFeatureIdx]   = useState(0);
+  const [featureVisible, setFeatureVisible] = useState(true);
 
   const goToSlide = (idx) => {
     if (heroFading) return;
@@ -170,6 +255,17 @@ const Home = () => {
     const t = setInterval(heroNext, 4500);
     return () => clearInterval(t);
   }, [heroIndex, heroFading]);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setFeatureVisible(false);
+      setTimeout(() => {
+        setFeatureIdx(i => (i + 1) % HERO_FEATURES.length);
+        setFeatureVisible(true);
+      }, 400);
+    }, 3500);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -390,94 +486,80 @@ const Home = () => {
           }}
           className="hero-split"
         >
-          {/* ── Left: copy + CTA ── */}
+          {/* ── Left: rotating features + CTA ── */}
           <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
-            <span
-              style={{
-                display: "inline-block",
-                background: "rgba(139,69,19,0.1)",
-                color: "#8B4513",
-                fontSize: 13,
-                fontWeight: 700,
-                letterSpacing: "0.12em",
-                textTransform: "uppercase",
-                padding: "5px 14px",
-                borderRadius: 100,
-                marginBottom: 28,
-                width: "fit-content",
-              }}
-            >
+
+            {/* Static top line */}
+            <span style={{ display: "inline-block", background: "rgba(139,69,19,0.1)", color: "#8B4513", fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "5px 14px", borderRadius: 100, marginBottom: 28, width: "fit-content" }}>
               Delhi NCR's Trusted Platform
             </span>
 
-            <h1
+            {/* Rotating feature block */}
+            <div
               style={{
-                fontSize: "clamp(2.6rem, 5vw, 4.2rem)",
-                fontWeight: 300,
-                lineHeight: 1.15,
-                color: "#2C1A0E",
-                marginBottom: 24,
-                letterSpacing: "0.01em",
-                fontFamily: "'Cormorant Garamond', Georgia, serif",
+                minHeight: 210,
+                transition: "opacity 0.4s ease, transform 0.4s ease",
+                opacity: featureVisible ? 1 : 0,
+                transform: featureVisible ? "translateY(0)" : "translateY(10px)",
               }}
             >
-              Plan, celebrate &amp;{" "}
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #C47A2E, #DEB887)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  fontStyle: "italic",
-                }}
-              >
-                remember
-              </span>
-              {" "}every moment.
-            </h1>
+              {/* Feature tag */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                <span style={{ fontSize: 22 }}>{HERO_FEATURES[featureIdx].emoji}</span>
+                <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", padding: "4px 12px", borderRadius: 100 }}>
+                  {HERO_FEATURES[featureIdx].tag}
+                </span>
+              </div>
 
-            <p
-              style={{
-                fontSize: 17,
-                fontWeight: 400,
-                color: "#6B4226",
-                lineHeight: 1.65,
-                marginBottom: 40,
-                maxWidth: 480,
-              }}
-            >
-              From discovering ideas to managing vendors, budgets, guest lists, and bookings, Tendr helps you handle every part of your celebration without the usual stress.
-            </p>
+              {/* Headline */}
+              <h1 style={{ fontSize: "clamp(2rem, 3.8vw, 3.2rem)", fontWeight: 300, lineHeight: 1.18, color: "#2C1A0E", marginBottom: 18, letterSpacing: "0.01em", fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+                <span style={{ background: "linear-gradient(135deg, #C47A2E, #DEB887)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontStyle: "italic" }}>
+                  {HERO_FEATURES[featureIdx].headline.split(" ").slice(0, 3).join(" ")}
+                </span>
+                {" "}{HERO_FEATURES[featureIdx].headline.split(" ").slice(3).join(" ")}
+              </h1>
 
-            <div style={{ display: "flex", gap: 16, alignItems: "center", flexWrap: "wrap" }}>
+              {/* Description */}
+              <p style={{ fontSize: 16, fontWeight: 400, color: "#6B4226", lineHeight: 1.65, marginBottom: 20, maxWidth: 460 }}>
+                {HERO_FEATURES[featureIdx].desc}
+              </p>
+
+              {/* Where to find it */}
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 36 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(139,69,19,0.5)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Find it in</span>
+                <span style={{ fontSize: 11, color: "rgba(139,69,19,0.5)", margin: "0 2px" }}>→</span>
+                <a
+                  href={HERO_FEATURES[featureIdx].href}
+                  style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textDecoration: "none", background: "rgba(196,122,46,0.08)", padding: "3px 10px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)", whiteSpace: "nowrap" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.16)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
+                >
+                  {HERO_FEATURES[featureIdx].where}
+                </a>
+              </div>
+            </div>
+
+            {/* CTA button — always visible */}
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
               <button
                 onClick={() => navigate("/booking")}
-                style={{
-                  background: "linear-gradient(135deg, #E8820C 0%, #CCAB4A 100%)",
-                  color: "#fff",
-                  fontSize: 20,
-                  fontWeight: 800,
-                  letterSpacing: "0.02em",
-                  padding: "18px 48px",
-                  borderRadius: 14,
-                  border: "none",
-                  cursor: "pointer",
-                  boxShadow: "0 6px 28px rgba(232,130,12,0.55)",
-                  transition: "transform 0.2s, box-shadow 0.2s",
-                  fontFamily: "'Outfit', sans-serif",
-                  whiteSpace: "nowrap",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-3px)";
-                  e.currentTarget.style.boxShadow = "0 12px 36px rgba(232,130,12,0.65)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 6px 28px rgba(232,130,12,0.55)";
-                }}
+                style={{ background: "linear-gradient(135deg, #E8820C 0%, #CCAB4A 100%)", color: "#fff", fontSize: 18, fontWeight: 800, letterSpacing: "0.02em", padding: "16px 44px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(232,130,12,0.55)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(232,130,12,0.65)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(232,130,12,0.55)"; }}
               >
                 Plan Your Event →
               </button>
+            </div>
+
+            {/* Dot indicators */}
+            <div style={{ display: "flex", gap: 5, marginTop: 20 }}>
+              {HERO_FEATURES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setFeatureVisible(false); setTimeout(() => { setFeatureIdx(i); setFeatureVisible(true); }, 400); }}
+                  style={{ width: i === featureIdx ? 18 : 6, height: 6, borderRadius: 100, border: "none", background: i === featureIdx ? "#C47A2E" : "rgba(139,69,19,0.2)", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }}
+                />
+              ))}
             </div>
           </div>
 
