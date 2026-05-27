@@ -141,6 +141,9 @@ export default function CustomerDashboard() {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loadingChats, setLoadingChats] = useState(false);
+  const [ghOrders, setGhOrders] = useState([]);
+  const [ghOrdersLoading, setGhOrdersLoading] = useState(false);
+  const [cancellingGhOrder, setCancellingGhOrder] = useState(null);
 
   // Redirect if not logged in
   useEffect(() => {
@@ -163,6 +166,35 @@ export default function CustomerDashboard() {
   };
 
   useEffect(() => { fetchPlans(); }, [token]);
+
+  // Fetch placed gift hamper orders
+  useEffect(() => {
+    if (!token) return;
+    setGhOrdersLoading(true);
+    fetch(`${BASE_URL}/gift-hampers/my-orders`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    })
+      .then(r => r.ok ? r.json() : { orders: [] })
+      .then(d => setGhOrders(Array.isArray(d.orders) ? d.orders : []))
+      .catch(() => {})
+      .finally(() => setGhOrdersLoading(false));
+  }, [token]);
+
+  const cancelGhOrder = async (orderId) => {
+    if (!window.confirm("Cancel this gift hamper order? We will process your refund manually.")) return;
+    setCancellingGhOrder(orderId);
+    try {
+      const res = await fetch(`${BASE_URL}/gift-hampers/orders/${orderId}/cancel`, {
+        method: "PATCH",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      if (res.ok) setGhOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: "cancelled" } : o));
+      else alert("Couldn't cancel order. Please contact us.");
+    } catch { alert("Something went wrong. Please try again."); }
+    setCancellingGhOrder(null);
+  };
 
   // When a paid plan is detected, clear form data so the customer gets a fresh start
   useEffect(() => {
@@ -288,7 +320,7 @@ export default function CustomerDashboard() {
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
     Chats:     visibleChats.length,
-    "Gift Hampers": ghCartItems.length,
+    "Gift Hampers": ghOrders.length,
   };
 
   return (
@@ -781,43 +813,81 @@ export default function CustomerDashboard() {
             )
           )}
 
-          {/* Gift Hampers tab */}
+          {/* Gift Hampers tab — placed orders */}
           {activeTab === "Gift Hampers" && (
-            <div>
-              {ghCartItems.length === 0 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#9B7450", letterSpacing: 0.5 }}>YOUR ORDERS</span>
+                <button onClick={() => navigate("/gift-hampers-cakes")}
+                  style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  + New Order
+                </button>
+              </div>
+
+              {ghOrdersLoading ? (
+                <div style={{ textAlign: "center", padding: "40px", color: "#9B7450" }}>Loading orders…</div>
+              ) : ghOrders.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
                   <div style={{ fontSize: 40, marginBottom: 14 }}>🎁</div>
-                  <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No gift hampers in cart</h4>
-                  <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px" }}>Browse our gift hampers collection and add items to your cart.</p>
+                  <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No orders yet</h4>
+                  <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px" }}>Browse our gift hampers and place your first order.</p>
                   <button onClick={() => navigate("/gift-hampers-cakes")}
                     style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
                     Browse Gift Hampers →
                   </button>
                 </div>
               ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {ghCartItems.map(item => (
-                    <div key={item.productId} style={{ display: "flex", alignItems: "center", gap: 14, background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", padding: "14px 18px", boxShadow: "0 2px 8px rgba(196,122,46,0.06)" }}>
-                      <img src={item.imageUrl || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=80&q=60"} alt={item.name} style={{ width: 56, height: 56, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>{item.name}</div>
-                        {item.productNumber && <div style={{ fontSize: 11, color: "#bbb" }}>#{item.productNumber}</div>}
-                        <div style={{ fontSize: 13, color: "#9B7450", marginTop: 2 }}>Qty: {item.quantity} × ₹{item.pricePerUnit.toLocaleString("en-IN")}</div>
+                ghOrders.map(order => {
+                  const statusColors = {
+                    pending:    { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
+                    confirmed:  { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
+                    processing: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
+                    delivered:  { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
+                    cancelled:  { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" },
+                  };
+                  const sc = statusColors[order.status] || statusColors.pending;
+                  const canCancel = !["delivered", "cancelled"].includes(order.status);
+                  return (
+                    <div key={order._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 20px", boxShadow: "0 2px 8px rgba(196,122,46,0.06)" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Order — {new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
+                          <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Deliver to: {order.city}</div>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                          </span>
+                          <span style={{ fontSize: 15, fontWeight: 900, color: "#C47A2E" }}>₹{order.totalAmount.toLocaleString("en-IN")}</span>
+                        </div>
                       </div>
-                      <div style={{ fontSize: 16, fontWeight: 900, color: "#C47A2E" }}>₹{item.subtotal.toLocaleString("en-IN")}</div>
+
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 12 }}>
+                        {order.items.map((item, i) => (
+                          <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535" }}>
+                            <span>{item.productName} ×{item.quantity}</span>
+                            <span style={{ fontWeight: 600 }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {canCancel && (
+                        <button
+                          disabled={cancellingGhOrder === order._id}
+                          onClick={() => cancelGhOrder(order._id)}
+                          style={{ width: "100%", padding: "9px", borderRadius: 10, border: "1.5px dashed #fca5a5", background: "transparent", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: cancellingGhOrder === order._id ? "not-allowed" : "pointer", fontFamily: font, opacity: cancellingGhOrder === order._id ? 0.6 : 1 }}
+                        >
+                          {cancellingGhOrder === order._id ? "Cancelling…" : "Cancel Order"}
+                        </button>
+                      )}
+                      {order.status === "cancelled" && (
+                        <div style={{ fontSize: 12, color: "#9B7450", textAlign: "center", padding: "6px 0" }}>
+                          Cancelled — refund will be processed manually within 3–5 days
+                        </div>
+                      )}
                     </div>
-                  ))}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", background: "#2C1A0E", borderRadius: 14, marginTop: 4 }}>
-                    <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.8)" }}>Total</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                      <span style={{ fontSize: 20, fontWeight: 900, color: "#CCAB4A" }}>₹{ghCartTotal.toLocaleString("en-IN")}</span>
-                      <button onClick={() => navigate("/gift-hampers-cakes")}
-                        style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                        View Cart →
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                  );
+                })
               )}
             </div>
           )}

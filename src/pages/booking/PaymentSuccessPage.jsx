@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { clearFinalisedVendor, clearVendorCompare } from "../../redux/listingFiltersSlice";
 import { resetEventPlanning } from "../../redux/eventPlanningSlice";
+import { clearCart, selectCartItems } from "../../redux/giftHamperCartSlice";
 import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
@@ -27,9 +28,10 @@ const PaymentSuccessPage = () => {
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [dayofSlots, setDayofSlots] = useState([]);
 
-  // Snapshot event + vendor data BEFORE it gets cleared in useEffect
+  // Snapshot event + vendor + cart data BEFORE it gets cleared in useEffect
   const rawFinalised   = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const rawFormData    = useSelector((s) => s.eventPlanning.formData || {});
+  const rawGhItems     = useSelector(selectCartItems);
   const [confirmedVendors] = useState(() => {
     const vendors = [];
     Object.entries(rawFinalised).forEach(([serviceType, vendorOrArr]) => {
@@ -101,6 +103,29 @@ const PaymentSuccessPage = () => {
   }, []);
 
   useEffect(() => {
+    // Place gift hamper order now that payment is confirmed
+    const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
+    if (rawGhItems.length > 0 && ghDelivery && paymentId) {
+      const token = localStorage.getItem("tendr_token");
+      fetch(`${import.meta.env.VITE_BASE_URL}/gift-hampers/orders`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        credentials: "include",
+        body: JSON.stringify({
+          items:               rawGhItems.map(i => ({ productId: i.productId, quantity: i.quantity })),
+          customerName:        ghDelivery.name,
+          customerPhone:       ghDelivery.phone,
+          deliveryAddress:     ghDelivery.address,
+          city:                ghDelivery.city,
+          pincode:             ghDelivery.pincode || "",
+          specialInstructions: ghDelivery.instructions || "",
+          paymentId,
+        }),
+      }).catch(() => {});
+      sessionStorage.removeItem("gh_delivery");
+    }
+    dispatch(clearCart());
+
     // Clear ALL booking state — payment is complete, fresh start
     dispatch(clearFinalisedVendor());
     dispatch(clearVendorCompare());
