@@ -7,6 +7,7 @@ import tendrLogoImg from "../../assets/logos/tendr-logo-secondary.png";
 import tendrLogo from "../../assets/logos/tendr.png";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
+import { Button, Badge, EmptyState } from "../../components/ui";
 import { resetEventPlanning, setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { useChatOverlay } from "../../context/ChatContext";
@@ -438,7 +439,7 @@ export default function CustomerDashboard() {
           <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px", letterSpacing: "-0.01em" }}>Your Events</h3>
 
           {/* Tabs */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+          <div className="cust-tab-row" style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
             {TABS.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 style={{ padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
@@ -827,25 +828,14 @@ export default function CustomerDashboard() {
               {ghOrdersLoading ? (
                 <div style={{ textAlign: "center", padding: "40px", color: "#9B7450" }}>Loading orders…</div>
               ) : ghOrders.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "56px 24px", background: "#FFFCF5", borderRadius: 16, border: "1.5px dashed rgba(196,122,46,0.25)" }}>
-                  <div style={{ fontSize: 40, marginBottom: 14 }}>🎁</div>
-                  <h4 style={{ fontSize: 18, fontWeight: 700, color: "#2C1A0E", margin: "0 0 8px" }}>No orders yet</h4>
-                  <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px" }}>Browse our gift hampers and place your first order.</p>
-                  <button onClick={() => navigate("/gift-hampers-cakes")}
-                    style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", border: "none", borderRadius: 10, padding: "11px 24px", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
-                    Browse Gift Hampers →
-                  </button>
-                </div>
+                <EmptyState
+                  icon="🎁"
+                  title="No orders yet"
+                  description="Browse our gift hampers and place your first order."
+                  action={{ label: "Browse Gift Hampers →", onClick: () => navigate("/gift-hampers-cakes") }}
+                />
               ) : (
                 ghOrders.map(order => {
-                  const statusColors = {
-                    pending:    { bg: "#fffbeb", color: "#b45309", border: "#fde68a" },
-                    confirmed:  { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
-                    processing: { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-                    delivered:  { bg: "#f0fdf4", color: "#15803d", border: "#bbf7d0" },
-                    cancelled:  { bg: "#fff5f5", color: "#c0392b", border: "#fca5a5" },
-                  };
-                  const sc = statusColors[order.status] || statusColors.pending;
                   const canCancel = !["delivered", "cancelled"].includes(order.status);
                   return (
                     <div key={order._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 20px", boxShadow: "0 2px 8px rgba(196,122,46,0.06)" }}>
@@ -855,9 +845,7 @@ export default function CustomerDashboard() {
                           <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Deliver to: {order.city}</div>
                         </div>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                            {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                          </span>
+                          <Badge status={order.status} />
                           <span style={{ fontSize: 15, fontWeight: 900, color: "#C47A2E" }}>₹{order.totalAmount.toLocaleString("en-IN")}</span>
                         </div>
                       </div>
@@ -872,13 +860,16 @@ export default function CustomerDashboard() {
                       </div>
 
                       {canCancel && (
-                        <button
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          fullWidth
                           disabled={cancellingGhOrder === order._id}
+                          loading={cancellingGhOrder === order._id}
                           onClick={() => cancelGhOrder(order._id)}
-                          style={{ width: "100%", padding: "9px", borderRadius: 10, border: "1.5px dashed #fca5a5", background: "transparent", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: cancellingGhOrder === order._id ? "not-allowed" : "pointer", fontFamily: font, opacity: cancellingGhOrder === order._id ? 0.6 : 1 }}
                         >
                           {cancellingGhOrder === order._id ? "Cancelling…" : "Cancel Order"}
-                        </button>
+                        </Button>
                       )}
                       {order.status === "cancelled" && (
                         <div style={{ fontSize: 12, color: "#9B7450", textAlign: "center", padding: "6px 0" }}>
@@ -988,7 +979,7 @@ export default function CustomerDashboard() {
                     return (
                       <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 14 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Your Documents</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+                        <div className="plan-card-actions" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
                           <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: user?.name }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>🧾</span>Invoice

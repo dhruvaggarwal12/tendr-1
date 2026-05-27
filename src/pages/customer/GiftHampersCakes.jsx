@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
+import { Button, Input } from "../../components/ui";
 import {
   addToCart, removeFromCart, updateQuantity, clearCart,
   selectCartItems, selectCartTotal, selectCartCount,
@@ -211,37 +212,42 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
     );
   }
 
-  const inp = { padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: font, outline: "none", width: "100%", boxSizing: "border-box" };
-
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.45)" }} />
-      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "min(92vw,440px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font }}>
+      <div className="gh-checkout-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "min(92vw,440px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
           <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: 0 }}>Delivery Details</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 18 }}>✕</button>
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {[
-            { key: "name",    label: "Full Name *",        placeholder: "Your name" },
-            { key: "phone",   label: "Phone Number *",     placeholder: "10-digit number" },
-            { key: "address", label: "Delivery Address *", placeholder: "House no, street, area" },
-            { key: "city",    label: "City *",             placeholder: "e.g. Delhi, Noida" },
-            { key: "pincode", label: "Pincode",            placeholder: "110001" },
-          ].map(({ key, label, placeholder }) => (
-            <div key={key}>
-              <label style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 5 }}>{label}</label>
-              <input value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} placeholder={placeholder} style={inp} />
-            </div>
+            { key: "name",    label: "Full Name",        placeholder: "Your name",              required: true },
+            { key: "phone",   label: "Phone Number",     placeholder: "10-digit number",        required: true },
+            { key: "address", label: "Delivery Address", placeholder: "House no, street, area", required: true },
+            { key: "city",    label: "City",             placeholder: "e.g. Delhi, Noida",      required: true },
+            { key: "pincode", label: "Pincode",          placeholder: "110001",                 required: false },
+          ].map(({ key, label, placeholder, required }) => (
+            <Input
+              key={key}
+              label={label}
+              value={form[key]}
+              onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
+              placeholder={placeholder}
+              required={required}
+            />
           ))}
-          <div>
-            <label style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", display: "block", marginBottom: 5 }}>Special Instructions</label>
-            <textarea value={form.instructions} onChange={e => setForm(p => ({ ...p, instructions: e.target.value }))} rows={2} placeholder="Any special requests..." style={{ ...inp, resize: "none" }} />
-          </div>
+          <Input
+            label="Special Instructions"
+            value={form.instructions}
+            onChange={e => setForm(p => ({ ...p, instructions: e.target.value }))}
+            placeholder="Any special requests..."
+            rows={2}
+          />
           {err && <p style={{ fontSize: 12, color: "#c0392b", margin: 0 }}>{err}</p>}
-          <button onClick={handleSubmit} style={{ padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, marginTop: 4, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
-            Review & Pay →
-          </button>
+          <Button variant="primary" size="lg" fullWidth onClick={handleSubmit} style={{ marginTop: 4, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+            Review &amp; Pay →
+          </Button>
         </div>
       </div>
     </>

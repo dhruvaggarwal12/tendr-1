@@ -378,10 +378,11 @@ const BookingReviewPage = () => {
           </div>
         )}
 
-        <div className="booking-review-grid" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
+        <div className="booking-review-grid booking-review-main" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
 
           {/* ── LEFT: Event details (sticky) ── */}
           <div
+            className="booking-review-sidebar"
             style={{
               background: "#fff",
               borderRadius: 18,
@@ -508,6 +509,7 @@ const BookingReviewPage = () => {
                   {/* Accordion header — always visible */}
                   <button
                     onClick={() => toggleOpen(serviceType)}
+                    className="booking-vendor-card"
                     style={{
                       width: "100%",
                       display: "flex",

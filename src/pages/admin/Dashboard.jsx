@@ -9,6 +9,7 @@ import { io } from "socket.io-client";
 import EastIcon from "@mui/icons-material/East";
 
 import Dashboards_Nav from "../../components/Dashboards_Nav";
+import { Badge } from "../../components/ui";
 
 import {
   LineChart_UserVendorGrowth_AdminDashboard,
@@ -933,6 +934,11 @@ const AdminDashboard = () => {
             {chatRequests.length === 0 ? (
               <div className="text-center py-16 text-gray-400 text-lg">No chat requests yet.</div>
             ) : (
+              <div className="adm-section">
+                <div className="adm-section-header">
+                  <span className="adm-section-title">Chat Requests</span>
+                  <span className="adm-section-count">{chatRequests.length}</span>
+                </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {chatRequests.map((req) => (
                   <div key={req._id} style={{ background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A", padding: "20px 24px", boxShadow: "0 2px 12px rgba(139,69,19,0.07)" }}>
@@ -943,12 +949,7 @@ const AdminDashboard = () => {
                           <span style={{ fontSize: 12, color: "#9B7450" }}>wants to chat with</span>
                           <span style={{ fontWeight: 800, fontSize: 16, color: "#C47A2E" }}>{req.vendorName || req.vendorId?.name || "Vendor"}</span>
                           <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "#eff6ff", color: "#0369a1", border: "1px solid #bfdbfe", fontWeight: 600 }}>{req.serviceType}</span>
-                          <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, fontWeight: 600,
-                            ...(req.chatApproved ? { background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }
-                            : req.chatRejected ? { background: "#fff5f5", color: "#c0392b", border: "1px solid #fca5a5" }
-                            : { background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }) }}>
-                            {req.chatApproved ? "Approved" : req.chatRejected ? "Rejected" : "Pending"}
-                          </span>
+                          <Badge status={req.chatApproved ? "approved" : req.chatRejected ? "rejected" : "pending"} />
                           {/* Expiry countdown */}
                           {(() => { const h = hoursLeft(req); return h !== null && h <= 6 ? (
                             <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: h <= 2 ? "#fff5f5" : "#fffbeb", color: h <= 2 ? "#c0392b" : "#b45309", border: `1px solid ${h <= 2 ? "#fca5a5" : "#fde68a"}`, fontWeight: 600 }}>
@@ -1065,6 +1066,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 ))}
+              </div>
               </div>
             )}
           </div>
@@ -1279,7 +1281,7 @@ const AdminDashboard = () => {
             </div>
 
             {/* Tabs */}
-            <div style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
+            <div className="adm-tab-row" style={{ display: "flex", gap: 6, marginBottom: 20, flexWrap: "wrap" }}>
               {BOOKING_TABS.map((tab) => {
                 const count = tab === "All" ? eventPlans.length : eventPlans.filter((p) => (BOOKING_STATUS[tab] || []).includes(p.status)).length;
                 return (
@@ -1317,6 +1319,18 @@ const AdminDashboard = () => {
               </div>
             ) : (
               <div className="mb-8">
+                {bookingTab === "Upcoming" && (
+                  <div className="adm-section-header" style={{ marginBottom: 16 }}>
+                    <span className="adm-section-title">Upcoming Bookings</span>
+                    <span className="adm-section-count">{filteredPlans.length}</span>
+                  </div>
+                )}
+                {bookingTab === "Ongoing" && (
+                  <div className="adm-section-header" style={{ marginBottom: 16 }}>
+                    <span className="adm-section-title">Ongoing Plans</span>
+                    <span className="adm-section-count">{filteredPlans.length}</span>
+                  </div>
+                )}
                 <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-x-auto">
                   <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
                     <thead>
@@ -1519,6 +1533,12 @@ const AdminDashboard = () => {
               </div>
 
               {/* Payments table */}
+              <div className="adm-section">
+                <div className="adm-section-header">
+                  <span className="adm-section-title">Payment Records</span>
+                  <span className="adm-section-count">{paymentsList.length}</span>
+                </div>
+              </div>
               <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-hidden">
                 <div className="px-6 py-4 border-b border-[#F1E1A8] flex justify-between items-center">
                   <h3 className="font-semibold text-lg text-black">All Transactions</h3>
@@ -3186,6 +3206,12 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
+              <div className="adm-section">
+                <div className="adm-section-header">
+                  <span className="adm-section-title">Gift Hamper Orders</span>
+                  <span className="adm-section-count">{ghOrders.length}</span>
+                </div>
+              </div>
               {ghLoading ? (
                 <p style={{ color: "#9B7450" }}>Loading orders…</p>
               ) : ghOrders.length === 0 ? (
@@ -3220,12 +3246,7 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                              <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 100,
-                                background: order.status === "delivered" ? "#f0fdf4" : order.status === "confirmed" ? "#eff6ff" : "#fffbeb",
-                                color: order.status === "delivered" ? "#15803d" : order.status === "confirmed" ? "#0369a1" : "#b45309",
-                                border: `1px solid ${order.status === "delivered" ? "#bbf7d0" : order.status === "confirmed" ? "#bfdbfe" : "#fde68a"}` }}>
-                                {order.status}
-                              </span>
+                              <Badge status={order.status} />
                               <select
                                 value={order.status}
                                 onClick={e => e.stopPropagation()}
