@@ -263,7 +263,7 @@ const Home = () => {
         setFeatureIdx(i => (i + 1) % HERO_FEATURES.length);
         setFeatureVisible(true);
       }, 400);
-    }, 3500);
+    }, 5000);
     return () => clearInterval(t);
   }, []);
 
@@ -489,11 +489,6 @@ const Home = () => {
           {/* ── Left: rotating features + CTA ── */}
           <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
 
-            {/* Static top line */}
-            <span style={{ display: "inline-block", background: "rgba(139,69,19,0.1)", color: "#8B4513", fontSize: 13, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", padding: "5px 14px", borderRadius: 100, marginBottom: 28, width: "fit-content" }}>
-              Delhi NCR's Trusted Platform
-            </span>
-
             {/* Rotating feature block */}
             <div
               style={{
@@ -551,16 +546,39 @@ const Home = () => {
               </button>
             </div>
 
-            {/* Dot indicators */}
-            <div style={{ display: "flex", gap: 5, marginTop: 20 }}>
-              {HERO_FEATURES.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setFeatureVisible(false); setTimeout(() => { setFeatureIdx(i); setFeatureVisible(true); }, 400); }}
-                  style={{ width: i === featureIdx ? 18 : 6, height: 6, borderRadius: 100, border: "none", background: i === featureIdx ? "#C47A2E" : "rgba(139,69,19,0.2)", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }}
-                />
-              ))}
-            </div>
+            {/* Dot indicators + prev/next arrows */}
+            {(() => {
+              const goFeature = (dir) => {
+                setFeatureVisible(false);
+                setTimeout(() => {
+                  setFeatureIdx(i => (i + dir + HERO_FEATURES.length) % HERO_FEATURES.length);
+                  setFeatureVisible(true);
+                }, 400);
+              };
+              const arrowStyle = { width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, transition: "all 0.2s", flexShrink: 0 };
+              return (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 20 }}>
+                  <button style={arrowStyle} onClick={() => goFeature(-1)}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.18)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.35)"; }}>
+                    ‹
+                  </button>
+                  <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
+                    {HERO_FEATURES.map((_, i) => (
+                      <button key={i}
+                        onClick={() => { setFeatureVisible(false); setTimeout(() => { setFeatureIdx(i); setFeatureVisible(true); }, 400); }}
+                        style={{ width: i === featureIdx ? 18 : 6, height: 6, borderRadius: 100, border: "none", background: i === featureIdx ? "#C47A2E" : "rgba(139,69,19,0.2)", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }}
+                      />
+                    ))}
+                  </div>
+                  <button style={arrowStyle} onClick={() => goFeature(1)}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.18)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.35)"; }}>
+                    ›
+                  </button>
+                </div>
+              );
+            })()}
           </div>
 
           {/* ── Right: photo carousel ── */}
@@ -716,7 +734,7 @@ const Home = () => {
           { icon: "🏙", label: "Cities", color: "#7A4A1E", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Faridabad", "Greater Noida"] },
           { icon: "🎯", label: "Services", color: "#C47A2E", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup"] },
           { icon: "🎉", label: "Events", color: "#8B4513", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
-          { icon: "✨", label: "Platform", color: "#C47A2E", items: ["Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
+          { icon: "✨", label: "Platform", color: "#C47A2E", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
         ];
 
         const strip = [...GROUPS, ...GROUPS]; // duplicate for seamless loop
