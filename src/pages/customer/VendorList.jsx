@@ -134,11 +134,21 @@ const VendorList = () => {
     navigate('/booking/review', { state: { booking: bookingDetails } });
   };
 
-  // Read ?serviceType=X from URL and apply as a filter (used by HamburgerNav "Browse" buttons)
+  // Read URL query params and apply as filters (HamburgerNav "Browse" + rejection WA link pre-fill)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const svcParam = params.get("serviceType");
-    if (svcParam) dispatch(setFilters({ serviceType: svcParam }));
+    const updates = {};
+    const svc      = params.get("serviceType");
+    const evType   = params.get("eventType");
+    const dt       = params.get("date");
+    const guests   = params.get("guests");
+    const loc      = params.get("location");
+    if (svc)    updates.serviceType  = svc;
+    if (evType) updates.eventType    = evType;
+    if (dt)     updates.date         = dt;
+    if (guests) updates.guestCount   = parseInt(guests) || guests;
+    if (loc)    updates.locationType = loc;
+    if (Object.keys(updates).length) dispatch(setFilters(updates));
   }, []); // eslint-disable-line
 
   // Gate: redirect to /booking if user hasn't filled ALL 5 event form fields
@@ -146,6 +156,8 @@ const VendorList = () => {
     if (user?.isAdmin) return;
     if (finalisedCount > 0) return;
     if (location.state?.selectedCategories?.length) return;
+    // Bypass gate when arriving from a rejected-chat WA link (event details in URL)
+    if (new URLSearchParams(location.search).get("from") === "rejected") return;
 
     // All 5 fields must be present in Redux
     if (formEventType && locationType && date && guestCount && budget) return;

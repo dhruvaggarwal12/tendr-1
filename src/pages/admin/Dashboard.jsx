@@ -1033,12 +1033,12 @@ const AdminDashboard = () => {
                                 credentials: "include",
                               })
                                 .then(r => r.json())
-                                .then(d => alert(d.error ? `Error: ${d.error}` : "✅ Customer notified on WhatsApp"))
+                                .then(d => alert(d.error ? `Error: ${d.error}` : "✅ Re-notification sent"))
                                 .catch(() => alert("Failed to send notification"));
                             }}
                             style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #CCAB4A", background: "#fffbeb", color: "#b45309", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "inline-flex", alignItems: "center", gap: 5 }}
                           >
-                            📲 Notify Customer
+                            📲 Re-send Notification
                           </button>
                         )}
                         {/* Delete — available for all request states */}
@@ -1331,11 +1331,20 @@ const AdminDashboard = () => {
                     <span className="adm-section-count">{filteredPlans.length}</span>
                   </div>
                 )}
+                {bookingTab === "Cancelled" && (
+                  <div className="adm-section-header" style={{ marginBottom: 16 }}>
+                    <span className="adm-section-title">Cancelled Bookings</span>
+                    <span className="adm-section-count">{filteredPlans.length}</span>
+                  </div>
+                )}
                 <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-x-auto">
                   <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
                     <thead>
                       <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
-                        {["Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type", "Actions"].map((h) => (
+                        {[
+                          "Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type",
+                          ...(bookingTab === "Cancelled" ? ["Reason"] : ["Actions"]),
+                        ].map((h) => (
                           <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
                         ))}
                       </tr>
@@ -1363,6 +1372,11 @@ const AdminDashboard = () => {
                                 {plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It"}
                               </span>
                             </td>
+                            {bookingTab === "Cancelled" ? (
+                              <td style={{ padding: "10px 14px", fontSize: 12, color: "#c0392b", fontStyle: "italic", maxWidth: 200 }}>
+                                {plan.cancelledReason || "—"}
+                              </td>
+                            ) : (
                             <td style={{ padding: "10px 14px" }}>
                               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                 {/* Unpaid: Event Details WA + View Pinned + Mark Payment Done */}
@@ -1490,6 +1504,7 @@ const AdminDashboard = () => {
                                 )}
                               </div>
                             </td>
+                            )}
                           </tr>
                         );
                       })}
