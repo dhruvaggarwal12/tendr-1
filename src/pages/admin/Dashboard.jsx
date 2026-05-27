@@ -1023,6 +1023,23 @@ const AdminDashboard = () => {
                             📱 Notify on WhatsApp
                           </a>
                         )}
+                        {req.chatRejected && (
+                          <button
+                            onClick={() => {
+                              fetch(`${BASE_URL}/admin/chat-requests/${req._id}/notify-rejected`, {
+                                method: "POST",
+                                headers: { Authorization: `Bearer ${token}` },
+                                credentials: "include",
+                              })
+                                .then(r => r.json())
+                                .then(d => alert(d.error ? `Error: ${d.error}` : "✅ Customer notified on WhatsApp"))
+                                .catch(() => alert("Failed to send notification"));
+                            }}
+                            style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #CCAB4A", background: "#fffbeb", color: "#b45309", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "inline-flex", alignItems: "center", gap: 5 }}
+                          >
+                            📲 Notify Customer
+                          </button>
+                        )}
                         {/* Delete — available for all request states */}
                         <button
                           onClick={() => {
