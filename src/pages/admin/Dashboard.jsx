@@ -1328,25 +1328,20 @@ const AdminDashboard = () => {
                                     </>
                                   );
                                 })()}
-                                {/* Paid: Event Details PDF WA + Invitation WA + Invoice */}
+                                {/* Paid: Send to Customer (dashboard link) + Invoice */}
                                 {plan.status === "in_progress" && (() => {
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
                                   const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
                                   const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({ name: v.vendorName || v.name || "", serviceType: v.serviceType || "" })).filter(v => v.name);
                                   const name = plan.customerId?.name || "there";
-                                  const inviteWA = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${name}! 🎉\n\nYour event invitation is ready!\n\nEvent: ${plan.eventType || ""} ${plan.date ? "on " + plan.date : ""}\n\nLog in to your Tendr dashboard to download your personalised invitation card.\n\ntendrito.com/dashboard\n\n— Team Tendr 💛`)}` : null;
+                                  const dashboardLink = `${window.location.origin}/dashboard`;
+                                  const sendWA = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${name}! 🎉\n\nYour event is planned!\n\nYou can download your Event Details and Invitation Flyer from your Tendr dashboard:\n\n${dashboardLink}\n\n— Team Tendr 💛`)}` : null;
                                   return (
                                     <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                                      {phone && (
-                                        <button onClick={() => notifyEventDetailsWhatsApp(plan)}
-                                          style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                          📲 Event Details
-                                        </button>
-                                      )}
-                                      {inviteWA && (
-                                        <a href={inviteWA} target="_blank" rel="noopener noreferrer"
+                                      {sendWA && (
+                                        <a href={sendWA} target="_blank" rel="noopener noreferrer"
                                           style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
-                                          📲 Invitation
+                                          📲 Send to Customer
                                         </a>
                                       )}
                                       <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name }); } finally { setPdfGenerating(false); } }}
@@ -3309,7 +3304,7 @@ const AdminDashboard = () => {
                                   style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                   🧾 Invoice
                                 </button>
-                                <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await notifyEventDetailsWhatsApp(plan, true); } finally { setPdfGenerating(false); } }}
+                                <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: {}, userName: plan.customerId?.name, orderId: plan.orderId }); } finally { setPdfGenerating(false); } }}
                                   style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                   📋 Event PDF
                                 </button>
