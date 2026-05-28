@@ -302,8 +302,9 @@ const BookingReviewPage = () => {
   const saveEventPlan = async () => {
     if (!token) return null;
     try {
+      // Use only the SELECTED vendor per category, not the full array
       const finalisedVendorIds = {};
-      Object.entries(finalisedVendors).forEach(([serviceType, vendor]) => {
+      vendorEntries.forEach(([serviceType, vendor]) => {
         if (vendor?._id) finalisedVendorIds[serviceType] = vendor._id;
       });
       const res = await fetch(`${BASE_URL}/event-plans`, {
@@ -875,7 +876,10 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_notes");
                           const grandTotal = confirmedTotal + ghTotal;
                           const finalAmount = appliedCode ? applyDiscount(grandTotal).finalTotal : grandTotal;
-                          navigate("/booking/payment", { state: { finalisedVendors, formData, totalAmount: finalAmount, referralCode: appliedCode || null, eventPlanId } });
+                          // Only pass the selected vendor per category to payment, not the full array
+                          const selectedVendorsForPayment = {};
+                          vendorEntries.forEach(([cat, v]) => { if (v) selectedVendorsForPayment[cat] = v; });
+                          navigate("/booking/payment", { state: { finalisedVendors: selectedVendorsForPayment, formData, totalAmount: finalAmount, referralCode: appliedCode || null, eventPlanId } });
                         }}
                         style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
                       >
