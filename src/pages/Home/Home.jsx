@@ -925,29 +925,11 @@ const Home = () => {
                   {n}
                 </span>
 
-                {/* Icon */}
-                <motion.div
-                  initial={{ scale: 0, rotate: -20 }}
-                  whileInView={{ scale: 1, rotate: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ type: "spring", stiffness: 200, damping: 12, delay: i * 0.1 + 0.15 }}
-                  whileHover={{ scale: 1.18, rotate: 8 }}
-                  style={{
-                    width: 52, height: 52, borderRadius: 14,
-                    background: "linear-gradient(135deg,rgba(204,171,74,0.2),rgba(196,122,46,0.12))",
-                    border: "1px solid rgba(204,171,74,0.25)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: 22, flexShrink: 0,
-                  }}
-                >
-                  {icon}
-                </motion.div>
-
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A", opacity: 0.85 }}>
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>
                   Step {n} · {time}
                 </span>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
-                <p style={{ fontSize: 12.5, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
 
                 {/* Connector arrow */}
                 {i < 4 && (
