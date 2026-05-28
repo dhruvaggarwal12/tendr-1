@@ -11,7 +11,7 @@ import { easeIn, motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import corpo from "../../assets/ui/corpo.jpg";
-import celebrationKit from "../../assets/ui/celebration-kit.jpg";
+import celebrationKit from "../../assets/ui/celebration-kit.jpeg";
 import heroCorporate from "../../assets/ui/hero-corporate.png";
 import heroHouseParty from "../../assets/ui/hero-house-party.png";
 import heroAnniversary from "../../assets/ui/hero-anniversary.png";
