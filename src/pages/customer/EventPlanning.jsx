@@ -72,6 +72,7 @@ const EventPlanning = () => {
   const [smartPlan, setSmartPlan] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [planError, setPlanError] = useState(false);
+  const [planErrorMsg, setPlanErrorMsg] = useState("");
   const [vendorOffset, setVendorOffset] = useState({});
   const [expandedCat, setExpandedCat] = useState(null);
   const [showSplitAdjust, setShowSplitAdjust] = useState(false);
@@ -737,6 +738,29 @@ const EventPlanning = () => {
     );
   }
 
+  const fetchSmartPlan = async () => {
+    if (selectedVendors.length === 0) return;
+    setPlanLoading(true);
+    setPlanError(false);
+    setPlanErrorMsg("");
+    try {
+      const result = await getSmartPlan({
+        eventType: formData?.eventType,
+        guests: formData?.guests,
+        budget: formData?.budget,
+        location: formData?.location,
+        categories: selectedVendors,
+      });
+      setSmartPlan(result);
+    } catch (err) {
+      console.error('Smart plan fetch failed:', err);
+      setPlanError(true);
+      setPlanErrorMsg(err?.message || "Unknown error");
+    } finally {
+      setPlanLoading(false);
+    }
+  };
+
   if (showVendorScreen) {
     const isYouDoIt = bookingType === "you-do-it";
 
@@ -847,9 +871,10 @@ const EventPlanning = () => {
               <div style={{ background: "#fff8f2", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "18px 24px", textAlign: "center", maxWidth: 420, fontFamily: "'Outfit', sans-serif" }}>
                 <div style={{ fontSize: 28, marginBottom: 8 }}>😕</div>
                 <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 6px" }}>Couldn't build your plan right now</p>
-                <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px" }}>Try again or talk to our team directly.</p>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px" }}>Our server may be waking up — try again in a moment.</p>
+                {planErrorMsg && <p style={{ fontSize: 11, color: "#bbb", margin: "0 0 12px", wordBreak: "break-all" }}>{planErrorMsg}</p>}
                 <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
-                  <button onClick={() => setPlanError(false)}
+                  <button onClick={() => fetchSmartPlan()}
                     style={{ padding: "9px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                     ↺ Try Again
                   </button>
@@ -878,25 +903,7 @@ const EventPlanning = () => {
             ) : (
               <button
                 disabled={selectedVendors.length === 0 || planLoading}
-                onClick={async () => {
-                  if (selectedVendors.length === 0) return;
-                  setPlanLoading(true);
-                  try {
-                    const result = await getSmartPlan({
-                      eventType: formData?.eventType,
-                      guests: formData?.guests,
-                      budget: formData?.budget,
-                      location: formData?.location,
-                      categories: selectedVendors,
-                    });
-                    setSmartPlan(result);
-                  } catch (err) {
-                    console.error('Smart plan fetch failed:', err);
-                    setPlanError(true);
-                  } finally {
-                    setPlanLoading(false);
-                  }
-                }}
+                onClick={() => fetchSmartPlan()}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 && !planLoading ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0 && !planLoading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
