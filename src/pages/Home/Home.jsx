@@ -1004,6 +1004,30 @@ const Home = () => {
         `}</style>
       </section>
 
+      {/* ── Trust bar ── */}
+      <section style={{ background: "#fff", borderTop: "1px solid rgba(196,122,46,0.1)", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "28px 24px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 0, flexWrap: "wrap" }}>
+          {[
+            { icon: "🛡️", stat: "Manually Verified",        sub: "Every vendor is personally reviewed before listing" },
+            { icon: "🎉", stat: "5,000+ Events Completed",  sub: "Collectively delivered by our vendor network" },
+            { icon: "⚡", stat: "Response in 24 hrs",       sub: "A real person responds to every booking request" },
+          ].map(({ icon, stat, sub }, i, arr) => (
+            <div key={stat} style={{ display: "flex", alignItems: "center", gap: 0, flex: "1 1 220px", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 28px", flex: 1 }}>
+                <span style={{ fontSize: 28, flexShrink: 0 }}>{icon}</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.3 }}>{stat}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4, marginTop: 2 }}>{sub}</div>
+                </div>
+              </div>
+              {i < arr.length - 1 && (
+                <div style={{ width: 1, height: 40, background: "rgba(196,122,46,0.18)", flexShrink: 0, alignSelf: "center" }} />
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
       <JourneyFlow />
 
       {/* ── Memories Section — admin preview only ── */}
