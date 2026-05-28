@@ -1701,6 +1701,19 @@ const AdminDashboard = () => {
           };
 
 
+          const openEditVendor = async (partialVendor) => {
+            try {
+              const res = await fetch(`${BASE_URL}/admin/vendors/${partialVendor._id}`, {
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: 'include',
+              });
+              const data = await res.json();
+              setEditingVendor(data.data || partialVendor);
+            } catch {
+              setEditingVendor(partialVendor);
+            }
+          };
+
           const handleDeleteVendor = async (vendor) => {
             if (!window.confirm(
               `Delete "${vendor.name}" (${vendor.serviceType})?\n\nThis will also delete all their conversations and messages. This cannot be undone.`
@@ -1904,7 +1917,7 @@ const AdminDashboard = () => {
                           </button>
                         )}
                         <button
-                          onClick={(e) => { e.stopPropagation(); setEditingVendor(v); }}
+                          onClick={(e) => { e.stopPropagation(); openEditVendor(v); }}
                           title="Edit vendor"
                           style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
                           onMouseEnter={(e) => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
@@ -1987,7 +2000,7 @@ const AdminDashboard = () => {
                       </div>
                       <div style={{ display: "flex", gap: 10 }}>
                         <button
-                          onClick={() => { setEditingVendor(selectedVendor); setSelectedVendor(null); }}
+                          onClick={() => { openEditVendor(selectedVendor); setSelectedVendor(null); }}
                           style={{ flex: 1, padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
                         >
                           ✏️ Edit Vendor
