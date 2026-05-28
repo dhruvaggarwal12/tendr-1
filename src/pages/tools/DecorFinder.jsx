@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -171,6 +172,7 @@ const THEME_EMOJI  = {
 // ── Component ───────────────────────────────────────────────────────────────
 export default function DecorFinder() {
   const navigate = useNavigate();
+  const { openVendorChat } = useChatOverlay();
   const [step, setStep]         = useState(0); // 0 = quiz, 1 = result
   const [qIdx, setQIdx]         = useState(0);
   const [answers, setAnswers]   = useState({});
@@ -327,6 +329,7 @@ export default function DecorFinder() {
 
                   {/* Real photos from DB */}
                   {themePhotos.length > 0 && (
+                    <>
                     <div style={{ position: "relative", background: "#1a0a00" }}>
                       <img
                         src={curPhoto.imageUrl}
@@ -358,6 +361,18 @@ export default function DecorFinder() {
                         </div>
                       </div>
                     </div>
+                    {/* Chat button for vendor-attributed photos */}
+                    {curPhoto.vendorId && curPhoto.vendorName && (
+                      <div style={{ padding: "10px 18px 0" }}>
+                        <button
+                          onClick={() => openVendorChat({ _id: curPhoto.vendorId, name: curPhoto.vendorName, serviceType: "Decorator" })}
+                          style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 12px rgba(196,122,46,0.28)", letterSpacing: "0.01em" }}
+                        >
+                          Chat with {curPhoto.vendorName} →
+                        </button>
+                      </div>
+                    )}
+                    </>
                   )}
 
                   <div style={{ padding: "14px 18px" }}>

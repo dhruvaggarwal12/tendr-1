@@ -330,7 +330,7 @@ const EventPlanning = () => {
           </div>
 
           {/* Budget breakdown pills */}
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 44 }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: selectedVendors.includes("Decorator") ? 20 : 44 }}>
             {smartPlan.lineup.map(({ category, estimatedCost }) => (
               <span key={category} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "6px 16px", fontSize: 13, fontWeight: 700, color: "#2C1A0E", boxShadow: "0 1px 4px rgba(196,122,46,0.08)" }}>
                 <span style={{ color: "#C47A2E" }}>
@@ -340,6 +340,23 @@ const EventPlanning = () => {
               </span>
             ))}
           </div>
+
+          {/* Decor Finder nudge card */}
+          {selectedVendors.includes("Decorator") && (
+            <div style={{ width: "100%", maxWidth: 700, marginBottom: 36, background: "linear-gradient(135deg, rgba(196,122,46,0.06), rgba(204,171,74,0.1))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 16, padding: "16px 22px", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 30 }}>🎀</span>
+              <div style={{ flex: 1, minWidth: 180 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Get decor inspiration first</div>
+                <div style={{ fontSize: 12.5, color: "#7A5535" }}>Browse real vendor photos by theme — Floral, Balloon Art, Lighting &amp; more</div>
+              </div>
+              <button
+                onClick={() => navigate("/decor-finder")}
+                style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+              >
+                Try Decor Finder →
+              </button>
+            </div>
+          )}
 
           {/* Per-category vendor cards */}
           <div style={{ width: "100%", maxWidth: 1100, display: "flex", flexDirection: "column", gap: 40 }}>
@@ -359,44 +376,49 @@ const EventPlanning = () => {
                     {" "}and we'll help you find one.
                   </div>
                 ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
-                    {catVendors.map((vendor) => (
-                      <div key={vendor._id} style={{ background: "#fff", borderRadius: 18, overflow: "hidden", boxShadow: "0 2px 14px rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.12)", display: "flex", flexDirection: "column" }}>
-                        {/* Vendor photo */}
-                        <div style={{ height: 160, background: "#f3ebe0", position: "relative", overflow: "hidden" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    {catVendors.map((vendor, vi) => (
+                      <div key={vendor._id} style={{ background: "#fff", borderRadius: 16, overflow: "hidden", boxShadow: vi === 0 ? "0 4px 20px rgba(196,122,46,0.15)" : "0 2px 10px rgba(196,122,46,0.08)", border: vi === 0 ? "1.5px solid rgba(196,122,46,0.22)" : "1.5px solid rgba(196,122,46,0.1)", display: "flex", flexDirection: "row" }}>
+                        {/* Photo */}
+                        <div style={{ width: vi === 0 ? 150 : 100, flexShrink: 0, position: "relative", overflow: "hidden", background: "#f3ebe0" }}>
                           {vendor.portfolioPhotos?.[0] ? (
                             <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           ) : (
-                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>
+                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: vi === 0 ? 36 : 28 }}>
                               {category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}
+                            </div>
+                          )}
+                          {vi === 0 && (
+                            <div style={{ position: "absolute", top: 8, left: 8, background: "#CCAB4A", color: "#fff", fontSize: 9, fontWeight: 800, padding: "3px 8px", borderRadius: 100, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                              Top Pick
                             </div>
                           )}
                         </div>
 
-                        {/* Vendor info */}
-                        <div style={{ padding: "16px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
-                          <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>{vendor.name}</div>
-                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                            {vendor.avgReviewScore > 0 && (
-                              <span style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700 }}>{stars(vendor.avgReviewScore)} <span style={{ color: "#9B7450" }}>({vendor.avgReviewScore.toFixed(1)})</span></span>
-                            )}
-                            {vendor.totalEventsCompleted > 0 && (
-                              <span style={{ fontSize: 11.5, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "2px 10px" }}>
-                                🎉 {vendor.totalEventsCompleted}+ events
-                              </span>
+                        {/* Info */}
+                        <div style={{ flex: 1, padding: vi === 0 ? "16px 18px" : "12px 14px", display: "flex", flexDirection: "column", justifyContent: "space-between", minWidth: 0 }}>
+                          <div>
+                            <div style={{ fontSize: vi === 0 ? 15 : 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 5 }}>{vendor.name}</div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
+                              {vendor.avgReviewScore > 0 && (
+                                <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700 }}>{stars(vendor.avgReviewScore)} <span style={{ color: "#9B7450" }}>({vendor.avgReviewScore.toFixed(1)})</span></span>
+                              )}
+                              {vendor.totalEventsCompleted > 0 && (
+                                <span style={{ fontSize: 10.5, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "2px 8px" }}>
+                                  🎉 {vendor.totalEventsCompleted}+ events
+                                </span>
+                              )}
+                            </div>
+                            {vendor.yearsOfExperience > 0 && (
+                              <div style={{ fontSize: 11, color: "#9B7450" }}>{vendor.yearsOfExperience} yr{vendor.yearsOfExperience !== 1 ? "s" : ""} exp</div>
                             )}
                           </div>
-                          {vendor.yearsOfExperience > 0 && (
-                            <div style={{ fontSize: 12, color: "#9B7450" }}>{vendor.yearsOfExperience} yr{vendor.yearsOfExperience !== 1 ? "s" : ""} experience</div>
-                          )}
-                          <div style={{ marginTop: "auto", paddingTop: 12 }}>
-                            <button
-                              onClick={() => openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType })}
-                              style={{ width: "100%", padding: "11px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}
-                            >
-                              Chat & Confirm Price →
-                            </button>
-                          </div>
+                          <button
+                            onClick={() => openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType })}
+                            style={{ marginTop: 10, padding: vi === 0 ? "10px 0" : "7px 0", borderRadius: 9, border: vi === 0 ? "none" : "1.5px solid rgba(196,122,46,0.4)", background: vi === 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "transparent", color: vi === 0 ? "#fff" : "#C47A2E", fontSize: vi === 0 ? 13 : 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: vi === 0 ? "0 3px 12px rgba(196,122,46,0.3)" : "none" }}
+                          >
+                            {vi === 0 ? "Chat & Confirm Price →" : "Chat →"}
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -422,6 +444,34 @@ const EventPlanning = () => {
             </button>
           </div>
         </div>
+      </div>
+      </>
+    );
+  }
+
+  if (showVendorScreen && planLoading) {
+    return (
+      <>
+      <div style={{ minHeight: "100vh", background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}>
+        <BasicSpeedDial />
+        <HamburgerNav active="Browse" noSidebar />
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 72px)", padding: "40px 20px", textAlign: "center" }}>
+          <div style={{ width: 60, height: 60, border: "5px solid rgba(196,122,46,0.15)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "tendr-spin 0.8s linear infinite", marginBottom: 32 }} />
+          <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 800, color: "#2C1A0E", marginBottom: 10, letterSpacing: "-0.01em" }}>
+            Building your plan…
+          </h2>
+          <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 340 }}>
+            Matching top vendors to your budget &amp; event preferences
+          </p>
+          <div style={{ display: "flex", gap: 8, marginTop: 28, flexWrap: "wrap", justifyContent: "center" }}>
+            {selectedVendors.map(cat => (
+              <span key={cat} style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 700, border: "1.5px solid rgba(196,122,46,0.2)" }}>
+                {cat === "Caterer" ? "🍽" : cat === "Decorator" ? "🎀" : cat === "Photographer" ? "📸" : "🎵"} {cat}
+              </span>
+            ))}
+          </div>
+        </div>
+        <style>{`@keyframes tendr-spin { to { transform: rotate(360deg); } }`}</style>
       </div>
       </>
     );
