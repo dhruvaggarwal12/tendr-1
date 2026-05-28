@@ -481,6 +481,50 @@ export default function CustomerDashboard() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
 
+                {/* ── Smart Plan — Waiting for Approval card ── */}
+                {(() => {
+                  try {
+                    const sp = JSON.parse(localStorage.getItem("tendr_smart_plan") || "null");
+                    if (!sp) return null;
+                    const slots = sp.vendorSlots || [];
+                    const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵' };
+                    const statusColor = s => s === 'Confirmed' ? '#16a34a' : s === 'Chatting' ? '#d97706' : s === 'Declined' ? '#dc2626' : '#9B7450';
+                    return (
+                      <div style={{ background: "linear-gradient(135deg,#FFFCF5,#fff9f0)", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.3)", boxShadow: "0 2px 12px rgba(196,122,46,0.1)", padding: "18px 22px", marginBottom: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, flexWrap: "wrap", gap: 8 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18 }}>✨</div>
+                            <div>
+                              <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Smart Plan — {sp.eventDetails?.eventType || "Event"}</div>
+                              <div style={{ fontSize: 12, color: "#9B7450" }}>Tendr is coordinating your vendors</div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: 11, fontWeight: 600, padding: "3px 12px", borderRadius: 100, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>⏳ Waiting for Approval</span>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+                          {slots.map((s, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 12px", background: "#fff", borderRadius: 10, border: "1px solid rgba(196,122,46,0.12)" }}>
+                              <span style={{ fontSize: 16 }}>{CAT_EMOJI[s.category] || '🏷'}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", flex: 1 }}>{s.vendorName || s.category}</span>
+                              <span style={{ fontSize: 11, fontWeight: 700, color: statusColor(s.status) }}>{s.status || 'Pending'}</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display: "flex", gap: 10 }}>
+                          <button onClick={() => navigate("/plan-event/form?bookingType=let-us-do-it")}
+                            style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                            View Plan →
+                          </button>
+                          <button onClick={() => { if (window.confirm("Clear your Smart Plan?")) { localStorage.removeItem("tendr_smart_plan"); window.location.reload(); } }}
+                            style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                            Clear
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  } catch { return null; }
+                })()}
+
                 {/* ── Planning in Progress card — shown as soon as form is filled ── */}
                 {showPlanningCard && (
                   <div style={{ background: "linear-gradient(135deg,#FFFCF5,#fff9f0)", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.25)", boxShadow: "0 2px 12px rgba(196,122,46,0.08)", padding: "18px 22px" }}>

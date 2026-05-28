@@ -37,6 +37,31 @@ import { setFilters } from "../../redux/listingFiltersSlice";
 import MakeAGroup_Nav from "../../components/MakeAGroup_Nav.jsx";
 import EventFormSummary from "../../components/EventFormSummary.jsx";
 import { getVendors, getSmartPlan, confirmSmartPlan } from "../../apis/vendorApi.js";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+const CAT_PACKAGES = {
+  Caterer:      [
+    { tier: "Basic",    desc: "Buffet · Up to 40 guests · Veg menu · Basic serving" },
+    { tier: "Standard", desc: "Live counters · Up to 80 guests · Veg/Non-Veg · Staff included" },
+    { tier: "Premium",  desc: "Custom menu · 80+ guests · Live counters · Fine dining setup" },
+  ],
+  Photographer: [
+    { tier: "Basic",    desc: "2-3 hrs coverage · 1 photographer · 100+ edited photos" },
+    { tier: "Standard", desc: "4-6 hrs · 1 photographer · 300+ photos · Highlight reel" },
+    { tier: "Premium",  desc: "Full day · 2 photographers · 500+ photos · Teaser video" },
+  ],
+  Decorator:    [
+    { tier: "Basic",    desc: "Balloon & fairy lights · Basic backdrop · Table decor" },
+    { tier: "Standard", desc: "Themed backdrop · Floral decor · Custom signage · Lighting" },
+    { tier: "Premium",  desc: "Full venue styling · Custom installations · Stage setup" },
+  ],
+  DJ:           [
+    { tier: "Basic",    desc: "3 hrs set · 1 DJ · Standard sound system" },
+    { tier: "Standard", desc: "5 hrs · 1 DJ · Pro sound · LED lighting · Wireless mic" },
+    { tier: "Premium",  desc: "Full night · DJ + assistant · Premium sound · Fog machine" },
+  ],
+};
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import JourneyProgress from "../../components/JourneyProgress";
@@ -81,9 +106,32 @@ const EventPlanning = () => {
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
   const [wizardAnswers, setWizardAnswers] = useState({});
-  const [planSubmitted, setPlanSubmitted] = useState(false);
-  const [confirmedPlan, setConfirmedPlan] = useState(null);
+  const [planSubmitted, setPlanSubmitted] = useState(() => !!localStorage.getItem("tendr_smart_plan"));
+  const [confirmedPlan, setConfirmedPlan] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("tendr_smart_plan") || "null"); } catch { return null; }
+  });
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [selectedPackages, setSelectedPackages] = useState({});
+  const [catererMenu, setCatererMenu] = useState([]);
+  const [menuLoading, setMenuLoading] = useState(false);
+  const [liveSlots, setLiveSlots] = useState(null);
+
+  // Poll live plan status every 30s when waiting for approval
+  useEffect(() => {
+    if (!planSubmitted || !confirmedPlan?._id) return;
+    const poll = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/smart-plans/${confirmedPlan._id}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.plan?.vendorSlots) setLiveSlots(data.plan.vendorSlots);
+        }
+      } catch {}
+    };
+    poll();
+    const t = setInterval(poll, 30000);
+    return () => clearInterval(t);
+  }, [planSubmitted, confirmedPlan?._id]);
 
   const dispatch = useDispatch();
   const {
@@ -355,11 +403,19 @@ const EventPlanning = () => {
           customerName: authUser?.name || '',
           customerPhone: authUser?.phoneNumber || '',
           eventDetails: { eventType: formData?.eventType, guests: Number(formData?.guests) || 0, totalBudget: smartPlan.totalBudget, location: formData?.location, date: formData?.date, budget: formData?.budget },
-          vendorSlots: currentVendors.map(({ category, estimatedCost, vendor }) => ({ category, percentage: split[category] || 25, estimatedCost, vendorId: vendor?._id || null, vendorName: vendor?.name || '', status: 'Pending' })),
-          wizardAnswers,
+          vendorSlots: currentVendors.map(({ category, estimatedCost, vendor }) => ({
+            category, percentage: split[category] || 25, estimatedCost,
+            vendorId: vendor?._id || null, vendorName: vendor?.name || '',
+            status: 'Pending',
+          })),
+          wizardAnswers: { ...wizardAnswers, selectedPackages },
         });
-        setConfirmedPlan(result.plan);
-      } catch {}
+        const planData = { ...result.plan, _savedAt: Date.now() };
+        localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
+        setConfirmedPlan(planData);
+      } catch (e) {
+        console.error('Plan submit failed:', e);
+      }
       setPlanSubmitted(true);
       setShowWizard(false);
       setSubmitLoading(false);
@@ -388,25 +444,69 @@ const EventPlanning = () => {
           <p style={{ fontSize: 12, color: "#9B7450", textAlign: "center", marginTop: 4 }}>These details will be sent to all your vendors.</p>
         </div>
       );
-      if (id === 'caterer') return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-          {[{ label: "Food Preference", field: "foodPreference", opts: ["Veg only", "Non-veg", "Both"], multi: false },
-            { label: "Meal Type", field: "mealType", opts: ["Buffet", "Plated", "Live counters", "High Tea"], multi: false },
-            { label: "Cuisine (multi-select)", field: "cuisine", opts: ["North Indian", "South Indian", "Chinese", "Continental", "Mixed"], multi: true }
-          ].map(({ label, field, opts, multi }) => (
-            <div key={field}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{label}</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
-                {opts.map(v => <OptBtn key={v} sec="catering" field={field} val={v} multi={multi} />)}
+      if (id === 'caterer') {
+        const catVendorId = currentVendors.find(cv => cv.category === 'Caterer')?.vendor?._id;
+        const fetchMenu = async (pkg) => {
+          if (!catVendorId) return;
+          setMenuLoading(true);
+          try {
+            const res = await fetch(`${BASE_URL}/vendors/${catVendorId}/menu`);
+            if (res.ok) { const d = await res.json(); setCatererMenu(d.menuItems || []); }
+          } catch {} finally { setMenuLoading(false); }
+        };
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {[{ label: "Food Preference", field: "foodPreference", opts: ["Veg only", "Non-veg", "Both"], multi: false },
+              { label: "Meal Type", field: "mealType", opts: ["Buffet", "Plated", "Live counters", "High Tea"], multi: false },
+              { label: "Cuisine (multi-select)", field: "cuisine", opts: ["North Indian", "South Indian", "Chinese", "Continental", "Mixed"], multi: true }
+            ].map(({ label, field, opts, multi }) => (
+              <div key={field}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>{label}</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 7 }}>
+                  {opts.map(v => <OptBtn key={v} sec="catering" field={field} val={v} multi={multi} />)}
+                </div>
+              </div>
+            ))}
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Dietary Restrictions <span style={{ fontSize: 10, color: "#9B7450", textTransform: "none" }}>(optional)</span></div>
+              <input type="text" placeholder="e.g. No onion-garlic, Jain food..." value={wizardAnswers.catering?.dietaryRestrictions || ""} onChange={e => updAns("catering", "dietaryRestrictions", e.target.value)} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: "#2C1A0E", outline: "none", background: "#FFFCF5", boxSizing: "border-box" }} />
+            </div>
+            {/* Packages */}
+            <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {CAT_PACKAGES.Caterer.map(p => {
+                  const sel = selectedPackages.Caterer === p.tier;
+                  return (
+                    <button key={p.tier} onClick={() => { setSelectedPackages(s => ({ ...s, Caterer: p.tier })); fetchMenu(p.tier); }}
+                      style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
+                      <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          ))}
-          <div>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Dietary Restrictions <span style={{ fontSize: 10, color: "#9B7450", textTransform: "none" }}>(optional)</span></div>
-            <input type="text" placeholder="e.g. No onion-garlic, Jain food..." value={wizardAnswers.catering?.dietaryRestrictions || ""} onChange={e => updAns("catering", "dietaryRestrictions", e.target.value)} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: "#2C1A0E", outline: "none", background: "#FFFCF5", boxSizing: "border-box" }} />
+            {/* Menu preview */}
+            {selectedPackages.Caterer && catererMenu.length > 0 && (
+              <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>🍽 Menu</div>
+                {menuLoading ? <div style={{ fontSize: 12, color: "#9B7450" }}>Loading menu…</div> : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {catererMenu.slice(0, 8).map((item, i) => (
+                      <div key={i} style={{ fontSize: 12, color: "#2C1A0E", display: "flex", justifyContent: "space-between" }}>
+                        <span>{item.name || item}</span>
+                        {item.price && <span style={{ color: "#C47A2E", fontWeight: 600 }}>₹{item.price}</span>}
+                      </div>
+                    ))}
+                    {catererMenu.length > 8 && <div style={{ fontSize: 11, color: "#9B7450" }}>+{catererMenu.length - 8} more items</div>}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </div>
-      );
+        );
+      }
       if (id === 'decorator') return (
         <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
           {[{ label: "Venue Type", field: "venueType", opts: ["Indoor hall", "Outdoor", "Home", "Farmhouse"], multi: false },
@@ -420,6 +520,18 @@ const EventPlanning = () => {
               </div>
             </div>
           ))}
+          <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {CAT_PACKAGES.Decorator.map(p => { const sel = selectedPackages.Decorator === p.tier; return (
+                <button key={p.tier} onClick={() => setSelectedPackages(s => ({ ...s, Decorator: p.tier }))}
+                  style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
+                </button>
+              ); })}
+            </div>
+          </div>
         </div>
       );
       if (id === 'photographer') return (
@@ -436,6 +548,18 @@ const EventPlanning = () => {
               </div>
             </div>
           ))}
+          <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {CAT_PACKAGES.Photographer.map(p => { const sel = selectedPackages.Photographer === p.tier; return (
+                <button key={p.tier} onClick={() => setSelectedPackages(s => ({ ...s, Photographer: p.tier }))}
+                  style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
+                </button>
+              ); })}
+            </div>
+          </div>
         </div>
       );
       if (id === 'dj') return (
@@ -451,71 +575,92 @@ const EventPlanning = () => {
               </div>
             </div>
           ))}
+          <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {CAT_PACKAGES.DJ.map(p => { const sel = selectedPackages.DJ === p.tier; return (
+                <button key={p.tier} onClick={() => setSelectedPackages(s => ({ ...s, DJ: p.tier }))}
+                  style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
+                </button>
+              ); })}
+            </div>
+          </div>
         </div>
       );
       return null;
     };
 
-    // ── Progress tracker (post-submit) ─────────────────────────────────────
+    // ── Waiting for approval (post-submit) ─────────────────────────────────
     if (planSubmitted) {
+      const slots = liveSlots || confirmedPlan?.vendorSlots || currentVendors.map(cv => ({ category: cv.category, vendorName: cv.vendor?.name || cv.category, estimatedCost: cv.estimatedCost, status: 'Pending' }));
+      const statusColor = s => s === 'Confirmed' ? '#16a34a' : s === 'Chatting' ? '#d97706' : s === 'Declined' ? '#dc2626' : '#6b7280';
+      const statusBg = s => s === 'Confirmed' ? 'rgba(22,163,74,0.08)' : s === 'Chatting' ? 'rgba(217,119,6,0.08)' : s === 'Declined' ? 'rgba(220,38,38,0.08)' : 'rgba(107,114,128,0.08)';
+      const allConfirmed = slots.every(s => s.status === 'Confirmed');
+      const fmt2 = n => `₹${Number(n).toLocaleString("en-IN")}`;
+      const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵' };
+
       return (
-        <>
-        <div style={{ minHeight: "100vh", background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
           <BasicSpeedDial />
           <HamburgerNav active="Browse" noSidebar />
-          <div style={{ maxWidth: 600, margin: "0 auto", padding: "48px 20px 80px", textAlign: "center" }}>
-            <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
-            <h2 style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 800, color: "#2C1A0E", marginBottom: 10 }}>Your plan is confirmed!</h2>
-            <p style={{ fontSize: 14, color: "#9B7450", marginBottom: 32, maxWidth: 340, margin: "0 auto 32px" }}>
-              Our team will coordinate with all vendors and get back to you within 2 hours.
-            </p>
-            <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.18)", overflow: "hidden", marginBottom: 28 }}>
-              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>Package Progress</span>
-                <span style={{ fontSize: 11, background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 10px", borderRadius: 100, fontWeight: 700 }}>{formData?.eventType || "Event"}</span>
+          <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 20px 80px" }}>
+
+            {/* Status banner */}
+            <div style={{ textAlign: "center", marginBottom: 28 }}>
+              <div style={{ fontSize: 48, marginBottom: 12 }}>{allConfirmed ? "🎉" : "⏳"}</div>
+              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
+                {allConfirmed ? "Your package is ready!" : "Waiting for Approval"}
+              </h2>
+              <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0, maxWidth: 380, marginLeft: "auto", marginRight: "auto" }}>
+                {allConfirmed ? "All vendors confirmed. Our team will reach out shortly." : "Our team is coordinating with vendors. We'll update you within 2 hours."}
+              </p>
+            </div>
+
+            {/* Vendor slots */}
+            <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", marginBottom: 20, boxShadow: "0 2px 16px rgba(196,122,46,0.07)" }}>
+              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>Your Package</span>
+                <span style={{ fontSize: 11, background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 10px", borderRadius: 100, fontWeight: 700 }}>
+                  {confirmedPlan?.eventDetails?.eventType || formData?.eventType || "Event"}
+                </span>
               </div>
-              {currentVendors.map(({ category, estimatedCost, vendor }) => (
-                <div key={category} style={{ padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderBottom: "1px solid rgba(196,122,46,0.07)" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 20 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{vendor?.name || category}</div>
-                      <div style={{ fontSize: 11, color: "#9B7450" }}>{fmt(estimatedCost)}</div>
-                    </div>
+              {slots.map((slot, i) => (
+                <div key={slot.category || i} style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < slots.length - 1 ? "1px solid rgba(196,122,46,0.06)" : "none" }}>
+                  <span style={{ fontSize: 22, width: 28, textAlign: "center" }}>{CAT_EMOJI[slot.category] || "🏷"}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || slot.category}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>{slot.category} · {fmt2(slot.estimatedCost || 0)}</div>
+                    {selectedPackages[slot.category] && <div style={{ fontSize: 10.5, color: "#C47A2E", fontWeight: 600, marginTop: 2 }}>📦 {selectedPackages[slot.category]} Package</div>}
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 100, background: "rgba(234,179,8,0.1)", color: "#a16207", border: "1px solid rgba(234,179,8,0.3)" }}>Pending</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 100, background: statusBg(slot.status), color: statusColor(slot.status), border: `1px solid ${statusColor(slot.status)}33` }}>
+                    {slot.status || 'Pending'}
+                  </span>
                 </div>
               ))}
             </div>
-            {/* Planning tools nudge */}
-            <div style={{ marginBottom: 28, textAlign: "left" }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12, textAlign: "center" }}>Keep your planning on track</p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                <button onClick={() => navigate("/prebuilt-timeline")}
-                  style={{ padding: "16px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", transition: "all 0.18s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; e.currentTarget.style.boxShadow = "none"; }}>
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>⏱️</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Event Timeline</div>
-                  <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>Track every milestone leading up to your event</div>
-                </button>
-                <button onClick={() => navigate("/prebuilt-checklist")}
-                  style={{ padding: "16px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", transition: "all 0.18s" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; e.currentTarget.style.boxShadow = "none"; }}>
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>✅</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Planning Checklist</div>
-                  <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>Never miss a detail with a ready-made checklist</div>
-                </button>
-              </div>
+
+            {/* Info note */}
+            <div style={{ background: "rgba(196,122,46,0.05)", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "flex", gap: 10, alignItems: "flex-start" }}>
+              <span style={{ fontSize: 16 }}>💬</span>
+              <p style={{ fontSize: 12.5, color: "#7A5535", margin: 0, lineHeight: 1.5 }}>
+                Our team will start a chat with you once all vendors confirm. You can check this status anytime from your <button onClick={() => navigate("/dashboard")} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, cursor: "pointer", fontSize: 12.5, padding: 0, fontFamily: "'Outfit', sans-serif" }}>dashboard</button>.
+              </p>
             </div>
 
-            <button onClick={() => navigate("/")} style={{ padding: "12px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-              Back to Home
-            </button>
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => navigate("/")}
+                style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                Back to Home
+              </button>
+              <button onClick={() => navigate("/dashboard")}
+                style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                My Dashboard →
+              </button>
+            </div>
           </div>
         </div>
-        </>
       );
     }
 
@@ -559,8 +704,8 @@ const EventPlanning = () => {
         <div className="w-full px-4 sm:px-6 lg:px-12 pt-8 pb-24 flex flex-col items-center">
 
           {/* Package header card */}
-          <div style={{ width: "100%", maxWidth: 680, marginBottom: 20 }}>
-            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 20, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
+          <div style={{ width: "100%", maxWidth: 1100, marginBottom: 20 }}>
+            <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", borderRadius: 20, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", top: -24, right: -24, width: 110, height: 110, borderRadius: "50%", background: "rgba(204,171,74,0.07)" }} />
               <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>✨ Your Event Package</div>
               <h2 style={{ fontSize: "clamp(1.1rem,2.5vw,1.5rem)", fontWeight: 900, color: "#CCAB4A", marginBottom: 8, letterSpacing: "-0.01em" }}>
@@ -623,8 +768,8 @@ const EventPlanning = () => {
             )}
           </div>
 
-          {/* Vendor cards — one per category */}
-          <div style={{ width: "100%", maxWidth: 680, display: "flex", flexDirection: "column", gap: 14, marginBottom: 24 }}>
+          {/* Vendor cards — 4 columns */}
+          <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }} className="smart-vendor-grid">
             {currentVendors.map(({ category, estimatedCost, vendor, totalVendors }) => (
               <div key={category} style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 2px 12px rgba(196,122,46,0.08)" }}>
                 <div style={{ padding: "11px 18px 8px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
@@ -649,13 +794,18 @@ const EventPlanning = () => {
                     </div>
                   </div>
                   {expandedCat === category && (
-                    <div style={{ padding: "0 18px 14px", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
-                      {vendor.portfolioPhotos?.length > 1 && (
-                        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 8, marginBottom: 8 }}>
-                          {vendor.portfolioPhotos.slice(0, 4).map((p, i) => <img key={i} src={p} alt="" style={{ width: 72, height: 58, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />)}
+                    <div style={{ padding: "0 16px 14px", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+                      {vendor.portfolioPhotos?.length > 0 && (
+                        <div style={{ display: "flex", gap: 5, overflowX: "auto", paddingBottom: 8, marginBottom: 8, marginTop: 10 }}>
+                          {vendor.portfolioPhotos.slice(0, 5).map((p, i) => <img key={i} src={p} alt="" style={{ width: 68, height: 55, objectFit: "cover", borderRadius: 8, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />)}
                         </div>
                       )}
-                      {vendor.locations?.length > 0 && <div style={{ fontSize: 11.5, color: "#9B7450" }}>📍 Serves: {vendor.locations.join(", ")}</div>}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {vendor.avgReviewScore > 0 && <div style={{ fontSize: 11.5, color: "#2C1A0E" }}>⭐ {vendor.avgReviewScore.toFixed(1)} · {vendor.totalEventsCompleted}+ events completed</div>}
+                        {vendor.yearsOfExperience > 0 && <div style={{ fontSize: 11.5, color: "#9B7450" }}>🕐 {vendor.yearsOfExperience} years experience</div>}
+                        {vendor.locations?.length > 0 && <div style={{ fontSize: 11.5, color: "#9B7450" }}>📍 Serves: {vendor.locations.join(", ")}</div>}
+                        {vendor.bio && <div style={{ fontSize: 11.5, color: "#7A5535", marginTop: 4, lineHeight: 1.5 }}>{vendor.bio.slice(0, 120)}{vendor.bio.length > 120 ? "…" : ""}</div>}
+                      </div>
                     </div>
                   )}
                   <div style={{ padding: "0 18px 14px", display: "flex", gap: 8 }}>
@@ -682,7 +832,7 @@ const EventPlanning = () => {
 
           {/* Decor Finder nudge */}
           {selectedVendors.includes("Decorator") && (
-            <div style={{ width: "100%", maxWidth: 680, marginBottom: 20, background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.1))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "13px 18px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ width: "100%", maxWidth: 1100, marginBottom: 20, background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.1))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "13px 18px", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <span style={{ fontSize: 26 }}>🎀</span>
               <div style={{ flex: 1, minWidth: 150 }}>
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Want decor inspiration?</div>
@@ -693,7 +843,7 @@ const EventPlanning = () => {
           )}
 
           {/* Primary CTA */}
-          <div style={{ width: "100%", maxWidth: 680, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+          <div style={{ width: "100%", maxWidth: 1100, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
             <button
               onClick={() => { setWizardStep(0); setWizardAnswers({}); setShowWizard(true); }}
               style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.38)", letterSpacing: "0.01em" }}>
@@ -706,6 +856,10 @@ const EventPlanning = () => {
           </div>
         </div>
       </div>
+      <style>{`
+        @media (max-width: 900px) { .smart-vendor-grid { grid-template-columns: repeat(2,1fr) !important; } }
+        @media (max-width: 540px) { .smart-vendor-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
       </>
     );
   }
