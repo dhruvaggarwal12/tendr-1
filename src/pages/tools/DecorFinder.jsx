@@ -348,9 +348,14 @@ export default function DecorFinder() {
                           </div>
                         </>
                       )}
-                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.5))", padding: "18px 14px 10px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                        {curPhoto.caption && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{curPhoto.caption}</span>}
-                        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginLeft: "auto" }}>{curIdx + 1}/{themePhotos.length} photos</span>
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.65))", padding: "22px 14px 10px", display: "flex", flexDirection: "column", gap: 2 }}>
+                        {curPhoto.vendorName && (
+                          <span style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700 }}>by {curPhoto.vendorName}</span>
+                        )}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                          {curPhoto.caption && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>{curPhoto.caption}</span>}
+                          <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginLeft: "auto" }}>{curIdx + 1}/{themePhotos.length}</span>
+                        </div>
                       </div>
                     </div>
                   )}

@@ -124,9 +124,14 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
   // Photo upload state
-  const [photos, setPhotos]       = useState(vendor.portfolioPhotos || []);
-  const [uploading, setUploading] = useState(false);
-  const [photoMsg, setPhotoMsg]   = useState("");
+  const [photos, setPhotos]             = useState(vendor.portfolioPhotos || []);
+  const [uploading, setUploading]       = useState(false);
+  const [photoMsg, setPhotoMsg]         = useState("");
+  const [uploadGalleryCat, setUploadGalleryCat] = useState("");
+  const [uploadDecorTheme, setUploadDecorTheme] = useState("");
+
+  const GALLERY_CATS  = ["Decoration", "Entertainment", "Catering", "Photography", "Full Event Setup", "Corporate Events"];
+  const DECOR_THEMES_LIST = ["Floral", "Balloon Art", "Lighting", "Themed Decoration", "Traditional", "Modern", "Rustic", "Minimalist"];
 
   const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
@@ -134,6 +139,8 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
     setUploading(true); setPhotoMsg("");
     const fd = new FormData();
     fd.append("photo", file);
+    if (uploadGalleryCat) fd.append("galleryCategory", uploadGalleryCat);
+    if (uploadDecorTheme && st === "Decorator") fd.append("decorTheme", uploadDecorTheme);
     try {
       const BASE = import.meta.env.VITE_BASE_URL;
       const res = await fetch(`${BASE}/admin/vendors/${vendor._id}/photos`, {
@@ -141,10 +148,12 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
         credentials: "include", body: fd,
       });
       const data = await res.json();
-      if (res.ok) { setPhotos(prev => [...prev, data.url]); setPhotoMsg("Photo uploaded!"); }
-      else setPhotoMsg(data.error || "Upload failed.");
+      if (res.ok) {
+        setPhotos(prev => [...prev, data.url]);
+        setPhotoMsg(uploadGalleryCat ? `Photo uploaded & added to ${uploadGalleryCat} gallery!` : "Photo uploaded!");
+      } else setPhotoMsg(data.error || "Upload failed.");
     } catch (err) { setPhotoMsg(err.message); }
-    finally { setUploading(false); e.target.value = ""; setTimeout(() => setPhotoMsg(""), 2500); }
+    finally { setUploading(false); e.target.value = ""; setTimeout(() => setPhotoMsg(""), 3000); }
   };
 
   const handlePhotoDelete = async (url) => {
@@ -276,6 +285,27 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
 
           <SectionTitle>Portfolio Photos</SectionTitle>
           <div style={{ marginTop: 10, marginBottom: 16 }}>
+            {/* Gallery tagging controls */}
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10, alignItems: "center" }}>
+              <select
+                value={uploadGalleryCat}
+                onChange={e => { setUploadGalleryCat(e.target.value); if (e.target.value !== "Decoration") setUploadDecorTheme(""); }}
+                style={{ ...inp, width: "auto", flex: 1, minWidth: 160, fontSize: 12, color: uploadGalleryCat ? "#2C1A0E" : "#9B7450" }}
+              >
+                <option value="">Add to Glimpse gallery? (optional)</option>
+                {GALLERY_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+              {st === "Decorator" && (
+                <select
+                  value={uploadDecorTheme}
+                  onChange={e => setUploadDecorTheme(e.target.value)}
+                  style={{ ...inp, width: "auto", flex: 1, minWidth: 150, fontSize: 12, color: uploadDecorTheme ? "#2C1A0E" : "#9B7450" }}
+                >
+                  <option value="">Decor theme? (optional)</option>
+                  {DECOR_THEMES_LIST.map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
+              )}
+            </div>
             {/* Upload button */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
               <label style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: uploading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: uploading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: uploading ? "not-allowed" : "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}>
