@@ -245,6 +245,7 @@ const Home = () => {
   const [heroPrev, setHeroPrev] = useState(null);
   const [heroFading, setHeroFading] = useState(false);
   const [galleryByCategory, setGalleryByCategory] = useState({});
+  const [glimpseCounter, setGlimpseCounter] = useState(0);
   const [featureIdx, setFeatureIdx]   = useState(0);
   const [featureVisible, setFeatureVisible] = useState(true);
 
@@ -301,6 +302,11 @@ const Home = () => {
       .then(r => r.ok ? r.json() : { grouped: {} })
       .then(d => { if (d.grouped) setGalleryByCategory(d.grouped); })
       .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setGlimpseCounter(c => c + 1), 2500);
+    return () => clearInterval(t);
   }, []);
 
   // Logo should navigate to the home route (works from other pages as well)
@@ -1176,18 +1182,28 @@ const Home = () => {
               { title: "Photography",      slug: "photography" },
               { title: "Full Event Setup", slug: "full-event-setup" },
               { title: "Corporate Events", slug: "corporate-events" },
-            ].map(({ title, slug }) => {
-              const img = galleryByCategory[title]?.[0]?.imageUrl || GALLERY_FALLBACKS[title];
+            ].map(({ title, slug }, catIdx) => {
+              const catPhotos = galleryByCategory[title] || [];
+              // Each tile cycles at a different offset so they don't all flip at the same time
+              const imgIdx = catPhotos.length > 0
+                ? Math.floor((glimpseCounter + catIdx * 2) / 1) % catPhotos.length
+                : 0;
+              const img = catPhotos[imgIdx]?.imageUrl || GALLERY_FALLBACKS[title];
               return (
               <div key={title} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", height: 220 }}
-                  onMouseEnter={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1.05)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1)"; }}
-                >
-                  <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease", display: "block" }} />
+                <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", height: 220, background: "#2C1A0E" }}>
+                  <img key={img} src={img} alt={title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", animation: "glimpseFade 0.6s ease" }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)", display: "flex", alignItems: "flex-end", padding: "14px 18px" }}>
                     <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>{title}</span>
                   </div>
+                  {catPhotos.length > 1 && (
+                    <div style={{ position: "absolute", top: 10, right: 12, display: "flex", gap: 4 }}>
+                      {catPhotos.slice(0, Math.min(catPhotos.length, 5)).map((_, di) => (
+                        <div key={di} style={{ width: 5, height: 5, borderRadius: "50%", background: di === imgIdx % Math.min(catPhotos.length, 5) ? "#fff" : "rgba(255,255,255,0.4)", transition: "background 0.3s" }} />
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <button onClick={() => navigate(`/gallery/${slug}`)}
                   style={{ width: "100%", padding: "9px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.15s" }}
@@ -1199,7 +1215,11 @@ const Home = () => {
             ); })}
           </div>
         </div>
-        <style>{`@media (max-width: 768px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } } @media (max-width: 480px) { .events-portfolio-grid { grid-template-columns: 1fr !important; } }`}</style>
+        <style>{`
+          @media (max-width: 768px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+          @media (max-width: 480px) { .events-portfolio-grid { grid-template-columns: 1fr !important; } }
+          @keyframes glimpseFade { from { opacity: 0.4; } to { opacity: 1; } }
+        `}</style>
       </section>
 
       {/* Become a Partner Section */}
