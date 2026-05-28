@@ -46,6 +46,27 @@ const PaymentSuccessPage = () => {
     location:  rawFormData.location  || "",
     guests:    rawFormData.guests    || "",
   }));
+
+  // Days until event from today
+  const daysUntilEvent = (() => {
+    const raw = rawFormData.date || bookingDetails?.schedule?.date || "";
+    if (!raw) return null;
+    try {
+      let d;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        d = new Date(raw);
+      } else if (/^\d{2}\/\d{2}\/\d{4}$/.test(raw)) {
+        const [day, month, year] = raw.split("/");
+        d = new Date(`${year}-${month}-${day}`);
+      } else {
+        d = new Date(raw);
+      }
+      if (isNaN(d.getTime())) return null;
+      const today = new Date(); today.setHours(0, 0, 0, 0); d.setHours(0, 0, 0, 0);
+      const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+      return diff > 0 ? diff : null;
+    } catch { return null; }
+  })();
   // Fetch pinned messages + eventTiming from vendor conversations before they get cleared
   // Also writes pre-populated checklist + day-of schedule to localStorage
   useEffect(() => {
@@ -190,6 +211,15 @@ const PaymentSuccessPage = () => {
           </h1>
           <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>Payment received · Your celebration is on its way</p>
         </div>
+
+        {/* ── Countdown pill ── */}
+        {daysUntilEvent && (
+          <div style={{ textAlign: "center", marginBottom: 20 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.12))", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 100, padding: "10px 24px", fontSize: 14, fontWeight: 700, color: "#7A4A1A", fontFamily: font }}>
+              🗓 Your event is in&nbsp;<span style={{ fontSize: 26, fontWeight: 900, color: "#C47A2E", lineHeight: 1 }}>{daysUntilEvent}</span>&nbsp;day{daysUntilEvent === 1 ? "" : "s"}!
+            </span>
+          </div>
+        )}
 
         {/* ── Event summary card ── */}
         <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 20, padding: "24px 28px", marginBottom: 20, boxShadow: "0 8px 32px rgba(44,26,14,0.2)" }}>
