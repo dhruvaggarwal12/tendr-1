@@ -140,13 +140,20 @@ const VendorList_ListingPage = ({
                     <div style={{ padding: "14px 16px 16px" }}>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.3 }}>{vendor.name}</h3>
 
-                      <div style={{ display: "flex", gap: 10, fontSize: 12, color: "#9B7450", marginBottom: 14, flexWrap: "wrap" }}>
+                      <div style={{ display: "flex", gap: 10, fontSize: 12, color: "#9B7450", marginBottom: 10, flexWrap: "wrap" }}>
                         {(vendor.city || vendor.address?.city || vendor.locations?.[0]) && (
                           <span>📍 {vendor.city || vendor.address?.city || vendor.locations?.[0]}</span>
                         )}
                         {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
                         {vendor.startingPrice && <span style={{ fontWeight: 700, color: "#C47A2E" }}>₹{Number(vendor.startingPrice).toLocaleString("en-IN")}+</span>}
                       </div>
+                      {vendor.totalEventsCompleted > 0 && (
+                        <div style={{ marginBottom: 12 }}>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, background: "linear-gradient(135deg,rgba(196,122,46,0.10),rgba(204,171,74,0.12))", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "3px 11px" }}>
+                            🎉 {vendor.totalEventsCompleted}+ events completed
+                          </span>
+                        </div>
+                      )}
 
                       <div style={{ display: "flex", gap: 8 }}>
                         {/* Primary CTA */}
