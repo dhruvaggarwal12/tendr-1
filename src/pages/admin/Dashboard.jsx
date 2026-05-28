@@ -370,6 +370,8 @@ const AdminDashboard = () => {
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoaded, setGalleryLoaded] = useState(false);
   const [galleryUploading, setGalleryUploading] = useState(false);
+  // per-category upload meta: { [category]: { theme, caption } }
+  const [galleryUploadMeta, setGalleryUploadMeta] = useState({});
   const [viewingPhoto, setViewingPhoto] = useState(null); // full-screen photo URL
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
@@ -3429,6 +3431,7 @@ const AdminDashboard = () => {
         {/* ── Photos ── */}
         {activeDropdown === "photos" && (() => {
           const GALLERY_CATEGORIES = ['Decoration', 'Entertainment', 'Catering', 'Photography', 'Full Event Setup', 'Corporate Events'];
+          const DECOR_THEMES = ['Floral', 'Balloon Art', 'Lighting', 'Themed Decoration', 'Traditional', 'Modern', 'Rustic', 'Minimalist'];
 
           if (!galleryLoaded) {
             fetch(`${BASE_URL}/admin/gallery`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
@@ -3441,13 +3444,20 @@ const AdminDashboard = () => {
           GALLERY_CATEGORIES.forEach(cat => { grouped[cat] = []; });
           galleryPhotos.forEach(p => { if (grouped[p.category]) grouped[p.category].push(p); });
 
+          const getMeta = (cat) => galleryUploadMeta[cat] || { theme: '', caption: '' };
+          const setMeta = (cat, field, val) =>
+            setGalleryUploadMeta(prev => ({ ...prev, [cat]: { ...getMeta(cat), [field]: val } }));
+
           const handleUpload = async (category, file) => {
             if (!file) return;
             setGalleryUploading(true);
             try {
+              const meta = getMeta(category);
               const fd = new FormData();
               fd.append('photo', file);
               fd.append('category', category);
+              if (meta.theme) fd.append('theme', meta.theme);
+              if (meta.caption) fd.append('caption', meta.caption);
               const res = await fetch(`${BASE_URL}/admin/gallery/upload`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
@@ -3483,7 +3493,7 @@ const AdminDashboard = () => {
                 📸 Gallery Photos
               </div>
               <p style={{ fontSize: 14, color: "#9B7450", marginBottom: 28 }}>
-                Upload photos per category — they appear on the homepage gallery and hero slideshow.
+                Upload photos per category. For Decoration photos, tag a theme so they appear in the Decor Finder.
               </p>
 
               {!galleryLoaded ? (
@@ -3493,19 +3503,41 @@ const AdminDashboard = () => {
                   {GALLERY_CATEGORIES.map(cat => (
                     <div key={cat}>
                       {/* Category header */}
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 10, borderBottom: "1.5px solid rgba(196,122,46,0.18)" }}>
-                        <div>
-                          <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", fontFamily: "'Outfit', sans-serif" }}>{cat}</span>
-                          <span style={{ marginLeft: 10, fontSize: 12, color: "#9B7450" }}>{grouped[cat].length} photo{grouped[cat].length !== 1 ? "s" : ""}</span>
+                      <div style={{ marginBottom: 14, paddingBottom: 10, borderBottom: "1.5px solid rgba(196,122,46,0.18)" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                          <div>
+                            <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", fontFamily: "'Outfit', sans-serif" }}>{cat}</span>
+                            <span style={{ marginLeft: 10, fontSize: 12, color: "#9B7450" }}>{grouped[cat].length} photo{grouped[cat].length !== 1 ? "s" : ""}</span>
+                          </div>
                         </div>
-                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 10, background: galleryUploading ? "#f3f4f6" : "linear-gradient(135deg,#2C1A0E,#4A2810)", color: galleryUploading ? "#bbb" : "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: galleryUploading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", userSelect: "none" }}>
-                          {galleryUploading ? "Uploading…" : "+ Add Photo"}
+                        {/* Upload controls row */}
+                        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                          {cat === "Decoration" && (
+                            <select
+                              value={getMeta(cat).theme}
+                              onChange={e => setMeta(cat, 'theme', e.target.value)}
+                              style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", fontSize: 13, color: getMeta(cat).theme ? "#2C1A0E" : "#9B7450", fontFamily: "'Outfit', sans-serif", cursor: "pointer", outline: "none" }}
+                            >
+                              <option value="">Decor theme (optional)</option>
+                              {DECOR_THEMES.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
+                          )}
                           <input
-                            type="file" accept="image/*" style={{ display: "none" }}
-                            disabled={galleryUploading}
-                            onChange={e => { if (e.target.files[0]) { handleUpload(cat, e.target.files[0]); e.target.value = ""; } }}
+                            type="text"
+                            placeholder="Caption (optional)"
+                            value={getMeta(cat).caption}
+                            onChange={e => setMeta(cat, 'caption', e.target.value)}
+                            style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", fontSize: 13, color: "#2C1A0E", fontFamily: "'Outfit', sans-serif", outline: "none", minWidth: 160, flex: 1 }}
                           />
-                        </label>
+                          <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 10, background: galleryUploading ? "#f3f4f6" : "linear-gradient(135deg,#2C1A0E,#4A2810)", color: galleryUploading ? "#bbb" : "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: galleryUploading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", userSelect: "none", flexShrink: 0 }}>
+                            {galleryUploading ? "Uploading…" : "+ Add Photo"}
+                            <input
+                              type="file" accept="image/*" style={{ display: "none" }}
+                              disabled={galleryUploading}
+                              onChange={e => { if (e.target.files[0]) { handleUpload(cat, e.target.files[0]); e.target.value = ""; } }}
+                            />
+                          </label>
+                        </div>
                       </div>
 
                       {/* Photo grid */}
@@ -3524,7 +3556,13 @@ const AdminDashboard = () => {
                                 onClick={() => setViewingPhoto(photo.imageUrl)}
                                 style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "zoom-in", display: "block" }}
                               />
-                              {photo.caption && (
+                              {/* Theme badge */}
+                              {photo.theme && (
+                                <div style={{ position: "absolute", top: 6, left: 6, background: "rgba(196,122,46,0.85)", backdropFilter: "blur(4px)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, fontFamily: "'Outfit', sans-serif" }}>
+                                  {photo.theme}
+                                </div>
+                              )}
+                              {(photo.caption || photo.theme) && (
                                 <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.55))", padding: "12px 8px 6px", color: "#fff", fontSize: 11, fontWeight: 600 }}>
                                   {photo.caption}
                                 </div>

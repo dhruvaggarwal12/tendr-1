@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const font = "'Outfit', sans-serif";
 
@@ -169,10 +171,19 @@ const THEME_EMOJI  = {
 // ── Component ───────────────────────────────────────────────────────────────
 export default function DecorFinder() {
   const navigate = useNavigate();
-  const [step, setStep]       = useState(0); // 0 = quiz, 1 = result
-  const [qIdx, setQIdx]       = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [copied, setCopied]   = useState(null);
+  const [step, setStep]         = useState(0); // 0 = quiz, 1 = result
+  const [qIdx, setQIdx]         = useState(0);
+  const [answers, setAnswers]   = useState({});
+  const [copied, setCopied]     = useState(null);
+  const [byTheme, setByTheme]   = useState({});
+  const [photoIdx, setPhotoIdx] = useState({}); // { [theme]: currentIndex }
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/gallery`)
+      .then(r => r.ok ? r.json() : {})
+      .then(d => { if (d.byTheme) setByTheme(d.byTheme); })
+      .catch(() => {});
+  }, []);
 
   const pick = (val) => {
     const newAnswers = { ...answers, [QUESTIONS[qIdx].id]: val };
@@ -291,6 +302,10 @@ export default function DecorFinder() {
             {/* What you get checklist for top 2 themes */}
             {themes.map(theme => {
               const items = COMBOS[theme]?.[budgetKey] || [];
+              const themePhotos = byTheme[theme] || [];
+              const curIdx = photoIdx[theme] || 0;
+              const curPhoto = themePhotos[curIdx];
+
               return (
                 <div key={theme} style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden" }}>
                   <div style={{ padding: "16px 18px 12px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -309,6 +324,36 @@ export default function DecorFinder() {
                       {copied === theme ? "✓ Copied!" : "📋 Copy"}
                     </button>
                   </div>
+
+                  {/* Real photos from DB */}
+                  {themePhotos.length > 0 && (
+                    <div style={{ position: "relative", background: "#1a0a00" }}>
+                      <img
+                        src={curPhoto.imageUrl}
+                        alt={curPhoto.caption || theme}
+                        style={{ width: "100%", height: 200, objectFit: "cover", display: "block", opacity: 0.92 }}
+                      />
+                      {/* Nav arrows */}
+                      {themePhotos.length > 1 && (
+                        <>
+                          <button onClick={() => setPhotoIdx(p => ({ ...p, [theme]: (curIdx - 1 + themePhotos.length) % themePhotos.length }))}
+                            style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 28, height: 28, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.45)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
+                          <button onClick={() => setPhotoIdx(p => ({ ...p, [theme]: (curIdx + 1) % themePhotos.length }))}
+                            style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 28, height: 28, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.45)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
+                          <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 5 }}>
+                            {themePhotos.map((_, i) => (
+                              <div key={i} onClick={() => setPhotoIdx(p => ({ ...p, [theme]: i }))}
+                                style={{ width: i === curIdx ? 18 : 6, height: 6, borderRadius: 3, background: i === curIdx ? "#CCAB4A" : "rgba(255,255,255,0.5)", cursor: "pointer", transition: "all 0.2s" }} />
+                            ))}
+                          </div>
+                        </>
+                      )}
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.5))", padding: "18px 14px 10px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                        {curPhoto.caption && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>{curPhoto.caption}</span>}
+                        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.55)", marginLeft: "auto" }}>{curIdx + 1}/{themePhotos.length} photos</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div style={{ padding: "14px 18px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
@@ -340,11 +385,19 @@ export default function DecorFinder() {
               <div style={{ padding: "0 18px 18px", display: "flex", flexDirection: "column", gap: 16 }}>
                 {Object.entries(COMBOS).map(([th, bands]) => {
                   const items = bands[budgetKey] || [];
+                  const thPhoto = byTheme[th]?.[0];
                   return (
                     <div key={th}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 8 }}>
-                        {THEME_EMOJI[th]} {th}
-                        <span style={{ fontSize: 11, fontWeight: 500, color: "#9B7450", marginLeft: 8 }}>{BUDGET_LABEL[budgetKey]}</span>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                        {thPhoto ? (
+                          <img src={thPhoto.imageUrl} alt={th} style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                        ) : (
+                          <span style={{ fontSize: 22 }}>{THEME_EMOJI[th]}</span>
+                        )}
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{th}</div>
+                          <div style={{ fontSize: 11, color: "#9B7450" }}>{BUDGET_LABEL[budgetKey]}</div>
+                        </div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         {items.map((item, i) => (
