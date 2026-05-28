@@ -199,7 +199,7 @@ export const getVendorById = async (vendorId) => {
   }
 }
 
-export const getSmartPlan = async ({ eventType, guests, budget, location, categories }) => {
+export const getSmartPlan = async ({ eventType, guests, budget, location, categories, customBudgets }) => {
   const params = new URLSearchParams({
     eventType: eventType || '',
     guests: guests || '',
@@ -207,7 +207,39 @@ export const getSmartPlan = async ({ eventType, guests, budget, location, catego
     location: location || '',
     categories: Array.isArray(categories) ? categories.join(',') : (categories || ''),
   });
+  if (customBudgets) params.append('customBudgets', customBudgets);
   const response = await fetch(`${BASE_URL}/vendors/smart-plan?${params}`);
   if (!response.ok) throw new Error('Failed to fetch smart plan');
+  return response.json();
+};
+
+export const confirmSmartPlan = async (data) => {
+  const response = await fetch(`${BASE_URL}/smart-plans`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Failed to confirm smart plan');
+  return response.json();
+};
+
+export const getAdminSmartPlans = async (token) => {
+  const response = await fetch(`${BASE_URL}/admin/smart-plans`, {
+    headers: { Authorization: `Bearer ${token}` },
+    credentials: 'include',
+  });
+  if (!response.ok) throw new Error('Failed to fetch smart plans');
+  return response.json();
+};
+
+export const updateSmartPlanVendorStatus = async (planId, category, status, token) => {
+  const response = await fetch(`${BASE_URL}/admin/smart-plans/${planId}/vendor-status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    credentials: 'include',
+    body: JSON.stringify({ category, status }),
+  });
+  if (!response.ok) throw new Error('Failed to update status');
   return response.json();
 };

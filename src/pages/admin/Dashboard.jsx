@@ -266,6 +266,7 @@ const sidebar_arr = [
   { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
+  { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks
@@ -373,6 +374,10 @@ const AdminDashboard = () => {
   // per-category upload meta: { [category]: { theme, caption } }
   const [galleryUploadMeta, setGalleryUploadMeta] = useState({});
   const [viewingPhoto, setViewingPhoto] = useState(null); // full-screen photo URL
+  // Smart Plans
+  const [smartPlans, setSmartPlans] = useState([]);
+  const [smartPlansLoaded, setSmartPlansLoaded] = useState(false);
+  const [smartPlanExpanded, setSmartPlanExpanded] = useState(null);
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [pinnedByPlan, setPinnedByPlan] = useState({}); // { [planId]: { loading, messages } }
@@ -3665,6 +3670,124 @@ const AdminDashboard = () => {
                       )}
                     </div>
                   ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ── Smart Plans ── */}
+        {activeDropdown === "smartplans" && (() => {
+          if (!smartPlansLoaded) {
+            fetch(`${BASE_URL}/admin/smart-plans`, {
+              headers: { Authorization: `Bearer ${token}` },
+              credentials: 'include',
+            })
+              .then(r => r.ok ? r.json() : { plans: [] })
+              .then(d => { setSmartPlans(d.plans || []); setSmartPlansLoaded(true); })
+              .catch(() => setSmartPlansLoaded(true));
+          }
+
+          const CAT_EMOJI = { Caterer: '🍽️', Decorator: '🎨', Photographer: '📸', DJ: '🎵' };
+
+          const handleStatusChange = async (planId, category, status) => {
+            try {
+              const res = await fetch(`${BASE_URL}/admin/smart-plans/${planId}/vendor-status`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                credentials: 'include',
+                body: JSON.stringify({ category, status }),
+              });
+              const data = await res.json();
+              if (data.plan) {
+                setSmartPlans(prev => prev.map(p => p._id === planId ? data.plan : p));
+              }
+            } catch (e) { console.error(e); }
+          };
+
+          return (
+            <div style={{ padding: "28px 32px", maxWidth: 860, margin: "0 auto" }}>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", fontFamily: "'Outfit', sans-serif" }}>🗂 Smart Plans</h2>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 24px", fontFamily: "'Outfit', sans-serif" }}>Customers who submitted a curated vendor package via Smart Planner</p>
+
+              {!smartPlansLoaded ? (
+                <div style={{ padding: 48, textAlign: "center", color: "#C47A2E", fontFamily: "'Outfit', sans-serif" }}>Loading…</div>
+              ) : smartPlans.length === 0 ? (
+                <div style={{ padding: 48, textAlign: "center", color: "#bbb", fontFamily: "'Outfit', sans-serif" }}>No smart plans submitted yet.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                  {smartPlans.map(plan => {
+                    const ed = plan.eventDetails || {};
+                    const isExp = smartPlanExpanded === plan._id;
+                    return (
+                      <div key={plan._id} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
+
+                        {/* Header row */}
+                        <div style={{ padding: "18px 22px 14px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
+                          <div>
+                            <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>
+                              {plan.customerName || "Guest"}
+                              {plan.customerPhone && <span style={{ fontSize: 12, fontWeight: 500, color: "#9B7450", marginLeft: 10 }}>📞 {plan.customerPhone}</span>}
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+                              {ed.eventType && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#7A5535", fontWeight: 600 }}>{ed.eventType}</span>}
+                              {ed.date && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>📅 {ed.date}</span>}
+                              {ed.location && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>📍 {ed.location}</span>}
+                              {ed.guests && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>👥 {ed.guests} guests</span>}
+                              {(ed.budget || ed.totalBudget) && <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "rgba(196,122,46,0.07)", color: "#7A5535" }}>💰 ₹{(ed.totalBudget || ed.budget || '').toLocaleString()}</span>}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setSmartPlanExpanded(isExp ? null : plan._id)}
+                            style={{ flexShrink: 0, padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                          >
+                            {isExp ? "▲ Collapse" : "▼ Details"}
+                          </button>
+                        </div>
+
+                        {/* Vendor slots — always visible */}
+                        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "12px 22px" }}>
+                          {(plan.vendorSlots || []).map((slot, si) => (
+                            <div key={si} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", borderBottom: si < plan.vendorSlots.length - 1 ? "1px dashed rgba(196,122,46,0.1)" : "none" }}>
+                              <span style={{ fontSize: 18, width: 26, textAlign: "center" }}>{CAT_EMOJI[slot.category] || '🏷️'}</span>
+                              <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || "—"}</div>
+                                <div style={{ fontSize: 11, color: "#9B7450" }}>{slot.category} · ₹{(slot.estimatedCost || 0).toLocaleString()}</div>
+                              </div>
+                              <select
+                                value={slot.status}
+                                onChange={e => handleStatusChange(plan._id, slot.category, e.target.value)}
+                                style={{ padding: "4px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: slot.status === 'Confirmed' ? '#16a34a' : slot.status === 'Declined' ? '#dc2626' : slot.status === 'Chatting' ? '#d97706' : '#6b7280', fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+                              >
+                                <option value="Pending">Pending</option>
+                                <option value="Chatting">Chatting</option>
+                                <option value="Confirmed">Confirmed</option>
+                                <option value="Declined">Declined</option>
+                              </select>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Expanded wizard answers */}
+                        {isExp && plan.wizardAnswers && Object.keys(plan.wizardAnswers).length > 0 && (
+                          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.03)" }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Event Brief</div>
+                            {Object.entries(plan.wizardAnswers).map(([key, val]) => (
+                              <div key={key} style={{ display: "flex", gap: 8, marginBottom: 6, fontSize: 13 }}>
+                                <span style={{ color: "#9B7450", minWidth: 140, textTransform: "capitalize" }}>{key.replace(/_/g, ' ')}:</span>
+                                <span style={{ color: "#2C1A0E", fontWeight: 500 }}>{Array.isArray(val) ? val.join(', ') : String(val)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Timestamp */}
+                        <div style={{ padding: "8px 22px 12px", fontSize: 11, color: "#bbb" }}>
+                          Submitted {new Date(plan.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
