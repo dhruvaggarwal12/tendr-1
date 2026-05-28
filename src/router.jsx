@@ -57,6 +57,7 @@ import StationeryCustomizer from './pages/stationery/StationeryCustomizer.jsx';
 import PaymentTracker from './pages/tools/PaymentTracker.jsx';
 import GuestList from './pages/tools/GuestList.jsx';
 import DecorFinder from './pages/tools/DecorFinder.jsx';
+import CategoryGallery from './pages/gallery/CategoryGallery.jsx';
 
 // only chat list for customers (no Conversation/ActiveChat components)
 import CustomerChatList from "./pages/customer/Chats";
@@ -358,6 +359,7 @@ const router = createBrowserRouter([
   { path: '/payment-tracker', element: <PaymentTracker />, errorElement: <ErrorPage /> },
   { path: '/guest-list', element: <GuestList />, errorElement: <ErrorPage /> },
   { path: '/decor-finder', element: <DecorFinder />, errorElement: <ErrorPage /> },
+  { path: '/gallery/:category', element: <CategoryGallery />, errorElement: <ErrorPage /> },
 
   // ── Wedding Stationery Sub-App (/wedding/*) ──────────────────────────────
   // Remove this route to disable the sub-app completely

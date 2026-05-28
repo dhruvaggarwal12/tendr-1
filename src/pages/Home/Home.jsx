@@ -1168,26 +1168,33 @@ const Home = () => {
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="events-portfolio-grid">
-            {["Decoration", "Entertainment", "Catering", "Photography", "Full Event Setup", "Corporate Events"].map(title => {
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="events-portfolio-grid">
+            {[
+              { title: "Decoration",       slug: "decoration" },
+              { title: "Entertainment",    slug: "entertainment" },
+              { title: "Catering",         slug: "catering" },
+              { title: "Photography",      slug: "photography" },
+              { title: "Full Event Setup", slug: "full-event-setup" },
+              { title: "Corporate Events", slug: "corporate-events" },
+            ].map(({ title, slug }) => {
               const img = galleryByCategory[title]?.[0]?.imageUrl || GALLERY_FALLBACKS[title];
-              const dest = title === "Decoration" ? "/decor-finder"
-                : title === "Photography" ? "/listings?serviceType=Photographer"
-                : title === "Catering" ? "/listings?serviceType=Caterer"
-                : title === "Entertainment" ? "/listings?serviceType=DJ"
-                : "/listings";
               return (
-              <div key={title}
-                onClick={() => navigate(dest)}
-                style={{ position: "relative", borderRadius: 16, overflow: "hidden", cursor: "pointer", height: 220 }}
-                onMouseEnter={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1.05)"; e.currentTarget.querySelector(".gl-overlay").style.background = "linear-gradient(to top, rgba(28,10,0,0.88) 0%, rgba(28,10,0,0.1) 60%)"; }}
-                onMouseLeave={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1)"; e.currentTarget.querySelector(".gl-overlay").style.background = "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)"; }}
-              >
-                <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease", display: "block" }} />
-                <div className="gl-overlay" style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)", transition: "background 0.3s ease", display: "flex", alignItems: "flex-end", padding: "16px 20px", justifyContent: "space-between" }}>
-                  <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>{title}</span>
-                  <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, fontWeight: 600, fontFamily: "'Outfit', sans-serif" }}>View →</span>
+              <div key={title} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", height: 220 }}
+                  onMouseEnter={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1.05)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1)"; }}
+                >
+                  <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease", display: "block" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)", display: "flex", alignItems: "flex-end", padding: "14px 18px" }}>
+                    <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>{title}</span>
+                  </div>
                 </div>
+                <button onClick={() => navigate(`/gallery/${slug}`)}
+                  style={{ width: "100%", padding: "9px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>
+                  Explore {title} →
+                </button>
               </div>
             ); })}
           </div>
