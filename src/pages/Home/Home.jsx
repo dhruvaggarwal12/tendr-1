@@ -1171,21 +1171,22 @@ const Home = () => {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="events-portfolio-grid">
             {["Decoration", "Entertainment", "Catering", "Photography", "Full Event Setup", "Corporate Events"].map(title => {
               const img = galleryByCategory[title]?.[0]?.imageUrl || GALLERY_FALLBACKS[title];
+              const dest = title === "Decoration" ? "/decor-finder"
+                : title === "Photography" ? "/listings?serviceType=Photographer"
+                : title === "Catering" ? "/listings?serviceType=Caterer"
+                : title === "Entertainment" ? "/listings?serviceType=DJ"
+                : "/listings";
               return (
               <div key={title}
+                onClick={() => navigate(dest)}
                 style={{ position: "relative", borderRadius: 16, overflow: "hidden", cursor: "pointer", height: 220 }}
-                onMouseEnter={(e) => { e.currentTarget.querySelector("div").style.opacity = "1"; }}
-                onMouseLeave={(e) => { e.currentTarget.querySelector("div").style.opacity = "0"; }}
+                onMouseEnter={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1.05)"; e.currentTarget.querySelector(".gl-overlay").style.background = "linear-gradient(to top, rgba(28,10,0,0.88) 0%, rgba(28,10,0,0.1) 60%)"; }}
+                onMouseLeave={(e) => { e.currentTarget.querySelector("img").style.transform = "scale(1)"; e.currentTarget.querySelector(".gl-overlay").style.background = "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)"; }}
               >
-                <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.05)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.75) 0%, transparent 55%)", opacity: 0, transition: "opacity 0.3s ease", display: "flex", alignItems: "flex-end", padding: "16px 20px" }}>
-                  <span style={{ color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif" }}>{title}</span>
-                </div>
-                <div style={{ position: "absolute", bottom: 14, left: 16 }}>
-                  <span style={{ color: "#fff", fontSize: 14, fontWeight: 600, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{title}</span>
+                <img src={img} alt={title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease", display: "block" }} />
+                <div className="gl-overlay" style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)", transition: "background 0.3s ease", display: "flex", alignItems: "flex-end", padding: "16px 20px", justifyContent: "space-between" }}>
+                  <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>{title}</span>
+                  <span style={{ color: "rgba(255,255,255,0.75)", fontSize: 12, fontWeight: 600, fontFamily: "'Outfit', sans-serif" }}>View →</span>
                 </div>
               </div>
             ); })}
