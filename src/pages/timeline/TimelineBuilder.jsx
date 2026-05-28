@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import HamburgerNav from "../../components/HamburgerNav";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SEO from "../../components/SEO";
@@ -170,6 +172,24 @@ export default function TimelineBuilder() {
   const done  = events.filter(e => e.checked).length;
   const total = events.length;
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
+
+  const slipRef = useRef(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const downloadSlip = async () => {
+    if (!slipRef.current || downloading) return;
+    setDownloading(true);
+    try {
+      const canvas = await html2canvas(slipRef.current, { scale: 2, useCORS: true, backgroundColor: "#FFFCF5" });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: [canvas.width / 2, canvas.height / 2] });
+      pdf.addImage(imgData, "PNG", 0, 0, canvas.width / 2, canvas.height / 2);
+      pdf.save("event-timeline.pdf");
+    } catch (e) {
+      console.error("Download failed", e);
+    }
+    setDownloading(false);
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
@@ -350,6 +370,20 @@ export default function TimelineBuilder() {
           </div>
         )}
 
+        {/* Action row: Edit/Preview toggle + Download */}
+        {events.length > 0 && (
+          <div style={{ display: "flex", gap: 10, marginBottom: 18, justifyContent: "flex-end" }}>
+            <button onClick={() => setPreview(p => !p)}
+              style={{ padding: "8px 18px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              {preview ? "✏️ Edit" : "👁 Preview"}
+            </button>
+            <button onClick={downloadSlip} disabled={downloading}
+              style={{ padding: "8px 18px", borderRadius: 10, border: "none", background: downloading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: downloading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: downloading ? "not-allowed" : "pointer", fontFamily: font, boxShadow: downloading ? "none" : "0 3px 10px rgba(196,122,46,0.28)" }}>
+              {downloading ? "Generating…" : "📄 Download Slip"}
+            </button>
+          </div>
+        )}
+
         {/* ── PREVIEW MODE ── */}
         {preview ? (
           <div style={{ position: "relative", paddingLeft: 32 }}>
@@ -468,6 +502,54 @@ export default function TimelineBuilder() {
           </button>
         )}
         </> /* end planning tab */}
+      </div>
+
+      {/* ── Hidden slip for PDF export ── */}
+      <div ref={slipRef} style={{
+        position: "fixed", top: "-9999px", left: "-9999px",
+        width: 560, background: "#FFFCF5", fontFamily: "'Outfit', sans-serif", padding: "36px 40px 40px",
+        borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)",
+      }}>
+        {/* Header */}
+        <div style={{ borderBottom: "2px solid rgba(196,122,46,0.18)", paddingBottom: 18, marginBottom: 24 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 6 }}>Tendr — Planning Tool</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Event Timeline</div>
+          {total > 0 && (
+            <div style={{ fontSize: 13, color: "#9B7450" }}>{done} of {total} milestones completed · {pct}% done</div>
+          )}
+          <div style={{ marginTop: 12, height: 6, background: "#EDE6D8", borderRadius: 100, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100 }} />
+          </div>
+        </div>
+
+        {/* Milestones */}
+        <div style={{ position: "relative", paddingLeft: 28 }}>
+          <div style={{ position: "absolute", left: 7, top: 0, bottom: 0, width: 2, background: "linear-gradient(180deg,#C47A2E,rgba(196,122,46,0.15))", borderRadius: 2 }} />
+          {events.map((ev, i) => (
+            <div key={ev.id} style={{ position: "relative", marginBottom: 16 }}>
+              <div style={{ position: "absolute", left: -25, top: 10, width: 12, height: 12, borderRadius: "50%", background: ev.checked ? "#22c55e" : "#C47A2E", border: "2px solid #FFFCF5" }} />
+              <div style={{ background: "#fff", borderRadius: 10, padding: "12px 16px", border: `1.5px solid ${ev.checked ? "rgba(34,197,94,0.25)" : "rgba(196,122,46,0.14)"}` }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div style={{ width: 16, height: 16, borderRadius: 5, border: `2px solid ${ev.checked ? "#22c55e" : "rgba(196,122,46,0.4)"}`, background: ev.checked ? "#22c55e" : "#fff", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff" }}>
+                    {ev.checked ? "✓" : ""}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", textDecoration: ev.checked ? "line-through" : "none", opacity: ev.checked ? 0.6 : 1 }}>
+                      {ev.title || "Untitled milestone"}
+                    </div>
+                    {ev.description && <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>{ev.description}</div>}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div style={{ marginTop: 24, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.12)", display: "flex", justifyContent: "space-between", fontSize: 11, color: "#bbb" }}>
+          <span>tendr.co.in</span>
+          <span>Generated {new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</span>
+        </div>
       </div>
 
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400&family=Outfit:wght@400;600;700;800;900&display=swap');`}</style>
