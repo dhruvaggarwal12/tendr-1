@@ -139,37 +139,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               <button onClick={() => setShowActiveChats(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
 
-            {/* Vendor category checklist — only when user selected categories */}
-            {selectedCategories.length > 0 && (
-              <div style={{ background: "rgba(196,122,46,0.05)", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "10px 16px" }}>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 7 }}>Your vendor checklist</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                  {selectedCategories.map(cat => {
-                    const done = !!finalisedVendors[cat];
-                    return (
-                      <div key={cat}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <div style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, background: done ? "#22c55e" : "rgba(255,255,255,0.12)", border: `1.5px solid ${done ? "#22c55e" : "rgba(255,255,255,0.25)"}`, color: "#fff" }}>
-                            {done ? "✓" : ""}
-                          </div>
-                          <span style={{ fontSize: 12, fontWeight: done ? 700 : 500, color: done ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.5)" }}>{cat}</span>
-                          {done && <span style={{ fontSize: 10, color: "#22c55e", marginLeft: "auto" }}>Finalised</span>}
-                          {!done && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginLeft: "auto" }}>Pending</span>}
-                        </div>
-                        {!done && (
-                          <button
-                            onClick={() => { setShowActiveChats(false); router.navigate(`/listings?serviceType=${encodeURIComponent(cat)}`); }}
-                            style={{ marginTop: 4, marginLeft: 26, fontSize: 10.5, color: "#CCAB4A", background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, textAlign: "left", textDecoration: "underline", fontStyle: "italic" }}
-                          >
-                            Haven't decided on {cat} yet? Compare vendors →
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
             {/* Chat list */}
             <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
               {vendorChats.length === 0 ? (

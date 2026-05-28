@@ -208,8 +208,11 @@ export const getSmartPlan = async ({ eventType, guests, budget, location, catego
     categories: Array.isArray(categories) ? categories.join(',') : (categories || ''),
   });
   if (customBudgets) params.append('customBudgets', customBudgets);
-  const response = await fetch(`${BASE_URL}/vendors/smart-plan?${params}`);
-  if (!response.ok) throw new Error('Failed to fetch smart plan');
+  const response = await fetch(`${BASE_URL}/vendors/smart-plan?${params}`, { credentials: 'include' });
+  if (!response.ok) {
+    const body = await response.text().catch(() => '');
+    throw new Error(`${response.status}: ${body || 'server error'}`);
+  }
   return response.json();
 };
 
