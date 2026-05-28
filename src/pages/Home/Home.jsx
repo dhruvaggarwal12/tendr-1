@@ -1,5 +1,5 @@
 // src/pages/Home/Home.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
@@ -213,6 +213,17 @@ function FaqSection() {
   );
 }
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+const GALLERY_FALLBACKS = {
+  "Decoration":        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=600&h=400&q=80",
+  "Entertainment":     "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=600&h=400&q=80",
+  "Catering":          "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=600&h=400&q=80",
+  "Photography":       "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&h=400&q=80",
+  "Full Event Setup":  "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=600&h=400&q=80",
+  "Corporate Events":  "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&h=400&q=80",
+};
+
 const Home = () => {
   const navigate = useNavigate();
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
@@ -233,6 +244,7 @@ const Home = () => {
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPrev, setHeroPrev] = useState(null);
   const [heroFading, setHeroFading] = useState(false);
+  const [galleryByCategory, setGalleryByCategory] = useState({});
   const [featureIdx, setFeatureIdx]   = useState(0);
   const [featureVisible, setFeatureVisible] = useState(true);
 
@@ -247,9 +259,16 @@ const Home = () => {
     }, 420);
   };
 
-  const heroNext = () => goToSlide((heroIndex + 1) % CELEBRATION_PHOTOS.length);
+  // Build hero slideshow from gallery photos; fall back to static assets when DB is empty
+  const heroPhotos = (() => {
+    const allPhotos = Object.values(galleryByCategory).flat();
+    if (allPhotos.length === 0) return CELEBRATION_PHOTOS;
+    return allPhotos.map(p => ({ url: p.imageUrl, label: p.category }));
+  })();
+
+  const heroNext = () => goToSlide((heroIndex + 1) % heroPhotos.length);
   const heroPrevSlide = () =>
-    goToSlide((heroIndex - 1 + CELEBRATION_PHOTOS.length) % CELEBRATION_PHOTOS.length);
+    goToSlide((heroIndex - 1 + heroPhotos.length) % heroPhotos.length);
 
   useEffect(() => {
     const t = setInterval(heroNext, 4500);
@@ -275,6 +294,13 @@ const Home = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/gallery`)
+      .then(r => r.ok ? r.json() : { grouped: {} })
+      .then(d => { if (d.grouped) setGalleryByCategory(d.grouped); })
+      .catch(() => {});
   }, []);
 
   // Logo should navigate to the home route (works from other pages as well)
@@ -595,8 +621,8 @@ const Home = () => {
               {/* Current photo */}
               <img
                 key={heroIndex}
-                src={CELEBRATION_PHOTOS[heroIndex].url}
-                alt={CELEBRATION_PHOTOS[heroIndex].label}
+                src={heroPhotos[Math.min(heroIndex, heroPhotos.length - 1)].url}
+                alt={heroPhotos[Math.min(heroIndex, heroPhotos.length - 1)].label}
                 style={{
                   position: "absolute",
                   inset: 0,
@@ -634,7 +660,7 @@ const Home = () => {
                   textShadow: "0 1px 4px rgba(0,0,0,0.4)",
                 }}
               >
-                {CELEBRATION_PHOTOS[heroIndex].label}
+                {heroPhotos[Math.min(heroIndex, heroPhotos.length - 1)].label}
               </div>
 
               {/* Prev arrow */}
@@ -706,7 +732,7 @@ const Home = () => {
                   zIndex: 2,
                 }}
               >
-                {CELEBRATION_PHOTOS.map((_, i) => (
+                {heroPhotos.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => goToSlide(i)}
@@ -1143,14 +1169,9 @@ const Home = () => {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="events-portfolio-grid">
-            {[
-              { title: "Decoration",        img: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Entertainment",     img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Catering",          img: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Photography",       img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Full Event Setup",  img: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Corporate Events",  img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&h=400&q=80" },
-            ].map(({ title, img }) => (
+            {["Decoration", "Entertainment", "Catering", "Photography", "Full Event Setup", "Corporate Events"].map(title => {
+              const img = galleryByCategory[title]?.[0]?.imageUrl || GALLERY_FALLBACKS[title];
+              return (
               <div key={title}
                 style={{ position: "relative", borderRadius: 16, overflow: "hidden", cursor: "pointer", height: 220 }}
                 onMouseEnter={(e) => { e.currentTarget.querySelector("div").style.opacity = "1"; }}
@@ -1167,7 +1188,7 @@ const Home = () => {
                   <span style={{ color: "#fff", fontSize: 14, fontWeight: 600, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 4px rgba(0,0,0,0.5)" }}>{title}</span>
                 </div>
               </div>
-            ))}
+            ); })}
           </div>
         </div>
         <style>{`@media (max-width: 768px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } } @media (max-width: 480px) { .events-portfolio-grid { grid-template-columns: 1fr !important; } }`}</style>

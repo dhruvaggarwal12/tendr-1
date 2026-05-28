@@ -265,6 +265,7 @@ const sidebar_arr = [
   { label: "Gift Hampers",     icon: <span style={{ fontSize: 18 }}>🎁</span>, key: "GiftHampers" },
   { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
+  { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks
@@ -365,6 +366,10 @@ const AdminDashboard = () => {
   // Reviews
   const [reviews, setReviews] = useState([]);
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
+  // Gallery / Photos
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [galleryLoaded, setGalleryLoaded] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
   const [viewingPhoto, setViewingPhoto] = useState(null); // full-screen photo URL
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
@@ -3415,6 +3420,125 @@ const AdminDashboard = () => {
                       })}
                     </tbody>
                   </table>
+                </div>
+              )}
+            </div>
+          );
+        })()}
+
+        {/* ── Photos ── */}
+        {activeDropdown === "photos" && (() => {
+          const GALLERY_CATEGORIES = ['Decoration', 'Entertainment', 'Catering', 'Photography', 'Full Event Setup', 'Corporate Events'];
+
+          if (!galleryLoaded) {
+            fetch(`${BASE_URL}/admin/gallery`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+              .then(r => r.ok ? r.json() : { photos: [] })
+              .then(d => { setGalleryPhotos(d.photos || []); setGalleryLoaded(true); })
+              .catch(() => setGalleryLoaded(true));
+          }
+
+          const grouped = {};
+          GALLERY_CATEGORIES.forEach(cat => { grouped[cat] = []; });
+          galleryPhotos.forEach(p => { if (grouped[p.category]) grouped[p.category].push(p); });
+
+          const handleUpload = async (category, file) => {
+            if (!file) return;
+            setGalleryUploading(true);
+            try {
+              const fd = new FormData();
+              fd.append('photo', file);
+              fd.append('category', category);
+              const res = await fetch(`${BASE_URL}/admin/gallery/upload`, {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: 'include',
+                body: fd,
+              });
+              const data = await res.json();
+              if (data.photo) setGalleryPhotos(prev => [data.photo, ...prev]);
+            } catch (e) {
+              alert('Upload failed: ' + e.message);
+            } finally {
+              setGalleryUploading(false);
+            }
+          };
+
+          const handleDelete = async (photoId) => {
+            if (!window.confirm('Delete this photo?')) return;
+            try {
+              const res = await fetch(`${BASE_URL}/admin/gallery/${photoId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` },
+                credentials: 'include',
+              });
+              if (res.ok) setGalleryPhotos(prev => prev.filter(p => p._id !== photoId));
+            } catch (e) {
+              alert('Delete failed: ' + e.message);
+            }
+          };
+
+          return (
+            <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e] my-4">
+                📸 Gallery Photos
+              </div>
+              <p style={{ fontSize: 14, color: "#9B7450", marginBottom: 28 }}>
+                Upload photos per category — they appear on the homepage gallery and hero slideshow.
+              </p>
+
+              {!galleryLoaded ? (
+                <div style={{ textAlign: "center", padding: 48, color: "#9B7450" }}>Loading...</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 36 }}>
+                  {GALLERY_CATEGORIES.map(cat => (
+                    <div key={cat}>
+                      {/* Category header */}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, paddingBottom: 10, borderBottom: "1.5px solid rgba(196,122,46,0.18)" }}>
+                        <div>
+                          <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", fontFamily: "'Outfit', sans-serif" }}>{cat}</span>
+                          <span style={{ marginLeft: 10, fontSize: 12, color: "#9B7450" }}>{grouped[cat].length} photo{grouped[cat].length !== 1 ? "s" : ""}</span>
+                        </div>
+                        <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 16px", borderRadius: 10, background: galleryUploading ? "#f3f4f6" : "linear-gradient(135deg,#2C1A0E,#4A2810)", color: galleryUploading ? "#bbb" : "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: galleryUploading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", userSelect: "none" }}>
+                          {galleryUploading ? "Uploading…" : "+ Add Photo"}
+                          <input
+                            type="file" accept="image/*" style={{ display: "none" }}
+                            disabled={galleryUploading}
+                            onChange={e => { if (e.target.files[0]) { handleUpload(cat, e.target.files[0]); e.target.value = ""; } }}
+                          />
+                        </label>
+                      </div>
+
+                      {/* Photo grid */}
+                      {grouped[cat].length === 0 ? (
+                        <div style={{ padding: "24px 16px", borderRadius: 12, border: "2px dashed rgba(196,122,46,0.2)", textAlign: "center", color: "#C4A882", fontSize: 13, fontFamily: "'Outfit', sans-serif" }}>
+                          No photos yet — upload the first one
+                        </div>
+                      ) : (
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
+                          {grouped[cat].map(photo => (
+                            <div key={photo._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "#eee", aspectRatio: "3/2", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
+                              onMouseEnter={e => e.currentTarget.querySelector(".del-btn").style.opacity = "1"}
+                              onMouseLeave={e => e.currentTarget.querySelector(".del-btn").style.opacity = "0"}
+                            >
+                              <img src={photo.imageUrl} alt={photo.caption || cat}
+                                onClick={() => setViewingPhoto(photo.imageUrl)}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", cursor: "zoom-in", display: "block" }}
+                              />
+                              {photo.caption && (
+                                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.55))", padding: "12px 8px 6px", color: "#fff", fontSize: 11, fontWeight: 600 }}>
+                                  {photo.caption}
+                                </div>
+                              )}
+                              <button className="del-btn" onClick={() => handleDelete(photo._id)}
+                                style={{ position: "absolute", top: 6, right: 6, width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.15s" }}>
+                                ✕
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
