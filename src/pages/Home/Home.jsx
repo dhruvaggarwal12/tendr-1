@@ -1138,18 +1138,18 @@ const Home = () => {
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Our Work</p>
             <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>A Glimpse Into Our Events</h2>
-            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 500, margin: "0 auto" }}>From intimate birthdays to grand weddings — events we have curated across Delhi NCR.</p>
+            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 500, margin: "0 auto" }}>Decoration, entertainment, catering, photography — every service you need, all in one place.</p>
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="events-portfolio-grid">
             {[
-              { title: "Wedding Ceremony", img: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Sangeet Night", img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Birthday Bash", img: "https://images.unsplash.com/photo-1527529482837-4698179dc6ce?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Gala Dinner", img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Ring Ceremony", img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=600&h=400&q=80" },
-              { title: "Family Gathering", img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Decoration",        img: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Entertainment",     img: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Catering",          img: "https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Photography",       img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Full Event Setup",  img: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=600&h=400&q=80" },
+              { title: "Corporate Events",  img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=600&h=400&q=80" },
             ].map(({ title, img }) => (
               <div key={title}
                 style={{ position: "relative", borderRadius: 16, overflow: "hidden", cursor: "pointer", height: 220 }}
