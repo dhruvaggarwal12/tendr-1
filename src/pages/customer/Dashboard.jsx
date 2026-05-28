@@ -1016,14 +1016,25 @@ export default function CustomerDashboard() {
                   {/* 4 download buttons — shown for Upcoming (in_progress) plans */}
                   {plan.status === "in_progress" && (() => {
                     const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
-                    const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({
-                      name: v.vendorName || v.name || "",
-                      serviceType: v.serviceType || "",
-                    })).filter(v => v.name);
-                    // Per-service amounts if available (vendors with agreedPrice/packagePrice)
-                    const rawVendors = plan.vendors || plan.confirmedVendors || [];
-                    const serviceAmounts = rawVendors.some(v => v.agreedPrice || v.packagePrice || v.price)
-                      ? rawVendors.map(v => ({ category: v.serviceType || v.category || "", amount: v.agreedPrice || v.packagePrice || v.price || 0 })).filter(v => v.category)
+
+                    // finalisedVendors is a populated Map: { "Caterer": vendorDoc, "DJ": vendorDoc }
+                    const finVendors = plan.finalisedVendors || {};
+                    const finEntries = Object.entries(finVendors).filter(([, v]) => v);
+
+                    // Build confirmedVendors for Event Details PDF (needs name + serviceType)
+                    const confirmedVendors = finEntries
+                      .map(([serviceType, v]) => ({
+                        name: typeof v === 'object' ? (v.name || serviceType) : serviceType,
+                        serviceType,
+                        _id: typeof v === 'object' ? v._id : null,
+                      }));
+
+                    // Per-service amounts using each vendor's listed price
+                    const serviceAmounts = finEntries.length > 0
+                      ? finEntries.map(([serviceType, v]) => ({
+                          category: serviceType,
+                          amount: typeof v === 'object' ? (v.price || v.startingPrice || 0) : 0,
+                        }))
                       : null;
                     return (
                       <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 14 }}>
