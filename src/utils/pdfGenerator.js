@@ -80,7 +80,9 @@ function row(doc, label, value, y, labelX = 14, valueX = 70) {
 }
 
 // ── Invoice PDF ──────────────────────────────────────────────────────────────
-export function generateInvoicePDF({ eventSummary, confirmedVendors, amount, orderId, paymentId, userName }) {
+// serviceAmounts (optional): [{ category, amount }] — per-service breakdown
+// confirmedVendors: used only to extract unique service categories when serviceAmounts not provided
+export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount, orderId, paymentId, userName, serviceAmounts = null }) {
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -103,10 +105,10 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors, amount, ord
   doc.setFontSize(8.5);
   doc.setTextColor(92, 58, 26);
   doc.text(`Invoice Date: ${date}`, 20, y + 16);
-  if (orderId) doc.text(`Order ID: ${orderId}`, 20, y + 21);
+  if (orderId)   doc.text(`Order ID: ${orderId}`, 20, y + 21);
   if (paymentId) doc.text(`Payment ID: ${paymentId}`, 20, y + 26);
 
-  // Status badge (paid)
+  // Status badge
   doc.setFillColor(21, 128, 61);
   doc.roundedRect(158, y + 5, 28, 10, 2, 2, "F");
   doc.setFont("helvetica", "bold");
@@ -128,28 +130,35 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors, amount, ord
   y = sectionTitle(doc, "Event Details", y);
   if (eventSummary.eventType) y = row(doc, "Event Type:", eventSummary.eventType, y);
   if (eventSummary.date)      y = row(doc, "Event Date:", eventSummary.date, y);
-  if (eventSummary.location)  y = row(doc, "Location:", eventSummary.location, y);
-  if (eventSummary.guests)    y = row(doc, "Guests:", eventSummary.guests, y);
+  if (eventSummary.location)  y = row(doc, "Location:",   eventSummary.location, y);
+  if (eventSummary.guests)    y = row(doc, "Guests:",     eventSummary.guests, y);
   y += 4;
 
-  // Services table
-  if (confirmedVendors.length > 0) {
+  // Build service rows — no vendor names
+  // Prefer serviceAmounts if provided; otherwise dedupe service types from confirmedVendors
+  const hasAmounts = serviceAmounts && serviceAmounts.length > 0;
+  const serviceRows = hasAmounts
+    ? serviceAmounts
+    : [...new Map(confirmedVendors.map(v => [v.serviceType, { category: v.serviceType }])).values()];
+
+  if (serviceRows.length > 0) {
     y = sectionTitle(doc, "Services Booked", y);
+
     // Table header
     doc.setFillColor(255, 250, 240);
     doc.rect(14, y - 4, 182, 7, "F");
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(92, 58, 26);
-    doc.text("Vendor Name", 18, y);
-    doc.text("Service", 110, y);
+    doc.text("Service Category", 18, y);
+    if (hasAmounts) doc.text("Amount", 178, y, { align: "right" });
     y += 3;
     doc.setDrawColor(204, 171, 74);
     doc.setLineWidth(0.2);
     doc.line(14, y, 196, y);
     y += 4;
 
-    confirmedVendors.forEach((v, i) => {
+    serviceRows.forEach((s, i) => {
       if (i % 2 === 0) {
         doc.setFillColor(255, 252, 247);
         doc.rect(14, y - 3.5, 182, 6.5, "F");
@@ -157,14 +166,18 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors, amount, ord
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(44, 26, 14);
-      doc.text(v.name, 18, y);
-      doc.text(v.serviceType, 110, y);
+      doc.text(s.category || s.serviceType || "", 18, y);
+      if (hasAmounts && s.amount) {
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(196, 122, 46);
+        doc.text(`₹${Number(s.amount).toLocaleString("en-IN")}`, 192, y, { align: "right" });
+      }
       y += 7;
     });
     y += 4;
   }
 
-  // Amount due
+  // Total amount
   doc.setFillColor(44, 26, 14);
   doc.roundedRect(14, y, 182, 16, 3, 3, "F");
   doc.setFont("helvetica", "bold");

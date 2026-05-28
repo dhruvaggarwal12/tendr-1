@@ -1020,11 +1020,16 @@ export default function CustomerDashboard() {
                       name: v.vendorName || v.name || "",
                       serviceType: v.serviceType || "",
                     })).filter(v => v.name);
+                    // Per-service amounts if available (vendors with agreedPrice/packagePrice)
+                    const rawVendors = plan.vendors || plan.confirmedVendors || [];
+                    const serviceAmounts = rawVendors.some(v => v.agreedPrice || v.packagePrice || v.price)
+                      ? rawVendors.map(v => ({ category: v.serviceType || v.category || "", amount: v.agreedPrice || v.packagePrice || v.price || 0 })).filter(v => v.category)
+                      : null;
                     return (
                       <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 14 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Your Documents</div>
                         <div className="plan-card-actions" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
-                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: user?.name }); } finally { setPdfGenerating(false); } }}
+                          <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: user?.name, serviceAmounts }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>🧾</span>Invoice
                           </button>
