@@ -198,3 +198,16 @@ export const getVendorById = async (vendorId) => {
     throw error;
   }
 }
+
+export const getSmartPlan = async ({ eventType, guests, budget, location, categories }) => {
+  const params = new URLSearchParams({
+    eventType: eventType || '',
+    guests: guests || '',
+    budget: budget || '',
+    location: location || '',
+    categories: Array.isArray(categories) ? categories.join(',') : (categories || ''),
+  });
+  const response = await fetch(`${BASE_URL}/vendors/smart-plan?${params}`);
+  if (!response.ok) throw new Error('Failed to fetch smart plan');
+  return response.json();
+};

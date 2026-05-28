@@ -36,7 +36,7 @@ import { setFilters } from "../../redux/listingFiltersSlice";
 
 import MakeAGroup_Nav from "../../components/MakeAGroup_Nav.jsx";
 import EventFormSummary from "../../components/EventFormSummary.jsx";
-import { getVendors } from "../../apis/vendorApi.js";
+import { getVendors, getSmartPlan } from "../../apis/vendorApi.js";
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import JourneyProgress from "../../components/JourneyProgress";
@@ -62,13 +62,15 @@ const EventPlanning = () => {
   };
   const navigate = useNavigate();
   const location = useLocation();
-  const { openConciergeChat } = useChatOverlay();
+  const { openConciergeChat, openVendorChat } = useChatOverlay();
   const TRANSITION_MS = 350;
   const [activeModal, setActiveModal] = useState(null);
   const [extraRequirements, setExtraRequirements] = useState(false);
   const [showExtraReq, setShowExtraReq] = useState();
   const [extraRequirementsText, setExtraRequirementsText] = useState("");
   const [animating, setAnimating] = useState(false);
+  const [smartPlan, setSmartPlan] = useState(null);
+  const [planLoading, setPlanLoading] = useState(false);
 
   const dispatch = useDispatch();
   const {
@@ -299,6 +301,132 @@ const EventPlanning = () => {
    *  SERVICE CATEGORY SCREEN (Both Flows — unified design)
    *  ======================= */
 
+  if (showVendorScreen && smartPlan) {
+    const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
+    const stars = (n) => {
+      const rounded = Math.round(n * 2) / 2;
+      return "★".repeat(Math.floor(rounded)) + (rounded % 1 ? "½" : "") + "☆".repeat(5 - Math.ceil(rounded));
+    };
+
+    return (
+      <>
+      <div className="min-h-screen w-full" style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}>
+        <BasicSpeedDial />
+        <HamburgerNav active="Browse" noSidebar />
+
+        <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-20 flex flex-col items-center">
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: 36, maxWidth: 700 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "5px 16px", marginBottom: 14 }}>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>✨ Your Personalised Plan</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", fontWeight: 800, color: "#2C1A0E", letterSpacing: "-0.02em", marginBottom: 10 }}>
+              Here's Your Event Lineup
+            </h2>
+            <p style={{ fontSize: 15, color: "#6B4226" }}>
+              Based on your {fmt(smartPlan.totalBudget)} budget for {formData?.eventType || "your event"} in {formData?.location || "your city"}.
+              Chat directly with any vendor to confirm pricing.
+            </p>
+          </div>
+
+          {/* Budget breakdown pills */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center", marginBottom: 44 }}>
+            {smartPlan.lineup.map(({ category, estimatedCost }) => (
+              <span key={category} style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "6px 16px", fontSize: 13, fontWeight: 700, color: "#2C1A0E", boxShadow: "0 1px 4px rgba(196,122,46,0.08)" }}>
+                <span style={{ color: "#C47A2E" }}>
+                  {category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}
+                </span>
+                {category}: <span style={{ color: "#C47A2E" }}>{fmt(estimatedCost)}</span>
+              </span>
+            ))}
+          </div>
+
+          {/* Per-category vendor cards */}
+          <div style={{ width: "100%", maxWidth: 1100, display: "flex", flexDirection: "column", gap: 40 }}>
+            {smartPlan.lineup.map(({ category, estimatedCost, vendors: catVendors }) => (
+              <div key={category}>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginBottom: 16, borderBottom: "1.5px solid rgba(196,122,46,0.15)", paddingBottom: 10 }}>
+                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{category}</h3>
+                  <span style={{ fontSize: 13, color: "#9B7450" }}>estimated {fmt(estimatedCost)}</span>
+                </div>
+
+                {catVendors.length === 0 ? (
+                  <div style={{ padding: "24px 16px", borderRadius: 14, border: "2px dashed rgba(196,122,46,0.2)", textAlign: "center", color: "#C4A882", fontSize: 14 }}>
+                    No {category.toLowerCase()} vendors available in {formData?.location} right now —{" "}
+                    <button onClick={openChatWithSocket} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, cursor: "pointer", fontSize: 14, padding: 0, fontFamily: "'Outfit', sans-serif" }}>
+                      chat with our team
+                    </button>
+                    {" "}and we'll help you find one.
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+                    {catVendors.map((vendor) => (
+                      <div key={vendor._id} style={{ background: "#fff", borderRadius: 18, overflow: "hidden", boxShadow: "0 2px 14px rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.12)", display: "flex", flexDirection: "column" }}>
+                        {/* Vendor photo */}
+                        <div style={{ height: 160, background: "#f3ebe0", position: "relative", overflow: "hidden" }}>
+                          {vendor.portfolioPhotos?.[0] ? (
+                            <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          ) : (
+                            <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>
+                              {category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Vendor info */}
+                        <div style={{ padding: "16px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 6 }}>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>{vendor.name}</div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                            {vendor.avgReviewScore > 0 && (
+                              <span style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700 }}>{stars(vendor.avgReviewScore)} <span style={{ color: "#9B7450" }}>({vendor.avgReviewScore.toFixed(1)})</span></span>
+                            )}
+                            {vendor.totalEventsCompleted > 0 && (
+                              <span style={{ fontSize: 11.5, fontWeight: 700, background: "rgba(196,122,46,0.1)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "2px 10px" }}>
+                                🎉 {vendor.totalEventsCompleted}+ events
+                              </span>
+                            )}
+                          </div>
+                          {vendor.yearsOfExperience > 0 && (
+                            <div style={{ fontSize: 12, color: "#9B7450" }}>{vendor.yearsOfExperience} yr{vendor.yearsOfExperience !== 1 ? "s" : ""} experience</div>
+                          )}
+                          <div style={{ marginTop: "auto", paddingTop: 12 }}>
+                            <button
+                              onClick={() => openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType })}
+                              style={{ width: "100%", padding: "11px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}
+                            >
+                              Chat & Confirm Price →
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Footer actions */}
+          <div style={{ marginTop: 48, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
+            <button
+              onClick={() => setSmartPlan(null)}
+              style={{ background: "transparent", border: "1.5px solid rgba(196,122,46,0.3)", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", padding: "9px 24px", borderRadius: 10, fontFamily: "'Outfit', sans-serif" }}
+            >
+              ← Change Services
+            </button>
+            <button
+              onClick={openChatWithSocket}
+              style={{ background: "none", border: "none", color: "#9B7450", fontSize: 13, cursor: "pointer", textDecoration: "underline", fontFamily: "'Outfit', sans-serif" }}
+            >
+              Prefer a human to plan this? Chat with our team
+            </button>
+          </div>
+        </div>
+      </div>
+      </>
+    );
+  }
+
   if (showVendorScreen) {
     const isYouDoIt = bookingType === "you-do-it";
 
@@ -322,7 +450,7 @@ const EventPlanning = () => {
             <p style={{ fontSize: 16, color: "#6B4226", fontWeight: 400 }}>
               {isYouDoIt
                 ? "Choose one or more — we'll show you the best vendors next"
-                : "Choose one or more — we'll open a chat with your requirements"}
+                : "Choose one or more — we'll instantly build your event lineup"}
             </p>
           </div>
 
@@ -419,13 +547,30 @@ const EventPlanning = () => {
               </button>
             ) : (
               <button
-                disabled={selectedVendors.length === 0}
-                onClick={() => { if (selectedVendors.length > 0) openChatWithSocket(); }}
-                style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
-                onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
+                disabled={selectedVendors.length === 0 || planLoading}
+                onClick={async () => {
+                  if (selectedVendors.length === 0) return;
+                  setPlanLoading(true);
+                  try {
+                    const result = await getSmartPlan({
+                      eventType: formData?.eventType,
+                      guests: formData?.guests,
+                      budget: formData?.budget,
+                      location: formData?.location,
+                      categories: selectedVendors,
+                    });
+                    setSmartPlan(result);
+                  } catch {
+                    openChatWithSocket();
+                  } finally {
+                    setPlanLoading(false);
+                  }
+                }}
+                style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 && !planLoading ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
+                onMouseEnter={(e) => { if (selectedVendors.length > 0 && !planLoading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
               >
-                Chat with Us →
+                {planLoading ? "Building your plan…" : "Get My Plan →"}
               </button>
             )}
 
