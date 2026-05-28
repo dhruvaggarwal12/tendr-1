@@ -1771,9 +1771,8 @@ const AdminDashboard = () => {
                 onClose={() => setEditingVendor(null)}
                 onSaved={(data) => {
                   setSeedResult({ message: data.message });
-                  // Refresh vendor name in list
                   setVendorStats(prev => prev.map(v =>
-                    v._id === editingVendor._id ? { ...v, name: data.vendor?.name || v.name } : v
+                    v._id === editingVendor._id ? { ...v, ...data.vendor } : v
                   ));
                   setSelectedVendor(null);
                 }}

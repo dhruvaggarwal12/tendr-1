@@ -124,23 +124,35 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
   // Photo upload state
-  const [photos, setPhotos]             = useState(vendor.portfolioPhotos || []);
-  const [uploading, setUploading]       = useState(false);
-  const [photoMsg, setPhotoMsg]         = useState("");
-  const [uploadGalleryCat, setUploadGalleryCat] = useState("");
-  const [uploadDecorTheme, setUploadDecorTheme] = useState("");
+  const [photos, setPhotos]       = useState(vendor.portfolioPhotos || []);
+  const [uploading, setUploading] = useState(false);
+  const [photoMsg, setPhotoMsg]   = useState("");
+  // Pending file — holds selected file until user confirms tag
+  const [pendingFile, setPendingFile]   = useState(null);
+  const [pendingPreview, setPendingPreview] = useState("");
+  const [pendingCat, setPendingCat]     = useState("");
+  const [pendingTheme, setPendingTheme] = useState("");
 
-  const GALLERY_CATS  = ["Decoration", "Entertainment", "Catering", "Photography", "Full Event Setup", "Corporate Events"];
+  const GALLERY_CATS      = ["Decoration", "Entertainment", "Catering", "Photography", "Full Event Setup", "Corporate Events"];
   const DECOR_THEMES_LIST = ["Floral", "Balloon Art", "Lighting", "Themed Decoration", "Traditional", "Modern", "Rustic", "Minimalist"];
 
-  const handlePhotoUpload = async (e) => {
+  const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setPendingFile(file);
+    setPendingPreview(URL.createObjectURL(file));
+    setPendingCat("");
+    setPendingTheme("");
+    e.target.value = "";
+  };
+
+  const confirmUpload = async () => {
+    if (!pendingFile || uploading) return;
     setUploading(true); setPhotoMsg("");
     const fd = new FormData();
-    fd.append("photo", file);
-    if (uploadGalleryCat) fd.append("galleryCategory", uploadGalleryCat);
-    if (uploadDecorTheme && st === "Decorator") fd.append("decorTheme", uploadDecorTheme);
+    fd.append("photo", pendingFile);
+    if (pendingCat) fd.append("galleryCategory", pendingCat);
+    if (pendingTheme && st === "Decorator") fd.append("decorTheme", pendingTheme);
     try {
       const BASE = import.meta.env.VITE_BASE_URL;
       const res = await fetch(`${BASE}/admin/vendors/${vendor._id}/photos`, {
@@ -150,10 +162,14 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
       const data = await res.json();
       if (res.ok) {
         setPhotos(prev => [...prev, data.url]);
-        setPhotoMsg(uploadGalleryCat ? `Photo uploaded & added to ${uploadGalleryCat} gallery!` : "Photo uploaded!");
+        setPhotoMsg(pendingCat ? `Uploaded to ${pendingCat}!` : "Photo uploaded!");
       } else setPhotoMsg(data.error || "Upload failed.");
     } catch (err) { setPhotoMsg(err.message); }
-    finally { setUploading(false); e.target.value = ""; setTimeout(() => setPhotoMsg(""), 3000); }
+    finally {
+      setUploading(false);
+      setPendingFile(null); setPendingPreview("");
+      setTimeout(() => setPhotoMsg(""), 3000);
+    }
   };
 
   const handlePhotoDelete = async (url) => {
@@ -285,36 +301,51 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
 
           <SectionTitle>Portfolio Photos</SectionTitle>
           <div style={{ marginTop: 10, marginBottom: 16 }}>
-            {/* Gallery tagging controls */}
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10, alignItems: "center" }}>
-              <select
-                value={uploadGalleryCat}
-                onChange={e => { setUploadGalleryCat(e.target.value); if (e.target.value !== "Decoration") setUploadDecorTheme(""); }}
-                style={{ ...inp, width: "auto", flex: 1, minWidth: 160, fontSize: 12, color: uploadGalleryCat ? "#2C1A0E" : "#9B7450" }}
-              >
-                <option value="">Add to Glimpse gallery? (optional)</option>
-                {GALLERY_CATS.map(c => <option key={c} value={c}>{c}</option>)}
-              </select>
-              {st === "Decorator" && (
-                <select
-                  value={uploadDecorTheme}
-                  onChange={e => setUploadDecorTheme(e.target.value)}
-                  style={{ ...inp, width: "auto", flex: 1, minWidth: 150, fontSize: 12, color: uploadDecorTheme ? "#2C1A0E" : "#9B7450" }}
-                >
-                  <option value="">Decor theme? (optional)</option>
-                  {DECOR_THEMES_LIST.map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              )}
-            </div>
-            {/* Upload button */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <label style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: uploading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: uploading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: uploading ? "not-allowed" : "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}>
-                {uploading ? "Uploading…" : "📷 Upload Photo"}
-                <input type="file" accept="image/*" onChange={handlePhotoUpload} disabled={uploading} style={{ display: "none" }} />
-              </label>
-              {photoMsg && <span style={{ fontSize: 12, color: photoMsg.includes("fail") || photoMsg.includes("Error") ? "#ef4444" : "#15803d", fontWeight: 600 }}>{photoMsg}</span>}
-              <span style={{ fontSize: 11, color: "#9B7450", marginLeft: "auto" }}>{photos.length}/10 photos</span>
-            </div>
+
+            {/* Pending file — tag before upload */}
+            {pendingFile ? (
+              <div style={{ background: "#FFFCF7", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "14px 16px", marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Tag this photo before uploading</div>
+                <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <img src={pendingPreview} alt="preview" style={{ width: 80, height: 80, borderRadius: 10, objectFit: "cover", flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.18)" }} />
+                  <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
+                    <select value={pendingCat} onChange={e => { setPendingCat(e.target.value); if (e.target.value !== "Decoration") setPendingTheme(""); }}
+                      style={{ ...inp, fontSize: 12, color: pendingCat ? "#2C1A0E" : "#9B7450" }}>
+                      <option value="">Add to Glimpse gallery? (optional)</option>
+                      {GALLERY_CATS.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    {st === "Decorator" && (
+                      <select value={pendingTheme} onChange={e => setPendingTheme(e.target.value)}
+                        style={{ ...inp, fontSize: 12, color: pendingTheme ? "#2C1A0E" : "#9B7450" }}>
+                        <option value="">Decor theme for this photo? (optional)</option>
+                        {DECOR_THEMES_LIST.map(t => <option key={t} value={t}>{t}</option>)}
+                      </select>
+                    )}
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button type="button" onClick={confirmUpload} disabled={uploading}
+                        style={{ flex: 1, padding: "9px 0", borderRadius: 9, border: "none", background: uploading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: uploading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: uploading ? "not-allowed" : "pointer", fontFamily: font }}>
+                        {uploading ? "Uploading…" : "✓ Upload"}
+                      </button>
+                      <button type="button" onClick={() => { setPendingFile(null); setPendingPreview(""); }}
+                        style={{ padding: "9px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                {photoMsg && <div style={{ marginTop: 8, fontSize: 12, color: photoMsg.includes("fail") || photoMsg.includes("Error") ? "#ef4444" : "#15803d", fontWeight: 600 }}>{photoMsg}</div>}
+              </div>
+            ) : (
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                <label style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}>
+                  📷 Upload Photo
+                  <input type="file" accept="image/*" onChange={handleFileSelect} style={{ display: "none" }} />
+                </label>
+                {photoMsg && <span style={{ fontSize: 12, color: "#15803d", fontWeight: 600 }}>{photoMsg}</span>}
+                <span style={{ fontSize: 11, color: "#9B7450", marginLeft: "auto" }}>{photos.length}/10 photos</span>
+              </div>
+            )}
+
             {/* Photo grid */}
             {photos.length > 0 ? (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: 8 }}>
@@ -327,19 +358,21 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
                     </button>
                   </div>
                 ))}
-                {photos.length < 10 && (
+                {!pendingFile && photos.length < 10 && (
                   <label style={{ aspectRatio: "1", borderRadius: 10, border: "2px dashed rgba(196,122,46,0.3)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#C47A2E", fontSize: 11, fontWeight: 600, gap: 4 }}>
-                    <span style={{ fontSize: 22 }}>+</span> Add Photo
-                    <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
+                    <span style={{ fontSize: 22 }}>+</span> Add
+                    <input type="file" accept="image/*" onChange={handleFileSelect} style={{ display: "none" }} />
                   </label>
                 )}
               </div>
             ) : (
-              <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "28px", border: "2px dashed rgba(196,122,46,0.25)", borderRadius: 12, cursor: "pointer", color: "#9B7450", gap: 8 }}>
-                <span style={{ fontSize: 32 }}>🖼️</span>
-                <span style={{ fontSize: 13, fontWeight: 600 }}>Click to upload first photo</span>
-                <input type="file" accept="image/*" onChange={handlePhotoUpload} style={{ display: "none" }} />
-              </label>
+              !pendingFile && (
+                <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "28px", border: "2px dashed rgba(196,122,46,0.25)", borderRadius: 12, cursor: "pointer", color: "#9B7450", gap: 8 }}>
+                  <span style={{ fontSize: 32 }}>🖼️</span>
+                  <span style={{ fontSize: 13, fontWeight: 600 }}>Click to upload first photo</span>
+                  <input type="file" accept="image/*" onChange={handleFileSelect} style={{ display: "none" }} />
+                </label>
+              )
             )}
           </div>
 
