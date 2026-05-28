@@ -71,6 +71,7 @@ const EventPlanning = () => {
   const [animating, setAnimating] = useState(false);
   const [smartPlan, setSmartPlan] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
+  const [planError, setPlanError] = useState(false);
   const [vendorOffset, setVendorOffset] = useState({});
   const [expandedCat, setExpandedCat] = useState(null);
   const [showSplitAdjust, setShowSplitAdjust] = useState(false);
@@ -840,6 +841,26 @@ const EventPlanning = () => {
 
           {/* CTA buttons */}
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, width: "100%", maxWidth: 860 }}>
+
+            {/* Error state */}
+            {planError && (
+              <div style={{ background: "#fff8f2", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "18px 24px", textAlign: "center", maxWidth: 420, fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>😕</div>
+                <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 6px" }}>Couldn't build your plan right now</p>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px" }}>Try again or talk to our team directly.</p>
+                <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+                  <button onClick={() => setPlanError(false)}
+                    style={{ padding: "9px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    ↺ Try Again
+                  </button>
+                  <button onClick={() => { setPlanError(false); openConciergeChat(); }}
+                    style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    Talk to Our Team
+                  </button>
+                </div>
+              </div>
+            )}
+
             {isYouDoIt ? (
               <button
                 disabled={selectedVendors.length === 0}
@@ -869,8 +890,9 @@ const EventPlanning = () => {
                       categories: selectedVendors,
                     });
                     setSmartPlan(result);
-                  } catch {
-                    openChatWithSocket();
+                  } catch (err) {
+                    console.error('Smart plan fetch failed:', err);
+                    setPlanError(true);
                   } finally {
                     setPlanLoading(false);
                   }
