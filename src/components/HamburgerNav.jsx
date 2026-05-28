@@ -38,7 +38,7 @@ function fmtINR(n) { return `₹${Number(n).toLocaleString("en-IN")}`; }
 
 // title: shown in center; showReviewPay: Review & Pay button; active: journey step
 // noSidebar: force drawer mode (use on form-filling pages like EventPlanning)
-export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false }) {
+export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false, noCompare = false }) {
   const navigate   = useNavigate();
   const location   = useLocation();
   const dispatch   = useDispatch();
@@ -443,8 +443,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 <FaChevronDown size={8} style={{ color: "#9B7450", transform: profileOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
               </button>
 
-              {/* Saved strip */}
-              {compareSelected.length > 0 && (
+              {/* Saved strip — hidden in smart planner flow */}
+              {!noCompare && compareSelected.length > 0 && (
                 <button onClick={() => setSavedOpen(true)}
                   style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, width: "100%", padding: "2px 8px", borderRadius: "0 0 100px 100px", border: "1.5px solid rgba(196,122,46,0.2)", borderTop: "none", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
                   🔀 {compareSelected.length}

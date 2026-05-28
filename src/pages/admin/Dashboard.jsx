@@ -405,7 +405,8 @@ const AdminDashboard = () => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryDraft, setSummaryDraft] = useState("");
 
-  const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats } = useConversations({ enabled: !!token });
+  const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats, reload: reloadConversations } = useConversations({ enabled: !!token });
+  const [pendingConciergeId, setPendingConciergeId] = useState(null);
   const [deletedChatIds, setDeletedChatIds] = useState(new Set());
 
   const handleDeleteChat = (e, chatId) => {
@@ -446,6 +447,17 @@ const AdminDashboard = () => {
   const recentChats  = rawRecentChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
   const supportChats = rawSupportChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
   const adminChats   = rawAdminChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
+
+  // Auto-select conversation when navigating from Smart Plans tab
+  useEffect(() => {
+    if (!pendingConciergeId || !adminChats.length) return;
+    const convo = adminChats.find(c => c._id?.toString() === pendingConciergeId.toString());
+    if (convo) {
+      setSelectedChat(convo);
+      loadConversation(convo._id);
+      setPendingConciergeId(null);
+    }
+  }, [adminChats, pendingConciergeId]);
 
   // Auto-delete expired conversations from DB when they're discovered
   useEffect(() => {
@@ -3809,12 +3821,14 @@ const AdminDashboard = () => {
                                 const data = await res.json();
                                 if (data.conversationId) {
                                   setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, conversationId: data.conversationId } : p));
-                                  alert('Chat started! Customer will see it in their Active Chats.');
+                                  setPendingConciergeId(data.conversationId.toString());
+                                  reloadConversations();
+                                  setactiveDropdown('chatconcierge');
                                 }
                               } catch (e) { console.error(e); }
                             }}
-                            style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: plan.conversationId ? "rgba(22,163,74,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: plan.conversationId ? "#16a34a" : "#fff", fontSize: 12, fontWeight: 700, cursor: plan.conversationId ? "default" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                            {plan.conversationId ? "✓ Chat Active" : "💬 Start Chat"}
+                            style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: plan.conversationId ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: plan.conversationId ? "#C47A2E" : "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                            {plan.conversationId ? "💬 Open Chat" : "💬 Start Chat"}
                           </button>
                         </div>
                       </div>
