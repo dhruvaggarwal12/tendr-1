@@ -485,6 +485,29 @@ const EventPlanning = () => {
                 </div>
               ))}
             </div>
+            {/* Planning tools nudge */}
+            <div style={{ marginBottom: 28, textAlign: "left" }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12, textAlign: "center" }}>Keep your planning on track</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                <button onClick={() => navigate("/prebuilt-timeline")}
+                  style={{ padding: "16px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", transition: "all 0.18s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; e.currentTarget.style.boxShadow = "none"; }}>
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>⏱️</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Event Timeline</div>
+                  <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>Track every milestone leading up to your event</div>
+                </button>
+                <button onClick={() => navigate("/prebuilt-checklist")}
+                  style={{ padding: "16px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", transition: "all 0.18s" }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.12)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; e.currentTarget.style.boxShadow = "none"; }}>
+                  <div style={{ fontSize: 22, marginBottom: 6 }}>✅</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Planning Checklist</div>
+                  <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>Never miss a detail with a ready-made checklist</div>
+                </button>
+              </div>
+            </div>
+
             <button onClick={() => navigate("/")} style={{ padding: "12px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
               Back to Home
             </button>
