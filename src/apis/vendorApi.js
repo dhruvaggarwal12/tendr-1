@@ -199,7 +199,7 @@ export const getVendorById = async (vendorId) => {
   }
 }
 
-export const getSmartPlan = async ({ eventType, guests, budget, location, categories, customBudgets }) => {
+export const getSmartPlan = async ({ eventType, guests, budget, location, categories, customBudgets, categoryBudgets }) => {
   const params = new URLSearchParams({
     eventType: eventType || '',
     guests: guests || '',
@@ -208,6 +208,8 @@ export const getSmartPlan = async ({ eventType, guests, budget, location, catego
     categories: Array.isArray(categories) ? categories.join(',') : (categories || ''),
   });
   if (customBudgets) params.append('customBudgets', customBudgets);
+  if (categoryBudgets && Object.keys(categoryBudgets).length > 0)
+    params.append('categoryBudgets', JSON.stringify(categoryBudgets));
   const response = await fetch(`${BASE_URL}/vendors/smart-plan?${params}`, { credentials: 'include' });
   if (!response.ok) {
     const body = await response.text().catch(() => '');

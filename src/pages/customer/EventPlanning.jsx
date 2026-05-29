@@ -148,6 +148,7 @@ const EventPlanning = () => {
   // Per-category budget modal state
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [draftBudgets, setDraftBudgets] = useState({});
+  const [budgetModalCallback, setBudgetModalCallback] = useState(null);
 
   const CAT_BUDGET_RANGES = {
     Caterer:      { min: 5000,  max: 500000, step: 5000,  default: 25000,  emoji: "🍽️" },
@@ -158,20 +159,23 @@ const EventPlanning = () => {
 
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
-  const openBudgetModal = () => {
+  const openBudgetModal = (onConfirm) => {
     const init = {};
     selectedVendors.forEach(cat => {
       init[cat] = savedCategoryBudgets[cat] || CAT_BUDGET_RANGES[cat]?.default || 10000;
     });
     setDraftBudgets(init);
+    setBudgetModalCallback(() => onConfirm);
     setShowBudgetModal(true);
   };
 
   const confirmBudgets = () => {
     dispatch(setCategoryBudgets(draftBudgets));
     setShowBudgetModal(false);
-    dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-    navigate("/listings", { state: { selectedCategories: selectedVendors, categoryBudgets: draftBudgets } });
+    if (budgetModalCallback) {
+      budgetModalCallback(draftBudgets);
+      setBudgetModalCallback(null);
+    }
   };
 
   // pick bookingType from URL (?bookingType=you-do-it | let-us-do-it)
@@ -368,15 +372,13 @@ const EventPlanning = () => {
       const r = Math.round(n * 2) / 2;
       return "★".repeat(Math.floor(r)) + (r % 1 ? "½" : "") + "☆".repeat(5 - Math.ceil(r));
     };
-    const SPLIT_DEFAULTS = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 };
-    const split = customSplit || Object.fromEntries(selectedVendors.map(c => [c, SPLIT_DEFAULTS[c] || 25]));
-    const splitTotal = selectedVendors.reduce((s, c) => s + (split[c] || 0), 0) || 100;
+    const CAT_EMOJI_MAP = { Caterer: "🍽", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
 
-    const currentVendors = smartPlan.lineup.map(({ category, vendors: vs }) => {
+    const currentVendors = smartPlan.lineup.map(({ category, vendors: vs, estimatedCost: lineupCost }) => {
       const offset = vendorOffset[category] || 0;
       const vendor = vs.length > 0 ? vs[offset % vs.length] : null;
-      const adjustedCost = Math.round(smartPlan.totalBudget * ((split[category] || 25) / splitTotal));
-      return { category, estimatedCost: adjustedCost, vendor, totalVendors: vs.length };
+      const estimatedCost = savedCategoryBudgets[category] || lineupCost || 0;
+      return { category, estimatedCost, vendor, totalVendors: vs.length };
     });
 
     const wizardCatOrder = ['Caterer', 'Decorator', 'Photographer', 'DJ'];
@@ -709,7 +711,7 @@ const EventPlanning = () => {
               <div style={{ position: "absolute", top: -24, right: -24, width: 110, height: 110, borderRadius: "50%", background: "rgba(204,171,74,0.07)" }} />
               <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>✨ Your Event Package</div>
               <h2 style={{ fontSize: "clamp(1.1rem,2.5vw,1.5rem)", fontWeight: 900, color: "#CCAB4A", marginBottom: 8, letterSpacing: "-0.01em" }}>
-                {formData?.eventType || "Your Event"} — {fmt(smartPlan.totalBudget)} budget
+                {formData?.eventType || "Your Event"} — Smart Package
               </h2>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 14, display: "flex", gap: 12, flexWrap: "wrap" }}>
                 {formData?.location && <span>📍 {formData.location}</span>}
@@ -719,53 +721,20 @@ const EventPlanning = () => {
               <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
                 {currentVendors.filter(cv => cv.vendor).map(cv => (
                   <span key={cv.category} style={{ fontSize: 12, fontWeight: 700, padding: "3px 12px", borderRadius: 100, background: "rgba(204,171,74,0.15)", color: "#CCAB4A", border: "1px solid rgba(204,171,74,0.25)" }}>
-                    {cv.category === "Caterer" ? "🍽" : cv.category === "Decorator" ? "🎀" : cv.category === "Photographer" ? "📸" : "🎵"} {cv.vendor.name}
+                    {CAT_EMOJI_MAP[cv.category] || "🏷"} {cv.vendor.name}
                   </span>
                 ))}
               </div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {currentVendors.map(({ category, estimatedCost }) => (
                   <div key={category} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 10, padding: "7px 14px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", fontWeight: 600, marginBottom: 2 }}>{category} {split[category]}%</div>
+                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", fontWeight: 600, marginBottom: 2 }}>{CAT_EMOJI_MAP[category]} {category}</div>
                     <div style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A" }}>{fmt(estimatedCost)}</div>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Split adjust toggle */}
-            <button
-              onClick={() => {
-                if (!showSplitAdjust) setDraftSplit({ ...split });
-                setShowSplitAdjust(s => !s);
-              }}
-              style={{ width: "100%", marginTop: 8, padding: "10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-              ⚙ {showSplitAdjust ? "Hide Adjust" : "Adjust Budget Split ▼"}
-            </button>
-
-            {showSplitAdjust && draftSplit && (
-              <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", padding: "16px 18px", marginTop: 6 }}>
-                <p style={{ fontSize: 12, color: "#9B7450", marginBottom: 12, textAlign: "center" }}>Total must equal 100% · Min 10% per category</p>
-                {selectedVendors.map(cat => (
-                  <div key={cat} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", width: 120 }}>{cat === "Caterer" ? "🍽" : cat === "Decorator" ? "🎀" : cat === "Photographer" ? "📸" : "🎵"} {cat}</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <button onClick={() => setDraftSplit(s => ({ ...s, [cat]: Math.max(10, (s[cat] || 25) - 5) }))} style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
-                      <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", minWidth: 36, textAlign: "center" }}>{draftSplit[cat] || 25}%</span>
-                      <button onClick={() => setDraftSplit(s => ({ ...s, [cat]: Math.min(70, (s[cat] || 25) + 5) }))} style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
-                    </div>
-                    <span style={{ fontSize: 12, color: "#9B7450", width: 64, textAlign: "right" }}>{fmt(Math.round(smartPlan.totalBudget * (draftSplit[cat] || 25) / 100))}</span>
-                  </div>
-                ))}
-                {(() => { const tot = selectedVendors.reduce((s, c) => s + (draftSplit[c] || 0), 0); return (
-                  <>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: tot === 100 ? "#16a34a" : "#dc2626", textAlign: "center", marginBottom: 10 }}>Total: {tot}% {tot === 100 ? "✓" : `(${100 - tot > 0 ? "+" : ""}${100 - tot}% to go)`}</div>
-                  <button onClick={() => { setCustomSplit({ ...draftSplit }); setShowSplitAdjust(false); }} disabled={tot !== 100}
-                    style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: tot === 100 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: tot === 100 ? "#fff" : "#9ca3af", fontSize: 13, fontWeight: 700, cursor: tot === 100 ? "pointer" : "not-allowed", fontFamily: "'Outfit', sans-serif" }}>Apply Split →</button>
-                  </>
-                ); })()}
-              </div>
-            )}
           </div>
 
           {/* Vendor cards — 4 columns */}
@@ -901,9 +870,9 @@ const EventPlanning = () => {
       const result = await getSmartPlan({
         eventType: formData?.eventType,
         guests: formData?.guests,
-        budget: formData?.budget,
         location: formData?.location,
         categories: selectedVendors,
+        categoryBudgets: savedCategoryBudgets,
       });
       setSmartPlan(result);
     } catch (err) {
@@ -1089,7 +1058,13 @@ const EventPlanning = () => {
             {isYouDoIt ? (
               <button
                 disabled={selectedVendors.length === 0}
-                onClick={() => { if (selectedVendors.length === 0) return; openBudgetModal(); }}
+                onClick={() => {
+                  if (selectedVendors.length === 0) return;
+                  openBudgetModal((budgets) => {
+                    dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
+                    navigate("/listings", { state: { selectedCategories: selectedVendors, categoryBudgets: budgets } });
+                  });
+                }}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
@@ -1099,7 +1074,10 @@ const EventPlanning = () => {
             ) : (
               <button
                 disabled={selectedVendors.length === 0 || planLoading}
-                onClick={() => fetchSmartPlan()}
+                onClick={() => {
+                  if (selectedVendors.length === 0) return;
+                  openBudgetModal(() => fetchSmartPlan());
+                }}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 && !planLoading ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0 && !planLoading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
