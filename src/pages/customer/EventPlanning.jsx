@@ -149,6 +149,8 @@ const EventPlanning = () => {
   const [showBudgetModal, setShowBudgetModal] = useState(false);
   const [draftBudgets, setDraftBudgets] = useState({});
   const [budgetModalCallback, setBudgetModalCallback] = useState(null);
+  const [totalDraftBudget, setTotalDraftBudget] = useState(50000);
+  const SPLIT_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 };
 
   const CAT_BUDGET_RANGES = {
     Caterer:      { min: 5000,  max: 500000, step: 5000,  default: 25000,  emoji: "🍽️" },
@@ -1009,51 +1011,119 @@ const EventPlanning = () => {
               </div>
             )}
 
-            {/* Budget Modal */}
-            {showBudgetModal && (
-              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Outfit', sans-serif" }}>
-                <div style={{ background: "#fff", borderRadius: 22, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", overflow: "hidden" }}>
-                  <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", padding: "20px 24px" }}>
-                    <h3 style={{ fontSize: 18, fontWeight: 800, color: "#CCAB4A", margin: "0 0 4px" }}>Set Your Budget</h3>
-                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", margin: 0 }}>Set a budget for each service you selected</p>
+            {/* Budget Modal — two column: per-category left, total right */}
+            {showBudgetModal && (() => {
+              const totalWeight = selectedVendors.reduce((s, c) => s + (SPLIT_PCT[c] || 25), 0) || 1;
+              const splitAmounts = Object.fromEntries(
+                selectedVendors.map(c => [c, Math.round(totalDraftBudget * (SPLIT_PCT[c] || 25) / totalWeight)])
+              );
+              return (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ background: "#F8F4EF", borderRadius: 22, width: "100%", maxWidth: 860, boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden" }}>
+
+                  {/* Header */}
+                  <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <div>
+                      <h3 style={{ fontSize: 17, fontWeight: 800, color: "#CCAB4A", margin: "0 0 3px" }}>How would you like to set your budget?</h3>
+                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", margin: 0 }}>Choose the approach that works best for you</p>
+                    </div>
+                    <button onClick={() => setShowBudgetModal(false)}
+                      style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", width: 32, height: 32, borderRadius: "50%", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
-                  <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 22 }}>
-                    {selectedVendors.map(cat => {
-                      const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 10000, emoji: "🏷️" };
-                      const val = draftBudgets[cat] || range.default;
-                      const pct = ((val - range.min) / (range.max - range.min)) * 100;
-                      return (
-                        <div key={cat}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji} {cat}</span>
-                            <span style={{ fontSize: 15, fontWeight: 800, color: "#C47A2E" }}>{fmtBudget(val)}</span>
-                          </div>
-                          <input type="range"
-                            min={range.min} max={range.max} step={range.step} value={val}
-                            onChange={e => setDraftBudgets(p => ({ ...p, [cat]: Number(e.target.value) }))}
-                            style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }}
-                          />
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginTop: 3 }}>
-                            <span>{fmtBudget(range.min)}</span>
-                            <span>{fmtBudget(range.max)}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                      <button onClick={() => setShowBudgetModal(false)}
-                        style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                        Back
-                      </button>
+
+                  {/* Two columns */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
+
+                    {/* LEFT — per-category sliders */}
+                    <div style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)" }}>
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set budget per service</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>Adjust each category independently</div>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                        {selectedVendors.map(cat => {
+                          const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 10000, emoji: "🏷️" };
+                          const val = draftBudgets[cat] || range.default;
+                          return (
+                            <div key={cat}>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji} {cat}</span>
+                                <span style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E" }}>{fmtBudget(val)}</span>
+                              </div>
+                              <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                                onChange={e => setDraftBudgets(p => ({ ...p, [cat]: Number(e.target.value) }))}
+                                style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
+                              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                                <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{ marginTop: 10, padding: "8px 12px", background: "rgba(196,122,46,0.06)", borderRadius: 8, fontSize: 12, color: "#9B7450", display: "flex", justifyContent: "space-between" }}>
+                        <span>Total</span>
+                        <strong style={{ color: "#C47A2E" }}>{fmtBudget(Object.values(draftBudgets).reduce((s, v) => s + (v || 0), 0))}</strong>
+                      </div>
                       <button onClick={confirmBudgets}
-                        style={{ flex: 2, padding: "11px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                        Find Vendors →
+                        style={{ width: "100%", marginTop: 14, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                        Get My Plan →
+                      </button>
+                    </div>
+
+                    {/* RIGHT — total budget with split */}
+                    <div style={{ padding: "24px 28px" }}>
+                      <div style={{ marginBottom: 16 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set total budget</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>We'll split it smartly across services</div>
+                      </div>
+                      <div style={{ marginBottom: 18 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>💰 Total Budget</span>
+                          <span style={{ fontSize: 18, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(totalDraftBudget)}</span>
+                        </div>
+                        <input type="range" min={5000} max={1000000} step={5000} value={totalDraftBudget}
+                          onChange={e => setTotalDraftBudget(Number(e.target.value))}
+                          style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                          <span>₹5,000</span><span>₹10,00,000</span>
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Budget split</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+                        {selectedVendors.map(cat => {
+                          const range = CAT_BUDGET_RANGES[cat] || { emoji: "🏷️" };
+                          const amt = splitAmounts[cat] || 0;
+                          const pct = SPLIT_PCT[cat] || 25;
+                          return (
+                            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "#fff", borderRadius: 10, border: "1px solid rgba(196,122,46,0.12)" }}>
+                              <span style={{ fontSize: 16 }}>{range.emoji}</span>
+                              <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", flex: 1 }}>{cat}</span>
+                              <span style={{ fontSize: 11, color: "#9B7450" }}>{pct}%</span>
+                              <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (budgetModalCallback) {
+                            dispatch(setCategoryBudgets(splitAmounts));
+                            setShowBudgetModal(false);
+                            budgetModalCallback(splitAmounts);
+                            setBudgetModalCallback(null);
+                          }
+                        }}
+                        style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(44,26,14,0.25)" }}>
+                        Get My Plan →
                       </button>
                     </div>
                   </div>
+
+                  <style>{`@media(max-width:640px){.budget-modal-grid{grid-template-columns:1fr!important;}}`}</style>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {isYouDoIt ? (
               <button
