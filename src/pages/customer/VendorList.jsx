@@ -1,6 +1,7 @@
 import { useSelector, useDispatch } from "react-redux";
 import SEO, { vendorListTitle, vendorListDescription } from "../../components/SEO";
 import { setFilters, addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice.js";
+import { setCategoryBudgets } from "../../redux/eventPlanningSlice.js";
 
 
 import { useNavigate, useLocation } from "react-router-dom";
@@ -308,15 +309,31 @@ const VendorList = () => {
           {/* Page header */}
           <div className="mb-1">
 
-            {/* Per-category budget banner */}
-            {currentCatBudget && (
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "8px 14px", borderRadius: 10, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", fontFamily: "'Outfit',sans-serif" }}>
-                <span style={{ fontSize: 14 }}>💰</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#5a3a1a" }}>
-                  Your {serviceType} budget: <strong style={{ color: "#C47A2E" }}>{fmtBudget(currentCatBudget)}</strong>
-                </span>
-              </div>
-            )}
+            {/* Per-category budget range adjuster */}
+            {serviceType && (() => {
+              const CAT_RANGES = {
+                Caterer:      { min: 5000,  max: 500000, step: 5000  },
+                Decorator:    { min: 3000,  max: 300000, step: 3000  },
+                Photographer: { min: 3000,  max: 200000, step: 3000  },
+                DJ:           { min: 2000,  max: 100000, step: 2000  },
+              };
+              const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
+              const val = currentCatBudget || range.max;
+              return (
+                <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 12, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a" }}>💰 {serviceType} budget range</span>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
+                  </div>
+                  <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                    onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
+                    style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                    <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
+                  </div>
+                </div>
+              );
+            })()}
 
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
@@ -513,7 +530,18 @@ const VendorList = () => {
               date={date}
               locationType={locationType}
               guestCount={guestCount}
-              vendors={applySecondaryFilters(vendorList, secondaryFilters, serviceType)}
+              vendors={(() => {
+                const filtered = applySecondaryFilters(vendorList, secondaryFilters, serviceType);
+                if (!currentCatBudget) return filtered;
+                // Sort: vendors within budget first, then those above
+                return [...filtered].sort((a, b) => {
+                  const aIn = !a.price || a.price <= currentCatBudget;
+                  const bIn = !b.price || b.price <= currentCatBudget;
+                  if (aIn && !bIn) return -1;
+                  if (!aIn && bIn) return 1;
+                  return 0;
+                });
+              })()}
               paginationInfo={paginationInfo}
               handleShowMore={handleShowMore}
               isLoading={isLoading}

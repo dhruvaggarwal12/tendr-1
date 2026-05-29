@@ -104,6 +104,9 @@ const EventPlanning = () => {
   const [showSplitAdjust, setShowSplitAdjust] = useState(false);
   const [customSplit, setCustomSplit] = useState(null);
   const [draftSplit, setDraftSplit] = useState(null);
+  const [smartPlanMode, setSmartPlanMode] = useState('perCategory'); // 'perCategory' | 'total'
+  const [splitPct, setSplitPct] = useState({ Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 });
+  const [totalPlanBudget, setTotalPlanBudget] = useState(50000);
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
   const [wizardAnswers, setWizardAnswers] = useState({});
@@ -739,6 +742,64 @@ const EventPlanning = () => {
 
           </div>
 
+          {/* Right-flow: total budget + split % adjuster */}
+          {smartPlanMode === 'total' && (() => {
+            const tw = selectedVendors.reduce((s, c) => s + (splitPct[c] || 25), 0) || 1;
+            const splitTotal = selectedVendors.reduce((s, c) => s + (splitPct[c] || 0), 0);
+            return (
+              <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 22px", boxShadow: "0 2px 12px rgba(196,122,46,0.07)" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>💰 Total Budget</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>Adjust total or change the split % per service</div>
+                  </div>
+                  <span style={{ fontSize: 22, fontWeight: 900, color: "#C47A2E" }}>{fmt(totalPlanBudget)}</span>
+                </div>
+                <input type="range" min={5000} max={1000000} step={5000} value={totalPlanBudget}
+                  onChange={e => {
+                    const t = Number(e.target.value);
+                    setTotalPlanBudget(t);
+                    const tw2 = selectedVendors.reduce((s, c) => s + (splitPct[c] || 25), 0) || 1;
+                    const sa = Object.fromEntries(selectedVendors.map(c => [c, Math.round(t * (splitPct[c] || 25) / tw2)]));
+                    dispatch(setCategoryBudgets(sa));
+                  }}
+                  style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", marginBottom: 14 }} />
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+                  {selectedVendors.map(cat => {
+                    const amt = Math.round(totalPlanBudget * (splitPct[cat] || 25) / tw);
+                    return (
+                      <div key={cat} style={{ flex: 1, minWidth: 120, background: "#FFFCF5", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                        <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 4 }}>{CAT_EMOJI_MAP[cat]} {cat}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <button onClick={() => setSplitPct(p => ({ ...p, [cat]: Math.max(5, (p[cat] || 25) - 5) }))}
+                            style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 800, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", flex: 1, textAlign: "center" }}>{splitPct[cat] || 25}%</span>
+                          <button onClick={() => setSplitPct(p => ({ ...p, [cat]: Math.min(70, (p[cat] || 25) + 5) }))}
+                            style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 800, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                        </div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textAlign: "center", marginTop: 4 }}>{fmt(amt)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontSize: 11, color: splitTotal === 100 ? "#16a34a" : "#dc2626", fontWeight: 700 }}>Split total: {splitTotal}% {splitTotal === 100 ? "✓" : `(needs ${100 - splitTotal > 0 ? "+" : ""}${100 - splitTotal}%)`}</span>
+                  <button
+                    disabled={splitTotal !== 100}
+                    onClick={() => {
+                      const tw3 = selectedVendors.reduce((s, c) => s + (splitPct[c] || 25), 0) || 1;
+                      const sa = Object.fromEntries(selectedVendors.map(c => [c, Math.round(totalPlanBudget * (splitPct[c] || 25) / tw3)]));
+                      dispatch(setCategoryBudgets(sa));
+                      fetchSmartPlan();
+                    }}
+                    style={{ padding: "8px 20px", borderRadius: 10, border: "none", background: splitTotal === 100 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: splitTotal === 100 ? "#fff" : "#9ca3af", fontSize: 13, fontWeight: 700, cursor: splitTotal === 100 ? "pointer" : "not-allowed", fontFamily: "'Outfit', sans-serif" }}>
+                    Update Plan →
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
+
           {/* Vendor cards — 4 columns */}
           <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }} className="smart-vendor-grid">
             {currentVendors.map(({ category, estimatedCost, vendor, totalVendors }) => (
@@ -779,6 +840,30 @@ const EventPlanning = () => {
                       </div>
                     </div>
                   )}
+                  {/* Left-flow: per-category budget range adjuster */}
+                  {smartPlanMode === 'perCategory' && (() => {
+                    const range = CAT_BUDGET_RANGES[category] || { min: 2000, max: 200000, step: 2000 };
+                    const val = savedCategoryBudgets[category] || range.default || 15000;
+                    return (
+                      <div style={{ padding: "0 18px 10px", borderTop: "1px dashed rgba(196,122,46,0.1)", paddingTop: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                          <span style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>Budget range</span>
+                          <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E" }}>Up to {fmt(val)}</span>
+                        </div>
+                        <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                          onChange={e => {
+                            const newBudgets = { ...savedCategoryBudgets, [category]: Number(e.target.value) };
+                            dispatch(setCategoryBudgets(newBudgets));
+                          }}
+                          style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
+                        <button
+                          onClick={() => fetchSmartPlan()}
+                          style={{ width: "100%", marginTop: 6, padding: "7px 0", borderRadius: 8, border: "none", background: "rgba(196,122,46,0.08)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                          ↺ Refresh vendors →
+                        </button>
+                      </div>
+                    );
+                  })()}
                   <div style={{ padding: "0 18px 14px", display: "flex", gap: 8 }}>
                     <button onClick={() => setExpandedCat(expandedCat === category ? null : category)}
                       style={{ padding: "8px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
@@ -1038,7 +1123,7 @@ const EventPlanning = () => {
                     <div style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)" }}>
                       <div style={{ marginBottom: 16 }}>
                         <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set budget per service</div>
-                        <div style={{ fontSize: 12, color: "#9B7450" }}>Adjust each category independently</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>Set an upper limit for each category</div>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
                         {selectedVendors.map(cat => {
@@ -1048,7 +1133,7 @@ const EventPlanning = () => {
                             <div key={cat}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                                 <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji} {cat}</span>
-                                <span style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E" }}>{fmtBudget(val)}</span>
+                                <span style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
                               </div>
                               <input type="range" min={range.min} max={range.max} step={range.step} value={val}
                                 onChange={e => setDraftBudgets(p => ({ ...p, [cat]: Number(e.target.value) }))}
@@ -1060,56 +1145,44 @@ const EventPlanning = () => {
                           );
                         })}
                       </div>
-                      <div style={{ marginTop: 10, padding: "8px 12px", background: "rgba(196,122,46,0.06)", borderRadius: 8, fontSize: 12, color: "#9B7450", display: "flex", justifyContent: "space-between" }}>
-                        <span>Total</span>
-                        <strong style={{ color: "#C47A2E" }}>{fmtBudget(Object.values(draftBudgets).reduce((s, v) => s + (v || 0), 0))}</strong>
-                      </div>
-                      <button onClick={confirmBudgets}
-                        style={{ width: "100%", marginTop: 14, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                      <button onClick={() => { setSmartPlanMode('perCategory'); confirmBudgets(); }}
+                        style={{ width: "100%", marginTop: 18, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
                         Get My Plan →
                       </button>
                     </div>
 
                     {/* RIGHT — total budget with split */}
                     <div style={{ padding: "24px 28px" }}>
-                      <div style={{ marginBottom: 16 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set total budget</div>
-                        <div style={{ fontSize: 12, color: "#9B7450" }}>We'll split it smartly across services</div>
+                      <div style={{ marginBottom: 20 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set your total budget</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>We'll show you vendors that fit — you can adjust the split on the next screen</div>
                       </div>
-                      <div style={{ marginBottom: 18 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ marginBottom: 20 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
                           <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>💰 Total Budget</span>
-                          <span style={{ fontSize: 18, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(totalDraftBudget)}</span>
+                          <span style={{ fontSize: 22, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(totalDraftBudget)}</span>
                         </div>
                         <input type="range" min={5000} max={1000000} step={5000} value={totalDraftBudget}
                           onChange={e => setTotalDraftBudget(Number(e.target.value))}
-                          style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                          style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 6 }} />
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#bbb", marginTop: 4 }}>
                           <span>₹5,000</span><span>₹10,00,000</span>
                         </div>
                       </div>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Budget split</div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
-                        {selectedVendors.map(cat => {
-                          const range = CAT_BUDGET_RANGES[cat] || { emoji: "🏷️" };
-                          const amt = splitAmounts[cat] || 0;
-                          const pct = SPLIT_PCT[cat] || 25;
-                          return (
-                            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "#fff", borderRadius: 10, border: "1px solid rgba(196,122,46,0.12)" }}>
-                              <span style={{ fontSize: 16 }}>{range.emoji}</span>
-                              <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E", flex: 1 }}>{cat}</span>
-                              <span style={{ fontSize: 11, color: "#9B7450" }}>{pct}%</span>
-                              <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
-                            </div>
-                          );
-                        })}
+                      <div style={{ padding: "12px 14px", background: "rgba(196,122,46,0.05)", borderRadius: 10, marginBottom: 20, fontSize: 12, color: "#9B7450", lineHeight: 1.6 }}>
+                        After seeing your vendors, you'll be able to adjust how the budget is split across each service and change the % allocation.
                       </div>
                       <button
                         onClick={() => {
+                          setSmartPlanMode('total');
+                          setTotalPlanBudget(totalDraftBudget);
+                          setSplitPct({ Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 });
+                          const tw = selectedVendors.reduce((s, c) => s + (SPLIT_PCT[c] || 25), 0) || 1;
+                          const sa = Object.fromEntries(selectedVendors.map(c => [c, Math.round(totalDraftBudget * (SPLIT_PCT[c] || 25) / tw)]));
                           if (budgetModalCallback) {
-                            dispatch(setCategoryBudgets(splitAmounts));
+                            dispatch(setCategoryBudgets(sa));
                             setShowBudgetModal(false);
-                            budgetModalCallback(splitAmounts);
+                            budgetModalCallback(sa);
                             setBudgetModalCallback(null);
                           }
                         }}
