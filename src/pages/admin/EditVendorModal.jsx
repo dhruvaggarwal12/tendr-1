@@ -215,7 +215,8 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
     e.preventDefault();
     setError(""); setSubmitting(true);
     try {
-      const photos = f.portfolioPhotos.split("\n").map(s => s.trim()).filter(Boolean);
+      // portfolioPhotos are managed via the dedicated upload/delete buttons above.
+      // Do NOT send them in the PATCH body — that would overwrite photos added since modal open.
       const body = {
         name: f.name, email: f.email, whatsappNumber: f.whatsappNumber, bio: f.bio,
         address: { street: f.street, city: f.city, state: f.state },
@@ -225,7 +226,6 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
         totalEventsCompleted: Number(f.totalEventsCompleted) || 0,
         maxConcurrentEvents: Number(f.maxConcurrentEvents) || 5,
         price: Number(f.price) || 0,
-        portfolioPhotos: photos,
         status: f.status,
         ...(f.newPassword.length >= 8 && { password: f.newPassword }),
         // Category-specific
