@@ -119,6 +119,7 @@ const saveSession = (state) => {
   try {
     const data = {
       formData: state.formData,
+      categoryBudgets: state.categoryBudgets,
       bookingType: state.bookingType,
       currentStep: state.currentStep,
       showVendorScreen: state.showVendorScreen,
@@ -138,6 +139,7 @@ const initialState = {
     location: "",
     date: "",
   },
+  categoryBudgets: savedSession?.categoryBudgets || {}, // { Caterer: 25000, DJ: 10000, ... }
   currentStep: savedSession?.currentStep || 0,
   showVendorScreen: savedSession?.showVendorScreen || false,
   selectedVendors: savedSession?.selectedVendors || [],
@@ -204,6 +206,10 @@ const eventPlanningSlice = createSlice({
       state.selectedVendors = Array.isArray(action.payload) ? action.payload : [];
       saveSession(state);
     },
+    setCategoryBudgets: (state, action) => {
+      state.categoryBudgets = action.payload || {};
+      saveSession(state);
+    },
     resetEventPlanning: () => {
       try {
         localStorage.removeItem("eventPlanningFormData");
@@ -212,13 +218,8 @@ const eventPlanningSlice = createSlice({
         sessionStorage.removeItem("tendr_session");
       } catch {}
       return {
-        formData: {
-          eventType: "",
-          guests: "",
-          budget: "",
-          location: "",
-          date: "",
-        },
+        formData: { eventType: "", guests: "", budget: "", location: "", date: "" },
+        categoryBudgets: {},
         currentStep: 0,
         showVendorScreen: false,
         selectedVendors: [],
@@ -261,6 +262,7 @@ export const {
   addSelectedVendor,
   removeSelectedVendor,
   setSelectedVendors,
+  setCategoryBudgets,
   resetEventPlanning,
 } = eventPlanningSlice.actions;
 
@@ -274,6 +276,7 @@ const eventPlanningWithLogout = (state, action) => {
     } catch {}
     return {
       formData: { eventType: "", guests: "", budget: "", location: "", date: "" },
+      categoryBudgets: {},
       currentStep: 0,
       showVendorScreen: false,
       selectedVendors: [],

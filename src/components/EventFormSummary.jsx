@@ -4,6 +4,7 @@ import {
   selectSelectedVendors,
   backToFormAction
 } from '../redux/eventPlanningSlice';
+const fmtBudget = (n) => n ? `₹${Number(n).toLocaleString('en-IN')}` : null;
 
 
 const fmt = (d) => (d ? new Date(d).toLocaleDateString() : '—');
@@ -11,6 +12,7 @@ const rupee = (v) => (v ? `₹${Number(v).toLocaleString('en-IN')}` : '—');
 
 export default function EventFormSummary() {
   const f = useSelector(selectFormData);
+  const categoryBudgets = useSelector((s) => s.eventPlanning.categoryBudgets || {});
   const selected = useSelector(selectSelectedVendors);
   const vendorProfiles = useSelector((s) => s.listingFilters.compareSelected);
   const dispatch = useDispatch();
@@ -54,15 +56,19 @@ export default function EventFormSummary() {
             </dd>
           </div>
 
-          {/* Budget */}
-          <div className="border rounded-xl p-4 bg-white">
-            <dt className="text-xs uppercase tracking-wide text-gray-500">
-              Budget
-            </dt>
-            <dd className="text-base font-semibold text-gray-800 mt-1">
-              {f.budget || "—"}
-            </dd>
-          </div>
+          {/* Per-category budgets */}
+          {Object.keys(categoryBudgets).length > 0 && (
+            <div className="border rounded-xl p-4 bg-white" style={{ gridColumn: "span 2" }}>
+              <dt className="text-xs uppercase tracking-wide text-gray-500 mb-2">Budgets</dt>
+              <dd className="flex flex-wrap gap-2">
+                {Object.entries(categoryBudgets).map(([cat, amt]) => (
+                  <span key={cat} className="text-sm font-semibold text-amber-800 bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
+                    {cat}: {fmtBudget(amt)}
+                  </span>
+                ))}
+              </dd>
+            </div>
+          )}
 
           {/* Location */}
           <div className="border rounded-xl p-4 bg-white">

@@ -46,7 +46,6 @@ const LABEL_MAP = {
   eventName:      "Event Name",
   eventType:      "Event Type",
   guests:         "Guests",
-  budget:         "Budget",
   location:       "Location",
   date:           "Date",
 };
@@ -99,8 +98,10 @@ const BookingReviewPage = () => {
   const finalisedVendors = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
   const formData         = useSelector((s) => s.eventPlanning.formData || {});
+  const categoryBudgets  = useSelector((s) => s.eventPlanning.categoryBudgets || {});
   const bookingType      = useSelector((s) => s.eventPlanning.bookingType);
   const isLetUsDoIt      = bookingType === "let-us-do-it";
+  const fmtBudget = (n) => n ? `₹${Number(n).toLocaleString("en-IN")}` : null;
 
   // On mount: if already paid and no new vendors selected, redirect to dashboard
   useEffect(() => {
@@ -316,7 +317,8 @@ const BookingReviewPage = () => {
           eventName: formData.eventName || "My Event",
           eventType: formData.eventType || "Other",
           guests: formData.guests || "0",
-          budget: formData.budget || "Not specified",
+          budget: "See category budgets",
+          categoryBudgets,
           location: formData.location || "Delhi",
           date: formData.date || new Date().toISOString().split("T")[0],
           additionalInfo: formData.additionalInfo || "",
@@ -407,12 +409,23 @@ const BookingReviewPage = () => {
                   return (
                     <div key={key}>
                       <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
-                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>
-                        {val}
-                      </div>
+                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
                     </div>
                   );
                 })}
+                {Object.keys(categoryBudgets).length > 0 && (
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Budgets</div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      {Object.entries(categoryBudgets).map(([cat, amt]) => (
+                        <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
+                          <span style={{ fontWeight: 500 }}>{cat}</span>
+                          <span style={{ fontWeight: 700, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>No event details found. Fill in the planning form first.</p>

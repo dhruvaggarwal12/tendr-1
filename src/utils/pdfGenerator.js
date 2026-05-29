@@ -234,8 +234,15 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
   if (eventSummary.date)        y = row(doc, "Event Date:",    eventSummary.date, y);
   if (eventSummary.location)    y = row(doc, "Location:",      eventSummary.location, y);
   if (eventSummary.guests)      y = row(doc, "Guests:",        eventSummary.guests, y);
-  if (eventSummary.budget)      y = row(doc, "Budget:",        eventSummary.budget, y);
   if (eventSummary.bookingType) y = row(doc, "Booking Type:",  eventSummary.bookingType === "let-us-do-it" ? "Let Us Do It" : "You Do It", y);
+  // Per-category budgets
+  if (eventSummary.categoryBudgets && Object.keys(eventSummary.categoryBudgets).length > 0) {
+    Object.entries(eventSummary.categoryBudgets).forEach(([cat, amt]) => {
+      y = row(doc, `${cat} Budget:`, `₹${Number(amt).toLocaleString("en-IN")}`, y);
+    });
+  } else if (eventSummary.budget && eventSummary.budget !== "See category budgets") {
+    y = row(doc, "Budget:", eventSummary.budget, y);
+  }
   y += 5;
 
   // Confirmed vendors

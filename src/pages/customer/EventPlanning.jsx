@@ -30,6 +30,7 @@ import {
   addSelectedVendor,
   removeSelectedVendor,
   setBookingType,
+  setCategoryBudgets,
 } from "../../redux/eventPlanningSlice.js";
 
 import { setFilters } from "../../redux/listingFiltersSlice";
@@ -140,8 +141,38 @@ const EventPlanning = () => {
     showVendorScreen,
     bookingType,
     selectedVendors,
+    categoryBudgets: savedCategoryBudgets,
   } = useSelector((state) => state.eventPlanning);
   const { token, user: authUser } = useSelector((state) => state.auth);
+
+  // Per-category budget modal state
+  const [showBudgetModal, setShowBudgetModal] = useState(false);
+  const [draftBudgets, setDraftBudgets] = useState({});
+
+  const CAT_BUDGET_RANGES = {
+    Caterer:      { min: 5000,  max: 500000, step: 5000,  default: 25000,  emoji: "🍽️" },
+    Decorator:    { min: 3000,  max: 300000, step: 3000,  default: 15000,  emoji: "🎨" },
+    Photographer: { min: 3000,  max: 200000, step: 3000,  default: 15000,  emoji: "📸" },
+    DJ:           { min: 2000,  max: 100000, step: 2000,  default: 10000,  emoji: "🎵" },
+  };
+
+  const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
+
+  const openBudgetModal = () => {
+    const init = {};
+    selectedVendors.forEach(cat => {
+      init[cat] = savedCategoryBudgets[cat] || CAT_BUDGET_RANGES[cat]?.default || 10000;
+    });
+    setDraftBudgets(init);
+    setShowBudgetModal(true);
+  };
+
+  const confirmBudgets = () => {
+    dispatch(setCategoryBudgets(draftBudgets));
+    setShowBudgetModal(false);
+    dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
+    navigate("/listings", { state: { selectedCategories: selectedVendors, categoryBudgets: draftBudgets } });
+  };
 
   // pick bookingType from URL (?bookingType=you-do-it | let-us-do-it)
   useEffect(() => {
@@ -152,22 +183,6 @@ const EventPlanning = () => {
     } else {
       dispatch(setBookingType("you-do-it"));
     }
-
-    // Pre-fill budget from Budget Allocator context if available
-    try {
-      const ctx = JSON.parse(sessionStorage.getItem("tendr_budget_ctx") || "null");
-      if (ctx?.maxBudget) {
-        const budget = Number(ctx.maxBudget);
-        // Map to nearest budget option
-        let option = "Over ₹50,000";
-        if (budget < 1000)         option = "Under ₹1,000";
-        else if (budget < 5000)    option = "₹1,000 - ₹5,000";
-        else if (budget < 10000)   option = "₹5,000 - ₹10,000";
-        else if (budget < 25000)   option = "₹10,000 - ₹25,000";
-        else if (budget <= 50000)  option = "₹25,000 - ₹50,000";
-        dispatch(setFormData({ field: "budget", value: option }));
-      }
-    } catch {}
   }, [location.search, dispatch]);
 
   const questions = [
@@ -195,21 +210,6 @@ const EventPlanning = () => {
       type: "number",
       placeholder: "e.g., 50",
       icon: <Users className="w-8 h-8" />,
-    },
-    {
-      id: "budget",
-      title: "What's your total budget?",
-      subtitle: "This helps vendors provide appropriate options",
-      type: "select",
-      options: [
-        "Under ₹1,000",
-        "₹1,000 - ₹5,000",
-        "₹5,000 - ₹10,000",
-        "₹10,000 - ₹25,000",
-        "₹25,000 - ₹50,000",
-        "Over ₹50,000",
-      ],
-      icon: <IndianRupee className="w-8 h-8" />,
     },
     {
       id: "location",
@@ -435,7 +435,7 @@ const EventPlanning = () => {
       const { id } = wizardSteps[wizardStep] || {};
       if (id === 'confirm') return (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {[{ l: "Event", v: formData?.eventType }, { l: "Date", v: formData?.date }, { l: "Location", v: formData?.location }, { l: "Guests", v: formData?.guests }, { l: "Budget", v: formData?.budget }].filter(r => r.v).map(r => (
+          {[{ l: "Event", v: formData?.eventType }, { l: "Date", v: formData?.date }, { l: "Location", v: formData?.location }, { l: "Guests", v: formData?.guests }].filter(r => r.v).map(r => (
             <div key={r.l} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "rgba(196,122,46,0.05)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.12)" }}>
               <span style={{ fontSize: 13, color: "#9B7450", fontWeight: 600 }}>{r.l}</span>
               <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{r.v}</span>
@@ -1040,14 +1040,56 @@ const EventPlanning = () => {
               </div>
             )}
 
+            {/* Budget Modal */}
+            {showBudgetModal && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ background: "#fff", borderRadius: 22, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", overflow: "hidden" }}>
+                  <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", padding: "20px 24px" }}>
+                    <h3 style={{ fontSize: 18, fontWeight: 800, color: "#CCAB4A", margin: "0 0 4px" }}>Set Your Budget</h3>
+                    <p style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", margin: 0 }}>Set a budget for each service you selected</p>
+                  </div>
+                  <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 22 }}>
+                    {selectedVendors.map(cat => {
+                      const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 10000, emoji: "🏷️" };
+                      const val = draftBudgets[cat] || range.default;
+                      const pct = ((val - range.min) / (range.max - range.min)) * 100;
+                      return (
+                        <div key={cat}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                            <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji} {cat}</span>
+                            <span style={{ fontSize: 15, fontWeight: 800, color: "#C47A2E" }}>{fmtBudget(val)}</span>
+                          </div>
+                          <input type="range"
+                            min={range.min} max={range.max} step={range.step} value={val}
+                            onChange={e => setDraftBudgets(p => ({ ...p, [cat]: Number(e.target.value) }))}
+                            style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }}
+                          />
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginTop: 3 }}>
+                            <span>{fmtBudget(range.min)}</span>
+                            <span>{fmtBudget(range.max)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
+                      <button onClick={() => setShowBudgetModal(false)}
+                        style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Back
+                      </button>
+                      <button onClick={confirmBudgets}
+                        style={{ flex: 2, padding: "11px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Find Vendors →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {isYouDoIt ? (
               <button
                 disabled={selectedVendors.length === 0}
-                onClick={() => {
-                  if (selectedVendors.length === 0) return;
-                  dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                  navigate("/listings", { state: { selectedCategories: selectedVendors } });
-                }}
+                onClick={() => { if (selectedVendors.length === 0) return; openBudgetModal(); }}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}

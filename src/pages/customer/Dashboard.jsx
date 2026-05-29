@@ -8,7 +8,7 @@ import tendrLogo from "../../assets/logos/tendr.png";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { Button, Badge, EmptyState } from "../../components/ui";
-import { resetEventPlanning, setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
+import { resetEventPlanning, setMultipleFormData, setBookingType, setCategoryBudgets } from "../../redux/eventPlanningSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { useChatOverlay } from "../../context/ChatContext";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
@@ -100,9 +100,11 @@ export default function CustomerDashboard() {
     dispatch(setMultipleFormData({
       eventType: plan.eventType || "",
       guests:    plan.guests    || "",
-      budget:    plan.budget    || "",
       location:  plan.location  || "",
     }));
+    if (plan.categoryBudgets && Object.keys(plan.categoryBudgets).length > 0) {
+      dispatch(setCategoryBudgets(plan.categoryBudgets));
+    }
     dispatch(setBookingType(plan.bookingType || "you-do-it"));
     navigate("/booking");
   };
@@ -551,7 +553,6 @@ export default function CustomerDashboard() {
                         formData.eventType && { icon: "🎉", text: formData.eventType },
                         formData.date      && { icon: "📅", text: formData.date },
                         formData.guests    && { icon: "👥", text: `${formData.guests} guests` },
-                        formData.budget    && { icon: "💰", text: formData.budget },
                         formData.location  && { icon: "📍", text: formData.location },
                       ].filter(Boolean).map(({ icon, text }) => (
                         <span key={text} style={{ fontSize: 12, fontWeight: 600, background: "#fff", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 11px", color: "#5a3a1a" }}>
@@ -627,7 +628,9 @@ export default function CustomerDashboard() {
                           {plan.date     && <span>📅 {plan.date}</span>}
                           {plan.location && <span>📍 {plan.location}</span>}
                           {plan.guests   && <span>👥 {plan.guests} guests</span>}
-                          {plan.budget   && <span>💰 {plan.budget}</span>}
+                          {plan.categoryBudgets && Object.entries(plan.categoryBudgets).map(([cat, amt]) => (
+                            <span key={cat}>💰 {cat}: ₹{Number(amt).toLocaleString("en-IN")}</span>
+                          ))}
                         </div>
                         {plan.bookingSummary && (
                           <div style={{ marginTop: 10, background: "rgba(196,122,46,0.05)", borderRadius: 10, padding: "10px 14px", fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.55, whiteSpace: "pre-wrap", wordBreak: "break-word", border: "1px solid rgba(196,122,46,0.12)" }}>
@@ -721,7 +724,6 @@ export default function CustomerDashboard() {
                       details.eventType && { k: "Event",    v: details.eventType },
                       details.date      && { k: "Date",     v: details.date },
                       details.guests    && { k: "Guests",   v: details.guests },
-                      details.budget    && { k: "Budget",   v: details.budget },
                       details.location  && { k: "City",     v: details.location },
                     ].filter(Boolean);
                     if (!lines.length) return null;
@@ -987,7 +989,9 @@ export default function CustomerDashboard() {
                         <span>📅 {plan.date}</span>
                         <span>📍 {plan.location}</span>
                         <span>👥 {plan.guests} guests</span>
-                        <span>💰 {plan.budget}</span>
+                        {plan.categoryBudgets && Object.entries(plan.categoryBudgets).map(([cat, amt]) => (
+                          <span key={cat}>💰 {cat}: ₹{Number(amt).toLocaleString("en-IN")}</span>
+                        ))}
                       </div>
                       {plan.selectedServices?.length > 0 && (
                         <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>

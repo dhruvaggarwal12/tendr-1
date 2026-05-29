@@ -41,9 +41,9 @@ const VendorList = () => {
   const {
     eventName,
     eventType: formEventType,
-    budget,
     additionalInfo,
   } = useSelector((state) => state.eventPlanning.formData);
+  const categoryBudgets = useSelector((s) => s.eventPlanning.categoryBudgets || {});
 
   // Categories from event planning flow — persists in Redux
   const planningSelectedVendors = useSelector((s) => s.eventPlanning.selectedVendors || []);
@@ -62,9 +62,9 @@ const VendorList = () => {
     return [];
   })();
 
-  // Budget context passed from Budget Allocator
-  const budgetCtx = (() => { try { return JSON.parse(sessionStorage.getItem("tendr_budget_ctx") || "null"); } catch { return null; } })();
-  const budgetMax = location.state?.budgetMax || budgetCtx?.maxBudget || null;
+  // Per-category budget for current service type
+  const currentCatBudget = categoryBudgets[serviceType] || location.state?.categoryBudgets?.[serviceType] || null;
+  const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
   const [showHint, setShowHint] = useState(true);
   const [vendorList, setVendorList] = useState([]);
@@ -308,15 +308,13 @@ const VendorList = () => {
           {/* Page header */}
           <div className="mb-1">
 
-            {/* Budget context banner from Budget Allocator */}
-            {budgetMax && (
+            {/* Per-category budget banner */}
+            {currentCatBudget && (
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10, padding: "8px 14px", borderRadius: 10, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", fontFamily: "'Outfit',sans-serif" }}>
                 <span style={{ fontSize: 14 }}>💰</span>
                 <span style={{ fontSize: 12, fontWeight: 600, color: "#5a3a1a" }}>
-                  Budget from allocator: <strong style={{ color: "#C47A2E" }}>₹{Number(budgetMax).toLocaleString("en-IN")}</strong> — vendors within this range shown first
+                  Your {serviceType} budget: <strong style={{ color: "#C47A2E" }}>{fmtBudget(currentCatBudget)}</strong>
                 </span>
-                <button onClick={() => sessionStorage.removeItem("tendr_budget_ctx")}
-                  style={{ marginLeft: "auto", background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 14 }}>✕</button>
               </div>
             )}
 
@@ -361,7 +359,7 @@ const VendorList = () => {
                 locationType ? { label: "Location", value: locationType, showLabel: false } : null,
                 date ? { label: "Date", value: date, showLabel: false } : null,
                 guestCount ? { label: "Guests", value: guestCount, showLabel: false } : null,
-                budget ? { label: "Budget", value: budget, showLabel: false } : null,
+                currentCatBudget ? { label: "Budget", value: fmtBudget(currentCatBudget), showLabel: false } : null,
                 additionalInfo ? { label: "Note", value: additionalInfo, showLabel: false } : null,
               ]
                 .filter(Boolean)
