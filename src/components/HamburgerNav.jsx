@@ -180,12 +180,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "✅ Checklist",          href: "/checklist-picker" },
       { label: "⏱️ Timeline",           href: "/timeline-picker" },
       { label: "💰 Budget Allocator",   href: "/budget-picker" },
-      { label: "💳 Payment Tracker",    href: "/payment-tracker" },
-      { label: "👥 Guest List",         href: "/guest-list" },
       { label: "🎨 Decor Finder",       href: "/decor-finder" },
       { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
       { label: "✉️ Invitation Flyers",  href: "/invitation" },
-      { label: "🎬 Aftermovie",         href: "/aftermovie" },
     ]},
     { label: "Gift & Hampers", items: [
       { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
@@ -259,6 +256,16 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   );
                 })}
               </div>
+            </div>
+          )}
+
+          {/* Sign In — for logged-out users, shown prominently near top */}
+          {!token && (
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+              <button onClick={() => navigate("/login")}
+                style={{ width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+                Sign In / Sign Up →
+              </button>
             </div>
           )}
 

@@ -1917,6 +1917,28 @@ const AdminDashboard = () => {
                     >
                       {/* Action buttons — top right corner */}
                       <div style={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 4 }}>
+                        {/* Top Rated toggle */}
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const newVal = !v.isTopRated;
+                            try {
+                              await fetch(`${BASE_URL}/admin/vendors/${v._id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                credentials: 'include',
+                                body: JSON.stringify({ isTopRated: newVal }),
+                              });
+                              setVendorStats(prev => prev.map(x => x._id === v._id ? { ...x, isTopRated: newVal } : x));
+                            } catch {}
+                          }}
+                          title={v.isTopRated ? "Remove from Top Rated" : "Mark as Top Rated"}
+                          style={{ width: 26, height: 26, borderRadius: "50%", border: `1.5px solid ${v.isTopRated ? "rgba(234,179,8,0.5)" : "rgba(156,163,175,0.3)"}`, background: v.isTopRated ? "rgba(234,179,8,0.15)" : "rgba(156,163,175,0.06)", color: v.isTopRated ? "#ca8a04" : "#9ca3af", cursor: "pointer", fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = v.isTopRated ? "rgba(234,179,8,0.25)" : "rgba(234,179,8,0.1)"; e.currentTarget.style.color = "#ca8a04"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = v.isTopRated ? "rgba(234,179,8,0.15)" : "rgba(156,163,175,0.06)"; e.currentTarget.style.color = v.isTopRated ? "#ca8a04" : "#9ca3af"; }}
+                        >
+                          ⭐
+                        </button>
                         {v.serviceType === "Caterer" && (
                           <button
                             onClick={(e) => { e.stopPropagation(); setMenuVendor(v); }}

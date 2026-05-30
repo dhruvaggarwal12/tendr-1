@@ -7,22 +7,26 @@ import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFil
 import { useChatOverlay } from "../context/ChatContext";
 
 const SEARCH_SUGGESTIONS = [
-  { text: "Photographers in Delhi", category: "Photographer", location: "Delhi" },
-  { text: "Caterers in Noida", category: "Caterer", location: "Noida" },
-  { text: "DJ for birthday party", category: "DJ" },
-  { text: "Wedding decorators in Gurgaon", category: "Decorator", location: "Gurgaon" },
-  { text: "Photographers in Ghaziabad", category: "Photographer", location: "Ghaziabad" },
-  { text: "Caterers in Greater Noida", category: "Caterer", location: "Greater Noida" },
-  { text: "DJ in Delhi", category: "DJ", location: "Delhi" },
-  { text: "Decorators in Noida", category: "Decorator", location: "Noida" },
+  // Vendors (only 3)
+  { text: "Photographers in Delhi", type: "vendor", category: "Photographer", location: "Delhi" },
+  { text: "Caterers in Noida", type: "vendor", category: "Caterer", location: "Noida" },
+  { text: "DJ for birthday party", type: "vendor", category: "DJ" },
+  // Gift hampers (1)
+  { text: "Gift Hampers & Cakes", type: "page", href: "/gift-hampers-cakes", icon: "🎁" },
+  // Budget Allocator (1)
+  { text: "Budget Allocator — plan your spend", type: "page", href: "/budget-picker", icon: "💰" },
+  // Decor Finder (1)
+  { text: "Decor Finder — browse decoration themes", type: "page", href: "/decor-finder", icon: "🎨" },
 ];
 const SVC_KEYWORDS = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", photo: "Photographer", dj: "DJ", music: "DJ", entertainment: "DJ" };
 const LOC_KEYWORDS = ["delhi", "noida", "gurgaon", "gurugram", "ghaziabad", "greater noida", "faridabad"];
+const PAGE_KEYWORDS = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker", invitation: "/invitation", stationery: "/stationery" };
 function parseSearch(q) {
   const lower = q.toLowerCase();
   const cats = [...new Set(Object.entries(SVC_KEYWORDS).filter(([k]) => lower.includes(k)).map(([, v]) => v))];
   const loc = LOC_KEYWORDS.find(l => lower.includes(l));
-  return { cats, loc };
+  const pageHref = Object.entries(PAGE_KEYWORDS).find(([k]) => lower.includes(k))?.[1];
+  return { cats, loc, pageHref };
 }
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -191,9 +195,11 @@ const Navbar = ({
   const handleSearch = (q) => {
     const query = q || searchQuery;
     if (!query.trim()) return;
-    const { cats, loc } = parseSearch(query);
+    const { cats, loc, pageHref } = parseSearch(query);
     const locationParam = loc ? `&location=${encodeURIComponent(loc.split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' '))}` : '';
-    if (cats.length === 1) {
+    if (pageHref) {
+      navigate(pageHref);
+    } else if (cats.length === 1) {
       navigate(`/top-rated/${cats[0]}${locationParam ? `?${locationParam.slice(1)}` : ''}`);
     } else if (cats.length > 1) {
       navigate(`/listings?serviceTypes=${cats.join(',')}${locationParam}`);
@@ -237,12 +243,9 @@ const Navbar = ({
         { label: "✅ Checklist",          href: "/checklist-picker" },
         { label: "⏱️ Timeline",           href: "/timeline-picker" },
         { label: "💰 Budget Allocator",   href: "/budget-picker" },
-        { label: "💳 Payment Tracker",    href: "/payment-tracker" },
-        { label: "👥 Guest List",         href: "/guest-list" },
         { label: "🎨 Decor Finder",       href: "/decor-finder" },
         { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
         { label: "✉️ Invitation Flyers",  href: "/invitation" },
-        { label: "🎬 Aftermovie",         href: "/aftermovie" },
       ],
     },
     {
@@ -350,12 +353,12 @@ const Navbar = ({
         <div ref={searchRef} className="desktop-nav desktop-search" style={{ position: "relative", flex: "0 0 auto", width: 280, margin: "0 16px" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 8,
-            padding: "8px 14px", borderRadius: 100,
-            border: `1.5px solid ${searchFocused ? "#C47A2E" : "rgba(196,122,46,0.25)"}`,
+            padding: "9px 16px", borderRadius: 100,
+            border: `2px solid ${searchFocused ? "#C47A2E" : "rgba(196,122,46,0.2)"}`,
             background: searchFocused ? "#fff" : "rgba(196,122,46,0.04)",
-            boxShadow: searchFocused ? "0 4px 20px rgba(196,122,46,0.18)" : "none",
-            transform: searchFocused ? "scale(1.02)" : "scale(1)",
-            transition: "all 0.22s ease",
+            boxShadow: searchFocused ? "0 6px 28px rgba(196,122,46,0.28), 0 0 0 4px rgba(196,122,46,0.08)" : "none",
+            transform: searchFocused ? "scale(1.04) translateY(-1px)" : "scale(1)",
+            transition: "all 0.22s cubic-bezier(0.34,1.56,0.64,1)",
           }}>
             <FaSearch size={12} style={{ color: searchFocused ? "#C47A2E" : "#9B7450", flexShrink: 0 }} />
             <input
@@ -375,12 +378,13 @@ const Navbar = ({
             <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
               {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
               {filteredSuggestions.map((s, i) => (
-                <button key={i} onClick={() => { setSearchQuery(s.text); handleSearch(s.text); }}
+                <button key={i} onClick={() => { if (s.href) { navigate(s.href); setShowSuggestions(false); setSearchQuery(""); } else { setSearchQuery(s.text); handleSearch(s.text); } }}
                   style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", gap: 8 }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <FaSearch size={10} style={{ color: "#C47A2E", flexShrink: 0 }} />
-                  {s.text}
+                  {s.icon ? <span style={{ fontSize: 14 }}>{s.icon}</span> : <FaSearch size={10} style={{ color: "#C47A2E", flexShrink: 0 }} />}
+                  <span style={{ flex: 1 }}>{s.text}</span>
+                  {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
                 </button>
               ))}
               {filteredSuggestions.length === 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>No suggestions — press Enter to search</div>}

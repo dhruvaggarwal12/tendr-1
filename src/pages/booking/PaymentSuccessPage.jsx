@@ -373,29 +373,6 @@ const PaymentSuccessPage = () => {
           )}
         </div>
 
-        {/* ── What else you can do ── */}
-        <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 22px", marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Your booking is confirmed. Here's what else you can do</div>
-          <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>Make the most of your Tendr dashboard while you wait for your event.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-            {[
-              { icon: "✅", title: "Event Checklist", desc: "Never miss a detail — tasks auto-sorted by your event date", href: "/prebuilt-checklist" },
-              { icon: "💳", title: "Payment Tracker", desc: "Track every vendor payment in one place", href: "/payment-tracker" },
-              { icon: "👥", title: "Guest List", desc: "Manage RSVPs and keep a headcount", href: "/guest-list" },
-              { icon: "🎬", title: "Aftermovie", desc: "Create a highlights reel from your event photos", href: "/aftermovie" },
-            ].map(({ icon, title, desc, href }) => (
-              <button key={title} onClick={() => navigate(href)}
-                style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 4, padding: "13px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, textAlign: "left", transition: "all 0.18s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 3px 12px rgba(196,122,46,0.12)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; e.currentTarget.style.boxShadow = "none"; }}>
-                <span style={{ fontSize: 20 }}>{icon}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{title}</span>
-                <span style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>{desc}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
         {/* ── Action buttons ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <a

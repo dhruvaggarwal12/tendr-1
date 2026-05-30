@@ -86,28 +86,12 @@ const HERO_FEATURES = [
     emoji: "🎨",
   },
   {
-    tag: "Aftermovie",
-    headline: "Turn your event memories into a cinematic reel",
-    desc: "Create a professional-style aftermovie from your photos and videos — a keepsake you will revisit forever.",
-    where: "Memories → Aftermovie",
-    href: "/aftermovie",
-    emoji: "🎬",
-  },
-  {
     tag: "For Vendors",
     headline: "Register your business & get booked on Tendr",
     desc: "List your services on Delhi NCR's fastest-growing event platform and connect directly with verified customers.",
     where: "Vendors → Register as Vendor",
     href: "/vendor/register",
     emoji: "🏪",
-  },
-  {
-    tag: "Guest List Manager",
-    headline: "Manage your guest list without the chaos",
-    desc: "Add guests, track RSVPs, assign tables and share your list — all from one simple tool.",
-    where: "Planning Tools → Guest List",
-    href: "/guest-list",
-    emoji: "👥",
   },
 ];
 
@@ -355,8 +339,6 @@ const Home = () => {
     if (!selectedValue) return;
     if (selectedValue === "timeline") {
       navigate("/timeline-picker");
-    } else if (selectedValue === "aftermovie") {
-      navigate("/aftermovie");
     } else if (selectedValue === "checklist") {
       navigate("/checklist-picker");
     } else if (selectedValue === "Budget Allocator") {
