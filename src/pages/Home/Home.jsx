@@ -236,14 +236,14 @@ const Home = () => {
   const [slideVisible, setSlideVisible] = useState(true);
 
   const FEATURE_SLIDES = [
-    { id: "smart-planner", tag: "Smart Planner", headline: "Your complete vendor package, built in seconds", desc: "Tell us your event once. We match caterers, decorators, photographers and DJs within your budget. You confirm, we coordinate everything.", where: "Booking → Tendr Plans It For Me", href: "/booking", dark: true },
-    { id: "browse-vendors", tag: "Browse Vendors", headline: "Find the right vendor. Compare. Chat. Book.", desc: "Browse top-rated caterers, decorators, photographers and DJs in Delhi NCR. Compare profiles side by side and chat directly.", where: "Vendors → Browse Vendors", href: "/listings", dark: false },
-    { id: "checklist", tag: "Event Checklist", headline: "Never miss a single event detail", desc: "Get a personalised checklist sorted by your event date. Tick off tasks as your big day approaches.", where: "Our Products → Checklist", href: "/checklist-picker", dark: false },
-    { id: "timeline", tag: "Event Timeline", headline: "Every milestone, perfectly timed", desc: "Build a day-by-day countdown. Download a timeline slip. Know exactly what happens and when.", where: "Our Products → Timeline", href: "/timeline-picker", dark: false },
-    { id: "decor-finder", tag: "Decor Finder", headline: "Discover your decoration theme before you book", desc: "Browse real decoration photos by theme — Floral, Balloon, Minimalist, Traditional. Get inspired and share with your decorator.", where: "Our Products → Decor Finder", href: "/decor-finder", dark: false },
-    { id: "budget", tag: "Budget Allocator", headline: "Plan your spend before you start booking", desc: "Enter your total budget and event type. We split it smartly across vendor categories so you know your limits upfront.", where: "Our Products → Budget Allocator", href: "/budget-picker", dark: false },
-    { id: "gift-hampers", tag: "Gift Hampers & Cakes", headline: "The perfect gift for every occasion", desc: "Curated hampers and custom cakes delivered to your door. Perfect for birthdays, anniversaries and corporate events.", where: "Gift & Hampers", href: "/gift-hampers-cakes", dark: true },
-    { id: "celebration-kit", tag: "Tendr Celebration Kit", headline: "Everything for a home celebration", desc: "Balloons, fairy lights, games, decor and more — all under ₹1,499. Delivered to your door.", where: "Coming Soon", href: null, dark: true, isKit: true },
+    { id: "smart-planner", tag: "Smart Planner", icon: "✨", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", headline: "Your complete vendor package, built in seconds", desc: "Tell us your event once. We match caterers, decorators, photographers and DJs within your budget. You confirm, we coordinate everything.", where: "Booking → Tendr Plans It For Me", href: "/booking", accent: "#C47A2E" },
+    { id: "browse-vendors", tag: "Browse Vendors", icon: "🔍", iconBg: "linear-gradient(135deg,#7B4F9E,#A67BC8)", headline: "Find the right vendor. Compare. Chat. Book.", desc: "Browse top-rated vendors in Delhi NCR. Compare profiles side by side, chat directly, and lock in your price — all in one place.", where: "Vendors → Browse Vendors", href: "/listings", accent: "#7B4F9E" },
+    { id: "checklist", tag: "Event Checklist", icon: "✅", iconBg: "linear-gradient(135deg,#15803d,#22c55e)", headline: "Never miss a single detail", desc: "A personalised checklist sorted by your event date. Every task timed perfectly so nothing falls through the cracks.", where: "Our Products → Checklist", href: "/checklist-picker", accent: "#15803d" },
+    { id: "timeline", tag: "Event Timeline", icon: "⏱️", iconBg: "linear-gradient(135deg,#0369a1,#38bdf8)", headline: "Every milestone, perfectly timed", desc: "Build a day-by-day countdown. Download a timeline slip you can share with every vendor on your list.", where: "Our Products → Timeline", href: "/timeline-picker", accent: "#0369a1" },
+    { id: "decor-finder", tag: "Decor Finder", icon: "🎨", iconBg: "linear-gradient(135deg,#be185d,#f472b6)", headline: "Discover your decoration style before you book", desc: "Take a short quiz → get your perfect theme. Browse real vendor photos by style and go straight from inspiration to booking.", where: "Our Products → Decor Finder", href: "/decor-finder", accent: "#be185d" },
+    { id: "budget", tag: "Budget Allocator", icon: "💰", iconBg: "linear-gradient(135deg,#b45309,#f59e0b)", headline: "Know exactly what you can afford — before you start", desc: "Set your budget per service. We filter and sort vendors so every option you see is within reach.", where: "Our Products → Budget Allocator", href: "/budget-picker", accent: "#b45309" },
+    { id: "gift-hampers", tag: "Gift Hampers & Cakes", icon: "🎁", iconBg: "linear-gradient(135deg,#c2410c,#f97316)", headline: "The perfect gift, delivered to the door", desc: "Curated hampers and custom cakes for birthdays, anniversaries and corporate celebrations.", where: "Gift & Hampers", href: "/gift-hampers-cakes", accent: "#c2410c" },
+    { id: "celebration-kit", tag: "Tendr Celebration Kit", icon: "🎉", iconBg: "linear-gradient(135deg,#4f46e5,#818cf8)", headline: "Everything for a home celebration — under ₹1,499", desc: "Balloons, fairy lights, games, decor disposals and a letter from Tendr. Unbox and celebrate.", where: "Coming Soon", href: null, accent: "#4f46e5", isKit: true },
   ];
 
   const goToSlide = (idx) => {
@@ -902,79 +902,110 @@ const Home = () => {
       </section>
 
       {/* ── 5s Rotating Feature Carousel ── */}
-      <section style={{ background: "linear-gradient(135deg,#FFF8F2,#FFF3DC)", padding: "48px 24px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 6 }}>Explore Tendr</p>
-            <h2 style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>What We Offer</h2>
-            <div style={{ width: 32, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "0 auto" }} />
+      <section style={{ background: "#FFFCF5", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
+        {/* Decorative background blobs — no photos, warm light tones */}
+        <div style={{ position: "absolute", top: -60, right: -60, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -40, left: -40, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: 920, margin: "0 auto", position: "relative", zIndex: 1 }}>
+          {/* Section heading */}
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", padding: "5px 16px", borderRadius: 100, display: "inline-block", marginBottom: 14 }}>Explore Tendr</span>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.01em" }}>What We Offer</h2>
+            <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>Everything you need for a perfect event — in one place</p>
           </div>
+
           {(() => {
             const slide = FEATURE_SLIDES[slideIdx];
             const goSlide = (dir) => {
               setSlideVisible(false);
               setTimeout(() => { setSlideIdx(i => (i + dir + FEATURE_SLIDES.length) % FEATURE_SLIDES.length); setSlideVisible(true); }, 400);
             };
-            const arrowSt = { width: 36, height: 36, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s", flexShrink: 0 };
+
             return (
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-                {/* Slide content */}
-                <div style={{ transition: "opacity 0.4s ease, transform 0.4s ease", opacity: slideVisible ? 1 : 0, transform: slideVisible ? "translateY(0)" : "translateY(12px)", width: "100%", textAlign: "center", minHeight: slide.isKit ? 320 : 240, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  {slide.isKit ? (
-                    // Celebration Kit slide — special layout
-                    <div style={{ display: "flex", alignItems: "center", gap: 48, flexWrap: "wrap", justifyContent: "center", padding: "24px", background: "linear-gradient(135deg,#1E0F06,#2C1A0E,#3D2210)", borderRadius: 24, width: "100%" }}>
-                      <div style={{ flex: 1, minWidth: 240, textAlign: "left" }}>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 14px", marginBottom: 16 }}>
-                          <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", animation: "kit-pulse 1.6s infinite" }} />
-                          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Coming Soon · Under ₹2,000</span>
-                        </div>
-                        <h3 style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 400, color: "#fff", margin: "0 0 12px" }}>Tendr Celebration Kit</h3>
-                        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: "0 0 16px", lineHeight: 1.6 }}>{slide.desc}</p>
-                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 18 }}>
-                          {["Balloons", "Fairy Lights", "Confetti", "Table Runner"].map(t => <span key={t} style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 100, padding: "4px 10px" }}>{t}</span>)}
-                        </div>
-                        <button style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>Notify Me</button>
-                      </div>
-                      <div style={{ position: "relative", width: "clamp(200px,32%,320px)", flexShrink: 0 }}>
-                        <img src={celebrationKit} alt="Tendr Celebration Kit" style={{ width: "100%", borderRadius: 16, boxShadow: "0 16px 40px rgba(0,0,0,0.4)", objectFit: "cover", aspectRatio: "4/3" }} onError={e => (e.currentTarget.style.display = "none")} />
-                        <div style={{ position: "absolute", top: -12, right: -8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 900, fontSize: 13, borderRadius: 100, padding: "6px 14px", boxShadow: "0 4px 14px rgba(196,122,46,0.45)", whiteSpace: "nowrap" }}>₹999 – ₹1,499</div>
-                      </div>
+              <div>
+                {/* Main slide card */}
+                <div style={{
+                  transition: "opacity 0.4s ease, transform 0.4s ease",
+                  opacity: slideVisible ? 1 : 0,
+                  transform: slideVisible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.98)",
+                  background: "#fff",
+                  borderRadius: 24,
+                  border: `1.5px solid ${slide.accent}22`,
+                  boxShadow: `0 8px 40px ${slide.accent}14, 0 2px 12px rgba(0,0,0,0.04)`,
+                  overflow: "hidden",
+                  display: "flex",
+                  minHeight: 220,
+                }}>
+                  {/* Left accent strip */}
+                  <div style={{ width: 5, background: `linear-gradient(180deg,${slide.accent},${slide.accent}44)`, flexShrink: 0 }} />
+
+                  {/* Icon column */}
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 28px", background: `${slide.accent}08`, flexShrink: 0, minWidth: 130 }}>
+                    <div style={{
+                      width: 80, height: 80, borderRadius: 22,
+                      background: slide.iconBg,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: 38,
+                      boxShadow: `0 8px 24px ${slide.accent}30`,
+                      flexShrink: 0,
+                    }}>
+                      {slide.icon}
                     </div>
-                  ) : (
-                    // Standard slide — centered text
-                    <>
-                      <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", padding: "4px 14px", borderRadius: 100, marginBottom: 20, display: "inline-block" }}>{slide.tag}</span>
-                      <h2 style={{ fontSize: "clamp(1.8rem,4vw,3rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 16px", letterSpacing: "-0.02em", maxWidth: 640 }}>{slide.headline}</h2>
-                      <p style={{ fontSize: 16, color: "#7A5535", lineHeight: 1.65, maxWidth: 520, margin: "0 0 24px" }}>{slide.desc}</p>
-                      {slide.href && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(139,69,19,0.5)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Find it in</span>
-                          <span style={{ color: "rgba(139,69,19,0.4)" }}>→</span>
-                          <a href={slide.href} style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textDecoration: "none", background: "rgba(196,122,46,0.08)", padding: "4px 12px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.2)" }}
-                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.16)")}
-                            onMouseLeave={e => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}>
-                            {slide.where}
-                          </a>
-                        </div>
-                      )}
-                    </>
-                  )}
+                  </div>
+
+                  {/* Content */}
+                  <div style={{ flex: 1, padding: "28px 28px 28px 20px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: slide.accent, marginBottom: 8, display: "block" }}>{slide.tag}</span>
+                    <h3 style={{ fontSize: "clamp(1.2rem,2.5vw,1.7rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em", lineHeight: 1.25 }}>{slide.headline}</h3>
+                    <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.65, margin: "0 0 18px", maxWidth: 520 }}>{slide.desc}</p>
+                    {slide.isKit ? (
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                        {["Balloons", "Fairy Lights", "Games", "Confetti"].map(t => (
+                          <span key={t} style={{ fontSize: 11, color: slide.accent, background: `${slide.accent}0f`, border: `1px solid ${slide.accent}30`, borderRadius: 100, padding: "3px 10px", fontWeight: 600 }}>{t}</span>
+                        ))}
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#fff", background: slide.iconBg, borderRadius: 100, padding: "4px 14px", boxShadow: `0 3px 10px ${slide.accent}30` }}>Under ₹1,499</span>
+                      </div>
+                    ) : slide.href ? (
+                      <a href={slide.href}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: slide.iconBg, padding: "9px 18px", borderRadius: 10, boxShadow: `0 4px 14px ${slide.accent}30`, alignSelf: "flex-start", transition: "opacity 0.2s" }}
+                        onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
+                        onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
+                        Explore {slide.tag} →
+                      </a>
+                    ) : null}
+                  </div>
                 </div>
 
-                {/* Controls */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 28 }}>
-                  <button style={arrowSt} onClick={() => goSlide(-1)}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.18)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}>‹</button>
-                  <div style={{ display: "flex", gap: 5, alignItems: "center" }}>
-                    {FEATURE_SLIDES.map((_, i) => (
+                {/* Controls row */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 24 }}>
+                  <button onClick={() => goSlide(-1)}
+                    style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.2s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>‹</button>
+
+                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                    {FEATURE_SLIDES.map((fs, i) => (
                       <button key={i} onClick={() => { setSlideVisible(false); setTimeout(() => { setSlideIdx(i); setSlideVisible(true); }, 400); }}
-                        style={{ width: i === slideIdx ? 18 : 6, height: 6, borderRadius: 100, border: "none", background: i === slideIdx ? "#C47A2E" : "rgba(139,69,19,0.2)", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }} />
+                        style={{ width: i === slideIdx ? 24 : 8, height: 8, borderRadius: 100, border: "none", background: i === slideIdx ? (FEATURE_SLIDES[i].accent || "#C47A2E") : "rgba(139,69,19,0.15)", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }} />
                     ))}
                   </div>
-                  <button style={arrowSt} onClick={() => goSlide(1)}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.18)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}>›</button>
+
+                  <button onClick={() => goSlide(1)}
+                    style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.2s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>›</button>
+                </div>
+
+                {/* Feature chips — quick pick all slides */}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 20 }}>
+                  {FEATURE_SLIDES.map((fs, i) => (
+                    <button key={i} onClick={() => { setSlideVisible(false); setTimeout(() => { setSlideIdx(i); setSlideVisible(true); }, 400); }}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${i === slideIdx ? fs.accent : "rgba(139,69,19,0.12)"}`, background: i === slideIdx ? `${fs.accent}10` : "#fff", cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: i === slideIdx ? 700 : 500, color: i === slideIdx ? fs.accent : "#9B7450", transition: "all 0.18s" }}>
+                      <span style={{ fontSize: 14 }}>{fs.icon}</span>
+                      {fs.tag}
+                    </button>
+                  ))}
                 </div>
               </div>
             );
