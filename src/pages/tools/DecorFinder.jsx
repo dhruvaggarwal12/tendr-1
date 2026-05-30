@@ -137,10 +137,10 @@ const QUIZ_STEPS = [
     q: "How do you want guests to feel when they walk in?",
     sub: "This shapes everything — décor, lighting, colours",
     options: [
-      { value: "wowed",   label: "Completely Wowed",     sub: "Spectacular, jaw-dropping",   photo: OPT_PHOTOS.wowed },
-      { value: "cosy",    label: "Cosy & Warm",          sub: "Intimate, homely, comfortable", photo: OPT_PHOTOS.cosy },
-      { value: "fun",     label: "Fun & Energetic",      sub: "Vibrant, colourful, exciting",  photo: OPT_PHOTOS.fun },
-      { value: "elegant", label: "Elegant & Polished",   sub: "Refined, sophisticated",        photo: OPT_PHOTOS.elegant },
+      { value: "wowed",   label: "Completely Wowed",   sub: "Spectacular, jaw-dropping",      emoji: "🤩", photo: OPT_PHOTOS.wowed },
+      { value: "cosy",    label: "Cosy & Warm",        sub: "Intimate, homely, comfortable",  emoji: "🧡", photo: OPT_PHOTOS.cosy },
+      { value: "fun",     label: "Fun & Energetic",    sub: "Vibrant, colourful, exciting",   emoji: "🎉", photo: OPT_PHOTOS.fun },
+      { value: "elegant", label: "Elegant & Polished", sub: "Refined, sophisticated",         emoji: "✨", photo: OPT_PHOTOS.elegant },
     ],
   },
   {
@@ -148,8 +148,8 @@ const QUIZ_STEPS = [
     q: "Is this for a traditional Indian occasion?",
     sub: "Puja, wedding rituals, festival, haldi, mehendi",
     options: [
-      { value: "yes", label: "Yes — traditional ceremony", sub: "Marigolds, diyas, mandap", photo: OPT_PHOTOS.trad_yes },
-      { value: "no",  label: "No — modern celebration",    sub: "Birthday, anniversary, party", photo: OPT_PHOTOS.trad_no },
+      { value: "yes", label: "Yes — traditional ceremony", sub: "Marigolds, diyas, mandap",       emoji: "🪔", photo: OPT_PHOTOS.trad_yes },
+      { value: "no",  label: "No — modern celebration",    sub: "Birthday, anniversary, party",   emoji: "🎊", photo: OPT_PHOTOS.trad_no },
     ],
   },
   {
@@ -157,10 +157,10 @@ const QUIZ_STEPS = [
     q: "Where is the event?",
     sub: "Space changes what's possible",
     options: [
-      { value: "home",    label: "At Home",              sub: "Living room / terrace",      photo: OPT_PHOTOS.home },
-      { value: "venue",   label: "Venue / Banquet Hall", sub: "Hotel, community hall",      photo: OPT_PHOTOS.venue },
-      { value: "outdoor", label: "Outdoor",              sub: "Garden, farmhouse, rooftop", photo: OPT_PHOTOS.outdoor },
-      { value: "office",  label: "Office / Corporate",   sub: "Conference room, lobby",     photo: OPT_PHOTOS.office },
+      { value: "home",    label: "At Home",              sub: "Living room / terrace",      emoji: "🏠", photo: OPT_PHOTOS.home },
+      { value: "venue",   label: "Venue / Banquet Hall", sub: "Hotel, community hall",      emoji: "🏛️", photo: OPT_PHOTOS.venue },
+      { value: "outdoor", label: "Outdoor",              sub: "Garden, farmhouse, rooftop", emoji: "🌿", photo: OPT_PHOTOS.outdoor },
+      { value: "office",  label: "Office / Corporate",   sub: "Conference room, lobby",     emoji: "🏢", photo: OPT_PHOTOS.office },
     ],
   },
   {
@@ -188,8 +188,8 @@ const QUIZ_STEPS = [
     q: "One last thing — do you have a specific theme in mind?",
     sub: "Like Bollywood, superhero, jungle, Barbie, vintage...",
     options: [
-      { value: "yes", label: "Yes, I want a specific themed setup", sub: "Character / concept decoration", photo: OPT_PHOTOS.theme_yes },
-      { value: "no",  label: "No, just the décor style you suggest", sub: "Based on my answers above",    photo: OPT_PHOTOS.theme_no },
+      { value: "yes", label: "Yes, I have a specific theme", sub: "Character / concept decoration",  emoji: "🎭", photo: OPT_PHOTOS.theme_yes },
+      { value: "no",  label: "No, go with what fits me",     sub: "Based on my answers above",       emoji: "✦",  photo: OPT_PHOTOS.theme_no },
     ],
   },
 ];
@@ -336,14 +336,14 @@ export default function DecorFinder() {
               {vendorMap[vendorProfile.vendorId]?.price > 0 && (
                 <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 10 }}>Starts from ₹{Number(vendorMap[vendorProfile.vendorId].price).toLocaleString("en-IN")}</div>
               )}
-              <div style={{ display: "flex", gap: 8 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <button onClick={() => { setVendorProfile(null); openChatForm({ _id: vendorProfile.vendorId, name: vendorProfile.vendorName, serviceType: "Decorator" }); }}
-                  style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  Chat →
+                  style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}>
+                  Request to Chat →
                 </button>
-                <button onClick={() => { setVendorProfile(null); navigate(`/listings?serviceType=Decorator`); }}
-                  style={{ flex: 1, padding: "10px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  View Profile
+                <button onClick={() => { setVendorProfile(null); navigate(`/vendor/${vendorProfile.vendorId}`); }}
+                  style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                  View Full Profile
                 </button>
               </div>
             </div>
@@ -438,7 +438,7 @@ export default function DecorFinder() {
                 </div>
               )}
 
-              {/* Multi-select (elements) */}
+              {/* Multi-select (elements) — text-only chips */}
               {currentStep.type === "multiselect" && (
                 <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 14 }}>
@@ -446,14 +446,10 @@ export default function DecorFinder() {
                     const sel = (answers.elements || []).includes(opt.value);
                     return (
                       <button key={opt.value} onClick={() => pick("elements", opt.value, true)}
-                        style={{ borderRadius: 12, border: `2.5px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, overflow: "hidden", cursor: "pointer", padding: 0, transform: sel ? "scale(1.04)" : "scale(1)", transition: "all 0.15s", boxShadow: sel ? "0 4px 14px rgba(196,122,46,0.3)" : "none" }}>
-                        <div style={{ position: "relative" }}>
-                          <img src={opt.photo} alt={opt.label} style={{ width: "100%", height: 72, objectFit: "cover", display: "block" }} />
-                          {sel && <div style={{ position: "absolute", top: 5, right: 5, width: 20, height: 20, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff" }}>✓</div>}
-                        </div>
-                        <div style={{ padding: "6px 8px", background: sel ? "rgba(196,122,46,0.07)" : "#fff" }}>
-                          <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", textAlign: "center" }}>{opt.label}</div>
-                        </div>
+                        style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: sel ? "rgba(196,122,46,0.08)" : "#FFFCF5", cursor: "pointer", padding: "16px 10px", textAlign: "center", transition: "all 0.15s", boxShadow: sel ? "0 3px 12px rgba(196,122,46,0.2)" : "none", transform: sel ? "scale(1.03)" : "scale(1)", fontFamily: font }}>
+                        <div style={{ fontSize: 22, marginBottom: 6 }}>{opt.photo === OPT_PHOTOS.flowers ? "🌺" : opt.photo === OPT_PHOTOS.balloons ? "🎈" : opt.photo === OPT_PHOTOS.candles ? "🕯️" : opt.photo === OPT_PHOTOS.lights ? "💡" : opt.photo === OPT_PHOTOS.backdrop ? "🖼️" : "🎁"}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: sel ? "#C47A2E" : "#2C1A0E" }}>{opt.label}</div>
+                        {sel && <div style={{ marginTop: 4, fontSize: 10, color: "#C47A2E" }}>✓</div>}
                       </button>
                     );
                   })}
@@ -465,23 +461,18 @@ export default function DecorFinder() {
                 </>
               )}
 
-              {/* Standard 2/4 option questions with photo thumbnails */}
+              {/* Standard 2/4 option questions — text-only styled cards */}
               {!currentStep.type && (
                 <div style={{ display: "grid", gridTemplateColumns: currentStep.options.length === 2 ? "1fr 1fr" : "1fr 1fr", gap: 12 }}>
                   {currentStep.options.map(opt => {
                     const isSelected = answers[currentStep.id] === opt.value;
                     return (
                       <button key={opt.value} onClick={() => pick(currentStep.id, opt.value)}
-                        style={{ borderRadius: 16, border: `3px solid ${isSelected ? "#C47A2E" : "transparent"}`, overflow: "hidden", cursor: "pointer", padding: 0, transition: "all 0.18s", transform: isSelected ? "scale(1.03)" : "scale(1)", boxShadow: isSelected ? "0 6px 20px rgba(196,122,46,0.35)" : "0 2px 10px rgba(0,0,0,0.1)" }}>
-                        <div style={{ position: "relative" }}>
-                          <img src={opt.photo} alt={opt.label}
-                            style={{ width: "100%", height: currentStep.options.length === 2 ? 140 : 110, objectFit: "cover", display: "block" }} />
-                          {isSelected && <div style={{ position: "absolute", top: 8, right: 8, width: 24, height: 24, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}>✓</div>}
-                          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.65))", padding: "20px 12px 10px" }}>
-                            <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{opt.label}</div>
-                            {opt.sub && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>{opt.sub}</div>}
-                          </div>
-                        </div>
+                        style={{ borderRadius: 16, border: `2.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: isSelected ? "rgba(196,122,46,0.07)" : "#FFFCF5", cursor: "pointer", padding: "22px 16px", textAlign: "center", transition: "all 0.18s", transform: isSelected ? "scale(1.03)" : "scale(1)", boxShadow: isSelected ? "0 6px 20px rgba(196,122,46,0.25)" : "none", fontFamily: font, position: "relative" }}>
+                        <div style={{ fontSize: 32, marginBottom: 10 }}>{opt.emoji || "✦"}</div>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: isSelected ? "#C47A2E" : "#2C1A0E", marginBottom: 4 }}>{opt.label}</div>
+                        {opt.sub && <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4 }}>{opt.sub}</div>}
+                        {isSelected && <div style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff" }}>✓</div>}
                       </button>
                     );
                   })}
@@ -551,49 +542,47 @@ export default function DecorFinder() {
                       const vInfo   = vendorMap[curVid] || {};
                       return (
                         <>
-                        {/* Main photo with arrows */}
+                        {/* Main photo — no arrows on photo */}
                         <div style={{ position: "relative", background: "#1a0a00" }}>
                           {curPhoto && (
                             <img key={curVid} src={curPhoto.imageUrl} alt={theme}
                               style={{ width: "100%", height: 200, objectFit: "cover", display: "block", opacity: 0.92, animation: "photoFadeIn 0.3s ease" }} />
                           )}
-                          {/* Download */}
                           {curPhoto && <a href={curPhoto.imageUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
                             style={{ position: "absolute", top: 8, right: 8, width: 26, height: 26, borderRadius: "50%", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>⬇</a>}
-                          {/* Arrows — only if multiple vendors */}
-                          {vendors.length > 1 && (
-                            <>
-                              <button onClick={goPrev}
-                                style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>‹</button>
-                              <button onClick={goNext}
-                                style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>›</button>
-                            </>
-                          )}
-                          {/* Bottom overlay — vendor name is clickable */}
-                          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.75))", padding: "24px 12px 10px", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-                            <div>
-                              {/* Clicking vendor name opens profile */}
-                              <button onClick={() => setVendorProfile(curGroup)}
-                                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: font, textAlign: "left" }}>
-                                <div style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", textDecoration: "underline", textUnderlineOffset: 2 }}>
-                                  {curGroup?.vendorName} ↗
-                                </div>
-                              </button>
-                              <div style={{ display: "flex", gap: 8, marginTop: 2, flexWrap: "wrap" }}>
-                                {vInfo.avgReviewScore > 0 && <span style={{ fontSize: 10, color: "#CCAB4A" }}>★ {vInfo.avgReviewScore.toFixed(1)}</span>}
-                                {vInfo.price > 0 && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.7)" }}>from ₹{Number(vInfo.price).toLocaleString("en-IN")}</span>}
-                                {wb !== null && <span style={{ fontSize: 10, fontWeight: 700, color: wb ? "#4ade80" : "#fbbf24" }}>{wb ? "✓ In budget" : "↑ Above"}</span>}
-                              </div>
-                            </div>
-                            {vendors.length > 1 && (
-                              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{safeIdx + 1}/{vendors.length}</span>
-                            )}
-                          </div>
                         </div>
 
-                        {/* Vendor dot indicators */}
+                        {/* Vendor name row WITH arrows — arrows cycle vendors, name opens profile */}
+                        <div style={{ display: "flex", alignItems: "center", padding: "10px 14px 6px", gap: 8, borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
+                          {vendors.length > 1 && (
+                            <button onClick={goPrev}
+                              style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>‹</button>
+                          )}
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <button onClick={() => setVendorProfile(curGroup)}
+                              style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: font, textAlign: "left", width: "100%" }}>
+                              <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", textDecoration: "underline", textUnderlineOffset: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {curGroup?.vendorName} ↗
+                              </div>
+                            </button>
+                            <div style={{ display: "flex", gap: 8, marginTop: 2, flexWrap: "wrap" }}>
+                              {vInfo.avgReviewScore > 0 && <span style={{ fontSize: 10, color: "#C47A2E" }}>★ {vInfo.avgReviewScore.toFixed(1)}</span>}
+                              {vInfo.price > 0 && <span style={{ fontSize: 10, color: "#9B7450" }}>from ₹{Number(vInfo.price).toLocaleString("en-IN")}</span>}
+                              {wb !== null && <span style={{ fontSize: 10, fontWeight: 700, color: wb ? "#16a34a" : "#b45309" }}>{wb ? "✓ In budget" : "↑ Above"}</span>}
+                            </div>
+                          </div>
+                          {vendors.length > 1 && (
+                            <>
+                              <span style={{ fontSize: 10, color: "#9B7450", flexShrink: 0 }}>{safeIdx + 1}/{vendors.length}</span>
+                              <button onClick={goNext}
+                                style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>›</button>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Dot indicators */}
                         {vendors.length > 1 && (
-                          <div style={{ display: "flex", justifyContent: "center", gap: 5, padding: "8px 0 4px" }}>
+                          <div style={{ display: "flex", justifyContent: "center", gap: 5, padding: "6px 0 2px" }}>
                             {vendors.map((vg, vi) => (
                               <button key={vg.vendorId} onClick={() => setSelVendor(p => ({ ...p, [theme]: vg.vendorId }))}
                                 style={{ width: vi === safeIdx ? 20 : 7, height: 7, borderRadius: 100, border: "none", background: vi === safeIdx ? "#C47A2E" : "rgba(196,122,46,0.25)", cursor: "pointer", padding: 0, transition: "all 0.25s" }} />
@@ -617,12 +606,12 @@ export default function DecorFinder() {
                       );
                     })()}
 
-                    {/* Chat button */}
+                    {/* Show Profile button */}
                     {curGroup?.vendorId && (
                       <div style={{ padding: "10px 14px 4px" }}>
-                        <button onClick={() => openChatForm({ _id: curGroup.vendorId, name: curGroup.vendorName, serviceType: "Decorator" })}
-                          style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.28)" }}>
-                          Chat with {curGroup.vendorName} →
+                        <button onClick={() => setVendorProfile(curGroup)}
+                          style={{ width: "100%", padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                          Show Profile ↗
                         </button>
                       </div>
                     )}
@@ -630,7 +619,7 @@ export default function DecorFinder() {
                     {/* Decor checklist */}
                     <div style={{ padding: "10px 14px 14px", flex: 1 }}>
                       <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
-                        What {BUDGET_LABEL[budgetKey]} gets you
+                        What's typically included
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         {items.map((item, i) => (
