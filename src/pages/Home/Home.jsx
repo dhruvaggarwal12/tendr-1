@@ -225,6 +225,25 @@ const Home = () => {
   };
 
   const [scrolled, setScrolled] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstall, setShowInstall] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { e.preventDefault(); setInstallPrompt(e); setShowInstall(true); };
+    window.addEventListener('beforeinstallprompt', handler);
+    // Hide if already installed
+    window.addEventListener('appinstalled', () => setShowInstall(false));
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') setShowInstall(false);
+    setInstallPrompt(null);
+  };
+
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPrev, setHeroPrev] = useState(null);
   const [heroFading, setHeroFading] = useState(false);
@@ -562,15 +581,27 @@ const Home = () => {
             </div>
 
             {/* CTA */}
-            <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <button
                 onClick={() => navigate("/booking")}
-                style={{ background: "linear-gradient(135deg, #E8820C 0%, #CCAB4A 100%)", color: "#fff", fontSize: 17, fontWeight: 800, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(232,130,12,0.55)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                style={{ background: "linear-gradient(135deg, #E8820C 0%, #CCAB4A 100%)", color: "#fff", fontSize: 17, fontWeight: 800, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(232,130,12,0.55)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", alignSelf: "flex-start" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(232,130,12,0.65)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(232,130,12,0.55)"; }}
               >
                 Start Planning →
               </button>
+
+              {/* PWA install button — shown only when Chrome fires beforeinstallprompt */}
+              {showInstall && (
+                <button
+                  onClick={handleInstall}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "1.5px solid rgba(196,122,46,0.4)", color: "#C47A2E", fontSize: 14, fontWeight: 700, padding: "10px 22px", borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s", alignSelf: "flex-start" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
+                >
+                  📲 Install Tendr App
+                </button>
+              )}
             </div>
           </div>
 
