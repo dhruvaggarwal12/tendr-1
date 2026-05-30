@@ -531,23 +531,22 @@ const Home = () => {
             <div style={{ marginBottom: 36 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#C47A2E", display: "inline-block" }} />
-                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E" }}>Delhi NCR's Event Platform</span>
+                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E" }}>Delhi NCR's Celebration Platform</span>
               </div>
 
               <h1 style={{ fontSize: "clamp(2.2rem, 4vw, 3.4rem)", fontWeight: 900, lineHeight: 1.12, color: "#2C1A0E", marginBottom: 18, letterSpacing: "-0.02em", fontFamily: "'Outfit', sans-serif" }}>
-                Book vendors.<br />
+                Everything your event needs.<br />
                 <span style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  Build your event.
-                </span><br />
-                All in one place.
+                  One place.
+                </span>
               </h1>
 
-              <p style={{ fontSize: 16, fontWeight: 400, color: "#6B4226", lineHeight: 1.65, maxWidth: 440, margin: 0 }}>
-                Caterers, decorators, photographers and DJs in Delhi NCR — browse and book yourself, or let us build your complete vendor package with one click.
+              <p style={{ fontSize: 16, fontWeight: 400, color: "#6B4226", lineHeight: 1.7, maxWidth: 440, margin: 0 }}>
+                From birthday parties and home celebrations to corporate events and house parties — book vendors, plan your budget, send invitations, manage guests, track payments and send curated gift hampers. All of it, right here.
               </p>
             </div>
 
-            {/* CTA buttons */}
+            {/* CTA */}
             <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
               <button
                 onClick={() => navigate("/booking")}
@@ -555,18 +554,9 @@ const Home = () => {
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(232,130,12,0.65)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(232,130,12,0.55)"; }}
               >
-                Plan Your Event →
+                Start Planning →
               </button>
             </div>
-
-              <button
-                onClick={() => navigate("/listings")}
-                style={{ background: "transparent", color: "#C47A2E", fontSize: 15, fontWeight: 700, padding: "15px 28px", borderRadius: 14, border: "2px solid rgba(196,122,46,0.4)", cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", transition: "all 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
-              >
-                Browse Vendors
-              </button>
           </div>
 
           {/* ── Right: photo carousel ── */}
