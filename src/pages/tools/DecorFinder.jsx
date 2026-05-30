@@ -392,12 +392,6 @@ export default function DecorFinder() {
                     </div>
                   </div>
 
-                  <div style={{ padding: "0 18px 16px", display: "flex", gap: 10 }}>
-                    <button onClick={() => goToVendors(theme)}
-                      style={{ flex: 1, padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
-                      Show Me {theme} Vendors →
-                    </button>
-                  </div>
                 </div>
               );
             })}
