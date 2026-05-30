@@ -311,6 +311,8 @@ export default function CustomerDashboard() {
   const visibleChats = conversations.filter(c => {
     // Vendor chats: show for 24hrs from customer's last message
     if (c.chatType === "vendor") return isWithin24Hrs(c);
+    // Smart Plan event chats: always show once approved (admin started the chat)
+    if (c.chatType === "event" && c.chatApproved) return true;
     // Support/concierge: only approved + explicitly opened
     if (!c.chatApproved) return false;
     return openedSupportChats.has(c._id);

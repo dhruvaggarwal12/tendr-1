@@ -601,59 +601,42 @@ const EventPlanning = () => {
 
     // ── Waiting for approval (post-submit) ─────────────────────────────────
     if (planSubmitted) {
-      const slots = liveSlots || confirmedPlan?.vendorSlots || currentVendors.map(cv => ({ category: cv.category, vendorName: cv.vendor?.name || cv.category, estimatedCost: cv.estimatedCost, status: 'Pending' }));
-      const statusColor = s => s === 'Confirmed' ? '#16a34a' : s === 'Chatting' ? '#d97706' : s === 'Declined' ? '#dc2626' : '#6b7280';
-      const statusBg = s => s === 'Confirmed' ? 'rgba(22,163,74,0.08)' : s === 'Chatting' ? 'rgba(217,119,6,0.08)' : s === 'Declined' ? 'rgba(220,38,38,0.08)' : 'rgba(107,114,128,0.08)';
-      const allConfirmed = slots.every(s => s.status === 'Confirmed');
-      const fmt2 = n => `₹${Number(n).toLocaleString("en-IN")}`;
+      const slots = confirmedPlan?.vendorSlots || currentVendors.map(cv => ({ category: cv.category, vendorName: cv.vendor?.name || cv.category, estimatedCost: cv.estimatedCost }));
       const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵' };
 
       return (
         <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
           <BasicSpeedDial />
           <HamburgerNav active="Browse" noSidebar noCompare />
-          <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 20px 80px" }}>
+          <div style={{ maxWidth: 480, margin: "0 auto", padding: "56px 20px 80px", textAlign: "center" }}>
 
-            {/* Status banner */}
-            <div style={{ textAlign: "center", marginBottom: 28 }}>
-              <div style={{ fontSize: 48, marginBottom: 12 }}>{allConfirmed ? "🎉" : "⏳"}</div>
-              <h2 style={{ fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-                {allConfirmed ? "Your package is ready!" : "Waiting for Approval"}
-              </h2>
-              <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0, maxWidth: 380, marginLeft: "auto", marginRight: "auto" }}>
-                {allConfirmed ? "All vendors confirmed. Our team will reach out shortly." : "Our team is coordinating with vendors. We'll update you within 2 hours."}
-              </p>
-            </div>
+            <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
+            <h2 style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
+              Your package request is submitted!
+            </h2>
+            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 32px", lineHeight: 1.65, maxWidth: 360, marginLeft: "auto", marginRight: "auto" }}>
+              Our team will review your package and start a chat with you shortly. You'll see it in <strong>View Chats</strong> once it's ready.
+            </p>
 
-            {/* Vendor slots */}
-            <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", marginBottom: 20, boxShadow: "0 2px 16px rgba(196,122,46,0.07)" }}>
-              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>Your Package</span>
+            {/* Package summary — clean, no status */}
+            <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", marginBottom: 24, textAlign: "left", boxShadow: "0 2px 12px rgba(196,122,46,0.07)" }}>
+              <div style={{ padding: "12px 18px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>Your Package</span>
                 <span style={{ fontSize: 11, background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 10px", borderRadius: 100, fontWeight: 700 }}>
                   {confirmedPlan?.eventDetails?.eventType || formData?.eventType || "Event"}
                 </span>
               </div>
-              {slots.map((slot, i) => (
-                <div key={slot.category || i} style={{ padding: "14px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < slots.length - 1 ? "1px solid rgba(196,122,46,0.06)" : "none" }}>
-                  <span style={{ fontSize: 22, width: 28, textAlign: "center" }}>{CAT_EMOJI[slot.category] || "🏷"}</span>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || slot.category}</div>
-                    <div style={{ fontSize: 11, color: "#9B7450" }}>{slot.category} · {fmt2(slot.estimatedCost || 0)}</div>
-                    {selectedPackages[slot.category] && <div style={{ fontSize: 10.5, color: "#C47A2E", fontWeight: 600, marginTop: 2 }}>📦 {selectedPackages[slot.category]} Package</div>}
+              <div style={{ padding: "10px 18px", display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {slots.map((slot, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: "rgba(196,122,46,0.05)", border: "1px solid rgba(196,122,46,0.12)" }}>
+                    <span style={{ fontSize: 15 }}>{CAT_EMOJI[slot.category] || "🏷"}</span>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || slot.category}</div>
+                      <div style={{ fontSize: 10, color: "#9B7450" }}>₹{Number(slot.estimatedCost || 0).toLocaleString("en-IN")}</div>
+                    </div>
                   </div>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 100, background: statusBg(slot.status), color: statusColor(slot.status), border: `1px solid ${statusColor(slot.status)}33` }}>
-                    {slot.status || 'Pending'}
-                  </span>
-                </div>
-              ))}
-            </div>
-
-            {/* Info note */}
-            <div style={{ background: "rgba(196,122,46,0.05)", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "flex", gap: 10, alignItems: "flex-start" }}>
-              <span style={{ fontSize: 16 }}>💬</span>
-              <p style={{ fontSize: 12.5, color: "#7A5535", margin: 0, lineHeight: 1.5 }}>
-                Our team will start a chat with you once all vendors confirm. You can check this status anytime from your <button onClick={() => navigate("/dashboard")} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, cursor: "pointer", fontSize: 12.5, padding: 0, fontFamily: "'Outfit', sans-serif" }}>dashboard</button>.
-              </p>
+                ))}
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: 10 }}>

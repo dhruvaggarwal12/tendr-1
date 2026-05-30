@@ -3791,25 +3791,15 @@ const AdminDashboard = () => {
                           </button>
                         </div>
 
-                        {/* Vendor slots — always visible */}
-                        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "12px 22px" }}>
+                        {/* Vendor slots — names and budgets only, no status */}
+                        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 22px", display: "flex", flexWrap: "wrap", gap: 8 }}>
                           {(plan.vendorSlots || []).map((slot, si) => (
-                            <div key={si} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 0", borderBottom: si < plan.vendorSlots.length - 1 ? "1px dashed rgba(196,122,46,0.1)" : "none" }}>
-                              <span style={{ fontSize: 18, width: 26, textAlign: "center" }}>{CAT_EMOJI[slot.category] || '🏷️'}</span>
-                              <div style={{ flex: 1 }}>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || "—"}</div>
-                                <div style={{ fontSize: 11, color: "#9B7450" }}>{slot.category} · ₹{(slot.estimatedCost || 0).toLocaleString()}</div>
+                            <div key={si} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.15)" }}>
+                              <span style={{ fontSize: 15 }}>{CAT_EMOJI[slot.category] || '🏷️'}</span>
+                              <div>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || "—"}</div>
+                                <div style={{ fontSize: 10, color: "#9B7450" }}>{slot.category} · ₹{(slot.estimatedCost || 0).toLocaleString()}</div>
                               </div>
-                              <select
-                                value={slot.status}
-                                onChange={e => handleStatusChange(plan._id, slot.category, e.target.value)}
-                                style={{ padding: "4px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: slot.status === 'Confirmed' ? '#16a34a' : slot.status === 'Declined' ? '#dc2626' : slot.status === 'Chatting' ? '#d97706' : '#6b7280', fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-                              >
-                                <option value="Pending">Pending</option>
-                                <option value="Chatting">Chatting</option>
-                                <option value="Confirmed">Confirmed</option>
-                                <option value="Declined">Declined</option>
-                              </select>
                             </div>
                           ))}
                         </div>
