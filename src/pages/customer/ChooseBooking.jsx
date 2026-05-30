@@ -14,13 +14,14 @@ const FLOWS = [
   {
     type: "you-do-it",
     emoji: "🔍",
-    title: "I'll Find My Vendors",
-    subtitle: "Browse, chat and book yourself — full control",
-    description: "You're in the driver's seat. Tell us about your event, browse our verified vendors in your city, chat with them to confirm pricing and requirements, then pay — all in one place.",
+    title: "You Do It",
+    subtitle: "Browse vendors, compare profiles, book at your own pace",
+    description: "Browse our verified vendors, compare profiles side by side, chat directly with each one, and negotiate your own price — all in one place.",
+    bestFor: "People who know what they want and enjoy the process.",
     steps: [
       "Fill event details (takes 2 minutes)",
-      "Browse & save vendors you like",
-      "Chat with vendors to confirm price",
+      "Browse & compare vendors by category",
+      "Chat directly to confirm price & details",
       "Finalise vendors & pay",
     ],
     cta: "Start Browsing Vendors",
@@ -31,16 +32,17 @@ const FLOWS = [
   {
     type: "let-us-do-it",
     emoji: "✨",
-    title: "Tendr Plans It For Me",
-    subtitle: "Get a personalised vendor lineup in seconds",
-    description: "Tell us your event type, budget, and city — our Smart Planner instantly builds a vendor lineup with estimated costs. Chat directly with recommended vendors to confirm pricing.",
+    title: "Let Us Do It — Smart Planner",
+    subtitle: "Tell us once. We build your complete vendor package.",
+    description: "Tell us your event details once. We suggest a complete package — one vendor per service, within your budget. You confirm, we coordinate everything.",
+    bestFor: "People who want it handled without going back and forth.",
     steps: [
       "Fill event details (takes 2 minutes)",
-      "Select the services you need",
-      "Instant plan with top vendors + cost split",
-      "Chat with vendors & confirm booking",
+      "Set your budget per service category",
+      "Get a complete vendor package instantly",
+      "Confirm & our team coordinates for you",
     ],
-    cta: "Get My Event Plan",
+    cta: "Build My Package",
     accentColor: "#7A4A1E",
     bgAccent: "rgba(122,74,30,0.05)",
     borderColor: "rgba(122,74,30,0.18)",
@@ -117,9 +119,17 @@ export default function ChooseBooking() {
             </div>
 
             {/* Description */}
-            <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.62, margin: "0 0 20px", flex: 1 }}>
+            <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.62, margin: "0 0 12px" }}>
               {flow.description}
             </p>
+
+            {/* Best for */}
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", borderRadius: 10, background: flow.bgAccent, border: "1px solid " + flow.borderColor, marginBottom: 20, flex: 1 }}>
+              <span style={{ fontSize: 14, flexShrink: 0 }}>✦</span>
+              <span style={{ fontSize: 13, color: flow.accentColor, fontWeight: 600, lineHeight: 1.5 }}>
+                <strong>Best for:</strong> {flow.bestFor}
+              </span>
+            </div>
 
             {/* Steps */}
             <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 28 }}>

@@ -554,6 +554,21 @@ const VendorList = () => {
               isLoggedIn={!!token}
             />
 
+            {/* Compare nudge — shown after 3+ vendors loaded, not already comparing */}
+            {vendorList.length >= 3 && compareSelected.length === 0 && token && (
+              <div style={{ margin: "20px 0", padding: "14px 18px", borderRadius: 14, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", fontFamily: font }}>
+                <span style={{ fontSize: 20 }}>🔀</span>
+                <div style={{ flex: 1, minWidth: 180 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>Comparing vendors?</div>
+                  <div style={{ fontSize: 12, color: "#9B7450" }}>Add vendors to Compare to see their profiles side by side before deciding.</div>
+                </div>
+                <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                  style={{ padding: "8px 16px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                  Use Compare Tool →
+                </button>
+              </div>
+            )}
+
             {!token && (
               <div style={{
                 position: "absolute", inset: 0, zIndex: 50,
