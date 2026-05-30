@@ -229,6 +229,7 @@ const Home = () => {
   const [heroPrev, setHeroPrev] = useState(null);
   const [heroFading, setHeroFading] = useState(false);
   const [galleryByCategory, setGalleryByCategory] = useState({});
+  const [galleryLoaded, setGalleryLoaded] = useState(false);
   const [glimpseCounter, setGlimpseCounter] = useState(0);
   const [featureIdx, setFeatureIdx]   = useState(0);
   const [featureVisible, setFeatureVisible] = useState(true);
@@ -257,10 +258,9 @@ const Home = () => {
     }, 420);
   };
 
-  // Build hero slideshow from gallery photos; fall back to static assets when DB is empty
+  // Build hero slideshow from gallery photos only — no static fallback
   const heroPhotos = (() => {
-    const allPhotos = Object.values(galleryByCategory).flat();
-    if (allPhotos.length === 0) return CELEBRATION_PHOTOS;
+    const allPhotos = Object.values(galleryByCategory).flat().filter(p => p.imageUrl);
     return allPhotos.map(p => ({ url: p.imageUrl, label: p.category }));
   })();
 
@@ -269,9 +269,10 @@ const Home = () => {
     goToSlide((heroIndex - 1 + heroPhotos.length) % heroPhotos.length);
 
   useEffect(() => {
+    if (!galleryLoaded || heroPhotos.length === 0) return;
     const t = setInterval(heroNext, 4500);
     return () => clearInterval(t);
-  }, [heroIndex, heroFading]);
+  }, [heroIndex, heroFading, galleryLoaded, heroPhotos.length]);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -306,10 +307,24 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
-    fetch(`${BASE_URL}/gallery`)
-      .then(r => r.ok ? r.json() : { grouped: {} })
-      .then(d => { if (d.grouped) setGalleryByCategory(d.grouped); })
-      .catch(() => {});
+    const fetchGallery = () => {
+      fetch(`${BASE_URL}/gallery`)
+        .then(r => r.ok ? r.json() : { grouped: {} })
+        .then(d => {
+          if (d.grouped && Object.keys(d.grouped).length > 0) {
+            setGalleryByCategory(d.grouped);
+            setGalleryLoaded(true);
+          } else {
+            // Retry once after 3s if empty (backend cold start)
+            setTimeout(fetchGallery, 3000);
+          }
+        })
+        .catch(() => {
+          // Retry once after 3s on network error
+          setTimeout(fetchGallery, 3000);
+        });
+    };
+    fetchGallery();
   }, []);
 
   useEffect(() => {
@@ -568,9 +583,20 @@ const Home = () => {
                 borderRadius: "0 0 0 32px",
                 overflow: "hidden",
                 boxShadow: "-8px 0 40px rgba(139,69,19,0.15)",
+                background: "#2C1A0E",
               }}
             >
-              {/* Current photo */}
+              {/* Loading state while gallery fetches */}
+              {!galleryLoaded && (
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ textAlign: "center", color: "rgba(204,171,74,0.6)" }}>
+                    <div style={{ fontSize: 32, marginBottom: 12 }}>🎉</div>
+                    <div style={{ fontSize: 13, letterSpacing: "0.1em" }}>Loading gallery...</div>
+                  </div>
+                </div>
+              )}
+              {/* Current photo — only shown when gallery loaded */}
+              {galleryLoaded && heroPhotos.length > 0 && (
               <img
                 key={heroIndex}
                 src={heroPhotos[Math.min(heroIndex, heroPhotos.length - 1)].url}
@@ -585,6 +611,7 @@ const Home = () => {
                   animation: "heroFadeIn 0.42s ease",
                 }}
               />
+              )}
 
               {/* Gradient overlay at bottom */}
               <div
@@ -612,7 +639,7 @@ const Home = () => {
                   textShadow: "0 1px 4px rgba(0,0,0,0.4)",
                 }}
               >
-                {heroPhotos[Math.min(heroIndex, heroPhotos.length - 1)].label}
+                {galleryLoaded && heroPhotos.length > 0 ? heroPhotos[Math.min(heroIndex, heroPhotos.length - 1)].label : ""}
               </div>
 
               {/* Prev arrow */}
@@ -684,7 +711,7 @@ const Home = () => {
                   zIndex: 2,
                 }}
               >
-                {heroPhotos.map((_, i) => (
+                {galleryLoaded && heroPhotos.map((_, i) => (
                   <button
                     key={i}
                     onClick={() => goToSlide(i)}

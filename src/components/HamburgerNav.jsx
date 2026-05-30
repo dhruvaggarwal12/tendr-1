@@ -57,7 +57,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   // All state declared before any useEffect that references them
   const [sidebarOpen,   setSidebarOpen]   = useState(true);
-  const [drawerOpen,    setDrawerOpen]    = useState(!isDesktop);
+  const [drawerOpen,    setDrawerOpen]    = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [savedOpen,     setSavedOpen]     = useState(false);
   const [reviewPopup,   setReviewPopup]   = useState(false);
@@ -460,38 +460,43 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         padding: "0 16px",
         fontFamily: font,
       }}>
-        {/* Left: hamburger + logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        {/* Left: Logo (small) */}
+        <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 20, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
+
+        {/* Center: Search bar — always visible on mobile */}
+        <div style={{ flex: 1, margin: "0 8px", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "6px 12px" }}>
+            <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>🔍</span>
+            <input value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setShowSuggest(true); }}
+              onFocus={() => setShowSuggest(true)}
+              onKeyDown={e => { if (e.key === "Enter") { handleNavSearch(); setShowMobileSearch(false); } if (e.key === "Escape") { setSearchQuery(""); setShowSuggest(false); } }}
+              placeholder="Search vendors, tools..."
+              style={{ flex: 1, border: "none", outline: "none", fontSize: 12, fontFamily: font, color: "#2C1A0E", background: "transparent", minWidth: 0 }} />
+            {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggest(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1, flexShrink: 0 }}>✕</button>}
+          </div>
+          {showSuggest && searchQuery.length > 0 && (
+            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 24px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 300 }}>
+              {filteredSuggestions.slice(0, 4).map((s, i) => (
+                <button key={i} onClick={() => { if (s.href) { navigate(s.href); } else { handleNavSearch(s.text); } setSearchQuery(""); setShowSuggest(false); }}
+                  style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  {s.text}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Right: Hamburger + optional actions */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          {/* Hamburger — opens drawer */}
           <button
             onClick={() => setDrawerOpen(true)}
             style={{ width: 34, height: 34, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.06)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0 }}
           >
             {[0,1,2].map(i => <div key={i} style={{ width: 13, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
           </button>
-          <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 24, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
-        </div>
-
-        {/* Center: page title when present */}
-        {title && (
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, textAlign: "center", padding: "0 8px" }}>{title}</span>
-        )}
-
-        {/* Right: search + Review & Pay + profile */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-          {/* Mobile search */}
-          {!showMobileSearch ? (
-            <button onClick={() => setShowMobileSearch(true)}
-              style={{ width: 34, height: 34, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontSize: 14 }}>
-              🔍
-            </button>
-          ) : (
-            <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "1.5px solid #C47A2E", borderRadius: 8, padding: "4px 8px", boxShadow: "0 2px 12px rgba(196,122,46,0.2)" }}>
-              <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                onKeyDown={e => { if (e.key === "Enter") { handleNavSearch(); setShowMobileSearch(false); } if (e.key === "Escape") { setShowMobileSearch(false); setSearchQuery(""); } }}
-                placeholder="Search..." style={{ border: "none", outline: "none", fontSize: 13, fontFamily: font, color: "#2C1A0E", width: 120, background: "transparent" }} />
-              <button onClick={() => { setShowMobileSearch(false); setSearchQuery(""); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>✕</button>
-            </div>
-          )}
           {/* Review & Pay button — shows when vendors finalised OR gift hampers in cart */}
           {(finalisedCount > 0 || ghCartCount > 0) && (
             <button

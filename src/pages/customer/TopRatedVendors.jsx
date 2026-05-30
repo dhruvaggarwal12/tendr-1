@@ -162,7 +162,7 @@ export default function TopRatedVendors() {
   const loadVendors = () => {
     setLoading(true);
     setFetchError(false);
-    fetch(`${BASE_URL}/vendors?serviceTypes=${category}&sortBy=rankingScore&limit=20`)
+    fetch(`${BASE_URL}/vendors?serviceTypes=${category}&isTopRated=true&sortBy=rankingScore&limit=20`)
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then((d) => setVendors(d.vendors || []))
       .catch(() => setFetchError(true))
@@ -339,6 +339,14 @@ export default function TopRatedVendors() {
         )}
 
       </div>
+
+      {/* Browse more note */}
+      {!loading && !fetchError && (
+        <div style={{ textAlign: "center", padding: "28px 24px 48px", fontFamily: font }}>
+          <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 4px" }}>Looking for more options?</p>
+          <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>Browse all vendors from <strong style={{ color: "#C47A2E" }}>Vendors → Browse Vendors</strong> in the navigation.</p>
+        </div>
+      )}
 
       {/* Quick Event Form modal */}
       {selectedVendor && (
