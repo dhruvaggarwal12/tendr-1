@@ -73,18 +73,30 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     { text: "Wedding decorators", cat: "Decorator" },
     { text: "Photographers in Ghaziabad", cat: "Photographer", loc: "Ghaziabad" },
   ];
-  const SVC_KW = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
-  const LOC_KW = ["delhi", "noida", "gurgaon", "gurugram", "ghaziabad", "greater noida", "faridabad"];
+  const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
+  const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker" };
 
   const handleNavSearch = (q) => {
-    const query = (q || searchQuery).toLowerCase();
+    const query = q || searchQuery;
     if (!query.trim()) return;
-    const cats = [...new Set(Object.entries(SVC_KW).filter(([k]) => query.includes(k)).map(([,v]) => v))];
-    const loc = LOC_KW.find(l => query.includes(l));
-    const locParam = loc ? loc.split(' ').map(w => w[0].toUpperCase()+w.slice(1)).join(' ') : '';
-    if (cats.length === 1) navigate(`/top-rated/${cats[0]}${locParam ? `?location=${locParam}` : ''}`);
-    else if (cats.length > 1) navigate(`/listings?serviceTypes=${cats.join(',')}${locParam ? `&location=${locParam}` : ''}`);
-    else navigate(`/listings${locParam ? `?location=${encodeURIComponent(locParam)}` : ''}`);
+    const lower = query.toLowerCase();
+    const pageHref = Object.entries(PAGE_KW2).find(([k]) => lower.includes(k))?.[1];
+    if (pageHref) { navigate(pageHref); setSearchQuery(""); setShowSuggest(false); return; }
+    const cats = [...new Set(Object.entries(SVC_KW2).filter(([k]) => lower.includes(k)).map(([,v]) => v))];
+    const locs = [...new Set(Object.entries(LOC_KW2).filter(([k]) => lower.includes(k)).sort((a,b)=>b[0].length-a[0].length).map(([,v]) => v))];
+    const budgetM = lower.match(/(?:under|below|₹)\s*(\d[\d,]*)\s*k?/i);
+    const budget = budgetM ? parseFloat(budgetM[1].replace(/,/g,"")) * (/k\b/.test(budgetM[0]) ? 1000 : 1) : null;
+    const isUnknown = query.trim().length > 2 && cats.length === 0 && locs.length === 0 && !budget;
+    if (isUnknown) { navigate(`/search?unknown=1&q=${encodeURIComponent(query)}`); }
+    else {
+      const p = new URLSearchParams();
+      if (cats.length) p.set("categories", cats.join(","));
+      if (locs.length) p.set("locations", locs.join(","));
+      if (budget) p.set("budget", budget);
+      p.set("q", query);
+      navigate(`/search?${p.toString()}`);
+    }
     setSearchQuery(""); setShowSuggest(false);
   };
 

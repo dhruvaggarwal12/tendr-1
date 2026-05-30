@@ -7,26 +7,59 @@ import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFil
 import { useChatOverlay } from "../context/ChatContext";
 
 const SEARCH_SUGGESTIONS = [
-  // Vendors (only 3)
-  { text: "Photographers in Delhi", type: "vendor", category: "Photographer", location: "Delhi" },
-  { text: "Caterers in Noida", type: "vendor", category: "Caterer", location: "Noida" },
-  { text: "DJ for birthday party", type: "vendor", category: "DJ" },
-  // Gift hampers (1)
-  { text: "Gift Hampers & Cakes", type: "page", href: "/gift-hampers-cakes", icon: "🎁" },
-  // Budget Allocator (1)
-  { text: "Budget Allocator — plan your spend", type: "page", href: "/budget-picker", icon: "💰" },
-  // Decor Finder (1)
-  { text: "Decor Finder — browse decoration themes", type: "page", href: "/decor-finder", icon: "🎨" },
+  { text: "Photographers in Delhi" },
+  { text: "Caterers in Noida" },
+  { text: "DJ in Gurgaon" },
+  { text: "Gift Hampers & Cakes",              type: "page", href: "/gift-hampers-cakes" },
+  { text: "Budget Allocator",                   type: "page", href: "/budget-picker" },
+  { text: "Decor Finder",                       type: "page", href: "/decor-finder" },
+  { text: "Decorators under ₹30,000" },
+  { text: "Photographer and caterer in Noida" },
 ];
-const SVC_KEYWORDS = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", photo: "Photographer", dj: "DJ", music: "DJ", entertainment: "DJ" };
-const LOC_KEYWORDS = ["delhi", "noida", "gurgaon", "gurugram", "ghaziabad", "greater noida", "faridabad"];
-const PAGE_KEYWORDS = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker", invitation: "/invitation", stationery: "/stationery" };
+// ── Smart search parser ───────────────────────────────────────────────────────
+const SVC_KW = { caterer: "Caterer", catering: "Caterer", food: "Caterer", cook: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", photo: "Photographer", dj: "DJ", music: "DJ", entertainment: "DJ", disc: "DJ" };
+const LOC_KW = { delhi: "Delhi", "new delhi": "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
+const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker", invitation: "/invitation", stationery: "/stationery" };
+const BUDGET_PATTERNS = [
+  /(?:under|below|within|upto|up to|less than|<)\s*₹?\s*(\d[\d,]*)\s*k?/i,
+  /₹\s*(\d[\d,]*)\s*k?\s*(?:budget|max|limit)?/i,
+  /(\d[\d,]*)\s*k\s*budget/i,
+];
+
 function parseSearch(q) {
   const lower = q.toLowerCase();
-  const cats = [...new Set(Object.entries(SVC_KEYWORDS).filter(([k]) => lower.includes(k)).map(([, v]) => v))];
-  const loc = LOC_KEYWORDS.find(l => lower.includes(l));
-  const pageHref = Object.entries(PAGE_KEYWORDS).find(([k]) => lower.includes(k))?.[1];
-  return { cats, loc, pageHref };
+
+  // Page keywords (tools, gift hampers) — check first
+  const pageHref = Object.entries(PAGE_KW).find(([k]) => lower.includes(k))?.[1];
+  if (pageHref) return { cats: [], locs: [], budget: null, pageHref, isUnknown: false };
+
+  // Categories — deduplicated
+  const cats = [...new Set(Object.entries(SVC_KW).filter(([k]) => lower.includes(k)).map(([, v]) => v))];
+
+  // Locations — check multi-word first
+  const locs = [...new Set(
+    Object.entries(LOC_KW)
+      .filter(([k]) => lower.includes(k))
+      .sort((a, b) => b[0].length - a[0].length) // longer match first
+      .map(([, v]) => v)
+  )];
+
+  // Budget
+  let budget = null;
+  for (const pat of BUDGET_PATTERNS) {
+    const m = lower.match(pat);
+    if (m) {
+      let num = parseFloat(m[1].replace(/,/g, ""));
+      if (/k\b/.test(m[0])) num *= 1000;
+      budget = num;
+      break;
+    }
+  }
+
+  // Unknown — has input but nothing matched platform
+  const isUnknown = q.trim().length > 2 && cats.length === 0 && locs.length === 0 && !budget && !pageHref;
+
+  return { cats, locs, budget, pageHref: null, isUnknown };
 }
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -195,16 +228,16 @@ const Navbar = ({
   const handleSearch = (q) => {
     const query = q || searchQuery;
     if (!query.trim()) return;
-    const { cats, loc, pageHref } = parseSearch(query);
-    const locationParam = loc ? `&location=${encodeURIComponent(loc.split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' '))}` : '';
-    if (pageHref) {
-      navigate(pageHref);
-    } else if (cats.length === 1) {
-      navigate(`/top-rated/${cats[0]}${locationParam ? `?${locationParam.slice(1)}` : ''}`);
-    } else if (cats.length > 1) {
-      navigate(`/listings?serviceTypes=${cats.join(',')}${locationParam}`);
-    } else {
-      navigate(`/listings${locationParam ? `?${locationParam.slice(1)}` : ''}`);
+    const { cats, locs, budget, pageHref, isUnknown } = parseSearch(query);
+    if (pageHref) { navigate(pageHref); }
+    else if (isUnknown) { navigate(`/search?unknown=1&q=${encodeURIComponent(query)}`); }
+    else {
+      const p = new URLSearchParams();
+      if (cats.length)  p.set("categories", cats.join(","));
+      if (locs.length)  p.set("locations",  locs.join(","));
+      if (budget)        p.set("budget",     budget);
+      p.set("q", query);
+      navigate(`/search?${p.toString()}`);
     }
     setSearchQuery(""); setShowSuggestions(false);
   };

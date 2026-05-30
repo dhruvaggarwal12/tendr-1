@@ -124,10 +124,14 @@ const VendorList_ListingPage = ({
                       />
                       {/* Gradient overlay */}
                       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.55) 0%, transparent 55%)", pointerEvents: "none" }} />
-                      {/* Rating badge */}
-                      {rating != null && (
+                      {/* Rating badge — only if has real reviews; else Verified badge */}
+                      {rating != null && rating > 0 ? (
                         <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", color: "#FFCC55", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                           ★ {Number(rating).toFixed(1)}
+                        </div>
+                      ) : (
+                        <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.88)", backdropFilter: "blur(6px)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                          ✓ Verified
                         </div>
                       )}
                       {/* Service type at bottom-left over image */}
@@ -147,13 +151,20 @@ const VendorList_ListingPage = ({
                         {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
                         {vendor.startingPrice && <span style={{ fontWeight: 700, color: "#C47A2E" }}>₹{Number(vendor.startingPrice).toLocaleString("en-IN")}+</span>}
                       </div>
-                      {vendor.totalEventsCompleted > 0 && (
-                        <div style={{ marginBottom: 12 }}>
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, background: "linear-gradient(135deg,rgba(196,122,46,0.10),rgba(204,171,74,0.12))", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "3px 11px" }}>
-                            🎉 {vendor.totalEventsCompleted}+ events completed
+                      <div style={{ marginBottom: 12 }}>
+                        {vendor.avgReviewScore > 0 ? (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, background: "rgba(204,171,74,0.1)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "3px 11px" }}>
+                            ★ {Number(vendor.avgReviewScore).toFixed(1)} rated
+                            {vendor.totalEventsCompleted > 0 && ` · ${vendor.totalEventsCompleted}+ events`}
                           </span>
-                        </div>
-                      )}
+                        ) : (
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, background: "rgba(196,122,46,0.07)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "3px 11px" }}>
+                            ✓ Verified by Tendr
+                            {vendor.yearsOfExperience > 0 && ` · ${vendor.yearsOfExperience} yrs`}
+                            {vendor.totalEventsCompleted > 0 && ` · ${vendor.totalEventsCompleted}+ events`}
+                          </span>
+                        )}
+                      </div>
 
                       <div style={{ display: "flex", gap: 8 }}>
                         {/* Primary CTA */}

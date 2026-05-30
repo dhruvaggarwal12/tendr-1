@@ -37,20 +37,35 @@ function StarRating({ value, onChange, size = 36 }) {
 
 export default function ReviewForm() {
   const [params] = useSearchParams();
-  const planId       = params.get("planId") || "";
-  const name         = params.get("name") || "";
-  const eventType    = params.get("event") || "";
-  const vendorNames  = (params.get("vendors") || "").split(",").map(v => v.trim()).filter(Boolean);
+  const planId = params.get("planId") || "";
 
-  const [overall, setOverall] = useState(0);
-  const [vendorRatings, setVendorRatings] = useState({});
-  const [reviewText, setReviewText] = useState("");
-  const [customerName, setCustomerName] = useState(name);
-  const [photos, setPhotos] = useState([]);
-  const [submitted, setSubmitted] = useState(false);
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
+  // Auto-fetched plan data
+  const [planData, setPlanData]     = useState(null);
+  const [planLoading, setPlanLoading] = useState(!!planId);
+
+  const [overall, setOverall]           = useState(0);
+  const [vendorRatings, setVendorRatings] = useState({});   // { vendorId: score }
+  const [reviewText, setReviewText]     = useState("");
+  const [photos, setPhotos]             = useState([]);
+  const [submitted, setSubmitted]       = useState(false);
+  const [submitting, setSubmitting]     = useState(false);
+  const [error, setError]               = useState("");
   const fileRef = useRef();
+
+  // Fetch plan data from planId
+  React.useEffect(() => {
+    if (!planId) { setPlanLoading(false); return; }
+    fetch(`${BASE_URL}/event-plans/${planId}/review-data`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => { if (d) setPlanData(d); })
+      .catch(() => {})
+      .finally(() => setPlanLoading(false));
+  }, [planId]);
+
+  // Derived from fetched data
+  const eventType   = planData?.eventType || "";
+  const date        = planData?.date       || "";
+  const vendors     = planData?.vendors    || [];  // [{ serviceType, vendorName, vendorId }]
 
   const handlePhotoChange = (e) => {
     const files = Array.from(e.target.files);
@@ -73,14 +88,12 @@ export default function ReviewForm() {
   };
 
   const handleSubmit = async () => {
-    if (!overall) { setError("Please select an overall rating to continue."); return; }
-    if (!customerName.trim()) { setError("Please enter your name."); return; }
+    if (!overall) { setError("Please give an overall rating to continue."); return; }
     setError("");
     setSubmitting(true);
     try {
       const fd = new FormData();
       fd.append("planId", planId);
-      fd.append("customerName", customerName.trim());
       fd.append("eventType", eventType);
       fd.append("overallRating", overall);
       fd.append("reviewText", reviewText.trim());
@@ -123,6 +136,20 @@ export default function ReviewForm() {
     );
   }
 
+  // Loading while fetching plan
+  if (planLoading) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#F8F4EF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>
+        <div style={{ textAlign: "center", color: "#C47A2E" }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>✨</div>
+          <div style={{ fontSize: 14 }}>Loading your review...</div>
+        </div>
+      </div>
+    );
+  }
+
+  const SVC_EMOJI = { Caterer: "🍽️", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
+
   // ── Form ────────────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
@@ -134,56 +161,54 @@ export default function ReviewForm() {
 
       <div style={{ maxWidth: 560, margin: "0 auto", padding: "36px 20px 80px" }}>
 
-        {/* Hero */}
+        {/* Personalised Hero */}
         <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: 44, marginBottom: 12 }}>✨</div>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,5vw,2.5rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 8px" }}>
-            How was your event?
+          <div style={{ fontSize: 44, marginBottom: 12 }}>🌟</div>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,5vw,2.4rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px" }}>
+            {eventType && date
+              ? `How was your ${eventType} on ${date}?`
+              : eventType
+              ? `How was your ${eventType}?`
+              : "How was your event?"}
           </h1>
           <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>
-            {eventType ? `Rate your ${eventType} experience` : "Share your Tendr experience"}
+            Takes 2 minutes — your feedback helps vendors improve and helps others choose
           </p>
         </div>
 
-        {/* Name */}
-        <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 22px", marginBottom: 14 }}>
-          <label style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", display: "block", marginBottom: 8 }}>
-            Your Name
-          </label>
-          <input
-            value={customerName}
-            onChange={e => setCustomerName(e.target.value)}
-            placeholder="Enter your name"
-            style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 14, fontFamily: font, color: "#2C1A0E", background: "#FDFCF8", outline: "none", boxSizing: "border-box" }}
-          />
-        </div>
-
-        {/* Overall rating */}
-        <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 22px", marginBottom: 14 }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 14 }}>
-            Overall Experience *
-          </div>
-          <StarRating value={overall} onChange={setOverall} size={40} />
-        </div>
-
-        {/* Per-vendor ratings */}
-        {vendorNames.length > 0 && (
-          <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 22px", marginBottom: 14 }}>
-            <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 16 }}>
-              Rate Your Vendors
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-              {vendorNames.map(v => (
-                <div key={v}>
-                  <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", marginBottom: 8 }}>
-                    {v}
+        {/* Per-vendor ratings — one card per service */}
+        {vendors.length > 0 && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 14 }}>
+            {vendors.map(v => (
+              <div key={v.vendorId || v.serviceType} style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 22px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <span style={{ fontSize: 24 }}>{SVC_EMOJI[v.serviceType] || "⭐"}</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{v.vendorName}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>{v.serviceType}</div>
                   </div>
-                  <StarRating value={vendorRatings[v] || 0} onChange={val => setVendorRatings(prev => ({ ...prev, [v]: val }))} size={30} />
                 </div>
-              ))}
-            </div>
+                <StarRating
+                  value={vendorRatings[v.vendorId || v.serviceType] || 0}
+                  onChange={val => setVendorRatings(prev => ({ ...prev, [v.vendorId || v.serviceType]: val }))}
+                  size={34}
+                />
+              </div>
+            ))}
           </div>
         )}
+
+        {/* Overall platform rating */}
+        <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 22px", marginBottom: 14 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+            <span style={{ fontSize: 24 }}>🏆</span>
+            <div>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>Tendr Overall</div>
+              <div style={{ fontSize: 11, color: "#9B7450" }}>Platform experience *</div>
+            </div>
+          </div>
+          <StarRating value={overall} onChange={setOverall} size={34} />
+        </div>
 
         {/* Review text */}
         <div style={{ background: "#FFFCF7", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 22px", marginBottom: 14 }}>

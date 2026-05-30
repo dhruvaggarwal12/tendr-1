@@ -1459,16 +1459,33 @@ const AdminDashboard = () => {
                                     </div>
                                   );
                                 })()}
-                                {/* Review link — shown for ALL bookings */}
+                                {/* Review link — personalised WA, just planId */}
                                 {(() => {
                                   const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
-                                  const reviewUrl = `${window.location.origin}/review?planId=${plan._id}&name=${encodeURIComponent(plan.customerId?.name || "")}&event=${encodeURIComponent(plan.eventName || plan.eventType || "")}&vendors=${encodeURIComponent((plan.selectedServices || []).join(","))}`;
-                                  const reviewWhatsApp = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${plan.customerId?.name || "there"}! 🌟\n\nThank you for celebrating with Tendr!\n\nWe'd love to hear your experience. Please rate your event:\n\n${reviewUrl}\n\n— Team Tendr`)}` : null;
+                                  const cName = plan.customerId?.name || "there";
+                                  const eType = plan.eventType || plan.eventName || "event";
+                                  const eDate = plan.date ? ` on ${plan.date}` : "";
+                                  const reviewUrl = `${window.location.origin}/review?planId=${plan._id}`;
+                                  const vendorStr = Object.values(plan.finalisedVendors || {}).filter(v => v && typeof v === 'object' && v.name).map(v => v.name).join(", ");
+                                  const msg = [
+                                    `Hi ${cName}! 🌟`,
+                                    ``,
+                                    `Thank you for celebrating your ${eType}${eDate} with Tendr!`,
+                                    ``,
+                                    vendorStr ? `Your vendors were: ${vendorStr}` : null,
+                                    ``,
+                                    `It takes just 2 minutes to share your experience. Your review helps vendors improve and helps others plan their events:`,
+                                    ``,
+                                    reviewUrl,
+                                    ``,
+                                    `— Team Tendr 💛`,
+                                  ].filter(l => l !== null).join('\n');
+                                  const reviewWhatsApp = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}` : null;
                                   if (!reviewWhatsApp) return null;
                                   return (
                                     <a href={reviewWhatsApp} target="_blank" rel="noopener noreferrer"
                                       style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
-                                      ⭐ Review Link
+                                      ⭐ Send Review Link
                                     </a>
                                   );
                                 })()}
