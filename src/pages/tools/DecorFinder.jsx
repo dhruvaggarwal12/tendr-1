@@ -33,43 +33,67 @@ const OPT_PHOTOS = {
 // Photo choice themes shown in Q4 — one real photo per theme from DB
 const PHOTO_Q_THEMES = ["Floral", "Balloon Art", "Modern", "Rustic"];
 
-// ── New scoring ──────────────────────────────────────────────────────────────
-function scoreThemes(answers) {
+// ── Scoring — covers all 8 types + 6 venue coverage types ───────────────────
+function scoreAll(answers) {
   const scores = { "Floral": 0, "Balloon Art": 0, "Lighting": 0, "Themed Decoration": 0, "Traditional": 0, "Modern": 0, "Rustic": 0, "Minimalist": 0 };
-  const { hasTheme, isTraditional, feel, space, photoChoice, elements = [] } = answers;
+  const coverage = { "Interior": 0, "Exterior": 0, "Full": 0, "Stage Setup": 0, "Entrance focus": 0, "Backdrop": 0 };
+  const { occasion, vision, space, style, lighting, entrance, stageBackdrop, hasTheme } = answers;
 
-  // Direct shortcut paths
-  if (hasTheme === "yes") return { ...scores, "Themed Decoration": 10 };
-  if (isTraditional === "yes") return { ...scores, "Traditional": 10, "Floral": 5 };
+  // Themed Decoration override (last question)
+  if (hasTheme === "yes") { scores["Themed Decoration"] += 8; }
 
-  // Feel signals
-  if (feel === "wowed")   { scores["Themed Decoration"] += 3; scores["Lighting"] += 3; scores["Modern"] += 2; }
-  if (feel === "cosy")    { scores["Rustic"] += 3; scores["Floral"] += 3; scores["Traditional"] += 2; }
-  if (feel === "fun")     { scores["Balloon Art"] += 4; scores["Themed Decoration"] += 2; }
-  if (feel === "elegant") { scores["Floral"] += 3; scores["Minimalist"] += 3; scores["Modern"] += 2; }
+  // Occasion signals
+  if (occasion === "birthday" || occasion === "party") { scores["Balloon Art"] += 3; scores["Themed Decoration"] += 3; }
+  if (occasion === "wedding")    { scores["Floral"] += 4; scores["Traditional"] += 2; }
+  if (occasion === "anniversary"){ scores["Floral"] += 3; scores["Lighting"] += 2; scores["Minimalist"] += 1; }
+  if (occasion === "corporate")  { scores["Modern"] += 4; scores["Minimalist"] += 3; }
+  if (occasion === "traditional"){ scores["Traditional"] += 5; coverage["Backdrop"] += 1; coverage["Stage Setup"] += 1; }
 
-  // Space signals
-  if (space === "home")   { scores["Balloon Art"] += 2; scores["Themed Decoration"] += 2; scores["Minimalist"] += 1; }
-  if (space === "venue")  { scores["Floral"] += 2; scores["Lighting"] += 2; scores["Modern"] += 2; }
-  if (space === "outdoor"){ scores["Rustic"] += 3; scores["Floral"] += 2; scores["Traditional"] += 1; }
-  if (space === "office") { scores["Modern"] += 4; scores["Minimalist"] += 3; scores["Lighting"] += 2; }
+  // Vision → coverage
+  if (vision === "whole")    { coverage["Full"] += 5; coverage["Interior"] += 2; coverage["Exterior"] += 2; }
+  if (vision === "stage")    { coverage["Stage Setup"] += 5; scores["Modern"] += 1; scores["Lighting"] += 1; }
+  if (vision === "entrance") { coverage["Entrance focus"] += 5; scores["Floral"] += 1; scores["Balloon Art"] += 1; }
+  if (vision === "backdrop") { coverage["Backdrop"] += 5; scores["Themed Decoration"] += 1; scores["Modern"] += 1; }
 
-  // Photo choice — direct +5 signal to chosen theme
-  if (photoChoice && scores[photoChoice] !== undefined) scores[photoChoice] += 5;
+  // Space → coverage + style
+  if (space === "indoor")  { coverage["Interior"] += 3; }
+  if (space === "outdoor") { coverage["Exterior"] += 3; scores["Rustic"] += 2; scores["Floral"] += 1; }
+  if (space === "both")    { coverage["Full"] += 4; coverage["Interior"] += 1; coverage["Exterior"] += 1; }
+  if (space === "office")  { coverage["Interior"] += 2; scores["Modern"] += 3; scores["Minimalist"] += 3; }
 
-  // Element multi-select signals
-  if (elements.includes("flowers"))  { scores["Floral"] += 4; scores["Traditional"] += 2; scores["Rustic"] += 1; }
-  if (elements.includes("balloons")) { scores["Balloon Art"] += 4; scores["Themed Decoration"] += 2; }
-  if (elements.includes("candles"))  { scores["Traditional"] += 3; scores["Rustic"] += 2; scores["Minimalist"] += 1; }
-  if (elements.includes("lights"))   { scores["Lighting"] += 4; scores["Modern"] += 2; }
-  if (elements.includes("backdrop")) { scores["Themed Decoration"] += 3; scores["Modern"] += 2; }
+  // Style (most direct theme signal)
+  if (style === "flowers")     { scores["Floral"] += 5; }
+  if (style === "balloons")    { scores["Balloon Art"] += 4; scores["Themed Decoration"] += 2; }
+  if (style === "traditional") { scores["Traditional"] += 4; scores["Rustic"] += 2; }
+  if (style === "clean")       { scores["Minimalist"] += 4; scores["Modern"] += 2; }
 
-  return scores;
+  // Lighting (isolates Lighting theme)
+  if (lighting === "everything")   { scores["Lighting"] += 6; }
+  if (lighting === "fairy")        { scores["Rustic"] += 2; scores["Floral"] += 1; scores["Traditional"] += 1; }
+  if (lighting === "somewhat")     { /* neutral */ }
+  if (lighting === "notthought")   { /* neutral */ }
+
+  // Entrance coverage
+  if (entrance === "dramatic") { coverage["Entrance focus"] += 4; scores["Floral"] += 1; scores["Balloon Art"] += 1; }
+  if (entrance === "nice")     { coverage["Entrance focus"] += 2; }
+  if (entrance === "simple")   { coverage["Interior"] += 1; }
+
+  // Stage / backdrop coverage
+  if (stageBackdrop === "stage")    { coverage["Stage Setup"] += 4; }
+  if (stageBackdrop === "backdrop") { coverage["Backdrop"] += 4; scores["Themed Decoration"] += 1; }
+  if (stageBackdrop === "maybe")    { coverage["Stage Setup"] += 1; coverage["Backdrop"] += 1; }
+
+  return { scores, coverage };
 }
 
 function topThemes(answers) {
-  const scores = scoreThemes(answers);
+  const { scores } = scoreAll(answers);
   return Object.entries(scores).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([theme]) => theme);
+}
+
+function topCoverage(answers) {
+  const { coverage } = scoreAll(answers);
+  return Object.entries(coverage).sort((a, b) => b[1] - a[1]).filter(([, v]) => v > 0).slice(0, 2).map(([c]) => c);
 }
 
 // ── What you get (theme × budget) ──────────────────────────────────────────
@@ -130,66 +154,90 @@ const THEME_EMOJI  = {
   "Traditional": "🪔", "Modern": "✨", "Rustic": "🍂", "Minimalist": "⬜",
 };
 
-// Quiz questions — all options have photo thumbnails; themed decoration LAST
+// ── Quiz steps — conversational, covers all 8 types + 6 coverage ─────────────
 const QUIZ_STEPS = [
   {
-    id: "feel",
-    q: "How do you want guests to feel when they walk in?",
-    sub: "This shapes everything — décor, lighting, colours",
+    id: "occasion",
+    q: "What's the occasion?",
+    sub: "This sets the whole direction — don't overthink it",
     options: [
-      { value: "wowed",   label: "Completely Wowed",   sub: "Spectacular, jaw-dropping",      emoji: "🤩", photo: OPT_PHOTOS.wowed },
-      { value: "cosy",    label: "Cosy & Warm",        sub: "Intimate, homely, comfortable",  emoji: "🧡", photo: OPT_PHOTOS.cosy },
-      { value: "fun",     label: "Fun & Energetic",    sub: "Vibrant, colourful, exciting",   emoji: "🎉", photo: OPT_PHOTOS.fun },
-      { value: "elegant", label: "Elegant & Polished", sub: "Refined, sophisticated",         emoji: "✨", photo: OPT_PHOTOS.elegant },
+      { value: "birthday",    label: "A birthday",                   sub: "Mine or someone I love",            emoji: "🎂" },
+      { value: "wedding",     label: "A wedding or engagement",      sub: "The real deal",                     emoji: "💍" },
+      { value: "anniversary", label: "An anniversary or milestone",  sub: "Worth celebrating properly",        emoji: "✦" },
+      { value: "corporate",   label: "A corporate or office event",  sub: "Professional but should look good", emoji: "▲" },
+      { value: "traditional", label: "A traditional ceremony",       sub: "Puja, haldi, festival, ritual",     emoji: "◆" },
+      { value: "party",       label: "Just a party — no label needed", sub: "Good enough reason",              emoji: "◇" },
     ],
   },
   {
-    id: "isTraditional",
-    q: "Is this for a traditional Indian occasion?",
-    sub: "Puja, wedding rituals, festival, haldi, mehendi",
+    id: "vision",
+    q: "Close your eyes for a second. Which of these looks most like your venue in your head?",
+    sub: "Go with your gut, not what seems practical",
     options: [
-      { value: "yes", label: "Yes — traditional ceremony", sub: "Marigolds, diyas, mandap",       emoji: "🪔", photo: OPT_PHOTOS.trad_yes },
-      { value: "no",  label: "No — modern celebration",    sub: "Birthday, anniversary, party",   emoji: "🎊", photo: OPT_PHOTOS.trad_no },
+      { value: "whole",    label: "The entire space is transformed — every corner, every wall", sub: "Nothing is left undecorated",         emoji: "■" },
+      { value: "stage",    label: "There's a stunning main stage that commands the whole room", sub: "Everyone faces it",                   emoji: "▲" },
+      { value: "entrance", label: "Guests are wowed the moment they walk in",                  sub: "The entrance does all the talking",   emoji: "→" },
+      { value: "backdrop", label: "One beautiful wall becomes the centrepiece for everything", sub: "Photos, memories, and the main focus", emoji: "□" },
     ],
   },
   {
     id: "space",
-    q: "Where is the event?",
-    sub: "Space changes what's possible",
+    q: "Where is it actually happening?",
     options: [
-      { value: "home",    label: "At Home",              sub: "Living room / terrace",      emoji: "🏠", photo: OPT_PHOTOS.home },
-      { value: "venue",   label: "Venue / Banquet Hall", sub: "Hotel, community hall",      emoji: "🏛️", photo: OPT_PHOTOS.venue },
-      { value: "outdoor", label: "Outdoor",              sub: "Garden, farmhouse, rooftop", emoji: "🌿", photo: OPT_PHOTOS.outdoor },
-      { value: "office",  label: "Office / Corporate",   sub: "Conference room, lobby",     emoji: "🏢", photo: OPT_PHOTOS.office },
+      { value: "indoor",   label: "Indoors", sub: "Home, hall, or banquet",        emoji: "◼" },
+      { value: "outdoor",  label: "Outdoors", sub: "Garden, terrace, or farmhouse", emoji: "◻" },
+      { value: "both",     label: "Both inside and outside",        sub: "",        emoji: "◈" },
+      { value: "office",   label: "An office or professional space", sub: "",       emoji: "▪" },
     ],
   },
   {
-    id: "photoChoice",
-    type: "photo-pick",
-    q: "Which of these looks closest to what you want?",
-    sub: "Pick the one that excites you most",
+    id: "style",
+    q: "Be honest — which of these sounds most like you?",
+    sub: "No wrong answers here",
+    options: [
+      { value: "flowers",     label: "I genuinely cannot have too many flowers",             sub: "The more the better, always",        emoji: "◆" },
+      { value: "balloons",    label: "Balloons, colour, props, fun everywhere",              sub: "Go big or go home",                  emoji: "◇" },
+      { value: "traditional", label: "Warm, traditional, rooted — it needs to feel familiar", sub: "Comfort over everything",           emoji: "◈" },
+      { value: "clean",       label: "Sleek, minimal, and effortlessly put together",        sub: "Less is genuinely more",             emoji: "□" },
+    ],
   },
   {
-    id: "elements",
-    type: "multiselect",
-    q: "Anything you definitely want?",
-    sub: "Pick all that apply — or none",
+    id: "lighting",
+    q: "Lighting — how central is it to your vision?",
     options: [
-      { value: "flowers",  label: "Flowers",    photo: OPT_PHOTOS.flowers },
-      { value: "balloons", label: "Balloons",   photo: OPT_PHOTOS.balloons },
-      { value: "candles",  label: "Candles",    photo: OPT_PHOTOS.candles },
-      { value: "lights",   label: "Lights",     photo: OPT_PHOTOS.lights },
-      { value: "backdrop", label: "Backdrop",   photo: OPT_PHOTOS.backdrop },
-      { value: "surprise", label: "Surprise me", photo: OPT_PHOTOS.surprise },
+      { value: "everything",   label: "It IS the decoration — lighting creates the entire mood",    sub: "Fairy lights, uplighting, the works",   emoji: "◈" },
+      { value: "fairy",        label: "Warm glow and some ambiance — décor comes first though",     sub: "Nice but supporting",                   emoji: "◇" },
+      { value: "somewhat",     label: "Nice to have, not the main thing",                           sub: "As long as it's not dark",              emoji: "◆" },
+      { value: "notthought",   label: "Honestly haven't thought about it",                          sub: "You tell me what works",                emoji: "□" },
+    ],
+  },
+  {
+    id: "entrance",
+    q: "The entrance — what's your honest take on it?",
+    options: [
+      { value: "dramatic", label: "Dramatic and show-stopping — first impressions are everything", sub: "A gate, arch, or statement setup", emoji: "▲" },
+      { value: "nice",     label: "A nice arch or gate that sets the tone",                        sub: "Noticed but not overdone",        emoji: "◆" },
+      { value: "simple",   label: "Keep it simple, save the budget for inside",                   sub: "Function over form",              emoji: "◇" },
+      { value: "nocare",   label: "Don't care about the entrance at all",                         sub: "What matters is inside",          emoji: "□" },
+    ],
+  },
+  {
+    id: "stageBackdrop",
+    q: "Stage or photo backdrop — where do you stand?",
+    options: [
+      { value: "stage",    label: "A dedicated stage for the main event — cake cutting, speeches, the moment", sub: "", emoji: "▲" },
+      { value: "backdrop", label: "A backdrop wall for photos is a must — everyone will pose in front of it",  sub: "", emoji: "□" },
+      { value: "maybe",    label: "One of the two, whichever fits better",                                     sub: "", emoji: "◈" },
+      { value: "neither",  label: "Neither — not really on my priority list",                                  sub: "", emoji: "◇" },
     ],
   },
   {
     id: "hasTheme",
-    q: "One last thing — do you have a specific theme in mind?",
-    sub: "Like Bollywood, superhero, jungle, Barbie, vintage...",
+    q: "Last one — do you have a specific concept or theme already?",
+    sub: "Like a Bollywood night, jungle safari, retro 90s, beach vibes, or a character theme...",
     options: [
-      { value: "yes", label: "Yes, I have a specific theme", sub: "Character / concept decoration",  emoji: "🎭", photo: OPT_PHOTOS.theme_yes },
-      { value: "no",  label: "No, go with what fits me",     sub: "Based on my answers above",       emoji: "✦",  photo: OPT_PHOTOS.theme_no },
+      { value: "yes", label: "Yes, I have a concept in mind", sub: "It's specific — tell the decorator about it", emoji: "◆" },
+      { value: "no",  label: "No — just the right style",     sub: "Let the style speak for itself",             emoji: "□" },
     ],
   },
 ];
@@ -224,7 +272,7 @@ export default function DecorFinder() {
   const [selVendor, setSelVendor] = useState({});     // { [theme]: vendorId }
   const [vendorProfile, setVendorProfile] = useState(null); // vendor to show in profile peek
   const [chatFormVendor, setChatFormVendor] = useState(null);
-  const [chatForm, setChatForm]             = useState({ venueType: '', guests: '', requirements: '' });
+  const [chatForm, setChatForm]             = useState({ eventType: '', guests: '', date: '', requirements: '' });
 
   useEffect(() => {
     fetch(`${BASE_URL}/gallery`)
@@ -269,6 +317,7 @@ export default function DecorFinder() {
   };
 
   const themes       = useMemo(() => (step === 1 ? topThemes(answers) : []), [answers, step]);
+  const coverage     = useMemo(() => (step === 1 ? topCoverage(answers) : []), [answers, step]);
   const budgetKey    = (() => {
     if (!decorBudget) return "mid";
     if (decorBudget < 15000) return "low";
@@ -362,27 +411,26 @@ export default function DecorFinder() {
               </div>
               <button onClick={() => setChatFormVendor(null)} style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", width: 30, height: 30, borderRadius: "50%", fontSize: 16, cursor: "pointer" }}>✕</button>
             </div>
-            <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ padding: "22px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>Venue Type</label>
-                <div style={{ display: "flex", gap: 8 }}>
-                  {["Indoor", "Outdoor", "Both"].map(v => (
-                    <button key={v} onClick={() => setChatForm(p => ({ ...p, venueType: v }))}
-                      style={{ flex: 1, padding: "9px", borderRadius: 9, border: `2px solid ${chatForm.venueType === v ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: chatForm.venueType === v ? "rgba(196,122,46,0.08)" : "#fff", color: "#2C1A0E", fontSize: 13, fontWeight: chatForm.venueType === v ? 700 : 500, cursor: "pointer", fontFamily: font }}>
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>Guest Count</label>
-                <input type="number" placeholder="e.g. 50" value={chatForm.guests} onChange={e => setChatForm(p => ({ ...p, guests: e.target.value }))}
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>What's the event?</label>
+                <input type="text" placeholder="e.g. Birthday party, wedding, anniversary..." value={chatForm.eventType} onChange={e => setChatForm(p => ({ ...p, eventType: e.target.value }))}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
               </div>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>Specific Requirements <span style={{ textTransform: "none", fontWeight: 500 }}>(optional)</span></label>
-                <textarea placeholder="Colours, must-have elements, theme references..." value={chatForm.requirements} onChange={e => setChatForm(p => ({ ...p, requirements: e.target.value }))}
-                  rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>How many guests?</label>
+                <input type="number" placeholder="Approximate is fine" value={chatForm.guests} onChange={e => setChatForm(p => ({ ...p, guests: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>Event date</label>
+                <input type="date" value={chatForm.date} onChange={e => setChatForm(p => ({ ...p, date: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>Anything specific? <span style={{ textTransform: "none", fontWeight: 500 }}>(optional)</span></label>
+                <textarea placeholder="Colour preferences, must-have elements, reference photos..." value={chatForm.requirements} onChange={e => setChatForm(p => ({ ...p, requirements: e.target.value }))}
+                  rows={2} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
               </div>
               <button onClick={submitChatForm} disabled={chatFormStep === 1}
                 style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
@@ -417,67 +465,20 @@ export default function DecorFinder() {
               <h2 style={{ fontSize: 19, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", lineHeight: 1.3 }}>{currentStep.q}</h2>
               {currentStep.sub && <p style={{ fontSize: 12.5, color: "#9B7450", margin: "0 0 20px" }}>{currentStep.sub}</p>}
 
-              {/* Photo-pick question (Q4) */}
-              {currentStep.type === "photo-pick" && (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  {PHOTO_Q_THEMES.map(theme => {
-                    const photo = byTheme[theme]?.[0];
-                    const isSelected = answers.photoChoice === theme;
-                    return (
-                      <button key={theme} onClick={() => { pick("photoChoice", theme); }}
-                        style={{ borderRadius: 14, border: `3px solid ${isSelected ? "#C47A2E" : "transparent"}`, overflow: "hidden", cursor: "pointer", padding: 0, position: "relative", transform: isSelected ? "scale(1.03)" : "scale(1)", transition: "all 0.18s", boxShadow: isSelected ? "0 6px 20px rgba(196,122,46,0.35)" : "0 2px 8px rgba(0,0,0,0.12)" }}>
-                        <img src={photo?.imageUrl || OPT_PHOTOS.elegant} alt={theme}
-                          style={{ width: "100%", height: 130, objectFit: "cover", display: "block" }} />
-                        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.7))", padding: "20px 10px 8px" }}>
-                          <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{THEME_EMOJI[theme]} {theme}</div>
-                        </div>
-                        {isSelected && <div style={{ position: "absolute", top: 8, right: 8, width: 24, height: 24, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff" }}>✓</div>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Multi-select (elements) — text-only chips */}
-              {currentStep.type === "multiselect" && (
-                <>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10, marginBottom: 14 }}>
-                  {currentStep.options.map(opt => {
-                    const sel = (answers.elements || []).includes(opt.value);
-                    return (
-                      <button key={opt.value} onClick={() => pick("elements", opt.value, true)}
-                        style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: sel ? "rgba(196,122,46,0.08)" : "#FFFCF5", cursor: "pointer", padding: "16px 10px", textAlign: "center", transition: "all 0.15s", boxShadow: sel ? "0 3px 12px rgba(196,122,46,0.2)" : "none", transform: sel ? "scale(1.03)" : "scale(1)", fontFamily: font }}>
-                        <div style={{ fontSize: 22, marginBottom: 6 }}>{opt.photo === OPT_PHOTOS.flowers ? "🌺" : opt.photo === OPT_PHOTOS.balloons ? "🎈" : opt.photo === OPT_PHOTOS.candles ? "🕯️" : opt.photo === OPT_PHOTOS.lights ? "💡" : opt.photo === OPT_PHOTOS.backdrop ? "🖼️" : "🎁"}</div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: sel ? "#C47A2E" : "#2C1A0E" }}>{opt.label}</div>
-                        {sel && <div style={{ marginTop: 4, fontSize: 10, color: "#C47A2E" }}>✓</div>}
-                      </button>
-                    );
-                  })}
-                </div>
-                <button onClick={advanceMulti}
-                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  {(answers.elements || []).length === 0 ? "Skip →" : `Continue with ${(answers.elements || []).length} selected →`}
-                </button>
-                </>
-              )}
-
-              {/* Standard 2/4 option questions — text-only styled cards */}
-              {!currentStep.type && (
-                <div style={{ display: "grid", gridTemplateColumns: currentStep.options.length === 2 ? "1fr 1fr" : "1fr 1fr", gap: 12 }}>
-                  {currentStep.options.map(opt => {
-                    const isSelected = answers[currentStep.id] === opt.value;
-                    return (
-                      <button key={opt.value} onClick={() => pick(currentStep.id, opt.value)}
-                        style={{ borderRadius: 16, border: `2.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: isSelected ? "rgba(196,122,46,0.07)" : "#FFFCF5", cursor: "pointer", padding: "22px 16px", textAlign: "center", transition: "all 0.18s", transform: isSelected ? "scale(1.03)" : "scale(1)", boxShadow: isSelected ? "0 6px 20px rgba(196,122,46,0.25)" : "none", fontFamily: font, position: "relative" }}>
-                        <div style={{ fontSize: 32, marginBottom: 10 }}>{opt.emoji || "✦"}</div>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: isSelected ? "#C47A2E" : "#2C1A0E", marginBottom: 4 }}>{opt.label}</div>
-                        {opt.sub && <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4 }}>{opt.sub}</div>}
-                        {isSelected && <div style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff" }}>✓</div>}
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+              {/* All questions use the same text card layout */}
+              <div style={{ display: "grid", gridTemplateColumns: currentStep.options?.length === 2 ? "1fr 1fr" : "1fr 1fr", gap: 12 }}>
+                {(currentStep.options || []).map(opt => {
+                  const isSelected = answers[currentStep.id] === opt.value;
+                  return (
+                    <button key={opt.value} onClick={() => pick(currentStep.id, opt.value)}
+                      style={{ borderRadius: 14, border: `2.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: isSelected ? "rgba(196,122,46,0.07)" : "#FFFCF5", cursor: "pointer", padding: currentStep.options.length > 4 ? "16px 12px" : "20px 14px", textAlign: "left", transition: "all 0.18s", transform: isSelected ? "scale(1.02)" : "scale(1)", boxShadow: isSelected ? "0 4px 16px rgba(196,122,46,0.22)" : "none", fontFamily: font, position: "relative" }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: isSelected ? "#C47A2E" : "#2C1A0E", marginBottom: opt.sub ? 4 : 0, lineHeight: 1.4 }}>{opt.label}</div>
+                      {opt.sub && <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4 }}>{opt.sub}</div>}
+                      {isSelected && <div style={{ position: "absolute", top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff" }}>✓</div>}
+                    </button>
+                  );
+                })}
+              </div>
 
               {qIdx > 0 && (
                 <button onClick={() => setQIdx(qIdx - 1)}
@@ -496,13 +497,21 @@ export default function DecorFinder() {
             {/* Header */}
             <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 18, padding: "20px 22px", color: "#fff", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
               <div>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Your 2 Perfect Matches</div>
-                <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Your 2 Best Matches</div>
+                <div style={{ display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap", marginBottom: 8 }}>
                   {themes.map(t => (
                     <span key={t} style={{ fontSize: 16, fontWeight: 800, color: "#CCAB4A" }}>{THEME_EMOJI[t]} {t}</span>
                   ))}
                 </div>
-                {decorBudget && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>Budget: ₹{Number(decorBudget).toLocaleString("en-IN")} · {BUDGET_LABEL[budgetKey]}</div>}
+                {coverage.length > 0 && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", marginRight: 4 }}>Best for:</span>
+                    {coverage.map(c => (
+                      <span key={c} style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.25)", borderRadius: 100, padding: "2px 10px" }}>{c}</span>
+                    ))}
+                  </div>
+                )}
+                {decorBudget && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Budget: ₹{Number(decorBudget).toLocaleString("en-IN")}</div>}
               </div>
               <button onClick={retakeQuiz}
                 style={{ padding: "8px 16px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.2)", background: "transparent", color: "rgba(255,255,255,0.7)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
