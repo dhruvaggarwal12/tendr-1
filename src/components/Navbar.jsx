@@ -349,8 +349,8 @@ const Navbar = ({
           />
         </a>
 
-        {/* ── Search bar (desktop) ── */}
-        <div ref={searchRef} className="desktop-nav desktop-search" style={{ position: "relative", flex: "0 0 auto", width: 260, margin: "0 8px" }}>
+        {/* ── Search bar (desktop) — sits right after nav links ── */}
+        <div ref={searchRef} className="desktop-nav desktop-search" style={{ position: "relative", flex: "0 0 auto", width: 240, margin: "0 0 0 4px" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 8,
             padding: "9px 16px", borderRadius: 100,
@@ -620,21 +620,21 @@ const Navbar = ({
                 )}
               </div>
             ) : (
-              <a href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#fff", padding: "8px 18px", borderRadius: 8, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 10px rgba(196,122,46,0.3)", transition: "opacity 0.2s", whiteSpace: "nowrap" }}
+              <a href="/login" style={{ fontSize: 15, fontWeight: 700, color: "#fff", padding: "10px 22px", borderRadius: 9, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.35)", transition: "opacity 0.2s", whiteSpace: "nowrap" }}
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >Sign In</a>
             )}
-            {/* WhatsApp — always rightmost */}
+            {/* WhatsApp — always rightmost, with clear gap */}
             <a
               href="https://wa.me/919211668427"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ background: "#25D366", color: "#fff", width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.35)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s", marginLeft: 4 }}
+              style={{ background: "#25D366", color: "#fff", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.35)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s", marginLeft: 12 }}
               onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              <FaWhatsapp size={15} />
+              <FaWhatsapp size={16} />
             </a>
           </div>
         </div>

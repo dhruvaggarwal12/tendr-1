@@ -109,13 +109,19 @@ export default function CategoryGallery() {
           <div style={{ columns: "3 280px", gap: 14 }} className="gallery-masonry">
             {visible.map((p, i) => (
               <div key={p._id || i}
-                onClick={() => setLightbox(p)}
-                style={{ breakInside: "avoid", marginBottom: 14, borderRadius: 12, overflow: "hidden", cursor: "zoom-in", position: "relative", background: "#fff" }}>
+                style={{ breakInside: "avoid", marginBottom: 14, borderRadius: 12, overflow: "hidden", position: "relative", background: "#fff", cursor: "zoom-in" }}>
                 <img src={p.imageUrl} alt={p.caption || category}
+                  onClick={() => setLightbox(p)}
                   style={{ width: "100%", display: "block", transition: "transform 0.3s ease" }}
                   onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.03)")}
                   onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
                 />
+                {/* Download button on photo */}
+                <a href={p.imageUrl} target="_blank" rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  style={{ position: "absolute", top: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 12, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s", zIndex: 2 }}
+                  className="gallery-dl-btn"
+                  title="Download">⬇</a>
                 {(p.theme || p.caption) && (
                   <div style={{ padding: "8px 12px", background: "#FFFCF5" }}>
                     {p.theme && <span style={{ fontSize: 11, fontWeight: 700, color: meta.color, marginRight: 8 }}>{p.theme}</span>}
@@ -171,6 +177,7 @@ export default function CategoryGallery() {
 
       <style>{`
         @media (max-width: 600px) { .gallery-masonry { columns: 2 140px !important; } }
+        .gallery-masonry > div:hover .gallery-dl-btn { opacity: 1 !important; }
       `}</style>
     </div>
   );

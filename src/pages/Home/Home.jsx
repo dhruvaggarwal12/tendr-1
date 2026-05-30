@@ -902,12 +902,12 @@ const Home = () => {
       </section>
 
       {/* ── 5s Rotating Feature Carousel ── */}
-      <section style={{ background: "linear-gradient(135deg,#FFF8F2,#FFF3DC)", padding: "72px 24px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+      <section style={{ background: "linear-gradient(135deg,#FFF8F2,#FFF3DC)", padding: "48px 24px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Explore Tendr</p>
-            <h2 style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em" }}>What We Offer</h2>
-            <div style={{ width: 40, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "0 auto" }} />
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 6 }}>Explore Tendr</p>
+            <h2 style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>What We Offer</h2>
+            <div style={{ width: 32, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "0 auto" }} />
           </div>
           {(() => {
             const slide = FEATURE_SLIDES[slideIdx];
