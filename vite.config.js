@@ -37,8 +37,15 @@ export default defineConfig({
         dir: 'ltr',
       },
       workbox: {
-        // Cache app shell (JS, CSS, fonts) — not API responses
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        // Increase limit to 10 MB to accommodate large assets
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
+        // Cache app shell — exclude huge background/hero images
+        globPatterns: ['**/*.{js,css,html,ico,svg,woff,woff2}'],
+        globIgnores: [
+          '**/signup-bg*',
+          '**/login-bg*',
+          '**/hero-*',
+        ],
         // Don't cache API calls — always fetch fresh from Render
         navigateFallback: null,
         runtimeCaching: [
