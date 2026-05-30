@@ -138,14 +138,29 @@ export default function CategoryGallery() {
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 3001, maxWidth: "90vw", maxHeight: "90vh", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
             <img src={lightbox.imageUrl} alt={lightbox.caption || category}
               onClick={() => setLightbox(null)}
-              style={{ maxWidth: "100%", maxHeight: "80vh", borderRadius: 14, boxShadow: "0 24px 80px rgba(0,0,0,0.6)", cursor: "zoom-out" }} />
-            {(lightbox.theme || lightbox.caption) && (
-              <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 16px", display: "flex", gap: 12, alignItems: "center" }}>
-                {lightbox.theme && <span style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A" }}>{lightbox.theme}</span>}
-                {lightbox.caption && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>{lightbox.caption}</span>}
-                {lightbox.vendorName && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>by {lightbox.vendorName}</span>}
-              </div>
-            )}
+              style={{ maxWidth: "100%", maxHeight: "78vh", borderRadius: 14, boxShadow: "0 24px 80px rgba(0,0,0,0.6)", cursor: "zoom-out" }} />
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", justifyContent: "center" }}>
+              {(lightbox.theme || lightbox.caption || lightbox.vendorName) && (
+                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 8, padding: "8px 14px", display: "flex", gap: 10, alignItems: "center" }}>
+                  {lightbox.theme && <span style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A" }}>{lightbox.theme}</span>}
+                  {lightbox.caption && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>{lightbox.caption}</span>}
+                  {lightbox.vendorName && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)" }}>by {lightbox.vendorName}</span>}
+                </div>
+              )}
+              {/* Download button */}
+              <a
+                href={lightbox.imageUrl}
+                download={`tendr-${category.toLowerCase()}-${Date.now()}.jpg`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 16px", borderRadius: 8, background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", cursor: "pointer", transition: "background 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.background = "rgba(255,255,255,0.25)")}
+                onMouseLeave={e => (e.currentTarget.style.background = "rgba(255,255,255,0.15)")}
+              >
+                ⬇ Download
+              </a>
+            </div>
             <button onClick={() => setLightbox(null)}
               style={{ position: "fixed", top: 20, right: 20, width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
               ✕
