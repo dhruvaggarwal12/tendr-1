@@ -1,10 +1,29 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaUserCircle } from "react-icons/fa";
+import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaSearch } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
+
+const SEARCH_SUGGESTIONS = [
+  { text: "Photographers in Delhi", category: "Photographer", location: "Delhi" },
+  { text: "Caterers in Noida", category: "Caterer", location: "Noida" },
+  { text: "DJ for birthday party", category: "DJ" },
+  { text: "Wedding decorators in Gurgaon", category: "Decorator", location: "Gurgaon" },
+  { text: "Photographers in Ghaziabad", category: "Photographer", location: "Ghaziabad" },
+  { text: "Caterers in Greater Noida", category: "Caterer", location: "Greater Noida" },
+  { text: "DJ in Delhi", category: "DJ", location: "Delhi" },
+  { text: "Decorators in Noida", category: "Decorator", location: "Noida" },
+];
+const SVC_KEYWORDS = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", photo: "Photographer", dj: "DJ", music: "DJ", entertainment: "DJ" };
+const LOC_KEYWORDS = ["delhi", "noida", "gurgaon", "gurugram", "ghaziabad", "greater noida", "faridabad"];
+function parseSearch(q) {
+  const lower = q.toLowerCase();
+  const cats = [...new Set(Object.entries(SVC_KEYWORDS).filter(([k]) => lower.includes(k)).map(([, v]) => v))];
+  const loc = LOC_KEYWORDS.find(l => lower.includes(l));
+  return { cats, loc };
+}
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -146,6 +165,10 @@ const Navbar = ({
   const [activeDropdown, setActiveDropdown] = useState(null);
   const [scrolled, setScrolled] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef(null);
   const navRef = useRef(null);
 
   useEffect(() => {
@@ -164,6 +187,31 @@ const Navbar = ({
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
+
+  const handleSearch = (q) => {
+    const query = q || searchQuery;
+    if (!query.trim()) return;
+    const { cats, loc } = parseSearch(query);
+    const locationParam = loc ? `&location=${encodeURIComponent(loc.split(' ').map(w => w[0].toUpperCase() + w.slice(1)).join(' '))}` : '';
+    if (cats.length === 1) {
+      navigate(`/top-rated/${cats[0]}${locationParam ? `?${locationParam.slice(1)}` : ''}`);
+    } else if (cats.length > 1) {
+      navigate(`/listings?serviceTypes=${cats.join(',')}${locationParam}`);
+    } else {
+      navigate(`/listings${locationParam ? `?${locationParam.slice(1)}` : ''}`);
+    }
+    setSearchQuery(""); setShowSuggestions(false);
+  };
+
+  useEffect(() => {
+    const handler = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setShowSuggestions(false); };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filteredSuggestions = searchQuery.length > 0
+    ? SEARCH_SUGGESTIONS.filter(s => s.text.toLowerCase().includes(searchQuery.toLowerCase()))
+    : SEARCH_SUGGESTIONS.slice(0, 5);
 
   const scrollToSection = (id) => {
     const section = document.getElementById(id);
@@ -184,21 +232,17 @@ const Navbar = ({
       ],
     },
     {
-      label: "Planning Tools",
+      label: "Our Products",
       items: [
-        { label: "Checklist",         href: "/checklist-picker" },
-        { label: "Timeline",          href: "/timeline-picker" },
-        { label: "Budget Allocator",  href: "/budget-picker" },
-        { label: "Payment Tracker",   href: "/payment-tracker" },
-        { label: "Guest List",        href: "/guest-list" },
-      ],
-    },
-    {
-      label: "Memories",
-      items: [
-        { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
-        { label: "Invitation Flyers",  href: "/invitation" },
-        { label: "Aftermovie",         href: "/aftermovie" },
+        { label: "✅ Checklist",          href: "/checklist-picker" },
+        { label: "⏱️ Timeline",           href: "/timeline-picker" },
+        { label: "💰 Budget Allocator",   href: "/budget-picker" },
+        { label: "💳 Payment Tracker",    href: "/payment-tracker" },
+        { label: "👥 Guest List",         href: "/guest-list" },
+        { label: "🎨 Decor Finder",       href: "/decor-finder" },
+        { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+        { label: "✉️ Invitation Flyers",  href: "/invitation" },
+        { label: "🎬 Aftermovie",         href: "/aftermovie" },
       ],
     },
     {
@@ -301,6 +345,48 @@ const Navbar = ({
             }}
           />
         </a>
+
+        {/* ── Search bar (desktop) ── */}
+        <div ref={searchRef} className="desktop-nav desktop-search" style={{ position: "relative", flex: "0 0 auto", width: 280, margin: "0 16px" }}>
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "8px 14px", borderRadius: 100,
+            border: `1.5px solid ${searchFocused ? "#C47A2E" : "rgba(196,122,46,0.25)"}`,
+            background: searchFocused ? "#fff" : "rgba(196,122,46,0.04)",
+            boxShadow: searchFocused ? "0 4px 20px rgba(196,122,46,0.18)" : "none",
+            transform: searchFocused ? "scale(1.02)" : "scale(1)",
+            transition: "all 0.22s ease",
+          }}>
+            <FaSearch size={12} style={{ color: searchFocused ? "#C47A2E" : "#9B7450", flexShrink: 0 }} />
+            <input
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
+              onBlur={() => setSearchFocused(false)}
+              onKeyDown={e => { if (e.key === "Enter") handleSearch(); if (e.key === "Escape") { setShowSuggestions(false); setSearchQuery(""); } }}
+              placeholder="Search caterers, decorators..."
+              style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: font, color: "#2C1A0E" }}
+            />
+            {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, padding: 0 }}>✕</button>}
+          </div>
+
+          {/* Suggestions dropdown */}
+          {showSuggestions && (
+            <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
+              {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
+              {filteredSuggestions.map((s, i) => (
+                <button key={i} onClick={() => { setSearchQuery(s.text); handleSearch(s.text); }}
+                  style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", gap: 8 }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  <FaSearch size={10} style={{ color: "#C47A2E", flexShrink: 0 }} />
+                  {s.text}
+                </button>
+              ))}
+              {filteredSuggestions.length === 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>No suggestions — press Enter to search</div>}
+            </div>
+          )}
+        </div>
 
         {/* ── Desktop nav ── */}
         <div
@@ -556,16 +642,10 @@ const Navbar = ({
                 )}
               </div>
             ) : (
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <a href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#6B3A1F", padding: "7px 14px", borderRadius: 8, textDecoration: "none", border: "1.5px solid rgba(139,69,19,0.2)", transition: "background 0.2s" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
-                  onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-                >Sign In</a>
-                <a href="/signup" style={{ fontSize: 14, fontWeight: 700, color: "#fff", padding: "7px 16px", borderRadius: 8, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 10px rgba(196,122,46,0.3)", transition: "opacity 0.2s" }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-                >Sign Up</a>
-              </div>
+              <a href="/login" style={{ fontSize: 14, fontWeight: 600, color: "#fff", padding: "8px 18px", borderRadius: 8, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 10px rgba(196,122,46,0.3)", transition: "opacity 0.2s", whiteSpace: "nowrap" }}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+                onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+              >Sign In</a>
             )}
           </div>
         </div>
@@ -600,6 +680,32 @@ const Navbar = ({
         }}
       >
         <div style={{ padding: "8px 24px 24px" }}>
+          {/* Mobile search */}
+          <div style={{ marginBottom: 12, padding: "10px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.04)", display: "flex", alignItems: "center", gap: 8 }}>
+            <FaSearch size={12} style={{ color: "#9B7450", flexShrink: 0 }} />
+            <input
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") { handleSearch(); setMenuOpen(false); } }}
+              placeholder="Search caterers, photographers..."
+              style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 14, fontFamily: font, color: "#2C1A0E" }}
+            />
+            <button onClick={() => { handleSearch(); setMenuOpen(false); }}
+              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, padding: "5px 12px", borderRadius: 7, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+              Search
+            </button>
+          </div>
+          {/* Mobile search suggestions */}
+          {searchQuery.length === 0 && (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
+              {SEARCH_SUGGESTIONS.slice(0, 4).map((s, i) => (
+                <button key={i} onClick={() => { setSearchQuery(s.text); handleSearch(s.text); setMenuOpen(false); }}
+                  style={{ padding: "5px 12px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                  {s.text}
+                </button>
+              ))}
+            </div>
+          )}
           {NAV_ITEMS.map((group) => (
             <div key={group.label} style={{ marginBottom: 2 }}>
               <button
@@ -737,14 +843,9 @@ const Navbar = ({
                 </div>
               </div>
             ) : (
-              <div style={{ flex: 1, display: "flex", gap: 8 }}>
-                <a href="/login" style={{ flex: 1, padding: "11px", borderRadius: 9, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 14, fontWeight: 600, textDecoration: "none", textAlign: "center", fontFamily: font }}>
-                  Sign In
-                </a>
-                <a href="/signup" style={{ flex: 1, padding: "11px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
-                  Sign Up
-                </a>
-              </div>
+              <a href="/login" style={{ flex: 1, padding: "11px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+                Sign In
+              </a>
             )}
           </div>
         </div>
@@ -754,9 +855,11 @@ const Navbar = ({
         @media (min-width: 768px) {
           .burger-btn-custom { display: none !important; }
           .desktop-nav { display: flex !important; }
+          .desktop-search { display: block !important; }
         }
         @media (max-width: 767px) {
           .desktop-nav { display: none !important; }
+          .desktop-search { display: none !important; }
           .burger-btn-custom { display: flex !important; }
         }
         @media (max-width: 480px) {

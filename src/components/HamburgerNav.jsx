@@ -61,7 +61,35 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [savedOpen,     setSavedOpen]     = useState(false);
   const [reviewPopup,   setReviewPopup]   = useState(false);
+  const [searchQuery,   setSearchQuery]   = useState("");
+  const [showSuggest,   setShowSuggest]   = useState(false);
   const profileRef = useRef(null);
+
+  const SEARCH_SUGGESTIONS = [
+    { text: "Photographers in Delhi", cat: "Photographer", loc: "Delhi" },
+    { text: "Caterers in Noida", cat: "Caterer", loc: "Noida" },
+    { text: "DJ for birthday party", cat: "DJ" },
+    { text: "Wedding decorators", cat: "Decorator" },
+    { text: "Photographers in Ghaziabad", cat: "Photographer", loc: "Ghaziabad" },
+  ];
+  const SVC_KW = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
+  const LOC_KW = ["delhi", "noida", "gurgaon", "gurugram", "ghaziabad", "greater noida", "faridabad"];
+
+  const handleNavSearch = (q) => {
+    const query = (q || searchQuery).toLowerCase();
+    if (!query.trim()) return;
+    const cats = [...new Set(Object.entries(SVC_KW).filter(([k]) => query.includes(k)).map(([,v]) => v))];
+    const loc = LOC_KW.find(l => query.includes(l));
+    const locParam = loc ? loc.split(' ').map(w => w[0].toUpperCase()+w.slice(1)).join(' ') : '';
+    if (cats.length === 1) navigate(`/top-rated/${cats[0]}${locParam ? `?location=${locParam}` : ''}`);
+    else if (cats.length > 1) navigate(`/listings?serviceTypes=${cats.join(',')}${locParam ? `&location=${locParam}` : ''}`);
+    else navigate(`/listings${locParam ? `?location=${encodeURIComponent(locParam)}` : ''}`);
+    setSearchQuery(""); setShowSuggest(false);
+  };
+
+  const filteredSuggestions = searchQuery.length > 0
+    ? SEARCH_SUGGESTIONS.filter(s => s.text.toLowerCase().includes(searchQuery.toLowerCase()))
+    : SEARCH_SUGGESTIONS.slice(0, 4);
 
   const { user, token } = useSelector((s) => s.auth);
   const compareSelected  = useSelector((s) => s.listingFilters.compareSelected || []);
@@ -148,18 +176,16 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
-    { label: "Planning Tools", items: [
-      { label: "Checklist",            href: "/checklist-picker" },
-      { label: "Timeline",             href: "/timeline-picker" },
-      { label: "Budget Allocator",     href: "/budget-picker" },
-      { label: "Payment Tracker",      href: "/payment-tracker" },
-      { label: "Guest List",           href: "/guest-list" },
-      { label: "🎨 Decor Finder",      href: "/decor-finder" },
-    ]},
-    { label: "Memories", items: [
-      { label: "Wedding Stationery",   href: "/stationery", comingSoon: !user?.isAdmin },
-      { label: "Invitation Flyers",    href: "/invitation" },
-      { label: "Aftermovie",           href: "/aftermovie" },
+    { label: "Our Products", items: [
+      { label: "✅ Checklist",          href: "/checklist-picker" },
+      { label: "⏱️ Timeline",           href: "/timeline-picker" },
+      { label: "💰 Budget Allocator",   href: "/budget-picker" },
+      { label: "💳 Payment Tracker",    href: "/payment-tracker" },
+      { label: "👥 Guest List",         href: "/guest-list" },
+      { label: "🎨 Decor Finder",       href: "/decor-finder" },
+      { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+      { label: "✉️ Invitation Flyers",  href: "/invitation" },
+      { label: "🎬 Aftermovie",         href: "/aftermovie" },
     ]},
     { label: "Gift & Hampers", items: [
       { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
@@ -235,6 +261,35 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               </div>
             </div>
           )}
+
+          {/* Search bar */}
+          <div style={{ padding: "10px 14px", borderBottom: "1px solid rgba(196,122,46,0.1)", position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 10, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(196,122,46,0.2)" }}>
+              <span style={{ fontSize: 12, color: "#CCAB4A", flexShrink: 0 }}>🔍</span>
+              <input
+                value={searchQuery}
+                onChange={e => { setSearchQuery(e.target.value); setShowSuggest(true); }}
+                onFocus={() => setShowSuggest(true)}
+                onKeyDown={e => { if (e.key === "Enter") handleNavSearch(); }}
+                placeholder="Search vendors..."
+                style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 12, fontFamily: font, color: "#fff" }}
+              />
+              {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggest(false); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 12, padding: 0 }}>✕</button>}
+            </div>
+            {showSuggest && (
+              <div style={{ position: "absolute", left: 10, right: 10, top: "calc(100% - 4px)", background: "#FFFEF9", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.18)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 300 }}>
+                {filteredSuggestions.map((s, i) => (
+                  <button key={i} onClick={() => handleNavSearch(s.text)}
+                    style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    🔍 {s.text}
+                  </button>
+                ))}
+                {filteredSuggestions.length === 0 && <div style={{ padding: "8px 10px", fontSize: 12, color: "#9B7450" }}>Press Enter to search</div>}
+              </div>
+            )}
+          </div>
 
           {/* User info */}
           {token && user && (
@@ -529,16 +584,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   </div>
                 </div>
               ) : (
-                <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
-                  <button onClick={() => { navigate("/login"); close(); }}
-                    style={{ flex: 1, padding: "9px", borderRadius: 9, border: "1px solid rgba(196,122,46,0.4)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                    Sign In
-                  </button>
-                  <button onClick={() => { navigate("/signup"); close(); }}
-                    style={{ flex: 1, padding: "9px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    Sign Up
-                  </button>
-                </div>
+                <button onClick={() => { navigate("/login"); close(); }}
+                  style={{ width: "100%", marginTop: 14, padding: "10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Sign In
+                </button>
               )}
             </div>
 
