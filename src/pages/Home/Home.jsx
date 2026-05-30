@@ -980,7 +980,6 @@ const Home = () => {
             );
           })()}
         </div>
-        </div>{/* close maxWidth wrapper opened for "What We Offer" heading */}
         <style>{`@keyframes kit-pulse { 0%,100%{opacity:1}50%{opacity:0.4} }`}</style>
       </section>
 
