@@ -1138,9 +1138,9 @@ const Home = () => {
       <section style={{ background: "#F0EBE3", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Our Work</p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>A Glimpse Into Our Events</h2>
-            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 500, margin: "0 auto" }}>Decoration, entertainment, catering, photography — every service you need, all in one place.</p>
+            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Vendor Portfolio</p>
+            <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>What Our Vendors Can Do</h2>
+            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>We're just getting started — but the vendors on Tendr aren't. These are real photos from their portfolios, showing exactly what they're capable of delivering for your event.</p>
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 
