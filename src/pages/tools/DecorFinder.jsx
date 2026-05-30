@@ -541,58 +541,69 @@ export default function DecorFinder() {
                       </button>
                     </div>
 
-                    {/* Main photo */}
-                    {curPhoto && (
-                      <div style={{ position: "relative", background: "#1a0a00" }}>
-                        <img src={curPhoto.imageUrl} alt={theme}
-                          style={{ width: "100%", height: 200, objectFit: "cover", display: "block", opacity: 0.92 }} />
-                        {/* Download */}
-                        <a href={curPhoto.imageUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
-                          style={{ position: "absolute", top: 8, right: 8, width: 26, height: 26, borderRadius: "50%", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>⬇</a>
-                        {curPhoto.vendorName && (
-                          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.7))", padding: "20px 12px 8px" }}>
-                            <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700 }}>by {curPhoto.vendorName}</span>
+                    {/* Photo + vendor navigation with arrows */}
+                    {vendors.length > 0 && (() => {
+                      const curIdx  = vendors.findIndex(v => v.vendorId === curVid);
+                      const safeIdx = curIdx < 0 ? 0 : curIdx;
+                      const goPrev  = () => { const i = (safeIdx - 1 + vendors.length) % vendors.length; setSelVendor(p => ({ ...p, [theme]: vendors[i].vendorId })); };
+                      const goNext  = () => { const i = (safeIdx + 1) % vendors.length; setSelVendor(p => ({ ...p, [theme]: vendors[i].vendorId })); };
+                      const wb      = inBudget(curVid);
+                      const vInfo   = vendorMap[curVid] || {};
+                      return (
+                        <>
+                        {/* Main photo with arrows */}
+                        <div style={{ position: "relative", background: "#1a0a00" }}>
+                          {curPhoto && (
+                            <img key={curVid} src={curPhoto.imageUrl} alt={theme}
+                              style={{ width: "100%", height: 200, objectFit: "cover", display: "block", opacity: 0.92, animation: "photoFadeIn 0.3s ease" }} />
+                          )}
+                          {/* Download */}
+                          {curPhoto && <a href={curPhoto.imageUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
+                            style={{ position: "absolute", top: 8, right: 8, width: 26, height: 26, borderRadius: "50%", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>⬇</a>}
+                          {/* Arrows — only if multiple vendors */}
+                          {vendors.length > 1 && (
+                            <>
+                              <button onClick={goPrev}
+                                style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>‹</button>
+                              <button onClick={goNext}
+                                style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>›</button>
+                            </>
+                          )}
+                          {/* Bottom overlay — vendor name is clickable */}
+                          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent,rgba(0,0,0,0.75))", padding: "24px 12px 10px", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <div>
+                              {/* Clicking vendor name opens profile */}
+                              <button onClick={() => setVendorProfile(curGroup)}
+                                style={{ background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: font, textAlign: "left" }}>
+                                <div style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", textDecoration: "underline", textUnderlineOffset: 2 }}>
+                                  {curGroup?.vendorName} ↗
+                                </div>
+                              </button>
+                              <div style={{ display: "flex", gap: 8, marginTop: 2, flexWrap: "wrap" }}>
+                                {vInfo.avgReviewScore > 0 && <span style={{ fontSize: 10, color: "#CCAB4A" }}>★ {vInfo.avgReviewScore.toFixed(1)}</span>}
+                                {vInfo.price > 0 && <span style={{ fontSize: 10, color: "rgba(255,255,255,0.7)" }}>from ₹{Number(vInfo.price).toLocaleString("en-IN")}</span>}
+                                {wb !== null && <span style={{ fontSize: 10, fontWeight: 700, color: wb ? "#4ade80" : "#fbbf24" }}>{wb ? "✓ In budget" : "↑ Above"}</span>}
+                              </div>
+                            </div>
+                            {vendors.length > 1 && (
+                              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>{safeIdx + 1}/{vendors.length}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Vendor dot indicators */}
+                        {vendors.length > 1 && (
+                          <div style={{ display: "flex", justifyContent: "center", gap: 5, padding: "8px 0 4px" }}>
+                            {vendors.map((vg, vi) => (
+                              <button key={vg.vendorId} onClick={() => setSelVendor(p => ({ ...p, [theme]: vg.vendorId }))}
+                                style={{ width: vi === safeIdx ? 20 : 7, height: 7, borderRadius: 100, border: "none", background: vi === safeIdx ? "#C47A2E" : "rgba(196,122,46,0.25)", cursor: "pointer", padding: 0, transition: "all 0.25s" }} />
+                            ))}
                           </div>
                         )}
-                      </div>
-                    )}
 
-                    {/* Vendor tabs — scrollable, clickable names */}
-                    {vendors.length > 0 && (
-                      <div style={{ padding: "10px 14px 6px", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 7 }}>
-                          {vendors.length} vendor{vendors.length > 1 ? "s" : ""} — tap name to see their work
-                        </div>
-                        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4 }}>
-                          {vendors.map(vg => {
-                            const isActive  = vg.vendorId === curVid;
-                            const wb        = inBudget(vg.vendorId);
-                            return (
-                              <div key={vg.vendorId} style={{ flexShrink: 0 }}>
-                                <button
-                                  onClick={() => setSelVendor(p => ({ ...p, [theme]: vg.vendorId }))}
-                                  style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 100, border: `2px solid ${isActive ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: isActive ? "rgba(196,122,46,0.08)" : "#fff", cursor: "pointer", transform: isActive ? "scale(1.06)" : "scale(1)", transition: "all 0.18s", boxShadow: isActive ? "0 3px 10px rgba(196,122,46,0.25)" : "none", fontFamily: font }}>
-                                  <div style={{ width: 26, height: 26, borderRadius: "50%", overflow: "hidden", flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.2)" }}>
-                                    {vg.photos[0]?.imageUrl ? <img src={vg.photos[0].imageUrl} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", background: "#f3ebe0" }} />}
-                                  </div>
-                                  <span style={{ fontSize: 12, fontWeight: isActive ? 800 : 600, color: isActive ? "#C47A2E" : "#2C1A0E", maxWidth: 80, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vg.vendorName}</span>
-                                  {wb !== null && <span style={{ fontSize: 9, color: wb ? "#16a34a" : "#b45309" }}>{wb ? "✓" : "↑"}</span>}
-                                </button>
-                                {/* Tap vendor name separately to open profile */}
-                                {isActive && (
-                                  <button onClick={() => setVendorProfile(vg)}
-                                    style={{ display: "block", width: "100%", marginTop: 3, fontSize: 10, color: "#C47A2E", background: "none", border: "none", cursor: "pointer", fontFamily: font, textAlign: "center", textDecoration: "underline" }}>
-                                    View profile
-                                  </button>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* More photos from selected vendor */}
+                        {/* More photos from current vendor */}
                         {curGroup && curGroup.photos.length > 1 && (
-                          <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingTop: 8, paddingBottom: 2 }}>
+                          <div style={{ display: "flex", gap: 6, overflowX: "auto", padding: "6px 14px 4px" }}>
                             {curGroup.photos.slice(0, 5).map((p, pi) => (
                               <div key={pi} style={{ position: "relative", flexShrink: 0 }}>
                                 <img src={p.imageUrl} alt="" style={{ width: 58, height: 46, objectFit: "cover", borderRadius: 7, border: `2px solid ${photos[0]?.imageUrl === p.imageUrl ? "#C47A2E" : "transparent"}` }} />
@@ -602,8 +613,9 @@ export default function DecorFinder() {
                             ))}
                           </div>
                         )}
-                      </div>
-                    )}
+                        </>
+                      );
+                    })()}
 
                     {/* Chat button */}
                     {curGroup?.vendorId && (
@@ -638,7 +650,10 @@ export default function DecorFinder() {
               })}
             </div>
 
-            <style>{`@media(max-width:600px){.decor-result-grid{grid-template-columns:1fr!important;}}`}</style>
+            <style>{`
+              @media(max-width:600px){.decor-result-grid{grid-template-columns:1fr!important;}}
+              @keyframes photoFadeIn { from{opacity:0;transform:scale(1.02)} to{opacity:0.92;transform:scale(1)} }
+            `}</style>
           </div>
         )}
       </div>
