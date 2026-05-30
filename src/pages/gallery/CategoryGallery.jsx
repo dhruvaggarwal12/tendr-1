@@ -57,7 +57,7 @@ export default function CategoryGallery() {
         path={`/gallery/${slug}`}
       />
       <BasicSpeedDial />
-      <HamburgerNav active="Browse" noSidebar />
+      <HamburgerNav active="Browse" />
 
       {/* Header */}
       <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "36px 24px 28px" }}>

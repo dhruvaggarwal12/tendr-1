@@ -216,7 +216,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         <aside style={{
           position: "fixed", left: 0, top: 0, zIndex: 200,
           width: SIDEBAR_W, height: "100vh",
-          background: "linear-gradient(180deg,#3D2410 0%,#2C1A0C 100%)",
+          background: "linear-gradient(180deg,#5C3418 0%,#3D2210 100%)",
           display: "flex", flexDirection: "column",
           boxShadow: "4px 0 24px rgba(0,0,0,0.15)",
           overflowY: "auto", overflowX: "hidden",
@@ -325,7 +325,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           {/* My Services checklist */}
           {selectedVendors.length > 0 && (
             <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
+              <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
               {selectedVendors.map(svc => {
                 const isBooked = !!finalisedVendors[svc];
                 return (
@@ -365,7 +365,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           <div style={{ padding: "8px 0" }}>
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
-                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.75)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
+                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
                 {sec.items.map(item => {
                   const isSoon     = !!item.comingSoon;
                   const isDisabled = !!item.disabled;
@@ -381,7 +381,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   if (isDisabled) {
                     return (
                       <div key={item.label} title="Fill your event details first" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 18px 9px 14px", borderLeft: "3px solid transparent", opacity: 0.4, cursor: "not-allowed" }}>
-                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: font }}>{item.label}</span>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontFamily: font }}>{item.label}</span>
                         <span style={{ fontSize: 9, fontWeight: 700, color: "#CCAB4A", flexShrink: 0 }}>fill form first</span>
                       </div>
                     );

@@ -349,8 +349,17 @@ const Navbar = ({
           />
         </a>
 
+        {/* Gift Hampers — left of search, prominent position */}
+        <a href="/gift-hampers-cakes" className="desktop-nav desktop-search"
+          style={{ color: "#C47A2E", fontSize: 13, fontWeight: 700, padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 5, textDecoration: "none", transition: "background 0.2s", flexShrink: 0, marginRight: 4 }}
+          onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.13)"; }}
+          onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; }}
+        >
+          🎁 Gift Hampers
+        </a>
+
         {/* ── Search bar (desktop) ── */}
-        <div ref={searchRef} className="desktop-nav desktop-search" style={{ position: "relative", flex: "0 0 auto", width: 280, margin: "0 16px" }}>
+        <div ref={searchRef} className="desktop-nav desktop-search" style={{ position: "relative", flex: "0 0 auto", width: 260, margin: "0 8px" }}>
           <div style={{
             display: "flex", alignItems: "center", gap: 8,
             padding: "9px 16px", borderRadius: 100,
@@ -498,21 +507,6 @@ const Navbar = ({
                 </div>
               </div>
             ))}
-          </div>
-
-          {/* Divider */}
-          <div style={{ width: 1, height: 22, background: "rgba(139,69,19,0.15)", margin: "0 12px", flexShrink: 0 }} />
-
-          {/* Gift Hampers */}
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            <a
-              href="/gift-hampers-cakes"
-              style={{ color: "#C47A2E", fontSize: 13, fontWeight: 600, padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4, textDecoration: "none", transition: "background 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.13)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; }}
-            >
-              🎁 Gift Hampers
-            </a>
           </div>
 
           {/* Divider before profile cluster */}

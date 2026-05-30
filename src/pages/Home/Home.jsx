@@ -904,6 +904,11 @@ const Home = () => {
       {/* ── 5s Rotating Feature Carousel ── */}
       <section style={{ background: "linear-gradient(135deg,#FFF8F2,#FFF3DC)", padding: "72px 24px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 860, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.16em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Explore Tendr</p>
+            <h2 style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em" }}>What We Offer</h2>
+            <div style={{ width: 40, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "0 auto" }} />
+          </div>
           {(() => {
             const slide = FEATURE_SLIDES[slideIdx];
             const goSlide = (dir) => {
@@ -975,6 +980,7 @@ const Home = () => {
             );
           })()}
         </div>
+        </div>{/* close maxWidth wrapper opened for "What We Offer" heading */}
         <style>{`@keyframes kit-pulse { 0%,100%{opacity:1}50%{opacity:0.4} }`}</style>
       </section>
 

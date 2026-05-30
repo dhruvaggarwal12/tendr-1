@@ -361,14 +361,20 @@ export default function DecorFinder() {
                         </div>
                       </div>
                     </div>
-                    {/* Chat button for vendor-attributed photos */}
+                    {/* Chat button + show all theme vendors */}
                     {curPhoto.vendorId && curPhoto.vendorName && (
-                      <div style={{ padding: "10px 18px 0" }}>
+                      <div style={{ padding: "10px 18px 0", display: "flex", flexDirection: "column", gap: 8 }}>
                         <button
                           onClick={() => openVendorChat({ _id: curPhoto.vendorId, name: curPhoto.vendorName, serviceType: "Decorator" })}
                           style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 12px rgba(196,122,46,0.28)", letterSpacing: "0.01em" }}
                         >
                           Chat with {curPhoto.vendorName} →
+                        </button>
+                        <button
+                          onClick={() => goToVendors(theme)}
+                          style={{ width: "100%", padding: "8px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                        >
+                          Show all {theme} vendors →
                         </button>
                       </div>
                     )}
