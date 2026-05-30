@@ -118,7 +118,7 @@ const Navbar = ({
     finalisedCount > 0 ||
     (() => { try { const d = JSON.parse(localStorage.getItem("tendr_ep_session") || "{}"); const fd = d.formData || {}; return !!(fd.eventType && fd.guests && fd.budget && fd.location && fd.date); } catch { return false; } })()
   );
-  const browseDisabled = !!(token && !user?.isAdmin && !isFormFilled);
+  const browseDisabled = false;
   const ghCartCount = useSelector((s) => s.giftHamperCart?.items?.length || 0);
   const [activeChatCount, setActiveChatCount] = useState(0);
   const [adminCounts, setAdminCounts] = useState(null);
@@ -379,11 +379,10 @@ const Navbar = ({
               {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
               {filteredSuggestions.map((s, i) => (
                 <button key={i} onClick={() => { if (s.href) { navigate(s.href); setShowSuggestions(false); setSearchQuery(""); } else { setSearchQuery(s.text); handleSearch(s.text); } }}
-                  style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", gap: 8 }}
+                  style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  {s.icon ? <span style={{ fontSize: 14 }}>{s.icon}</span> : <FaSearch size={10} style={{ color: "#C47A2E", flexShrink: 0 }} />}
-                  <span style={{ flex: 1 }}>{s.text}</span>
+                  <span>{s.text}</span>
                   {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
                 </button>
               ))}
@@ -504,7 +503,7 @@ const Navbar = ({
           {/* Divider */}
           <div style={{ width: 1, height: 22, background: "rgba(139,69,19,0.15)", margin: "0 12px", flexShrink: 0 }} />
 
-          {/* Always-visible: Gift Hampers + WhatsApp */}
+          {/* Gift Hampers */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
             <a
               href="/gift-hampers-cakes"
@@ -513,16 +512,6 @@ const Navbar = ({
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; }}
             >
               🎁 Gift Hampers
-            </a>
-            <a
-              href="https://wa.me/919211668427"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ background: "#25D366", color: "#fff", width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.35)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-            >
-              <FaWhatsapp size={15} />
             </a>
           </div>
 
@@ -651,6 +640,17 @@ const Navbar = ({
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >Sign In</a>
             )}
+            {/* WhatsApp — always rightmost */}
+            <a
+              href="https://wa.me/919211668427"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ background: "#25D366", color: "#fff", width: 34, height: 34, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.35)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s", marginLeft: 4 }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              <FaWhatsapp size={15} />
+            </a>
           </div>
         </div>
 

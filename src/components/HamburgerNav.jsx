@@ -158,7 +158,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     })()
   );
   // Disable Browse Vendors for logged-in non-admin customers who haven't filled the whole form
-  const browseDisabled = !!(token && !user?.isAdmin && !isFormFilled);
+  const browseDisabled = false;
 
   // Pages where the user is deep in the vendor flow — always send to listings
   const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/top-rated"];

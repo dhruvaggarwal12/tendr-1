@@ -39,6 +39,7 @@ const VendorDetailsPage = () => {
 
   // Redux compare state
   const compareSelected = useSelector((state) => state.listingFilters.compareSelected);
+  const { token } = useSelector((s) => s.auth);
 
   // Event form data from Redux
   const formEventName = useSelector((state) => state.eventPlanning.formData.eventName);
@@ -621,10 +622,13 @@ const VendorDetailsPage = () => {
 
                 {/* CTA */}
                 <button
-                  onClick={() => openVendorChat(vendor)}
+                  onClick={() => {
+                    if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                    openVendorChat(vendor);
+                  }}
                   style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", marginBottom: 6 }}
                 >
-                  💬 Request to Chat
+                  💬 {token ? "Request to Chat" : "Sign In to Chat"}
                 </button>
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 14px", lineHeight: 1.5 }}>
                   Our team reviews and connects you within a few hours

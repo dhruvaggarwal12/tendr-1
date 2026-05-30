@@ -569,44 +569,6 @@ const VendorList = () => {
               </div>
             )}
 
-            {!token && (
-              <div style={{
-                position: "absolute", inset: 0, zIndex: 50,
-                backdropFilter: "blur(8px)", WebkitBackdropFilter: "blur(8px)",
-                background: "rgba(255,252,245,0.6)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-              }}>
-                <div style={{
-                  background: "#FFFCF5", borderRadius: 24,
-                  boxShadow: "0 24px 64px rgba(139,69,19,0.18)",
-                  border: "1.5px solid rgba(196,122,46,0.2)",
-                  padding: "40px 36px", textAlign: "center",
-                  maxWidth: 380, width: "90%", fontFamily: font,
-                }}>
-                  <div style={{ fontSize: 44, marginBottom: 14 }}>🔐</div>
-                  <h3 style={{ fontSize: 21, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>
-                    Sign in to view vendors
-                  </h3>
-                  <p style={{ fontSize: 14, color: "#7A5535", margin: "0 0 24px", lineHeight: 1.55 }}>
-                    Create a free account to browse vendor listings, compare profiles, and plan your event.
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                    <button
-                      onClick={() => { sessionStorage.setItem("auth_return", "/listings"); navigate("/login"); }}
-                      style={{ padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
-                    >
-                      Sign In
-                    </button>
-                    <button
-                      onClick={() => { sessionStorage.setItem("auth_return", "/listings"); navigate("/signup"); }}
-                      style={{ padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font }}
-                    >
-                      Create Free Account
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
 
           {paginationInfo && paginationInfo.totalPages > 1 && (
