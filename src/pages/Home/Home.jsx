@@ -937,7 +937,6 @@ const Home = () => {
         <div style={{ maxWidth: 920, margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Section heading */}
           <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", padding: "5px 16px", borderRadius: 100, display: "inline-block", marginBottom: 14 }}>Explore Tendr</span>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.01em" }}>What We Offer</h2>
             <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>Everything you need for a perfect event — in one place</p>
           </div>
@@ -1025,7 +1024,7 @@ const Home = () => {
                 </div>
 
                 {/* Feature chips — quick pick all slides */}
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", justifyContent: "center", marginTop: 20 }}>
+                <div style={{ display: "flex", gap: 8, flexWrap: "nowrap", justifyContent: "center", marginTop: 20, overflowX: "auto", paddingBottom: 4 }}>
                   {FEATURE_SLIDES.map((fs, i) => (
                     <button key={i} onClick={() => { setSlideVisible(false); setTimeout(() => { setSlideIdx(i); setSlideVisible(true); }, 400); }}
                       style={{ padding: "5px 14px", borderRadius: 100, border: `1.5px solid ${i === slideIdx ? "#C47A2E" : "rgba(139,69,19,0.12)"}`, background: i === slideIdx ? "rgba(196,122,46,0.1)" : "#fff", cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: i === slideIdx ? 700 : 500, color: i === slideIdx ? "#C47A2E" : "#9B7450", transition: "all 0.18s" }}>

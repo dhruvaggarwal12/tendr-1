@@ -649,6 +649,35 @@ const Navbar = ({
           </div>
         </div>
 
+        {/* Mobile search bar — between logo and burger, hidden on desktop */}
+        <div className="mobile-search-bar" style={{ flex: 1, margin: "0 10px", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "6px 12px" }}>
+            <FaSearch size={10} style={{ color: "#9B7450", flexShrink: 0 }} />
+            <input
+              value={searchQuery}
+              onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
+              onKeyDown={e => { if (e.key === "Enter") { handleSearch(); setMenuOpen(false); } }}
+              placeholder="Search..."
+              style={{ flex: 1, border: "none", outline: "none", fontSize: 12, fontFamily: font, color: "#2C1A0E", background: "transparent", minWidth: 0 }}
+            />
+            {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}>✕</button>}
+          </div>
+          {showSuggestions && searchQuery.length > 0 && (
+            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 24px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 9999 }}>
+              {filteredSuggestions.slice(0, 4).map((s, i) => (
+                <button key={i} onClick={() => { if (s.href) { navigate(s.href); } else { setSearchQuery(s.text); handleSearch(s.text); } setSearchQuery(""); setShowSuggestions(false); setMenuOpen(false); }}
+                  style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  {s.text}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Burger (mobile) */}
         <button
           className="burger-btn-custom"
@@ -662,6 +691,7 @@ const Navbar = ({
             display: "flex",
             alignItems: "center",
             borderRadius: 8,
+            flexShrink: 0,
           }}
         >
           {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
@@ -855,11 +885,13 @@ const Navbar = ({
           .burger-btn-custom { display: none !important; }
           .desktop-nav { display: flex !important; }
           .desktop-search { display: block !important; }
+          .mobile-search-bar { display: none !important; }
         }
         @media (max-width: 767px) {
           .desktop-nav { display: none !important; }
           .desktop-search { display: none !important; }
           .burger-btn-custom { display: flex !important; }
+          .mobile-search-bar { display: block !important; }
         }
         @media (max-width: 480px) {
           .mobile-menu-content { padding: 6px 16px 20px !important; }
