@@ -411,7 +411,9 @@ const EventPlanning = () => {
           customerPhone: authUser?.phoneNumber || '',
           eventDetails: { eventType: formData?.eventType, guests: Number(formData?.guests) || 0, totalBudget: smartPlan.totalBudget, location: formData?.location, date: formData?.date, budget: formData?.budget },
           vendorSlots: currentVendors.map(({ category, estimatedCost, vendor }) => ({
-            category, percentage: split[category] || 25, estimatedCost,
+            category,
+            percentage: smartPlan?.totalBudget > 0 ? Math.round((estimatedCost / smartPlan.totalBudget) * 100) : 25,
+            estimatedCost,
             vendorId: vendor?._id || null, vendorName: vendor?.name || '',
             status: 'Pending',
           })),
@@ -614,9 +616,15 @@ const EventPlanning = () => {
             <h2 style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
               Your package request is submitted!
             </h2>
-            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 32px", lineHeight: 1.65, maxWidth: 360, marginLeft: "auto", marginRight: "auto" }}>
-              Our team will review your package and start a chat with you shortly. You'll see it in <strong>View Chats</strong> once it's ready.
+            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.65, maxWidth: 360, marginLeft: "auto", marginRight: "auto" }}>
+              Our team is reviewing your package. We'll notify you on WhatsApp once it's ready.
             </p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 18px", marginBottom: 28 }}>
+              <span style={{ fontSize: 15 }}>💬</span>
+              <span style={{ fontSize: 13, color: "#7A5535", fontWeight: 600 }}>
+                Once confirmed — check <strong>View Chats</strong> to find your chat with our team
+              </span>
+            </div>
 
             {/* Package summary — clean, no status */}
             <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", marginBottom: 24, textAlign: "left", boxShadow: "0 2px 12px rgba(196,122,46,0.07)" }}>
