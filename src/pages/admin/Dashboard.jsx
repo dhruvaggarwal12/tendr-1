@@ -3827,31 +3827,54 @@ const AdminDashboard = () => {
                           </div>
                         )}
 
-                        {/* Start Chat + Timestamp */}
+                        {/* Start Chat + Mark Payment + Timestamp */}
                         <div style={{ padding: "10px 22px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
                           <span style={{ fontSize: 11, color: "#bbb" }}>
                             Submitted {new Date(plan.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                           </span>
-                          <button
-                            onClick={async () => {
-                              try {
-                                const res = await fetch(`${BASE_URL}/admin/smart-plans/${plan._id}/start-chat`, {
-                                  method: 'POST',
-                                  headers: { Authorization: `Bearer ${token}` },
-                                  credentials: 'include',
-                                });
-                                const data = await res.json();
-                                if (data.conversationId) {
-                                  setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, conversationId: data.conversationId } : p));
-                                  setPendingConciergeId(data.conversationId.toString());
-                                  reloadConversations();
-                                  setactiveDropdown('chatconcierge');
-                                }
-                              } catch (e) { console.error(e); }
-                            }}
-                            style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: plan.conversationId ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: plan.conversationId ? "#C47A2E" : "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                            {plan.conversationId ? "💬 Open Chat" : "💬 Start Chat"}
-                          </button>
+                          <div style={{ display: "flex", gap: 8 }}>
+                            <button
+                              onClick={async () => {
+                                try {
+                                  const res = await fetch(`${BASE_URL}/admin/smart-plans/${plan._id}/start-chat`, {
+                                    method: 'POST',
+                                    headers: { Authorization: `Bearer ${token}` },
+                                    credentials: 'include',
+                                  });
+                                  const data = await res.json();
+                                  if (data.conversationId) {
+                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, conversationId: data.conversationId } : p));
+                                    setPendingConciergeId(data.conversationId.toString());
+                                    reloadConversations();
+                                    setactiveDropdown('chatconcierge');
+                                  }
+                                } catch (e) { console.error(e); }
+                              }}
+                              style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: plan.conversationId ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: plan.conversationId ? "#C47A2E" : "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                              {plan.conversationId ? "💬 Open Chat" : "💬 Start Chat"}
+                            </button>
+                            {plan.status !== 'completed' && (
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm(`Mark payment done for ${plan.customerName || 'this customer'}? A WhatsApp will be sent automatically.`)) return;
+                                  try {
+                                    const res = await fetch(`${BASE_URL}/admin/smart-plans/${plan._id}/mark-payment`, {
+                                      method: 'PATCH',
+                                      headers: { Authorization: `Bearer ${token}` },
+                                      credentials: 'include',
+                                    });
+                                    const data = await res.json();
+                                    if (data.plan) setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'completed' } : p));
+                                  } catch (e) { console.error(e); }
+                                }}
+                                style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "#0369a1", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                💳 Mark Payment Done
+                              </button>
+                            )}
+                            {plan.status === 'completed' && (
+                              <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 8, padding: "7px 12px" }}>✓ Paid</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     );
