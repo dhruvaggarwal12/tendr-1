@@ -650,8 +650,8 @@ const Navbar = ({
         </div>
 
         {/* Mobile search bar — between logo and burger, hidden on desktop */}
-        <div className="mobile-search-bar" style={{ flex: 1, margin: "0 10px", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "6px 12px" }}>
+        <div className="mobile-search-bar" style={{ flex: 1, margin: "0 8px", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 10px" }}>
             <FaSearch size={10} style={{ color: "#9B7450", flexShrink: 0 }} />
             <input
               value={searchQuery}
@@ -892,6 +892,7 @@ const Navbar = ({
           .desktop-search { display: none !important; }
           .burger-btn-custom { display: flex !important; }
           .mobile-search-bar { display: block !important; }
+          .navbar-main-bar img { height: 32px !important; }
         }
         @media (max-width: 480px) {
           .mobile-menu-content { padding: 6px 16px 20px !important; }
