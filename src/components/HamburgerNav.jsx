@@ -61,8 +61,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [savedOpen,     setSavedOpen]     = useState(false);
   const [reviewPopup,   setReviewPopup]   = useState(false);
-  const [searchQuery,   setSearchQuery]   = useState("");
-  const [showSuggest,   setShowSuggest]   = useState(false);
+  const [searchQuery,      setSearchQuery]      = useState("");
+  const [showSuggest,      setShowSuggest]      = useState(false);
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
   const profileRef = useRef(null);
 
   const SEARCH_SUGGESTIONS = [
@@ -459,27 +460,38 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         padding: "0 16px",
         fontFamily: font,
       }}>
-        {/* Left: hamburger */}
-        <button
-          onClick={() => setDrawerOpen(true)}
-          style={{ width: 36, height: 36, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.06)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0 }}
-        >
-          {[0,1,2].map(i => <div key={i} style={{ width: 14, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
-        </button>
-
-        {/* Center: title or logo */}
-        <div style={{ flex: 1, padding: "0 10px", overflow: "hidden" }}>
-          {title ? (
-            <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block", textAlign: "center" }}>{title}</span>
-          ) : (
-            <div style={{ textAlign: "center" }}>
-              <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 28, cursor: "pointer", objectFit: "contain" }} />
-            </div>
-          )}
+        {/* Left: hamburger + logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+          <button
+            onClick={() => setDrawerOpen(true)}
+            style={{ width: 34, height: 34, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.06)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 4, flexShrink: 0 }}
+          >
+            {[0,1,2].map(i => <div key={i} style={{ width: 13, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
+          </button>
+          <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 24, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
         </div>
 
-        {/* Right: Review & Pay + profile */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+        {/* Center: page title when present */}
+        {title && (
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1, textAlign: "center", padding: "0 8px" }}>{title}</span>
+        )}
+
+        {/* Right: search + Review & Pay + profile */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+          {/* Mobile search */}
+          {!showMobileSearch ? (
+            <button onClick={() => setShowMobileSearch(true)}
+              style={{ width: 34, height: 34, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.06)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontSize: 14 }}>
+              🔍
+            </button>
+          ) : (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "1.5px solid #C47A2E", borderRadius: 8, padding: "4px 8px", boxShadow: "0 2px 12px rgba(196,122,46,0.2)" }}>
+              <input autoFocus value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => { if (e.key === "Enter") { handleNavSearch(); setShowMobileSearch(false); } if (e.key === "Escape") { setShowMobileSearch(false); setSearchQuery(""); } }}
+                placeholder="Search..." style={{ border: "none", outline: "none", fontSize: 13, fontFamily: font, color: "#2C1A0E", width: 120, background: "transparent" }} />
+              <button onClick={() => { setShowMobileSearch(false); setSearchQuery(""); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 14, padding: 0, lineHeight: 1 }}>✕</button>
+            </div>
+          )}
           {/* Review & Pay button — shows when vendors finalised OR gift hampers in cart */}
           {(finalisedCount > 0 || ghCartCount > 0) && (
             <button

@@ -204,6 +204,7 @@ const VendorList = () => {
     const payload = {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
+      ...(currentCatBudget && { maxPrice: currentCatBudget }),
       sortBy,
       sortOrder,
       page: 1,
@@ -219,13 +220,14 @@ const VendorList = () => {
       })
       .catch((err) => console.error("Error fetching vendors:", err))
       .finally(() => setIsLoading(false));
-  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType]);
+  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, currentCatBudget]);
 
   const fetchPage = (pageNum) => {
     setIsLoading(true);
     const payload = {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
+      ...(currentCatBudget && { maxPrice: currentCatBudget }),
       sortBy,
       sortOrder,
       page: pageNum,

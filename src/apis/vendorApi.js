@@ -136,6 +136,7 @@ export const getVendors = async (filters = {}) => {
   if (filters.location) params.append('location', filters.location);
   if (filters.serviceTypes) params.append('serviceTypes', filters.serviceTypes.join(','));
   if (filters.minExperience) params.append('minExperience', filters.minExperience);
+  if (filters.maxPrice) params.append('maxPrice', filters.maxPrice);
   if (filters.sortBy) params.append('sortBy', filters.sortBy);
   if (filters.sortOrder) params.append('sortOrder', filters.sortOrder);
   if (filters.page) params.append('page', filters.page);
