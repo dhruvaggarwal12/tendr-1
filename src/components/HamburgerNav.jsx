@@ -57,7 +57,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
   // All state declared before any useEffect that references them
   const [sidebarOpen,   setSidebarOpen]   = useState(true);
-  const [drawerOpen,    setDrawerOpen]    = useState(false);
+  const [drawerOpen,    setDrawerOpen]    = useState(!isDesktop);
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [savedOpen,     setSavedOpen]     = useState(false);
   const [reviewPopup,   setReviewPopup]   = useState(false);
