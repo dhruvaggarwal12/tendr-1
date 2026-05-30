@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
+import { useChatOverlay } from "../../context/ChatContext";
 import { addVendorToCompare, removeVendorFromCompare } from "../../redux/listingFiltersSlice";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
@@ -151,6 +152,7 @@ export default function TopRatedVendors() {
   const { category } = useParams();
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
   const token = useSelector((s) => s.auth.token);
+  const { openVendorChat } = useChatOverlay();
 
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -174,13 +176,18 @@ export default function TopRatedVendors() {
     loadVendors();
   }, [category]);
 
-  const handleViewProfile = (vendor) => setSelectedVendor(vendor);
+  const handleViewProfile = (vendor) => {
+    if (!token) { navigate("/login", { state: { returnTo: window.location.pathname } }); return; }
+    setSelectedVendor(vendor);
+  };
 
   const handleFormSubmit = (formData) => {
+    // Save event details to Redux then open chat directly
     dispatch(setMultipleFormData(formData));
     dispatch(setBookingType("you-do-it"));
+    const vendor = selectedVendor;
     setSelectedVendor(null);
-    navigate(`/vendor/${selectedVendor._id}`);
+    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
   };
 
   const toggleCompare = (vendor) => {

@@ -21,9 +21,15 @@ const SVC_KW = { caterer: "Caterer", catering: "Caterer", food: "Caterer", cook:
 const LOC_KW = { delhi: "Delhi", "new delhi": "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
 const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker", invitation: "/invitation", stationery: "/stationery" };
 const BUDGET_PATTERNS = [
-  /(?:under|below|within|upto|up to|less than|<)\s*₹?\s*(\d[\d,]*)\s*k?/i,
+  // "under/below 1 lakh", "1.5 lakh"
+  /(?:under|below|within|upto|up to|less than|around|approx\.?|~)?\s*₹?\s*(\d+(?:\.\d+)?)\s*lakh/i,
+  // "under/below 20k", "under ₹20000"
+  /(?:under|below|within|upto|up to|less than|around|approx\.?|<|~)\s*₹?\s*(\d[\d,]*)\s*k?\b/i,
+  // "₹20000 budget", "budget 20k"
   /₹\s*(\d[\d,]*)\s*k?\s*(?:budget|max|limit)?/i,
-  /(\d[\d,]*)\s*k\s*budget/i,
+  /(?:budget|max|limit)\s*(?:of\s*)?₹?\s*(\d[\d,]*)\s*k?\b/i,
+  // plain number with k: "20k"
+  /\b(\d+)\s*k\b/i,
 ];
 
 function parseSearch(q) {
@@ -50,8 +56,9 @@ function parseSearch(q) {
     const m = lower.match(pat);
     if (m) {
       let num = parseFloat(m[1].replace(/,/g, ""));
-      if (/k\b/.test(m[0])) num *= 1000;
-      budget = num;
+      if (/lakh/i.test(m[0])) num *= 100000;
+      else if (/k\b/i.test(m[0].replace(m[1], ""))) num *= 1000;
+      budget = Math.round(num);
       break;
     }
   }

@@ -49,13 +49,16 @@ export default function SearchResults() {
     return () => clearTimeout(t);
   }, []);
 
-  // Fetch vendors when filters change
+  // Fetch vendors when filters change — all locations combined, no location swap
   useEffect(() => {
     if (!activeCat && !isUnknown) return;
     setLoading(true);
     const params = new URLSearchParams();
     if (activeCat) params.set("serviceTypes", activeCat);
-    if (activeLoc) params.set("location", activeLoc);
+    // Pass first location only (backend filters by single location)
+    // If multiple locations, we fetch per-location and merge — for now use first
+    if (rawLocs.length === 1) params.set("location", rawLocs[0]);
+    // If multiple locations or none — no location filter (show all)
     if (rawBudget) params.set("maxPrice", rawBudget);
     params.set("isTopRated", "true");
     params.set("sortBy", "rankingScore");
@@ -134,27 +137,14 @@ export default function SearchResults() {
           <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Top-rated, verified vendors only</p>
         </div>
 
-        {/* Category swap chips — only if 2+ categories */}
+        {/* Category swap chips — only the categories that were searched, only if 2+ */}
         {rawCats.length > 1 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", alignSelf: "center", marginRight: 4 }}>Category:</span>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
             {rawCats.map(cat => (
               <button key={cat} onClick={() => { setActiveCat(cat); setCurrentPage(1); }}
-                style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 100, border: `2px solid ${activeCat === cat ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: activeCat === cat ? "rgba(196,122,46,0.08)" : "#fff", color: activeCat === cat ? "#C47A2E" : "#7A5535", fontSize: 13, fontWeight: activeCat === cat ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.18s" }}>
-                <span>{CAT_EMOJI[cat] || "🏷"}</span> {cat}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Location swap chips — only if 2+ locations */}
-        {rawLocs.length > 1 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", alignSelf: "center", marginRight: 4 }}>Location:</span>
-            {rawLocs.map(loc => (
-              <button key={loc} onClick={() => { setActiveLoc(loc); setCurrentPage(1); }}
-                style={{ padding: "6px 14px", borderRadius: 100, border: `2px solid ${activeLoc === loc ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: activeLoc === loc ? "rgba(196,122,46,0.08)" : "#fff", color: activeLoc === loc ? "#C47A2E" : "#7A5535", fontSize: 13, fontWeight: activeLoc === loc ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.18s" }}>
-                📍 {loc}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 100, border: `2px solid ${activeCat === cat ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: activeCat === cat ? "rgba(196,122,46,0.08)" : "#fff", color: activeCat === cat ? "#C47A2E" : "#7A5535", fontSize: 14, fontWeight: activeCat === cat ? 800 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.18s", boxShadow: activeCat === cat ? "0 3px 10px rgba(196,122,46,0.2)" : "none" }}>
+                <span style={{ fontSize: 16 }}>{CAT_EMOJI[cat] || "🏷"}</span> {cat}
+                {activeCat === cat && <span style={{ fontSize: 10, fontWeight: 700 }}>✓</span>}
               </button>
             ))}
           </div>
@@ -186,13 +176,14 @@ export default function SearchResults() {
           <VendorList_ListingPage
             vendors={vendors}
             serviceType={activeCat}
-            locationType={activeLoc}
+            locationType={rawLocs.length === 1 ? rawLocs[0] : ""}
             isLoading={loading}
             paginationInfo={pagination}
             handleShowMore={() => setCurrentPage(p => p + 1)}
             isLoggedIn={true}
             compareSelected={[]}
             onToggleCompare={() => {}}
+            requireFormBeforeChat={true}
           />
         )}
       </div>
