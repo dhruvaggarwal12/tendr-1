@@ -349,53 +349,55 @@ const Navbar = ({
           />
         </a>
 
-        {/* search bar placeholder — real one moved inside desktop-nav below */}
-        <div className="desktop-nav desktop-search" style={{ display: "none" }}>
-          <div style={{
-            display: "flex", alignItems: "center", gap: 8,
-            padding: "9px 16px", borderRadius: 100,
-            border: `2px solid ${searchFocused ? "#C47A2E" : "rgba(196,122,46,0.2)"}`,
-            background: searchFocused ? "#fff" : "rgba(196,122,46,0.04)",
-            boxShadow: searchFocused ? "0 6px 28px rgba(196,122,46,0.28), 0 0 0 4px rgba(196,122,46,0.08)" : "none",
-            transform: searchFocused ? "scale(1.04) translateY(-1px)" : "scale(1)",
-            transition: "all 0.22s cubic-bezier(0.34,1.56,0.64,1)",
-          }}>
-            <FaSearch size={12} style={{ color: searchFocused ? "#C47A2E" : "#9B7450", flexShrink: 0 }} />
-            <input
-              value={searchQuery}
-              onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
-              onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
-              onBlur={() => setSearchFocused(false)}
-              onKeyDown={e => { if (e.key === "Enter") handleSearch(); if (e.key === "Escape") { setShowSuggestions(false); setSearchQuery(""); } }}
-              placeholder="Search caterers, decorators..."
-              style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: font, color: "#2C1A0E" }}
-            />
-            {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, padding: 0 }}>✕</button>}
-          </div>
 
-          {/* Suggestions dropdown */}
-          {showSuggestions && (
-            <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
-              {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
-              {filteredSuggestions.map((s, i) => (
-                <button key={i} onClick={() => { if (s.href) { navigate(s.href); setShowSuggestions(false); setSearchQuery(""); } else { setSearchQuery(s.text); handleSearch(s.text); } }}
-                  style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  <span>{s.text}</span>
-                  {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
-                </button>
-              ))}
-              {filteredSuggestions.length === 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>No suggestions — press Enter to search</div>}
-            </div>
-          )}
-        </div>
-
-        {/* ── Desktop nav ── */}
+        {/* ── Desktop nav — search first, then links, then gift hampers, then auth ── */}
         <div
           className="desktop-nav"
-          style={{ display: "flex", alignItems: "center" }}
+          style={{ display: "flex", alignItems: "center", gap: 6 }}
         >
+          {/* Search bar */}
+          <div ref={searchRef} style={{ position: "relative", width: 220, flexShrink: 0 }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: 7,
+              padding: "7px 13px", borderRadius: 100,
+              border: `2px solid ${searchFocused ? "#C47A2E" : "rgba(196,122,46,0.2)"}`,
+              background: searchFocused ? "#fff" : "rgba(196,122,46,0.04)",
+              boxShadow: searchFocused ? "0 6px 28px rgba(196,122,46,0.28), 0 0 0 4px rgba(196,122,46,0.08)" : "none",
+              transform: searchFocused ? "scale(1.04) translateY(-1px)" : "scale(1)",
+              transition: "all 0.22s cubic-bezier(0.34,1.56,0.64,1)",
+            }}>
+              <FaSearch size={11} style={{ color: searchFocused ? "#C47A2E" : "#9B7450", flexShrink: 0 }} />
+              <input
+                value={searchQuery}
+                onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
+                onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
+                onBlur={() => setSearchFocused(false)}
+                onKeyDown={e => { if (e.key === "Enter") handleSearch(); if (e.key === "Escape") { setShowSuggestions(false); setSearchQuery(""); } }}
+                placeholder="Search..."
+                style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: font, color: "#2C1A0E", minWidth: 0 }}
+              />
+              {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, padding: 0 }}>✕</button>}
+            </div>
+            {showSuggestions && (
+              <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
+                {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
+                {filteredSuggestions.map((s, i) => (
+                  <button key={i} onClick={() => { if (s.href) { navigate(s.href); setShowSuggestions(false); setSearchQuery(""); } else { setSearchQuery(s.text); handleSearch(s.text); } }}
+                    style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <span>{s.text}</span>
+                    {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
+                  </button>
+                ))}
+                {filteredSuggestions.length === 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>Press Enter to search</div>}
+              </div>
+            )}
+          </div>
+
+          {/* thin divider */}
+          <div style={{ width: 1, height: 20, background: "rgba(139,69,19,0.12)", flexShrink: 0 }} />
+
           {/* Primary nav links */}
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
             {NAV_ITEMS.map((group) => (
@@ -500,48 +502,16 @@ const Navbar = ({
             ))}
           </div>
 
-          {/* Search bar — immediately after nav links */}
-          <div ref={searchRef} style={{ position: "relative", flex: "0 0 auto", width: 230, margin: "0 10px" }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "8px 14px", borderRadius: 100,
-              border: `2px solid ${searchFocused ? "#C47A2E" : "rgba(196,122,46,0.2)"}`,
-              background: searchFocused ? "#fff" : "rgba(196,122,46,0.04)",
-              boxShadow: searchFocused ? "0 6px 28px rgba(196,122,46,0.28), 0 0 0 4px rgba(196,122,46,0.08)" : "none",
-              transform: searchFocused ? "scale(1.04) translateY(-1px)" : "scale(1)",
-              transition: "all 0.22s cubic-bezier(0.34,1.56,0.64,1)",
-            }}>
-              <FaSearch size={11} style={{ color: searchFocused ? "#C47A2E" : "#9B7450", flexShrink: 0 }} />
-              <input
-                value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
-                onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
-                onBlur={() => setSearchFocused(false)}
-                onKeyDown={e => { if (e.key === "Enter") handleSearch(); if (e.key === "Escape") { setShowSuggestions(false); setSearchQuery(""); } }}
-                placeholder="Search..."
-                style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: font, color: "#2C1A0E" }}
-              />
-              {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, padding: 0 }}>✕</button>}
-            </div>
-            {showSuggestions && (
-              <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
-                {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
-                {filteredSuggestions.map((s, i) => (
-                  <button key={i} onClick={() => { if (s.href) { navigate(s.href); setShowSuggestions(false); setSearchQuery(""); } else { setSearchQuery(s.text); handleSearch(s.text); } }}
-                    style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span>{s.text}</span>
-                    {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
-                  </button>
-                ))}
-                {filteredSuggestions.length === 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>No suggestions — press Enter to search</div>}
-              </div>
-            )}
-          </div>
+          {/* Gift Hampers — after Booking, before Sign In */}
+          <a href="/gift-hampers-cakes"
+            style={{ color: "#C47A2E", fontSize: 13, fontWeight: 600, padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.28)", background: "rgba(196,122,46,0.06)", whiteSpace: "nowrap", textDecoration: "none", transition: "background 0.2s", flexShrink: 0 }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.13)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}>
+            🎁 Gift Hampers
+          </a>
 
-          {/* Divider before profile cluster */}
-          <div style={{ width: 1, height: 22, background: "rgba(139,69,19,0.15)", margin: "0 12px", flexShrink: 0 }} />
+          {/* Divider before auth */}
+          <div style={{ width: 1, height: 20, background: "rgba(139,69,19,0.12)", margin: "0 4px", flexShrink: 0 }} />
 
           {/* Right cluster: conditional buttons + profile — always together */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
