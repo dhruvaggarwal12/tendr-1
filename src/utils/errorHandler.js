@@ -132,21 +132,50 @@ export const createErrorBoundary = (Component, fallback) => {
   };
 };
 
+// Detect Vite/Rollup chunk-load failures (happen after a new Vercel deploy)
+const isChunkError = (err) => {
+  if (!err) return false;
+  const msg = (err.message || err.toString() || "").toLowerCase();
+  return (
+    msg.includes("failed to fetch dynamically imported module") ||
+    msg.includes("loading chunk") ||
+    msg.includes("loading css chunk") ||
+    msg.includes("chunkloaderror") ||
+    err.name === "ChunkLoadError"
+  );
+};
+
 // Global error handler for unhandled promise rejections
 export const setupGlobalErrorHandling = () => {
   window.addEventListener('unhandledrejection', (event) => {
-    console.error('Unhandled promise rejection:', event.reason);
-    
-    const errorInfo = handleApiError(event.reason, 'Global');
+    const reason = event.reason;
+
+    // Auto-reload once when a chunk fails to load — happens after new deploy
+    // because old cached HTML references old chunk hashes that no longer exist
+    if (isChunkError(reason)) {
+      event.preventDefault();
+      if (!sessionStorage.getItem("tendr_chunk_reloaded")) {
+        sessionStorage.setItem("tendr_chunk_reloaded", "1");
+        window.location.reload();
+      }
+      return;
+    }
+
+    console.error('Unhandled promise rejection:', reason);
+    const errorInfo = handleApiError(reason, 'Global');
     showErrorToast(errorInfo);
-    
-    // Prevent the default browser error handling
     event.preventDefault();
   });
 
   window.addEventListener('error', (event) => {
+    if (isChunkError(event.error)) {
+      if (!sessionStorage.getItem("tendr_chunk_reloaded")) {
+        sessionStorage.setItem("tendr_chunk_reloaded", "1");
+        window.location.reload();
+      }
+      return;
+    }
     console.error('Global error:', event.error);
-    
     const errorInfo = handleApiError(event.error, 'Global');
     showErrorToast(errorInfo);
   });
