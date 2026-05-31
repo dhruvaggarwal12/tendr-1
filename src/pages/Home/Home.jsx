@@ -982,7 +982,7 @@ const Home = () => {
             return (
               <div>
                 {/* Main slide card */}
-                <div style={{
+                <div className="offer-slide-card" style={{
                   transition: "opacity 0.4s ease, transform 0.4s ease",
                   opacity: slideVisible ? 1 : 0,
                   transform: slideVisible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.98)",
@@ -998,7 +998,7 @@ const Home = () => {
                   <div style={{ width: 5, background: `linear-gradient(180deg,${slide.accent},${slide.accent}44)`, flexShrink: 0 }} />
 
                   {/* Icon column */}
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 28px", background: `${slide.accent}08`, flexShrink: 0, minWidth: 130 }}>
+                  <div className="offer-slide-icon-col" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 28px", background: `${slide.accent}08`, flexShrink: 0, minWidth: 130 }}>
                     <div style={{
                       width: 80, height: 80, borderRadius: 22,
                       background: slide.iconBg,

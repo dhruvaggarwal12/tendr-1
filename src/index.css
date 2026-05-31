@@ -101,6 +101,42 @@
 button { transition: transform 0.12s ease, opacity 0.12s ease; }
 button:active:not(:disabled) { transform: scale(0.97); }
 
+/* ── Prevent iOS auto-zoom on input focus (requires font-size >= 16px) ── */
+@media (max-width: 767px) {
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+  /* Budget modal single column on mobile */
+  .budget-modal-cols {
+    grid-template-columns: 1fr !important;
+  }
+  /* What We Offer chips — single scrollable row */
+  .offer-chips-row {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    padding-bottom: 4px;
+    justify-content: flex-start !important;
+  }
+  .offer-chips-row button {
+    flex-shrink: 0 !important;
+  }
+  /* What We Offer slide card — stack on mobile */
+  .offer-slide-card {
+    flex-direction: column !important;
+    min-height: unset !important;
+  }
+  .offer-slide-icon-col {
+    padding: 20px 24px 16px !important;
+    min-width: unset !important;
+  }
+  .offer-slide-icon-col > div {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 26px !important;
+    border-radius: 16px !important;
+  }
+}
+
 /* Input focus ring */
 .tendr-input:focus {
   border-color: #C47A2E !important;
@@ -181,7 +217,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
   .adm-tab-row {
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
-    -webkit-overflow-scrolling: touch;
     padding-bottom: 4px;
   }
   .adm-tab-row::-webkit-scrollbar { display: none; }
@@ -189,7 +224,6 @@ button:active:not(:disabled) { transform: scale(0.97); }
   .cust-tab-row {
     overflow-x: auto !important;
     flex-wrap: nowrap !important;
-    -webkit-overflow-scrolling: touch;
     gap: 6px !important;
     padding-bottom: 4px;
   }

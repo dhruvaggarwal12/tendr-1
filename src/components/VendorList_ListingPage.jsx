@@ -24,6 +24,7 @@ const VendorList_ListingPage = ({
   setSortOrder,
   compareSelected = [],
   onToggleCompare,
+  hideCompare = false,
   isLoggedIn = false,
   requireFormBeforeChat = false, // when true: show event form before opening chat
 }) => {
@@ -129,6 +130,12 @@ const VendorList_ListingPage = ({
                       />
                       {/* Gradient overlay */}
                       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.55) 0%, transparent 55%)", pointerEvents: "none" }} />
+                      {/* Top Rated star badge */}
+                      {vendor.isTopRated && (
+                        <div style={{ position: "absolute", top: 10, left: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, boxShadow: "0 2px 8px rgba(196,122,46,0.5)" }}>
+                          ⭐ Top Rated
+                        </div>
+                      )}
                       {/* Rating badge — only if has real reviews; else Verified badge */}
                       {rating != null && rating > 0 ? (
                         <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", color: "#FFCC55", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
@@ -181,8 +188,8 @@ const VendorList_ListingPage = ({
                         >
                           View Profile
                         </button>
-                        {/* Secondary CTA */}
-                        {isLoggedIn && (
+                        {/* Secondary CTA — compare, hidden when hideCompare=true */}
+                        {isLoggedIn && !hideCompare && (
                           <button
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
                             style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.25)"}`, background: isSelected ? "rgba(196,122,46,0.08)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", flexShrink: 0, fontFamily: font, transition: "all 0.15s" }}

@@ -241,24 +241,22 @@ export default function TopRatedVendors() {
         }}
       />
       <HamburgerNav />
-      {/* Category filter bar */}
-      <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 32px" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", height: 52, display: "flex", alignItems: "center", gap: 8 }}>
-          <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: font }}>
+      {/* Category filter bar — horizontally scrollable on mobile */}
+      <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 12px" }}>
+        <div style={{ maxWidth: 1280, margin: "0 auto", height: 52, display: "flex", alignItems: "center", gap: 8, overflowX: "auto" }}>
+          <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
             ← Home
           </button>
-          <div style={{ display: "flex", gap: 8 }}>
-            {Object.keys(CATEGORY_MAP).map((cat) => (
-              <button key={cat} onClick={() => navigate(`/top-rated/${cat}`)}
-                style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: font, transition: "all 0.18s",
-                  borderColor: cat === category ? "#C47A2E" : "rgba(139,69,19,0.2)",
-                  background: cat === category ? "#C47A2E" : "transparent",
-                  color: cat === category ? "#fff" : "#6B3A1F",
-                }}>
-                {CATEGORY_MAP[cat].label.split(" ")[0]}
-              </button>
-            ))}
-          </div>
+          {Object.keys(CATEGORY_MAP).map((cat) => (
+            <button key={cat} onClick={() => navigate(`/top-rated/${cat}`)}
+              style={{ padding: "6px 16px", borderRadius: 8, border: "1.5px solid", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: font, transition: "all 0.18s", flexShrink: 0, whiteSpace: "nowrap",
+                borderColor: cat === category ? "#C47A2E" : "rgba(139,69,19,0.2)",
+                background: cat === category ? "#C47A2E" : "transparent",
+                color: cat === category ? "#fff" : "#6B3A1F",
+              }}>
+              {CATEGORY_MAP[cat].label.split(" ")[0]}
+            </button>
+          ))}
         </div>
       </div>{/* end category bar */}
 
@@ -330,12 +328,7 @@ export default function TopRatedVendors() {
                     <div style={{ display: "flex", gap: 8 }}>
                       <button onClick={() => handleViewProfile(vendor)}
                         style={{ flex: 1, padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
-                        Quick View
-                      </button>
-                      <button onClick={() => toggleCompare(vendor)}
-                        style={{ padding: "9px 14px", borderRadius: 10, border: `1.5px solid ${isInCompare ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isInCompare ? "rgba(196,122,46,0.1)" : "#fff", color: isInCompare ? "#C47A2E" : "#6B3A1F", fontSize: 12, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
-                        title={isInCompare ? "Saved" : "Save vendor"}>
-                        {isInCompare ? "♥ Saved" : "♡ Save"}
+                        View Profile
                       </button>
                     </div>
                   </div>

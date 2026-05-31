@@ -190,12 +190,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
     { label: "Our Products", items: [
-      { label: "✅ Checklist",          href: "/checklist-picker" },
-      { label: "⏱️ Timeline",           href: "/timeline-picker" },
-      { label: "💰 Budget Allocator",   href: "/budget-picker" },
-      { label: "🎨 Decor Finder",       href: "/decor-finder" },
-      { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
-      { label: "✉️ Invitation Flyers",  href: "/invitation" },
+      { label: "Checklist",          href: "/checklist-picker" },
+      { label: "Timeline",           href: "/timeline-picker" },
+      { label: "Budget Allocator",   href: "/budget-picker" },
+      { label: "Decor Finder",       href: "/decor-finder" },
+      { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+      { label: "Invitation Flyers",  href: "/invitation" },
     ]},
     { label: "Gift & Hampers", items: [
       { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },

@@ -60,7 +60,6 @@ export default function SearchResults() {
     if (rawLocs.length === 1) params.set("location", rawLocs[0]);
     // If multiple locations or none — no location filter (show all)
     if (rawBudget) params.set("maxPrice", rawBudget);
-    params.set("isTopRated", "true");
     params.set("sortBy", "rankingScore");
     params.set("limit", "20");
     params.set("page", currentPage);
@@ -181,8 +180,7 @@ export default function SearchResults() {
             paginationInfo={pagination}
             handleShowMore={() => setCurrentPage(p => p + 1)}
             isLoggedIn={true}
-            compareSelected={[]}
-            onToggleCompare={() => {}}
+            hideCompare={true}
             requireFormBeforeChat={true}
           />
         )}
