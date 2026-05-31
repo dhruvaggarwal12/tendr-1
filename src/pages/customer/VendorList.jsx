@@ -13,7 +13,7 @@ import ListingsNav from "../../components/ListingsNav";
 import PrimaryFilters_ListingPage from "../../components/PrimaryFilters_ListingPage";
 import SecondaryFilters_ListingPage, { applySecondaryFilters } from "../../components/SecondaryFilters_ListingPage";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { getVendors } from "../../apis/vendorApi";
 import CompareModal from "../../components/CompareModal";
 import Footer from "../../components/Footer.jsx";
@@ -274,6 +274,20 @@ const VendorList = () => {
       .finally(() => setIsLoading(false));
   };
 
+
+  // Sync active filters to URL so links can be shared with context
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  React.useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    if (serviceType)  p.set("serviceType", serviceType); else p.delete("serviceType");
+    if (locationType) p.set("location", locationType);   else p.delete("location");
+    if (sortBy !== "rankingScore") p.set("sortBy", sortBy); else p.delete("sortBy");
+    if (sortOrder !== "desc") p.set("sortOrder", sortOrder); else p.delete("sortOrder");
+    const next = `${window.location.pathname}?${p.toString()}`;
+    if (next !== window.location.pathname + window.location.search) {
+      window.history.replaceState(null, "", next);
+    }
+  }, [serviceType, locationType, sortBy, sortOrder]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF" }}>

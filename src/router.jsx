@@ -1,77 +1,67 @@
 import { createBrowserRouter } from "react-router-dom";
+import { lazy } from "react";
 
-// ─── Wedding Stationery Sub-App ───────────────────────────────────────────────
-// Accessible at /wedding — standalone design + ordering system (localStorage only)
-// To DISABLE: comment out the { path: "/wedding/*", ... } route below
-import WeddingApp from "./wedding-stationery/WeddingApp";
-// ─────────────────────────────────────────────────────────────────────────────
+// ── Eagerly loaded (critical path — loaded on first visit) ──────────────────
+import Home             from "./pages/Home/Home";
+import Auth             from "./pages/customer/Auth";
+import VendorList       from './pages/customer/VendorList';
+import VendorDetails    from './pages/customer/VendorDetails';
+import TopRatedVendors  from "./pages/customer/TopRatedVendors";
+import SearchResults    from './pages/search/SearchResults.jsx';
+import NotFound         from "./pages/shared/NotFound";
+import ErrorPage        from "./components/ErrorPage";
+import OtpVerification  from "./pages/customer/OtpVerification";
 
-import Home from "./pages/Home/Home";
-import Auth from "./pages/customer/Auth";
-import VendorRegistration from "./pages/vendor/Registration";
-import ApplicationStatus from "./pages/vendor/ApplicationStatus";
-import TopRatedVendors from "./pages/customer/TopRatedVendors";
-import EventPlanningForm from "./pages/customer/EventPlanning.jsx"; // ✅ use the new form
-import NotFound from "./pages/shared/NotFound";
-import ErrorPage from "./components/ErrorPage";
-import CorporateLogin from "./pages/corporate/Login";
-import CorporateSignup from "./pages/corporate/SignUp.jsx";
-
-import VendorList from './pages/customer/VendorList';
-import VendorDetails from './pages/customer/VendorDetails';
-import Chat from './pages/customer/Chat';
-
-import AdminDashboard from "./pages/admin/Dashboard";
-import VendorOnboarding from "./pages/vendor/Onboarding";
-import VendorDashboard from "./pages/vendor/Dashboard";
-import VendorChatList from "./pages/vendor/ChatList";
-import VendorChat from "./pages/vendor/Chat";
-
-import CorporateBooking from "./pages/corporate/Booking";
-import UserDashboard from "./pages/customer/Dashboard";
-import OtpVerification from "./pages/customer/OtpVerification";
-
-import RefundPolicy from "./pages/info/RefundPolicy";
-import CancellationPolicy from "./pages/info/CancellationPolicy";
-import ContactUs from "./pages/info/ContactUs.jsx";
-import AboutUs from "./pages/info/AboutUs.jsx";
-
-import ChooseBooking from "./pages/customer/ChooseBooking";
-
-import CorporateDashboard from './pages/corporate/Dashboard.jsx';
-import TimelineBuilder from './pages/timeline/TimelineBuilder';
-import Timeline from './pages/timeline/Timeline';
-import Checkbox from './pages/checkbox/Checkbox';
-import TimelinePicker from './pages/timeline/TimelinePicker';
-import CheckboxPicker from './pages/checkbox/CheckboxPicker.jsx';
-import PrebuiltCheckbox from './pages/checkbox/PrebuiltCheckbox.jsx';
-import BudgetPicker from './pages/budget/BudgetPicker.jsx';
-import BudgetAllocator from './pages/budget/BudgetAllocator.jsx';
-import AftermoviePicker from './pages/aftermovie/AftermoviePicker.jsx';
-import AftermovieCustomizer from './pages/aftermovie/AftermovieCustomizer.jsx';
-import InvitationFlyerPicker from './pages/invitation/InvitationFlyerPicker.jsx';
-import TemplateGallery from './pages/invitation/TemplateGallery.jsx';
-import InvitationCustomizer from './pages/invitation/InvitationCustomizer.jsx';
-import WeddingStationery from './pages/stationery/WeddingStationery.jsx';
-import StationeryCustomizer from './pages/stationery/StationeryCustomizer.jsx';
-import PaymentTracker from './pages/tools/PaymentTracker.jsx';
-import GuestList from './pages/tools/GuestList.jsx';
-import DecorFinder from './pages/tools/DecorFinder.jsx';
-import SearchResults from './pages/search/SearchResults.jsx';
-import CategoryGallery from './pages/gallery/CategoryGallery.jsx';
-
-// only chat list for customers (no Conversation/ActiveChat components)
-import CustomerChatList from "./pages/customer/Chats";
-import EventPlanning from "./pages/customer/EventPlanning.jsx";
-import GiftHampersCakes from './pages/customer/GiftHampersCakes';
-
-import BookingReviewPage from './pages/booking/BookingReviewPage';
-import PaymentSelectionPage from './pages/booking/PaymentSelectionPage';
-import PaymentProcessing from './pages/booking/PaymentProcessingPage';
-import PaymentSuccessPage from './pages/booking/PaymentSuccessPage';
-import PaymentFailedPage from './pages/booking/PaymentFailedPage';
-import BookingConfirmation from './pages/booking/BookingConfirmation';
-import ReviewForm from './pages/review/ReviewForm';
+// ── Lazy loaded (not on critical path — split into separate chunks) ─────────
+const WeddingApp          = lazy(() => import("./wedding-stationery/WeddingApp"));
+const EventPlanningForm   = lazy(() => import("./pages/customer/EventPlanning.jsx"));
+const EventPlanning       = lazy(() => import("./pages/customer/EventPlanning.jsx"));
+const AdminDashboard      = lazy(() => import("./pages/admin/Dashboard"));
+const VendorRegistration  = lazy(() => import("./pages/vendor/Registration"));
+const ApplicationStatus   = lazy(() => import("./pages/vendor/ApplicationStatus"));
+const VendorOnboarding    = lazy(() => import("./pages/vendor/Onboarding"));
+const VendorDashboard     = lazy(() => import("./pages/vendor/Dashboard"));
+const VendorChatList      = lazy(() => import("./pages/vendor/ChatList"));
+const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
+const CorporateLogin      = lazy(() => import("./pages/corporate/Login"));
+const CorporateSignup     = lazy(() => import("./pages/corporate/SignUp.jsx"));
+const CorporateBooking    = lazy(() => import("./pages/corporate/Booking"));
+const CorporateDashboard  = lazy(() => import('./pages/corporate/Dashboard.jsx'));
+const UserDashboard       = lazy(() => import("./pages/customer/Dashboard"));
+const CustomerChatList    = lazy(() => import("./pages/customer/Chats"));
+const Chat                = lazy(() => import('./pages/customer/Chat'));
+const ChooseBooking       = lazy(() => import("./pages/customer/ChooseBooking"));
+const GiftHampersCakes    = lazy(() => import('./pages/customer/GiftHampersCakes'));
+const DecorFinder         = lazy(() => import('./pages/tools/DecorFinder.jsx'));
+const GuestList           = lazy(() => import('./pages/tools/GuestList.jsx'));
+const PaymentTracker      = lazy(() => import('./pages/tools/PaymentTracker.jsx'));
+const CategoryGallery     = lazy(() => import('./pages/gallery/CategoryGallery.jsx'));
+const TimelineBuilder     = lazy(() => import('./pages/timeline/TimelineBuilder'));
+const Timeline            = lazy(() => import('./pages/timeline/Timeline'));
+const TimelinePicker      = lazy(() => import('./pages/timeline/TimelinePicker'));
+const Checkbox            = lazy(() => import('./pages/checkbox/Checkbox'));
+const CheckboxPicker      = lazy(() => import('./pages/checkbox/CheckboxPicker.jsx'));
+const PrebuiltCheckbox    = lazy(() => import('./pages/checkbox/PrebuiltCheckbox.jsx'));
+const BudgetPicker        = lazy(() => import('./pages/budget/BudgetPicker.jsx'));
+const BudgetAllocator     = lazy(() => import('./pages/budget/BudgetAllocator.jsx'));
+const AftermoviePicker    = lazy(() => import('./pages/aftermovie/AftermoviePicker.jsx'));
+const AftermovieCustomizer= lazy(() => import('./pages/aftermovie/AftermovieCustomizer.jsx'));
+const InvitationFlyerPicker=lazy(() => import('./pages/invitation/InvitationFlyerPicker.jsx'));
+const TemplateGallery     = lazy(() => import('./pages/invitation/TemplateGallery.jsx'));
+const InvitationCustomizer= lazy(() => import('./pages/invitation/InvitationCustomizer.jsx'));
+const WeddingStationery   = lazy(() => import('./pages/stationery/WeddingStationery.jsx'));
+const StationeryCustomizer= lazy(() => import('./pages/stationery/StationeryCustomizer.jsx'));
+const BookingReviewPage   = lazy(() => import('./pages/booking/BookingReviewPage'));
+const PaymentSelectionPage= lazy(() => import('./pages/booking/PaymentSelectionPage'));
+const PaymentProcessing   = lazy(() => import('./pages/booking/PaymentProcessingPage'));
+const PaymentSuccessPage  = lazy(() => import('./pages/booking/PaymentSuccessPage'));
+const PaymentFailedPage   = lazy(() => import('./pages/booking/PaymentFailedPage'));
+const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation'));
+const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
+const RefundPolicy        = lazy(() => import("./pages/info/RefundPolicy"));
+const CancellationPolicy  = lazy(() => import("./pages/info/CancellationPolicy"));
+const ContactUs           = lazy(() => import("./pages/info/ContactUs.jsx"));
+const AboutUs             = lazy(() => import("./pages/info/AboutUs.jsx"));
 
 
 const router = createBrowserRouter([

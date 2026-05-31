@@ -2,7 +2,7 @@
 import { RouterProvider } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider } from "react-helmet-async";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import "./App.css";
 import router from "./router";
 import store from "./store";
@@ -76,7 +76,9 @@ function App() {
       <ErrorBoundary>
         <ChatProvider>
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
-          <RouterProvider router={router} />
+          <Suspense fallback={<div style={{ minHeight: "100vh", background: "#FFFCF5" }} />}>
+            <RouterProvider router={router} />
+          </Suspense>
           <FloatingChatButton />
           <VendorChatModal />
         </ChatProvider>

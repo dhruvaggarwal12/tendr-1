@@ -141,6 +141,17 @@ const VendorDetailsPage = () => {
     }
   };
 
+  // Keyboard: arrows scroll photo gallery, Esc closes chat form
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape" && chatFormOpen) { setChatFormOpen(false); return; }
+      if (e.key === "ArrowRight") scrollGallery(1);
+      if (e.key === "ArrowLeft")  scrollGallery(-1);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [chatFormOpen]);
+
   const primaryCity = vendor?.address?.city || vendor?.location || vendor?.locations?.[0] || "Location";
   const stateName = vendor?.address?.state || "";
   const serviceType = vendor?.serviceType || "Service";

@@ -1,5 +1,5 @@
 // src/components/VendorList_ListingPage.jsx
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
@@ -53,6 +53,22 @@ const VendorList_ListingPage = ({
     toggleSaved(vendor);
     setSavedTick(t => t + 1);
   }, []);
+
+  // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") {
+        if (chatFormVendor) { setChatFormVendor(null); return; }
+        if (quickViewVendor) { setQuickViewVendor(null); return; }
+      }
+      if (!quickViewVendor || vendors.length < 2) return;
+      const idx = vendors.findIndex(v => v._id === quickViewVendor._id);
+      if (e.key === "ArrowRight" && idx < vendors.length - 1) setQuickViewVendor(vendors[idx + 1]);
+      if (e.key === "ArrowLeft"  && idx > 0)                  setQuickViewVendor(vendors[idx - 1]);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [quickViewVendor, chatFormVendor, vendors]);
 
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();

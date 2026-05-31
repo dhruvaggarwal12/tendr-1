@@ -102,7 +102,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
             ref={inputRef}
             value={q}
             onChange={e => setQ(e.target.value)}
-            onKeyDown={e => { if (e.key === "Enter" && q.trim()) doSearch(q); if (e.key === "Escape") onClose(); }}
+            onKeyDown={e => { if (e.key === "Enter" && q.trim()) { doSearch(q); } if (e.key === "Escape") { if (q) setQ(""); else onClose(); } }}
             placeholder="Search vendors, tools, locations..."
             style={{ flex: 1, border: "none", outline: "none", fontSize: 16, fontFamily: font, color: "#2C1A0E", background: "transparent" }}
           />
