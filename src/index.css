@@ -161,9 +161,14 @@
 button { transition: transform 0.12s ease, opacity 0.12s ease; }
 button:active:not(:disabled) { transform: scale(0.97); }
 
-/* ── HamburgerNav: hide logo on mobile ── */
+/* ── HamburgerNav: hide logo, show back arrow on mobile ── */
 @media (max-width: 767px) {
   .hamburger-logo { display: none !important; }
+  .mobile-back-btn { display: flex !important; }
+}
+/* ── Navbar home page: hide logo on mobile ── */
+@media (max-width: 767px) {
+  .navbar-logo-img { display: none !important; }
 }
 
 /* ── VendorList filters: bottom sheet on mobile, dropdown on desktop ── */

@@ -383,6 +383,7 @@ const Navbar = ({
           <img
             src={tendrLogo}
             alt="Tendr"
+            className="navbar-logo-img"
             style={{
               height: scrolled ? 42 : 50,
               width: "auto",
