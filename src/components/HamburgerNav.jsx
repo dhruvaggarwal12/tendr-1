@@ -191,6 +191,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
 
   const NAV_SECTIONS = [
+    { label: "Gift & Hampers", items: [
+      { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+    ]},
     { label: "Vendors", items: [
       { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors, disabled: browseDisabled },
       { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
@@ -203,9 +206,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Decor Finder",       href: "/decor-finder" },
       { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
       { label: "Invitation Flyers",  href: "/invitation" },
-    ]},
-    { label: "Gift & Hampers", items: [
-      { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
     ]},
     { label: "Booking", items: [
       { label: "Plan Your Event",      href: "/booking" },
@@ -367,19 +367,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               })}
             </div>
           )}
-
-          {/* Gift Hampers quick-link — always visible */}
-          <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-            <button onClick={() => { close(); navigate("/gift-hampers-cakes"); }}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
-            >
-              <span style={{ fontSize: 17 }}>🎁</span>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: "#CCAB4A" }}>Gift Hampers &amp; Cakes</span>
-              <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(204,171,74,0.6)" }}>→</span>
-            </button>
-          </div>
 
           {/* Nav sections */}
           <div style={{ padding: "8px 0" }}>

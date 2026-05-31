@@ -17,6 +17,7 @@ const CATEGORIES = [
   { emoji: "🍽", label: "Catering",    path: "/top-rated/Caterer" },
   { emoji: "🎵", label: "DJ & Music",  path: "/top-rated/DJ" },
   { emoji: "🎀", label: "Decoration",  path: "/top-rated/Decorator" },
+  { emoji: "🎁", label: "Gift Hampers",path: "/gift-hampers-cakes" },
 ];
 
 const NAV_ICONS = {
@@ -120,8 +121,8 @@ function BottomNavInner() {
             </div>
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Browse Vendors</p>
 
-            {/* 2×2 grid of category buttons */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 12 }}>
+            {/* Category grid — auto-fills based on count */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 12 }}>
               {CATEGORIES.map(({ emoji, label, path }) => (
                 <button key={label}
                   onClick={() => { navigate(path); setBrowseOpen(false); }}
