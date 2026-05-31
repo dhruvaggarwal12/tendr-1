@@ -227,6 +227,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
         maxConcurrentEvents: Number(f.maxConcurrentEvents) || 5,
         price: Number(f.price) || 0,
         status: f.status,
+        ...(f.avgReviewScore !== null && f.avgReviewScore !== undefined && f.avgReviewScore !== "" && { avgReviewScore: Number(f.avgReviewScore) }),
         ...(f.newPassword.length >= 8 && { password: f.newPassword }),
         // Category-specific
         ...(st === "DJ" && { setup: djSetup, lightsIncluded: djLights, eventTypes: djEvents }),
@@ -272,6 +273,9 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
             <Field label="WhatsApp Number"><TI value={f.whatsappNumber} onChange={v => set("whatsappNumber", v)} placeholder="+91 9XXXXXXXXX" /></Field>
             <Field label="Email"><TI value={f.email} onChange={v => set("email", v)} placeholder="vendor@email.com" type="email" /></Field>
             <Field label="Starting Price (₹)"><TI value={f.price} onChange={v => set("price", v)} placeholder="15000" type="number" /></Field>
+            <Field label="Admin Rating Override (0–5)">
+              <TI value={f.avgReviewScore ?? ""} onChange={v => set("avgReviewScore", v === "" ? null : Math.min(5, Math.max(0, parseFloat(v) || 0)))} placeholder="e.g. 4.8  (overrides calculated rating)" type="number" />
+            </Field>
             <Field label="Status">
               <SI value={f.status} onChange={v => set("status", v)} options={["pending","approved","rejected","suspended"]} />
             </Field>

@@ -99,6 +99,40 @@ export default function Footer() {
           ]} />
         </div>
 
+        {/* ── Install Tendr App ── */}
+        <div style={{ borderTop: "1px solid rgba(139,69,19,0.1)", marginTop: 48, padding: "36px 48px" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 48, flexWrap: "wrap" }}>
+              {/* Left: headline */}
+              <div style={{ flex: "0 0 260px" }}>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 8px" }}>📲 Install Tendr App</p>
+                <h3 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.25 }}>Celebrate on the go</h3>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: 0, lineHeight: 1.6 }}>
+                  Get instant booking updates, chat with vendors and manage your event from your phone.
+                </p>
+              </div>
+              {/* Right: device instructions */}
+              <div style={{ flex: 1, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }}>
+                {[
+                  { icon: "🍎", title: "iPhone / iPad", steps: ["Open tendr-1.vercel.app in Safari", "Tap the Share button (□↑)", "Scroll down → tap Add to Home Screen", "Tap Add — done!"] },
+                  { icon: "🤖", title: "Android", steps: ["Open tendr-1.vercel.app in Chrome", "Tap the ⋮ menu (top right)", "Tap Add to Home Screen", "Tap Add — done!"] },
+                  { icon: "💻", title: "Desktop (Chrome / Edge)", steps: ["Open tendr-1.vercel.app", "Look for the ⊕ install icon in the address bar", "Click it → click Install", "Tendr opens as a standalone app!"] },
+                ].map(({ icon, title, steps }) => (
+                  <div key={title} style={{ background: "rgba(196,122,46,0.05)", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "16px 18px" }}>
+                    <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 10 }}>{title}</div>
+                    <ol style={{ margin: 0, padding: "0 0 0 16px", display: "flex", flexDirection: "column", gap: 5 }}>
+                      {steps.map((s, i) => (
+                        <li key={i} style={{ fontSize: 12, color: "#7A5535", lineHeight: 1.5 }}>{s}</li>
+                      ))}
+                    </ol>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Bottom bar */}
         <div
           style={{ borderTop: "1px solid rgba(139,69,19,0.12)", marginTop: 52, padding: "20px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, maxWidth: 1200, margin: "52px auto 0" }}

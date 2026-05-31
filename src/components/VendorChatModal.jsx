@@ -943,6 +943,13 @@ export default function VendorChatModal() {
                   ))}
                 </div>
               </div>
+              {/* Install App highlight */}
+              <a href="https://tendr-1.vercel.app" target="_blank" rel="noopener noreferrer"
+                onClick={e => { e.preventDefault(); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }}
+                style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 10, padding: "10px 16px", maxWidth: 320, textDecoration: "none", cursor: "pointer" }}>
+                <span style={{ fontSize: 18, flexShrink: 0 }}>📲</span>
+                <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700, lineHeight: 1.4 }}>Install the Tendr App for instant notifications when your chat is approved</span>
+              </a>
               <button onClick={handleMinimize}
                 style={{ marginTop: 4, padding: "9px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                 Minimise & wait

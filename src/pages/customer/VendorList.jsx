@@ -630,6 +630,7 @@ const VendorList = () => {
               compareSelected={compareSelected}
               onToggleCompare={toggleCompare}
               compareInProfile={true}
+              saveToCompare={true}
               isLoggedIn={!!token}
             />
 

@@ -37,9 +37,10 @@ const VendorList_ListingPage = ({
   compareSelected = [],
   onToggleCompare,
   hideCompare = false,
-  compareInProfile = false, // when true: VendorDetails will show compare button
+  compareInProfile = false,
+  saveToCompare = false, // when true: ♡ toggles compareSelected (normal flow), else localStorage
   isLoggedIn = false,
-  requireFormBeforeChat = false, // when true: show event form before opening chat
+  requireFormBeforeChat = false,
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -208,60 +209,67 @@ const VendorList_ListingPage = ({
                       </span>
                     </div>
 
-                    {/* Info */}
-                    <div className="vendor-card-info" style={{ padding: "14px 16px 16px" }}>
-                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.3 }}>{vendor.name}</h3>
+                    {/* Info — redesigned layout */}
+                    <div className="vendor-card-info" style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
 
-                      <div style={{ display: "flex", gap: 10, fontSize: 12, color: "#9B7450", marginBottom: 10, flexWrap: "wrap" }}>
-                        {(vendor.city || vendor.address?.city || vendor.locations?.[0]) && (
-                          <span>📍 {vendor.city || vendor.address?.city || vendor.locations?.[0]}</span>
+                      {/* Service category + verified badge */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 9px", borderRadius: 20 }}>
+                          {vendor.serviceType}
+                        </span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)", padding: "2px 8px", borderRadius: 20 }}>
+                          ✓ Verified
+                        </span>
+                        {vendor.isTopRated && (
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#ca8a04", background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.25)", padding: "2px 8px", borderRadius: 20 }}>⭐ Top</span>
                         )}
+                      </div>
+
+                      {/* Name */}
+                      <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: 0, lineHeight: 1.25 }}>{vendor.name}</h3>
+
+                      {/* Exp + Team size */}
+                      <div style={{ display: "flex", gap: 10, fontSize: 11.5, color: "#9B7450", flexWrap: "wrap" }}>
                         {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
-                        {vendor.startingPrice && <span style={{ fontWeight: 700, color: "#C47A2E" }}>₹{Number(vendor.startingPrice).toLocaleString("en-IN")}+</span>}
-                      </div>
-                      <div style={{ marginBottom: 12 }}>
-                        {vendor.avgReviewScore > 0 ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, background: "rgba(204,171,74,0.1)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "3px 11px" }}>
-                            ★ {Number(vendor.avgReviewScore).toFixed(1)} rated
-                            {vendor.totalEventsCompleted > 0 && ` · ${vendor.totalEventsCompleted}+ events`}
-                          </span>
-                        ) : (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 11.5, fontWeight: 700, background: "rgba(196,122,46,0.07)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "3px 11px" }}>
-                            ✓ Verified by Tendr
-                            {vendor.yearsOfExperience > 0 && ` · ${vendor.yearsOfExperience} yrs`}
-                            {vendor.totalEventsCompleted > 0 && ` · ${vendor.totalEventsCompleted}+ events`}
-                          </span>
-                        )}
+                        {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
+                        {rating > 0 && <span style={{ color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
                       </div>
 
-                      <div style={{ display: "flex", gap: 8 }}>
-                        {/* Primary CTA */}
+                      {/* Locations served */}
+                      {(vendor.locations?.length > 0 || vendor.city) && (
+                        <div style={{ fontSize: 11, color: "#9B7450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          📍 {vendor.locations?.length > 0 ? vendor.locations.slice(0,3).join(", ") : vendor.city}
+                          {vendor.locations?.length > 3 && ` +${vendor.locations.length - 3}`}
+                        </div>
+                      )}
+
+                      {/* Quick View + Save/Compare — side by side */}
+                      <div style={{ display: "flex", gap: 7, marginTop: 2 }}>
                         <button
                           onClick={(e) => { e.stopPropagation(); setQuickViewVendor(vendor); }}
-                          style={{ flex: 1, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 12px rgba(196,122,46,0.35)", transition: "box-shadow 0.18s" }}
-                          onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 6px 18px rgba(196,122,46,0.5)")}
-                          onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(196,122,46,0.35)")}
+                          style={{ flex: 1, padding: "9px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
                         >
-                          View Profile
+                          Quick View
                         </button>
-                        {/* Save button — always visible */}
-                        {(() => { const saved = isSaved(vendor._id); return (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleToggleSave(vendor); }}
-                            title={saved ? "Saved" : "Save vendor"}
-                            style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: saved ? "rgba(196,122,46,0.1)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 16, cursor: "pointer", flexShrink: 0, transition: "all 0.15s", lineHeight: 1 }}
-                          >
-                            {saved ? "♥" : "♡"}
-                          </button>
-                        ); })()}
-                        {/* Compare CTA — hidden when hideCompare=true */}
-                        {isLoggedIn && !hideCompare && (
+                        {/* ♡ button: in normal booking → compare; in discovery → savedVendors */}
+                        {saveToCompare ? (
                           <button
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
-                            style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.25)"}`, background: isSelected ? "rgba(196,122,46,0.08)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", flexShrink: 0, fontFamily: font, transition: "all 0.15s" }}
+                            title={isSelected ? "In compare list" : "Add to compare"}
+                            style={{ padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 15, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}
                           >
-                            {isSelected ? "✓" : "+"}
+                            {isSelected ? "♥" : "♡"}
                           </button>
+                        ) : (
+                          (() => { const saved = isSaved(vendor._id); return (
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleToggleSave(vendor); }}
+                              title={saved ? "Saved" : "Save vendor"}
+                              style={{ padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: saved ? "rgba(196,122,46,0.1)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 15, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}
+                            >
+                              {saved ? "♥" : "♡"}
+                            </button>
+                          ); })()
                         )}
                       </div>
                     </div>

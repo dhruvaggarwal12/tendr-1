@@ -52,7 +52,7 @@ function addFooter(doc, pageNum, totalPages) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(155, 116, 80);
-  doc.text("tendr.in  ·  support@tendr.in", 14, y + 5);
+  doc.text("tendr.in  ·  support@tendr.in  ·  📲 Install app: tendr-1.vercel.app", 14, y + 5);
   doc.text(`Page ${pageNum} of ${totalPages}`, 196, y + 5, { align: "right" });
 }
 
