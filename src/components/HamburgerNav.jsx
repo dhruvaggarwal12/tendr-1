@@ -370,7 +370,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Gift Hampers quick-link — always visible */}
           <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-            <button onClick={() => navigate("/gift-hampers-cakes")}
+            <button onClick={() => { close(); navigate("/gift-hampers-cakes"); }}
               style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
               onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
@@ -408,7 +408,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   }
                   return (
                     <button key={item.label}
-                      onClick={() => item.onClickOverride ? item.onClickOverride() : navigate(item.href)}
+                      onClick={() => { close(); item.onClickOverride ? item.onClickOverride() : navigate(item.href); }}
                       style={{
                         display: "flex", alignItems: "center",
                         width: "100%", textAlign: "left",
@@ -481,8 +481,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         padding: "0 16px",
         fontFamily: font,
       }}>
-        {/* Left: Logo (small) */}
-        <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 18, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
+        {/* Left: Logo — hidden on mobile since bottom nav handles Home */}
+        <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} className="hamburger-logo" style={{ height: 18, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
 
         {/* Center: Search bar — tapping opens full-screen overlay */}
         <button

@@ -212,24 +212,48 @@ export default function TopRatedVendors() {
         }}
       />
       <HamburgerNav />
-      {/* Category filter bar — horizontally scrollable on mobile */}
+      {/* Category bar — chips on desktop, dropdown on mobile */}
       <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 12px" }}>
-        <div style={{ maxWidth: 1280, margin: "0 auto", height: 52, display: "flex", alignItems: "center", gap: 8, overflowX: "auto" }}>
-          <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
-            ← Home
-          </button>
-          {Object.keys(CATEGORY_MAP).map((cat) => (
-            <button key={cat} onClick={() => navigate(`/top-rated/${cat}`)}
-              style={{ padding: "6px 16px", borderRadius: 8, border: "1.5px solid", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: font, transition: "all 0.18s", flexShrink: 0, whiteSpace: "nowrap",
-                borderColor: cat === category ? "#C47A2E" : "rgba(139,69,19,0.2)",
-                background: cat === category ? "#C47A2E" : "transparent",
-                color: cat === category ? "#fff" : "#6B3A1F",
-              }}>
-              {CATEGORY_MAP[cat].label.split(" ")[0]}
+        <div style={{ maxWidth: 1280, margin: "0 auto", height: 52, display: "flex", alignItems: "center", gap: 8 }}>
+
+          {/* Mobile: compact dropdown */}
+          <div className="top-rated-mobile-select" style={{ display: "none", alignItems: "center", gap: 8, width: "100%" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", flexShrink: 0 }}>Category:</span>
+            <select
+              value={category}
+              onChange={e => navigate(`/top-rated/${e.target.value}`)}
+              style={{ flex: 1, padding: "7px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#2C1A0E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", outline: "none", accentColor: "#C47A2E" }}>
+              {Object.entries(CATEGORY_MAP).map(([key, val]) => (
+                <option key={key} value={key}>{val.label}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Desktop: chips row */}
+          <div className="top-rated-desktop-chips" style={{ display: "flex", alignItems: "center", gap: 8, overflowX: "auto" }}>
+            <button onClick={() => navigate("/")} style={{ fontSize: 13, fontWeight: 600, color: "#6B3A1F", background: "rgba(139,69,19,0.06)", border: "1px solid rgba(139,69,19,0.18)", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+              ← Home
             </button>
-          ))}
+            {Object.keys(CATEGORY_MAP).map((cat) => (
+              <button key={cat} onClick={() => navigate(`/top-rated/${cat}`)}
+                style={{ padding: "6px 16px", borderRadius: 8, border: "1.5px solid", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: font, transition: "all 0.18s", flexShrink: 0, whiteSpace: "nowrap",
+                  borderColor: cat === category ? "#C47A2E" : "rgba(139,69,19,0.2)",
+                  background: cat === category ? "#C47A2E" : "transparent",
+                  color: cat === category ? "#fff" : "#6B3A1F",
+                }}>
+                {CATEGORY_MAP[cat].label.split(" ")[0]}
+              </button>
+            ))}
+          </div>
+
         </div>
-      </div>{/* end category bar */}
+      </div>
+      <style>{`
+        @media (max-width: 640px) {
+          .top-rated-mobile-select { display: flex !important; }
+          .top-rated-desktop-chips { display: none !important; }
+        }
+      `}</style>
 
       {/* Header */}
       <div style={{ background: "linear-gradient(160deg, #FFF8F2, #F5E6CC)", padding: "52px 32px 40px", textAlign: "center" }}>

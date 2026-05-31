@@ -337,6 +337,27 @@ const VendorList = () => {
               );
             })()}
 
+            {/* Category switcher chips — visible directly on the page */}
+            {(() => {
+              const ALL_CATS = ["Photographer", "Caterer", "Decorator", "DJ"];
+              const cats = selectedCategories.length > 0 ? selectedCategories : ALL_CATS;
+              if (cats.length < 2) return null;
+              return (
+                <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
+                  {cats.map(cat => (
+                    <button key={cat} onClick={() => dispatch(setFilters({ serviceType: cat }))}
+                      style={{ padding: "6px 16px", borderRadius: 100, border: "1.5px solid", fontSize: 13, fontWeight: serviceType === cat ? 700 : 500, cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s",
+                        borderColor: serviceType === cat ? "#C47A2E" : "rgba(196,122,46,0.25)",
+                        background: serviceType === cat ? "rgba(196,122,46,0.1)" : "#fff",
+                        color: serviceType === cat ? "#C47A2E" : "#6B3A1F",
+                      }}>
+                      {cat === "Photographer" ? "📸" : cat === "Caterer" ? "🍽" : cat === "Decorator" ? "🎀" : "🎵"} {cat}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
                 {serviceType || "All"} Vendors
@@ -446,42 +467,62 @@ const VendorList = () => {
                   <span style={{ display: "inline-block", transform: filtersOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", fontSize: 11 }}>⌄</span>
                 </button>
 
-                {/* Filters dropdown panel */}
+                {/* Filters — bottom sheet on mobile, dropdown on desktop */}
                 {filtersOpen && (
                   <>
+                    {/* Backdrop */}
                     <div style={{ position: "fixed", inset: 0, zIndex: 99 }} onClick={() => setFiltersOpen(false)} />
-                    <div style={{
+
+                    {/* Desktop dropdown (unchanged) */}
+                    <div className="filters-desktop-panel" style={{
                       position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 100,
                       width: 320, maxHeight: "70vh", overflowY: "auto",
                       background: "#fff", borderRadius: 16,
                       border: "1.5px solid rgba(196,122,46,0.2)",
                       boxShadow: "0 8px 32px rgba(44,26,14,0.14)",
-                      padding: "18px 20px",
-                      fontFamily: "'Outfit', sans-serif",
+                      padding: "18px 20px", fontFamily: "'Outfit', sans-serif",
                     }}>
-                      {/* Primary filters */}
                       <div style={{ marginBottom: 18 }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>
-                          Service & Location
-                        </p>
-                        <PrimaryFilters_ListingPage
-                          onSearch={(params) => { handleSearch(params); setFiltersOpen(false); }}
-                          allowedServiceTypes={selectedCategories}
-                        />
+                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>Service & Location</p>
+                        <PrimaryFilters_ListingPage onSearch={(params) => { handleSearch(params); setFiltersOpen(false); }} allowedServiceTypes={selectedCategories} />
                       </div>
-
-                      {/* Secondary filters */}
                       {serviceType && (
                         <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
-                          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>
-                            {serviceType} Filters
-                          </p>
-                          <SecondaryFilters_ListingPage
-                            serviceType={serviceType}
-                            onFiltersChange={(f) => setSecondaryFilters(f)}
-                          />
+                          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>{serviceType} Filters</p>
+                          <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setSecondaryFilters(f)} />
                         </div>
                       )}
+                    </div>
+
+                    {/* Mobile bottom sheet */}
+                    <div className="filters-mobile-sheet" style={{
+                      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
+                      background: "#FFFCF5", borderRadius: "20px 20px 0 0",
+                      boxShadow: "0 -8px 40px rgba(44,26,14,0.18)",
+                      maxHeight: "75vh", overflowY: "auto",
+                      fontFamily: "'Outfit', sans-serif",
+                      animation: "sheet-up 0.28s cubic-bezier(0.4,0,0.2,1)",
+                    }}>
+                      {/* Handle */}
+                      <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
+                        <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 20px 12px" }}>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Filters</span>
+                        <button onClick={() => setFiltersOpen(false)} style={{ background: "none", border: "none", fontSize: 20, color: "#9B7450", cursor: "pointer", padding: 0 }}>✕</button>
+                      </div>
+                      <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
+                        <div>
+                          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>Service & Location</p>
+                          <PrimaryFilters_ListingPage onSearch={(params) => { handleSearch(params); setFiltersOpen(false); }} allowedServiceTypes={selectedCategories} />
+                        </div>
+                        {serviceType && (
+                          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>{serviceType} Filters</p>
+                            <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setSecondaryFilters(f)} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </>
                 )}
