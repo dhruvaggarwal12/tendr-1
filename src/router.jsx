@@ -2,16 +2,15 @@ import { createBrowserRouter, Outlet, useLocation, useNavigationType, ScrollRest
 import { lazy } from "react";
 
 // Root layout:
-// - Forward nav (PUSH/REPLACE): new key → remount → fade-in animation, scrolls to top via ScrollRestoration
-// - Back nav (POP): stable key → no remount → browser-native scroll position restored
+// - Forward nav (PUSH/REPLACE): new key → remount → fade-in, ScrollRestoration scrolls to top
+// - Back nav (POP): stable key → no remount → scroll position restored
 function RootLayout() {
   const { key }  = useLocation();
-  const navType  = useNavigationType(); // "PUSH" | "REPLACE" | "POP"
+  const navType  = useNavigationType();
   const isPop    = navType === "POP";
 
   return (
     <>
-      {/* Restores scroll on back/forward; scrolls to top on forward nav */}
       <ScrollRestoration />
       <div key={isPop ? "pop" : key} className={isPop ? "" : "route-fade"}>
         <Outlet />

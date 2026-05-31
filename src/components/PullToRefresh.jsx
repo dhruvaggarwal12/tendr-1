@@ -76,7 +76,9 @@ export default function PullToRefresh({ onRefresh, children }) {
           )}
         </div>
       </div>
-      <div style={{ transform: `translateY(${pulling || refreshing ? distance * 0.4 : 0}px)`, transition: pulling ? "none" : "transform 0.3s ease" }}>
+      {/* Only apply transform when actively pulling — translateY(0) still creates a
+          Chrome containing block for position:fixed elements (breaks sidebars) */}
+      <div style={pulling || refreshing ? { transform: `translateY(${distance * 0.4}px)` } : {}}>
         {children}
       </div>
       <style>{`@keyframes ptr-spin { to { transform: rotate(360deg); } }`}</style>
