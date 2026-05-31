@@ -18,6 +18,7 @@ import { getVendorById } from "../../apis/vendorApi";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import { useSelector, useDispatch } from "react-redux";
 import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice";
+import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 import { useChatOverlay } from "../../context/ChatContext";
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
@@ -27,6 +28,8 @@ const VendorDetailsPage = () => {
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [chatFormOpen, setChatFormOpen] = useState(false);
+  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -624,7 +627,13 @@ const VendorDetailsPage = () => {
                 <button
                   onClick={() => {
                     if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
-                    openVendorChat(vendor);
+                    setChatEventForm({
+                      eventType: formEventType || "",
+                      guests: formGuests ? String(formGuests) : "",
+                      date: formDate || "",
+                      location: formLocation || "",
+                    });
+                    setChatFormOpen(true);
                   }}
                   style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", marginBottom: 6 }}
                 >
@@ -853,6 +862,53 @@ const VendorDetailsPage = () => {
       )}
 
       <Footer />
+
+      {/* Pre-chat event form — same as QuickView flow */}
+      {chatFormOpen && vendor && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Outfit', sans-serif" }}
+          onClick={() => setChatFormOpen(false)}>
+          <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "24px", maxWidth: 460, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+              <div>
+                <h2 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Your Event Details</h2>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>This goes to {vendor.name} — wizard questions follow after</p>
+              </div>
+              <button onClick={() => setChatFormOpen(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {[
+                { label: "What's the occasion?", field: "eventType", placeholder: "e.g. Birthday, Wedding, Anniversary..." },
+                { label: "Guest count", field: "guests", placeholder: "Approx. number of guests" },
+                { label: "Event date", field: "date", type: "date", placeholder: "" },
+                { label: "Location", field: "location", placeholder: "City / area" },
+              ].map(({ label, field, placeholder, type }) => (
+                <div key={field}>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 4 }}>{label}</label>
+                  <input type={type || "text"} placeholder={placeholder} value={chatEventForm[field]}
+                    onChange={e => setChatEventForm(p => ({ ...p, [field]: e.target.value }))}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              ))}
+            </div>
+            <button
+              onClick={() => {
+                dispatch(setMultipleFormData({
+                  eventType: chatEventForm.eventType,
+                  guests: chatEventForm.guests,
+                  date: chatEventForm.date,
+                  location: chatEventForm.location,
+                }));
+                dispatch(setBookingType("you-do-it"));
+                setChatFormOpen(false);
+                openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+              }}
+              style={{ width: "100%", marginTop: 18, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+              Request to Chat with {vendor.name} →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
