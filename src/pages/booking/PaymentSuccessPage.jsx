@@ -224,7 +224,7 @@ const PaymentSuccessPage = () => {
         {/* ── Event summary card ── */}
         <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 20, padding: "24px 28px", marginBottom: 20, boxShadow: "0 8px 32px rgba(44,26,14,0.2)" }}>
           <div style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 14 }}>Your Event</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 12 }}>
             {[
               eventSummary.eventType && { icon: "🎉", label: "Event",    val: eventSummary.eventType },
               eventSummary.date      && { icon: "📅", label: "Date",     val: eventSummary.date },
@@ -232,9 +232,9 @@ const PaymentSuccessPage = () => {
               eventSummary.guests    && { icon: "👥", label: "Guests",   val: eventSummary.guests },
               amount                 && { icon: "💳", label: "Paid",     val: `₹${Number(amount).toLocaleString("en-IN")}` },
             ].filter(Boolean).map(({ icon, label, val }) => (
-              <div key={label} style={{ minWidth: 120 }}>
+              <div key={label}>
                 <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>{label}</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{icon} {val}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", wordBreak: "break-word" }}>{icon} {val}</div>
               </div>
             ))}
           </div>
@@ -309,7 +309,7 @@ const PaymentSuccessPage = () => {
                   generateInvoicePDF({ eventSummary, confirmedVendors, amount, orderId: state?.orderId, paymentId: state?.paymentId, userName: user?.name });
                 } finally { setPdfGenerating(false); }
               }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s", minHeight: 80 }}
             >
               <span style={{ fontSize: 22 }}>🧾</span>
               Invoice
@@ -328,7 +328,7 @@ const PaymentSuccessPage = () => {
                   await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: pinnedByKey, userName: user?.name, orderId: state?.orderId });
                 } finally { setPdfGenerating(false); }
               }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s", minHeight: 80 }}
             >
               <span style={{ fontSize: 22 }}>📋</span>
               Event Details
@@ -343,7 +343,7 @@ const PaymentSuccessPage = () => {
                   await generateTimelinePDF({ slots, eventSummary, userName: user?.name });
                 } finally { setPdfGenerating(false); }
               }}
-              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, padding: "14px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s" }}
+              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s", minHeight: 80 }}
             >
               <span style={{ fontSize: 22 }}>🗓</span>
               Day Timeline

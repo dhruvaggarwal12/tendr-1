@@ -151,7 +151,8 @@ function MenuSelectCard({ payload, onSend }) {
                   const atLimit = selCount >= limit && !isSel;
                   return (
                     <button key={dish} onClick={() => !atLimit && toggle(course, dish)}
-                      style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: isSel ? 700 : 500, cursor: atLimit ? "not-allowed" : "pointer", fontFamily: font, border: `1.5px solid ${isSel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: isSel ? "rgba(196,122,46,0.12)" : "#fff", color: isSel ? "#C47A2E" : atLimit ? "#ccc" : "#2C1A0E", transition: "all 0.12s" }}>
+                      className="vcm-dish-pill"
+                      style={{ padding: "5px 12px", borderRadius: 20, fontSize: 11, fontWeight: isSel ? 700 : 500, cursor: atLimit ? "not-allowed" : "pointer", fontFamily: font, border: `1.5px solid ${isSel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: isSel ? "rgba(196,122,46,0.12)" : "#fff", color: isSel ? "#C47A2E" : atLimit ? "#ccc" : "#2C1A0E", transition: "all 0.12s" }}>
                       {isSel && "✓ "}{dish}
                     </button>
                   );
@@ -298,7 +299,8 @@ function FullMenuCard({ payload, onSend }) {
           const cnt = Object.values(selected).filter(v => v.cuisine === c).length;
           return (
             <button key={c} onClick={() => setActiveCuisine(c)}
-              style={{ flexShrink: 0, padding: "8px 11px", border: "none", borderBottom: isActive ? "2.5px solid #C47A2E" : "2.5px solid transparent", background: "transparent", color: isActive ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: isActive ? 800 : 500, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
+              className="vcm-cuisine-tab"
+              style={{ flexShrink: 0, padding: "8px 12px", border: "none", borderBottom: isActive ? "2.5px solid #C47A2E" : "2.5px solid transparent", background: "transparent", color: isActive ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: isActive ? 800 : 500, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
               {c}
               {cnt > 0 && <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 10, fontSize: 9, fontWeight: 700, padding: "1px 5px", lineHeight: 1.4 }}>{cnt}</span>}
             </button>
