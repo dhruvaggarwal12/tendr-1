@@ -116,12 +116,13 @@ const VendorList_ListingPage = ({
               <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 6px", lineHeight: 1.6 }}>
                 {serviceType ? `No ${serviceType.toLowerCase()} vendors matched your filters.` : "No vendors matched your filters."}
               </p>
-              <p style={{ fontSize: 13, color: "#bbb", margin: "0 0 24px" }}>Try adjusting your budget, location, or removing filters.</p>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 6px" }}>Want to see all {serviceType ? `${serviceType.toLowerCase()} vendors` : "vendors"}?</p>
+              <p style={{ fontSize: 12, color: "#bbb", margin: "0 0 24px" }}>Start your event planning and browse all available vendors.</p>
               <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
                 <button
-                  onClick={() => navigate("/listings")}
+                  onClick={() => navigate("/booking")}
                   style={{ padding: "10px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  Browse all {serviceType || "vendors"} →
+                  Plan Your Event →
                 </button>
                 <button
                   onClick={() => navigate(-1)}

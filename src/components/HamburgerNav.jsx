@@ -344,8 +344,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
-          {/* My Services checklist */}
-          {selectedVendors.length > 0 && (
+          {/* My Services checklist — only during booking flow */}
+          {selectedVendors.length > 0 && isOnVendorFlow && (
             <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
               <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
               {selectedVendors.map(svc => {
@@ -496,10 +496,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         {/* Center: Search bar — tapping opens full-screen overlay */}
         <button
           onClick={() => setSearchOverlay(true)}
-          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "6px 10px", cursor: "pointer", textAlign: "left" }}
+          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer", lineHeight: 1 }}
         >
-          <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>🔍</span>
-          <span style={{ flex: 1, fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Search vendors, tools...</span>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, display: "block" }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <span style={{ flex: 1, fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1 }}>Search vendors, tools...</span>
         </button>
 
         {/* Right: Hamburger + optional actions */}
@@ -632,8 +632,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               )}
             </div>
 
-            {/* My Services — drawer: tick when finalised but always show Browse */}
-            {selectedVendors.length > 0 && (
+            {/* My Services — only during active booking flow (user is on vendor/listings pages) */}
+            {selectedVendors.length > 0 && isOnVendorFlow && (
               <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(196,122,46,0.12)", background: "rgba(196,122,46,0.04)" }}>
                 <p style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 7px" }}>My Services</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

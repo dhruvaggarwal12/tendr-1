@@ -864,37 +864,6 @@ const Home = () => {
         }
       `}</style>
 
-      {/* ── Category Quick-Access Circles ── */}
-      <section style={{ background: "#FFFCF5", padding: "28px 16px 24px", fontFamily: "'Outfit', sans-serif", borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
-        <div style={{ maxWidth: 480, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", marginBottom: 16 }}>Browse by Category</p>
-          <div style={{ display: "flex", justifyContent: "space-around", gap: 8 }}>
-            {[
-              { emoji: "📸", label: "Photography", path: "/top-rated/Photographer" },
-              { emoji: "🍽", label: "Catering",    path: "/top-rated/Caterer" },
-              { emoji: "🎵", label: "DJ",          path: "/top-rated/DJ" },
-              { emoji: "🎀", label: "Decoration",  path: "/top-rated/Decorator" },
-              { emoji: "⭐", label: "Top Rated",   path: "/top-rated/Photographer" },
-            ].map(({ emoji, label, path }) => (
-              <a key={label} href={path}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, textDecoration: "none", flex: 1, maxWidth: 72 }}>
-                <div style={{
-                  width: 54, height: 54, borderRadius: "50%",
-                  background: "linear-gradient(145deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))",
-                  border: "1.5px solid rgba(196,122,46,0.18)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 24, boxShadow: "0 3px 12px rgba(196,122,46,0.12)",
-                  transition: "transform 0.18s, box-shadow 0.18s",
-                }}>
-                  {emoji}
-                </div>
-                <span style={{ fontSize: 10, fontWeight: 600, color: "#6B3A1F", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
-              </a>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* How Tendr Works */}
       <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>

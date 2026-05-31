@@ -60,7 +60,6 @@ export default function CustomerChatList() {
   };
 
   const vendorChats = chats.filter(c => c.chatType === "vendor");
-  const hasPending = vendorChats.some(c => !c.chatApproved);
 
   return (
     <PullToRefresh onRefresh={fetchChats}>
@@ -115,7 +114,17 @@ export default function CustomerChatList() {
             Active Chats
           </p>
 
-          {loading ? (
+          {!token ? (
+            <div style={{ textAlign: "center", padding: "40px 24px", background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.1)" }}>
+              <div style={{ fontSize: 40, marginBottom: 12 }}>🔒</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>Sign in to see your chats</div>
+              <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 16 }}>Your vendor conversations appear here after you sign in.</div>
+              <button onClick={() => navigate("/login")}
+                style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                Sign In →
+              </button>
+            </div>
+          ) : loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[1, 2].map(i => (
                 <div key={i} style={{ height: 74, borderRadius: 16, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
