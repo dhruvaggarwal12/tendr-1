@@ -1,8 +1,9 @@
 // src/components/VendorList_ListingPage.jsx
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
+import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 
 const SAVED_KEY = "tendr_saved_vendors";
 const getSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
@@ -40,6 +41,7 @@ const VendorList_ListingPage = ({
   requireFormBeforeChat = false, // when true: show event form before opening chat
 }) => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { openVendorChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
   const [quickViewVendor, setQuickViewVendor] = useState(null);
@@ -473,7 +475,15 @@ const VendorList_ListingPage = ({
             </div>
             <button
               onClick={() => {
-                openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, eventDetails: chatEventForm });
+                // Save event details to Redux so wizard skips already-answered questions
+                dispatch(setMultipleFormData({
+                  eventType: chatEventForm.eventType,
+                  guests: chatEventForm.guests,
+                  date: chatEventForm.date,
+                  location: chatEventForm.location,
+                }));
+                dispatch(setBookingType("you-do-it"));
+                openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
                 setChatFormVendor(null);
               }}
               style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>

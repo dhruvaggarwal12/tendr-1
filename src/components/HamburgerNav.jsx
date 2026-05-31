@@ -479,11 +479,11 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         fontFamily: font,
       }}>
         {/* Left: Logo (small) */}
-        <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 20, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
+        <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 18, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
 
         {/* Center: Search bar — always visible on mobile */}
-        <div style={{ flex: 1, margin: "0 8px", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "6px 12px" }}>
+        <div style={{ flex: 1, minWidth: 0, margin: "0 6px", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 10px" }}>
             <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>🔍</span>
             <input value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setShowSuggest(true); }}
               onFocus={() => setShowSuggest(true)}

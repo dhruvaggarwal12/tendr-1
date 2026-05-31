@@ -6,6 +6,66 @@
 } */
 
 /* ─────────────────────────────────────────────
+   GLOBAL MOBILE SIZE REDUCTION  (≤ 767px)
+   Reduces font sizes, padding, card sizes
+   across all pages and components
+───────────────────────────────────────────── */
+@media (max-width: 767px) {
+  /* Base font scale-down */
+  body { font-size: 14px; }
+
+  /* Section headings */
+  h1 { font-size: clamp(1.4rem, 5vw, 2rem) !important; }
+  h2 { font-size: clamp(1.2rem, 4.5vw, 1.7rem) !important; }
+  h3 { font-size: clamp(1rem, 4vw, 1.3rem) !important; }
+
+  /* EventPlanning step cards */
+  .booking-flow-card {
+    padding: 16px !important;
+    border-radius: 14px !important;
+  }
+  .booking-flow-card h2, .booking-flow-card h3 {
+    font-size: 15px !important;
+  }
+  .booking-flow-card p {
+    font-size: 12px !important;
+  }
+
+  /* Home page hero */
+  .hero-split { min-height: unset !important; }
+
+  /* Section padding */
+  section { padding-top: 40px !important; padding-bottom: 40px !important; }
+
+  /* Card content padding */
+  .page-container { padding: 12px !important; }
+
+  /* EventPlanning question cards */
+  .event-question-card {
+    padding: 16px !important;
+    border-radius: 20px !important;
+    margin-bottom: 16px !important;
+  }
+  .event-question-card .w-14,
+  .event-question-card .w-16 {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    border-radius: 12px !important;
+  }
+
+  /* EventPlanning category selection cards */
+  .event-cat-img {
+    height: 110px !important;
+  }
+
+  /* Vendor card grid gap */
+  .vendor-list-grid {
+    gap: 10px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
    MOBILE RESPONSIVE OVERRIDES  (≤ 640px)
 ───────────────────────────────────────────── */
 @media (max-width: 640px) {

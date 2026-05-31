@@ -692,8 +692,8 @@ const Navbar = ({
         </div>
 
         {/* Mobile search bar — between logo and burger, hidden on desktop */}
-        <div className="mobile-search-bar" style={{ flex: 1, margin: "0 8px", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 10px" }}>
+        <div className="mobile-search-bar" style={{ flex: 1, minWidth: 0, margin: "0 6px", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 8px" }}>
             <FaSearch size={10} style={{ color: "#9B7450", flexShrink: 0 }} />
             <input
               value={searchQuery}
@@ -731,14 +731,14 @@ const Navbar = ({
             border: "none",
             color: "#3B2F2F",
             cursor: "pointer",
-            padding: 8,
+            padding: "6px 4px",
             display: "flex",
             alignItems: "center",
             borderRadius: 8,
             flexShrink: 0,
           }}
         >
-          {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
+          {menuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
         </button>
       </div>
 
@@ -936,11 +936,12 @@ const Navbar = ({
           .desktop-search { display: none !important; }
           .burger-btn-custom { display: flex !important; }
           .mobile-search-bar { display: block !important; }
-          .navbar-main-bar img { height: 32px !important; }
+          .navbar-main-bar img { height: 28px !important; }
+          .navbar-main-bar { padding: 0 12px !important; height: 52px !important; }
+          .mobile-menu-content { padding: 6px 14px 20px !important; }
         }
-        @media (max-width: 480px) {
-          .mobile-menu-content { padding: 6px 16px 20px !important; }
-          .navbar-main-bar { padding: 0 16px !important; }
+        @media (max-width: 380px) {
+          .navbar-main-bar { padding: 0 8px !important; }
         }
       `}</style>
     </nav>

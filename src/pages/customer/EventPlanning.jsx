@@ -1015,7 +1015,7 @@ const EventPlanning = () => {
                     transform: isSelected ? "translateY(-3px)" : "translateY(0)",
                   }}
                 >
-                  <div style={{ position: "relative", height: 160, overflow: "hidden" }}>
+                  <div className="event-cat-img" style={{ position: "relative", height: 160, overflow: "hidden" }}>
                     <img
                       src={vendor.photo}
                       alt={vendor.title}
@@ -1190,34 +1190,34 @@ const EventPlanning = () => {
               );
             })()}
 
-            {/* You Do It — budget range modal */}
+            {/* You Do It — budget range popup (small window) */}
             {showYouDoItBudget && (
-              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, fontFamily: "'Outfit', sans-serif" }}>
-                <div style={{ background: "#F8F4EF", borderRadius: 22, width: "100%", maxWidth: 500, boxShadow: "0 24px 64px rgba(0,0,0,0.3)", overflow: "hidden" }}>
+              <>
+                <div onClick={() => setShowYouDoItBudget(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 9998 }} />
+                <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 9999, background: "#FFFCF5", borderRadius: 18, width: "92%", maxWidth: 420, boxShadow: "0 20px 50px rgba(0,0,0,0.22)", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
                   {/* Header */}
-                  <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Step 2 of 2</div>
-                      <h3 style={{ fontSize: 18, fontWeight: 900, color: "#CCAB4A", margin: 0 }}>Set your budget per service</h3>
-                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "4px 0 0" }}>You can adjust anytime while browsing vendors</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 900, color: "#CCAB4A", margin: 0 }}>Set budget per service</h3>
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", margin: "2px 0 0" }}>Adjust anytime while browsing</p>
                     </div>
-                    <button onClick={() => setShowYouDoItBudget(false)} style={{ width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                    <button onClick={() => setShowYouDoItBudget(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
                   {/* Per-category sliders */}
-                  <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
+                  <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 14, maxHeight: "60vh", overflowY: "auto" }}>
                     {selectedVendors.map(cat => {
                       const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 15000 };
                       const val = savedCategoryBudgets[cat] || range.default;
                       return (
                         <div key={cat}>
-                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                            <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji || "🏷"} {cat}</span>
-                            <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji || "🏷"} {cat}</span>
+                            <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
                           </div>
                           <input type="range" min={range.min} max={range.max} step={range.step} value={val}
                             onChange={e => dispatch(setCategoryBudgets({ ...savedCategoryBudgets, [cat]: Number(e.target.value) }))}
-                            style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 6 }} />
-                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                            style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 5 }} />
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#bbb", marginTop: 1 }}>
                             <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
                           </div>
                         </div>
@@ -1229,12 +1229,12 @@ const EventPlanning = () => {
                         dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
                         navigate("/listings", { state: { selectedCategories: selectedVendors } });
                       }}
-                      style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.35)", marginTop: 4 }}>
+                      style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)", marginTop: 2 }}>
                       Browse Vendors →
                     </button>
                   </div>
                 </div>
-              </div>
+              </>
             )}
 
             {isYouDoIt ? (
@@ -1309,7 +1309,7 @@ const EventPlanning = () => {
 
         {/* Question Card */}
         <div
-          className="bg-white rounded-3xl p-6 sm:p-8 mb-8 border border-white/50 shadow-xl"
+          className="bg-white rounded-3xl p-4 sm:p-8 mb-6 sm:mb-8 border border-white/50 shadow-xl event-question-card"
           style={{
             transition: `opacity ${TRANSITION_MS}ms ease, transform ${TRANSITION_MS}ms ease`,
             opacity: animating ? 0 : 1,
