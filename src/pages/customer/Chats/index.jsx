@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChatOverlay } from "../../../context/ChatContext";
+import HamburgerNav from "../../../components/HamburgerNav";
 
 /**
  * Simple chat list for "you-do-it" flow.
@@ -50,7 +51,9 @@ export default function CustomerChatList() {
   const { openVendorChat } = useChatOverlay();
 
   return (
-    <div className="max-w-3xl mx-auto p-4 mt-10">
+    <div>
+    <HamburgerNav active="Chats" />
+    <div className="max-w-3xl mx-auto p-4 mt-6">
       {/* THEME CSS (only CSS changes, no JSX structure changes) */}
       <style>{`
         /* Import a friendly geometric font similar to the site's feel */
@@ -197,6 +200,7 @@ export default function CustomerChatList() {
           ))}
         </ul>
       )}
+    </div>
     </div>
   );
 }
