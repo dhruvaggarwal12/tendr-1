@@ -82,7 +82,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
-  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", stationery: "/stationery", aftermovie: "/aftermovie" };
 
   const handleNavSearch = (q) => {
     const query = q || searchQuery;
