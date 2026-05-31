@@ -48,6 +48,7 @@ const VendorList_ListingPage = ({
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
   const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
+  const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
 
   const handleToggleSave = useCallback((vendor) => {
     toggleSaved(vendor);
@@ -451,13 +452,13 @@ const VendorList_ListingPage = ({
                   >
                     View Full Profile →
                   </button>
-                  {/* Share button */}
+                  {/* Share button — uses shareCopiedId from component state (no hooks-in-IIFE) */}
                   {(() => {
-                    const [copied, setCopied] = useState(false);
+                    const copied = shareCopiedId === quickViewVendor._id;
                     const share = async () => {
                       const url = `${window.location.origin}/vendor/${quickViewVendor._id}`;
                       if (navigator.share) { try { await navigator.share({ title: quickViewVendor.name, url }); } catch {} }
-                      else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+                      else { await navigator.clipboard.writeText(url); setShareCopiedId(quickViewVendor._id); setTimeout(() => setShareCopiedId(null), 2000); }
                     };
                     return (
                       <button onClick={share} title={copied ? "Copied!" : "Share"}
