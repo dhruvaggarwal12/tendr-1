@@ -16,10 +16,8 @@ import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
 const LIVE_DOMAINS = ["tendr.co.in", "www.tendr.co.in"];
 const isLiveDomain = LIVE_DOMAINS.includes(window.location.hostname);
 
-// Scroll to top on every navigation
-router.subscribe(() => {
-  window.scrollTo({ top: 0, behavior: "instant" });
-});
+// NOTE: Scroll-to-top on forward nav is handled by ScrollRestoration in RootLayout.
+// Removed the blanket router.subscribe scroll-to-top which was breaking back-button scroll restoration.
 
 function SplashScreen({ onDone }) {
   const [fade, setFade] = useState(false);

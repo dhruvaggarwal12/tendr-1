@@ -1,10 +1,23 @@
-import { createBrowserRouter, Outlet, useLocation } from "react-router-dom";
-import { lazy, useEffect } from "react";
+import { createBrowserRouter, Outlet, useLocation, useNavigationType, ScrollRestoration } from "react-router-dom";
+import { lazy } from "react";
 
-// Root layout — adds a lightweight fade-in on every page transition
+// Root layout:
+// - Forward nav (PUSH/REPLACE): new key → remount → fade-in animation, scrolls to top via ScrollRestoration
+// - Back nav (POP): stable key → no remount → browser-native scroll position restored
 function RootLayout() {
-  const { key } = useLocation();
-  return <div key={key} className="route-fade"><Outlet /></div>;
+  const { key }  = useLocation();
+  const navType  = useNavigationType(); // "PUSH" | "REPLACE" | "POP"
+  const isPop    = navType === "POP";
+
+  return (
+    <>
+      {/* Restores scroll on back/forward; scrolls to top on forward nav */}
+      <ScrollRestoration />
+      <div key={isPop ? "pop" : key} className={isPop ? "" : "route-fade"}>
+        <Outlet />
+      </div>
+    </>
+  );
 }
 
 // ── Eagerly loaded (critical path — loaded on first visit) ──────────────────
