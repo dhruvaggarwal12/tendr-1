@@ -81,6 +81,7 @@ const RefundPolicy        = lazy(() => import("./pages/info/RefundPolicy"));
 const CancellationPolicy  = lazy(() => import("./pages/info/CancellationPolicy"));
 const ContactUs           = lazy(() => import("./pages/info/ContactUs.jsx"));
 const AboutUs             = lazy(() => import("./pages/info/AboutUs.jsx"));
+const InstallApp          = lazy(() => import("./pages/install/InstallApp.jsx"));
 
 
 const router = createBrowserRouter([
@@ -321,9 +322,14 @@ const router = createBrowserRouter([
   },
 
   { 
-    path: "/cancellation-policy", 
-    element: <CancellationPolicy />, 
-    errorElement: <ErrorPage /> 
+    path: "/cancellation-policy",
+    element: <CancellationPolicy />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/install",
+    element: <InstallApp />,
+    errorElement: <ErrorPage />,
   },
 
   { 

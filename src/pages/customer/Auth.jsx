@@ -113,7 +113,8 @@ const Auth = () => {
       }
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
-      navigate(data.consumer?.isAdmin ? "/AdminDashboard" : "/");
+      // After signup: show install page — user just joined, perfect time to install
+      navigate(data.consumer?.isAdmin ? "/AdminDashboard" : "/install");
 
       // OTP FLOW (kept for when you re-enable):
       // const result = await dispatch(signup({ phoneNumber, name, email, password }));

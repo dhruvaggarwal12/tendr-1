@@ -423,6 +423,7 @@ export default function VendorChatModal() {
   const [botOtherMode, setBotOtherMode] = useState(false); // "Other..." selected — show text input
   const [conversationId, setConversationId] = useState(null);
   const [approved, setApproved] = useState(false);
+  const [justApproved, setJustApproved] = useState(false); // shows install banner on first approval
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -593,7 +594,7 @@ export default function VendorChatModal() {
       } catch {}
     });
 
-    socket.on("chat_approved", () => setApproved(true));
+    socket.on("chat_approved", () => { setApproved(true); setJustApproved(true); });
     socket.on("new_message", (msg) => {
       if (msg.sender === "user") return;
       setMessages(prev => [...prev, { text: msg.content, sender: "vendor", ts: Date.now() }]);
@@ -954,6 +955,23 @@ export default function VendorChatModal() {
                 style={{ marginTop: 4, padding: "9px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                 Minimise & wait
               </button>
+            </div>
+          )}
+
+          {/* Install App banner — shown once when chat first gets approved */}
+          {justApproved && (
+            <div style={{ alignSelf: "stretch", margin: "8px 4px", background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Your chat is now live!</div>
+                <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Install the app to never miss a message from {vendor?.name}.</div>
+              </div>
+              <a href="/install"
+                style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+                Install →
+              </a>
+              <button onClick={() => setJustApproved(false)}
+                style={{ flexShrink: 0, background: "none", border: "none", color: "#9B7450", fontSize: 14, cursor: "pointer", padding: 0, lineHeight: 1 }}>✕</button>
             </div>
           )}
 

@@ -112,6 +112,7 @@ export default function CustomerDashboard() {
   const [changeReqState, setChangeReqState] = useState({}); // { [planId]: { open, message, submitting, done } }
   const [cancelState, setCancelState] = useState({}); // { [planId]: { open, reason, submitting, done } }
   const [pdfGenerating, setPdfGenerating] = useState(false);
+  const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
 
   const openChangeReq = (planId) =>
     setChangeReqState(prev => ({ ...prev, [planId]: { open: true, message: "", submitting: false, done: false } }));
@@ -336,6 +337,25 @@ export default function CustomerDashboard() {
       <HamburgerNav />
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,40px) clamp(14px,3vw,32px) 80px" }}>
+
+        {/* Install App Banner — shown once per session, dismissible */}
+        {showInstallBanner && (
+          <div style={{ display: "flex", alignItems: "center", gap: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "14px 18px", marginBottom: 24, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 28, flexShrink: 0 }}>📲</span>
+            <div style={{ flex: 1, minWidth: 180 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A", marginBottom: 2 }}>
+                {plans.length > 0 ? `You have ${plans.length} active booking${plans.length > 1 ? "s" : ""}` : "Manage bookings on the go"}
+              </div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Install Tendr for instant updates, chat and tracking.</div>
+            </div>
+            <button onClick={() => navigate("/install")}
+              style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "#CCAB4A", color: "#2C1A0E", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>
+              Install App →
+            </button>
+            <button onClick={() => { setShowInstallBanner(false); sessionStorage.setItem("tendr_install_dismissed", "1"); }}
+              style={{ flexShrink: 0, background: "none", border: "none", color: "rgba(255,255,255,0.5)", fontSize: 18, cursor: "pointer", padding: 0, lineHeight: 1 }}>✕</button>
+          </div>
+        )}
 
         {/* Profile card */}
         <div className="dashboard-profile-card" style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", padding: "28px 32px", marginBottom: 32, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>

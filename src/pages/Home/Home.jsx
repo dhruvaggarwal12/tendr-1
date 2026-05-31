@@ -614,17 +614,12 @@ const Home = () => {
                 Start Planning →
               </button>
 
-              {/* PWA install button — shown only when Chrome fires beforeinstallprompt */}
-              {showInstall && (
-                <button
-                  onClick={handleInstall}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "transparent", border: "1.5px solid rgba(196,122,46,0.4)", color: "#C47A2E", fontSize: 14, fontWeight: 700, padding: "10px 22px", borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s", alignSelf: "flex-start" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
-                >
-                  📲 Install Tendr App
-                </button>
-              )}
+              {/* Install link — subtle, doesn't compete with main CTA */}
+              <a href="/install" style={{ fontSize: 13, color: "#9B7450", textDecoration: "none", alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 5, marginTop: -4 }}
+                onMouseEnter={e => e.currentTarget.style.color = "#C47A2E"}
+                onMouseLeave={e => e.currentTarget.style.color = "#9B7450"}>
+                📲 Get the app
+              </a>
             </div>
           </div>
 

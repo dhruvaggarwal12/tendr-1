@@ -373,6 +373,21 @@ const PaymentSuccessPage = () => {
           )}
         </div>
 
+        {/* ── Install App CTA ── */}
+        <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 18, padding: "20px 22px", marginBottom: 20, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 36, flexShrink: 0 }}>📲</div>
+          <div style={{ flex: 1, minWidth: 180 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: "#CCAB4A", marginBottom: 4 }}>Install the Tendr App</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.65)", lineHeight: 1.5 }}>
+              Get instant notifications when vendors confirm timings, send messages or your booking status changes.
+            </div>
+          </div>
+          <button onClick={() => navigate("/install")}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "#CCAB4A", color: "#2C1A0E", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>
+            Install Now →
+          </button>
+        </div>
+
         {/* ── Action buttons ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           <a
