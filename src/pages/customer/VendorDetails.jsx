@@ -53,6 +53,10 @@ const VendorDetailsPage = () => {
 
   // If navigated from listings
   const vendorFromState = location.state?.vendor;
+  // Only show compare button when navigated from normal booking flow
+  const showCompare = location.state?.compareInProfile === true;
+  // Skip pre-chat form if event details already collected (normal booking flow)
+  const hasEventContext = !!(location.state?.compareInProfile && formEventType);
 
   // Redux compare state
   const compareSelected = useSelector((state) => state.listingFilters.compareSelected);
@@ -361,8 +365,15 @@ const VendorDetailsPage = () => {
             <button
               onClick={() => {
                 if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
-                setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
-                setChatFormOpen(true);
+                if (hasEventContext) {
+                  // Normal booking flow: event data in Redux — open chat directly, wizard runs
+                  dispatch(setBookingType("you-do-it"));
+                  openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                } else {
+                  // Top Rated / Search: show all-at-once form first
+                  setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
+                  setChatFormOpen(true);
+                }
               }}
               style={{ flexShrink: 0, padding: "11px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.35)", whiteSpace: "nowrap" }}
             >
@@ -692,13 +703,13 @@ const VendorDetailsPage = () => {
                 <button
                   onClick={() => {
                     if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
-                    setChatEventForm({
-                      eventType: formEventType || "",
-                      guests: formGuests ? String(formGuests) : "",
-                      date: formDate || "",
-                      location: formLocation || "",
-                    });
-                    setChatFormOpen(true);
+                    if (hasEventContext) {
+                      dispatch(setBookingType("you-do-it"));
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    } else {
+                      setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
+                      setChatFormOpen(true);
+                    }
                   }}
                   style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", marginBottom: 6 }}
                 >
@@ -708,8 +719,8 @@ const VendorDetailsPage = () => {
                   Our team reviews and connects you within a few hours
                 </p>
 
-                {/* Save */}
-                {(() => {
+                {/* Compare — only from normal booking flow */}
+                {showCompare && (() => {
                   const isSaved = compareSelected.some(v => v._id === vendor._id);
                   return (
                     <button

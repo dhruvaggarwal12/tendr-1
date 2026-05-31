@@ -629,6 +629,7 @@ const VendorList = () => {
               setSortOrder={setSortOrder}
               compareSelected={compareSelected}
               onToggleCompare={toggleCompare}
+              compareInProfile={true}
               isLoggedIn={!!token}
             />
 

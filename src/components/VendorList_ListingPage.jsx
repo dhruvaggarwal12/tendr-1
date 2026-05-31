@@ -37,6 +37,7 @@ const VendorList_ListingPage = ({
   compareSelected = [],
   onToggleCompare,
   hideCompare = false,
+  compareInProfile = false, // when true: VendorDetails will show compare button
   isLoggedIn = false,
   requireFormBeforeChat = false, // when true: show event form before opening chat
 }) => {
@@ -73,11 +74,11 @@ const VendorList_ListingPage = ({
 
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();
-    // Save scroll position before leaving
     sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
     navigate(`/vendor/${vendorId}`, {
       state: {
         from: "listing",
+        compareInProfile, // passed from parent (true only in normal booking flow)
         filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder },
       },
     });
