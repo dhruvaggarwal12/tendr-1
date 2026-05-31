@@ -370,19 +370,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
-          {/* Gift Hampers quick-link — above Browse Vendors, drawer-only (mobile) */}
-          <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-            <button onClick={() => { close(); navigate("/gift-hampers-cakes"); }}
-              style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
-            >
-              <span style={{ fontSize: 17 }}>🎁</span>
-              <span style={{ fontSize: 12.5, fontWeight: 700, color: "#CCAB4A" }}>Gift Hampers &amp; Cakes</span>
-              <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(204,171,74,0.6)" }}>→</span>
-            </button>
-          </div>
-
           {/* Nav sections */}
           <div style={{ padding: "8px 0" }}>
             {NAV_SECTIONS.map((sec, si) => (
@@ -657,6 +644,19 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 </div>
               </div>
             )}
+
+            {/* Gift Hampers quick-link — drawer (mobile) only, above Browse Vendors */}
+            <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+              <button onClick={() => { close(); navigate("/gift-hampers-cakes"); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
+              >
+                <span style={{ fontSize: 17 }}>🎁</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#CCAB4A" }}>Gift Hampers &amp; Cakes</span>
+                <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(204,171,74,0.6)" }}>→</span>
+              </button>
+            </div>
 
             {/* Nav sections */}
             <div style={{ padding: "12px 0", flex: 1 }}>
