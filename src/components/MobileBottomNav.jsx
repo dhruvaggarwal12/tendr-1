@@ -95,7 +95,7 @@ function BottomNavInner() {
   ];
 
   return (
-    <>
+    <div className="mobile-bottom-nav-root">
       {/* Browse category picker — pops up just above the bottom nav */}
       {browseOpen && (
         <>
@@ -252,10 +252,11 @@ function BottomNavInner() {
 
       <style>{`
         @keyframes sheet-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @media (min-width: 768px) { .mobile-bottom-nav { display: none !important; } }
-        @media (max-height: 450px) { .mobile-bottom-nav { display: none !important; } }
+        /* Hide EVERYTHING in this portal on desktop — the entire root wrapper */
+        @media (min-width: 768px) { .mobile-bottom-nav-root { display: none !important; } }
+        @media (max-height: 450px) { .mobile-bottom-nav-root { display: none !important; } }
       `}</style>
-    </>
+    </div>
   );
 }
 
