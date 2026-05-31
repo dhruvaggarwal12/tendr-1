@@ -6,6 +6,25 @@
 } */
 
 /* ─────────────────────────────────────────────
+   GLOBAL MOBILE FIXES
+───────────────────────────────────────────── */
+/* Prevent iOS 300ms tap delay on all interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Bottom nav safe-area padding so last content isn't hidden */
+@media (max-width: 767px) {
+  #root {
+    padding-bottom: 60px;
+  }
+  /* Pages with sticky CTA need more bottom space */
+  .vendor-profile-content {
+    padding-bottom: 140px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────
    GLOBAL MOBILE SIZE REDUCTION  (≤ 767px)
    Reduces font sizes, padding, card sizes
    across all pages and components

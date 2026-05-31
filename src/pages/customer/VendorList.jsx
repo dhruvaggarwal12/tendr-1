@@ -337,26 +337,28 @@ const VendorList = () => {
               );
             })()}
 
-            {/* Category switcher chips — visible directly on the page */}
-            {(() => {
-              const ALL_CATS = ["Photographer", "Caterer", "Decorator", "DJ"];
-              const cats = selectedCategories.length > 0 ? selectedCategories : ALL_CATS;
-              if (cats.length < 2) return null;
-              return (
-                <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
-                  {cats.map(cat => (
-                    <button key={cat} onClick={() => dispatch(setFilters({ serviceType: cat }))}
-                      style={{ padding: "6px 16px", borderRadius: 100, border: "1.5px solid", fontSize: 13, fontWeight: serviceType === cat ? 700 : 500, cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s",
-                        borderColor: serviceType === cat ? "#C47A2E" : "rgba(196,122,46,0.25)",
-                        background: serviceType === cat ? "rgba(196,122,46,0.1)" : "#fff",
-                        color: serviceType === cat ? "#C47A2E" : "#6B3A1F",
-                      }}>
-                      {cat === "Photographer" ? "📸" : cat === "Caterer" ? "🍽" : cat === "Decorator" ? "🎀" : "🎵"} {cat}
-                    </button>
-                  ))}
-                </div>
-              );
-            })()}
+            {/* Category switcher — always shows all 4, active one highlighted */}
+            <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
+              {[
+                { id: "Photographer", emoji: "📸" },
+                { id: "Caterer",      emoji: "🍽" },
+                { id: "Decorator",    emoji: "🎀" },
+                { id: "DJ",           emoji: "🎵" },
+              ].map(({ id, emoji }) => (
+                <button key={id} onClick={() => dispatch(setFilters({ serviceType: id }))}
+                  style={{
+                    padding: "7px 16px", borderRadius: 100, border: "1.5px solid", fontSize: 13,
+                    fontWeight: serviceType === id ? 700 : 500, cursor: "pointer",
+                    fontFamily: "'Outfit',sans-serif", flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s",
+                    borderColor: serviceType === id ? "#C47A2E" : "rgba(196,122,46,0.22)",
+                    background: serviceType === id ? "#C47A2E" : "#fff",
+                    color: serviceType === id ? "#fff" : "#6B3A1F",
+                    boxShadow: serviceType === id ? "0 3px 10px rgba(196,122,46,0.3)" : "none",
+                  }}>
+                  {emoji} {id === "Photographer" ? "Photography" : id}
+                </button>
+              ))}
+            </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
@@ -470,12 +472,12 @@ const VendorList = () => {
                 {/* Filters — bottom sheet on mobile, dropdown on desktop */}
                 {filtersOpen && (
                   <>
-                    {/* Backdrop */}
-                    <div style={{ position: "fixed", inset: 0, zIndex: 99 }} onClick={() => setFiltersOpen(false)} />
+                    {/* Backdrop — above bottom nav */}
+                    <div style={{ position: "fixed", inset: 0, zIndex: 99993 }} onClick={() => setFiltersOpen(false)} />
 
-                    {/* Desktop dropdown (unchanged) */}
+                    {/* Desktop dropdown */}
                     <div className="filters-desktop-panel" style={{
-                      position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 100,
+                      position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 99994,
                       width: 320, maxHeight: "70vh", overflowY: "auto",
                       background: "#fff", borderRadius: 16,
                       border: "1.5px solid rgba(196,122,46,0.2)",
@@ -494,9 +496,9 @@ const VendorList = () => {
                       )}
                     </div>
 
-                    {/* Mobile bottom sheet */}
+                    {/* Mobile bottom sheet — above bottom nav (99990) */}
                     <div className="filters-mobile-sheet" style={{
-                      position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100,
+                      position: "fixed", bottom: 60, left: 0, right: 0, zIndex: 99994,
                       background: "#FFFCF5", borderRadius: "20px 20px 0 0",
                       boxShadow: "0 -8px 40px rgba(44,26,14,0.18)",
                       maxHeight: "75vh", overflowY: "auto",
