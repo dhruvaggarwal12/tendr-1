@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import HamburgerNav from "../../components/HamburgerNav";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
@@ -56,19 +57,11 @@ export default function InstallApp() {
   const device = DEVICES.find(d => d.id === active);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, display: "flex", flexDirection: "column" }}>
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
 
-      {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "20px 24px", display: "flex", alignItems: "center", gap: 14 }}>
-        <img src={tendrLogo} alt="Tendr" style={{ height: 28, objectFit: "contain", cursor: "pointer" }} onClick={() => navigate("/")} />
-        <div style={{ flex: 1 }} />
-        <button onClick={() => navigate(-1)}
-          style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", borderRadius: 8, padding: "6px 14px", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-          ← Back
-        </button>
-      </div>
+      <HamburgerNav title="Install App" noSidebar />
 
-      <div style={{ flex: 1, maxWidth: 560, margin: "0 auto", padding: "40px 20px 80px", width: "100%" }}>
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "32px 20px 80px", width: "100%" }}>
 
         {/* Hero */}
         <div style={{ textAlign: "center", marginBottom: 36 }}>
@@ -157,9 +150,9 @@ export default function InstallApp() {
           style={{ display: "block", width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, textAlign: "center", textDecoration: "none", boxSizing: "border-box", boxShadow: "0 4px 18px rgba(196,122,46,0.35)", marginBottom: 14 }}>
           Open Tendr in Browser →
         </a>
-        <button onClick={() => navigate(-1)}
+        <button onClick={() => navigate("/")}
           style={{ width: "100%", padding: "12px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-          ← Go Back
+          Go to Home →
         </button>
 
       </div>

@@ -61,6 +61,7 @@ const Auth = () => {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
+  const [showInstallModal, setShowInstallModal] = useState(false);
 
   useEffect(() => {
     setIsSignup(location.pathname === "/signup");
@@ -113,8 +114,9 @@ const Auth = () => {
       }
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
-      // After signup: show install page — user just joined, perfect time to install
-      navigate(data.consumer?.isAdmin ? "/AdminDashboard" : "/install");
+      if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
+      // After signup: show install modal — user can choose to install or skip
+      setShowInstallModal(true);
 
       // OTP FLOW (kept for when you re-enable):
       // const result = await dispatch(signup({ phoneNumber, name, email, password }));
@@ -158,6 +160,30 @@ const Auth = () => {
 
   const isBusy = loading || localLoading;
   const bgPhoto = isSignup ? signupbackground : loginbackground;
+
+  if (showInstallModal) return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}>
+      <div style={{ background: "#FFFCF5", borderRadius: 22, padding: "32px 28px", maxWidth: 380, width: "100%", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", textAlign: "center" }}>
+        <div style={{ fontSize: 48, marginBottom: 14 }}>📲</div>
+        <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em" }}>Install Tendr App</h2>
+        <p style={{ fontSize: 13.5, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.65 }}>
+          Get instant notifications, chat with vendors and track your bookings right from your home screen. No app store needed.
+        </p>
+        <div style={{ display: "flex", gap: 10, flexDirection: "column" }}>
+          <button
+            onClick={() => navigate("/install")}
+            style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+            Install App →
+          </button>
+          <button
+            onClick={() => navigate("/")}
+            style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            Skip for now
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", fontFamily: font, position: "relative" }}>
