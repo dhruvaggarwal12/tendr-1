@@ -159,7 +159,16 @@ const Auth = () => {
   const bgPhoto = isSignup ? signupbackground : loginbackground;
 
   return (
-    <div style={{ minHeight: "100vh", display: "flex", fontFamily: font }}>
+    <div style={{ minHeight: "100vh", display: "flex", fontFamily: font, position: "relative" }}>
+      {/* Back arrow — mobile only */}
+      <button
+        onClick={() => navigate(-1)}
+        className="auth-back-btn"
+        style={{ display: "none", position: "fixed", top: 14, left: 14, zIndex: 100, width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(255,252,245,0.95)", cursor: "pointer", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#6B3A1F", boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+      >
+        ←
+      </button>
+      <style>{`@media(max-width:767px){ .auth-back-btn { display: flex !important; } }`}</style>
 
       {/* ── Left panel: photo + branding ── */}
       <div

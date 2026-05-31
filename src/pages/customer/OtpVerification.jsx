@@ -119,8 +119,11 @@ const OTPPage = () => {
   };
 
   return (
-    <div className="w-screen min-h-screen flex flex-col bg-[#E8DED1]">
+    <div className="w-screen min-h-screen flex flex-col bg-[#E8DED1]" style={{ position: "relative" }}>
       <BasicSpeedDial/>
+      {/* Back arrow — mobile only */}
+      <button onClick={() => navigate(-1)} className="auth-back-btn" style={{ display: "none", position: "fixed", top: 14, left: 14, zIndex: 100, width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(255,252,245,0.95)", cursor: "pointer", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#6B3A1F" }}>←</button>
+      <style>{`@media(max-width:767px){ .auth-back-btn { display: flex !important; } }`}</style>
       <div className="flex-grow flex items-center justify-center p-4">
         <div className="bg-[#F7F4EF] rounded-2xl shadow-lg w-[454px] h-[530px] p-6 flex flex-col items-center">
           <img

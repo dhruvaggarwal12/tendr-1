@@ -49,9 +49,9 @@ export default function SearchResults() {
     return () => clearTimeout(t);
   }, []);
 
-  // Fetch vendors when filters change — all locations combined, no location swap
+  // Fetch vendors when filters change — show all vendors if no category detected
   useEffect(() => {
-    if (!activeCat && !isUnknown) return;
+    if (isUnknown) return; // unknown screen handled separately
     setLoading(true);
     const params = new URLSearchParams();
     if (activeCat) params.set("serviceTypes", activeCat);
