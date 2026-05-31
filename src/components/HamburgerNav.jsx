@@ -60,6 +60,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const [drawerOpen,    setDrawerOpen]    = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [savedOpen,     setSavedOpen]     = useState(false);
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  const [bookmarkTick,  setBookmarkTick]  = useState(0);
+  const getSavedVendors = () => { try { return JSON.parse(localStorage.getItem("tendr_saved_vendors") || "[]"); } catch { return []; } };
+  const removeSaved = (id) => { localStorage.setItem("tendr_saved_vendors", JSON.stringify(getSavedVendors().filter(v => v._id !== id))); setBookmarkTick(t => t + 1); };
   const [reviewPopup,   setReviewPopup]   = useState(false);
   const [searchQuery,      setSearchQuery]      = useState("");
   const [showSuggest,      setShowSuggest]      = useState(false);
@@ -299,7 +303,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             {showSuggest && (
               <div style={{ position: "absolute", left: 10, right: 10, top: "calc(100% - 4px)", background: "#FFFEF9", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.18)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 300 }}>
                 {filteredSuggestions.map((s, i) => (
-                  <button key={i} onClick={() => handleNavSearch(s.text)}
+                  <button key={i}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggest(false); } else { handleNavSearch(s.text); } }}
                     style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
@@ -376,23 +382,23 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           <div style={{ padding: "8px 0" }}>
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
-                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 18px 4px" }}>{sec.label}</div>
+                <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px", textAlign: "left" }}>{sec.label}</div>
                 {sec.items.map(item => {
                   const isSoon     = !!item.comingSoon;
                   const isDisabled = !!item.disabled;
                   const isActive   = !isSoon && !isDisabled && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
                   if (isSoon) {
                     return (
-                      <div key={item.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 18px 9px 14px", borderLeft: "3px solid transparent" }}>
-                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontFamily: font }}>{item.label}</span>
+                      <div key={item.label} style={{ display: "flex", alignItems: "center", padding: "9px 16px", borderLeft: "3px solid transparent", gap: 10 }}>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.3)", fontFamily: font, textAlign: "left" }}>{item.label}</span>
                         <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(204,171,74,0.15)", color: "#CCAB4A", padding: "2px 7px", borderRadius: 20, flexShrink: 0 }}>Soon</span>
                       </div>
                     );
                   }
                   if (isDisabled) {
                     return (
-                      <div key={item.label} title="Fill your event details first" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "9px 18px 9px 14px", borderLeft: "3px solid transparent", opacity: 0.4, cursor: "not-allowed" }}>
-                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontFamily: font }}>{item.label}</span>
+                      <div key={item.label} title="Fill your event details first" style={{ display: "flex", alignItems: "center", padding: "9px 16px", borderLeft: "3px solid transparent", opacity: 0.4, cursor: "not-allowed", gap: 10 }}>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.85)", fontFamily: font, textAlign: "left" }}>{item.label}</span>
                         <span style={{ fontSize: 9, fontWeight: 700, color: "#CCAB4A", flexShrink: 0 }}>fill form first</span>
                       </div>
                     );
@@ -401,9 +407,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     <button key={item.label}
                       onClick={() => item.onClickOverride ? item.onClickOverride() : navigate(item.href)}
                       style={{
-                        display: "flex", alignItems: "center", justifyContent: "space-between",
+                        display: "flex", alignItems: "center",
                         width: "100%", textAlign: "left",
-                        padding: "9px 18px 9px 14px", border: "none",
+                        padding: "9px 16px", border: "none",
                         background: isActive ? "rgba(196,122,46,0.18)" : "transparent",
                         fontSize: 13, fontWeight: isActive ? 700 : 500,
                         color: isActive ? "#FFCC66" : "rgba(255,255,255,0.85)",
@@ -414,7 +420,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
                       onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</span>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left" }}>{item.label}</span>
                     </button>
                   );
                 })}
@@ -489,7 +495,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           {showSuggest && searchQuery.length > 0 && (
             <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 24px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 300 }}>
               {filteredSuggestions.slice(0, 4).map((s, i) => (
-                <button key={i} onClick={() => { if (s.href) { navigate(s.href); } else { handleNavSearch(s.text); } setSearchQuery(""); setShowSuggest(false); }}
+                <button key={i}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggest(false); } else { handleNavSearch(s.text); } }}
                   style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
@@ -509,6 +517,15 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           >
             {[0,1,2].map(i => <div key={i} style={{ width: 13, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
           </button>
+          {/* Saved Vendors button — shows when there are saved vendors */}
+          {(() => { const saved = getSavedVendors(); return saved.length > 0 ? (
+            <button onClick={() => setBookmarksOpen(true)}
+              style={{ position: "relative", width: 34, height: 34, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.07)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0, color: "#C47A2E" }}
+              title="Saved Vendors">
+              ♥
+              <span style={{ position: "absolute", top: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{saved.length}</span>
+            </button>
+          ) : null; })()}
           {/* Review & Pay button — shows when vendors finalised OR gift hampers in cart */}
           {(finalisedCount > 0 || ghCartCount > 0) && (
             <button
@@ -567,11 +584,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 </>
               )}
             </div>
-          ) : (
-            <button onClick={() => navigate("/login")} style={{ fontSize: 12, fontWeight: 600, color: "#6B3A1F", padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", cursor: "pointer", fontFamily: font }}>
-              Sign In
-            </button>
-          )}
+          ) : null}
         </div>
       </div>
 
@@ -761,6 +774,41 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           </div>
         </div>
       )}
+
+      {/* Saved Vendors panel */}
+      {bookmarksOpen && (() => { const savedList = getSavedVendors(); return (
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
+          onClick={() => setBookmarksOpen(false)}>
+          <div style={{ width: "92%", maxWidth: 500, background: "#FFFCF5", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>♥ Saved Vendors ({savedList.length})</h3>
+              <button onClick={() => setBookmarksOpen(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            </div>
+            {savedList.length === 0 ? (
+              <div style={{ padding: "40px 24px", textAlign: "center", color: "#9B7450", fontSize: 14 }}>No saved vendors yet.<br />Tap ♡ on any vendor card to save them here.</div>
+            ) : (
+              <div style={{ overflowY: "auto", padding: "10px 16px", flex: 1 }}>
+                {savedList.map(v => (
+                  <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.12)", background: "#fff", marginBottom: 8 }}>
+                    {v.image ? <img src={v.image} alt={v.name} style={{ width: 46, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} /> : <div style={{ width: 46, height: 38, borderRadius: 8, background: "rgba(196,122,46,0.1)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🏷</div>}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14, textAlign: "left" }}>{v.name}</div>
+                      <div style={{ fontSize: 11, color: "#9B7450", textAlign: "left" }}>{v.serviceType}{v.city ? ` · ${v.city}` : ""}</div>
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <button onClick={() => { setBookmarksOpen(false); navigate(`/vendor/${v._id}`); }}
+                        style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", cursor: "pointer", fontWeight: 600 }}>View</button>
+                      <button onClick={() => removeSaved(v._id)}
+                        style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.08)", background: "#f5f5f5", color: "#C47A2E", cursor: "pointer" }}>♥</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ); })()}
 
       <style>{`@keyframes drawerSlideIn { from { transform: translateX(-100%) } to { transform: translateX(0) } }`}</style>
 

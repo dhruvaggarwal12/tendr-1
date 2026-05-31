@@ -101,6 +101,13 @@
 button { transition: transform 0.12s ease, opacity 0.12s ease; }
 button:active:not(:disabled) { transform: scale(0.97); }
 
+/* ── Vendor card image height — smaller on mobile ── */
+@media (max-width: 640px) {
+  .vendor-card-img {
+    height: 160px !important;
+  }
+}
+
 /* ── Prevent iOS auto-zoom on input focus (requires font-size >= 16px) ── */
 @media (max-width: 767px) {
   input, textarea, select {

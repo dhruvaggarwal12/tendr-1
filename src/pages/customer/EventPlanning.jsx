@@ -117,6 +117,7 @@ const EventPlanning = () => {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [selectedPackages, setSelectedPackages] = useState({});
   const [catererMenu, setCatererMenu] = useState([]);
+  const [showYouDoItBudget, setShowYouDoItBudget] = useState(false);
   const [menuLoading, setMenuLoading] = useState(false);
   const [liveSlots, setLiveSlots] = useState(null);
 
@@ -1189,20 +1190,62 @@ const EventPlanning = () => {
               );
             })()}
 
+            {/* You Do It — budget range modal */}
+            {showYouDoItBudget && (
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ background: "#F8F4EF", borderRadius: 22, width: "100%", maxWidth: 500, boxShadow: "0 24px 64px rgba(0,0,0,0.3)", overflow: "hidden" }}>
+                  {/* Header */}
+                  <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "20px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Step 2 of 2</div>
+                      <h3 style={{ fontSize: 18, fontWeight: 900, color: "#CCAB4A", margin: 0 }}>Set your budget per service</h3>
+                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "4px 0 0" }}>You can adjust anytime while browsing vendors</p>
+                    </div>
+                    <button onClick={() => setShowYouDoItBudget(false)} style={{ width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                  </div>
+                  {/* Per-category sliders */}
+                  <div style={{ padding: "20px 24px 24px", display: "flex", flexDirection: "column", gap: 18 }}>
+                    {selectedVendors.map(cat => {
+                      const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 15000 };
+                      const val = savedCategoryBudgets[cat] || range.default;
+                      return (
+                        <div key={cat}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                            <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji || "🏷"} {cat}</span>
+                            <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
+                          </div>
+                          <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                            onChange={e => dispatch(setCategoryBudgets({ ...savedCategoryBudgets, [cat]: Number(e.target.value) }))}
+                            style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 6 }} />
+                          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                            <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <button
+                      onClick={() => {
+                        setShowYouDoItBudget(false);
+                        dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
+                        navigate("/listings", { state: { selectedCategories: selectedVendors } });
+                      }}
+                      style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.35)", marginTop: 4 }}>
+                      Browse Vendors →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {isYouDoIt ? (
               <button
                 disabled={selectedVendors.length === 0}
-                onClick={() => {
-                  if (selectedVendors.length === 0) return;
-                  // You Do It: go directly to listings, budget filter available in listing page
-                  dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                  navigate("/listings", { state: { selectedCategories: selectedVendors } });
-                }}
+                onClick={() => { if (selectedVendors.length > 0) { const init = {}; selectedVendors.forEach(c => { init[c] = savedCategoryBudgets[c] || CAT_BUDGET_RANGES[c]?.default || 10000; }); dispatch(setCategoryBudgets(init)); setShowYouDoItBudget(true); } }}
                 style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
                 onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
                 onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
               >
-                Continue Booking →
+                Set Budget & Browse →
               </button>
             ) : (
               <button

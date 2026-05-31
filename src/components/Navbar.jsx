@@ -422,7 +422,9 @@ const Navbar = ({
               <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
                 {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
                 {filteredSuggestions.map((s, i) => (
-                  <button key={i} onClick={() => { if (s.href) { navigate(s.href); setShowSuggestions(false); setSearchQuery(""); } else { setSearchQuery(s.text); handleSearch(s.text); } }}
+                  <button key={i}
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggestions(false); } else { handleSearch(s.text); } }}
                     style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
                     onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
@@ -707,7 +709,9 @@ const Navbar = ({
           {showSuggestions && searchQuery.length > 0 && (
             <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 24px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 9999 }}>
               {filteredSuggestions.slice(0, 4).map((s, i) => (
-                <button key={i} onClick={() => { if (s.href) { navigate(s.href); } else { setSearchQuery(s.text); handleSearch(s.text); } setSearchQuery(""); setShowSuggestions(false); setMenuOpen(false); }}
+                <button key={i}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggestions(false); setMenuOpen(false); } else { handleSearch(s.text); setMenuOpen(false); } }}
                   style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>

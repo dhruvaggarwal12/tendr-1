@@ -1,8 +1,19 @@
 // src/components/VendorList_ListingPage.jsx
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
+
+const SAVED_KEY = "tendr_saved_vendors";
+const getSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
+const isSaved = (id) => getSaved().some(v => v._id === id);
+const toggleSaved = (vendor) => {
+  const list = getSaved();
+  const exists = list.some(v => v._id === vendor._id);
+  localStorage.setItem(SAVED_KEY, JSON.stringify(
+    exists ? list.filter(v => v._id !== vendor._id) : [...list, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, image: vendor.image || vendor.portfolioPhotos?.[0] || "", city: vendor.city || "" }]
+  ));
+};
 
 const font = "'Outfit', sans-serif";
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80";
@@ -34,6 +45,12 @@ const VendorList_ListingPage = ({
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
+  const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
+
+  const handleToggleSave = useCallback((vendor) => {
+    toggleSaved(vendor);
+    setSavedTick(t => t + 1);
+  }, []);
 
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();
@@ -119,7 +136,7 @@ const VendorList_ListingPage = ({
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}
                   >
                     {/* Image — 60% of card */}
-                    <div style={{ height: 220, overflow: "hidden", position: "relative" }}>
+                    <div className="vendor-card-img" style={{ height: 220, overflow: "hidden", position: "relative" }}>
                       <img
                         src={vendor.image || vendor.portfolioPhotos?.[0] || FALLBACK_IMG}
                         alt={vendor.name}
@@ -188,7 +205,17 @@ const VendorList_ListingPage = ({
                         >
                           View Profile
                         </button>
-                        {/* Secondary CTA — compare, hidden when hideCompare=true */}
+                        {/* Save button — always visible */}
+                        {(() => { const saved = isSaved(vendor._id); return (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleToggleSave(vendor); }}
+                            title={saved ? "Saved" : "Save vendor"}
+                            style={{ padding: "10px 12px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: saved ? "rgba(196,122,46,0.1)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 16, cursor: "pointer", flexShrink: 0, transition: "all 0.15s", lineHeight: 1 }}
+                          >
+                            {saved ? "♥" : "♡"}
+                          </button>
+                        ); })()}
+                        {/* Compare CTA — hidden when hideCompare=true */}
                         {isLoggedIn && !hideCompare && (
                           <button
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
