@@ -6,6 +6,8 @@ import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor } fro
 import { useChatOverlay } from "../context/ChatContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa";
+import MobileBottomNav from "./MobileBottomNav";
+import SearchOverlay from "./SearchOverlay";
 
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
@@ -59,7 +61,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const [sidebarOpen,   setSidebarOpen]   = useState(true);
   const [drawerOpen,    setDrawerOpen]    = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
-  const [savedOpen,     setSavedOpen]     = useState(false);
+  const [savedOpen,       setSavedOpen]       = useState(false);
+  const [searchOverlay,   setSearchOverlay]   = useState(false);
   const [bookmarksOpen, setBookmarksOpen] = useState(false);
   const [bookmarkTick,  setBookmarkTick]  = useState(0);
   const getSavedVendors = () => { try { return JSON.parse(localStorage.getItem("tendr_saved_vendors") || "[]"); } catch { return []; } };
@@ -481,32 +484,14 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         {/* Left: Logo (small) */}
         <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 18, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
 
-        {/* Center: Search bar — always visible on mobile */}
-        <div style={{ flex: 1, minWidth: 0, margin: "0 6px", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 10px" }}>
-            <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>🔍</span>
-            <input value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setShowSuggest(true); }}
-              onFocus={() => setShowSuggest(true)}
-              onKeyDown={e => { if (e.key === "Enter") { handleNavSearch(); setShowMobileSearch(false); } if (e.key === "Escape") { setSearchQuery(""); setShowSuggest(false); } }}
-              placeholder="Search vendors, tools..."
-              style={{ flex: 1, border: "none", outline: "none", fontSize: 12, fontFamily: font, color: "#2C1A0E", background: "transparent", minWidth: 0 }} />
-            {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggest(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1, flexShrink: 0 }}>✕</button>}
-          </div>
-          {showSuggest && searchQuery.length > 0 && (
-            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 24px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 300 }}>
-              {filteredSuggestions.slice(0, 4).map((s, i) => (
-                <button key={i}
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggest(false); } else { handleNavSearch(s.text); } }}
-                  style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  {s.text}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Center: Search bar — tapping opens full-screen overlay */}
+        <button
+          onClick={() => setSearchOverlay(true)}
+          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "6px 10px", cursor: "pointer", textAlign: "left" }}
+        >
+          <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>🔍</span>
+          <span style={{ flex: 1, fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Search vendors, tools...</span>
+        </button>
 
         {/* Right: Hamburger + optional actions */}
         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
@@ -810,6 +795,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         </div>
       ); })()}
 
+      <MobileBottomNav />
+      <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
       <style>{`@keyframes drawerSlideIn { from { transform: translateX(-100%) } to { transform: translateX(0) } }`}</style>
 
       {/* Review & Pay popup */}

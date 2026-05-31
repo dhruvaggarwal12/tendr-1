@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
+import MobileBottomNav from "./MobileBottomNav";
+import SearchOverlay from "./SearchOverlay";
 
 const SEARCH_SUGGESTIONS = [
   { text: "Photographers in Delhi" },
@@ -212,6 +214,7 @@ const Navbar = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [searchFocused, setSearchFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [searchOverlay, setSearchOverlay] = useState(false);
   const searchRef = useRef(null);
   const navRef = useRef(null);
 
@@ -691,36 +694,15 @@ const Navbar = ({
           </div>
         </div>
 
-        {/* Mobile search bar — between logo and burger, hidden on desktop */}
-        <div className="mobile-search-bar" style={{ flex: 1, minWidth: 0, margin: "0 6px", position: "relative" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 8px" }}>
-            <FaSearch size={10} style={{ color: "#9B7450", flexShrink: 0 }} />
-            <input
-              value={searchQuery}
-              onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 150)}
-              onKeyDown={e => { if (e.key === "Enter") { handleSearch(); setMenuOpen(false); } }}
-              placeholder="Search..."
-              style={{ flex: 1, border: "none", outline: "none", fontSize: 12, fontFamily: font, color: "#2C1A0E", background: "transparent", minWidth: 0 }}
-            />
-            {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 12, padding: 0, lineHeight: 1 }}>✕</button>}
-          </div>
-          {showSuggestions && searchQuery.length > 0 && (
-            <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 24px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 9999 }}>
-              {filteredSuggestions.slice(0, 4).map((s, i) => (
-                <button key={i}
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggestions(false); setMenuOpen(false); } else { handleSearch(s.text); setMenuOpen(false); } }}
-                  style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  {s.text}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Mobile search bar — taps open full-screen overlay */}
+        <button
+          className="mobile-search-bar"
+          onClick={() => setSearchOverlay(true)}
+          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "6px 10px", cursor: "pointer", textAlign: "left" }}
+        >
+          <FaSearch size={10} style={{ color: "#9B7450", flexShrink: 0 }} />
+          <span style={{ flex: 1, fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>Search vendors...</span>
+        </button>
 
         {/* Burger (mobile) */}
         <button
@@ -924,6 +906,8 @@ const Navbar = ({
         </div>
       </div>
 
+      <MobileBottomNav />
+      <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
       <style>{`
         @media (min-width: 768px) {
           .burger-btn-custom { display: none !important; }

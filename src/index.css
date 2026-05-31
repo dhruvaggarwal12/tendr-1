@@ -161,10 +161,75 @@
 button { transition: transform 0.12s ease, opacity 0.12s ease; }
 button:active:not(:disabled) { transform: scale(0.97); }
 
-/* ── Vendor card image height — smaller on mobile ── */
-@media (max-width: 640px) {
+/* ── Vendor profile sticky CTA — mobile only ── */
+@media (max-width: 767px) {
+  .vendor-sticky-cta {
+    display: block !important;
+    position: fixed !important;
+    bottom: 56px !important; /* above bottom nav */
+    left: 0 !important;
+    right: 0 !important;
+    z-index: 8999 !important;
+    background: rgba(255,252,245,0.98) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    backdrop-filter: blur(16px) !important;
+    border-top: 1px solid rgba(196,122,46,0.15) !important;
+    padding: 10px 0 !important;
+    box-shadow: 0 -4px 20px rgba(139,69,19,0.1) !important;
+  }
+  /* Add bottom padding to vendor profile content so sticky CTA doesn't overlap */
+  .vendor-profile-content {
+    padding-bottom: 120px !important;
+  }
+}
+
+/* ── Vendor cards — horizontal layout on mobile ── */
+@media (max-width: 639px) {
+  /* Force single column */
+  .vendor-list-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  /* Horizontal card: image left, info right */
+  .vendor-card {
+    display: flex !important;
+    flex-direction: row !important;
+    min-height: 120px !important;
+    border-radius: 16px !important;
+  }
   .vendor-card-img {
-    height: 160px !important;
+    width: 110px !important;
+    min-width: 110px !important;
+    height: auto !important;
+    min-height: 120px !important;
+    flex-shrink: 0 !important;
+    border-radius: 0 !important;
+  }
+  .vendor-card-img img {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 120px !important;
+  }
+  /* Hide service type label and gradient on mobile (saves space) */
+  .vendor-card-img span:last-child {
+    display: none !important;
+  }
+  .vendor-card-info {
+    padding: 10px 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  .vendor-card-info h3 {
+    font-size: 13px !important;
+    margin: 0 0 4px !important;
+  }
+  /* Reduce review badge text */
+  .vendor-card-info > div:nth-child(3) span {
+    font-size: 10px !important;
+    padding: 2px 8px !important;
   }
 }
 

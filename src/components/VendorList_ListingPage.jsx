@@ -89,13 +89,25 @@ const VendorList_ListingPage = ({
               ))}
             </div>
           ) : vendors.length === 0 ? (
-            <div className="py-16 text-center">
-              <div className="mx-auto mb-3 h-12 w-12 rounded-full border border-dashed border-[#CCAB4A] flex items-center justify-center">
-                <svg className="h-6 w-6 text-[#CCAB4A]" viewBox="0 0 24 24" fill="none">
-                  <path d="M12 5v14m-7-7h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+            <div style={{ textAlign: "center", padding: "60px 24px 40px", fontFamily: font }}>
+              <div style={{ fontSize: 52, marginBottom: 16 }}>🔍</div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>No vendors found</h3>
+              <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 6px", lineHeight: 1.6 }}>
+                {serviceType ? `No ${serviceType.toLowerCase()} vendors matched your filters.` : "No vendors matched your filters."}
+              </p>
+              <p style={{ fontSize: 13, color: "#bbb", margin: "0 0 24px" }}>Try adjusting your budget, location, or removing filters.</p>
+              <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                <button
+                  onClick={() => navigate("/listings")}
+                  style={{ padding: "10px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Browse all {serviceType || "vendors"} →
+                </button>
+                <button
+                  onClick={() => navigate(-1)}
+                  style={{ padding: "10px 22px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  ← Go back
+                </button>
               </div>
-              <p className="text-sm sm:text-base text-gray-600">No vendors found matching your criteria.</p>
             </div>
           ) : (
             <div className="vendor-list-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-2 pb-4">
@@ -126,6 +138,7 @@ const VendorList_ListingPage = ({
                 return (
                   <div
                     key={vendor._id || index}
+                    className="vendor-card"
                     onClick={() => setQuickViewVendor(vendor)}
                     style={{
                       background: "#FFFCF5", borderRadius: 20,
@@ -172,7 +185,7 @@ const VendorList_ListingPage = ({
                     </div>
 
                     {/* Info */}
-                    <div style={{ padding: "14px 16px 16px" }}>
+                    <div className="vendor-card-info" style={{ padding: "14px 16px 16px" }}>
                       <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.3 }}>{vendor.name}</h3>
 
                       <div style={{ display: "flex", gap: 10, fontSize: 12, color: "#9B7450", marginBottom: 10, flexWrap: "wrap" }}>

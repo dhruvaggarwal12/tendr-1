@@ -409,7 +409,7 @@ const VendorList = () => {
                 ))}
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
+            <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, justifyContent: "space-between", flexWrap: "wrap", position: "sticky", top: 52, zIndex: 40, background: "rgba(255,252,245,0.97)", backdropFilter: "blur(12px)", padding: "8px 0", margin: "10px -3px 0", borderRadius: 10 }}>
               {/* Sort controls — left */}
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>

@@ -319,7 +319,29 @@ const VendorDetailsPage = () => {
         <ListingsNav onOpenSelected={openSelectedModal} selectedCount={compareSelected.length} showFinalisedBtn={true} hideTitle={true} />
       </div>
 
-      <div className="page-container" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
+      {/* Sticky bottom CTA — mobile only */}
+      {vendor && (
+        <div className="vendor-sticky-cta" style={{ display: "none" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, maxWidth: 500, margin: "0 auto", padding: "0 16px" }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
+              <div style={{ fontSize: 11, color: "#9B7450" }}>{vendor.serviceType}</div>
+            </div>
+            <button
+              onClick={() => {
+                if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
+                setChatFormOpen(true);
+              }}
+              style={{ flexShrink: 0, padding: "11px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.35)", whiteSpace: "nowrap" }}
+            >
+              💬 Request to Chat
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className="page-container vendor-profile-content" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
 
         {/* ── Hero Header ── */}
         <div style={{ padding: "28px 0 20px" }}>
