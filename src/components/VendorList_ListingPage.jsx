@@ -91,18 +91,23 @@ const VendorList_ListingPage = ({
 
         <div className="vendor-list">
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 py-8">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-lg border border-gray-100 bg-white p-3 sm:p-4">
-                  <div className="aspect-[16/10] w-full rounded-md bg-gray-200" />
-                  <div className="mt-3 h-4 w-3/4 rounded bg-gray-200" />
-                  <div className="mt-2 h-3 w-1/2 rounded bg-gray-200" />
-                  <div className="mt-4 flex items-center justify-between">
-                    <div className="h-3 w-24 rounded bg-gray-200" />
-                    <div className="h-3 w-16 rounded bg-gray-200" />
+            <div className="vendor-list-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 py-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                /* Skeleton matches horizontal card layout on mobile, vertical on desktop */
+                <div key={i} className="vendor-card animate-pulse"
+                  style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.08)", overflow: "hidden", display: "flex" }}>
+                  {/* Image placeholder */}
+                  <div className="vendor-card-img"
+                    style={{ width: 110, minWidth: 110, height: "auto", minHeight: 120, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", flexShrink: 0 }} />
+                  {/* Info placeholder */}
+                  <div className="vendor-card-info" style={{ padding: "12px 14px", flex: 1, display: "flex", flexDirection: "column", gap: 8, justifyContent: "center" }}>
+                    <div style={{ height: 14, width: "65%", borderRadius: 6, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                    <div style={{ height: 11, width: "45%", borderRadius: 6, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                    <div style={{ height: 30, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", marginTop: 4 }} />
                   </div>
                 </div>
               ))}
+              <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
             </div>
           ) : vendors.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 24px 40px", fontFamily: font }}>
@@ -438,12 +443,34 @@ const VendorList_ListingPage = ({
 
               {/* CTAs */}
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button
-                  onClick={(e) => { closePanel(); handleViewProfile(e, quickViewVendor._id); }}
-                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
-                >
-                  View Full Profile →
-                </button>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button
+                    onClick={(e) => { closePanel(); handleViewProfile(e, quickViewVendor._id); }}
+                    style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
+                  >
+                    View Full Profile →
+                  </button>
+                  {/* Share button */}
+                  {(() => {
+                    const [copied, setCopied] = useState(false);
+                    const share = async () => {
+                      const url = `${window.location.origin}/vendor/${quickViewVendor._id}`;
+                      if (navigator.share) { try { await navigator.share({ title: quickViewVendor.name, url }); } catch {} }
+                      else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2000); }
+                    };
+                    return (
+                      <button onClick={share} title={copied ? "Copied!" : "Share"}
+                        style={{ padding: "13px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: copied ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", cursor: "pointer", flexShrink: 0, fontSize: 16, transition: "all 0.2s" }}>
+                        {copied ? "✓" : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                          </svg>
+                        )}
+                      </button>
+                    );
+                  })()}
+                </div>
                 <button
                   onClick={() => {
                     if (!token) {

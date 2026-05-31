@@ -30,6 +30,20 @@ const VendorDetailsPage = () => {
   const [error, setError] = useState(null);
   const [chatFormOpen, setChatFormOpen] = useState(false);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
+  const [shareCopied, setShareCopied] = useState(false);
+
+  const handleShare = async () => {
+    const url = window.location.href;
+    const title = vendor?.name ? `${vendor.name} on Tendr` : "Check out this vendor on Tendr";
+    const text = vendor?.serviceType ? `Book ${vendor.serviceType.toLowerCase()} services from ${vendor.name}` : title;
+    if (navigator.share) {
+      try { await navigator.share({ title, text, url }); } catch {}
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2000);
+    }
+  };
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -134,11 +148,17 @@ const VendorDetailsPage = () => {
   }, [vendor]);
 
   const galleryRef = useRef(null);
+  const touchStartX = useRef(0);
   const scrollGallery = (dir) => {
     if (galleryRef.current) {
       const w = galleryRef.current.offsetWidth * 0.55;
       galleryRef.current.scrollBy({ left: dir * w, behavior: "smooth" });
     }
+  };
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd   = (e) => {
+    const delta = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(delta) > 40) scrollGallery(delta > 0 ? 1 : -1);
   };
 
   // Keyboard: arrows scroll photo gallery, Esc closes chat form
@@ -361,7 +381,16 @@ const VendorDetailsPage = () => {
             {isPhoneVerified && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle2 size={11} /> Phone Verified</span>}
             {vendor?.isTopRated && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>🏆 Top Rated</span>}
           </div>
-          <h1 style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", lineHeight: 1.1, letterSpacing: "-0.02em" }}>{vendor.name || "Vendor"}</h1>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+            <h1 style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", margin: 0, lineHeight: 1.1, letterSpacing: "-0.02em", flex: 1 }}>{vendor.name || "Vendor"}</h1>
+            <button onClick={handleShare}
+              style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: shareCopied ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, transition: "all 0.2s" }}
+              title={shareCopied ? "Link copied!" : "Share vendor"}>
+              {shareCopied ? "✓ Copied!" : (
+                <><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share</>
+              )}
+            </button>
+          </div>
           <div style={{ display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
             <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14, color: "#7A5535" }}>
               <MapPin size={14} color="#C47A2E" /> {primaryCity}{stateName ? ", " + stateName : ""}
@@ -388,6 +417,8 @@ const VendorDetailsPage = () => {
           <div
             ref={galleryRef}
             className="vendor-gallery-scroll"
+            onTouchStart={onTouchStart}
+            onTouchEnd={onTouchEnd}
             style={{
               display: "flex",
               gap: 10,
@@ -396,6 +427,7 @@ const VendorDetailsPage = () => {
               borderRadius: 20,
               scrollbarWidth: "none",
               msOverflowStyle: "none",
+              cursor: "grab",
             }}
           >
             <style>{`#vendor-gallery::-webkit-scrollbar { display: none; }`}</style>

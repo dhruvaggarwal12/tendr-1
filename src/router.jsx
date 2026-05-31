@@ -1,5 +1,11 @@
-import { createBrowserRouter } from "react-router-dom";
-import { lazy } from "react";
+import { createBrowserRouter, Outlet, useLocation } from "react-router-dom";
+import { lazy, useEffect } from "react";
+
+// Root layout — adds a lightweight fade-in on every page transition
+function RootLayout() {
+  const { key } = useLocation();
+  return <div key={key} className="route-fade"><Outlet /></div>;
+}
 
 // ── Eagerly loaded (critical path — loaded on first visit) ──────────────────
 import Home             from "./pages/Home/Home";
@@ -65,6 +71,9 @@ const AboutUs             = lazy(() => import("./pages/info/AboutUs.jsx"));
 
 
 const router = createBrowserRouter([
+  {
+    element: <RootLayout />,
+    children: [
   {
     path: "/",
     element: <Home />,
@@ -361,6 +370,8 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   // ─────────────────────────────────────────────────────────────────────────
+  ], // end children of RootLayout
+  }, // end RootLayout route
 ]);
 
 

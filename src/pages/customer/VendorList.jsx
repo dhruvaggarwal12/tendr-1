@@ -20,6 +20,7 @@ import Footer from "../../components/Footer.jsx";
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import JourneyProgress from "../../components/JourneyProgress";
 import HamburgerNav from "../../components/HamburgerNav";
+import PullToRefresh from "../../components/PullToRefresh";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
@@ -185,17 +186,34 @@ const VendorList = () => {
     navigate("/booking", { replace: true });
   }, []); // eslint-disable-line
 
-  // Restore saved scroll position (from vendor detail back-nav) or scroll to top
-  useEffect(() => {
+  // Restore saved scroll position after vendors load (not on mount — vendors aren't rendered yet)
+  const [pendingScroll, setPendingScroll] = useState(() => {
     const saved = sessionStorage.getItem("listings_scroll_y");
-    if (saved) {
-      sessionStorage.removeItem("listings_scroll_y");
-      const y = Number(saved);
+    if (saved) { sessionStorage.removeItem("listings_scroll_y"); return Number(saved); }
+    return null;
+  });
+  useEffect(() => {
+    if (pendingScroll !== null && !isLoading && vendorList.length > 0) {
+      const y = pendingScroll;
+      setPendingScroll(null);
+      // Two rAFs: first lets React paint, second lets the browser lay out images
       requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" })));
-    } else {
-      window.scrollTo(0, 0);
     }
-  }, []);
+  }, [isLoading, vendorList.length, pendingScroll]);
+
+  const doFetch = React.useCallback(() => {
+    setIsLoading(true);
+    const payload = {
+      ...(locationType && { location: locationType }),
+      ...(serviceType && { serviceTypes: [serviceType] }),
+      ...(currentCatBudget && { maxPrice: currentCatBudget }),
+      sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
+    };
+    return getVendors(payload)
+      .then((data) => { setVendorList(data.vendors || []); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
+      .catch((err) => console.error("Error fetching vendors:", err))
+      .finally(() => setIsLoading(false));
+  }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, currentCatBudget]);
 
   // fetch on changes — one category at a time using Redux serviceType
   useEffect(() => {
@@ -290,6 +308,7 @@ const VendorList = () => {
   }, [serviceType, locationType, sortBy, sortOrder]);
 
   return (
+    <PullToRefresh onRefresh={doFetch}>
     <div style={{ minHeight: "100vh", background: "#F8F4EF" }}>
       <SEO
         title={vendorListTitle(serviceType, locationType)}
@@ -867,6 +886,7 @@ const VendorList = () => {
       {/* Footer (unchanged) */}
       <Footer />
     </div>
+    </PullToRefresh>
   );
 };
 

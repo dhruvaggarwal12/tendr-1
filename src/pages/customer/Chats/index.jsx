@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { useChatOverlay } from "../../../context/ChatContext";
 import HamburgerNav from "../../../components/HamburgerNav";
 import MiniChatWidget from "../../../components/MiniChatWidget";
+import PullToRefresh from "../../../components/PullToRefresh";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -62,6 +63,7 @@ export default function CustomerChatList() {
   const hasPending = vendorChats.some(c => !c.chatApproved);
 
   return (
+    <PullToRefresh onRefresh={fetchChats}>
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <HamburgerNav active="Chats" />
       {showSupport && <MiniChatWidget onClose={() => setShowSupport(false)} />}
@@ -203,5 +205,6 @@ export default function CustomerChatList() {
 
       </div>
     </div>
+    </PullToRefresh>
   );
 }

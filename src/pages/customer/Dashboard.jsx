@@ -335,10 +335,10 @@ export default function CustomerDashboard() {
       {/* Main Navbar */}
       <HamburgerNav />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 32px 80px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,40px) clamp(14px,3vw,32px) 80px" }}>
 
         {/* Profile card */}
-        <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", padding: "28px 32px", marginBottom: 32, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
+        <div className="dashboard-profile-card" style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", padding: "28px 32px", marginBottom: 32, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
           <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
             {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
@@ -358,7 +358,7 @@ export default function CustomerDashboard() {
               style={{ fontSize: 13, fontWeight: 700, color: "#fff", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", borderRadius: 10, padding: "9px 20px", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
               + Plan New Event
             </button>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            <div className="dashboard-stats-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {[
               { label: "Total Events", val: counts.All },
               { label: "Upcoming", val: counts.Upcoming },
