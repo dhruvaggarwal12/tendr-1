@@ -5,13 +5,15 @@
   @apply font-kulfam;
 } */
 
-/* ── Page transition fade-in ── */
+/* ── Page transition fade-in — opacity only, NO transform ──
+   Using transform here breaks position:fixed elements (sidebar, modals)
+   because transform creates a new containing block for fixed descendants. */
 @keyframes route-fade {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 .route-fade {
-  animation: route-fade 0.18s ease forwards;
+  animation: route-fade 0.2s ease forwards;
 }
 
 /* ─────────────────────────────────────────────
