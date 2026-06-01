@@ -11,11 +11,8 @@ export default function OccasionsPage() {
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
 
-  // Admin-only for now
-  if (!user?.isAdmin) {
-    navigate("/");
-    return null;
-  }
+  // Admin-only — customers are redirected
+  if (!user?.isAdmin) { navigate("/"); return null; }
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
@@ -26,14 +23,12 @@ export default function OccasionsPage() {
 
         {/* Header */}
         <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "4px 14px", marginBottom: 12 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em" }}>Admin Preview</span>
-          </div>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>🎉 Plan by Occasion</p>
           <h1 style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-            Plan by Occasion
+            What are you celebrating?
           </h1>
           <p style={{ fontSize: 15, color: "#9B7450", margin: 0, maxWidth: 560 }}>
-            Curated decor ideas, gift suggestions, activities and checklists for every celebration. Community photos will be added as users share their events.
+            Curated decor ideas, gift suggestions, activities and checklists — tailored for every occasion.
           </p>
         </div>
 

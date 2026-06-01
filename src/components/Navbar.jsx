@@ -283,6 +283,7 @@ const Navbar = ({
     {
       label: "Our Products",
       items: [
+        ...(user?.isAdmin ? [{ label: "🎉 Plan by Occasion", onClick: () => window.open("/occasions", "_blank") }] : []),
         { label: "✅ Checklist",          href: "/checklist-picker" },
         { label: "⏱️ Timeline",           href: "/timeline-picker" },
         { label: "💰 Budget Allocator",   href: "/budget-picker" },

@@ -22,7 +22,7 @@ export default function OccasionDetail() {
 
   const occasion = getOccasionById(slug);
 
-  // Admin-only guard
+  // Admin-only
   if (!user?.isAdmin) { navigate("/"); return null; }
   if (!occasion) { navigate("/occasions"); return null; }
 

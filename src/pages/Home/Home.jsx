@@ -1108,6 +1108,69 @@ const Home = () => {
 
       <JourneyFlow />
 
+      {/* ── Plan by Occasion — admin preview only ── */}
+      {user?.isAdmin && (
+        <section style={{ background: "#F8F4EF", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+          <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+            <div style={{ textAlign: "center", marginBottom: 44 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>
+                🎉 Admin Preview
+              </p>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.02em" }}>
+                Plan by Occasion
+              </h2>
+              <p style={{ fontSize: 15, color: "#9B7450", margin: "0 auto", maxWidth: 480 }}>
+                Curated guides for every celebration — decor, gifts, activities and checklists.
+              </p>
+            </div>
+
+            {/* Occasion card strip */}
+            <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 8 }}>
+              {[
+                { id: "baby-shower",    icon: "🍼", name: "Baby Shower",    color: "#FFB6C1", img: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=400&q=70" },
+                { id: "newborn-welcome",icon: "👶", name: "Newborn Welcome", color: "#B5EAD7", img: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&q=70" },
+                { id: "first-birthday", icon: "🎂", name: "First Birthday",  color: "#FFDAC1", img: "https://images.unsplash.com/photo-1602631985686-1bb0e6a8696e?w=400&q=70" },
+                { id: "anniversary",    icon: "💍", name: "Anniversary",     color: "#FF6B9D", img: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&q=70" },
+                { id: "housewarming",   icon: "🏠", name: "Housewarming",    color: "#FFEAA7", img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&q=70" },
+                { id: "graduation",     icon: "🎓", name: "Graduation",      color: "#89CFF0", img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=70" },
+              ].map(({ id, icon, name, color, img }) => (
+                <button
+                  key={id}
+                  onClick={() => window.open(`/occasions/${id}`, "_blank")}
+                  style={{
+                    flex: "0 0 200px", borderRadius: 18, overflow: "hidden",
+                    border: "1.5px solid rgba(196,122,46,0.12)", cursor: "pointer",
+                    background: "#fff", textAlign: "left",
+                    boxShadow: "0 4px 20px rgba(139,69,19,0.08)", transition: "transform 0.2s",
+                    fontFamily: "'Outfit', sans-serif",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  <div style={{ height: 130, position: "relative", overflow: "hidden" }}>
+                    <img src={img} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 55%)" }} />
+                    <span style={{ position: "absolute", top: 10, left: 12, fontSize: 22 }}>{icon}</span>
+                  </div>
+                  <div style={{ padding: "12px 14px" }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>{name}</div>
+                    <div style={{ fontSize: 11, color: "#C47A2E", marginTop: 3, fontWeight: 600 }}>Themes · Gifts · Checklist ↗</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div style={{ textAlign: "center", marginTop: 28 }}>
+              <button
+                onClick={() => window.open("/occasions", "_blank")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                View All Occasions →
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Memories Section — admin preview only ── */}
       {user?.isAdmin && (() => {
         const BLANK_D = { coupleName: "Rahul & Priya", date: "15th Dec 2025", day: "Saturday", time: "7 PM", venue: "The Grand Palace", rsvp: "+91 9XXXXXXXXX" };

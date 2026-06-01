@@ -122,9 +122,12 @@ function BottomNavInner() {
 
             {/* Category grid — auto-fills based on count */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 12 }}>
-              {CATEGORIES.map(({ emoji, label, path }) => (
+              {[
+                ...CATEGORIES,
+                ...(user?.isAdmin ? [{ emoji: "🎉", label: "Plan by Occasion", path: null, newTab: true }] : []),
+              ].map(({ emoji, label, path, newTab }) => (
                 <button key={label}
-                  onClick={() => { navigate(path); setBrowseOpen(false); }}
+                  onClick={() => { if (newTab) { window.open("/occasions", "_blank"); setBrowseOpen(false); } else { navigate(path); setBrowseOpen(false); } }}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,
                     padding: "14px 16px", borderRadius: 14,
