@@ -382,10 +382,11 @@ const EventPlanning = () => {
     const CAT_EMOJI_MAP = { Caterer: "🍽", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
 
     const currentVendors = smartPlan.lineup.map(({ category, vendors: vs, estimatedCost: lineupCost }) => {
+      const pool = vs.slice(0, 3); // max 3 suggestions per category
       const offset = vendorOffset[category] || 0;
-      const vendor = vs.length > 0 ? vs[offset % vs.length] : null;
+      const vendor = pool.length > 0 ? pool[offset % pool.length] : null;
       const estimatedCost = savedCategoryBudgets[category] || lineupCost || 0;
-      return { category, estimatedCost, vendor, totalVendors: vs.length };
+      return { category, estimatedCost, vendor, totalVendors: pool.length };
     });
 
     const wizardCatOrder = ['Caterer', 'Decorator', 'Photographer', 'DJ'];
@@ -818,7 +819,22 @@ const EventPlanning = () => {
                       {vendor.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 28 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>{vendor.name}</div>
+                      {/* Vendor name + swap arrows */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</span>
+                        {totalVendors > 1 && (
+                          <div style={{ display: "flex", gap: 3, flexShrink: 0 }}>
+                            <button
+                              onClick={() => { setVendorOffset(p => { const cur = p[category] || 0; return { ...p, [category]: (cur - 1 + totalVendors) % totalVendors }; }); setExpandedCat(null); }}
+                              title="Previous vendor"
+                              style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>‹</button>
+                            <button
+                              onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
+                              title="Next vendor"
+                              style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>›</button>
+                          </div>
+                        )}
+                      </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
                         {vendor.avgReviewScore > 0 && <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700 }}>{stars(vendor.avgReviewScore)} {vendor.avgReviewScore.toFixed(1)}</span>}
                         {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 10.5, background: "rgba(196,122,46,0.1)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "2px 8px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+</span>}
@@ -857,12 +873,9 @@ const EventPlanning = () => {
                             const newBudgets = { ...savedCategoryBudgets, [category]: Number(e.target.value) };
                             dispatch(setCategoryBudgets(newBudgets));
                           }}
+                          onMouseUp={() => fetchSmartPlan()}
+                          onTouchEnd={() => fetchSmartPlan()}
                           style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
-                        <button
-                          onClick={() => fetchSmartPlan()}
-                          style={{ width: "100%", marginTop: 6, padding: "7px 0", borderRadius: 8, border: "none", background: "rgba(196,122,46,0.08)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                          ↺ Refresh vendors →
-                        </button>
                       </div>
                     );
                   })()}
@@ -871,12 +884,6 @@ const EventPlanning = () => {
                       style={{ padding: "8px 14px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                       Quick View
                     </button>
-                    {totalVendors > 1 && (
-                      <button onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
-                        style={{ padding: "8px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.12)", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                        ↺ Try another
-                      </button>
-                    )}
                   </div>
                   </>
                 ) : (
@@ -886,6 +893,28 @@ const EventPlanning = () => {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Browse All Vendors — smart planning exit to normal flow */}
+          <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16, padding: "14px 20px", background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", boxShadow: "0 2px 8px rgba(196,122,46,0.06)" }}>
+            <div style={{ flex: 1, minWidth: 200 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>Didn't find the perfect vendor?</div>
+              <div style={{ fontSize: 11.5, color: "#9B7450" }}>Browse all vendors with your budget and preferences already applied.</div>
+            </div>
+            <button
+              onClick={() => {
+                dispatch(setFilters({
+                  serviceType: selectedVendors[0],
+                  eventType: formData?.eventType || "",
+                  locationType: formData?.location || "",
+                  date: formData?.date || "",
+                  guestCount: Number(formData?.guests) || 0,
+                }));
+                navigate("/listings", { state: { selectedCategories: selectedVendors } });
+              }}
+              style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}>
+              Browse All Vendors →
+            </button>
           </div>
 
           {/* Decor Finder nudge */}
