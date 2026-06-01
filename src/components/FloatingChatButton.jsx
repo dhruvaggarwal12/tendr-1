@@ -328,9 +328,22 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
         @media (max-width: 767px) {
-          /* Hide on mobile — bottom nav Chats tab handles navigation */
-          .floating-chat-btn { display: none !important; }
-          .chat-popup { display: none !important; }
+          /* Position above the 60px bottom nav bar */
+          .floating-chat-btn {
+            bottom: 72px !important;
+            right: 14px !important;
+            padding: 12px !important;
+            width: 50px !important;
+            height: 50px !important;
+          }
+          .chat-btn-text { display: none; }
+          .chat-popup {
+            right: 12px !important;
+            left: 12px !important;
+            min-width: unset !important;
+            max-width: unset !important;
+            bottom: 130px !important;
+          }
         }
       `}</style>
 

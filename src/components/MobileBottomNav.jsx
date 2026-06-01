@@ -90,7 +90,6 @@ function BottomNavInner() {
     { label: "Home",    paths: ["/"],                              onTap: () => navigate("/") },
     { label: "Browse",  paths: ["/listings","/top-rated","/search"], onTap: () => setBrowseOpen(o => !o) },
     { label: "Plan",    paths: ["/booking","/plan-event"],          onTap: () => navigate("/booking") },
-    { label: "Chats",   paths: ["/chats","/chat"],                  onTap: () => navigate("/chats") },
     { label: "Profile", paths: ["/dashboard","/AdminDashboard"],    onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
 
