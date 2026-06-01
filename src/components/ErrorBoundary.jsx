@@ -67,13 +67,6 @@ const ErrorFallback = ({ error, errorInfo }) => {
           We're sorry, but something unexpected happened. Don't worry, our team has been notified and we're working to fix it.
         </p>
 
-        {/* Temporary: show error in production for debugging */}
-        {error && (
-          <div style={{ background: "#fee2e2", borderRadius: 8, padding: "8px 12px", marginBottom: 16, fontSize: 11, color: "#b91c1c", textAlign: "left", wordBreak: "break-all" }}>
-            <strong>Debug:</strong> {error.toString()}
-          </div>
-        )}
-
         {/* Error Details (Development Only) */}
         {import.meta.env.DEV && error && (
           <details className="mb-6 text-left">
