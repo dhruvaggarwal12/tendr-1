@@ -16,6 +16,8 @@ const STATUS_MAP = {
   in_progress: { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
   upcoming:   { bg: "#eff6ff", color: "#0369a1", border: "#bfdbfe" },
   processing: { bg: "#faf5ff", color: "#7c3aed", border: "#ddd6fe" },
+  closed:     { bg: "#f3f4f6", color: "#6b7280", border: "#d1d5db" },
+  CLOSED:     { bg: "#f3f4f6", color: "#6b7280", border: "#d1d5db" },
 };
 
 export default function Badge({

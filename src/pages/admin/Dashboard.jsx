@@ -434,6 +434,7 @@ const AdminDashboard = () => {
 
   // 24-hour inactivity TTL — filter and auto-delete inactive conversations
   const TTL_MS = 24 * 60 * 60 * 1000;
+  const isClosed = (c) => c.status === 'CLOSED' || c.status === 'closed';
   const isExpired = (c) => {
     const last = c.updatedAt || c.lastMessageAt || c.createdAt;
     return last && (Date.now() - new Date(last).getTime()) > TTL_MS;
@@ -445,10 +446,10 @@ const AdminDashboard = () => {
     return remaining > 0 ? Math.ceil(remaining / 3600000) : 0;
   };
 
-  // Active (non-expired, non-deleted) chats — always compare as strings
-  const recentChats  = rawRecentChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
-  const supportChats = rawSupportChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
-  const adminChats   = rawAdminChats.filter(c => !isExpired(c) && !deletedChatIds.has(c._id?.toString()));
+  // Active + closed (non-expired or explicitly CLOSED) chats — CLOSED ones always stay visible
+  const recentChats  = rawRecentChats.filter(c => (!isExpired(c) || isClosed(c)) && !deletedChatIds.has(c._id?.toString()));
+  const supportChats = rawSupportChats.filter(c => (!isExpired(c) || isClosed(c)) && !deletedChatIds.has(c._id?.toString()));
+  const adminChats   = rawAdminChats.filter(c => (!isExpired(c) || isClosed(c)) && !deletedChatIds.has(c._id?.toString()));
 
   // Auto-select conversation when navigating from Smart Plans tab
   useEffect(() => {
@@ -461,10 +462,10 @@ const AdminDashboard = () => {
     }
   }, [adminChats, pendingConciergeId]);
 
-  // Auto-delete expired conversations from DB when they're discovered
+  // Auto-delete expired conversations from DB — skip CLOSED ones (admin reviews those)
   useEffect(() => {
     if (!token || !user?.isAdmin) return;
-    const expired = [...rawRecentChats, ...rawSupportChats, ...rawAdminChats].filter(isExpired);
+    const expired = [...rawRecentChats, ...rawSupportChats, ...rawAdminChats].filter(c => isExpired(c) && !isClosed(c));
     if (!expired.length) return;
     expired.forEach(c => {
       fetch(`${BASE_URL}/admin/conversations/${c._id}`, {
@@ -509,8 +510,8 @@ const AdminDashboard = () => {
       .then((r) => r.json())
       .then((data) => {
         const all = data.conversations || [];
-        // Auto-delete expired chat requests (>24hr inactive)
-        const expired = all.filter(isExpired);
+        // Auto-delete expired chat requests (>24hr inactive) — skip CLOSED ones
+        const expired = all.filter(c => isExpired(c) && !isClosed(c));
         expired.forEach(c => {
           fetch(`${BASE_URL}/admin/conversations/${c._id}`, {
             method: "DELETE",
@@ -518,7 +519,7 @@ const AdminDashboard = () => {
             credentials: "include",
           }).catch(() => {});
         });
-        setChatRequests(all.filter(c => !isExpired(c)));
+        setChatRequests(all.filter(c => !isExpired(c) || isClosed(c)));
       })
       .catch(() => {});
 
@@ -976,6 +977,7 @@ const AdminDashboard = () => {
                           <span style={{ fontWeight: 800, fontSize: 16, color: "#C47A2E" }}>{req.vendorName || req.vendorId?.name || "Vendor"}</span>
                           <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: "#eff6ff", color: "#0369a1", border: "1px solid #bfdbfe", fontWeight: 600 }}>{req.serviceType}</span>
                           <Badge status={req.chatApproved ? "approved" : req.chatRejected ? "rejected" : "pending"} />
+                          {isClosed(req) && <Badge status="closed">🔒 Auto-closed</Badge>}
                           {/* Expiry countdown */}
                           {(() => { const h = hoursLeft(req); return h !== null && h <= 6 ? (
                             <span style={{ fontSize: 11, padding: "2px 10px", borderRadius: 100, background: h <= 2 ? "#fff5f5" : "#fffbeb", color: h <= 2 ? "#c0392b" : "#b45309", border: `1px solid ${h <= 2 ? "#fca5a5" : "#fde68a"}`, fontWeight: 600 }}>
@@ -2475,11 +2477,12 @@ const AdminDashboard = () => {
                         </span>
                       )}
                       {/* Expiry badge */}
-                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 ? (
+                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 && !isClosed(c) ? (
                         <span style={{ fontSize: 10, fontWeight: 700, color: h <= 2 ? "#c0392b" : "#b45309" }}>
                           ⏳ {h === 0 ? "Expiring" : `${h}h left`}
                         </span>
                       ) : null; })()}
+                      {isClosed(c) && <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 6, padding: "2px 7px", marginTop: 2 }}>🔒 Closed</span>}
                       {/* Delete button */}
                       <button
                         onClick={(e) => handleDeleteChat(e, c._id)}
@@ -2843,11 +2846,12 @@ const AdminDashboard = () => {
                       <span className="text-gray-500">
                         {formatTimeIST(c.updatedAt)}
                       </span>
-                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 ? (
+                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 && !isClosed(c) ? (
                         <span style={{ fontSize: 10, fontWeight: 700, color: h <= 2 ? "#c0392b" : "#b45309" }}>
                           ⏳ {h === 0 ? "Expiring" : `${h}h left`}
                         </span>
                       ) : null; })()}
+                      {isClosed(c) && <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 6, padding: "2px 7px", marginTop: 2 }}>🔒 Closed</span>}
                       <button
                         onClick={(e) => handleDeleteChat(e, c._id)}
                         style={{ fontSize: 10, fontWeight: 700, color: "#c0392b", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 6, padding: "2px 7px", cursor: "pointer", marginTop: 2 }}
@@ -3062,11 +3066,12 @@ const AdminDashboard = () => {
                       <span className="text-gray-500">
                         {formatTimeIST(c.updatedAt)}
                       </span>
-                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 ? (
+                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 && !isClosed(c) ? (
                         <span style={{ fontSize: 10, fontWeight: 700, color: h <= 2 ? "#c0392b" : "#b45309" }}>
                           ⏳ {h === 0 ? "Expiring" : `${h}h left`}
                         </span>
                       ) : null; })()}
+                      {isClosed(c) && <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 6, padding: "2px 7px", marginTop: 2 }}>🔒 Closed</span>}
                       <button
                         onClick={(e) => handleDeleteChat(e, c._id)}
                         style={{ fontSize: 10, fontWeight: 700, color: "#c0392b", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 6, padding: "2px 7px", cursor: "pointer", marginTop: 2 }}
@@ -3338,7 +3343,12 @@ const AdminDashboard = () => {
                               </div>
                             </div>
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
-                              <Badge status={order.status} />
+                              <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                <Badge status={order.status} />
+                                {order.status === 'cancelled' && order.paymentStatus === 'pending' && (
+                                  <span style={{ fontSize: 10, fontWeight: 600, color: "#9B7450", background: "#faf5ee", border: "1px solid #F1E1A8", borderRadius: 100, padding: "2px 8px" }}>Auto-expired (7 days)</span>
+                                )}
+                              </div>
                               <select
                                 value={order.status}
                                 onClick={e => e.stopPropagation()}
