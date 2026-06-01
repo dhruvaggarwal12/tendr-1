@@ -1,20 +1,14 @@
-import { createBrowserRouter, Outlet, useLocation, useNavigationType, ScrollRestoration } from "react-router-dom";
+import { createBrowserRouter, Outlet, ScrollRestoration } from "react-router-dom";
 import { lazy } from "react";
 
 // Root layout — FloatingChatButton + VendorChatModal remain in App.jsx
 // because they already use router.state + router.navigate() directly
 // (not useNavigate/useLocation hooks), so they don't need Router context.
 function RootLayout() {
-  const { key }  = useLocation();
-  const navType  = useNavigationType();
-  const isPop    = navType === "POP";
-
   return (
     <>
       <ScrollRestoration />
-      <div key={isPop ? "pop" : key} className={isPop ? "" : "route-fade"}>
-        <Outlet />
-      </div>
+      <Outlet />
     </>
   );
 }
