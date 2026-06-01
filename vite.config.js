@@ -39,8 +39,9 @@ export default defineConfig({
         dir: 'ltr',
       },
       workbox: {
-        // Force new service worker to take control immediately on next reload
-        // (instead of waiting for all tabs to close)
+        // Changing cacheId forces Workbox to delete ALL old caches and
+        // fetch fresh resources — increment this whenever a major update is needed
+        cacheId: 'tendr-v3',
         skipWaiting: true,
         clientsClaim: true,
         // Increase limit to 10 MB to accommodate large assets
