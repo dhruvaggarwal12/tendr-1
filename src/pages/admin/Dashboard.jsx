@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { OCCASIONS } from "../../data/occasions";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
@@ -3987,10 +3988,7 @@ const AdminDashboard = () => {
     )}
 
         {/* ── Occasions ── */}
-        {activeDropdown === "occasions" && (() => {
-          const { OCCASIONS } = require('../../data/occasions');
-          const navigate = useNavigate();
-          return (
+        {activeDropdown === "occasions" && (
             <div style={{ padding: "32px 24px", fontFamily: "'Outfit',sans-serif" }}>
               <div style={{ marginBottom: 24 }}>
                 <h2 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>🎉 Occasions</h2>
@@ -4016,8 +4014,7 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
-          );
-        })()}
+        )}
 
     </>
   );

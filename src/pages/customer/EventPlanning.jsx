@@ -1431,25 +1431,26 @@ const EventPlanning = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center w-full max-w-xl sm:max-w-2xl">
+        <div className="flex justify-between items-center w-full max-w-xl sm:max-w-2xl" style={{ gap: 12 }}>
           {/* PREVIOUS / BACK TO HOME on first step */}
           {currentStep === 0 ? (
             <button
               onClick={() => navigate("/")}
-              className="flex items-center text-base sm:text-lg px-4 sm:px-6 py-3 rounded-2xl transition-all duration-300 text-gray-600 hover:bg-white hover:text-black hover:scale-105 hover:-translate-y-1"
+              className="flex items-center text-base px-4 py-3 rounded-2xl transition-all duration-300 text-gray-600 hover:bg-white hover:text-black"
+              style={{ flexShrink: 0 }}
             >
-              <ChevronLeft className="w-5 h-5 mr-2" />
+              <ChevronLeft className="w-5 h-5 mr-1" />
               Home
             </button>
           ) : (
             <button
               onClick={prevStep}
               disabled={animating}
-              className={`flex items-center text-base sm:text-lg px-4 sm:px-6 py-3 rounded-2xl transition-all duration-300
-              ${animating ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:bg-white hover:text-black hover:scale-105 hover:-translate-y-1"}`}
+              className={`flex items-center text-base px-4 py-3 rounded-2xl transition-all duration-300 flex-shrink-0
+              ${animating ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:bg-white hover:text-black"}`}
             >
-              <ChevronLeft className="w-5 h-5 mr-2" />
-              Previous
+              <ChevronLeft className="w-5 h-5 mr-1" />
+              Prev
             </button>
           )}
 
@@ -1457,18 +1458,24 @@ const EventPlanning = () => {
           <button
             onClick={nextStep}
             disabled={!formData[currentQuestion.id] || animating}
-            style={formData[currentQuestion.id] && !animating ? { background: "linear-gradient(135deg,#C47A2E,#CCAB4A)" } : {}}
-            className={`flex items-center text-base sm:text-lg px-6 sm:px-8 py-3 rounded-2xl transition-all duration-300
+            style={{
+              ...(formData[currentQuestion.id] && !animating ? { background: "linear-gradient(135deg,#C47A2E,#CCAB4A)" } : {}),
+              flexShrink: 0, maxWidth: "calc(100% - 90px)"
+            }}
+            className={`flex items-center justify-center text-sm sm:text-base px-5 sm:px-8 py-3 rounded-2xl transition-all duration-300
             ${
               formData[currentQuestion.id] && !animating
-                ? "text-white transform hover:scale-105 hover:-translate-y-1 shadow-lg"
+                ? "text-white shadow-lg"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}
           >
-            {currentStep === questions.length - 1
-              ? "Select Service Category"
-              : "Next"}
-            <ChevronRight className="w-5 h-5 ml-2" />
+            <span className="hidden sm:inline">
+              {currentStep === questions.length - 1 ? "Select Service Category" : "Next"}
+            </span>
+            <span className="sm:hidden">
+              {currentStep === questions.length - 1 ? "Continue" : "Next"}
+            </span>
+            <ChevronRight className="w-5 h-5 ml-1 flex-shrink-0" />
           </button>
         </div>
       </div>
