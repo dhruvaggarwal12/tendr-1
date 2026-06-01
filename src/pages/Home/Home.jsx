@@ -1258,7 +1258,7 @@ const Home = () => {
             </div>
           </section>
         );
-      )}
+      })()}
 
       {/* ── Memories Section — admin preview only ── */}
       {user?.isAdmin && (() => {
