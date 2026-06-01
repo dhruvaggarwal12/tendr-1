@@ -39,6 +39,10 @@ export default defineConfig({
         dir: 'ltr',
       },
       workbox: {
+        // Force new service worker to take control immediately on next reload
+        // (instead of waiting for all tabs to close)
+        skipWaiting: true,
+        clientsClaim: true,
         // Increase limit to 10 MB to accommodate large assets
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         // Cache app shell — exclude huge background/hero images
