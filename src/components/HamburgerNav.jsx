@@ -292,37 +292,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
-          {/* Search bar */}
-          <div style={{ padding: "10px 14px", borderBottom: "1px solid rgba(196,122,46,0.1)", position: "relative" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 12px", borderRadius: 10, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(196,122,46,0.2)" }}>
-              <span style={{ fontSize: 12, color: "#CCAB4A", flexShrink: 0 }}>🔍</span>
-              <input
-                value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setShowSuggest(true); }}
-                onFocus={() => setShowSuggest(true)}
-                onKeyDown={e => { if (e.key === "Enter") handleNavSearch(); }}
-                placeholder="Search vendors..."
-                style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 12, fontFamily: font, color: "#fff" }}
-              />
-              {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggest(false); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 12, padding: 0 }}>✕</button>}
-            </div>
-            {showSuggest && (
-              <div style={{ position: "absolute", left: 10, right: 10, top: "calc(100% - 4px)", background: "#FFFEF9", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.18)", border: "1px solid rgba(196,122,46,0.12)", padding: 4, zIndex: 300 }}>
-                {filteredSuggestions.map((s, i) => (
-                  <button key={i}
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggest(false); } else { handleNavSearch(s.text); } }}
-                    style={{ width: "100%", textAlign: "left", padding: "8px 10px", borderRadius: 7, border: "none", background: "transparent", cursor: "pointer", fontSize: 12, color: "#3B2F2F", fontFamily: font }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    🔍 {s.text}
-                  </button>
-                ))}
-                {filteredSuggestions.length === 0 && <div style={{ padding: "8px 10px", fontSize: 12, color: "#9B7450" }}>Press Enter to search</div>}
-              </div>
-            )}
-          </div>
-
           {/* User info */}
           {token && user && (
             <div style={{ padding: "14px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>

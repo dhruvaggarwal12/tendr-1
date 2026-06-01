@@ -1066,15 +1066,6 @@ const Home = () => {
                     onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>›</button>
                 </div>
 
-                {/* Feature chips — quick pick all slides */}
-                <div style={{ display: "flex", gap: 8, flexWrap: "nowrap", justifyContent: "center", marginTop: 20, overflowX: "auto", paddingBottom: 4 }}>
-                  {FEATURE_SLIDES.map((fs, i) => (
-                    <button key={i} onClick={() => { setSlideVisible(false); setTimeout(() => { setSlideIdx(i); setSlideVisible(true); }, 400); }}
-                      style={{ padding: "5px 14px", borderRadius: 100, border: `1.5px solid ${i === slideIdx ? "#C47A2E" : "rgba(139,69,19,0.12)"}`, background: i === slideIdx ? "rgba(196,122,46,0.1)" : "#fff", cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: i === slideIdx ? 700 : 500, color: i === slideIdx ? "#C47A2E" : "#9B7450", transition: "all 0.18s" }}>
-                      {fs.tag}
-                    </button>
-                  ))}
-                </div>
               </div>
             );
           })()}
