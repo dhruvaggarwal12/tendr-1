@@ -75,14 +75,16 @@ const VendorList_ListingPage = ({
 
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();
-    sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
-    navigate(`/vendor/${vendorId}`, {
-      state: {
-        from: "listing",
-        compareInProfile, // passed from parent (true only in normal booking flow)
-        filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder },
-      },
-    });
+    const url = `/vendor/${vendorId}`;
+    const state = { from: "listing", compareInProfile, filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder } };
+    if (window.innerWidth >= 768) {
+      // Desktop — open in new tab so user keeps their listings context
+      window.open(url, "_blank");
+    } else {
+      // Mobile — same tab, scroll position restored via sessionStorage
+      sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
+      navigate(url, { state });
+    }
   };
 
   const closePanel = () => setQuickViewVendor(null);

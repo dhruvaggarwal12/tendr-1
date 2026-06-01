@@ -101,6 +101,7 @@ const EventPlanning = () => {
   const [planErrorMsg, setPlanErrorMsg] = useState("");
   const [vendorOffset, setVendorOffset] = useState({});
   const [expandedCat, setExpandedCat] = useState(null);
+  const [spQuickView, setSpQuickView] = useState(null); // vendor shown in smart plan QuickView panel
   const [showSplitAdjust, setShowSplitAdjust] = useState(false);
   const [customSplit, setCustomSplit] = useState(null);
   const [draftSplit, setDraftSplit] = useState(null);
@@ -866,9 +867,9 @@ const EventPlanning = () => {
                     );
                   })()}
                   <div style={{ padding: "0 18px 14px", display: "flex", gap: 8 }}>
-                    <button onClick={() => setExpandedCat(expandedCat === category ? null : category)}
-                      style={{ padding: "8px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                      {expandedCat === category ? "▲ Less" : "▼ Profile"}
+                    <button onClick={() => setSpQuickView(vendor)}
+                      style={{ padding: "8px 14px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                      Quick View
                     </button>
                     {totalVendors > 1 && (
                       <button onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
@@ -913,6 +914,69 @@ const EventPlanning = () => {
           </div>
         </div>
       </div>
+      {/* Smart Plan QuickView side panel */}
+      {spQuickView && (
+        <>
+          <div onClick={() => setSpQuickView(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1100 }} />
+          <div style={{ position: "fixed", right: 0, top: 0, height: "100vh", width: 420, maxWidth: "92vw", background: "#FFFCF5", zIndex: 1101, overflowY: "auto", boxShadow: "-8px 0 48px rgba(139,69,19,0.18)", animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)", fontFamily: "'Outfit',sans-serif" }}>
+            {/* Cover */}
+            <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
+              <img src={spQuickView.portfolioPhotos?.[0] || spQuickView.image || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"} alt={spQuickView.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <button onClick={() => setSpQuickView(null)} style={{ position: "absolute", top: 12, right: 12, width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              {spQuickView.avgReviewScore > 0 && (
+                <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>
+                  ⭐ {Number(spQuickView.avgReviewScore).toFixed(1)}
+                </div>
+              )}
+              <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>
+                {spQuickView.serviceType}
+              </span>
+            </div>
+            {/* Content */}
+            <div style={{ padding: "22px 24px 32px" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>{spQuickView.name}</h2>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+                {spQuickView.city && <div style={{ fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>📍 {spQuickView.city}</div>}
+                {spQuickView.yearsOfExperience > 0 && <div style={{ fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>⏱ {spQuickView.yearsOfExperience}y exp</div>}
+                {spQuickView.teamSize > 0 && <div style={{ fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>👥 Team {spQuickView.teamSize}</div>}
+              </div>
+              {spQuickView.portfolioPhotos?.length > 1 && (
+                <div style={{ marginBottom: 20 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Portfolio</p>
+                  <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+                    {spQuickView.portfolioPhotos.slice(0, 5).map((photo, i) => (
+                      <img key={i} src={photo} alt="" style={{ width: 82, height: 72, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 0 20px" }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button
+                  onClick={() => {
+                    const url = `/vendor/${spQuickView._id}`;
+                    if (window.innerWidth >= 768) { window.open(url, "_blank"); }
+                    else { navigate(url); }
+                  }}
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                  View Full Profile {window.innerWidth >= 768 ? "↗" : "→"}
+                </button>
+                <button
+                  onClick={() => {
+                    setSpQuickView(null);
+                    dispatch(setBookingType("let-us-do-it"));
+                    openVendorChat({ _id: spQuickView._id, name: spQuickView.name, serviceType: spQuickView.serviceType });
+                  }}
+                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer" }}>
+                  💬 Request to Chat
+                </button>
+              </div>
+            </div>
+          </div>
+          <style>{`@keyframes qv-slide { from { transform: translateX(100%) } to { transform: translateX(0) } }`}</style>
+        </>
+      )}
+
       <style>{`
         @media (max-width: 900px) { .smart-vendor-grid { grid-template-columns: repeat(2,1fr) !important; } }
         @media (max-width: 540px) { .smart-vendor-grid { grid-template-columns: 1fr !important; } }
