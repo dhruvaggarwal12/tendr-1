@@ -46,8 +46,10 @@ export default defineConfig({
         clientsClaim: true,
         // Increase limit to 10 MB to accommodate large assets
         maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
-        // Cache app shell — exclude huge background/hero images
-        globPatterns: ['**/*.{js,css,html,ico,svg,woff,woff2}'],
+        // Do NOT cache HTML — always fetch index.html fresh from network
+        // so new JS chunk URLs are always loaded after a deploy.
+        // JS/CSS chunks have content hashes so safe to cache indefinitely.
+        globPatterns: ['**/*.{js,css,ico,svg,woff,woff2}'],
         globIgnores: [
           '**/signup-bg*',
           '**/login-bg*',
