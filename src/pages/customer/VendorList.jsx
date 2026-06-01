@@ -44,6 +44,7 @@ const VendorList = () => {
     eventName,
     eventType: formEventType,
     additionalInfo,
+    budget: formBudget,
   } = useSelector((state) => state.eventPlanning.formData);
   const categoryBudgets = useSelector((s) => s.eventPlanning.categoryBudgets || {});
 
@@ -162,7 +163,7 @@ const VendorList = () => {
     if (new URLSearchParams(location.search).get("from") === "rejected") return;
 
     // All 5 fields must be present in Redux
-    if (formEventType && locationType && date && guestCount && budget) return;
+    if (formEventType && locationType && date && guestCount) return; // budget optional
 
     // Check persisted session in localStorage
     try {
