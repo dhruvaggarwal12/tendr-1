@@ -323,7 +323,7 @@ const VendorList = () => {
           {/* Page header */}
           <div className="mb-1">
 
-            {/* Per-category budget range adjuster */}
+            {/* Per-category budget range adjuster — compact slider */}
             {serviceType && (() => {
               const CAT_RANGES = {
                 Caterer:      { min: 5000,  max: 500000, step: 5000  },
@@ -334,43 +334,50 @@ const VendorList = () => {
               const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
               const val = currentCatBudget || range.max;
               return (
-                <div style={{ marginBottom: 12, padding: "12px 16px", borderRadius: 12, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a" }}>💰 {serviceType} budget range</span>
-                    <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
-                  </div>
-                  <input type="range" min={range.min} max={range.max} step={range.step} value={val}
-                    onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
-                    style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
-                    <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
+                <div style={{ marginBottom: 12, padding: "10px 16px", borderRadius: 12, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0 }}>
+                      💰 {serviceType} budget
+                    </span>
+                    {/* Compact slider — max 45% width */}
+                    <div style={{ flex: "0 0 42%", minWidth: 120 }}>
+                      <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                        onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
+                        style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 4 }} />
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#bbb" }}>
+                        <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
+                      </div>
+                    </div>
+                    {/* Range display */}
+                    <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>
+                      {fmtBudget(range.min)} – {fmtBudget(val)}
+                    </span>
                   </div>
                 </div>
               );
             })()}
 
-            {/* Category switcher — always shows all 4, active one highlighted */}
-            <div style={{ display: "flex", gap: 8, overflowX: "auto", marginBottom: 14, paddingBottom: 2 }}>
-              {[
-                { id: "Photographer", emoji: "📸" },
-                { id: "Caterer",      emoji: "🍽" },
-                { id: "Decorator",    emoji: "🎀" },
-                { id: "DJ",           emoji: "🎵" },
-              ].map(({ id, emoji }) => (
-                <button key={id} onClick={() => dispatch(setFilters({ serviceType: id }))}
-                  style={{
-                    padding: "7px 16px", borderRadius: 100, border: "1.5px solid", fontSize: 13,
-                    fontWeight: serviceType === id ? 700 : 500, cursor: "pointer",
-                    fontFamily: "'Outfit',sans-serif", flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s",
-                    borderColor: serviceType === id ? "#C47A2E" : "rgba(196,122,46,0.22)",
-                    background: serviceType === id ? "#C47A2E" : "#fff",
-                    color: serviceType === id ? "#fff" : "#6B3A1F",
-                    boxShadow: serviceType === id ? "0 3px 10px rgba(196,122,46,0.3)" : "none",
-                  }}>
-                  {emoji} {id === "Photographer" ? "Photography" : id}
-                </button>
-              ))}
+            {/* Category switcher — mobile only dropdown; hidden on desktop (sidebar handles it) */}
+            <div className="mobile-cat-switcher" style={{ display: "none", marginBottom: 12 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", flexShrink: 0 }}>Category:</span>
+                <select value={serviceType || ""}
+                  onChange={e => dispatch(setFilters({ serviceType: e.target.value }))}
+                  style={{ flex: 1, padding: "7px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#2C1A0E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", outline: "none" }}>
+                  {[
+                    { id: "Photographer", label: "📸 Photography" },
+                    { id: "Caterer",      label: "🍽 Catering" },
+                    { id: "Decorator",    label: "🎀 Decoration" },
+                    { id: "DJ",           label: "🎵 DJ" },
+                  ].map(({ id, label }) => (
+                    <option key={id} value={id}>{label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
+            <style>{`
+              @media (max-width: 639px) { .mobile-cat-switcher { display: block !important; } }
+            `}</style>
 
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
@@ -413,7 +420,7 @@ const VendorList = () => {
                 locationType ? { label: "Location", value: locationType, showLabel: false } : null,
                 date ? { label: "Date", value: date, showLabel: false } : null,
                 guestCount ? { label: "Guests", value: guestCount, showLabel: false } : null,
-                currentCatBudget ? { label: "Budget", value: `${fmtBudget(currentCatBudget)}`, showLabel: false } : null,
+                currentCatBudget ? { label: "Budget", value: (() => { const mins = {Caterer:5000,Decorator:3000,Photographer:3000,DJ:2000}; return `${fmtBudget(mins[serviceType]||0)} – ${fmtBudget(currentCatBudget)}`; })(), showLabel: false } : null,
                 additionalInfo ? { label: "Note", value: additionalInfo, showLabel: false } : null,
               ]
                 .filter(Boolean)

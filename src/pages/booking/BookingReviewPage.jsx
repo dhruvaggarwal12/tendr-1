@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCartItems, selectCartTotal, clearCart } from "../../redux/giftHamperCartSlice";
+import { selectCartItems, selectCartTotal, clearCart, removeFromCart } from "../../redux/giftHamperCartSlice";
 import SEO from "../../components/SEO";
 import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
 
@@ -572,6 +572,15 @@ const BookingReviewPage = () => {
                       )}
                     </div>
                     <ChevronIcon open={isOpen} />
+                    {/* Remove vendor button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); if (window.confirm(`Remove ${vendor.name || serviceType} from your booking?`)) handleRemove(serviceType); }}
+                      style={{ flexShrink: 0, width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", marginLeft: 4, fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#c0392b"; e.currentTarget.style.color = "#fff"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "rgba(192,57,43,0.06)"; e.currentTarget.style.color = "#c0392b"; }}
+                      title="Remove this vendor">
+                      ✕
+                    </button>
                   </button>
 
                   {/* Accordion body — collapses */}
@@ -779,8 +788,12 @@ const BookingReviewPage = () => {
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎁 Gift Hampers</div>
                   {ghItems.map(item => (
                     <div key={item.productId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a", marginBottom: 6 }}>
-                      <span style={{ fontWeight: 500 }}>{item.name} × {item.quantity}</span>
-                      <span style={{ fontWeight: 700, color: "#2C1A0E" }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
+                      <span style={{ fontWeight: 500, flex: 1 }}>{item.name} × {item.quantity}</span>
+                      <span style={{ fontWeight: 700, color: "#2C1A0E", marginRight: 10 }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
+                      <button
+                        onClick={() => { if (window.confirm(`Remove "${item.name}" from cart?`)) dispatch(removeFromCart(item.productId)); }}
+                        style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif" }}
+                        title="Remove item">✕</button>
                     </div>
                   ))}
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 8, marginTop: 6 }}>
