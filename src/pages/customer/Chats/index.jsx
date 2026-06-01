@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useChatOverlay } from "../../../context/ChatContext";
 import HamburgerNav from "../../../components/HamburgerNav";
@@ -11,6 +12,7 @@ const font = "'Outfit', sans-serif";
 const CAT_EMOJI = { Photographer: "📸", Caterer: "🍽", Decorator: "🎀", DJ: "🎵", Concierge: "🤝", support: "🛟" };
 
 export default function CustomerChatList() {
+  const navigate = useNavigate();
   const { token } = useSelector((s) => s.auth);
   const { openExistingChat, openConciergeChat } = useChatOverlay();
   const [chats, setChats] = useState([]);
