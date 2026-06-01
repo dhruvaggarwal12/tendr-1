@@ -7,6 +7,8 @@ import "./App.css";
 import router from "./router";
 import store from "./store";
 import ErrorBoundary from "./components/ErrorBoundary";
+import FloatingChatButton from "./components/FloatingChatButton";
+import VendorChatModal from "./components/VendorChatModal";
 import { ChatProvider } from "./context/ChatContext";
 import ComingSoon from "./pages/ComingSoon";
 import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
@@ -75,6 +77,8 @@ function App() {
           <Suspense fallback={<div style={{ minHeight: "100vh", background: "#FFFCF5" }} />}>
             <RouterProvider router={router} />
           </Suspense>
+          <FloatingChatButton />
+          <VendorChatModal />
         </ChatProvider>
       </ErrorBoundary>
     </HelmetProvider>

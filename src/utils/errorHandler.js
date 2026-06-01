@@ -161,6 +161,14 @@ export const setupGlobalErrorHandling = () => {
       return;
     }
 
+    // Suppress React Router context errors — FloatingChatButton/VendorChatModal
+    // render outside RouterProvider but already use router.navigate() directly
+    const msg = (reason?.message || "").toLowerCase();
+    if (msg.includes("usenavigate") || msg.includes("uselocation") || msg.includes("context of a router")) {
+      event.preventDefault();
+      return;
+    }
+
     console.error('Unhandled promise rejection:', reason);
     const errorInfo = handleApiError(reason, 'Global');
     showErrorToast(errorInfo);
@@ -173,6 +181,11 @@ export const setupGlobalErrorHandling = () => {
         sessionStorage.setItem("tendr_chunk_reloaded", "1");
         window.location.reload();
       }
+      return;
+    }
+    // Suppress router context errors (same as above)
+    const msg = (event.error?.message || "").toLowerCase();
+    if (msg.includes("usenavigate") || msg.includes("uselocation") || msg.includes("context of a router")) {
       return;
     }
     console.error('Global error:', event.error);

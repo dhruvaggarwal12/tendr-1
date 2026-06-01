@@ -1,11 +1,9 @@
 import { createBrowserRouter, Outlet, useLocation, useNavigationType, ScrollRestoration } from "react-router-dom";
 import { lazy } from "react";
-import FloatingChatButton from "./components/FloatingChatButton";
-import VendorChatModal from "./components/VendorChatModal";
 
-// Root layout — FloatingChatButton + VendorChatModal moved here so they
-// have Router context (useNavigate/useLocation). They were in App.jsx as
-// siblings of RouterProvider which meant no Router context → error.
+// Root layout — FloatingChatButton + VendorChatModal remain in App.jsx
+// because they already use router.state + router.navigate() directly
+// (not useNavigate/useLocation hooks), so they don't need Router context.
 function RootLayout() {
   const { key }  = useLocation();
   const navType  = useNavigationType();
@@ -14,8 +12,6 @@ function RootLayout() {
   return (
     <>
       <ScrollRestoration />
-      <FloatingChatButton />
-      <VendorChatModal />
       <div key={isPop ? "pop" : key} className={isPop ? "" : "route-fade"}>
         <Outlet />
       </div>
