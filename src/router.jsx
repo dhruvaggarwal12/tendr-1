@@ -77,6 +77,8 @@ const CancellationPolicy  = lazy(() => import("./pages/info/CancellationPolicy")
 const ContactUs           = lazy(() => import("./pages/info/ContactUs.jsx"));
 const AboutUs             = lazy(() => import("./pages/info/AboutUs.jsx"));
 const InstallApp          = lazy(() => import("./pages/install/InstallApp.jsx"));
+const OccasionsPage       = lazy(() => import("./pages/occasions/OccasionsPage.jsx"));
+const OccasionDetail      = lazy(() => import("./pages/occasions/OccasionDetail.jsx"));
 
 
 const router = createBrowserRouter([
@@ -324,6 +326,16 @@ const router = createBrowserRouter([
   {
     path: "/install",
     element: <InstallApp />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/occasions",
+    element: <OccasionsPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/occasions/:slug",
+    element: <OccasionDetail />,
     errorElement: <ErrorPage />,
   },
 

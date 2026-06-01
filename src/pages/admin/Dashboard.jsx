@@ -267,6 +267,7 @@ const sidebar_arr = [
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
   { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
+  { label: "Occasions",       icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "Occasions" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks
@@ -3984,6 +3985,39 @@ const AdminDashboard = () => {
         </div>
       </>
     )}
+
+        {/* ── Occasions ── */}
+        {activeDropdown === "occasions" && (() => {
+          const { OCCASIONS } = require('../../data/occasions');
+          const navigate = useNavigate();
+          return (
+            <div style={{ padding: "32px 24px", fontFamily: "'Outfit',sans-serif" }}>
+              <div style={{ marginBottom: 24 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>🎉 Occasions</h2>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>
+                  Curated planning guides for specific celebrations. Click any occasion to preview the full customer-facing page.
+                </p>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+                {OCCASIONS.map(occ => (
+                  <div key={occ.id} style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", boxShadow: "0 2px 10px rgba(196,122,46,0.06)" }}>
+                    <div style={{ height: 100, background: occ.color + "44", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 38 }}>
+                      {occ.icon}
+                    </div>
+                    <div style={{ padding: "14px 16px" }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>{occ.name}</div>
+                      <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 12 }}>{occ.typicalGuests} guests · {occ.decorThemes.length} themes · {occ.giftIdeas.length} gifts</div>
+                      <button onClick={() => window.open(`/occasions/${occ.id}`, '_blank')}
+                        style={{ width: "100%", padding: "8px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                        Preview Page →
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
 
     </>
   );
