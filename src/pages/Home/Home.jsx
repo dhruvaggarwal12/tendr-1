@@ -614,12 +614,6 @@ const Home = () => {
                 Start Planning →
               </button>
 
-              {/* Install link — subtle, doesn't compete with main CTA */}
-              <a href="/install" style={{ fontSize: 13, color: "#9B7450", textDecoration: "none", alignSelf: "flex-start", display: "inline-flex", alignItems: "center", gap: 5, marginTop: -4 }}
-                onMouseEnter={e => e.currentTarget.style.color = "#C47A2E"}
-                onMouseLeave={e => e.currentTarget.style.color = "#9B7450"}>
-                📲 Get the app
-              </a>
             </div>
           </div>
 
