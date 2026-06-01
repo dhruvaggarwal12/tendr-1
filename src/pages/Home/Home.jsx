@@ -1108,6 +1108,63 @@ const Home = () => {
 
       <JourneyFlow />
 
+      {/* ── Book a Party Place — admin preview only ── */}
+      {user?.isAdmin && (
+        <section style={{ background: "#fff", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+          <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+            <div style={{ textAlign: "center", marginBottom: 36 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>
+                🏡 Admin Preview
+              </p>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.02em" }}>
+                Book a Party Place Through Us
+              </h2>
+              <p style={{ fontSize: 15, color: "#9B7450", margin: "0 auto", maxWidth: 480 }}>
+                Villas, farmhouses, penthouses and banquet halls — with decoration, catering and entertainment included.
+              </p>
+            </div>
+
+            {/* Place type cards */}
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", justifyContent: "center", marginBottom: 28 }}>
+              {[
+                { icon: "🏡", label: "Villa",       type: "villa" },
+                { icon: "🌾", label: "Farm House",  type: "farmhouse" },
+                { icon: "🏢", label: "Flat",        type: "flat" },
+                { icon: "🏛", label: "Venue Hall",  type: "venue" },
+                { icon: "🌆", label: "Terrace",     type: "terrace" },
+                { icon: "🔍", label: "All Places",  type: "all" },
+              ].map(({ icon, label, type }) => (
+                <button
+                  key={type}
+                  onClick={() => window.open(`/party-places?type=${type}`, "_blank")}
+                  style={{
+                    width: 110, height: 110,
+                    borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.18)",
+                    background: "#FFFCF5", cursor: "pointer",
+                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8,
+                    boxShadow: "0 2px 12px rgba(196,122,46,0.08)", transition: "all 0.18s",
+                    fontFamily: "'Outfit', sans-serif",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.transform = "translateY(-3px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  <span style={{ fontSize: 30 }}>{icon}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{label}</span>
+                </button>
+              ))}
+            </div>
+
+            <div style={{ textAlign: "center" }}>
+              <button
+                onClick={() => window.open("/party-places", "_blank")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                Browse All Party Places ↗
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Plan by Occasion — admin preview only ── */}
       {user?.isAdmin && (
         <section style={{ background: "#F8F4EF", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>

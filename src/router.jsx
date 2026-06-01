@@ -79,6 +79,8 @@ const AboutUs             = lazy(() => import("./pages/info/AboutUs.jsx"));
 const InstallApp          = lazy(() => import("./pages/install/InstallApp.jsx"));
 const OccasionsPage       = lazy(() => import("./pages/occasions/OccasionsPage.jsx"));
 const OccasionDetail      = lazy(() => import("./pages/occasions/OccasionDetail.jsx"));
+const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesPage.jsx"));
+const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
 
 
 const router = createBrowserRouter([
@@ -336,6 +338,16 @@ const router = createBrowserRouter([
   {
     path: "/occasions/:slug",
     element: <OccasionDetail />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/party-places",
+    element: <PartyPlacesPage />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/party-places/:id",
+    element: <PartyPlaceProfile />,
     errorElement: <ErrorPage />,
   },
 
