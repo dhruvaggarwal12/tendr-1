@@ -1181,65 +1181,84 @@ const Home = () => {
       )}
 
       {/* ── Plan by Occasion — admin preview only ── */}
-      {user?.isAdmin && (
-        <section style={{ background: "#F8F4EF", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
-          <div style={{ maxWidth: 1160, margin: "0 auto" }}>
-            <div style={{ textAlign: "center", marginBottom: 44 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>
-                🎉 Admin Preview
-              </p>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.02em" }}>
-                Plan by Occasion
-              </h2>
-              <p style={{ fontSize: 15, color: "#9B7450", margin: "0 auto", maxWidth: 480 }}>
-                Curated guides for every celebration — decor, gifts, activities and checklists.
-              </p>
+      {user?.isAdmin && (() => {
+        const occScrollRef = React.createRef();
+        const scrollOcc = (dir) => {
+          if (occScrollRef.current) occScrollRef.current.scrollBy({ left: dir * 220, behavior: "smooth" });
+        };
+        const OCC_CARDS = [
+          { id: "baby-shower",    icon: "🍼", name: "Baby Shower",    img: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=400&q=70" },
+          { id: "newborn-welcome",icon: "👶", name: "Newborn Welcome", img: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&q=70" },
+          { id: "first-birthday", icon: "🎂", name: "First Birthday",  img: "https://images.unsplash.com/photo-1602631985686-1bb0e6a8696e?w=400&q=70" },
+          { id: "anniversary",    icon: "💍", name: "Anniversary",     img: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&q=70" },
+          { id: "housewarming",   icon: "🏠", name: "Housewarming",    img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&q=70" },
+          { id: "graduation",     icon: "🎓", name: "Graduation",      img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=70" },
+        ];
+        return (
+          <section style={{ background: "#F8F4EF", padding: "56px 0 60px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+            <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>
+                    🎉 Admin Preview
+                  </p>
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.02em" }}>
+                    What are you celebrating?
+                  </h2>
+                  <p style={{ fontSize: 14, color: "#9B7450", margin: 0, maxWidth: 440 }}>
+                    Every moment deserves a perfect plan — décor, gifts, activities and checklists for each occasion.
+                  </p>
+                </div>
+                {/* Arrow controls */}
+                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+                  <button onClick={() => scrollOcc(-1)}
+                    style={{ width: 40, height: 40, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.18s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>‹</button>
+                  <button onClick={() => scrollOcc(1)}
+                    style={{ width: 40, height: 40, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.18s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>›</button>
+                </div>
+              </div>
             </div>
 
-            {/* Occasion card strip */}
-            <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 8 }}>
-              {[
-                { id: "baby-shower",    icon: "🍼", name: "Baby Shower",    color: "#FFB6C1", img: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=400&q=70" },
-                { id: "newborn-welcome",icon: "👶", name: "Newborn Welcome", color: "#B5EAD7", img: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&q=70" },
-                { id: "first-birthday", icon: "🎂", name: "First Birthday",  color: "#FFDAC1", img: "https://images.unsplash.com/photo-1602631985686-1bb0e6a8696e?w=400&q=70" },
-                { id: "anniversary",    icon: "💍", name: "Anniversary",     color: "#FF6B9D", img: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&q=70" },
-                { id: "housewarming",   icon: "🏠", name: "Housewarming",    color: "#FFEAA7", img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&q=70" },
-                { id: "graduation",     icon: "🎓", name: "Graduation",      color: "#89CFF0", img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=70" },
-              ].map(({ id, icon, name, color, img }) => (
-                <button
-                  key={id}
-                  onClick={() => window.open(`/occasions/${id}`, "_blank")}
-                  style={{
-                    flex: "0 0 200px", borderRadius: 18, overflow: "hidden",
-                    border: "1.5px solid rgba(196,122,46,0.12)", cursor: "pointer",
-                    background: "#fff", textAlign: "left",
-                    boxShadow: "0 4px 20px rgba(139,69,19,0.08)", transition: "transform 0.2s",
-                    fontFamily: "'Outfit', sans-serif",
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; }}
-                >
-                  <div style={{ height: 130, position: "relative", overflow: "hidden" }}>
-                    <img src={img} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 55%)" }} />
-                    <span style={{ position: "absolute", top: 10, left: 12, fontSize: 22 }}>{icon}</span>
-                  </div>
-                  <div style={{ padding: "12px 14px" }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>{name}</div>
-                    <div style={{ fontSize: 11, color: "#C47A2E", marginTop: 3, fontWeight: 600 }}>Themes · Gifts · Checklist ↗</div>
-                  </div>
-                </button>
-              ))}
+            {/* Cards — no scrollbar, arrow-controlled */}
+            <div style={{ position: "relative" }}>
+              <div ref={occScrollRef}
+                style={{ display: "flex", gap: 16, overflowX: "auto", padding: "4px 24px 12px", scrollbarWidth: "none", msOverflowStyle: "none", maxWidth: 1208, margin: "0 auto" }}>
+                <style>{`.occ-strip::-webkit-scrollbar { display: none; }`}</style>
+                {OCC_CARDS.map(({ id, icon, name, img }) => (
+                  <button key={id} className="occ-strip"
+                    onClick={() => window.open(`/occasions/${id}`, "_blank")}
+                    style={{ flex: "0 0 195px", borderRadius: 18, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.12)", cursor: "pointer", background: "#fff", textAlign: "left", boxShadow: "0 4px 18px rgba(139,69,19,0.08)", transition: "transform 0.2s", fontFamily: "'Outfit', sans-serif" }}
+                    onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
+                    onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
+                    <div style={{ height: 140, position: "relative", overflow: "hidden" }}>
+                      <img src={img} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)" }} />
+                      <span style={{ position: "absolute", top: 10, left: 12, fontSize: 24 }}>{icon}</span>
+                    </div>
+                    <div style={{ padding: "11px 14px 13px" }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>{name}</div>
+                      <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600 }}>Décor · Gifts · Checklist ↗</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div style={{ textAlign: "center", marginTop: 28 }}>
-              <button
-                onClick={() => window.open("/occasions", "_blank")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-                View All Occasions →
+            <div style={{ textAlign: "center", marginTop: 20, padding: "0 24px" }}>
+              <button onClick={() => window.open("/occasions", "_blank")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 26px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.18s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
+                View All Occasions ↗
               </button>
             </div>
-          </div>
+          </section>
+        );
+      })()}
         </section>
       )}
 
