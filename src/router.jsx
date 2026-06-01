@@ -29,9 +29,8 @@ import SearchResults    from './pages/search/SearchResults.jsx';
 import NotFound         from "./pages/shared/NotFound";
 import ErrorPage        from "./components/ErrorPage";
 import OtpVerification  from "./pages/customer/OtpVerification";
-// Eagerly loaded — frequently accessed via bottom nav, must not show blank Suspense screen
+// Eagerly loaded — Chats accessed via bottom nav, must not show blank Suspense screen
 import CustomerChatList from "./pages/customer/Chats";
-import UserDashboardEager from "./pages/customer/Dashboard";
 
 // ── Lazy loaded (not on critical path — split into separate chunks) ─────────
 const WeddingApp          = lazy(() => import("./wedding-stationery/WeddingApp"));
@@ -48,7 +47,7 @@ const CorporateLogin      = lazy(() => import("./pages/corporate/Login"));
 const CorporateSignup     = lazy(() => import("./pages/corporate/SignUp.jsx"));
 const CorporateBooking    = lazy(() => import("./pages/corporate/Booking"));
 const CorporateDashboard  = lazy(() => import('./pages/corporate/Dashboard.jsx'));
-const UserDashboard       = UserDashboardEager; // eagerly loaded above
+const UserDashboard       = lazy(() => import("./pages/customer/Dashboard"));
 // CustomerChatList = eagerly loaded above (not lazy — must not show blank Suspense fallback)
 const Chat                = lazy(() => import('./pages/customer/Chat'));
 const ChooseBooking       = lazy(() => import("./pages/customer/ChooseBooking"));

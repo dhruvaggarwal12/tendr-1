@@ -1,5 +1,4 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AlertTriangle, Home, RefreshCw, ArrowLeft } from 'lucide-react';
 
 class ErrorBoundary extends React.Component {
@@ -36,15 +35,15 @@ class ErrorBoundary extends React.Component {
 }
 
 const ErrorFallback = ({ error, errorInfo }) => {
-  const navigate = useNavigate();
+  // Use window.location instead of useNavigate — ErrorBoundary renders outside
+  // RouterProvider so useNavigate has no context and would crash
 
   const handleGoHome = () => {
-    navigate('/');
-    window.location.reload();
+    window.location.href = '/';
   };
 
   const handleGoBack = () => {
-    navigate(-1);
+    window.history.back();
   };
 
   const handleRefresh = () => {
