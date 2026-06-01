@@ -1,9 +1,11 @@
 import { createBrowserRouter, Outlet, useLocation, useNavigationType, ScrollRestoration } from "react-router-dom";
 import { lazy } from "react";
+import FloatingChatButton from "./components/FloatingChatButton";
+import VendorChatModal from "./components/VendorChatModal";
 
-// Root layout:
-// - Forward nav (PUSH/REPLACE): new key → remount → fade-in, ScrollRestoration scrolls to top
-// - Back nav (POP): stable key → no remount → scroll position restored
+// Root layout — FloatingChatButton + VendorChatModal moved here so they
+// have Router context (useNavigate/useLocation). They were in App.jsx as
+// siblings of RouterProvider which meant no Router context → error.
 function RootLayout() {
   const { key }  = useLocation();
   const navType  = useNavigationType();
@@ -12,6 +14,8 @@ function RootLayout() {
   return (
     <>
       <ScrollRestoration />
+      <FloatingChatButton />
+      <VendorChatModal />
       <div key={isPop ? "pop" : key} className={isPop ? "" : "route-fade"}>
         <Outlet />
       </div>
