@@ -215,8 +215,21 @@ const VendorList = () => {
       .finally(() => setIsLoading(false));
   }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, currentCatBudget]);
 
-  // fetch on filter changes — uses the same doFetch callback (avoids duplicate)
-  useEffect(() => { doFetch(); }, [doFetch]);
+  // fetch on filter changes
+  useEffect(() => {
+    setIsLoading(true);
+    const payload = {
+      ...(locationType && { location: locationType }),
+      ...(serviceType && { serviceTypes: [serviceType] }),
+      ...(currentCatBudget && { maxPrice: currentCatBudget }),
+      sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
+    };
+    getVendors(payload)
+      .then((data) => { setVendorList(data.vendors || []); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
+      .catch((err) => console.error("Error fetching vendors:", err))
+      .finally(() => setIsLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortBy, sortOrder, locationType, serviceType, currentCatBudget]); // secondaryFilters excluded to prevent loop
 
   const fetchPage = (pageNum) => {
     setIsLoading(true);
