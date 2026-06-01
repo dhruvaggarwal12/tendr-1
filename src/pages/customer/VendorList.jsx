@@ -413,7 +413,7 @@ const VendorList = () => {
                 locationType ? { label: "Location", value: locationType, showLabel: false } : null,
                 date ? { label: "Date", value: date, showLabel: false } : null,
                 guestCount ? { label: "Guests", value: guestCount, showLabel: false } : null,
-                currentCatBudget ? { label: "Budget", value: `${fmtBudget(CAT_RANGES[serviceType]?.min || 0)} – ${fmtBudget(currentCatBudget)}`, showLabel: false } : null,
+                currentCatBudget ? { label: "Budget", value: `${fmtBudget(currentCatBudget)}`, showLabel: false } : null,
                 additionalInfo ? { label: "Note", value: additionalInfo, showLabel: false } : null,
               ]
                 .filter(Boolean)
