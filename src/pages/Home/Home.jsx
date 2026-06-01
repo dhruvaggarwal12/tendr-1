@@ -1258,8 +1258,6 @@ const Home = () => {
             </div>
           </section>
         );
-      })()}
-        </section>
       )}
 
       {/* ── Memories Section — admin preview only ── */}
