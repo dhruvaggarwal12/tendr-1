@@ -1104,7 +1104,7 @@ const EventPlanning = () => {
                 selectedVendors.map(c => [c, Math.round(totalDraftBudget * (SPLIT_PCT[c] || 25) / totalWeight)])
               );
               return (
-              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, paddingLeft: `${20 + parseInt(document.body.style.marginLeft || "0")}px`, fontFamily: "'Outfit', sans-serif" }}>
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, paddingLeft: window.innerWidth >= 1024 ? 240 : 20, fontFamily: "'Outfit', sans-serif" }}>
                 <div style={{ background: "#F8F4EF", borderRadius: 22, width: "100%", maxWidth: 860, boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden" }}>
 
                   {/* Header */}
@@ -1203,7 +1203,7 @@ const EventPlanning = () => {
             {showYouDoItBudget && (
               <>
                 <div onClick={() => setShowYouDoItBudget(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 9998 }} />
-                <div style={{ position: "fixed", top: "50%", left: `calc(50% + ${parseInt(document.body.style.marginLeft || "0") / 2}px)`, transform: "translate(-50%,-50%)", zIndex: 9999, background: "#FFFCF5", borderRadius: 18, width: "92%", maxWidth: 420, boxShadow: "0 20px 50px rgba(0,0,0,0.22)", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ position: "fixed", top: "50%", left: window.innerWidth >= 1024 ? "calc(50% + 110px)" : "50%", transform: "translate(-50%,-50%)", zIndex: 9999, background: "#FFFCF5", borderRadius: 18, width: "92%", maxWidth: 420, boxShadow: "0 20px 50px rgba(0,0,0,0.22)", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
                   {/* Header */}
                   <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
@@ -1379,7 +1379,8 @@ const EventPlanning = () => {
                 value={formData[currentQuestion.id] || ""}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A]
+                style={{ width: "100%", boxSizing: "border-box", display: "block" }}
+                className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A]
               rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
               />
             )}
