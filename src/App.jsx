@@ -74,7 +74,12 @@ function App() {
       <ErrorBoundary>
         <ChatProvider>
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
-          <Suspense fallback={<div style={{ minHeight: "100vh", background: "#FFFCF5" }} />}>
+          <Suspense fallback={
+            <div style={{ minHeight: "100vh", background: "#FFFCF5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ width: 36, height: 36, border: "3px solid rgba(196,122,46,0.2)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "tendr-spin 0.65s linear infinite" }} />
+              <style>{`@keyframes tendr-spin { to { transform: rotate(360deg); } }`}</style>
+            </div>
+          }>
             <RouterProvider router={router} />
           </Suspense>
           <FloatingChatButton />
