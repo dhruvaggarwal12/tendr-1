@@ -366,6 +366,12 @@ const AdminDashboard = () => {
   const [editingVendor, setEditingVendor] = useState(null);
   const [menuVendor, setMenuVendor] = useState(null);
   const [registeringAppId, setRegisteringAppId] = useState(null);
+  // Vendor search + filters
+  const [vendorSearch, setVendorSearch] = useState("");
+  const [vendorFilterType, setVendorFilterType] = useState("all");
+  const [vendorFilterCity, setVendorFilterCity] = useState("all");
+  const [vendorFilterStatus, setVendorFilterStatus] = useState("all");
+  const [vendorFilterTopRated, setVendorFilterTopRated] = useState("all");
   // Reviews
   const [reviews, setReviews] = useState([]);
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
@@ -1926,11 +1932,75 @@ const AdminDashboard = () => {
             </div>
 
             {/* Individual Vendor Stats */}
-            {vendorStats.length > 0 && (
+            {vendorStats.length > 0 && (() => {
+              const filteredVendors = vendorStats.filter(v => {
+                if (vendorSearch && !v.name?.toLowerCase().includes(vendorSearch.toLowerCase())) return false;
+                if (vendorFilterType !== "all" && v.serviceType !== vendorFilterType) return false;
+                if (vendorFilterCity !== "all" && v.city !== vendorFilterCity) return false;
+                if (vendorFilterStatus !== "all" && v.status !== vendorFilterStatus) return false;
+                if (vendorFilterTopRated === "yes" && !v.isTopRated) return false;
+                if (vendorFilterTopRated === "no" && v.isTopRated) return false;
+                return true;
+              });
+              const allCities = [...new Set(vendorStats.map(v => v.city).filter(Boolean))].sort();
+              const selStyle = { padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", fontSize: 12, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", cursor: "pointer", outline: "none" };
+              return (
               <div className="mb-8">
-                <div className="text-xl font-semibold text-black mb-3">Vendor Details</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8, marginBottom: 12 }}>
+                  <div className="text-xl font-semibold text-black">Vendor Details ({filteredVendors.length}/{vendorStats.length})</div>
+                </div>
+                {/* Search + Filters */}
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 16, padding: "12px 16px", background: "#fff", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)" }}>
+                  {/* Name search */}
+                  <div style={{ display: "flex", alignItems: "center", flex: "1 1 200px", minWidth: 160, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 8, padding: "0 10px", gap: 6 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input
+                      type="text"
+                      placeholder="Search by name..."
+                      value={vendorSearch}
+                      onChange={e => setVendorSearch(e.target.value)}
+                      style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", padding: "7px 0" }}
+                    />
+                    {vendorSearch && <button onClick={() => setVendorSearch("")} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 14, padding: 0, lineHeight: 1 }}>✕</button>}
+                  </div>
+                  {/* Service type */}
+                  <select value={vendorFilterType} onChange={e => setVendorFilterType(e.target.value)} style={selStyle}>
+                    <option value="all">All Types</option>
+                    {["Caterer","Decorator","Photographer","DJ","GiftHamper"].map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  {/* City */}
+                  <select value={vendorFilterCity} onChange={e => setVendorFilterCity(e.target.value)} style={selStyle}>
+                    <option value="all">All Cities</option>
+                    {allCities.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                  {/* Status */}
+                  <select value={vendorFilterStatus} onChange={e => setVendorFilterStatus(e.target.value)} style={selStyle}>
+                    <option value="all">All Status</option>
+                    <option value="approved">Approved</option>
+                    <option value="pending">Pending</option>
+                  </select>
+                  {/* Top Rated */}
+                  <select value={vendorFilterTopRated} onChange={e => setVendorFilterTopRated(e.target.value)} style={selStyle}>
+                    <option value="all">All</option>
+                    <option value="yes">⭐ Top Rated</option>
+                    <option value="no">Not Top Rated</option>
+                  </select>
+                  {/* Clear all */}
+                  {(vendorSearch || vendorFilterType !== "all" || vendorFilterCity !== "all" || vendorFilterStatus !== "all" || vendorFilterTopRated !== "all") && (
+                    <button onClick={() => { setVendorSearch(""); setVendorFilterType("all"); setVendorFilterCity("all"); setVendorFilterStatus("all"); setVendorFilterTopRated("all"); }}
+                      style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(192,57,43,0.25)", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                      ✕ Clear
+                    </button>
+                  )}
+                </div>
+                {filteredVendors.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "40px 24px", background: "#fff", borderRadius: 14, border: "2px solid #F1E1A8" }}>
+                    <div style={{ fontSize: 32, marginBottom: 10 }}>🔍</div>
+                    <p style={{ color: "#9B7450", fontSize: 14, fontWeight: 600 }}>No vendors match your filters</p>
+                  </div>
+                ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
-                  {vendorStats.map((v) => (
+                  {filteredVendors.map((v) => (
                     <div key={v._id}
                       style={{ background: "#fff", borderRadius: 14, border: "2px solid #CCAB4A", padding: "16px 18px", transition: "box-shadow 0.2s", position: "relative" }}
                       onMouseEnter={(e) => (e.currentTarget.style.boxShadow = "0 6px 20px rgba(204,171,74,0.25)")}
@@ -2021,6 +2091,7 @@ const AdminDashboard = () => {
                     </div>
                   ))}
                 </div>
+                )}
 
                 {/* Vendor Detail Modal */}
                 {selectedVendor && (
@@ -2074,7 +2145,8 @@ const AdminDashboard = () => {
                   </div>
                 )}
               </div>
-            )}
+              );
+            })()}
 
             {/* Vendor Applications Table */}
             <div className="mb-8">
