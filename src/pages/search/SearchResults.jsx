@@ -81,7 +81,7 @@ export default function SearchResults() {
     return (
       <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" noSidebar />
+        <HamburgerNav active="Browse" />
         <div style={{ maxWidth: 580, margin: "0 auto", padding: "60px 24px", textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>
@@ -112,7 +112,7 @@ export default function SearchResults() {
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <BasicSpeedDial />
-      <HamburgerNav active="Browse" noSidebar />
+      <HamburgerNav active="Browse" />
 
       {/* Loading overlay */}
       {showOverlay && (
@@ -128,10 +128,10 @@ export default function SearchResults() {
 
         {/* Page header */}
         <div style={{ marginBottom: 20 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>
-            {activeCat ? `Top ${activeCat}s` : "Search Results"}
-            {activeLoc && ` in ${activeLoc}`}
-            {rawBudget && ` under ₹${Number(rawBudget).toLocaleString("en-IN")}`}
+          <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px", textTransform: "capitalize" }}>
+            {rawQuery || (activeCat
+              ? `${activeCat}s${activeLoc ? ` in ${activeLoc}` : ""}${rawBudget ? ` under ₹${Number(rawBudget).toLocaleString("en-IN")}` : ""}`
+              : "Search Results")}
           </h1>
           <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Top-rated, verified vendors only</p>
         </div>
