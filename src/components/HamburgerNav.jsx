@@ -164,6 +164,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const formData            = useSelector((s) => s.eventPlanning.formData || {});
   const formEventType       = formData.eventType;
   const selectedVendors     = useSelector((s) => s.eventPlanning.selectedVendors || []);
+  const bookingType         = useSelector((s) => s.eventPlanning.bookingType || "");
 
   // Form is fully filled only when ALL 5 fields are answered
   const isFormFilled = !!(
@@ -206,9 +207,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Decor Finder",       href: "/decor-finder" },
       { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
       { label: "Invitation Flyers",  href: "/invitation" },
-    ]},
-    { label: "Gift & Hampers", items: [
-      { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
     ]},
     { label: "Booking", items: [
       { label: "Plan Your Event",      href: "/booking" },
@@ -255,6 +253,25 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               style={{ width: 26, height: 26, borderRadius: "50%", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.5)", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
               title="Close navigation"
             >‹</button>
+          </div>
+
+          {/* Search bar — always visible at top of sidebar */}
+          <div style={{ padding: "8px 14px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+            <style>{`.sb-search::placeholder{color:rgba(255,255,255,0.35);}`}</style>
+            <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, overflow: "hidden" }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginLeft: 9 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input
+                className="sb-search"
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && handleNavSearch()}
+                placeholder="Search..."
+                style={{ flex: 1, background: "transparent", border: "none", outline: "none", padding: "8px 8px 8px 7px", fontSize: 12, color: "#fff", fontFamily: font }}
+              />
+              <button onClick={() => handleNavSearch()}
+                style={{ padding: "8px 10px", background: "transparent", border: "none", cursor: "pointer", color: "#CCAB4A", fontSize: 13, lineHeight: 1, flexShrink: 0 }}>›</button>
+            </div>
           </div>
 
           {/* Journey progress — shown when active prop is passed */}
@@ -316,8 +333,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           )}
 
-          {/* My Services checklist — only during booking flow */}
-          {selectedVendors.length > 0 && isOnVendorFlow && (
+          {/* My Services checklist — only in normal (you-do-it) booking flow */}
+          {selectedVendors.length > 0 && isOnVendorFlow && bookingType === 'you-do-it' && (
             <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
               <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
               {selectedVendors.map(svc => {
@@ -342,6 +359,24 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Nav sections */}
           <div style={{ padding: "8px 0" }}>
+            {/* Gift Hampers — above Browse Vendors */}
+            {(() => {
+              const isGiftActive = location.pathname === "/gift-hampers-cakes";
+              return (
+                <div style={{ marginBottom: 2 }}>
+                  <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px" }}>Gift &amp; Hampers</div>
+                  <button
+                    onClick={() => navigate("/gift-hampers-cakes")}
+                    style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "9px 16px", border: "none", background: isGiftActive ? "rgba(196,122,46,0.18)" : "transparent", fontSize: 13, fontWeight: isGiftActive ? 700 : 500, color: isGiftActive ? "#FFCC66" : "rgba(255,255,255,0.85)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderLeft: isGiftActive ? "3px solid #C9A84C" : "3px solid transparent" }}
+                    onMouseEnter={e => { if (!isGiftActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
+                    onMouseLeave={e => { if (!isGiftActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                  >
+                    🎁 Gift Hampers &amp; Cakes
+                  </button>
+                  <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "4px 18px" }} />
+                </div>
+              );
+            })()}
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px", textAlign: "left" }}>{sec.label}</div>
@@ -455,10 +490,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         {/* Center: Search bar — tapping opens full-screen overlay */}
         <button
           onClick={() => setSearchOverlay(true)}
-          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer", lineHeight: 1 }}
+          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer", lineHeight: 1 }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, display: "block" }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style={{ flex: 1, fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", lineHeight: 1 }}>Search vendors, tools...</span>
+          <span style={{ fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", lineHeight: 1 }}>Search vendors, tools...</span>
         </button>
 
         {/* Right: Hamburger + optional actions */}
@@ -489,55 +524,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </button>
           )}
 
-          {/* Profile */}
-          {token && user ? (
-            <div ref={profileRef} style={{ position: "relative" }}>
-              <button
-                onClick={() => setProfileOpen(!profileOpen)}
-                style={{ display: "flex", alignItems: "center", gap: 5, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.15)", borderRadius: 100, padding: "4px 10px 4px 5px", cursor: "pointer", fontFamily: font }}
-              >
-                <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700 }}>
-                  {user.name?.[0]?.toUpperCase() || "U"}
-                </div>
-                <FaChevronDown size={8} style={{ color: "#9B7450", transform: profileOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
-              </button>
-
-              {/* Saved strip — hidden in smart planner flow */}
-              {!noCompare && compareSelected.length > 0 && (
-                <button onClick={() => setSavedOpen(true)}
-                  style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, width: "100%", padding: "2px 8px", borderRadius: "0 0 100px 100px", border: "1.5px solid rgba(196,122,46,0.2)", borderTop: "none", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-                  🔀 {compareSelected.length}
-                </button>
-              )}
-
-              {profileOpen && (
-                <>
-                  <div style={{ position: "fixed", inset: 0, zIndex: 998 }} onClick={() => setProfileOpen(false)} />
-                  <div style={{ position: "absolute", right: 0, top: "calc(100% + 8px)", background: "#FFFEF9", borderRadius: 12, boxShadow: "0 8px 32px rgba(139,69,19,0.12)", border: "1px solid rgba(139,69,19,0.08)", minWidth: 180, padding: 6, zIndex: 999 }}>
-                    <div style={{ padding: "8px 14px 10px", borderBottom: "1px solid rgba(139,69,19,0.08)", marginBottom: 4 }}>
-                      <p style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{user.name}</p>
-                    </div>
-                    {[
-                      { label: "Dashboard",    path: "/dashboard" },
-                      ...(user.isAdmin ? [{ label: "Admin", path: "/AdminDashboard" }] : []),
-                    ].map(({ label, path }) => (
-                      <button key={label} onClick={() => { navigate(path); setProfileOpen(false); }}
-                        style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 13, color: "#3B2F2F", cursor: "pointer", fontFamily: font }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
-                      >{label}</button>
-                    ))}
-                    <div style={{ borderTop: "1px solid rgba(139,69,19,0.08)", marginTop: 4, paddingTop: 4 }}>
-                      <button onClick={() => { dispatch(logout()); navigate("/"); setProfileOpen(false); }}
-                        style={{ display: "block", width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 13, color: "#C0392B", cursor: "pointer", fontFamily: font }}>
-                        Logout
-                      </button>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          ) : null}
         </div>
       </div>
 
@@ -591,8 +577,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               )}
             </div>
 
-            {/* My Services — only during active booking flow (user is on vendor/listings pages) */}
-            {selectedVendors.length > 0 && isOnVendorFlow && (
+            {/* My Services — only in normal (you-do-it) booking flow */}
+            {selectedVendors.length > 0 && isOnVendorFlow && bookingType === 'you-do-it' && (
               <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(196,122,46,0.12)", background: "rgba(196,122,46,0.04)" }}>
                 <p style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 7px" }}>My Services</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

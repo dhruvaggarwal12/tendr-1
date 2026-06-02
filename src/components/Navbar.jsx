@@ -737,32 +737,6 @@ const Navbar = ({
         }}
       >
         <div style={{ padding: "8px 24px 24px" }}>
-          {/* Mobile search */}
-          <div style={{ marginBottom: 12, padding: "10px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.04)", display: "flex", alignItems: "center", gap: 8 }}>
-            <FaSearch size={12} style={{ color: "#9B7450", flexShrink: 0 }} />
-            <input
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              onKeyDown={e => { if (e.key === "Enter") { handleSearch(); setMenuOpen(false); } }}
-              placeholder="Search caterers, photographers..."
-              style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 14, fontFamily: font, color: "#2C1A0E" }}
-            />
-            <button onClick={() => { handleSearch(); setMenuOpen(false); }}
-              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", color: "#fff", fontSize: 12, fontWeight: 700, padding: "5px 12px", borderRadius: 7, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-              Search
-            </button>
-          </div>
-          {/* Mobile search suggestions */}
-          {searchQuery.length === 0 && (
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 12 }}>
-              {SEARCH_SUGGESTIONS.slice(0, 4).map((s, i) => (
-                <button key={i} onClick={() => { setSearchQuery(s.text); handleSearch(s.text); setMenuOpen(false); }}
-                  style={{ padding: "5px 12px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                  {s.text}
-                </button>
-              ))}
-            </div>
-          )}
           {NAV_ITEMS.map((group) => (
             <div key={group.label} style={{ marginBottom: 2 }}>
               <button
