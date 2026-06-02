@@ -115,6 +115,8 @@ const Auth = () => {
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
+      const returnTo = location.state?.returnTo;
+      if (returnTo) { navigate(returnTo); return; }
       // After signup: show install modal — user can choose to install or skip
       setShowInstallModal(true);
 
@@ -140,7 +142,8 @@ const Auth = () => {
       }));
       if (login.fulfilled.match(result)) {
         const loggedUser = result.payload?.consumer;
-        navigate(loggedUser?.isAdmin ? "/AdminDashboard" : "/");
+        const returnTo = location.state?.returnTo;
+        navigate(loggedUser?.isAdmin ? "/AdminDashboard" : (returnTo || "/"));
       } else {
         const msg = result.payload || "";
         if (msg.toLowerCase().includes("not found") || msg.includes("404")) {
@@ -176,7 +179,7 @@ const Auth = () => {
             Install App →
           </button>
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate(location.state?.returnTo || "/")}
             style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
             Skip for now
           </button>
