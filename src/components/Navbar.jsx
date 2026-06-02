@@ -700,10 +700,10 @@ const Navbar = ({
         <button
           className="mobile-search-bar"
           onClick={() => setSearchOverlay(true)}
-          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer" }}
+          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer" }}
         >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, verticalAlign: "middle", display: "block" }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style={{ flex: 1, fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", verticalAlign: "middle" }}>Search vendors, tools...</span>
+          <span style={{ fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", verticalAlign: "middle" }}>Search vendors, tools...</span>
         </button>
 
         {/* Burger (mobile) */}
