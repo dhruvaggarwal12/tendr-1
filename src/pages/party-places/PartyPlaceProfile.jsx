@@ -25,9 +25,8 @@ export default function PartyPlaceProfile() {
   const [activePhoto, setActivePhoto] = useState(0);
   const [openCats, setOpenCats] = useState({});
   const [selectedPkgs, setSelectedPkgs] = useState({});
-  const [bookingForm, setBookingForm] = useState({ name: "", phone: "", email: "", date: "", guests: "", occasion: "" });
   const [showBookForm, setShowBookForm] = useState(false);
-  const [booked, setBooked] = useState(false);
+  const [bookForm, setBookForm] = useState({ name: "", phone: "", date: "", guests: "", occasion: "" });
 
   if (!user?.isAdmin) { navigate("/"); return null; }
   if (!place) { navigate("/party-places"); return null; }
@@ -48,16 +47,65 @@ export default function PartyPlaceProfile() {
   }, 0);
   const grandTotal = place.roomPrice + place.serviceCharge + totalPackagePrice;
 
-  const handleBook = (e) => {
+  const TENDR_WA = "919211668427";
+
+  const pkgSummaryLines = () =>
+    Object.entries(selectedPkgs)
+      .filter(([, v]) => v)
+      .map(([cat, pkgId]) => {
+        const pkg = place.packages[cat]?.find(p => p.id === pkgId);
+        return pkg ? `  • ${cat}: ${pkg.name} — ${fmt(pkg.price)}` : null;
+      })
+      .filter(Boolean);
+
+  const openBookWhatsApp = (e) => {
     e.preventDefault();
-    setBooked(true);
+    const lines = pkgSummaryLines();
+    const msg = [
+      `🎉 Party Place Booking Request`,
+      ``,
+      `📍 Place: ${place.name}`,
+      `🗺 Location: ${place.location}`,
+      ``,
+      `👤 Name: ${bookForm.name}`,
+      `📞 Phone: ${bookForm.phone}`,
+      `📅 Date: ${bookForm.date}`,
+      `👥 Guests: ${bookForm.guests}`,
+      `🎊 Occasion: ${bookForm.occasion || "Not specified"}`,
+      ``,
+      `💰 Pricing:`,
+      `  Room/Venue: ${fmt(place.roomPrice)}`,
+      `  Service Charges: ${fmt(place.serviceCharge)}`,
+      lines.length ? lines.join("\n") : `  Packages: None selected`,
+      `  ─────────────`,
+      `  Total: ${fmt(grandTotal)}`,
+      ``,
+      `Please confirm my booking. Thank you!`,
+    ].join("\n");
+    window.open(`https://wa.me/${TENDR_WA}?text=${encodeURIComponent(msg)}`, "_blank");
     setShowBookForm(false);
+  };
+
+  const openChatWhatsApp = () => {
+    const lines = pkgSummaryLines();
+    const msg = [
+      `Hi Tendr! I'm interested in ${place.name} and have some questions.`,
+      ``,
+      `📍 Place: ${place.name}`,
+      `🗺 Location: ${place.location}`,
+      lines.length ? `\nPackages I'm considering:\n${lines.join("\n")}` : ``,
+      ``,
+      `💰 Estimated total: ${fmt(grandTotal)}`,
+      ``,
+      `Could we discuss the details?`,
+    ].filter(x => x !== undefined).join("\n");
+    window.open(`https://wa.me/${TENDR_WA}?text=${encodeURIComponent(msg)}`, "_blank");
   };
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO title={`${place.name} — Tendr Party Places`} description={place.tagline} path={`/party-places/${id}`} noIndex />
-      <HamburgerNav noSidebar />
+      <HamburgerNav />
 
       {/* Photo gallery */}
       <div style={{ position: "relative", height: "clamp(260px,40vw,420px)", background: "#2C1A0E", overflow: "hidden" }}>
@@ -215,80 +263,60 @@ export default function PartyPlaceProfile() {
                     <span>Total</span><span style={{ color: "#C47A2E" }}>{fmt(grandTotal)}</span>
                   </div>
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   <button
-                    onClick={() => { if (selectedCount === 0) { alert("Please select at least 1 package to continue."); return; } setShowBookForm(true); }}
-                    style={{ flex: 2, padding: "13px", borderRadius: 12, border: "none", background: selectedCount > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: selectedCount > 0 ? "#fff" : "#9ca3af", fontSize: 14, fontWeight: 800, cursor: selectedCount > 0 ? "pointer" : "not-allowed", fontFamily: font, boxShadow: selectedCount > 0 ? "0 4px 14px rgba(196,122,46,0.3)" : "none" }}>
-                    Book Now →
+                    onClick={() => setShowBookForm(true)}
+                    style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    💬 Book Now on WhatsApp
                   </button>
                   <button
-                    style={{ flex: 1, padding: "13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    Save ♡
+                    onClick={openChatWhatsApp}
+                    style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid #25D366", background: "rgba(37,211,102,0.06)", color: "#16a34a", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    💬 Chat for Changes
                   </button>
                 </div>
-                {selectedCount === 0 && <p style={{ fontSize: 11, color: "#ef4444", textAlign: "center", margin: "8px 0 0" }}>Select at least 1 package to book</p>}
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Booking form modal */}
-      {showBookForm && !booked && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <div style={{ background: "#FFFCF5", borderRadius: 22, padding: "28px 28px", maxWidth: 480, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.3)", fontFamily: font }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+      {/* Book Now — collect quick details then open WhatsApp */}
+      {showBookForm && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+          <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "24px 26px", maxWidth: 440, width: "100%", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
               <div>
-                <h2 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 3px" }}>Complete Booking</h2>
-                <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>{place.name} — {fmt(grandTotal)}</p>
+                <h2 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 2px" }}>Quick Details</h2>
+                <p style={{ fontSize: 11.5, color: "#9B7450", margin: 0 }}>{place.name} · Total: {fmt(grandTotal)}</p>
               </div>
-              <button onClick={() => setShowBookForm(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
+              <button onClick={() => setShowBookForm(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0, lineHeight: 1 }}>✕</button>
             </div>
-            <form onSubmit={handleBook} style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <form onSubmit={openBookWhatsApp} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {[
-                { label: "Full Name *", field: "name", type: "text", placeholder: "Your full name" },
+                { label: "Your Name *", field: "name", type: "text", placeholder: "Full name" },
                 { label: "Phone Number *", field: "phone", type: "tel", placeholder: "+91 9XXXXXXXXX" },
-                { label: "Email", field: "email", type: "email", placeholder: "your@email.com" },
-                { label: "Event Date *", field: "date", type: "date", placeholder: "" },
-                { label: "Number of Guests *", field: "guests", type: "number", placeholder: `${place.minGuests}–${place.maxGuests}` },
+                { label: "Event Date *", field: "date", type: "date" },
+                { label: "No. of Guests *", field: "guests", type: "number", placeholder: `${place.minGuests}–${place.maxGuests}` },
                 { label: "Occasion", field: "occasion", type: "text", placeholder: "e.g. Birthday, Anniversary" },
               ].map(({ label, field, type, placeholder }) => (
                 <div key={field}>
-                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 5 }}>{label}</label>
-                  <input type={type} required={label.includes("*")} value={bookingForm[field]} placeholder={placeholder}
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "#6B3A1F", marginBottom: 4 }}>{label}</label>
+                  <input type={type} required={label.includes("*")} value={bookForm[field]} placeholder={placeholder}
                     min={type === "date" ? today : type === "number" ? place.minGuests : undefined}
                     max={type === "number" ? place.maxGuests : undefined}
-                    onChange={e => setBookingForm(p => ({ ...p, [field]: e.target.value }))}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                    onChange={e => setBookForm(p => ({ ...p, [field]: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
                 </div>
               ))}
-              <div style={{ padding: "12px 14px", background: "rgba(196,122,46,0.06)", borderRadius: 10, fontSize: 12, color: "#7A5535" }}>
-                <strong>Summary:</strong> {place.name} · {fmt(grandTotal)} · {selectedCount} package{selectedCount > 1 ? "s" : ""}
-              </div>
-              <button type="submit" style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
-                Confirm Booking →
+              <button type="submit" style={{ width: "100%", marginTop: 4, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#25D366,#16a34a)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(37,211,102,0.35)" }}>
+                📲 Send Booking on WhatsApp →
               </button>
             </form>
           </div>
         </div>
       )}
 
-      {/* Booking confirmed */}
-      {booked && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <div style={{ background: "#FFFCF5", borderRadius: 22, padding: "40px 32px", maxWidth: 400, width: "100%", textAlign: "center", boxShadow: "0 24px 64px rgba(0,0,0,0.3)", fontFamily: font }}>
-            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 28, margin: "0 auto 16px", boxShadow: "0 8px 24px rgba(21,128,61,0.3)" }}>✓</div>
-            <h2 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Booking Confirmed!</h2>
-            <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 6px" }}>{place.name}</p>
-            <p style={{ fontSize: 16, fontWeight: 800, color: "#C47A2E", margin: "0 0 20px" }}>{fmt(grandTotal)}</p>
-            <p style={{ fontSize: 13, color: "#7A5535", margin: "0 0 24px", lineHeight: 1.6 }}>Our team will contact you within 2 hours to confirm details and next steps.</p>
-            <button onClick={() => { setBooked(false); window.close(); }}
-              style={{ padding: "12px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-              Close
-            </button>
-          </div>
-        </div>
-      )}
 
       <style>{`
         @media (max-width: 767px) {

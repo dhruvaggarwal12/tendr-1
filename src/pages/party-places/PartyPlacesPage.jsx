@@ -6,13 +6,16 @@ import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 
 const font = "'Outfit', sans-serif";
-const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
+const SAVED_KEY = "tendr_saved_places";
+const getSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
+const setSaved = (ids) => localStorage.setItem(SAVED_KEY, JSON.stringify(ids));
 
 export default function PartyPlacesPage() {
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const [activeType, setActiveType] = useState("all");
   const [form, setForm] = useState({ date: "", guests: "", location: "", occasion: "" });
+  const [savedIds, setSavedIds] = useState(() => getSaved());
 
   if (!user?.isAdmin) { navigate("/"); return null; }
 
@@ -115,24 +118,23 @@ export default function PartyPlacesPage() {
 
                 {/* Info */}
                 <div className="pp-info" style={{ padding: "16px 18px" }}>
-                  <p style={{ fontSize: 12.5, color: "#7A5535", margin: "0 0 12px", lineHeight: 1.5 }}>{place.tagline}</p>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+                  <p style={{ fontSize: 12.5, color: "#7A5535", margin: "0 0 10px", lineHeight: 1.5 }}>{place.tagline}</p>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "3px 10px" }}>👥 {place.minGuests}–{place.maxGuests} guests</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "3px 10px" }}>📐 {place.area}</span>
                   </div>
-                  {/* Pricing */}
-                  <div style={{ marginBottom: 14, padding: "10px 14px", background: "#FFFCF5", borderRadius: 10, border: "1px solid rgba(196,122,46,0.12)" }}>
-                    <div style={{ fontSize: 18, fontWeight: 900, color: "#C47A2E" }}>{fmt(place.roomPrice)}</div>
-                    <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>
-                      Room/venue price + {fmt(place.serviceCharge)} service charges
-                    </div>
-                    <div style={{ fontSize: 10, color: "#bbb", marginTop: 2 }}>* Package pricing added separately</div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); const s = getSaved(); const next = s.includes(place.id) ? s.filter(x => x !== place.id) : [...s, place.id]; setSaved(next); setSavedIds(next); }}
+                      style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${savedIds.includes(place.id) ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: savedIds.includes(place.id) ? "rgba(196,122,46,0.08)" : "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      {savedIds.includes(place.id) ? "♥ Saved" : "♡ Save"}
+                    </button>
+                    <button
+                      onClick={() => navigate(`/party-places/${place.id}`)}
+                      style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}>
+                      View Profile →
+                    </button>
                   </div>
-                  <button
-                    onClick={() => window.open(`/party-places/${place.id}`, "_blank")}
-                    style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}>
-                    View Profile ↗
-                  </button>
                 </div>
               </div>
             ))}
