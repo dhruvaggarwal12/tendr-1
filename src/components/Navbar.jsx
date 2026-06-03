@@ -895,7 +895,7 @@ const Navbar = ({
           .desktop-nav { display: none !important; }
           .desktop-search { display: none !important; }
           .burger-btn-custom { display: flex !important; }
-          .mobile-search-bar { display: block !important; }
+          .mobile-search-bar { display: flex !important; }
           .navbar-main-bar img { height: 28px !important; }
           .navbar-main-bar { padding: 0 12px !important; height: 52px !important; }
           .mobile-menu-content { padding: 6px 14px 20px !important; }
