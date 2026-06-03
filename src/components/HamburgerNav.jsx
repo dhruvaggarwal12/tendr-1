@@ -200,7 +200,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
     { label: "Our Products", items: [
-      ...(user?.isAdmin ? [{ label: "🎉 Plan by Occasion", onClickOverride: () => { close(); window.open("/occasions", "_blank"); } }] : []),
+      ...(user?.isAdmin ? [
+        { label: "🎉 Plan by Occasion", onClickOverride: () => { close(); window.open("/occasions", "_blank"); } },
+        { label: "🏡 Party Places",     href: "/party-places" },
+      ] : []),
       { label: "Checklist",          href: "/checklist-picker" },
       { label: "Timeline",           href: "/timeline-picker" },
       { label: "Budget Allocator",   href: "/budget-picker" },
