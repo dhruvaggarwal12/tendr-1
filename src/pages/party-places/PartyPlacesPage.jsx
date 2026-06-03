@@ -130,7 +130,7 @@ export default function PartyPlacesPage() {
                       {savedIds.includes(place.id) ? "♥ Saved" : "♡ Save"}
                     </button>
                     <button
-                      onClick={() => navigate(`/party-places/${place.id}`)}
+                      onClick={() => window.open(`/party-places/${place.id}`, "_blank")}
                       style={{ flex: 2, padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}>
                       View Profile →
                     </button>

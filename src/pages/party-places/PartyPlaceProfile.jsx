@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getPlaceById } from "../../data/partyPlaces";
@@ -27,6 +27,14 @@ export default function PartyPlaceProfile() {
   const [selectedPkgs, setSelectedPkgs] = useState({});
   const [showBookForm, setShowBookForm] = useState(false);
   const [bookForm, setBookForm] = useState({ name: "", phone: "", date: "", guests: "", occasion: "" });
+  const [reviews, setReviews] = useState([
+    { name: "Priya Sharma", rating: 5, date: "March 2025", text: "Absolutely stunning venue! The decoration team was professional and the catering was top-notch. Our anniversary party was a huge hit. Highly recommend Tendr for hassle-free party planning." },
+    { name: "Rohan Mehta", rating: 5, date: "February 2025", text: "Booked the villa for my birthday and it was beyond expectations. Beautiful setup, great food, and everything was handled by the team. Will definitely book again!" },
+    { name: "Simran Kaur", rating: 4, date: "January 2025", text: "Great experience overall. The place looked amazing with the decor package. Only minor issue was the parking — but the team sorted it quickly. Would recommend." },
+  ]);
+  const [reviewForm, setReviewForm] = useState({ name: "", rating: 5, text: "" });
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const reviewsRef = useRef(null);
 
   if (!user?.isAdmin) { navigate("/"); return null; }
   if (!place) { navigate("/party-places"); return null; }
@@ -317,6 +325,85 @@ export default function PartyPlaceProfile() {
         </div>
       )}
 
+
+      {/* ── Public Reviews ── */}
+      <div ref={reviewsRef} style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px 80px" }}>
+        <div style={{ borderTop: "1px solid rgba(196,122,46,0.12)", paddingTop: 36 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginBottom: 24 }}>
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px" }}>Guest Reviews</h2>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", gap: 2 }}>
+                  {[1,2,3,4,5].map(s => <span key={s} style={{ fontSize: 16, color: "#C47A2E" }}>★</span>)}
+                </div>
+                <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>5.0</span>
+                <span style={{ fontSize: 13, color: "#9B7450" }}>· {reviews.length} reviews</span>
+              </div>
+            </div>
+            <button onClick={() => setShowReviewForm(v => !v)}
+              style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: showReviewForm ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              {showReviewForm ? "Cancel" : "✏ Write a Review"}
+            </button>
+          </div>
+
+          {/* Review form */}
+          {showReviewForm && (
+            <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", padding: "22px 24px", marginBottom: 24 }}>
+              <h3 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px" }}>Share your experience</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <input placeholder="Your name" value={reviewForm.name}
+                  onChange={e => setReviewForm(p => ({ ...p, name: e.target.value }))}
+                  style={{ padding: "10px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.2)", fontFamily: font, fontSize: 13, outline: "none" }} />
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 6 }}>Rating</div>
+                  <div style={{ display: "flex", gap: 6 }}>
+                    {[1,2,3,4,5].map(s => (
+                      <button key={s} onClick={() => setReviewForm(p => ({ ...p, rating: s }))}
+                        style={{ fontSize: 22, background: "none", border: "none", cursor: "pointer", color: s <= reviewForm.rating ? "#C47A2E" : "#ddd", padding: 0, lineHeight: 1 }}>★</button>
+                    ))}
+                  </div>
+                </div>
+                <textarea placeholder="Tell us about your experience..." value={reviewForm.text}
+                  onChange={e => setReviewForm(p => ({ ...p, text: e.target.value }))}
+                  rows={3}
+                  style={{ padding: "10px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.2)", fontFamily: font, fontSize: 13, outline: "none", resize: "vertical" }} />
+                <button
+                  onClick={() => {
+                    if (!reviewForm.name.trim() || !reviewForm.text.trim()) return;
+                    const now = new Date();
+                    const month = now.toLocaleString("en-IN", { month: "long", year: "numeric" });
+                    setReviews(prev => [{ name: reviewForm.name, rating: reviewForm.rating, date: month, text: reviewForm.text }, ...prev]);
+                    setReviewForm({ name: "", rating: 5, text: "" });
+                    setShowReviewForm(false);
+                  }}
+                  style={{ alignSelf: "flex-start", padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Submit Review →
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Review cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+            {reviews.map((r, i) => (
+              <div key={i} style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.1)", padding: "18px 20px", boxShadow: "0 2px 12px rgba(139,69,19,0.05)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{r.name}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>{r.date}</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 1 }}>
+                    {[1,2,3,4,5].map(s => (
+                      <span key={s} style={{ fontSize: 13, color: s <= r.rating ? "#C47A2E" : "#e5e7eb" }}>★</span>
+                    ))}
+                  </div>
+                </div>
+                <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.6, margin: 0 }}>{r.text}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
       <style>{`
         @media (max-width: 767px) {

@@ -1113,9 +1113,14 @@ const Home = () => {
               .pp-home-ctas button { padding: 10px 16px !important; font-size: 13px !important; }
             }
           `}</style>
-          <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1400&q=80" alt="Party venue"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(15,8,0,0.9) 0%,rgba(44,26,14,0.84) 55%,rgba(74,40,16,0.78) 100%)" }} />
+          {/* Split background — villa left, flat right */}
+          <div style={{ position: "absolute", inset: 0, display: "flex" }}>
+            <img src="https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=900&q=80" alt="Villa"
+              style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
+            <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=900&q=80" alt="Flat decoration"
+              style={{ width: "50%", height: "100%", objectFit: "cover", objectPosition: "center" }} />
+          </div>
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(15,8,0,0.88) 0%,rgba(44,26,14,0.82) 50%,rgba(30,15,5,0.87) 100%)" }} />
 
           <div className="pp-home-content" style={{ position: "relative", zIndex: 2, maxWidth: 1160, margin: "0 auto", padding: "60px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 36 }}>
 
@@ -1142,12 +1147,6 @@ const Home = () => {
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
                   Browse All Places ↗
-                </button>
-                <button onClick={() => window.open("/party-places?type=villa", "_blank")}
-                  style={{ padding: "12px 20px", borderRadius: 11, border: "1.5px solid rgba(255,255,255,0.28)", background: "transparent", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "background 0.2s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  Browse Villas
                 </button>
               </div>
             </div>
