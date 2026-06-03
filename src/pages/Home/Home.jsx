@@ -1099,8 +1099,8 @@ const Home = () => {
 
       <JourneyFlow />
 
-      {/* ── Book a Party Place — admin preview only — full-width dark banner ── */}
-      {user?.isAdmin && (
+      {/* ── Book a Party Place — removed from home page ── */}
+      {false && (
         <section style={{ position: "relative", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
           {/* Background photo */}
           <img

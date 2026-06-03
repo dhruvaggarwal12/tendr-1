@@ -27,28 +27,26 @@ export default function PartyPlacesPage() {
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO title="Book a Party Place — Tendr" description="Villas, farmhouses, flats and venues for your celebration" path="/party-places" noIndex />
-      <HamburgerNav noSidebar />
+      <HamburgerNav />
 
-      {/* Hero */}
-      <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "44px 24px 40px", textAlign: "center" }}>
-        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "4px 14px", marginBottom: 14 }}>
-          <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em" }}>Admin Preview</span>
-        </div>
-        <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 900, color: "#fff", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
+      {/* Header */}
+      <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "36px 24px 32px", textAlign: "center" }}>
+        <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", fontWeight: 900, color: "#fff", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
           Book a Party Place
         </h1>
-        <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", margin: "0 auto", maxWidth: 500 }}>
-          Villas, farmhouses, penthouses and banquet halls — with decoration, catering and entertainment included.
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: 0 }}>
+          Villas and flats — fully decorated, catered and ready for your celebration.
         </p>
       </div>
 
-      {/* Place type filter */}
-      <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.1)", overflowX: "auto" }}>
-        <div style={{ display: "flex", padding: "0 24px", maxWidth: 1200, margin: "0 auto" }}>
+      {/* Type filter — big icon tiles, only Villa and Flat */}
+      <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "18px 24px" }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: 16, maxWidth: 480, margin: "0 auto" }}>
           {PLACE_TYPES.map(t => (
             <button key={t.id} onClick={() => setActiveType(t.id)}
-              style={{ padding: "14px 20px", border: "none", borderBottom: activeType === t.id ? "2.5px solid #C47A2E" : "2.5px solid transparent", background: "transparent", fontSize: 13, fontWeight: activeType === t.id ? 700 : 500, color: activeType === t.id ? "#C47A2E" : "#9B7450", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 6 }}>
-              <span>{t.icon}</span> {t.label}
+              style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 12px", borderRadius: 14, border: activeType === t.id ? "2px solid #C47A2E" : "2px solid rgba(196,122,46,0.15)", background: activeType === t.id ? "rgba(196,122,46,0.08)" : "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+              <span style={{ fontSize: 32 }}>{t.icon}</span>
+              <span style={{ fontSize: 13, fontWeight: activeType === t.id ? 700 : 500, color: activeType === t.id ? "#C47A2E" : "#7A5535" }}>{t.label}</span>
             </button>
           ))}
         </div>
@@ -95,13 +93,15 @@ export default function PartyPlacesPage() {
             <div style={{ fontSize: 13, color: "#9B7450" }}>Try adjusting your guest count or location filter.</div>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 22 }}>
+          <>
+          <style>{`@media(max-width:639px){.pp-card{border-radius:14px!important}.pp-photo{height:140px!important}.pp-info{padding:12px 14px!important}}`}</style>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
             {places.map(place => (
-              <div key={place.id} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", transition: "transform 0.2s, box-shadow 0.2s" }}
+              <div key={place.id} className="pp-card" style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", transition: "transform 0.2s, box-shadow 0.2s" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.12)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}>
                 {/* Photo */}
-                <div style={{ height: 200, overflow: "hidden", position: "relative" }}>
+                <div className="pp-photo" style={{ height: 200, overflow: "hidden", position: "relative" }}>
                   <img src={place.coverPhoto} alt={place.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 50%)" }} />
                   <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.9)", color: "#fff", borderRadius: 100, padding: "3px 10px", fontSize: 10.5, fontWeight: 700 }}>
@@ -114,7 +114,7 @@ export default function PartyPlacesPage() {
                 </div>
 
                 {/* Info */}
-                <div style={{ padding: "16px 18px" }}>
+                <div className="pp-info" style={{ padding: "16px 18px" }}>
                   <p style={{ fontSize: 12.5, color: "#7A5535", margin: "0 0 12px", lineHeight: 1.5 }}>{place.tagline}</p>
                   <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "3px 10px" }}>👥 {place.minGuests}–{place.maxGuests} guests</span>
@@ -137,6 +137,7 @@ export default function PartyPlacesPage() {
               </div>
             ))}
           </div>
+          </>
         )}
       </div>
     </div>

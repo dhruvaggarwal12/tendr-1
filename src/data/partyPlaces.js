@@ -2,12 +2,9 @@
 // Photos from Unsplash, all data curated for demo
 
 export const PLACE_TYPES = [
-  { id: "all",       label: "All",        icon: "🏠" },
-  { id: "villa",     label: "Villa",      icon: "🏡" },
-  { id: "farmhouse", label: "Farm House", icon: "🌾" },
-  { id: "flat",      label: "Flat",       icon: "🏢" },
-  { id: "venue",     label: "Venue Hall", icon: "🏛" },
-  { id: "terrace",   label: "Terrace",    icon: "🌆" },
+  { id: "all",   label: "All",   icon: "🏠" },
+  { id: "villa", label: "Villa", icon: "🏡" },
+  { id: "flat",  label: "Flat",  icon: "🏢" },
 ];
 
 export const PARTY_PLACES = [
