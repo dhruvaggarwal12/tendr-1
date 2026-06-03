@@ -1099,52 +1099,52 @@ const Home = () => {
 
       <JourneyFlow />
 
-      {/* ── Book a Party Place — removed from home page ── */}
-      {false && (
+      {/* ── Book a Party Place — admin preview only ── */}
+      {user?.isAdmin && (
         <section style={{ position: "relative", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
-          {/* Background photo */}
-          <img
-            src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1400&q=80"
-            alt="Party venue"
-            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }}
-          />
-          {/* Dark overlay */}
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg, rgba(15,8,0,0.88) 0%, rgba(44,26,14,0.82) 60%, rgba(74,40,16,0.75) 100%)" }} />
+          <style>{`
+            @media (max-width: 767px) {
+              .pp-home-content { padding: 32px 20px !important; flex-direction: column !important; gap: 20px !important; }
+              .pp-home-title { font-size: 1.5rem !important; margin-bottom: 10px !important; }
+              .pp-home-desc { font-size: 13px !important; margin-bottom: 16px !important; }
+              .pp-home-pills { margin-bottom: 16px !important; }
+              .pp-home-stats { display: none !important; }
+              .pp-home-ctas { gap: 8px !important; }
+              .pp-home-ctas button { padding: 10px 16px !important; font-size: 13px !important; }
+            }
+          `}</style>
+          <img src="https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=1400&q=80" alt="Party venue"
+            style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 30%" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(15,8,0,0.9) 0%,rgba(44,26,14,0.84) 55%,rgba(74,40,16,0.78) 100%)" }} />
 
-          {/* Content */}
-          <div style={{ position: "relative", zIndex: 2, maxWidth: 1160, margin: "0 auto", padding: "72px 24px 72px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 40, flexWrap: "wrap" }}>
+          <div className="pp-home-content" style={{ position: "relative", zIndex: 2, maxWidth: 1160, margin: "0 auto", padding: "60px 28px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 36 }}>
 
-            {/* Left: text */}
-            <div style={{ flex: 1, minWidth: 280 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "4px 14px", marginBottom: 18 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block" }} />
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.12em" }}>Admin Preview</span>
+            {/* Left */}
+            <div style={{ flex: 1, minWidth: 260 }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.25)", borderRadius: 100, padding: "3px 12px", marginBottom: 14 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#CCAB4A", display: "inline-block" }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.12em" }}>Admin Preview</span>
               </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 400, color: "#fff", margin: "0 0 14px", letterSpacing: "0.01em", lineHeight: 1.2 }}>
-                Book a Party Place<br />
-                <span style={{ color: "#CCAB4A" }}>Through Us</span>
+              <h2 className="pp-home-title" style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
+                Book a Party Place<br /><span style={{ color: "#CCAB4A" }}>Through Us</span>
               </h2>
-              <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", margin: "0 0 28px", maxWidth: 420, lineHeight: 1.7 }}>
-                Villas, farmhouses, penthouses and banquet halls — with decoration, catering, photography and entertainment all included. One booking, everything sorted.
+              <p className="pp-home-desc" style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: "0 0 20px", maxWidth: 400, lineHeight: 1.65 }}>
+                Villas and flats — fully decorated, catered and ready for your celebration. One booking, everything sorted.
               </p>
-              {/* Type pills */}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 28 }}>
-                {["🏡 Villa", "🌾 Farm House", "🏢 Flat", "🏛 Venue Hall", "🌆 Terrace"].map(t => (
-                  <span key={t} style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 100, padding: "5px 14px" }}>{t}</span>
+              <div className="pp-home-pills" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
+                {["🏡 Villa", "🏢 Flat"].map(t => (
+                  <span key={t} style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 100, padding: "4px 14px" }}>{t}</span>
                 ))}
               </div>
-              {/* CTAs */}
-              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                <button
-                  onClick={() => window.open("/party-places", "_blank")}
-                  style={{ padding: "13px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.4)", transition: "opacity 0.2s" }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+              <div className="pp-home-ctas" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                <button onClick={() => window.open("/party-places", "_blank")}
+                  style={{ padding: "12px 24px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", transition: "opacity 0.2s" }}
+                  onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
                   Browse All Places ↗
                 </button>
-                <button
-                  onClick={() => window.open("/party-places?type=villa", "_blank")}
-                  style={{ padding: "13px 22px", borderRadius: 12, border: "1.5px solid rgba(255,255,255,0.3)", background: "transparent", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "background 0.2s" }}
+                <button onClick={() => window.open("/party-places?type=villa", "_blank")}
+                  style={{ padding: "12px 20px", borderRadius: 11, border: "1.5px solid rgba(255,255,255,0.28)", background: "transparent", color: "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "background 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.1)"}
                   onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                   Browse Villas
@@ -1152,17 +1152,17 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right: stat cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, width: 280, flexShrink: 0 }}>
+            {/* Right: stat cards — desktop only */}
+            <div className="pp-home-stats" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: 260, flexShrink: 0 }}>
               {[
-                { num: "6+",   label: "Curated venues" },
+                { num: "2",    label: "Property types" },
                 { num: "400",  label: "Max guests" },
                 { num: "4",    label: "Packages per venue" },
                 { num: "100%", label: "End-to-end handled" },
               ].map(({ num, label }) => (
-                <div key={label} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 16, padding: "18px 16px", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
-                  <div style={{ fontSize: 26, fontWeight: 900, color: "#CCAB4A", lineHeight: 1, marginBottom: 4 }}>{num}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", fontWeight: 500, lineHeight: 1.4 }}>{label}</div>
+                <div key={label} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 14px", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
+                  <div style={{ fontSize: 24, fontWeight: 900, color: "#CCAB4A", lineHeight: 1, marginBottom: 4 }}>{num}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 500, lineHeight: 1.4 }}>{label}</div>
                 </div>
               ))}
             </div>
