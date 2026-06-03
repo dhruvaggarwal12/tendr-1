@@ -270,9 +270,15 @@ export default function CustomerDashboard() {
     return () => clearInterval(interval);
   }, [token]);
 
+  const todayStr = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+  // Ongoing: unpaid (submitted/draft) plans whose event date hasn't passed yet
+  const isOngoing = (p) => statusMap.Ongoing.includes(p.status) && (!p.date || p.date >= todayStr);
+
   const filtered = activeTab === "All"
     ? plans
-    : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
+    : activeTab === "Ongoing"
+      ? plans.filter(isOngoing)
+      : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
   // Vendor chats expire 24hrs after the customer's last message
   const TWENTY_FOUR_HRS = 24 * 60 * 60 * 1000;
@@ -322,7 +328,7 @@ export default function CustomerDashboard() {
   const counts = {
     All:       plans.length,
     Upcoming:  plans.filter((p) => p.status === "in_progress").length, // payment received, awaiting confirmation
-    Ongoing:   plans.filter((p) => statusMap.Ongoing.includes(p.status)).length + ongoingVendorChats.length + (showPlanningCard ? 1 : 0),
+    Ongoing:   plans.filter(isOngoing).length + ongoingVendorChats.length + (showPlanningCard ? 1 : 0),
     Completed: plans.filter((p) => p.status === "completed").length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
     Chats:     visibleChats.length,
