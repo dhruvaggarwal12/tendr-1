@@ -1033,7 +1033,6 @@ const EventPlanning = () => {
           </div>
         </>
       )}
-      )}
 
       <style>{`
         @media (max-width: 900px) { .smart-vendor-grid { grid-template-columns: repeat(2,1fr) !important; } }

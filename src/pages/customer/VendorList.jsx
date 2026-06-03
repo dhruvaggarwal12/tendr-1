@@ -67,6 +67,8 @@ const VendorList = () => {
 
   // Per-category budget for current service type
   const currentCatBudget = categoryBudgets[serviceType] || location.state?.categoryBudgets?.[serviceType] || null;
+  // When opened from Budget Allocator, show fixed budget label only — no slider
+  const fromBudgetAllocator = location.state?.fromBudgetAllocator === true;
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
   const [showHint, setShowHint] = useState(true);
@@ -323,7 +325,7 @@ const VendorList = () => {
           {/* Page header */}
           <div className="mb-1">
 
-            {/* Per-category budget range adjuster — compact slider */}
+            {/* Per-category budget range adjuster — compact slider (or fixed label from Budget Allocator) */}
             {serviceType && (() => {
               const CAT_RANGES = {
                 Caterer:      { min: 5000,  max: 500000, step: 5000  },
@@ -339,7 +341,11 @@ const VendorList = () => {
                     <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0 }}>
                       💰 {serviceType} budget
                     </span>
-                    {/* Compact slider — max 45% width */}
+                    {fromBudgetAllocator ? (
+                      /* Fixed value from Budget Allocator — no slider */
+                      <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(val)}</span>
+                    ) : (
+                    /* Compact slider */
                     <div style={{ flex: "0 0 42%", minWidth: 120 }}>
                       <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#C47A2E;cursor:pointer;margin-top:-5px}.budget-sl::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;background:linear-gradient(to right,#C47A2E calc((var(--val) - var(--min))/(var(--max) - var(--min))*100%),rgba(196,122,46,0.2) 0)}`}</style>
                       <input type="range" min={range.min} max={range.max} step={range.step} value={val}
@@ -350,10 +356,13 @@ const VendorList = () => {
                         <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
                       </div>
                     </div>
-                    {/* Range display */}
-                    <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>
-                      {fmtBudget(range.min)} – {fmtBudget(val)}
-                    </span>
+                    )}
+                    {/* Range display — only when not from budget allocator */}
+                    {!fromBudgetAllocator && (
+                      <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>
+                        {fmtBudget(range.min)} – {fmtBudget(val)}
+                      </span>
+                    )}
                   </div>
                 </div>
               );

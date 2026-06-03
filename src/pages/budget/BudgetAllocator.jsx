@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setFilters } from "../../redux/listingFiltersSlice";
+import { setCategoryBudgets } from "../../redux/eventPlanningSlice";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -139,6 +141,7 @@ const VENDOR_TO_BUDGET = {
 export default function BudgetAllocator() {
   const location = useLocation();
   const navigate  = useNavigate();
+  const dispatch  = useDispatch();
   const routeEventType    = location.state?.eventType;
   const prefillBudget     = location.state?.prefillBudget;
   const prefillServices   = location.state?.prefillServices; // array of vendor serviceType strings
@@ -148,6 +151,44 @@ export default function BudgetAllocator() {
   const [vendorPanel, setVendorPanel]       = useState(null); // { catName, serviceType, budget }
   const [panelVendors, setPanelVendors]     = useState([]);
   const [panelLoading, setPanelLoading]     = useState(false);
+
+  // Mini 4-question form (shown before navigating to vendor listing/profile)
+  // pendingAction: { type: 'listing', serviceType, budget } | { type: 'profile', vendorId, budget, serviceType }
+  const [miniFormOpen, setMiniFormOpen]   = useState(false);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [miniForm, setMiniForm]           = useState({ eventType: "", date: "", location: "", guests: "" });
+
+  const CITIES = ["Delhi", "Noida", "Greater Noida", "Ghaziabad"];
+
+  const openMiniForm = (action) => { setPendingAction(action); setMiniFormOpen(true); };
+
+  const submitMiniForm = (e) => {
+    e.preventDefault();
+    if (!pendingAction) return;
+    // Dispatch event details + budget to Redux
+    dispatch(setFilters({
+      serviceType:  pendingAction.serviceType,
+      eventType:    miniForm.eventType,
+      locationType: miniForm.location,
+      date:         miniForm.date,
+      guestCount:   parseInt(miniForm.guests) || 0,
+    }));
+    dispatch(setCategoryBudgets({ [pendingAction.serviceType]: pendingAction.budget }));
+    setMiniFormOpen(false);
+    setVendorPanel(null);
+    if (pendingAction.type === "profile") {
+      window.open(`/vendor/${pendingAction.vendorId}`, "_blank");
+    } else {
+      navigate("/listings", {
+        state: {
+          selectedCategories: [pendingAction.serviceType],
+          budgetMax: pendingAction.budget,
+          fromBudgetAllocator: true,
+        }
+      });
+    }
+    setPendingAction(null);
+  };
 
   const openVendorPanel = useCallback(async (catName, allocated) => {
     const st = getServiceType(catName);
@@ -432,7 +473,7 @@ export default function BudgetAllocator() {
                 const tl         = trafficLight(c.spent, allocated);
                 return (
                   <div key={c.id} style={{ borderBottom: "1px solid rgba(196,122,46,0.06)", padding: "12px 20px", background: tl ? tl.bg : "transparent", transition: "background 0.2s" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 100px 120px 28px", gap: 8, alignItems: "center", marginBottom: 8 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 100px 120px 28px", gap: 8, alignItems: "center", marginBottom: 6 }}>
                       {/* Name + traffic light dot */}
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                         <div style={{ width: 10, height: 10, borderRadius: 3, background: c.color, flexShrink: 0 }} />
@@ -459,6 +500,13 @@ export default function BudgetAllocator() {
                       />
                       <button onClick={() => deleteCategory(c.id)}
                         style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 14, padding: 0 }}>✕</button>
+                    </div>
+                    {/* % slider for easy adjustment */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, paddingRight: 36 }}>
+                      <input type="range" min="0" max="60" step="1" value={c.pct}
+                        onChange={e => updatePct(c.id, e.target.value)}
+                        style={{ flex: 1, accentColor: c.color, cursor: "pointer", height: 4 }} />
+                      <span style={{ fontSize: 11, fontWeight: 700, color: c.color, minWidth: 42, textAlign: "right" }}>{formatINR(allocated)}</span>
                     </div>
                     {/* Progress bar + status label */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: getServiceType(c.name) && allocated > 0 ? 10 : 0 }}>
@@ -562,7 +610,7 @@ export default function BudgetAllocator() {
                           <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Price on request</div>
                         )}
                       </div>
-                      <button onClick={() => { setVendorPanel(null); navigate(`/vendor/${v._id}`); }}
+                      <button onClick={() => openMiniForm({ type: "profile", vendorId: v._id, budget: vendorPanel.budget, serviceType: vendorPanel.serviceType })}
                         style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
                         View
                       </button>
@@ -574,25 +622,72 @@ export default function BudgetAllocator() {
           </div>
 
           <div style={{ padding: "12px 20px 16px", borderTop: "1px solid rgba(196,122,46,0.1)", background: "#FFFCF7", flexShrink: 0 }}>
-            <button onClick={() => {
-              // Store budget context so the form and vendor listing can use it
-              sessionStorage.setItem("tendr_budget_ctx", JSON.stringify({
-                serviceType: vendorPanel.serviceType,
-                maxBudget: vendorPanel.budget,
-                catName: vendorPanel.catName,
-              }));
-              setVendorPanel(null);
-              navigate("/listings", { state: { selectedCategories: [vendorPanel.serviceType], budgetMax: vendorPanel.budget } });
-            }}
+            <button onClick={() => openMiniForm({ type: "listing", serviceType: vendorPanel.serviceType, budget: vendorPanel.budget })}
               style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
               Browse All {vendorPanel.serviceType}s within {formatINR(vendorPanel.budget)} →
             </button>
             <p style={{ textAlign: "center", fontSize: 11, color: "#9B7450", margin: "6px 0 0" }}>
-              Your budget for this category will be pre-filled in the event form
+              Add your event details and we'll show the best matches
             </p>
           </div>
         </div>
         <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+      </>
+    )}
+
+    {/* ── Mini 4-question form ── */}
+    {miniFormOpen && pendingAction && (
+      <>
+        <div onClick={() => setMiniFormOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(28,10,0,0.5)", backdropFilter: "blur(3px)" }} />
+        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, width: "min(95vw,460px)", background: "#FFFCF5", borderRadius: 20, boxShadow: "0 24px 64px rgba(28,10,0,0.25)", border: "1.5px solid rgba(196,122,46,0.2)", fontFamily: font, overflow: "hidden" }}>
+          <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+            <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: "0 0 3px" }}>Quick Event Details</h3>
+            <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>
+              Budget set: <strong style={{ color: "#C47A2E" }}>{formatINR(pendingAction.budget)}</strong> for {pendingAction.serviceType}
+            </p>
+          </div>
+          <form onSubmit={submitMiniForm} style={{ padding: "18px 22px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Event type */}
+            <div>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 5 }}>What type of event? *</label>
+              <select required value={miniForm.eventType} onChange={e => setMiniForm(p => ({ ...p, eventType: e.target.value }))}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                <option value="">Select event type</option>
+                {["Birthday", "Anniversary", "Pre Wedding", "Get-together", "Office Party", "Festival", "Others"].map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+            {/* City */}
+            <div>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 5 }}>City *</label>
+              <select required value={miniForm.location} onChange={e => setMiniForm(p => ({ ...p, location: e.target.value }))}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                <option value="">Select city</option>
+                {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            {/* Date */}
+            <div>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 5 }}>Event Date *</label>
+              <input required type="date" value={miniForm.date}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={e => setMiniForm(p => ({ ...p, date: e.target.value }))}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+            </div>
+            {/* Guests */}
+            <div>
+              <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 5 }}>Number of guests *</label>
+              <input required type="number" min="1" placeholder="e.g. 50" value={miniForm.guests}
+                onChange={e => setMiniForm(p => ({ ...p, guests: e.target.value }))}
+                style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+            </div>
+            <button type="submit"
+              style={{ width: "100%", padding: "12px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)", marginTop: 2 }}>
+              {pendingAction.type === "profile" ? "View Vendor Profile ↗" : `Browse ${pendingAction.serviceType}s →`}
+            </button>
+          </form>
+        </div>
       </>
     )}
     </>
