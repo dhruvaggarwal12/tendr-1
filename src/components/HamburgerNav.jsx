@@ -258,24 +258,65 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             >‹</button>
           </div>
 
-          {/* Search bar — always visible at top of sidebar */}
-          <div style={{ padding: "8px 14px", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+          {/* Search bar + suggestions */}
+          <div style={{ padding: "8px 14px 0", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
             <style>{`.sb-search::placeholder{color:rgba(255,255,255,0.35);}`}</style>
-            <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, overflow: "hidden" }}>
+            <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: showSuggest && (searchQuery.length > 0 || true) ? "8px 8px 0 0" : 8 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginLeft: 9 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               <input
                 className="sb-search"
                 type="text"
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && handleNavSearch()}
-                placeholder="Search..."
+                onChange={e => { setSearchQuery(e.target.value); setShowSuggest(true); }}
+                onFocus={() => setShowSuggest(true)}
+                onBlur={() => setTimeout(() => setShowSuggest(false), 150)}
+                onKeyDown={e => { if (e.key === "Enter") { handleNavSearch(); setShowSuggest(false); } }}
+                placeholder="Search vendors, tools..."
                 style={{ flex: 1, background: "transparent", border: "none", outline: "none", padding: "8px 8px 8px 7px", fontSize: 12, color: "#fff", fontFamily: font }}
               />
-              <button onClick={() => handleNavSearch()}
+              <button onClick={() => { handleNavSearch(); setShowSuggest(false); }}
                 style={{ padding: "8px 10px", background: "transparent", border: "none", cursor: "pointer", color: "#CCAB4A", fontSize: 13, lineHeight: 1, flexShrink: 0 }}>›</button>
             </div>
+            {/* Suggestions dropdown */}
+            {showSuggest && (
+              <div style={{ background: "rgba(20,10,5,0.97)", border: "1px solid rgba(255,255,255,0.08)", borderTop: "none", borderRadius: "0 0 8px 8px", overflow: "hidden", marginBottom: 8 }}>
+                {filteredSuggestions.map((s, i) => (
+                  <button key={i}
+                    onMouseDown={() => { handleNavSearch(s.text); setShowSuggest(false); }}
+                    style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", background: "transparent", border: "none", fontSize: 11.5, color: "rgba(255,255,255,0.75)", cursor: "pointer", fontFamily: font, borderBottom: i < filteredSuggestions.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none" }}
+                    onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.15)"}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                  >
+                    🔍 {s.text}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+
+          {/* Compare Vendors (below search, if any) */}
+          {compareSelected.length > 0 && (
+            <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
+              <button onClick={() => setSavedOpen(true)}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.08)", cursor: "pointer", fontFamily: font }}>
+                <span style={{ fontSize: 13 }}>🔀</span>
+                <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#CCAB4A", textAlign: "left" }}>Compare Vendors</span>
+                <span style={{ fontSize: 11, fontWeight: 800, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{compareSelected.length}</span>
+              </button>
+            </div>
+          )}
+
+          {/* Saved Vendors (below compare, if any) */}
+          {(() => { const sv = getSavedVendors(); return sv.length > 0 ? (
+            <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
+              <button onClick={() => setBookmarksOpen(true)}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.08)", cursor: "pointer", fontFamily: font }}>
+                <span style={{ fontSize: 13 }}>♥</span>
+                <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#CCAB4A", textAlign: "left" }}>Saved Vendors</span>
+                <span style={{ fontSize: 11, fontWeight: 800, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{sv.length}</span>
+              </button>
+            </div>
+          ) : null; })()}
 
           {/* Journey progress — shown when active prop is passed */}
           {active && (

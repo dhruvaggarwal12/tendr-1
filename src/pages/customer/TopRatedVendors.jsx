@@ -281,6 +281,21 @@ export default function TopRatedVendors() {
             requireFormBeforeChat={true}
           />
         )}
+
+        {/* Browse All Vendors — starts normal booking flow from first question */}
+        {!fetchError && (
+          <div style={{ textAlign: "center", padding: "20px 0 40px" }}>
+            <div style={{ height: 1, background: "rgba(196,122,46,0.12)", marginBottom: 28 }} />
+            <p style={{ fontSize: 14, color: "#9B7450", marginBottom: 16 }}>
+              Want to plan your full event and compare all vendors?
+            </p>
+            <button
+              onClick={() => navigate("/booking")}
+              style={{ padding: "13px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
+              Browse All Vendors — Start Planning →
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

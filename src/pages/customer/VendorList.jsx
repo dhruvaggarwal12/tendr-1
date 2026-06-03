@@ -152,7 +152,7 @@ const VendorList = () => {
     if (guests) updates.guestCount   = parseInt(guests) || guests;
     if (loc)    updates.locationType = loc;
     if (Object.keys(updates).length) dispatch(setFilters(updates));
-  }, []); // eslint-disable-line
+  }, [location.search]); // re-run when URL params change (sidebar Browse→ buttons)
 
   // Gate: redirect to /booking if user hasn't filled ALL 5 event form fields
   useEffect(() => {
@@ -316,7 +316,7 @@ const VendorList = () => {
         }}
       />
       <BasicSpeedDial />
-      <HamburgerNav title="Vendor Listings" active="Browse" />
+      <HamburgerNav active="Browse" />
       <div>
         {/* Full-width main content */}
         <div className="p-3 lg:p-4" style={{ position: "relative" }}>
@@ -341,9 +341,11 @@ const VendorList = () => {
                     </span>
                     {/* Compact slider — max 45% width */}
                     <div style={{ flex: "0 0 42%", minWidth: 120 }}>
+                      <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#C47A2E;cursor:pointer;margin-top:-5px}.budget-sl::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;background:linear-gradient(to right,#C47A2E calc((var(--val) - var(--min))/(var(--max) - var(--min))*100%),rgba(196,122,46,0.2) 0)}`}</style>
                       <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                        className="budget-sl"
                         onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
-                        style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 4 }} />
+                        style={{ width: "100%", cursor: "pointer", height: 4, borderRadius: 2, outline: "none", border: "none" }} />
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#bbb" }}>
                         <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
                       </div>

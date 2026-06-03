@@ -253,7 +253,7 @@ const VendorList_ListingPage = ({
                         >
                           Quick View
                         </button>
-                        {/* ♡ button: in normal booking → compare; in discovery → savedVendors */}
+                        {/* Normal booking → ♡ compare; Discovery (top-rated/search) → "Save" text */}
                         {saveToCompare ? (
                           <button
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
@@ -267,9 +267,9 @@ const VendorList_ListingPage = ({
                             <button
                               onClick={(e) => { e.stopPropagation(); handleToggleSave(vendor); }}
                               title={saved ? "Saved" : "Save vendor"}
-                              style={{ padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: saved ? "rgba(196,122,46,0.1)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 15, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}
+                              style={{ padding: "7px 12px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: saved ? "rgba(196,122,46,0.1)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0, fontFamily: font }}
                             >
-                              {saved ? "♥" : "♡"}
+                              {saved ? "♥ Saved" : "Save"}
                             </button>
                           ); })()
                         )}

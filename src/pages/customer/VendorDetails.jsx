@@ -350,9 +350,6 @@ const VendorDetailsPage = () => {
       />
       <BasicSpeedDial />
       <HamburgerNav active="Browse" />
-      <div style={{ borderBottom: "1px solid rgba(196,122,46,0.25)" }}>
-        <ListingsNav onOpenSelected={openSelectedModal} selectedCount={compareSelected.length} showFinalisedBtn={true} hideTitle={true} />
-      </div>
 
       {/* Sticky bottom CTA — mobile only */}
       {vendor && (
@@ -719,18 +716,6 @@ const VendorDetailsPage = () => {
                   Our team reviews and connects you within a few hours
                 </p>
 
-                {/* Compare — only from normal booking flow */}
-                {showCompare && (() => {
-                  const isSaved = compareSelected.some(v => v._id === vendor._id);
-                  return (
-                    <button
-                      onClick={() => isSaved ? dispatch(removeVendorFromCompare(vendor._id)) : dispatch(addVendorToCompare(vendor))}
-                      style={{ width: "100%", padding: "11px", borderRadius: 12, border: `1.5px solid ${isSaved ? "#C47A2E" : "rgba(139,69,19,0.22)"}`, background: isSaved ? "rgba(196,122,46,0.08)" : "transparent", color: isSaved ? "#C47A2E" : "#7A5535", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", transition: "all 0.18s" }}
-                    >
-                      {isSaved ? "✓ Comparing" : "🔀 Compare Vendors"}
-                    </button>
-                  );
-                })()}
 
                 {/* Quick facts */}
                 <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(196,122,46,0.1)" }}>

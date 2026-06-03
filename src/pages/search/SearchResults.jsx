@@ -27,6 +27,7 @@ export default function SearchResults() {
   // Active filter state (for swap chips)
   const [activeCat, setActiveCat] = useState(rawCats[0] || "");
   const [activeLoc, setActiveLoc] = useState(rawLocs[0] || "");
+  const [topRatedOnly, setTopRatedOnly] = useState(false);
 
   // Vendors state
   const [vendors, setVendors]         = useState([]);
@@ -60,6 +61,7 @@ export default function SearchResults() {
     if (rawLocs.length === 1) params.set("location", rawLocs[0]);
     // If multiple locations or none — no location filter (show all)
     if (rawBudget) params.set("maxPrice", rawBudget);
+    if (topRatedOnly) params.set("isTopRated", "true");
     params.set("sortBy", "rankingScore");
     params.set("limit", "20");
     params.set("page", currentPage);
@@ -69,7 +71,7 @@ export default function SearchResults() {
       .then(d => { setVendors(d.vendors || []); setPagination(d.pagination || {}); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [activeCat, activeLoc, rawBudget, currentPage]);
+  }, [activeCat, activeLoc, rawBudget, currentPage, topRatedOnly]);
 
   // Sync to Redux so vendor cards work
   useEffect(() => {
@@ -128,12 +130,18 @@ export default function SearchResults() {
 
         {/* Page header */}
         <div style={{ marginBottom: 20 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px", textTransform: "capitalize" }}>
-            {rawQuery || (activeCat
-              ? `${activeCat}s${activeLoc ? ` in ${activeLoc}` : ""}${rawBudget ? ` under ₹${Number(rawBudget).toLocaleString("en-IN")}` : ""}`
-              : "Search Results")}
-          </h1>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Top-rated, verified vendors only</p>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: 0, textTransform: "capitalize" }}>
+              {rawQuery || (activeCat
+                ? `${activeCat}s${activeLoc ? ` in ${activeLoc}` : ""}${rawBudget ? ` under ₹${Number(rawBudget).toLocaleString("en-IN")}` : ""}`
+                : "Search Results")}
+            </h1>
+            <button
+              onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
+              style={{ padding: "7px 16px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 5 }}>
+              ⭐ Top Rated {topRatedOnly ? "✓" : ""}
+            </button>
+          </div>
         </div>
 
         {/* Category swap chips — only the categories that were searched, only if 2+ */}

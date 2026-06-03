@@ -102,6 +102,7 @@ const EventPlanning = () => {
   const [vendorOffset, setVendorOffset] = useState({});
   const [expandedCat, setExpandedCat] = useState(null);
   const [spQuickView, setSpQuickView] = useState(null); // vendor shown in smart plan QuickView panel
+  const [spProfileView, setSpProfileView] = useState(null); // vendor shown in centered View Profile modal
   const [showSplitAdjust, setShowSplitAdjust] = useState(false);
   const [customSplit, setCustomSplit] = useState(null);
   const [draftSplit, setDraftSplit] = useState(null);
@@ -612,7 +613,7 @@ const EventPlanning = () => {
       return (
         <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
           <BasicSpeedDial />
-          <HamburgerNav active="Browse" noSidebar noCompare />
+          <HamburgerNav active="Browse" noCompare />
           <div style={{ maxWidth: 480, margin: "0 auto", padding: "56px 20px 80px", textAlign: "center" }}>
 
             <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
@@ -709,7 +710,7 @@ const EventPlanning = () => {
       {/* ── Package view ── */}
       <div className="min-h-screen w-full" style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}>
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" noSidebar noCompare />
+        <HamburgerNav active="Browse" noCompare />
 
         <div className="w-full px-4 sm:px-6 lg:px-12 pt-8 pb-24 flex flex-col items-center">
 
@@ -803,86 +804,72 @@ const EventPlanning = () => {
             );
           })()}
 
-          {/* Vendor cards — 4 columns */}
-          <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }} className="smart-vendor-grid">
+          {/* Vendor cards — 2-column bigger cards */}
+          <style>{`@media(max-width:639px){.smart-vendor-grid{grid-template-columns:1fr!important}}`}</style>
+          <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20, marginBottom: 24 }} className="smart-vendor-grid">
             {currentVendors.map(({ category, estimatedCost, vendor, totalVendors }) => (
-              <div key={category} style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 2px 12px rgba(196,122,46,0.08)" }}>
-                <div style={{ padding: "11px 18px 8px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 18 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>
-                  <span style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>{category}</span>
-                  <span style={{ fontSize: 12, color: "#9B7450", marginLeft: "auto" }}>Budget: <strong style={{ color: "#C47A2E" }}>{fmt(estimatedCost)}</strong></span>
+              <div key={category} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 4px 20px rgba(196,122,46,0.1)" }}>
+                {/* Category header */}
+                <div style={{ padding: "13px 20px 10px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 20 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>
+                  <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{category}</span>
+                  <span style={{ fontSize: 13, color: "#9B7450", marginLeft: "auto" }}>Budget: <strong style={{ color: "#C47A2E" }}>{fmt(estimatedCost)}</strong></span>
                 </div>
                 {vendor ? (
                   <>
-                  <div style={{ padding: "14px 18px", display: "flex", gap: 14, alignItems: "flex-start" }}>
-                    <div style={{ width: 66, height: 66, borderRadius: 12, overflow: "hidden", flexShrink: 0, background: "#f3ebe0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      {vendor.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 28 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      {/* Vendor name + swap arrows */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</span>
-                        {totalVendors > 1 && (
-                          <div style={{ display: "flex", gap: 3, flexShrink: 0 }}>
-                            <button
-                              onClick={() => { setVendorOffset(p => { const cur = p[category] || 0; return { ...p, [category]: (cur - 1 + totalVendors) % totalVendors }; }); setExpandedCat(null); }}
-                              title="Previous vendor"
-                              style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>‹</button>
-                            <button
-                              onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
-                              title="Next vendor"
-                              style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>›</button>
-                          </div>
-                        )}
+                  {/* Full-width photo */}
+                  <div style={{ height: 140, overflow: "hidden", position: "relative", background: "#f3ebe0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {vendor.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 48 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>}
+                    {/* Swap arrows overlay */}
+                    {totalVendors > 1 && (
+                      <div style={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 4 }}>
+                        <button onClick={() => { setVendorOffset(p => { const cur = p[category] || 0; return { ...p, [category]: (cur - 1 + totalVendors) % totalVendors }; }); setExpandedCat(null); }}
+                          style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>‹</button>
+                        <button onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
+                          style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>›</button>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 4 }}>
-                        {vendor.avgReviewScore > 0 && <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700 }}>{stars(vendor.avgReviewScore)} {vendor.avgReviewScore.toFixed(1)}</span>}
-                        {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 10.5, background: "rgba(196,122,46,0.1)", color: "#7A4A1A", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 100, padding: "2px 8px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+</span>}
-                        {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 10.5, color: "#9B7450" }}>{vendor.yearsOfExperience} yrs</span>}
-                      </div>
-                      <div style={{ fontSize: 11, color: "#16a34a", fontWeight: 700 }}>✓ Perfect for your event type &amp; location</div>
-                    </div>
+                    )}
                   </div>
-                  {expandedCat === category && (
-                    <div style={{ padding: "0 16px 14px", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
-                      {vendor.portfolioPhotos?.length > 0 && (
-                        <div style={{ display: "flex", gap: 5, overflowX: "auto", paddingBottom: 8, marginBottom: 8, marginTop: 10 }}>
-                          {vendor.portfolioPhotos.slice(0, 5).map((p, i) => <img key={i} src={p} alt="" style={{ width: 68, height: 55, objectFit: "cover", borderRadius: 8, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />)}
-                        </div>
-                      )}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        {vendor.avgReviewScore > 0 && <div style={{ fontSize: 11.5, color: "#2C1A0E" }}>⭐ {vendor.avgReviewScore.toFixed(1)} · {vendor.totalEventsCompleted}+ events completed</div>}
-                        {vendor.yearsOfExperience > 0 && <div style={{ fontSize: 11.5, color: "#9B7450" }}>🕐 {vendor.yearsOfExperience} years experience</div>}
-                        {vendor.locations?.length > 0 && <div style={{ fontSize: 11.5, color: "#9B7450" }}>📍 Serves: {vendor.locations.join(", ")}</div>}
-                        {vendor.bio && <div style={{ fontSize: 11.5, color: "#7A5535", marginTop: 4, lineHeight: 1.5 }}>{vendor.bio.slice(0, 120)}{vendor.bio.length > 120 ? "…" : ""}</div>}
+                  <div style={{ padding: "16px 20px" }}>
+                    <div style={{ marginBottom: 6 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E" }}>{vendor.name}</span>
                       </div>
                     </div>
-                  )}
-                  {/* Left-flow: per-category budget range adjuster */}
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
+                        {vendor.avgReviewScore > 0 && <span style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700 }}>⭐ {vendor.avgReviewScore.toFixed(1)}</span>}
+                        {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 12, color: "#9B7450" }}>⏱ {vendor.yearsOfExperience}y exp</span>}
+                        {vendor.teamSize > 0 && <span style={{ fontSize: 12, color: "#9B7450" }}>👥 Team {vendor.teamSize}</span>}
+                        {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 11, background: "rgba(196,122,46,0.1)", color: "#7A4A1A", borderRadius: 100, padding: "2px 8px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+ events</span>}
+                      </div>
+                      {vendor.locations?.length > 0 && <div style={{ fontSize: 12, color: "#9B7450", marginTop: 4 }}>📍 {vendor.locations.slice(0, 2).join(", ")}</div>}
+                  </div>
+                  {/* Budget slider */}
                   {smartPlanMode === 'perCategory' && (() => {
                     const range = CAT_BUDGET_RANGES[category] || { min: 2000, max: 200000, step: 2000 };
                     const val = savedCategoryBudgets[category] || range.default || 15000;
                     return (
-                      <div style={{ padding: "0 18px 10px", borderTop: "1px dashed rgba(196,122,46,0.1)", paddingTop: 10 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                          <span style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>Budget range</span>
+                      <div style={{ padding: "0 20px 12px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                          <span style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>Budget</span>
                           <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E" }}>Up to {fmt(val)}</span>
                         </div>
                         <input type="range" min={range.min} max={range.max} step={range.step} value={val}
-                          onChange={e => {
-                            const newBudgets = { ...savedCategoryBudgets, [category]: Number(e.target.value) };
-                            dispatch(setCategoryBudgets(newBudgets));
-                          }}
-                          onMouseUp={() => fetchSmartPlan()}
-                          onTouchEnd={() => fetchSmartPlan()}
-                          style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
+                          onChange={e => dispatch(setCategoryBudgets({ ...savedCategoryBudgets, [category]: Number(e.target.value) }))}
+                          onMouseUp={() => fetchSmartPlan()} onTouchEnd={() => fetchSmartPlan()}
+                          style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 4 }} />
                       </div>
                     );
                   })()}
-                  <div style={{ padding: "0 18px 14px", display: "flex", gap: 8 }}>
+                  {/* Action buttons */}
+                  <div style={{ padding: "0 20px 18px", display: "flex", gap: 8 }}>
                     <button onClick={() => setSpQuickView(vendor)}
-                      style={{ padding: "8px 14px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                      style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                       Quick View
+                    </button>
+                    <button onClick={() => setSpProfileView(vendor)}
+                      style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                      View Profile
                     </button>
                   </div>
                   </>
@@ -1006,6 +993,48 @@ const EventPlanning = () => {
         </>
       )}
 
+      {/* ── Centered View Profile modal (smart planner, no chat) ── */}
+      {spProfileView && (
+        <>
+          <div onClick={() => setSpProfileView(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#fff", borderRadius: 22, width: "92%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.28)", fontFamily: "'Outfit',sans-serif" }}>
+            {/* Photo */}
+            <div style={{ position: "relative", height: 220 }}>
+              <img src={spProfileView.portfolioPhotos?.[0] || spProfileView.image || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"} alt={spProfileView.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)" }} />
+              <button onClick={() => setSpProfileView(null)} style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              {spProfileView.avgReviewScore > 0 && <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "4px 12px", fontSize: 13, fontWeight: 700 }}>⭐ {Number(spProfileView.avgReviewScore).toFixed(1)}</div>}
+              <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>{spProfileView.serviceType}</span>
+            </div>
+            {/* Content */}
+            <div style={{ padding: "22px 24px 28px" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px" }}>{spProfileView.name}</h2>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+                {spProfileView.city && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>📍 {spProfileView.city}</span>}
+                {spProfileView.yearsOfExperience > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>⏱ {spProfileView.yearsOfExperience}y exp</span>}
+                {spProfileView.teamSize > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>👥 Team {spProfileView.teamSize}</span>}
+                {spProfileView.totalEventsCompleted > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>🎉 {spProfileView.totalEventsCompleted}+ events</span>}
+              </div>
+              {spProfileView.bio && <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.65, margin: "0 0 16px" }}>{spProfileView.bio}</p>}
+              {spProfileView.portfolioPhotos?.length > 1 && (
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>Portfolio</p>
+                  <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
+                    {spProfileView.portfolioPhotos.slice(0, 6).map((photo, i) => (
+                      <img key={i} src={photo} alt="" style={{ width: 88, height: 70, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {spProfileView.locations?.length > 0 && (
+                <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 16px" }}>📍 Serves: {spProfileView.locations.join(", ")}</p>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+      )}
+
       <style>{`
         @media (max-width: 900px) { .smart-vendor-grid { grid-template-columns: repeat(2,1fr) !important; } }
         @media (max-width: 540px) { .smart-vendor-grid { grid-template-columns: 1fr !important; } }
@@ -1019,7 +1048,7 @@ const EventPlanning = () => {
       <>
       <div style={{ minHeight: "100vh", background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}>
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" noSidebar noCompare />
+        <HamburgerNav active="Browse" noCompare />
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 72px)", padding: "40px 20px", textAlign: "center" }}>
           <div style={{ width: 60, height: 60, border: "5px solid rgba(196,122,46,0.15)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "tendr-spin 0.8s linear infinite", marginBottom: 32 }} />
           <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 800, color: "#2C1A0E", marginBottom: 10, letterSpacing: "-0.01em" }}>
@@ -1075,7 +1104,7 @@ const EventPlanning = () => {
         style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}
       >
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" noSidebar noCompare />
+        <HamburgerNav active="Browse" noCompare />
 
 
         <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-16 flex flex-col items-center">
