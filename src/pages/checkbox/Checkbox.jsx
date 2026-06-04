@@ -231,9 +231,9 @@ export default function CheckBox() {
     dispatch(setFilters({ serviceType: vendorFormService, eventType: vendorForm.eventType, locationType: vendorForm.city, date: vendorForm.date }));
     dispatch(setCategoryBudgets({ [vendorFormService]: vendorForm.budget }));
     setVendorFormOpen(false);
-    navigate(`/listings?serviceType=${vendorFormService}`, {
-      state: { fromChecklist: true, budgetMax: vendorForm.budget, fromBudgetAllocator: true },
-    });
+    // Open in new tab so checklist progress is preserved
+    const params = new URLSearchParams({ serviceType: vendorFormService });
+    window.open(`/listings?${params}`, "_blank");
   };
   const [checklistSaved, setChecklistSaved] = useState(() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } });
   const [templateKey, setTemplateKey] = useState(routeTemplateKey || "birthday");

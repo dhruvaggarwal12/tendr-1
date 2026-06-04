@@ -1,8 +1,12 @@
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { setFilters } from "../../redux/listingFiltersSlice";
 import HamburgerNav from "../../components/HamburgerNav";
 import { useChatOverlay } from "../../context/ChatContext";
+
+const DECOR_CITIES = ["Delhi", "Noida", "Greater Noida", "Ghaziabad"];
+const DECOR_EVENT_TYPES = ["Birthday", "Wedding", "Anniversary", "Pre Wedding", "Corporate Event", "Party / Get-together", "Others"];
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -248,9 +252,44 @@ const QUIZ_TTL = 24 * 60 * 60 * 1000;
 // ── Component ───────────────────────────────────────────────────────────────
 export default function DecorFinder() {
   const navigate  = useNavigate();
+  const dispatch  = useDispatch();
   const { openVendorChat } = useChatOverlay();
   const decorBudget = useSelector(s => s.eventPlanning?.categoryBudgets?.Decorator || null);
   const { token }   = useSelector(s => s.auth);
+
+  // Quick View side panel
+  const [decorQV, setDecorQV] = useState(null); // { vendorId, vendorName, photos, info }
+  // Mini form — shown before View Profile or Chat
+  const [miniFormOpen, setMiniFormOpen]     = useState(false);
+  const [miniFormAction, setMiniFormAction] = useState(null); // 'profile' | 'chat'
+  const [miniForm, setMiniForm]             = useState({ eventType: "", city: "", date: "", guests: "" });
+  const [miniFormVendor, setMiniFormVendor] = useState(null);
+
+  const openMiniForm = (vendor, action) => {
+    setMiniFormVendor(vendor);
+    setMiniFormAction(action);
+    setMiniForm({ eventType: "", city: "", date: "", guests: "" });
+    setMiniFormOpen(true);
+    setDecorQV(null);
+  };
+
+  const submitMiniForm = (e) => {
+    e.preventDefault();
+    dispatch(setFilters({ eventType: miniForm.eventType, locationType: miniForm.city, date: miniForm.date, guestCount: parseInt(miniForm.guests) || 0 }));
+    setMiniFormOpen(false);
+    if (miniFormAction === 'profile') {
+      window.open(`/vendor/${miniFormVendor.vendorId || miniFormVendor._id}`, "_blank");
+    } else {
+      openVendorChat({ _id: miniFormVendor.vendorId || miniFormVendor._id, name: miniFormVendor.vendorName || miniFormVendor.name, serviceType: "Decorator" });
+    }
+    setMiniFormVendor(null);
+  };
+
+  const copyItems = (theme) => {
+    const items = COMBOS[theme]?.[budgetKey] || [];
+    const txt = `🎨 ${theme} Decoration — ${BUDGET_LABEL[budgetKey]}\n\nYou Should Have:\n` + items.map((it, i) => `${i + 1}. ${it}`).join("\n") + "\n\nSend this to your decorator on Tendr.co.in";
+    navigator.clipboard.writeText(txt).then(() => { setCopied(`copy_${theme}`); setTimeout(() => setCopied(null), 1800); });
+  };
 
   // Restore quiz from localStorage (24hr TTL)
   const savedQuiz = (() => {
@@ -361,7 +400,95 @@ export default function DecorFinder() {
     <div style={{ minHeight: "100vh", background: "#FFF8F0", fontFamily: font }}>
       <HamburgerNav title="Decor Finder" />
 
-      {/* Vendor profile peek modal */}
+      {/* ── Quick View side panel ── */}
+      {decorQV && (
+        <>
+          <div onClick={() => setDecorQV(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1100 }} />
+          <div style={{ position: "fixed", right: 0, top: 0, height: "100vh", width: 420, maxWidth: "92vw", background: "#FFFCF5", zIndex: 1101, overflowY: "auto", boxShadow: "-8px 0 48px rgba(139,69,19,0.18)", animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)", fontFamily: font, paddingBottom: 80 }}>
+            {/* Cover photo */}
+            <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
+              <img src={decorQV.photos?.[0]?.imageUrl || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80"} alt={decorQV.vendorName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <button onClick={() => setDecorQV(null)} style={{ position: "absolute", top: 12, right: 12, width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              {vendorMap[decorQV.vendorId]?.avgReviewScore > 0 && <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>⭐ {vendorMap[decorQV.vendorId].avgReviewScore.toFixed(1)}</div>}
+              <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>DECORATOR</span>
+            </div>
+            {/* Content */}
+            <div style={{ padding: "20px 22px 24px" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>{decorQV.vendorName}</h2>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
+                {vendorMap[decorQV.vendorId]?.avgReviewScore > 0 && <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)" }}>⭐ {vendorMap[decorQV.vendorId].avgReviewScore.toFixed(1)}</div>}
+                {vendorMap[decorQV.vendorId]?.price > 0 && <div style={{ fontSize: 12, color: "#C47A2E", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)", fontWeight: 700 }}>₹{Number(vendorMap[decorQV.vendorId].price).toLocaleString("en-IN")}+</div>}
+              </div>
+              {/* Portfolio */}
+              {decorQV.photos?.length > 1 && (
+                <div style={{ marginBottom: 18 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>Portfolio</p>
+                  <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
+                    {decorQV.photos.slice(0, 6).map((p, i) => <img key={i} src={p.imageUrl} alt="" style={{ width: 82, height: 66, objectFit: "cover", borderRadius: 9, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />)}
+                  </div>
+                </div>
+              )}
+              <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 0 18px" }} />
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                <button onClick={() => openMiniForm(decorQV, 'profile')}
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                  View Full Profile ↗
+                </button>
+                <button onClick={() => openMiniForm(decorQV, 'chat')}
+                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}>
+                  💬 Request to Chat
+                </button>
+              </div>
+            </div>
+          </div>
+          <style>{`@keyframes qv-slide { from { transform: translateX(100%) } to { transform: translateX(0) } }`}</style>
+        </>
+      )}
+
+      {/* ── Mini form modal (before profile/chat) ── */}
+      {miniFormOpen && miniFormVendor && (
+        <>
+          <div onClick={() => setMiniFormOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#FFFCF5", borderRadius: 20, width: "min(95vw,440px)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font, overflow: "hidden" }}>
+            <div style={{ padding: "16px 22px 12px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+              <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: "0 0 2px" }}>Quick Event Details</h3>
+              <p style={{ fontSize: 11.5, color: "#9B7450", margin: 0 }}>
+                {miniFormAction === 'profile' ? `Viewing: ${miniFormVendor.vendorName || miniFormVendor.name}` : `Chatting with: ${miniFormVendor.vendorName || miniFormVendor.name}`}
+              </p>
+            </div>
+            <form onSubmit={submitMiniForm} style={{ padding: "16px 22px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+              {[
+                { label: "Event Type *",   field: "eventType", type: "select", opts: DECOR_EVENT_TYPES },
+                { label: "City *",          field: "city",      type: "select", opts: DECOR_CITIES },
+                { label: "Event Date *",    field: "date",      type: "date" },
+                { label: "No. of Guests *", field: "guests",    type: "number", placeholder: "e.g. 50" },
+              ].map(({ label, field, type, opts, placeholder }) => (
+                <div key={field}>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>{label}</label>
+                  {type === "select" ? (
+                    <select required value={miniForm[field]} onChange={e => setMiniForm(p => ({ ...p, [field]: e.target.value }))}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                      <option value="">Select…</option>
+                      {opts.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  ) : (
+                    <input required type={type} value={miniForm[field]} placeholder={placeholder}
+                      min={type === "date" ? new Date().toISOString().split("T")[0] : type === "number" ? "1" : undefined}
+                      onChange={e => setMiniForm(p => ({ ...p, [field]: e.target.value }))}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                  )}
+                </div>
+              ))}
+              <button type="submit"
+                style={{ width: "100%", marginTop: 4, padding: "13px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+                {miniFormAction === 'profile' ? 'View Profile ↗' : '💬 Start Chat →'}
+              </button>
+            </form>
+          </div>
+        </>
+      )}
+
+      {/* Old vendorProfile modal (kept for backward compat — replaced by decorQV) */}
       {vendorProfile && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}
           onClick={() => setVendorProfile(null)}>
@@ -654,12 +781,12 @@ export default function DecorFinder() {
                       );
                     })()}
 
-                    {/* Show Profile button */}
+                    {/* Quick View button */}
                     {curGroup?.vendorId && (
                       <div style={{ padding: "10px 14px 4px" }}>
-                        <button onClick={() => setVendorProfile(curGroup)}
-                          style={{ width: "100%", padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                          Show Profile ↗
+                        <button onClick={() => setDecorQV(curGroup)}
+                          style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}>
+                          Quick View →
                         </button>
                       </div>
                     )}
@@ -677,8 +804,13 @@ export default function DecorFinder() {
                           </div>
                         ))}
                       </div>
+                      {/* Copy to chat button */}
+                      <button onClick={() => copyItems(theme)}
+                        style={{ marginTop: 10, width: "100%", padding: "8px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.2)", background: copied === `copy_${theme}` ? "rgba(34,197,94,0.08)" : "rgba(196,122,46,0.04)", color: copied === `copy_${theme}` ? "#15803d" : "#9B7450", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                        {copied === `copy_${theme}` ? "✓ Copied!" : "→ Copy this list to send on chat"}
+                      </button>
                       <button onClick={() => goToVendors(theme)}
-                        style={{ marginTop: 10, width: "100%", padding: "7px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                        style={{ marginTop: 6, width: "100%", padding: "7px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                         See all {theme} vendors →
                       </button>
                     </div>

@@ -254,7 +254,8 @@ export default function Timeline() {
     dispatch(setFilters({ serviceType: vendorFormService, eventType: vendorForm.eventType, locationType: vendorForm.city, date: vendorForm.date }));
     dispatch(setCategoryBudgets({ [vendorFormService]: vendorForm.budget }));
     setVendorFormOpen(false);
-    navigate(`/listings?serviceType=${vendorFormService}`, { state: { fromBudgetAllocator: true, budgetMax: vendorForm.budget } });
+    // Open in new tab so timeline progress is preserved
+    window.open(`/listings?serviceType=${vendorFormService}`, "_blank");
   };
   const routeEventType = location.state?.eventType;
   const routePlanKey   = routeEventType ? (EVENT_TO_PLAN[routeEventType] || "30day") : null;
