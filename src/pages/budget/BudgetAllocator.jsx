@@ -366,58 +366,39 @@ export default function BudgetAllocator() {
       <HamburgerNav title="Budget Allocator" />
 
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "28px 40px 24px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 12 }}>
+      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "22px 40px 20px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", gap: 16 }}>
+          <button onClick={() => navigate("/budget-picker")}
+            style={{ padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, backdropFilter: "blur(4px)" }}>
+            ← Back
+          </button>
           <div>
-            <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 5 }}>Planning Tool</div>
-            <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.02em" }}>Budget Allocator</h1>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", margin: 0 }}>Plan spend · track actuals · stay on budget</p>
-          </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
-            <button
-              onClick={syncFromVendors}
-              style={{ padding: "9px 18px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.5)", background: "rgba(255,255,255,0.15)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}
-            >
-              ⚡ Sync from Vendors
-            </button>
-            {syncMsg && <span style={{ fontSize: 12, color: "rgba(255,255,255,0.9)", fontWeight: 600 }}>{syncMsg}</span>}
+            <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Planning Tool</div>
+            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "0 0 2px", letterSpacing: "-0.02em" }}>Budget Allocator</h1>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", margin: 0 }}>
+              {EVENT_TYPES[eventKey]?.icon} {EVENT_TYPES[eventKey]?.label} · Plan spend · track actuals
+            </p>
           </div>
         </div>
       </div>
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px" }}>
 
-        {/* Event type + budget input */}
-        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 20, alignItems: "flex-end" }}>
-            <div style={{ flex: 1, minWidth: 220 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Event type</div>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {Object.entries(EVENT_TYPES).map(([key, et]) => (
-                  <button key={key} onClick={() => applyEventType(key)}
-                    style={{ padding: "7px 14px", borderRadius: 100, fontSize: 12, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.15s",
-                      borderColor: eventKey === key ? "#C47A2E" : "rgba(196,122,46,0.2)",
-                      background: eventKey === key ? "#C47A2E" : "#fff",
-                      color: eventKey === key ? "#fff" : "#6B3A1F",
-                    }}>
-                    {et.icon} {et.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Total Budget</div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "8px 14px" }}>
-                <span style={{ fontSize: 16, fontWeight: 700, color: "#9B7450" }}>₹</span>
-                <input
-                  type="number"
-                  value={totalBudget}
-                  onChange={e => setTotalBudget(Math.max(1000, Number(e.target.value) || 1000))}
-                  style={{ width: 120, border: "none", outline: "none", fontSize: 16, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}
-                  min="1000" step="5000"
-                />
-              </div>
-            </div>
+        {/* Total budget input only */}
+        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "16px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Total Budget</div>
+            <div style={{ fontSize: 11, color: "#9B7450" }}>Adjust to recalculate all category allocations</div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "8px 14px" }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: "#9B7450" }}>₹</span>
+            <input
+              type="number"
+              value={totalBudget}
+              onChange={e => setTotalBudget(Math.max(1000, Number(e.target.value) || 1000))}
+              style={{ width: 120, border: "none", outline: "none", fontSize: 16, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}
+              min="1000" step="5000"
+            />
           </div>
         </div>
 
@@ -549,10 +530,16 @@ export default function BudgetAllocator() {
               </button>
             </div>
 
-            <button onClick={() => applyEventType(eventKey)}
-              style={{ marginTop: 12, padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-              Reset to defaults
-            </button>
+            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+              <button onClick={() => applyEventType(eventKey)}
+                style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                Reset to {EVENT_TYPES[eventKey]?.label} defaults
+              </button>
+              <button onClick={() => navigate("/budget-picker")}
+                style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                ← Change Event Type
+              </button>
+            </div>
           </div>
         </div>
       </div>
