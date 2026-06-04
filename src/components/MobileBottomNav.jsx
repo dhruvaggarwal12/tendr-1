@@ -95,13 +95,10 @@ function BottomNavInner() {
     paths.some((p) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p));
 
   const PRODUCTS = [
-    { emoji: "✅", label: "Checklist",       href: "/checklist-picker" },
-    { emoji: "⏱️", label: "Timeline",        href: "/timeline-picker" },
-    { emoji: "💰", label: "Budget Allocator",href: "/budget-picker" },
-    { emoji: "🎨", label: "Decor Finder",    href: "/decor-finder" },
-    { emoji: "✉️", label: "Invitation Flyers",href: "/invitation" },
-    { emoji: "💒", label: "Stationery",      href: "/stationery" },
-    { emoji: "🎬", label: "Aftermovie",      href: "/aftermovie" },
+    { emoji: "✅", label: "Checklist",        href: "/checklist-picker" },
+    { emoji: "⏱️", label: "Timeline",         href: "/timeline-picker" },
+    { emoji: "💰", label: "Budget Allocator", href: "/budget-picker" },
+    { emoji: "🎨", label: "Decor Finder",     href: "/decor-finder" },
     ...(user?.isAdmin ? [{ emoji: "🎉", label: "Occasions", href: null, newTab: true, path: "/occasions" }] : []),
   ];
 

@@ -211,8 +211,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // Mobile drawer: Gift & Hampers shown as standalone button above these sections
   const NAV_SECTIONS = [
     { label: "Vendors", items: [
-      { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors, disabled: browseDisabled },
-      { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
+      { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
+      { label: "Top Rated Vendors",    href: "/top-rated/Photographer", activePaths: ["/top-rated/"] },
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
@@ -233,7 +233,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Aftermovie",         href: "/aftermovie" },
     ]}] : []),
     { label: "Booking", items: [
-      { label: "Plan Your Event",      href: "/booking" },
+      { label: "Plan Your Event",      href: "/booking", activePaths: ["/booking", "/plan-event"] },
     ]},
     { label: "Company", items: [
       { label: "About Us",             href: "/about-us" },

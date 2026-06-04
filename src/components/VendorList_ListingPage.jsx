@@ -317,6 +317,7 @@ const VendorList_ListingPage = ({
               boxShadow: "-8px 0 48px rgba(139,69,19,0.18)",
               overflowY: "auto", fontFamily: font,
               animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
             {/* Cover image */}
@@ -338,7 +339,7 @@ const VendorList_ListingPage = ({
             </div>
 
             {/* Content */}
-            <div style={{ padding: "22px 24px 32px" }}>
+            <div style={{ padding: "22px 24px 80px" }}>{/* 80px bottom padding clears mobile bottom nav */}
               {/* Name + type */}
               <div style={{ marginBottom: 14 }}>
                 <h2 style={{ fontSize: 21, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "-0.01em" }}>

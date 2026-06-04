@@ -452,29 +452,57 @@ export default function DecorFinder() {
 
         {/* ── QUIZ ── */}
         {step === 0 && (
-          <div style={{ background: "#fff", borderRadius: 22, boxShadow: "0 8px 32px rgba(44,26,14,0.08)", border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden" }}>
-            {/* Progress */}
-            <div style={{ height: 4, background: "rgba(196,122,46,0.1)" }}>
+          <div style={{ background: "#fff", borderRadius: 24, boxShadow: "0 12px 40px rgba(44,26,14,0.1)", border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", maxWidth: 640, margin: "0 auto" }}>
+            {/* Progress bar */}
+            <div style={{ height: 5, background: "rgba(196,122,46,0.08)" }}>
               <div style={{ height: "100%", width: `${((qIdx + 1) / QUIZ_STEPS.length) * 100}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", transition: "width 0.35s ease", borderRadius: 4 }} />
             </div>
 
-            <div style={{ padding: "26px 22px 22px" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 8 }}>
-                {qIdx + 1} / {QUIZ_STEPS.length}
+            <div style={{ padding: "28px 26px 24px" }}>
+              {/* Step indicator */}
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
+                <div style={{ display: "flex", gap: 5 }}>
+                  {QUIZ_STEPS.map((_, i) => (
+                    <div key={i} style={{ width: i === qIdx ? 20 : 7, height: 7, borderRadius: 100, background: i < qIdx ? "#C47A2E" : i === qIdx ? "#CCAB4A" : "rgba(196,122,46,0.15)", transition: "all 0.3s" }} />
+                  ))}
+                </div>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", marginLeft: 4 }}>{qIdx + 1} of {QUIZ_STEPS.length}</span>
               </div>
-              <h2 style={{ fontSize: 19, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", lineHeight: 1.3 }}>{currentStep.q}</h2>
-              {currentStep.sub && <p style={{ fontSize: 12.5, color: "#9B7450", margin: "0 0 20px" }}>{currentStep.sub}</p>}
 
-              {/* All questions use the same text card layout */}
-              <div style={{ display: "grid", gridTemplateColumns: currentStep.options?.length === 2 ? "1fr 1fr" : "1fr 1fr", gap: 12 }}>
+              {/* Question */}
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{currentStep.q}</h2>
+              {currentStep.sub && <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 22px", fontStyle: "italic" }}>{currentStep.sub}</p>}
+              {!currentStep.sub && <div style={{ marginBottom: 22 }} />}
+
+              {/* Options grid */}
+              <div style={{ display: "grid", gridTemplateColumns: currentStep.options?.length === 2 ? "1fr 1fr" : "1fr 1fr", gap: 10 }}>
                 {(currentStep.options || []).map(opt => {
                   const isSelected = answers[currentStep.id] === opt.value;
                   return (
                     <button key={opt.value} onClick={() => pick(currentStep.id, opt.value)}
-                      style={{ borderRadius: 14, border: `2.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: isSelected ? "rgba(196,122,46,0.07)" : "#FFFCF5", cursor: "pointer", padding: currentStep.options.length > 4 ? "16px 12px" : "20px 14px", textAlign: "left", transition: "all 0.18s", transform: isSelected ? "scale(1.02)" : "scale(1)", boxShadow: isSelected ? "0 4px 16px rgba(196,122,46,0.22)" : "none", fontFamily: font, position: "relative" }}>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: isSelected ? "#C47A2E" : "#2C1A0E", marginBottom: opt.sub ? 4 : 0, lineHeight: 1.4 }}>{opt.label}</div>
-                      {opt.sub && <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4 }}>{opt.sub}</div>}
-                      {isSelected && <div style={{ position: "absolute", top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, color: "#fff" }}>✓</div>}
+                      style={{
+                        borderRadius: 16,
+                        border: `2px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.14)"}`,
+                        background: isSelected ? "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.07))" : "#FFFCF5",
+                        cursor: "pointer",
+                        padding: "16px 14px",
+                        textAlign: "left",
+                        transition: "all 0.18s",
+                        transform: isSelected ? "scale(1.02)" : "scale(1)",
+                        boxShadow: isSelected ? "0 4px 18px rgba(196,122,46,0.25)" : "0 1px 4px rgba(196,122,46,0.06)",
+                        fontFamily: font,
+                        position: "relative",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                      }}>
+                      {/* Emoji */}
+                      <span style={{ fontSize: 22, marginBottom: 2 }}>{opt.emoji}</span>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: isSelected ? "#C47A2E" : "#2C1A0E", lineHeight: 1.35 }}>{opt.label}</div>
+                      {opt.sub && <div style={{ fontSize: 11.5, color: isSelected ? "rgba(196,122,46,0.75)" : "#9B7450", lineHeight: 1.4 }}>{opt.sub}</div>}
+                      {isSelected && (
+                        <div style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff", fontWeight: 800 }}>✓</div>
+                      )}
                     </button>
                   );
                 })}
@@ -482,8 +510,8 @@ export default function DecorFinder() {
 
               {qIdx > 0 && (
                 <button onClick={() => setQIdx(qIdx - 1)}
-                  style={{ marginTop: 14, background: "none", border: "none", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: font }}>
-                  ← Back
+                  style={{ marginTop: 16, background: "none", border: "none", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: font, padding: 0 }}>
+                  ← Previous question
                 </button>
               )}
             </div>
