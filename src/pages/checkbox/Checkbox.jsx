@@ -573,24 +573,6 @@ export default function CheckBox() {
           </button>
         </div>
 
-        {/* ── Find Vendors section ── */}
-        <div style={{ marginTop: 32, padding: "24px", background: "#FFFCF5", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-          <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px" }}>🛍️ Find Vendors</h3>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 18px" }}>Set your budget and browse verified vendors for your event.</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
-            {Object.entries(VENDOR_BUDGET_RANGES).map(([svc, range]) => (
-              <button key={svc} onClick={() => openVendorForm(svc)}
-                style={{ padding: "14px 10px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
-              >
-                <span style={{ fontSize: 24 }}>{svc === "Caterer" ? "🍽️" : svc === "Decorator" ? "🎀" : svc === "Photographer" ? "📸" : "🎵"}</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{svc === "Photographer" ? "Photography" : svc}</span>
-                <span style={{ fontSize: 10, color: "#9B7450" }}>from {fmtINR(range.min)}</span>
-              </button>
-            ))}
-          </div>
-        </div>
 
       </div>
       </div>
