@@ -350,20 +350,17 @@ const VendorList = () => {
                     ) : (
                     /* Compact slider */
                     <div style={{ flex: "0 0 42%", minWidth: 120 }}>
-                      <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#C47A2E;cursor:pointer;margin-top:-5px}.budget-sl::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;background:linear-gradient(to right,#C47A2E calc((var(--val) - var(--min))/(var(--max) - var(--min))*100%),rgba(196,122,46,0.2) 0)}`}</style>
+                      <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;box-shadow:0 1px 4px rgba(196,122,46,0.4)}.budget-sl::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;outline:none;border:none}`}</style>
                       <input type="range" min={range.min} max={range.max} step={range.step} value={val}
                         className="budget-sl"
                         onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
-                        style={{ width: "100%", cursor: "pointer", height: 4, borderRadius: 2, outline: "none", border: "none" }} />
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#bbb" }}>
-                        <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
-                      </div>
+                        style={{ width: "100%", cursor: "pointer", background: `linear-gradient(to right, #C47A2E ${((val - range.min) / (range.max - range.min)) * 100}%, rgba(196,122,46,0.2) 0)` }} />
                     </div>
                     )}
-                    {/* Range display — only when not from budget allocator */}
+                    {/* Current value only — no range display */}
                     {!fromBudgetAllocator && (
                       <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>
-                        {fmtBudget(range.min)} – {fmtBudget(val)}
+                        {fmtBudget(val)}
                       </span>
                     )}
                   </div>

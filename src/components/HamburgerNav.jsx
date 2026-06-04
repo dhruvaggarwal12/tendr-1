@@ -202,8 +202,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const isOnVendorFlow = vendorFlowPaths.some(p => location.pathname.startsWith(p));
 
   const handleBrowseVendors = () => {
-    if (browseDisabled) { navigate("/booking"); return; }
-    navigate("/listings");
+    // Always land on flow-choosing page so user picks You Do It vs Smart Planner
+    navigate("/booking");
   };
 
 
