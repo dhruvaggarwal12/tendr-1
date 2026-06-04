@@ -50,6 +50,12 @@ const NAV_ICONS = {
       <circle cx="12" cy="7" r="4"/>
     </svg>
   ),
+  Products: (on) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? "#C47A2E" : "#aaa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="9" y="3" width="6" height="6" rx="1"/><rect x="16" y="3" width="6" height="6" rx="1"/>
+      <rect x="2" y="11" width="6" height="6" rx="1"/><rect x="9" y="11" width="6" height="6" rx="1"/><rect x="16" y="11" width="6" height="6" rx="1"/>
+    </svg>
+  ),
 };
 
 function BottomNavInner() {
@@ -61,6 +67,7 @@ function BottomNavInner() {
   const finalisedCount = Object.keys(finalisedVendors).length;
   const [visible, setVisible] = useState(true);
   const [browseOpen, setBrowseOpen] = useState(false);
+  const [productsOpen, setProductsOpen] = useState(false);
   const scrollTimer = useRef(null);
 
   // Hide while scrolling, show when stopped
@@ -74,10 +81,11 @@ function BottomNavInner() {
     return () => { window.removeEventListener("scroll", onScroll); clearTimeout(scrollTimer.current); };
   }, []);
 
-  // Close browse sheet + reset visible on route change
+  // Close sheets + reset visible on route change
   useEffect(() => {
     setVisible(true);
     setBrowseOpen(false);
+    setProductsOpen(false);
   }, [location.pathname]);
 
   const shouldHide = HIDE_PATHS.some((p) => location.pathname.startsWith(p));
@@ -86,11 +94,22 @@ function BottomNavInner() {
   const isActive = (paths) =>
     paths.some((p) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p));
 
+  const PRODUCTS = [
+    { emoji: "✅", label: "Checklist",       href: "/checklist-picker" },
+    { emoji: "⏱️", label: "Timeline",        href: "/timeline-picker" },
+    { emoji: "💰", label: "Budget Allocator",href: "/budget-picker" },
+    { emoji: "🎨", label: "Decor Finder",    href: "/decor-finder" },
+    { emoji: "✉️", label: "Invitation Flyers",href: "/invitation" },
+    { emoji: "💒", label: "Stationery",      href: "/stationery" },
+    { emoji: "🎬", label: "Aftermovie",      href: "/aftermovie" },
+    ...(user?.isAdmin ? [{ emoji: "🎉", label: "Occasions", href: null, newTab: true, path: "/occasions" }] : []),
+  ];
+
   const items = [
-    { label: "Home",    paths: ["/"],                              onTap: () => navigate("/") },
-    { label: "Browse",  paths: ["/listings","/top-rated","/search"], onTap: () => setBrowseOpen(o => !o) },
-    { label: "Plan",    paths: ["/booking","/plan-event"],          onTap: () => navigate("/booking") },
-    { label: "Profile", paths: ["/dashboard","/AdminDashboard"],    onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
+    { label: "Home",    paths: ["/"],                                onTap: () => navigate("/") },
+    { label: "Browse",  paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setBrowseOpen(o => !o); } },
+    { label: "Products",paths: ["/checklist","/timeline","/budget","/decor","/invitation","/stationery","/aftermovie"], onTap: () => { setBrowseOpen(false); setProductsOpen(o => !o); } },
+    { label: "Profile", paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
 
   return (
@@ -159,6 +178,33 @@ function BottomNavInner() {
               }}>
               Browse All Vendors →
             </button>
+          </div>
+        </>
+      )}
+
+      {/* Our Products popup sheet */}
+      {productsOpen && (
+        <>
+          <div onClick={() => setProductsOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991 }} />
+          <div style={{ position: "fixed", bottom: 60, left: 0, right: 0, zIndex: 99992, background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
+            </div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Products</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
+              {PRODUCTS.map(({ emoji, label, href, newTab, path }) => (
+                <button key={label}
+                  onClick={() => { if (newTab) { window.open(path, "_blank"); } else { navigate(href); } setProductsOpen(false); }}
+                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                  onTouchEnd={e => e.currentTarget.style.background = "#fff"}
+                >
+                  <span style={{ fontSize: 22, lineHeight: 1 }}>{emoji}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3 }}>{label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </>
       )}

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
-import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor } from "../redux/listingFiltersSlice";
+import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor, setFilters } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa";
@@ -67,6 +67,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const [bookmarkTick,  setBookmarkTick]  = useState(0);
   const getSavedVendors = () => { try { return JSON.parse(localStorage.getItem("tendr_saved_vendors") || "[]"); } catch { return []; } };
   const removeSaved = (id) => { localStorage.setItem("tendr_saved_vendors", JSON.stringify(getSavedVendors().filter(v => v._id !== id))); setBookmarkTick(t => t + 1); };
+  // Saved vendor mini-form (shown before opening profile)
+  const [savedMiniForm, setSavedMiniForm] = useState({ eventType: "", date: "", location: "", guests: "", occasion: "" });
+  const [savedMiniOpen, setSavedMiniOpen] = useState(false);
+  const [savedVendorTarget, setSavedVendorTarget] = useState(null);
+  const CITIES_LIST = ["Delhi", "Noida", "Greater Noida", "Ghaziabad"];
+  const openSavedVendor = (v) => { setSavedVendorTarget(v); setSavedMiniOpen(true); setBookmarksOpen(false); };
   const [reviewPopup,   setReviewPopup]   = useState(false);
   const [searchQuery,      setSearchQuery]      = useState("");
   const [showSuggest,      setShowSuggest]      = useState(false);
@@ -134,6 +140,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     return () => document.removeEventListener("mousedown", h);
   }, []);
 
+  // Listen for save/unsave events from VendorList_ListingPage to refresh sidebar count
+  useEffect(() => {
+    const onSaved = () => setBookmarkTick(t => t + 1);
+    window.addEventListener("tendr:saved-updated", onSaved);
+    return () => window.removeEventListener("tendr:saved-updated", onSaved);
+  }, []);
+
   // Check backend: if user has a paid EventPlan, silently clear Review & Pay state
   useEffect(() => {
     if (!token || !finalisedCount || user?.isAdmin) return;
@@ -199,7 +212,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Top Rated Vendors",    href: "/top-rated/Photographer" },
       { label: "Register as Vendor",   href: "/vendor/register" },
     ]},
-    { label: "Our Products", items: [
+    { label: "Our Products", hideOnMobile: true, items: [
       ...(user?.isAdmin ? [
         { label: "🎉 Plan by Occasion", onClickOverride: () => { close(); window.open("/occasions", "_blank"); } },
         { label: "🏡 Party Places",     href: "/party-places" },
@@ -208,8 +221,11 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Timeline",           href: "/timeline-picker" },
       { label: "Budget Allocator",   href: "/budget-picker" },
       { label: "Decor Finder",       href: "/decor-finder" },
-      { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+    ]},
+    { label: "Memories", hideOnMobile: true, items: [
       { label: "Invitation Flyers",  href: "/invitation" },
+      { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+      { label: "Aftermovie",         href: "/aftermovie" },
     ]},
     { label: "Booking", items: [
       { label: "Plan Your Event",      href: "/booking" },
@@ -558,7 +574,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                         <div style={{ fontSize: 11, color: "#9B7450" }}>{v.serviceType}{v.city ? ` · ${v.city}` : ""}</div>
                       </div>
                       <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => { setBookmarksOpen(false); navigate(`/vendor/${v._id}`); }}
+                        <button onClick={() => openSavedVendor(v)}
                           style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", cursor: "pointer", fontWeight: 600 }}>View</button>
                         <button onClick={() => removeSaved(v._id)}
                           style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.08)", background: "#f5f5f5", color: "#C47A2E", cursor: "pointer" }}>♥</button>
@@ -570,6 +586,59 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
           </div>
         ); })()}
+
+        {/* Mini form — before opening saved vendor profile */}
+        {savedMiniOpen && savedVendorTarget && (
+          <>
+            <div onClick={() => setSavedMiniOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 400, backdropFilter: "blur(3px)" }} />
+            <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 401, background: "#FFFCF5", borderRadius: 20, width: "min(95vw,440px)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font, overflow: "hidden" }}>
+              <div style={{ padding: "16px 22px 12px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: "0 0 2px" }}>Quick Event Details</h3>
+                <p style={{ fontSize: 11.5, color: "#9B7450", margin: 0 }}>Viewing: <strong>{savedVendorTarget.name}</strong> · {savedVendorTarget.serviceType}</p>
+              </div>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                dispatch(setFilters({ eventType: savedMiniForm.eventType, locationType: savedMiniForm.location, date: savedMiniForm.date, guestCount: parseInt(savedMiniForm.guests) || 0 }));
+                setSavedMiniOpen(false);
+                window.open(`/vendor/${savedVendorTarget._id}`, "_blank");
+                setSavedVendorTarget(null);
+              }} style={{ padding: "16px 22px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Type *</label>
+                  <select required value={savedMiniForm.eventType} onChange={e => setSavedMiniForm(p => ({ ...p, eventType: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                    <option value="">Select event type</option>
+                    {["Birthday", "Anniversary", "Pre Wedding", "Get-together", "Office Party", "Festival", "Others"].map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>City *</label>
+                  <select required value={savedMiniForm.location} onChange={e => setSavedMiniForm(p => ({ ...p, location: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                    <option value="">Select city</option>
+                    {CITIES_LIST.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Date *</label>
+                  <input required type="date" value={savedMiniForm.date} min={new Date().toISOString().split("T")[0]}
+                    onChange={e => setSavedMiniForm(p => ({ ...p, date: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>No. of Guests *</label>
+                  <input required type="number" min="1" placeholder="e.g. 50" value={savedMiniForm.guests}
+                    onChange={e => setSavedMiniForm(p => ({ ...p, guests: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <button type="submit"
+                  style={{ width: "100%", marginTop: 4, padding: "12px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+                  View Vendor Profile ↗
+                </button>
+              </form>
+            </div>
+          </>
+        )}
 
         <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
       </>
@@ -734,7 +803,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
             {/* Nav sections */}
             <div style={{ padding: "12px 0", flex: 1 }}>
-              {NAV_SECTIONS.map((sec, si) => (
+              {NAV_SECTIONS.filter(sec => !sec.hideOnMobile).map((sec, si) => (
                 <div key={sec.label} style={{ marginBottom: 4 }}>
                   <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", padding: "10px 20px 6px" }}>
                     {sec.label}

@@ -288,8 +288,14 @@ const Navbar = ({
         { label: "⏱️ Timeline",           href: "/timeline-picker" },
         { label: "💰 Budget Allocator",   href: "/budget-picker" },
         { label: "🎨 Decor Finder",       href: "/decor-finder" },
-        { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+      ],
+    },
+    {
+      label: "Memories",
+      items: [
         { label: "✉️ Invitation Flyers",  href: "/invitation" },
+        { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+        { label: "🎬 Aftermovie",         href: "/aftermovie" },
       ],
     },
     {

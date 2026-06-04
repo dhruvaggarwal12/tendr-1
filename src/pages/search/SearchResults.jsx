@@ -24,10 +24,18 @@ export default function SearchResults() {
   const rawQuery   = searchParams.get("q") || "";
   const isUnknown  = searchParams.get("unknown") === "1";
 
-  // Active filter state (for swap chips)
+  // Active filter state (for swap chips) — sync whenever URL params change
   const [activeCat, setActiveCat] = useState(rawCats[0] || "");
   const [activeLoc, setActiveLoc] = useState(rawLocs[0] || "");
   const [topRatedOnly, setTopRatedOnly] = useState(false);
+
+  // Re-sync when URL changes (user searches again from this page)
+  useEffect(() => {
+    setActiveCat(rawCats[0] || "");
+    setActiveLoc(rawLocs[0] || "");
+    setCurrentPage(1);
+    setTopRatedOnly(false);
+  }, [searchParams.toString()]);
 
   // Vendors state
   const [vendors, setVendors]         = useState([]);

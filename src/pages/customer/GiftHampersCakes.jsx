@@ -261,7 +261,29 @@ const GiftHampersCakes = () => {
   const cartCount = useSelector(selectCartCount);
   const cartTotal = useSelector(selectCartTotal);
   const cartItems = useSelector(selectCartItems);
-  const { token } = useSelector(s => s.auth);
+  const { token, user } = useSelector(s => s.auth);
+
+  // Non-admin customers see Coming Soon
+  if (!user?.isAdmin) {
+    return (
+      <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 20 }}>🎁</div>
+        <h1 style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "-0.02em" }}>Gift Hampers & Cakes</h1>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "6px 18px", marginBottom: 20 }}>
+          <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#C47A2E", display: "inline-block", animation: "pulse 1.5s infinite" }} />
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em" }}>Coming Soon</span>
+        </div>
+        <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 420, lineHeight: 1.7, margin: "0 0 32px" }}>
+          We're curating beautiful gift hampers and cakes for every celebration. Stay tuned — launching very soon in Delhi NCR!
+        </p>
+        <button onClick={() => navigate("/")}
+          style={{ padding: "12px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+          Back to Home
+        </button>
+        <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+      </div>
+    );
+  }
 
   const [products,      setProducts]      = useState([]);
   const [loading,       setLoading]       = useState(true);

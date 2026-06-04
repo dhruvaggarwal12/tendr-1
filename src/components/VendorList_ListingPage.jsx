@@ -55,6 +55,8 @@ const VendorList_ListingPage = ({
   const handleToggleSave = useCallback((vendor) => {
     toggleSaved(vendor);
     setSavedTick(t => t + 1);
+    // Notify HamburgerNav sidebar to refresh saved vendors count
+    window.dispatchEvent(new CustomEvent("tendr:saved-updated"));
   }, []);
 
   // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
