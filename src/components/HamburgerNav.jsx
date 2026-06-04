@@ -498,6 +498,80 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{title}</span>
           </div>
         )}
+
+        {/* Compare Vendors modal — sidebar mode */}
+        {savedOpen && compareSelected.length > 0 && (
+          <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
+            onClick={() => setSavedOpen(false)}>
+            <div style={{ width: "92%", maxWidth: 540, background: "#fff", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font }}
+              onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
+                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Compare Vendors ({compareSelected.length})</h3>
+                <button onClick={() => setSavedOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18 }}>×</button>
+              </div>
+              <div style={{ overflowY: "auto", padding: "12px 24px", flex: 1 }}>
+                {compareSelected.map((v) => (
+                  <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: "1.5px solid #f0e8dc", background: "#fffcf5", marginBottom: 8 }}>
+                    <img src={v.image || FALLBACK} alt={v.name} style={{ width: 46, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
+                      {v.city && <div style={{ fontSize: 12, color: "#9B7450" }}>{v.serviceType || v.city}</div>}
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <button onClick={() => { setSavedOpen(false); navigate(`/vendor/${v._id}`); }}
+                        style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>View</button>
+                      <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
+                        style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 24px", borderTop: "1px solid #f0e8dc" }}>
+                <button onClick={() => { dispatch(clearVendorCompare()); setSavedOpen(false); }}
+                  style={{ fontSize: 13, padding: "7px 16px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#555", cursor: "pointer" }}>Clear All</button>
+                <button onClick={() => { setSavedOpen(false); navigate("/listings"); }}
+                  style={{ fontSize: 13, fontWeight: 700, padding: "7px 22px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer" }}>Go to Listings</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Saved Vendors modal — sidebar mode */}
+        {bookmarksOpen && (() => { const savedList = getSavedVendors(); return (
+          <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
+            onClick={() => setBookmarksOpen(false)}>
+            <div style={{ width: "92%", maxWidth: 500, background: "#FFFCF5", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }}
+              onClick={e => e.stopPropagation()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                <h3 style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>♥ Saved Vendors ({savedList.length})</h3>
+                <button onClick={() => setBookmarksOpen(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+              </div>
+              {savedList.length === 0 ? (
+                <div style={{ padding: "40px 24px", textAlign: "center", color: "#9B7450", fontSize: 14 }}>No saved vendors yet.</div>
+              ) : (
+                <div style={{ overflowY: "auto", padding: "10px 16px", flex: 1 }}>
+                  {savedList.map(v => (
+                    <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.12)", background: "#fff", marginBottom: 8 }}>
+                      {v.image ? <img src={v.image} alt={v.name} style={{ width: 46, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} /> : <div style={{ width: 46, height: 38, borderRadius: 8, background: "rgba(196,122,46,0.1)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20 }}>🏷</div>}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14 }}>{v.name}</div>
+                        <div style={{ fontSize: 11, color: "#9B7450" }}>{v.serviceType}{v.city ? ` · ${v.city}` : ""}</div>
+                      </div>
+                      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                        <button onClick={() => { setBookmarksOpen(false); navigate(`/vendor/${v._id}`); }}
+                          style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", cursor: "pointer", fontWeight: 600 }}>View</button>
+                        <button onClick={() => removeSaved(v._id)}
+                          style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.08)", background: "#f5f5f5", color: "#C47A2E", cursor: "pointer" }}>♥</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        ); })()}
+
+        <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
       </>
     );
   }

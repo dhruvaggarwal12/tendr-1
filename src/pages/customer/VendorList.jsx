@@ -390,38 +390,10 @@ const VendorList = () => {
               @media (max-width: 639px) { .mobile-cat-switcher { display: block !important; } }
             `}</style>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
+            <div style={{ marginBottom: 10 }}>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
                 {serviceType || "All"} Vendors
               </h1>
-              {token && compareSelected.length > 0 && (
-                <button
-                  onClick={openSelectedModal}
-                  style={{
-                    marginLeft: "auto",
-                    fontFamily: "'Outfit', sans-serif",
-                    flexShrink: 0,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 8,
-                    padding: "8px 18px",
-                    borderRadius: 10,
-                    fontWeight: 700,
-                    fontSize: 14,
-                    border: "none",
-                    cursor: "pointer",
-                    background: "#CCAB4A",
-                    color: "#fff",
-                    transition: "background 0.2s",
-                    boxShadow: "0 4px 14px rgba(204,171,74,0.35)",
-                  }}
-                >
-                  Compare Vendors
-                  <span style={{ background: "rgba(255,255,255,0.3)", borderRadius: 100, padding: "2px 8px", fontSize: 12, fontWeight: 800 }}>
-                    {compareSelected.length}
-                  </span>
-                </button>
-              )}
             </div>
 
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
