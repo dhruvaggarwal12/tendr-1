@@ -940,7 +940,7 @@ const EventPlanning = () => {
                   <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Browse Yourself</div>
                   <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, marginBottom: 14, flex: 1 }}>Compare vendor profiles, chat directly, negotiate your own price.</div>
                   <button
-                    onClick={() => { dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType, locationType: formData?.location, date: formData?.date, guestCount: Number(formData?.guests) || 0 })); navigate("/listings", { state: { selectedCategories: selectedVendors } }); }}
+                    onClick={() => { dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType, locationType: formData?.location, date: formData?.date, guestCount: Number(formData?.guests) || 0 })); navigate("/booking"); }}
                     style={{ width: "100%", padding: "11px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                     Browse Vendors →
                   </button>
@@ -975,7 +975,7 @@ const EventPlanning = () => {
                   date: formData?.date || "",
                   guestCount: Number(formData?.guests) || 0,
                 }));
-                navigate("/listings", { state: { selectedCategories: selectedVendors } });
+                navigate("/booking");
               }}
               style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}>
               Browse All Vendors →
@@ -1026,40 +1026,74 @@ const EventPlanning = () => {
                 {spQuickView.serviceType}
               </span>
             </div>
-            {/* Content */}
-            <div style={{ padding: "20px 22px 28px" }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px" }}>{spQuickView.name}</h2>
-              {spQuickView.avgReviewScore > 0 && (
-                <div style={{ fontSize: 13, color: "#C47A2E", fontWeight: 700, marginBottom: 10 }}>
-                  ⭐ {Number(spQuickView.avgReviewScore).toFixed(1)}
-                  {spQuickView.totalEventsCompleted > 0 && <span style={{ color: "#9B7450", fontWeight: 500 }}> · {spQuickView.totalEventsCompleted}+ events</span>}
-                </div>
-              )}
-              {/* All info tags */}
+            {/* Content — matches normal booking Quick View style */}
+            <div style={{ padding: "18px 20px 80px" }}>
+              {/* Name + category badge */}
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{spQuickView.name}</h2>
               <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 14 }}>
-                {spQuickView.city && <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)" }}>📍 {spQuickView.city}</div>}
-                {spQuickView.yearsOfExperience > 0 && <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)" }}>⏱ {spQuickView.yearsOfExperience}y exp</div>}
-                {spQuickView.teamSize > 0 && <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)" }}>👥 Team {spQuickView.teamSize}</div>}
-                {spQuickView.price > 0 && <div style={{ fontSize: 12, color: "#C47A2E", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)", fontWeight: 700 }}>₹{Number(spQuickView.price).toLocaleString("en-IN")}+</div>}
-                {spQuickView.isVerified && <div style={{ fontSize: 12, color: "#15803d", background: "rgba(21,128,61,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(21,128,61,0.2)" }}>✓ Verified</div>}
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.12)", borderRadius: 100, padding: "3px 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>{spQuickView.serviceType}</span>
+                {spQuickView.isVerified && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.1)", borderRadius: 100, padding: "3px 10px" }}>✓ Verified</span>}
+                {spQuickView.isTopRated && <span style={{ fontSize: 11, fontWeight: 700, color: "#b45309", background: "rgba(245,158,11,0.1)", borderRadius: 100, padding: "3px 10px" }}>⭐ Top Rated</span>}
               </div>
-              {/* Bio */}
-              {spQuickView.bio && <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.6, margin: "0 0 14px" }}>{spQuickView.bio.slice(0, 160)}{spQuickView.bio.length > 160 ? "…" : ""}</p>}
-              {/* Locations served */}
-              {spQuickView.locations?.length > 0 && (
-                <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 14px" }}>📍 Serves: {spQuickView.locations.join(", ")}</p>
-              )}
-              {/* Portfolio */}
-              {spQuickView.portfolioPhotos?.length > 0 && (
+
+              {/* Location + exp + team chips */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 18 }}>
+                {(spQuickView.city || spQuickView.locations?.[0]) && <div style={{ fontSize: 12, color: "#5a3a1a", background: "#f5ede0", borderRadius: 20, padding: "5px 12px" }}>📍 {spQuickView.city || spQuickView.locations?.[0]}</div>}
+                {spQuickView.yearsOfExperience > 0 && <div style={{ fontSize: 12, color: "#5a3a1a", background: "#f5ede0", borderRadius: 20, padding: "5px 12px" }}>⏱ {spQuickView.yearsOfExperience}y experience</div>}
+                {spQuickView.teamSize > 0 && <div style={{ fontSize: 12, color: "#5a3a1a", background: "#f5ede0", borderRadius: 20, padding: "5px 12px" }}>👥 Team of {spQuickView.teamSize}</div>}
+              </div>
+
+              {/* ABOUT section — 2×2 grid */}
+              <div style={{ marginBottom: 18 }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>About</div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                  {[
+                    { label: "Events Completed", value: spQuickView.totalEventsCompleted > 0 ? `${spQuickView.totalEventsCompleted}+` : "—" },
+                    { label: "Team Size",         value: spQuickView.teamSize > 0 ? `${spQuickView.teamSize}` : "—" },
+                    { label: "Experience",        value: spQuickView.yearsOfExperience > 0 ? `${spQuickView.yearsOfExperience} years` : "—" },
+                    { label: "Serves",            value: spQuickView.locations?.length > 0 ? spQuickView.locations.slice(0,2).join(", ") : (spQuickView.city || "—") },
+                  ].map(({ label, value }) => (
+                    <div key={label} style={{ background: "#FFFCF5", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{label}</div>
+                      <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>{value}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* SPECIALTIES — only if data present */}
+              {(spQuickView.cuisine?.length > 0 || spQuickView.serviceStyle?.length > 0 || spQuickView.menuType?.length > 0 || spQuickView.avgReviewScore > 0) && (
                 <div style={{ marginBottom: 18 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>Portfolio</p>
-                  <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
-                    {spQuickView.portfolioPhotos.slice(0, 6).map((photo, i) => (
-                      <img key={i} src={photo} alt="" style={{ width: 80, height: 65, objectFit: "cover", borderRadius: 9, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />
-                    ))}
+                  <div style={{ fontSize: 10, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Specialties</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                    {spQuickView.cuisine?.length > 0 && (
+                      <div style={{ background: "#FFFCF5", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Cuisine</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.4 }}>{(Array.isArray(spQuickView.cuisine) ? spQuickView.cuisine : [spQuickView.cuisine]).join(", ")}</div>
+                      </div>
+                    )}
+                    {spQuickView.serviceStyle?.length > 0 && (
+                      <div style={{ background: "#FFFCF5", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Service Style</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.4 }}>{(Array.isArray(spQuickView.serviceStyle) ? spQuickView.serviceStyle : [spQuickView.serviceStyle]).join(", ")}</div>
+                      </div>
+                    )}
+                    {spQuickView.menuType?.length > 0 && (
+                      <div style={{ background: "#FFFCF5", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Menu Type</div>
+                        <div style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.4 }}>{(Array.isArray(spQuickView.menuType) ? spQuickView.menuType : [spQuickView.menuType]).join(", ")}</div>
+                      </div>
+                    )}
+                    {spQuickView.avgReviewScore > 0 && (
+                      <div style={{ background: "#FFFCF5", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Rating</div>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: "#C47A2E" }}>⭐ {Number(spQuickView.avgReviewScore).toFixed(1)}</div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
+
               <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "0 0 16px" }} />
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button
@@ -1487,7 +1521,7 @@ const EventPlanning = () => {
                       onClick={() => {
                         setShowYouDoItBudget(false);
                         dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                        navigate("/listings", { state: { selectedCategories: selectedVendors } });
+                        navigate("/booking");
                       }}
                       style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)", marginTop: 2 }}>
                       Browse Vendors →
