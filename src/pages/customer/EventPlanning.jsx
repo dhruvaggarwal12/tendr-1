@@ -148,6 +148,7 @@ const EventPlanning = () => {
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [selectedPackages, setSelectedPackages] = useState({});
+  const [pkgExpanded, setPkgExpanded] = useState({}); // { "Caterer-Basic": true }
   const [catererMenu, setCatererMenu] = useState([]);
   const [showYouDoItBudget, setShowYouDoItBudget] = useState(false);
   const [menuLoading, setMenuLoading] = useState(false);
@@ -523,18 +524,33 @@ const EventPlanning = () => {
               <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Dietary Restrictions <span style={{ fontSize: 10, color: "#9B7450", textTransform: "none" }}>(optional)</span></div>
               <input type="text" placeholder="e.g. No onion-garlic, Jain food..." value={wizardAnswers.catering?.dietaryRestrictions || ""} onChange={e => updAns("catering", "dietaryRestrictions", e.target.value)} style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: "#2C1A0E", outline: "none", background: "#FFFCF5", boxSizing: "border-box" }} />
             </div>
-            {/* Packages */}
+            {/* Packages — expandable cards */}
             <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {CAT_PACKAGES.Caterer.map(p => {
                   const sel = selectedPackages.Caterer === p.tier;
+                  const key = `Caterer-${p.tier}`;
+                  const open = !!pkgExpanded[key];
                   return (
-                    <button key={p.tier} onClick={() => { setSelectedPackages(s => ({ ...s, Caterer: p.tier })); fetchMenu(p.tier); }}
-                      style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
-                      <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
-                    </button>
+                    <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }}
+                        onClick={() => { setSelectedPackages(s => ({ ...s, Caterer: p.tier })); fetchMenu(p.tier); }}>
+                        <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                          {sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                        </div>
+                        <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }}
+                          style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", lineHeight: 1, transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
+                      </div>
+                      {open && (
+                        <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                          <p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p>
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -575,12 +591,15 @@ const EventPlanning = () => {
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CAT_PACKAGES.Decorator.map(p => { const sel = selectedPackages.Decorator === p.tier; return (
-                <button key={p.tier} onClick={() => setSelectedPackages(s => ({ ...s, Decorator: p.tier }))}
-                  style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
-                </button>
+              {CAT_PACKAGES.Decorator.map(p => { const sel = selectedPackages.Decorator === p.tier; const key = `Decorator-${p.tier}`; const open = !!pkgExpanded[key]; return (
+                <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, Decorator: p.tier }))}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}</div>
+                    <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                    <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
+                  </div>
+                  {open && <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p></div>}
+                </div>
               ); })}
             </div>
           </div>
@@ -603,12 +622,15 @@ const EventPlanning = () => {
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CAT_PACKAGES.Photographer.map(p => { const sel = selectedPackages.Photographer === p.tier; return (
-                <button key={p.tier} onClick={() => setSelectedPackages(s => ({ ...s, Photographer: p.tier }))}
-                  style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
-                </button>
+              {CAT_PACKAGES.Photographer.map(p => { const sel = selectedPackages.Photographer === p.tier; const key = `Photographer-${p.tier}`; const open = !!pkgExpanded[key]; return (
+                <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, Photographer: p.tier }))}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}</div>
+                    <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                    <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
+                  </div>
+                  {open && <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p></div>}
+                </div>
               ); })}
             </div>
           </div>
@@ -630,12 +652,15 @@ const EventPlanning = () => {
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CAT_PACKAGES.DJ.map(p => { const sel = selectedPackages.DJ === p.tier; return (
-                <button key={p.tier} onClick={() => setSelectedPackages(s => ({ ...s, DJ: p.tier }))}
-                  style={{ padding: "11px 14px", borderRadius: 10, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#FFFCF5", textAlign: "left", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{sel ? "✓ " : ""}{p.tier}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", marginTop: 2 }}>{p.desc}</div>
-                </button>
+              {CAT_PACKAGES.DJ.map(p => { const sel = selectedPackages.DJ === p.tier; const key = `DJ-${p.tier}`; const open = !!pkgExpanded[key]; return (
+                <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, DJ: p.tier }))}>
+                    <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}</div>
+                    <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                    <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
+                  </div>
+                  {open && <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p></div>}
+                </div>
               ); })}
             </div>
           </div>
@@ -843,76 +868,54 @@ const EventPlanning = () => {
             );
           })()}
 
-          {/* Vendor cards — 2-column bigger cards */}
-          <style>{`@media(max-width:639px){.smart-vendor-grid{grid-template-columns:1fr!important}}`}</style>
-          <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20, marginBottom: 24 }} className="smart-vendor-grid">
+          {/* Vendor cards — 4-column compact, normal flow style */}
+          <style>{`@media(max-width:900px){.smart-vendor-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:540px){.smart-vendor-grid{grid-template-columns:1fr!important}}`}</style>
+          <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }} className="smart-vendor-grid">
             {currentVendors.map(({ category, estimatedCost, vendor, totalVendors }) => (
-              <div key={category} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 4px 20px rgba(196,122,46,0.1)" }}>
-                {/* Category header */}
-                <div style={{ padding: "13px 20px 10px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 20 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>
-                  <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{category}</span>
-                  <span style={{ fontSize: 13, color: "#9B7450", marginLeft: "auto" }}>Budget: <strong style={{ color: "#C47A2E" }}>{fmt(estimatedCost)}</strong></span>
+              <div key={category} style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 2px 12px rgba(196,122,46,0.08)", display: "flex", flexDirection: "column" }}>
+                {/* Photo */}
+                <div style={{ position: "relative", height: 140, background: "#f3ebe0", overflow: "hidden" }}>
+                  {vendor?.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor?.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</div>}
+                  {/* Category + budget badges */}
+                  <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 5 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{category}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: 100, padding: "2px 8px" }}>{fmt(estimatedCost)}</span>
+                  </div>
+                  {/* Swap arrows */}
+                  {vendor && totalVendors > 1 && (
+                    <div style={{ position: "absolute", top: 6, right: 6, display: "flex", gap: 4 }}>
+                      <button onClick={() => { setVendorOffset(p => { const cur = p[category] || 0; return { ...p, [category]: (cur - 1 + totalVendors) % totalVendors }; }); }}
+                        style={{ width: 24, height: 24, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>‹</button>
+                      <button onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); }}
+                        style={{ width: 24, height: 24, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>›</button>
+                    </div>
+                  )}
                 </div>
                 {vendor ? (
-                  <>
-                  {/* Full-width photo — no arrows here */}
-                  <div style={{ height: 110, overflow: "hidden", position: "relative", background: "#f3ebe0", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    {vendor.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 48 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>}
-                  </div>
-                  <div style={{ padding: "12px 16px" }}>
-                    {/* Vendor name + swap arrows side by side */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                      <span style={{ fontSize: 15, fontWeight: 900, color: "#2C1A0E", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</span>
-                      {totalVendors > 1 && (
-                        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
-                          <button onClick={() => { setVendorOffset(p => { const cur = p[category] || 0; return { ...p, [category]: (cur - 1 + totalVendors) % totalVendors }; }); setExpandedCat(null); }}
-                            style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>‹</button>
-                          <button onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
-                            style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>›</button>
-                        </div>
-                      )}
+                  <div style={{ padding: "11px 13px 13px", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
+                      {vendor.avgReviewScore > 0 && <span style={{ fontSize: 10.5, color: "#CCAB4A", fontWeight: 700 }}>⭐ {vendor.avgReviewScore.toFixed(1)}</span>}
+                      {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 10.5, color: "#9B7450" }}>⏱ {vendor.yearsOfExperience}y</span>}
+                      {vendor.teamSize > 0 && <span style={{ fontSize: 10.5, color: "#9B7450" }}>👥 {vendor.teamSize}</span>}
+                      {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 10, background: "rgba(196,122,46,0.08)", color: "#7A4A1A", borderRadius: 100, padding: "1px 6px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+</span>}
                     </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
-                        {vendor.avgReviewScore > 0 && <span style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700 }}>⭐ {vendor.avgReviewScore.toFixed(1)}</span>}
-                        {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 12, color: "#9B7450" }}>⏱ {vendor.yearsOfExperience}y exp</span>}
-                        {vendor.teamSize > 0 && <span style={{ fontSize: 12, color: "#9B7450" }}>👥 Team {vendor.teamSize}</span>}
-                        {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 11, background: "rgba(196,122,46,0.1)", color: "#7A4A1A", borderRadius: 100, padding: "2px 8px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+ events</span>}
-                      </div>
-                      {vendor.locations?.length > 0 && <div style={{ fontSize: 12, color: "#9B7450", marginTop: 4 }}>📍 {vendor.locations.slice(0, 2).join(", ")}</div>}
+                    {vendor.locations?.length > 0 && <div style={{ fontSize: 10.5, color: "#9B7450", marginBottom: 8 }}>📍 {vendor.locations.slice(0, 2).join(", ")}</div>}
+                    <div style={{ marginTop: "auto", display: "flex", gap: 6 }}>
+                      <button onClick={() => openQuickView(vendor)}
+                        style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Quick View
+                      </button>
+                      <button onClick={() => openProfile(vendor)}
+                        style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        Profile
+                      </button>
+                    </div>
                   </div>
-                  {/* Budget slider */}
-                  {smartPlanMode === 'perCategory' && (() => {
-                    const range = CAT_BUDGET_RANGES[category] || { min: 2000, max: 200000, step: 2000 };
-                    const val = savedCategoryBudgets[category] || range.default || 15000;
-                    return (
-                      <div style={{ padding: "0 20px 12px" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                          <span style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>Budget</span>
-                          <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E" }}>Up to {fmt(val)}</span>
-                        </div>
-                        <input type="range" min={range.min} max={range.max} step={range.step} value={val}
-                          onChange={e => dispatch(setCategoryBudgets({ ...savedCategoryBudgets, [category]: Number(e.target.value) }))}
-                          onMouseUp={() => fetchSmartPlan()} onTouchEnd={() => fetchSmartPlan()}
-                          style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 4 }} />
-                      </div>
-                    );
-                  })()}
-                  {/* Action buttons */}
-                  <div style={{ padding: "0 20px 18px", display: "flex", gap: 8 }}>
-                    <button onClick={() => openQuickView(vendor)}
-                      style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                      Quick View
-                    </button>
-                    <button onClick={() => openProfile(vendor)}
-                      style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                      View Profile
-                    </button>
-                  </div>
-                  </>
                 ) : (
-                  <div style={{ padding: "18px", textAlign: "center", color: "#C4A882", fontSize: 13 }}>
-                    No vendors in {formData?.location} — <button onClick={openChatWithSocket} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, cursor: "pointer", fontSize: 13, padding: 0, fontFamily: "'Outfit', sans-serif" }}>chat with our team</button>
+                  <div style={{ padding: "14px", textAlign: "center", color: "#C4A882", fontSize: 12, flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    No vendors in {formData?.location}
+                    <button onClick={openChatWithSocket} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, cursor: "pointer", fontSize: 11, padding: "4px 0 0", fontFamily: "'Outfit', sans-serif" }}>Chat with our team</button>
                   </div>
                 )}
               </div>
@@ -1146,9 +1149,24 @@ const EventPlanning = () => {
                 {spProfileView.price > 0 && <span style={{ fontSize: 12, color: "#C47A2E", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 13px", border: "1px solid rgba(196,122,46,0.15)", fontWeight: 700 }}>₹{Number(spProfileView.price).toLocaleString("en-IN")}+</span>}
               </div>
 
+              {/* Stats grid — like VendorDetails */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 10, marginBottom: 18 }}>
+                {[
+                  { label: "Rating",    value: spProfileView.avgReviewScore > 0 ? `⭐ ${Number(spProfileView.avgReviewScore).toFixed(1)}` : "—" },
+                  { label: "Experience", value: spProfileView.yearsOfExperience > 0 ? `${spProfileView.yearsOfExperience} yrs` : "—" },
+                  { label: "Team",      value: spProfileView.teamSize > 0 ? spProfileView.teamSize : "—" },
+                  { label: "Events",    value: spProfileView.totalEventsCompleted > 0 ? `${spProfileView.totalEventsCompleted}+` : "—" },
+                ].map(({ label, value }) => (
+                  <div key={label} style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(196,122,46,0.1)", textAlign: "center" }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>{label}</div>
+                    <div style={{ fontSize: 15, fontWeight: 900, color: "#2C1A0E" }}>{value}</div>
+                  </div>
+                ))}
+              </div>
+
               {/* Bio */}
               {spProfileView.bio && (
-                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 18px", padding: "14px 16px", background: "rgba(196,122,46,0.04)", borderRadius: 12, border: "1px solid rgba(196,122,46,0.1)" }}>{spProfileView.bio}</p>
+                <p style={{ fontSize: 13.5, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 18px", padding: "14px 16px", background: "rgba(196,122,46,0.04)", borderRadius: 12, border: "1px solid rgba(196,122,46,0.1)" }}>{spProfileView.bio}</p>
               )}
 
               {/* Portfolio photos */}

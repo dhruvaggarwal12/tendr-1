@@ -339,31 +339,25 @@ const VendorList = () => {
               const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
               const val = currentCatBudget || range.max;
               return (
-                <div style={{ marginBottom: 12, padding: "10px 16px", borderRadius: 12, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
-                    <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0 }}>
-                      💰 {serviceType} budget
-                    </span>
-                    {fromBudgetAllocator ? (
-                      /* Fixed value from Budget Allocator — no slider */
-                      <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(val)}</span>
-                    ) : (
-                    /* Compact slider */
-                    <div style={{ flex: "0 0 42%", minWidth: 120 }}>
-                      <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;box-shadow:0 1px 4px rgba(196,122,46,0.4)}.budget-sl::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;outline:none;border:none}`}</style>
-                      <input type="range" min={range.min} max={range.max} step={range.step} value={val}
-                        className="budget-sl"
-                        onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
-                        style={{ width: "100%", cursor: "pointer", background: `linear-gradient(to right, #C47A2E ${((val - range.min) / (range.max - range.min)) * 100}%, rgba(196,122,46,0.2) 0)` }} />
-                    </div>
-                    )}
-                    {/* Current value only — no range display */}
-                    {!fromBudgetAllocator && (
-                      <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>
-                        {fmtBudget(val)}
-                      </span>
-                    )}
-                  </div>
+                <div style={{ marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 12, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif" }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0 }}>
+                    💰 {serviceType}
+                  </span>
+                  {fromBudgetAllocator ? (
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(val)}</span>
+                  ) : (
+                    <>
+                      <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>{fmtBudget(range.min)}</span>
+                      <div style={{ width: 160, flexShrink: 0 }}>
+                        <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;box-shadow:0 1px 4px rgba(196,122,46,0.4)}.budget-sl::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;outline:none;border:none}`}</style>
+                        <input type="range" min={range.min} max={range.max} step={range.step} value={val}
+                          className="budget-sl"
+                          onChange={e => dispatch(setCategoryBudgets({ ...categoryBudgets, [serviceType]: Number(e.target.value) }))}
+                          style={{ width: "100%", cursor: "pointer", background: `linear-gradient(to right, #C47A2E ${((val - range.min) / (range.max - range.min)) * 100}%, rgba(196,122,46,0.2) 0)` }} />
+                      </div>
+                      <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", flexShrink: 0 }}>{fmtBudget(val)}</span>
+                    </>
+                  )}
                 </div>
               );
             })()}
