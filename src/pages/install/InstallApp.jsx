@@ -65,15 +65,22 @@ export default function InstallApp() {
       <div style={{ maxWidth: 500, margin: "0 auto", padding: "32px 20px 80px" }}>
 
         {/* Hero */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ fontSize: 52, marginBottom: 12 }}>📲</div>
-          <h1 style={{ fontSize: "clamp(1.5rem,5vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-            Tendr on your phone
-          </h1>
-          <p style={{ fontSize: 14, color: "#9B7450", margin: 0, lineHeight: 1.6 }}>
-            Get instant notifications, chat with vendors and track bookings from your home screen.
-          </p>
-        </div>
+        {(() => {
+          const heroContent = {
+            android: { icon: "🤖", title: "Install on Android",      sub: "Add Tendr to your home screen from Chrome — no app store needed." },
+            desktop: { icon: "💻", title: "Install on Desktop",       sub: "Add Tendr as a desktop app that opens instantly without a browser." },
+            ios:     { icon: "🍎", title: "Install on iPhone / iPad", sub: "Add Tendr to your home screen from Safari in 4 quick steps." },
+          }[active];
+          return (
+            <div style={{ textAlign: "center", marginBottom: 32 }}>
+              <div style={{ fontSize: 52, marginBottom: 12 }}>{heroContent.icon}</div>
+              <h1 style={{ fontSize: "clamp(1.5rem,5vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
+                {heroContent.title}
+              </h1>
+              <p style={{ fontSize: 14, color: "#9B7450", margin: 0, lineHeight: 1.6 }}>{heroContent.sub}</p>
+            </div>
+          );
+        })()}
 
         {/* Device tabs */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24, background: "#fff", borderRadius: 14, padding: 5, border: "1.5px solid rgba(196,122,46,0.12)" }}>
