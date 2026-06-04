@@ -138,6 +138,7 @@ const initialState = {
     budget: "",
     location: "",
     date: "",
+    companyName: "", // corporate only
   },
   categoryBudgets: savedSession?.categoryBudgets || {}, // { Caterer: 25000, DJ: 10000, ... }
   currentStep: savedSession?.currentStep || 0,

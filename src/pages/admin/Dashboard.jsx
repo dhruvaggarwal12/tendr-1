@@ -372,6 +372,7 @@ const AdminDashboard = () => {
   const [vendorFilterCity, setVendorFilterCity] = useState("all");
   const [vendorFilterStatus, setVendorFilterStatus] = useState("all");
   const [vendorFilterTopRated, setVendorFilterTopRated] = useState("all");
+  const [vendorFilterCorporate, setVendorFilterCorporate] = useState("all");
   // Reviews
   const [reviews, setReviews] = useState([]);
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
@@ -1940,6 +1941,8 @@ const AdminDashboard = () => {
                 if (vendorFilterStatus !== "all" && v.status !== vendorFilterStatus) return false;
                 if (vendorFilterTopRated === "yes" && !v.isTopRated) return false;
                 if (vendorFilterTopRated === "no" && v.isTopRated) return false;
+                if (vendorFilterCorporate === "yes" && !v.hasCorporateExperience) return false;
+                if (vendorFilterCorporate === "no" && v.hasCorporateExperience) return false;
                 return true;
               });
               const allCities = [...new Set(vendorStats.map(v => v.city).filter(Boolean))].sort();
@@ -1985,9 +1988,15 @@ const AdminDashboard = () => {
                     <option value="yes">⭐ Top Rated</option>
                     <option value="no">Not Top Rated</option>
                   </select>
+                  {/* Corporate Experience */}
+                  <select value={vendorFilterCorporate} onChange={e => setVendorFilterCorporate(e.target.value)} style={selStyle}>
+                    <option value="all">All</option>
+                    <option value="yes">🏢 Corporate Exp.</option>
+                    <option value="no">No Corporate Exp.</option>
+                  </select>
                   {/* Clear all */}
-                  {(vendorSearch || vendorFilterType !== "all" || vendorFilterCity !== "all" || vendorFilterStatus !== "all" || vendorFilterTopRated !== "all") && (
-                    <button onClick={() => { setVendorSearch(""); setVendorFilterType("all"); setVendorFilterCity("all"); setVendorFilterStatus("all"); setVendorFilterTopRated("all"); }}
+                  {(vendorSearch || vendorFilterType !== "all" || vendorFilterCity !== "all" || vendorFilterStatus !== "all" || vendorFilterTopRated !== "all" || vendorFilterCorporate !== "all") && (
+                    <button onClick={() => { setVendorSearch(""); setVendorFilterType("all"); setVendorFilterCity("all"); setVendorFilterStatus("all"); setVendorFilterTopRated("all"); setVendorFilterCorporate("all"); }}
                       style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(192,57,43,0.25)", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
                       ✕ Clear
                     </button>
@@ -2029,6 +2038,28 @@ const AdminDashboard = () => {
                           onMouseLeave={e => { e.currentTarget.style.background = v.isTopRated ? "rgba(234,179,8,0.15)" : "rgba(156,163,175,0.06)"; e.currentTarget.style.color = v.isTopRated ? "#ca8a04" : "#9ca3af"; }}
                         >
                           ⭐
+                        </button>
+                        {/* Corporate Experience toggle */}
+                        <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const newVal = !v.hasCorporateExperience;
+                            try {
+                              await fetch(`${BASE_URL}/admin/vendors/${v._id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                credentials: 'include',
+                                body: JSON.stringify({ hasCorporateExperience: newVal }),
+                              });
+                              setVendorStats(prev => prev.map(x => x._id === v._id ? { ...x, hasCorporateExperience: newVal } : x));
+                            } catch {}
+                          }}
+                          title={v.hasCorporateExperience ? "Remove Corporate tag" : "Tag as Corporate Experienced"}
+                          style={{ width: 26, height: 26, borderRadius: "50%", border: `1.5px solid ${v.hasCorporateExperience ? "rgba(124,58,237,0.5)" : "rgba(156,163,175,0.3)"}`, background: v.hasCorporateExperience ? "rgba(124,58,237,0.15)" : "rgba(156,163,175,0.06)", color: v.hasCorporateExperience ? "#7c3aed" : "#9ca3af", cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = "rgba(124,58,237,0.15)"; e.currentTarget.style.color = "#7c3aed"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = v.hasCorporateExperience ? "rgba(124,58,237,0.15)" : "rgba(156,163,175,0.06)"; e.currentTarget.style.color = v.hasCorporateExperience ? "#7c3aed" : "#9ca3af"; }}
+                        >
+                          🏢
                         </button>
                         {v.serviceType === "Caterer" && (
                           <button
@@ -2084,6 +2115,13 @@ const AdminDashboard = () => {
                             ...(v.status === "approved" ? { background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }
                             : { background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }) }}>
                             {v.status}
+                          </span>
+                          {v.hasCorporateExperience && (
+                            <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 100, fontWeight: 600, background: "rgba(124,58,237,0.1)", color: "#7c3aed", border: "1px solid rgba(124,58,237,0.25)" }}>
+                              🏢 Corporate
+                            </span>
+                          )}
+                          <span style={{ fontSize: 0 }}>
                           </span>
                           <span style={{ fontSize: 11, color: "#9B7450" }}>Team: {v.teamSize}</span>
                         </div>

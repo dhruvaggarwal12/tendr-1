@@ -146,6 +146,10 @@ export default function BudgetAllocator() {
   const prefillBudget     = location.state?.prefillBudget;
   const prefillServices   = location.state?.prefillServices; // array of vendor serviceType strings
   const finalisedVendors  = useSelector(s => s.listingFilters?.finalisedVendors || {});
+  const planFormData      = useSelector(s => s.eventPlanning?.formData || {});
+  const { user }          = useSelector(s => s.auth);
+  const isCorporate       = planFormData.eventType === "Corporate Event" && user?.isAdmin;
+  const headcount         = parseInt(planFormData.guests) || 0;
 
   // Vendor suggestion panel
   const [vendorPanel, setVendorPanel]       = useState(null); // { catName, serviceType, budget }
@@ -351,6 +355,7 @@ export default function BudgetAllocator() {
     { label: "Total Allocated",value: formatINR(totalAlloc),   color: "#0369a1", bg: "rgba(59,130,246,0.07)" },
     { label: "Total Spent",    value: formatINR(totalSpent),   color: "#c0392b", bg: "rgba(239,68,68,0.07)"  },
     { label: "Remaining",      value: formatINR(remaining),    color: remaining >= 0 ? "#15803d" : "#c0392b", bg: remaining >= 0 ? "rgba(34,197,94,0.07)" : "rgba(239,68,68,0.07)" },
+    ...(isCorporate && headcount > 0 ? [{ label: `Cost / Employee (${headcount} people)`, value: formatINR(Math.round(totalBudget / headcount)), color: "#7c3aed", bg: "rgba(124,58,237,0.07)" }] : []),
   ];
 
   return (
@@ -377,6 +382,7 @@ export default function BudgetAllocator() {
             <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "0 0 2px", letterSpacing: "-0.02em" }}>Budget Allocator</h1>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", margin: 0 }}>
               {EVENT_TYPES[eventKey]?.icon} {EVENT_TYPES[eventKey]?.label} · Plan spend · track actuals
+              {isCorporate && planFormData.companyName && <span style={{ marginLeft: 8, background: "rgba(204,171,74,0.2)", border: "1px solid rgba(204,171,74,0.4)", borderRadius: 100, padding: "1px 8px", fontSize: 10, fontWeight: 700, color: "#CCAB4A" }}>🏢 {planFormData.companyName}</span>}
             </p>
           </div>
         </div>

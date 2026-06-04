@@ -456,6 +456,14 @@ const VendorList = () => {
                   <option value="desc">High to Low</option>
                   <option value="asc">Low to High</option>
                 </select>
+                {/* Corporate filter — admin only */}
+                {user?.isAdmin && (
+                  <button
+                    onClick={() => dispatch(setFilters({ corporateOnly: !formData?.corporateOnly }))}
+                    style={{ fontSize: 11, padding: "4px 12px", borderRadius: 100, border: `1.5px solid ${formData?.corporateOnly ? "rgba(124,58,237,0.5)" : "rgba(124,58,237,0.2)"}`, background: formData?.corporateOnly ? "rgba(124,58,237,0.1)" : "#fff", color: "#7c3aed", cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 700 }}>
+                    🏢 Corporate Exp. {formData?.corporateOnly ? "✓" : ""}
+                  </button>
+                )}
               </div>
 
               {/* Filters button — right side, slightly inset */}

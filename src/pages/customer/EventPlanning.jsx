@@ -15,6 +15,7 @@ import {
   Utensils,
   X,
   Plus,
+  Briefcase,
 } from "lucide-react";
 
 import EastIcon from "@mui/icons-material/East";
@@ -212,17 +213,26 @@ const EventPlanning = () => {
         "Rituals",
         "Festival",
         "Others",
+        ...(authUser?.isAdmin ? ["Corporate Event"] : []),
       ],
       icon: <Calendar className="w-8 h-8" />,
     },
     {
       id: "guests",
-      title: "How many guests will attend?",
+      title: formData.eventType === "Corporate Event" ? "How many employees will attend?" : "How many guests will attend?",
       subtitle: "An approximate number is fine",
       type: "number",
       placeholder: "e.g., 50",
       icon: <Users className="w-8 h-8" />,
     },
+    ...(authUser?.isAdmin && formData.eventType === "Corporate Event" ? [{
+      id: "companyName",
+      title: "What is the company name?",
+      subtitle: "Used in the event summary and vendor communications",
+      type: "text",
+      placeholder: "e.g., Acme Technologies Pvt. Ltd.",
+      icon: <Briefcase className="w-8 h-8" />,
+    }] : []),
     {
       id: "location",
       title: "Where will your event take place?",
@@ -881,6 +891,47 @@ const EventPlanning = () => {
               </div>
             ))}
           </div>
+
+          {/* ── Corporate split screen ── */}
+          {formData?.eventType === "Corporate Event" && authUser?.isAdmin && (
+            <div style={{ width: "100%", maxWidth: 1100, marginBottom: 20 }}>
+              <div style={{ background: "linear-gradient(135deg,#1a0f00,#2C1A0E)", borderRadius: 16, padding: "20px 24px", marginBottom: 14 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "3px 12px", marginBottom: 10 }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em" }}>🏢 Corporate Event</span>
+                </div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", marginBottom: 4 }}>
+                  {formData?.companyName && <span style={{ fontWeight: 700, color: "#CCAB4A" }}>{formData.companyName} · </span>}
+                  {formData?.guests && <span>{formData.guests} employees · </span>}
+                  {formData?.location}
+                </div>
+                <div style={{ fontSize: 11, color: "rgba(204,171,74,0.6)" }}>How would you like to proceed?</div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                {/* You Do It */}
+                <div style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", padding: "20px 20px 16px", display: "flex", flexDirection: "column" }}>
+                  <div style={{ fontSize: 22, marginBottom: 8 }}>🔍</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Browse Yourself</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, marginBottom: 14, flex: 1 }}>Compare vendor profiles, chat directly, negotiate your own price.</div>
+                  <button
+                    onClick={() => { dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType, locationType: formData?.location, date: formData?.date, guestCount: Number(formData?.guests) || 0 })); navigate("/listings", { state: { selectedCategories: selectedVendors } }); }}
+                    style={{ width: "100%", padding: "11px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    Browse Vendors →
+                  </button>
+                </div>
+                {/* Smart Planning */}
+                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.04))", borderRadius: 14, border: "2px solid rgba(196,122,46,0.35)", padding: "20px 20px 16px", display: "flex", flexDirection: "column" }}>
+                  <div style={{ fontSize: 22, marginBottom: 8 }}>✨</div>
+                  <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Build My Package <span style={{ fontSize: 10, fontWeight: 700, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "2px 7px", marginLeft: 4 }}>Recommended</span></div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, marginBottom: 14, flex: 1 }}>Tell us your budget once. We'll build a complete vendor package and coordinate everything.</div>
+                  <button
+                    onClick={() => { dispatch(setBookingType("let-us-do-it")); fetchSmartPlan(); }}
+                    style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}>
+                    Get Corporate Package →
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Browse All Vendors — smart planning exit to normal flow */}
           <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16, padding: "14px 20px", background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", boxShadow: "0 2px 8px rgba(196,122,46,0.06)" }}>
