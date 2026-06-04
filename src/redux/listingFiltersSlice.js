@@ -86,6 +86,7 @@ const initialState = {
   locationType: "",
   date: "",
   guestCount: 0,
+  corporateOnly: false,
   ...savedFilters,
   compareSelected: loadCompareSelected(),
   finalisedVendors: loadFinalisedVendors(),

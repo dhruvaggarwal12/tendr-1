@@ -38,6 +38,7 @@ const VendorList = () => {
     locationType,
     date,
     guestCount,
+    corporateOnly,
   } = useSelector((state) => state.listingFilters);
 
   const {
@@ -210,6 +211,7 @@ const VendorList = () => {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
       ...(currentCatBudget && { maxPrice: currentCatBudget }),
+      ...(corporateOnly && { hasCorporateExperience: true }),
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
     return getVendors(payload)
@@ -225,6 +227,7 @@ const VendorList = () => {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
       ...(currentCatBudget && { maxPrice: currentCatBudget }),
+      ...(corporateOnly && { hasCorporateExperience: true }),
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
     getVendors(payload)
@@ -459,9 +462,9 @@ const VendorList = () => {
                 {/* Corporate filter — admin only */}
                 {user?.isAdmin && (
                   <button
-                    onClick={() => dispatch(setFilters({ corporateOnly: !formData?.corporateOnly }))}
-                    style={{ fontSize: 11, padding: "4px 12px", borderRadius: 100, border: `1.5px solid ${formData?.corporateOnly ? "rgba(124,58,237,0.5)" : "rgba(124,58,237,0.2)"}`, background: formData?.corporateOnly ? "rgba(124,58,237,0.1)" : "#fff", color: "#7c3aed", cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 700 }}>
-                    🏢 Corporate Exp. {formData?.corporateOnly ? "✓" : ""}
+                    onClick={() => dispatch(setFilters({ corporateOnly: !corporateOnly }))}
+                    style={{ fontSize: 11, padding: "4px 12px", borderRadius: 100, border: `1.5px solid ${corporateOnly ? "rgba(124,58,237,0.5)" : "rgba(124,58,237,0.2)"}`, background: corporateOnly ? "rgba(124,58,237,0.1)" : "#fff", color: "#7c3aed", cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 700 }}>
+                    🏢 Corporate Exp. {corporateOnly ? "✓" : ""}
                   </button>
                 )}
               </div>
