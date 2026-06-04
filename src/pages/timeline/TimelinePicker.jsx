@@ -54,7 +54,7 @@ export default function TimelinePicker() {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="timeline-grid">
           {EVENT_TYPES.map(({ id, label, icon }) => (
             <button key={id}
-              onClick={() => navigate("/prebuilt-timeline")}
+              onClick={() => navigate("/prebuilt-timeline", { state: { eventType: id } })}
               style={{ background: "#FFFCF5", borderRadius: 16, padding: "24px 16px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, transition: "all 0.2s" }}
               onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
               onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}

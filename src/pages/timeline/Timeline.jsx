@@ -1,7 +1,18 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
+
+// Map event type → best plan
+const EVENT_TO_PLAN = {
+  wedding:     "90day",
+  corporate:   "90day",
+  birthday:    "30day",
+  anniversary: "30day",
+  party:       "30day",
+  custom:      "30day",
+};
 
 const font = "'Outfit', sans-serif";
 
@@ -203,12 +214,31 @@ const buildFromPlan = (planKey) =>
   }));
 
 export default function Timeline() {
-  const [planKey, setPlanKey] = useState("90day");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const routeEventType = location.state?.eventType;
+  const routePlanKey   = routeEventType ? (EVENT_TO_PLAN[routeEventType] || "30day") : null;
+
+  const [planKey, setPlanKey] = useState(routePlanKey || "90day");
   const [phases, setPhases] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [expandedNote, setExpandedNote] = useState(null);
+  const [timelineSaved, setTimelineSaved] = useState(() => { try { return localStorage.getItem("tendr_timeline_saved") === "true"; } catch { return false; } });
+
+  const saveTimeline = () => {
+    try { localStorage.setItem("tendr_timeline_saved", "true"); } catch {}
+    setTimelineSaved(true);
+    window.dispatchEvent(new CustomEvent("tendr:timeline-saved"));
+  };
 
   useEffect(() => {
+    if (routePlanKey) {
+      // Came from picker with event type — always use the matched plan
+      setPlanKey(routePlanKey);
+      setPhases(buildFromPlan(routePlanKey));
+      setLoaded(true);
+      return;
+    }
     try {
       const raw = localStorage.getItem("tendr_timeline_v2");
       if (raw) {
@@ -220,7 +250,7 @@ export default function Timeline() {
       }
     } catch { setPhases(buildFromPlan("90day")); }
     setLoaded(true);
-  }, []);
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     if (!loaded) return;
@@ -261,57 +291,58 @@ export default function Timeline() {
   const done  = phases.reduce((s, p) => s + p.tasks.filter(t => t.done).length, 0);
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
 
-  return (
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
-      <SEO
-        title="Prebuilt Event Timeline — Ready-Made Schedules for Every Celebration"
-        description="Use Tendr's prebuilt event timelines for birthdays, anniversaries, corporate events and more. Download or follow a day-by-day milestone schedule to keep your celebration on track in Delhi NCR."
-        path="/prebuilt-timeline"
-        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Timeline Planner", path: "/timeline-picker" }, { name: "Prebuilt Timeline", path: "/prebuilt-timeline" }]}
-      />
-      <BasicSpeedDial />
-      <HamburgerNav title="Event Timeline" />
+  const plan = PLANS[planKey];
 
-      {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "32px 40px 28px" }}>
-        <div style={{ maxWidth: 760, margin: "0 auto" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Planning Tool</div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, color: "#fff", margin: "0 0 6px", letterSpacing: "-0.02em" }}>Event Timeline</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", margin: 0 }}>Step-by-step countdown plan for your event</p>
+  return (
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#F8F4EF", fontFamily: font }}>
+      <SEO title="Event Timeline — Tendr" description="Step-by-step countdown plan for your event." path="/prebuilt-timeline" />
+      <BasicSpeedDial />
+      <div style={{ flexShrink: 0 }}><HamburgerNav active="Browse" /></div>
+
+      {/* Fixed top: header + progress */}
+      <div style={{ flexShrink: 0 }}>
+        {/* Header */}
+        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "14px 24px" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 14 }}>
+            <button onClick={() => navigate("/timeline-picker")}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+              ← Back
+            </button>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Event Timeline</div>
+              <h1 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0 }}>
+                {plan.icon} {plan.label} <span style={{ fontSize: 13, fontWeight: 500, opacity: 0.75 }}>— {plan.subtitle}</span>
+              </h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress — fixed */}
+        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "12px 24px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>
+                  {pct === 100 ? "All done — great work! 🎉" : "Overall Progress"}
+                </span>
+                <span style={{ fontSize: 16, fontWeight: 900, color: pct === 100 ? "#15803d" : "#C47A2E" }}>{pct}%</span>
+              </div>
+              <div style={{ height: 7, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s ease" }} />
+              </div>
+              <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>{done} of {total} tasks done</div>
+            </div>
+            <button onClick={saveTimeline}
+              style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: timelineSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: timelineSaved ? "rgba(34,197,94,0.08)" : "#fff", color: timelineSaved ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              {timelineSaved ? "✓ Saved" : "💾 Save"}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "28px 20px" }}>
-
-        {/* Plan selector */}
-        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Choose your plan</div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {Object.entries(PLANS).map(([key, plan]) => (
-              <button key={key} onClick={() => applyPlan(key)}
-                style={{ padding: "10px 18px", borderRadius: 12, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.15s", textAlign: "left",
-                  borderColor: planKey === key ? "#C47A2E" : "rgba(196,122,46,0.2)",
-                  background: planKey === key ? "#C47A2E" : "#fff",
-                  color: planKey === key ? "#fff" : "#6B3A1F",
-                }}>
-                <div>{plan.icon} {plan.label}</div>
-                <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>{plan.subtitle}</div>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Progress */}
-        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "18px 24px", marginBottom: 28, boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>Overall Progress</span>
-            <span style={{ fontSize: 22, fontWeight: 900, color: pct === 100 ? "#15803d" : "#C47A2E" }}>{pct}%</span>
-          </div>
-          <div style={{ height: 10, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
-            <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s ease" }} />
-          </div>
-          <div style={{ fontSize: 12, color: "#9B7450", marginTop: 6 }}>{done} of {total} tasks done</div>
-        </div>
+      {/* Scrollable timeline */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 40px" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
         {/* Vertical timeline */}
         <div style={{ position: "relative" }}>
@@ -401,10 +432,18 @@ export default function Timeline() {
           })}
         </div>
 
-        <button onClick={() => applyPlan(planKey)}
-          style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font, marginTop: 8 }}>
-          Reset to Plan
-        </button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 8 }}>
+          <button onClick={() => applyPlan(planKey)}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            Reset to Plan
+          </button>
+          <button onClick={() => navigate("/timeline-picker")}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            ← Change Event Type
+          </button>
+        </div>
+
+      </div>
       </div>
     </div>
   );

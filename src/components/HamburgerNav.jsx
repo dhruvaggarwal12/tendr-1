@@ -144,9 +144,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   useEffect(() => {
     const onSaved = () => setBookmarkTick(t => t + 1);
     window.addEventListener("tendr:saved-updated", onSaved);
-    // Also listen for checklist saved event to re-render CHECK badge
     window.addEventListener("tendr:checklist-saved", onSaved);
-    return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:checklist-saved", onSaved); };
+    window.addEventListener("tendr:timeline-saved", onSaved);
+    return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:checklist-saved", onSaved); window.removeEventListener("tendr:timeline-saved", onSaved); };
   }, []);
 
   // Check backend: if user has a paid EventPlan, silently clear Review & Pay state
@@ -220,7 +220,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         { label: "🏡 Party Places",     href: "/party-places" },
       ] : []),
       { label: "Checklist",          href: "/checklist-picker", activePaths: ["/checklist-picker","/checklist","/prebuilt-checklist"] },
-      { label: "Timeline",           href: "/timeline-picker" },
+      { label: "Timeline",           href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"] },
       { label: "Budget Allocator",   href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
       { label: "Decor Finder",       href: "/decor-finder" },
     ]},
@@ -451,6 +451,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     (item.activePaths || []).some(p => location.pathname === p || location.pathname.startsWith(p))
                   );
                   const checklistSaved = item.href === "/checklist-picker" && (() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } })();
+                  const timelineSaved  = item.href === "/timeline-picker"  && (() => { try { return localStorage.getItem("tendr_timeline_saved")  === "true"; } catch { return false; } })();
                   if (isSoon) {
                     return (
                       <div key={item.label} style={{ display: "flex", alignItems: "center", padding: "9px 16px", borderLeft: "3px solid transparent", gap: 10 }}>
@@ -485,7 +486,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left", flex: 1 }}>{item.label}</span>
-                      {checklistSaved && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
+                      {(checklistSaved || timelineSaved) && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
                     </button>
                   );
                 })}
