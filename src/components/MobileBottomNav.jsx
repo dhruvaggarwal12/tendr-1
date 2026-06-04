@@ -103,10 +103,11 @@ function BottomNavInner() {
   ];
 
   const items = [
-    { label: "Home",    paths: ["/"],                                onTap: () => navigate("/") },
-    { label: "Browse",  paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setBrowseOpen(o => !o); } },
-    { label: "Products",paths: ["/checklist","/timeline","/budget","/decor","/invitation","/stationery","/aftermovie"], onTap: () => { setBrowseOpen(false); setProductsOpen(o => !o); } },
-    { label: "Profile", paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
+    { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
+    { label: "Browse",   paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setBrowseOpen(o => !o); } },
+    { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setProductsOpen(o => !o); } },
+    { label: "Plan",     paths: ["/booking","/plan-event"],           onTap: () => navigate("/booking") },
+    { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
 
   return (
