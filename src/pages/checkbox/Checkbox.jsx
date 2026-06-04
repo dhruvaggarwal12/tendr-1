@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -167,14 +167,35 @@ const buildFromTemplate = (templateKey) => {
 };
 
 export default function CheckBox() {
-  const [vendorPanel, setVendorPanel] = useState(null); // { serviceType, catName }
-  const [templateKey, setTemplateKey] = useState("birthday");
+  const navigate = useNavigate();
+  const location = useLocation();
+  const routeTemplateKey = location.state?.templateKey;  // from CheckboxPicker step 2
+  const customMode       = location.state?.customMode === true; // blank custom checklist
+
+  const [vendorPanel, setVendorPanel] = useState(null);
+  const [checklistSaved, setChecklistSaved] = useState(() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } });
+  const [templateKey, setTemplateKey] = useState(routeTemplateKey || "birthday");
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
   const TTL_7D = 7 * 24 * 60 * 60 * 1000;
 
   useEffect(() => {
+    if (customMode) {
+      // Custom: start completely blank
+      setTemplateKey("custom");
+      setCategories([]);
+      setLoaded(true);
+      return;
+    }
+    if (routeTemplateKey) {
+      // Coming from picker with chosen event type
+      setTemplateKey(routeTemplateKey);
+      setCategories(buildFromTemplate(routeTemplateKey));
+      setLoaded(true);
+      return;
+    }
+    // Restore from localStorage if no route state
     try {
       const raw = localStorage.getItem("tendr_checklist_v2");
       if (raw) {
@@ -236,88 +257,102 @@ export default function CheckBox() {
     if (window.confirm("Clear all tasks and reset to template?")) applyTemplate(templateKey);
   };
 
+  const saveChecklist = () => {
+    try { localStorage.setItem("tendr_checklist_saved", "true"); } catch {}
+    setChecklistSaved(true);
+    window.dispatchEvent(new CustomEvent("tendr:checklist-saved"));
+  };
+
   const total = categories.reduce((s, c) => s + c.items.length, 0);
   const done  = categories.reduce((s, c) => s + c.items.filter(i => i.done).length, 0);
   const pct   = total === 0 ? 0 : Math.round((done / total) * 100);
 
+  const tpl = TEMPLATES[templateKey];
+
   return (
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font, paddingBottom: 60 }}>
-      <SEO
-        title="Prebuilt Event Checklist — Ready-Made Task Lists for Every Celebration"
-        description="Download or use Tendr's prebuilt event checklists for birthdays, anniversaries, corporate events and weddings. Track vendors, logistics and every detail for a stress-free celebration in Delhi NCR."
-        path="/prebuilt-checklist"
-        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Checklist Planner", path: "/checklist-picker" }, { name: "Prebuilt Checklist", path: "/prebuilt-checklist" }]}
-      />
+    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#F8F4EF", fontFamily: font }}>
+      <SEO title="Event Checklist — Tendr" description="Track every task for a perfectly planned event." path="/prebuilt-checklist" />
       <BasicSpeedDial />
-      <HamburgerNav title="Event Checklist" />
+      <div style={{ flexShrink: 0 }}><HamburgerNav active="Browse" /></div>
       {vendorPanel && <VendorPanel serviceType={vendorPanel.serviceType} catName={vendorPanel.catName} onClose={() => setVendorPanel(null)} />}
 
-      {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "32px 40px 28px" }}>
-        <div style={{ maxWidth: 820, margin: "0 auto" }}>
-          <div style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Planning Tool</div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, color: "#fff", margin: "0 0 6px", letterSpacing: "-0.02em" }}>Event Checklist</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.8)", margin: 0 }}>Track every task for a perfectly planned event</p>
+      {/* Fixed top: header + progress */}
+      <div style={{ flexShrink: 0 }}>
+        {/* Header */}
+        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "14px 24px" }}>
+          <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", gap: 14 }}>
+            <button onClick={() => navigate("/checklist-picker")}
+              style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, backdropFilter: "blur(4px)" }}>
+              ← Back
+            </button>
+            <div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Event Checklist</div>
+              <h1 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0, letterSpacing: "-0.01em" }}>
+                {customMode ? "✏️ Custom Checklist" : `${tpl?.icon || ""} ${tpl?.label || ""} Checklist`}
+              </h1>
+            </div>
+          </div>
+        </div>
+
+        {/* Progress ring — fixed */}
+        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "14px 24px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
+          <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", gap: 20 }}>
+            {(() => {
+              const r = 30, circ = 2 * Math.PI * r;
+              const dash = (pct / 100) * circ;
+              const ringColor = pct === 100 ? "#22c55e" : pct >= 60 ? "#C47A2E" : "#CCAB4A";
+              return (
+                <div style={{ flexShrink: 0, position: "relative", width: 76, height: 76 }}>
+                  <svg width="76" height="76" viewBox="0 0 76 76">
+                    <circle cx="38" cy="38" r={r} fill="none" stroke="#f3e8d4" strokeWidth="6" />
+                    <circle cx="38" cy="38" r={r} fill="none" stroke={ringColor} strokeWidth="6"
+                      strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
+                      style={{ transformOrigin: "50% 50%", transform: "rotate(-90deg)", transition: "stroke-dasharray 0.5s ease" }} />
+                  </svg>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 15, fontWeight: 900, color: ringColor, lineHeight: 1 }}>{pct}%</span>
+                    {pct === 100 && <span style={{ fontSize: 12 }}>🎉</span>}
+                  </div>
+                </div>
+              );
+            })()}
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>
+                {pct === 100 ? "All done — great work! 🎉" : "Overall Progress"}
+              </div>
+              <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 6 }}>{done} of {total} tasks completed · {total - done} remaining</div>
+              <div style={{ height: 5, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s" }} />
+              </div>
+            </div>
+            {/* Save button */}
+            <button onClick={saveChecklist}
+              style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: checklistSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: checklistSaved ? "rgba(34,197,94,0.08)" : "#fff", color: checklistSaved ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              {checklistSaved ? "✓ Saved" : "💾 Save"}
+            </button>
+          </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 820, margin: "0 auto", padding: "28px 20px" }}>
+      {/* Scrollable tasks area */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 40px" }}>
+      <div style={{ maxWidth: 820, margin: "0 auto" }}>
 
-        {/* Template selector */}
-        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>Choose template</div>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {Object.entries(TEMPLATES).map(([key, tpl]) => (
-              <button key={key} onClick={() => applyTemplate(key)}
-                style={{ padding: "8px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.15s",
-                  borderColor: templateKey === key ? "#C47A2E" : "rgba(196,122,46,0.2)",
-                  background: templateKey === key ? "#C47A2E" : "#fff",
-                  color: templateKey === key ? "#fff" : "#6B3A1F",
-                }}>
-                {tpl.icon} {tpl.label}
-              </button>
-            ))}
+        {/* Custom mode empty state */}
+        {customMode && categories.length === 0 && (
+          <div style={{ textAlign: "center", padding: "48px 24px", background: "#FFFCF5", borderRadius: 16, border: "2px dashed rgba(196,122,46,0.2)", marginBottom: 20 }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>✏️</div>
+            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Your blank checklist is ready</h3>
+            <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 20px", lineHeight: 1.6 }}>
+              Click <strong>"+ Add Category"</strong> below to create your first section (e.g. "Venue", "Catering").<br />
+              Then add individual tasks inside each section.
+            </p>
+            <button onClick={addCategory}
+              style={{ padding: "11px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+              + Add First Category
+            </button>
           </div>
-        </div>
-
-        {/* Progress ring */}
-        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "20px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)", display: "flex", alignItems: "center", gap: 24 }}>
-          {/* SVG ring */}
-          {(() => {
-            const r = 38, circ = 2 * Math.PI * r;
-            const dash = (pct / 100) * circ;
-            const ringColor = pct === 100 ? "#22c55e" : pct >= 60 ? "#C47A2E" : "#CCAB4A";
-            return (
-              <div style={{ flexShrink: 0, position: "relative", width: 100, height: 100 }}>
-                <svg width="100" height="100" viewBox="0 0 100 100">
-                  {/* Track */}
-                  <circle cx="50" cy="50" r={r} fill="none" stroke="#f3e8d4" strokeWidth="8" />
-                  {/* Progress */}
-                  <circle cx="50" cy="50" r={r} fill="none" stroke={ringColor} strokeWidth="8"
-                    strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-                    style={{ transformOrigin: "50% 50%", transform: "rotate(-90deg)", transition: "stroke-dasharray 0.5s ease" }} />
-                </svg>
-                <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: 20, fontWeight: 900, color: ringColor, lineHeight: 1 }}>{pct}%</span>
-                  {pct === 100 && <span style={{ fontSize: 16 }}>🎉</span>}
-                </div>
-              </div>
-            );
-          })()}
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>
-              {pct === 100 ? "All done — great work!" : "Overall Progress"}
-            </div>
-            <div style={{ fontSize: 14, color: "#9B7450", marginBottom: 10 }}>
-              {done} of {total} tasks completed
-            </div>
-            {/* Mini bar */}
-            <div style={{ height: 6, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s" }} />
-            </div>
-            <div style={{ fontSize: 11, color: "#9B7450", marginTop: 5 }}>{total - done} tasks remaining</div>
-          </div>
-        </div>
+        )}
 
         {/* Categories */}
         {categories.map((cat) => {
@@ -408,11 +443,19 @@ export default function CheckBox() {
             style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
             + Add Category
           </button>
-          <button onClick={clearAll}
-            style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-            Reset to Template
+          {!customMode && (
+            <button onClick={clearAll}
+              style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+              Reset to Template
+            </button>
+          )}
+          <button onClick={() => navigate("/checklist-picker")}
+            style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            ← Change Event Type
           </button>
         </div>
+
+      </div>
       </div>
     </div>
   );

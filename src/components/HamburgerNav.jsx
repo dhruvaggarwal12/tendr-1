@@ -144,7 +144,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   useEffect(() => {
     const onSaved = () => setBookmarkTick(t => t + 1);
     window.addEventListener("tendr:saved-updated", onSaved);
-    return () => window.removeEventListener("tendr:saved-updated", onSaved);
+    // Also listen for checklist saved event to re-render CHECK badge
+    window.addEventListener("tendr:checklist-saved", onSaved);
+    return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:checklist-saved", onSaved); };
   }, []);
 
   // Check backend: if user has a paid EventPlan, silently clear Review & Pay state
@@ -217,16 +219,16 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         { label: "🎉 Plan by Occasion", onClickOverride: () => { close(); window.open("/occasions", "_blank"); } },
         { label: "🏡 Party Places",     href: "/party-places" },
       ] : []),
-      { label: "Checklist",          href: "/checklist-picker" },
+      { label: "Checklist",          href: "/checklist-picker", activePaths: ["/checklist-picker","/checklist","/prebuilt-checklist"] },
       { label: "Timeline",           href: "/timeline-picker" },
-      { label: "Budget Allocator",   href: "/budget-picker" },
+      { label: "Budget Allocator",   href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
       { label: "Decor Finder",       href: "/decor-finder" },
     ]},
-    { label: "Memories", hideOnMobile: true, items: [
+    ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
       { label: "Invitation Flyers",  href: "/invitation" },
-      { label: "Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+      { label: "Wedding Stationery", href: "/stationery" },
       { label: "Aftermovie",         href: "/aftermovie" },
-    ]},
+    ]}] : []),
     { label: "Booking", items: [
       { label: "Plan Your Event",      href: "/booking" },
     ]},
@@ -443,7 +445,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 {sec.items.map(item => {
                   const isSoon     = !!item.comingSoon;
                   const isDisabled = !!item.disabled;
-                  const isActive   = !isSoon && !isDisabled && (location.pathname === item.href || (item.href !== "/" && location.pathname.startsWith(item.href)));
+                  const isActive   = !isSoon && !isDisabled && (
+                    location.pathname === item.href ||
+                    (item.href !== "/" && location.pathname.startsWith(item.href)) ||
+                    (item.activePaths || []).some(p => location.pathname === p || location.pathname.startsWith(p))
+                  );
+                  const checklistSaved = item.href === "/checklist-picker" && (() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } })();
                   if (isSoon) {
                     return (
                       <div key={item.label} style={{ display: "flex", alignItems: "center", padding: "9px 16px", borderLeft: "3px solid transparent", gap: 10 }}>
@@ -477,7 +484,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       onMouseEnter={e => { if (!isActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
                       onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
-                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left" }}>{item.label}</span>
+                      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left", flex: 1 }}>{item.label}</span>
+                      {checklistSaved && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
                     </button>
                   );
                 })}

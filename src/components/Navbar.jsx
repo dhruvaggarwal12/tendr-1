@@ -290,14 +290,14 @@ const Navbar = ({
         { label: "🎨 Decor Finder",       href: "/decor-finder" },
       ],
     },
-    {
+    ...(user?.isAdmin ? [{
       label: "Memories",
       items: [
         { label: "✉️ Invitation Flyers",  href: "/invitation" },
-        { label: "💒 Wedding Stationery", href: "/stationery", comingSoon: !user?.isAdmin },
+        { label: "💒 Wedding Stationery", href: "/stationery" },
         { label: "🎬 Aftermovie",         href: "/aftermovie" },
       ],
-    },
+    }] : []),
     {
       label: "Booking",
       items: [
