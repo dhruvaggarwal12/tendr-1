@@ -154,19 +154,19 @@ const THEME_EMOJI  = {
   "Traditional": "🪔", "Modern": "✨", "Rustic": "🍂", "Minimalist": "⬜",
 };
 
-// ── Quiz steps — conversational, covers all 8 types + 6 coverage ─────────────
+// ── Quiz steps — with images specific to each option ──────────────────────────
 const QUIZ_STEPS = [
   {
     id: "occasion",
     q: "What's the occasion?",
-    sub: "This sets the whole direction — don't overthink it",
+    sub: "This sets the whole direction",
     options: [
-      { value: "birthday",    label: "A birthday",                   sub: "Mine or someone I love",            emoji: "🎂" },
-      { value: "wedding",     label: "A wedding or engagement",      sub: "The real deal",                     emoji: "💍" },
-      { value: "anniversary", label: "An anniversary or milestone",  sub: "Worth celebrating properly",        emoji: "✦" },
-      { value: "corporate",   label: "A corporate or office event",  sub: "Professional but should look good", emoji: "▲" },
-      { value: "traditional", label: "A traditional ceremony",       sub: "Puja, haldi, festival, ritual",     emoji: "◆" },
-      { value: "party",       label: "Just a party — no label needed", sub: "Good enough reason",              emoji: "◇" },
+      { value: "birthday",    label: "Birthday",           sub: "Mine or someone I love",         emoji: "🎂", image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=75" },
+      { value: "wedding",     label: "Wedding",            sub: "The big day",                    emoji: "💍", image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=75" },
+      { value: "anniversary", label: "Anniversary",        sub: "Worth celebrating properly",     emoji: "💕", image: "https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=400&q=75" },
+      { value: "corporate",   label: "Corporate Event",    sub: "Professional but should look good", emoji: "🏢", image: "https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=400&q=75" },
+      { value: "traditional", label: "Traditional Ceremony", sub: "Puja, haldi, festival, ritual", emoji: "🪔", image: "https://images.unsplash.com/photo-1621116012704-5de74ee8ad8c?w=400&q=75" },
+      { value: "party",       label: "Party / Get-together", sub: "Fun, casual, memorable",       emoji: "🎉", image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400&q=75" },
     ],
   },
   {
@@ -174,20 +174,20 @@ const QUIZ_STEPS = [
     q: "How do you picture the venue?",
     sub: "Go with your gut",
     options: [
-      { value: "whole",    label: "Full space transformation",   sub: "Every corner decorated",        emoji: "■" },
-      { value: "stage",    label: "Stunning main stage",         sub: "The centrepiece everyone sees",  emoji: "▲" },
-      { value: "entrance", label: "Wow them at the entrance",    sub: "First impression says it all",   emoji: "→" },
-      { value: "backdrop", label: "One beautiful focal wall",    sub: "Perfect for photos & memories",  emoji: "□" },
+      { value: "whole",    label: "Full space transformation", sub: "Every corner decorated",       emoji: "✨", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&q=75" },
+      { value: "stage",    label: "Stunning main stage",       sub: "The centrepiece everyone sees", emoji: "🎭", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=75" },
+      { value: "entrance", label: "Wow them at the entrance",  sub: "First impression says it all", emoji: "🚪", image: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=75" },
+      { value: "backdrop", label: "One beautiful focal wall",  sub: "Perfect for photos & memories", emoji: "📸", image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&q=75" },
     ],
   },
   {
     id: "space",
-    q: "Where is it actually happening?",
+    q: "Where is it happening?",
     options: [
-      { value: "indoor",   label: "Indoors", sub: "Home, hall, or banquet",        emoji: "◼" },
-      { value: "outdoor",  label: "Outdoors", sub: "Garden, terrace, or farmhouse", emoji: "◻" },
-      { value: "both",     label: "Both inside and outside",        sub: "",        emoji: "◈" },
-      { value: "office",   label: "An office or professional space", sub: "",       emoji: "▪" },
+      { value: "indoor",   label: "Indoors",               sub: "Home, hall, or banquet",         emoji: "🏛", image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&q=75" },
+      { value: "outdoor",  label: "Outdoors",              sub: "Garden, terrace, or farmhouse",  emoji: "🌿", image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&q=75" },
+      { value: "both",     label: "Both indoor & outdoor", sub: "Large spread, multiple areas",   emoji: "🌐", image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=75" },
+      { value: "office",   label: "Office / Professional", sub: "Conference hall or workspace",   emoji: "🏢", image: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=75" },
     ],
   },
   {
@@ -195,40 +195,40 @@ const QUIZ_STEPS = [
     q: "What's your decoration style?",
     sub: "No wrong answers",
     options: [
-      { value: "flowers",     label: "Floral — more is always better",   sub: "Roses, marigolds, arrangements",  emoji: "◆" },
-      { value: "balloons",    label: "Balloons & props — fun and bold",   sub: "Colourful, playful, festive",     emoji: "◇" },
-      { value: "traditional", label: "Warm & traditional",                sub: "Familiar, rooted, comfortable",   emoji: "◈" },
-      { value: "clean",       label: "Minimal & modern",                  sub: "Sleek, simple, effortless",       emoji: "□" },
+      { value: "flowers",     label: "Floral",      sub: "Roses, marigolds, arrangements", emoji: "🌸", image: "https://images.unsplash.com/photo-1490750967868-88df5691cc5a?w=400&q=75" },
+      { value: "balloons",    label: "Balloons & Props", sub: "Colourful, playful, festive", emoji: "🎈", image: "https://images.unsplash.com/photo-1559181567-c3190ca9d713?w=400&q=75" },
+      { value: "traditional", label: "Traditional", sub: "Familiar, rooted, comfortable",   emoji: "🪔", image: "https://images.unsplash.com/photo-1621116012704-5de74ee8ad8c?w=400&q=75" },
+      { value: "clean",       label: "Minimal & Modern", sub: "Sleek, simple, effortless",  emoji: "⬜", image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=400&q=75" },
     ],
   },
   {
     id: "lighting",
     q: "How important is lighting?",
     options: [
-      { value: "everything",   label: "Lighting IS the decoration",  sub: "Fairy lights, uplighting, the works",  emoji: "◈" },
-      { value: "fairy",        label: "Warm glow as support",        sub: "Décor first, lighting enhances",       emoji: "◇" },
-      { value: "somewhat",     label: "Nice to have",                sub: "Just not too dark",                    emoji: "◆" },
-      { value: "notthought",   label: "Haven't thought about it",    sub: "Guide me",                             emoji: "□" },
+      { value: "everything", label: "Lighting IS the décor",   sub: "Fairy lights, uplighting, everything",  emoji: "💡", image: "https://images.unsplash.com/photo-1567696153798-9111f9cd3d0d?w=400&q=75" },
+      { value: "fairy",      label: "Warm glow as support",    sub: "Décor first, lighting enhances",       emoji: "🕯", image: "https://images.unsplash.com/photo-1544948503-7ad532b0f18c?w=400&q=75" },
+      { value: "somewhat",   label: "Nice to have",            sub: "Just not too dark",                    emoji: "🔆", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=75" },
+      { value: "notthought", label: "Haven't thought about it", sub: "Guide me",                            emoji: "💭", image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=75" },
     ],
   },
   {
     id: "entrance",
     q: "What about the entrance?",
     options: [
-      { value: "dramatic", label: "Show-stopping entrance",    sub: "Gate, arch, statement setup",  emoji: "▲" },
-      { value: "nice",     label: "A nice arch or gate",       sub: "Sets the tone, not overdone",  emoji: "◆" },
-      { value: "simple",   label: "Keep it simple",            sub: "Save budget for inside",       emoji: "◇" },
-      { value: "nocare",   label: "Skip it entirely",          sub: "What matters is inside",       emoji: "□" },
+      { value: "dramatic", label: "Show-stopping entrance",  sub: "Gate, arch, statement setup",  emoji: "🌟", image: "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=400&q=75" },
+      { value: "nice",     label: "A nice arch or gate",     sub: "Sets the tone, not overdone",  emoji: "🌺", image: "https://images.unsplash.com/photo-1490750967868-88df5691cc5a?w=400&q=75" },
+      { value: "simple",   label: "Keep it simple",          sub: "Save budget for inside",       emoji: "➡", image: "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=400&q=75" },
+      { value: "nocare",   label: "Skip it entirely",        sub: "What matters is inside",       emoji: "🏠", image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&q=75" },
     ],
   },
   {
     id: "stageBackdrop",
     q: "Stage or photo backdrop?",
     options: [
-      { value: "stage",    label: "Dedicated stage",        sub: "For cake cutting, speeches, key moments", emoji: "▲" },
-      { value: "backdrop", label: "Photo backdrop wall",    sub: "Everyone will pose in front of it",       emoji: "□" },
-      { value: "maybe",    label: "Either works",           sub: "Whichever fits the space better",         emoji: "◈" },
-      { value: "neither",  label: "Neither needed",         sub: "Not a priority for me",                   emoji: "◇" },
+      { value: "stage",    label: "Dedicated stage",      sub: "Cake cutting, speeches, key moments", emoji: "🎤", image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=75" },
+      { value: "backdrop", label: "Photo backdrop wall",  sub: "Everyone poses in front of it",       emoji: "🖼", image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=400&q=75" },
+      { value: "maybe",    label: "Either works",         sub: "Whichever fits better",               emoji: "🔄", image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=400&q=75" },
+      { value: "neither",  label: "Neither needed",       sub: "Not a priority",                      emoji: "✖", image: "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=400&q=75" },
     ],
   },
   {
@@ -236,8 +236,8 @@ const QUIZ_STEPS = [
     q: "Do you have a specific theme?",
     sub: "e.g. Bollywood night, jungle safari, retro 90s, beach vibes...",
     options: [
-      { value: "yes", label: "Yes, I have one in mind", sub: "Tell the decorator the concept", emoji: "◆" },
-      { value: "no",  label: "No — just the right style", sub: "Let the style speak",         emoji: "□" },
+      { value: "yes", label: "Yes, I have one in mind", sub: "Tell the decorator the concept", emoji: "🎭", image: "https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=400&q=75" },
+      { value: "no",  label: "No — just the right style", sub: "Let the style speak",         emoji: "🎨", image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=75" },
     ],
   },
 ];
@@ -481,27 +481,38 @@ export default function DecorFinder() {
                   return (
                     <button key={opt.value} onClick={() => pick(currentStep.id, opt.value)}
                       style={{
-                        borderRadius: 16,
+                        borderRadius: 14,
                         border: `2px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.14)"}`,
-                        background: isSelected ? "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.07))" : "#FFFCF5",
+                        background: isSelected ? "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.05))" : "#FFFCF5",
                         cursor: "pointer",
-                        padding: "16px 14px",
+                        padding: 0,
                         textAlign: "left",
                         transition: "all 0.18s",
                         transform: isSelected ? "scale(1.02)" : "scale(1)",
                         boxShadow: isSelected ? "0 4px 18px rgba(196,122,46,0.25)" : "0 1px 4px rgba(196,122,46,0.06)",
                         fontFamily: font,
                         position: "relative",
+                        overflow: "hidden",
                         display: "flex",
                         flexDirection: "column",
-                        gap: 4,
                       }}>
-                      {/* Emoji */}
-                      <span style={{ fontSize: 22, marginBottom: 2 }}>{opt.emoji}</span>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: isSelected ? "#C47A2E" : "#2C1A0E", lineHeight: 1.35 }}>{opt.label}</div>
-                      {opt.sub && <div style={{ fontSize: 11.5, color: isSelected ? "rgba(196,122,46,0.75)" : "#9B7450", lineHeight: 1.4 }}>{opt.sub}</div>}
+                      {/* Option image */}
+                      {opt.image && (
+                        <div style={{ height: 80, overflow: "hidden", flexShrink: 0 }}>
+                          <img src={opt.image} alt={opt.label}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }}
+                            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+                            onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                          />
+                        </div>
+                      )}
+                      {/* Text content */}
+                      <div style={{ padding: "10px 12px 12px", flex: 1 }}>
+                        <div style={{ fontSize: 14, fontWeight: 800, color: isSelected ? "#C47A2E" : "#2C1A0E", lineHeight: 1.3, marginBottom: 3 }}>{opt.label}</div>
+                        {opt.sub && <div style={{ fontSize: 11, color: isSelected ? "rgba(196,122,46,0.75)" : "#9B7450", lineHeight: 1.35 }}>{opt.sub}</div>}
+                      </div>
                       {isSelected && (
-                        <div style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff", fontWeight: 800 }}>✓</div>
+                        <div style={{ position: "absolute", top: 8, right: 8, width: 22, height: 22, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "#fff", fontWeight: 800, boxShadow: "0 2px 6px rgba(196,122,46,0.4)" }}>✓</div>
                       )}
                     </button>
                   );
@@ -655,14 +666,14 @@ export default function DecorFinder() {
 
                     {/* Decor checklist */}
                     <div style={{ padding: "10px 14px 14px", flex: 1 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
-                        What's typically included
+                      <div style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                        ✦ You Should Have
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                         {items.map((item, i) => (
                           <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "rgba(34,197,94,0.12)", border: "1.5px solid rgba(34,197,94,0.4)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#16a34a", flexShrink: 0, marginTop: 2 }}>✓</div>
-                            <span style={{ fontSize: 12.5, color: "#2C1A0E", lineHeight: 1.4 }}>{item}</span>
+                            <div style={{ width: 16, height: 16, borderRadius: "50%", background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.1))", border: "1.5px solid rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 8, color: "#C47A2E", flexShrink: 0, marginTop: 2, fontWeight: 800 }}>✓</div>
+                            <span style={{ fontSize: 12.5, color: "#2C1A0E", lineHeight: 1.4, fontWeight: 500 }}>{item}</span>
                           </div>
                         ))}
                       </div>
