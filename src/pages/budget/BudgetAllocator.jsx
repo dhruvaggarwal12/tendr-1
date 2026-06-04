@@ -218,6 +218,12 @@ export default function BudgetAllocator() {
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
+  const [budgetSaved, setBudgetSaved] = useState(() => { try { return localStorage.getItem("tendr_budget_saved") === "true"; } catch { return false; } });
+  const saveBudget = () => {
+    try { localStorage.setItem("tendr_budget_saved", "true"); } catch {}
+    setBudgetSaved(true);
+    window.dispatchEvent(new CustomEvent("tendr:budget-saved"));
+  };
 
   const TTL_7D = 7 * 24 * 60 * 60 * 1000;
   const loadBudget = () => {
@@ -385,6 +391,10 @@ export default function BudgetAllocator() {
               {isCorporate && planFormData.companyName && <span style={{ marginLeft: 8, background: "rgba(204,171,74,0.2)", border: "1px solid rgba(204,171,74,0.4)", borderRadius: 100, padding: "1px 8px", fontSize: 10, fontWeight: 700, color: "#CCAB4A" }}>🏢 {planFormData.companyName}</span>}
             </p>
           </div>
+          <button onClick={saveBudget}
+            style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: budgetSaved ? "1.5px solid rgba(34,197,94,0.6)" : "1.5px solid rgba(255,255,255,0.4)", background: budgetSaved ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.12)", color: budgetSaved ? "#bbf7d0" : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}>
+            {budgetSaved ? "✓ Saved" : "💾 Save"}
+          </button>
         </div>
       </div>
 

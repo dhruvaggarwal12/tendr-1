@@ -146,7 +146,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     window.addEventListener("tendr:saved-updated", onSaved);
     window.addEventListener("tendr:checklist-saved", onSaved);
     window.addEventListener("tendr:timeline-saved", onSaved);
-    return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:checklist-saved", onSaved); window.removeEventListener("tendr:timeline-saved", onSaved); };
+    window.addEventListener("tendr:budget-saved", onSaved);
+    return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:checklist-saved", onSaved); window.removeEventListener("tendr:timeline-saved", onSaved); window.removeEventListener("tendr:budget-saved", onSaved); };
   }, []);
 
   // Check backend: if user has a paid EventPlan, silently clear Review & Pay state
@@ -219,9 +220,11 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         { label: "🎉 Plan by Occasion", onClickOverride: () => { close(); window.open("/occasions", "_blank"); } },
         { label: "🏡 Party Places",     href: "/party-places" },
       ] : []),
-      { label: "Checklist",          href: "/checklist-picker", activePaths: ["/checklist-picker","/checklist","/prebuilt-checklist"] },
-      { label: "Timeline",           href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"] },
-      { label: "Budget Allocator",   href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
+      { label: "Checklist",        href: "/checklist-picker", activePaths: ["/checklist-picker","/checklist","/prebuilt-checklist"],
+        onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_checklist_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.categories?.length > 0 ? "/prebuilt-checklist" : "/checklist-picker"); } catch { navigate("/checklist-picker"); } } },
+      { label: "Timeline",         href: "/timeline-picker",  activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
+        onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_timeline_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.phases?.length > 0 ? "/prebuilt-timeline" : "/timeline-picker"); } catch { navigate("/timeline-picker"); } } },
+      { label: "Budget Allocator", href: "/budget-picker",    activePaths: ["/budget-picker","/budget-allocator"] },
       { label: "Decor Finder",       href: "/decor-finder" },
     ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
@@ -452,6 +455,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   );
                   const checklistSaved = item.href === "/checklist-picker" && (() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } })();
                   const timelineSaved  = item.href === "/timeline-picker"  && (() => { try { return localStorage.getItem("tendr_timeline_saved")  === "true"; } catch { return false; } })();
+                  const budgetSaved    = item.href === "/budget-picker"     && (() => { try { return localStorage.getItem("tendr_budget_saved")    === "true"; } catch { return false; } })();
                   if (isSoon) {
                     return (
                       <div key={item.label} style={{ display: "flex", alignItems: "center", padding: "9px 16px", borderLeft: "3px solid transparent", gap: 10 }}>
@@ -486,7 +490,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left", flex: 1 }}>{item.label}</span>
-                      {(checklistSaved || timelineSaved) && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
+                      {(checklistSaved || timelineSaved || budgetSaved) && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
                     </button>
                   );
                 })}

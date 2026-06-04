@@ -51,16 +51,16 @@ export default function TimelinePicker() {
           <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="timeline-grid">
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 16 }} className="timeline-grid">
           {EVENT_TYPES.map(({ id, label, icon }) => (
             <button key={id}
               onClick={() => navigate("/prebuilt-timeline", { state: { eventType: id } })}
-              style={{ background: "#FFFCF5", borderRadius: 16, padding: "24px 16px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, transition: "all 0.2s" }}
-              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
+              style={{ background: "#FFFCF5", borderRadius: 20, padding: "32px 20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.18)"; e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.background = "rgba(196,122,46,0.03)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "#FFFCF5"; }}
             >
-              <span style={{ fontSize: 32 }}>{icon}</span>
-              <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{label}</span>
+              <span style={{ fontSize: 44 }}>{icon}</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>{label}</span>
             </button>
           ))}
         </div>
