@@ -94,8 +94,8 @@ export default function ChooseBooking() {
               background: "#FFFCF5",
               border: "2px solid " + flow.borderColor,
               borderRadius: 24,
-              padding: "40px 32px",
-              minHeight: 520,
+              padding: "32px 28px",
+              minHeight: 400,
               display: "flex",
               flexDirection: "column",
               boxShadow: "0 4px 24px rgba(139,69,19,0.08)",
@@ -118,27 +118,14 @@ export default function ChooseBooking() {
               </p>
             </div>
 
-            {/* Description */}
-            <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.62, margin: "0 0 12px" }}>
-              {flow.description}
-            </p>
-
-            {/* Best for */}
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "10px 14px", borderRadius: 10, background: flow.bgAccent, border: "1px solid " + flow.borderColor, marginBottom: 20, flex: 1 }}>
-              <span style={{ fontSize: 14, flexShrink: 0 }}>✦</span>
-              <span style={{ fontSize: 13, color: flow.accentColor, fontWeight: 600, lineHeight: 1.5 }}>
-                <strong>Best for:</strong> {flow.bestFor}
-              </span>
-            </div>
-
-            {/* Steps */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 28 }}>
+            {/* Steps — 4 points, prominent */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 32, flex: 1 }}>
               {flow.steps.map((step, i) => (
-                <div key={step} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ width: 22, height: 22, borderRadius: "50%", background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, color: flow.accentColor, flexShrink: 0 }}>
+                <div key={step} style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                  <span style={{ width: 32, height: 32, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: flow.accentColor, flexShrink: 0 }}>
                     {i + 1}
                   </span>
-                  <span style={{ fontSize: 13.5, color: "#5a3a1a", fontWeight: 500 }}>{step}</span>
+                  <span style={{ fontSize: 15.5, color: "#2C1A0E", fontWeight: 600, lineHeight: 1.35 }}>{step}</span>
                 </div>
               ))}
             </div>

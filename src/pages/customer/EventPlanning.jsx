@@ -818,7 +818,7 @@ const EventPlanning = () => {
                 {vendor ? (
                   <>
                   {/* Full-width photo */}
-                  <div style={{ height: 140, overflow: "hidden", position: "relative", background: "#f3ebe0", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ height: 110, overflow: "hidden", position: "relative", background: "#f3ebe0", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {vendor.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 48 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>}
                     {/* Swap arrows overlay */}
                     {totalVendors > 1 && (
@@ -830,7 +830,7 @@ const EventPlanning = () => {
                       </div>
                     )}
                   </div>
-                  <div style={{ padding: "16px 20px" }}>
+                  <div style={{ padding: "12px 16px" }}>
                     <div style={{ marginBottom: 6 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                         <span style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E" }}>{vendor.name}</span>
@@ -949,33 +949,45 @@ const EventPlanning = () => {
               </span>
             </div>
             {/* Content */}
-            <div style={{ padding: "22px 24px 32px" }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>{spQuickView.name}</h2>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-                {spQuickView.city && <div style={{ fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>📍 {spQuickView.city}</div>}
-                {spQuickView.yearsOfExperience > 0 && <div style={{ fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>⏱ {spQuickView.yearsOfExperience}y exp</div>}
-                {spQuickView.teamSize > 0 && <div style={{ fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>👥 Team {spQuickView.teamSize}</div>}
+            <div style={{ padding: "20px 22px 28px" }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px" }}>{spQuickView.name}</h2>
+              {spQuickView.avgReviewScore > 0 && (
+                <div style={{ fontSize: 13, color: "#C47A2E", fontWeight: 700, marginBottom: 10 }}>
+                  ⭐ {Number(spQuickView.avgReviewScore).toFixed(1)}
+                  {spQuickView.totalEventsCompleted > 0 && <span style={{ color: "#9B7450", fontWeight: 500 }}> · {spQuickView.totalEventsCompleted}+ events</span>}
+                </div>
+              )}
+              {/* All info tags */}
+              <div style={{ display: "flex", gap: 7, flexWrap: "wrap", marginBottom: 14 }}>
+                {spQuickView.city && <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)" }}>📍 {spQuickView.city}</div>}
+                {spQuickView.yearsOfExperience > 0 && <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)" }}>⏱ {spQuickView.yearsOfExperience}y exp</div>}
+                {spQuickView.teamSize > 0 && <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)" }}>👥 Team {spQuickView.teamSize}</div>}
+                {spQuickView.price > 0 && <div style={{ fontSize: 12, color: "#C47A2E", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(196,122,46,0.12)", fontWeight: 700 }}>₹{Number(spQuickView.price).toLocaleString("en-IN")}+</div>}
+                {spQuickView.isVerified && <div style={{ fontSize: 12, color: "#15803d", background: "rgba(21,128,61,0.07)", borderRadius: 20, padding: "4px 11px", border: "1px solid rgba(21,128,61,0.2)" }}>✓ Verified</div>}
               </div>
-              {spQuickView.portfolioPhotos?.length > 1 && (
-                <div style={{ marginBottom: 20 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Portfolio</p>
-                  <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
-                    {spQuickView.portfolioPhotos.slice(0, 5).map((photo, i) => (
-                      <img key={i} src={photo} alt="" style={{ width: 82, height: 72, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />
+              {/* Bio */}
+              {spQuickView.bio && <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.6, margin: "0 0 14px" }}>{spQuickView.bio.slice(0, 160)}{spQuickView.bio.length > 160 ? "…" : ""}</p>}
+              {/* Locations served */}
+              {spQuickView.locations?.length > 0 && (
+                <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 14px" }}>📍 Serves: {spQuickView.locations.join(", ")}</p>
+              )}
+              {/* Portfolio */}
+              {spQuickView.portfolioPhotos?.length > 0 && (
+                <div style={{ marginBottom: 18 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>Portfolio</p>
+                  <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
+                    {spQuickView.portfolioPhotos.slice(0, 6).map((photo, i) => (
+                      <img key={i} src={photo} alt="" style={{ width: 80, height: 65, objectFit: "cover", borderRadius: 9, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />
                     ))}
                   </div>
                 </div>
               )}
-              <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "4px 0 20px" }} />
+              <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "0 0 16px" }} />
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button
-                  onClick={() => {
-                    const url = `/vendor/${spQuickView._id}`;
-                    if (window.innerWidth >= 768) { window.open(url, "_blank"); }
-                    else { navigate(url); }
-                  }}
-                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-                  View Full Profile {window.innerWidth >= 768 ? "↗" : "→"}
+                  onClick={() => { setSpProfileView(spQuickView); setSpQuickView(null); }}
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                  View Profile →
                 </button>
                 <button
                   onClick={() => {
