@@ -104,6 +104,35 @@ const EventPlanning = () => {
   const [expandedCat, setExpandedCat] = useState(null);
   const [spQuickView, setSpQuickView] = useState(null); // vendor shown in smart plan QuickView panel
   const [spProfileView, setSpProfileView] = useState(null); // vendor shown in centered View Profile modal
+  const [vendorFullCache, setVendorFullCache] = useState({}); // _id → full vendor data
+
+  // Fetch full vendor profile (bio, locations, price, etc.) before opening panels
+  const openQuickView = async (vendor) => {
+    if (!vendor?._id) return;
+    if (vendorFullCache[vendor._id]) { setSpQuickView(vendorFullCache[vendor._id]); return; }
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BASE_URL}/vendors/${vendor._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const full = { ...vendor, ...(data.vendor || data) };
+        setVendorFullCache(p => ({ ...p, [vendor._id]: full }));
+        setSpQuickView(full);
+      } else { setSpQuickView(vendor); }
+    } catch { setSpQuickView(vendor); }
+  };
+  const openProfile = async (vendor) => {
+    if (!vendor?._id) return;
+    if (vendorFullCache[vendor._id]) { setSpProfileView(vendorFullCache[vendor._id]); return; }
+    try {
+      const res = await fetch(`${import.meta.env.VITE_BASE_URL}/vendors/${vendor._id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const full = { ...vendor, ...(data.vendor || data) };
+        setVendorFullCache(p => ({ ...p, [vendor._id]: full }));
+        setSpProfileView(full);
+      } else { setSpProfileView(vendor); }
+    } catch { setSpProfileView(vendor); }
+  };
   const [showSplitAdjust, setShowSplitAdjust] = useState(false);
   const [customSplit, setCustomSplit] = useState(null);
   const [draftSplit, setDraftSplit] = useState(null);
@@ -827,24 +856,22 @@ const EventPlanning = () => {
                 </div>
                 {vendor ? (
                   <>
-                  {/* Full-width photo */}
+                  {/* Full-width photo — no arrows here */}
                   <div style={{ height: 110, overflow: "hidden", position: "relative", background: "#f3ebe0", display: "flex", alignItems: "center", justifyContent: "center" }}>
                     {vendor.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span style={{ fontSize: 48 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</span>}
-                    {/* Swap arrows overlay */}
-                    {totalVendors > 1 && (
-                      <div style={{ position: "absolute", top: 8, right: 8, display: "flex", gap: 4 }}>
-                        <button onClick={() => { setVendorOffset(p => { const cur = p[category] || 0; return { ...p, [category]: (cur - 1 + totalVendors) % totalVendors }; }); setExpandedCat(null); }}
-                          style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>‹</button>
-                        <button onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
-                          style={{ width: 26, height: 26, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.5)", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>›</button>
-                      </div>
-                    )}
                   </div>
                   <div style={{ padding: "12px 16px" }}>
-                    <div style={{ marginBottom: 6 }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                        <span style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E" }}>{vendor.name}</span>
-                      </div>
+                    {/* Vendor name + swap arrows side by side */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <span style={{ fontSize: 15, fontWeight: 900, color: "#2C1A0E", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</span>
+                      {totalVendors > 1 && (
+                        <div style={{ display: "flex", gap: 4, flexShrink: 0 }}>
+                          <button onClick={() => { setVendorOffset(p => { const cur = p[category] || 0; return { ...p, [category]: (cur - 1 + totalVendors) % totalVendors }; }); setExpandedCat(null); }}
+                            style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>‹</button>
+                          <button onClick={() => { setVendorOffset(p => ({ ...p, [category]: ((p[category] || 0) + 1) % totalVendors })); setExpandedCat(null); }}
+                            style={{ width: 26, height: 26, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800 }}>›</button>
+                        </div>
+                      )}
                     </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginTop: 4 }}>
                         {vendor.avgReviewScore > 0 && <span style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 700 }}>⭐ {vendor.avgReviewScore.toFixed(1)}</span>}
@@ -873,11 +900,11 @@ const EventPlanning = () => {
                   })()}
                   {/* Action buttons */}
                   <div style={{ padding: "0 20px 18px", display: "flex", gap: 8 }}>
-                    <button onClick={() => setSpQuickView(vendor)}
+                    <button onClick={() => openQuickView(vendor)}
                       style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                       Quick View
                     </button>
-                    <button onClick={() => setSpProfileView(vendor)}
+                    <button onClick={() => openProfile(vendor)}
                       style={{ flex: 1, padding: "10px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                       View Profile
                     </button>
@@ -1036,7 +1063,7 @@ const EventPlanning = () => {
               <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "0 0 16px" }} />
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <button
-                  onClick={() => { setSpProfileView(spQuickView); setSpQuickView(null); }}
+                  onClick={() => { const v = spQuickView; setSpQuickView(null); openProfile(v); }}
                   style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
                   View Profile →
                 </button>
@@ -1056,42 +1083,82 @@ const EventPlanning = () => {
         </>
       )}
 
-      {/* ── Centered View Profile modal (smart planner, no chat) ── */}
+      {/* ── Centered Full Profile modal (smart planner) ── */}
       {spProfileView && (
         <>
-          <div onClick={() => setSpProfileView(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#fff", borderRadius: 22, width: "92%", maxWidth: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.28)", fontFamily: "'Outfit',sans-serif" }}>
-            {/* Photo */}
-            <div style={{ position: "relative", height: 220 }}>
-              <img src={spProfileView.portfolioPhotos?.[0] || spProfileView.image || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"} alt={spProfileView.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 50%)" }} />
-              <button onClick={() => setSpProfileView(null)} style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-              {spProfileView.avgReviewScore > 0 && <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "4px 12px", fontSize: 13, fontWeight: 700 }}>⭐ {Number(spProfileView.avgReviewScore).toFixed(1)}</div>}
-              <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>{spProfileView.serviceType}</span>
-            </div>
-            {/* Content */}
-            <div style={{ padding: "22px 24px 28px" }}>
-              <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px" }}>{spProfileView.name}</h2>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
-                {spProfileView.city && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>📍 {spProfileView.city}</span>}
-                {spProfileView.yearsOfExperience > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>⏱ {spProfileView.yearsOfExperience}y exp</span>}
-                {spProfileView.teamSize > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>👥 Team {spProfileView.teamSize}</span>}
-                {spProfileView.totalEventsCompleted > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>🎉 {spProfileView.totalEventsCompleted}+ events</span>}
+          <div onClick={() => setSpProfileView(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 1200, backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#FFFCF5", borderRadius: 22, width: "95%", maxWidth: 640, maxHeight: "92vh", overflowY: "auto", boxShadow: "0 28px 72px rgba(0,0,0,0.3)", fontFamily: "'Outfit',sans-serif" }}>
+            {/* Hero photo */}
+            <div style={{ position: "relative", height: 240, flexShrink: 0 }}>
+              <img src={spProfileView.portfolioPhotos?.[0] || spProfileView.image || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80"} alt={spProfileView.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 55%)" }} />
+              <button onClick={() => setSpProfileView(null)} style={{ position: "absolute", top: 14, right: 14, width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 17, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              {spProfileView.avgReviewScore > 0 && <div style={{ position: "absolute", top: 14, left: 14, background: "rgba(196,122,46,0.95)", color: "#fff", borderRadius: 100, padding: "5px 13px", fontSize: 13, fontWeight: 700 }}>⭐ {Number(spProfileView.avgReviewScore).toFixed(1)}</div>}
+              {spProfileView.isVerified && <div style={{ position: "absolute", top: 14, left: spProfileView.avgReviewScore > 0 ? 90 : 14, background: "rgba(21,128,61,0.92)", color: "#fff", borderRadius: 100, padding: "5px 13px", fontSize: 12, fontWeight: 700 }}>✓ Verified</div>}
+              <div style={{ position: "absolute", bottom: 16, left: 18 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 10px", borderRadius: 20 }}>{spProfileView.serviceType}</span>
+                <h2 style={{ fontSize: "clamp(1.2rem,3vw,1.6rem)", fontWeight: 900, color: "#fff", margin: "6px 0 0", letterSpacing: "-0.01em" }}>{spProfileView.name}</h2>
               </div>
-              {spProfileView.bio && <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.65, margin: "0 0 16px" }}>{spProfileView.bio}</p>}
-              {spProfileView.portfolioPhotos?.length > 1 && (
-                <div style={{ marginBottom: 16 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>Portfolio</p>
-                  <div style={{ display: "flex", gap: 7, overflowX: "auto", paddingBottom: 4 }}>
-                    {spProfileView.portfolioPhotos.slice(0, 6).map((photo, i) => (
-                      <img key={i} src={photo} alt="" style={{ width: 88, height: 70, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: "20px 24px 28px" }}>
+              {/* Info chips */}
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+                {spProfileView.city && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 13px", border: "1px solid rgba(196,122,46,0.15)" }}>📍 {spProfileView.city}</span>}
+                {spProfileView.yearsOfExperience > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 13px", border: "1px solid rgba(196,122,46,0.15)" }}>⏱ {spProfileView.yearsOfExperience}y exp</span>}
+                {spProfileView.teamSize > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 13px", border: "1px solid rgba(196,122,46,0.15)" }}>👥 Team {spProfileView.teamSize}</span>}
+                {spProfileView.totalEventsCompleted > 0 && <span style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 13px", border: "1px solid rgba(196,122,46,0.15)" }}>🎉 {spProfileView.totalEventsCompleted}+ events</span>}
+                {spProfileView.price > 0 && <span style={{ fontSize: 12, color: "#C47A2E", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 13px", border: "1px solid rgba(196,122,46,0.15)", fontWeight: 700 }}>₹{Number(spProfileView.price).toLocaleString("en-IN")}+</span>}
+              </div>
+
+              {/* Bio */}
+              {spProfileView.bio && (
+                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 18px", padding: "14px 16px", background: "rgba(196,122,46,0.04)", borderRadius: 12, border: "1px solid rgba(196,122,46,0.1)" }}>{spProfileView.bio}</p>
+              )}
+
+              {/* Portfolio photos */}
+              {spProfileView.portfolioPhotos?.length > 0 && (
+                <div style={{ marginBottom: 18 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>Portfolio</p>
+                  <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 4 }}>
+                    {spProfileView.portfolioPhotos.slice(0, 8).map((photo, i) => (
+                      <img key={i} src={photo} alt="" style={{ width: 100, height: 80, objectFit: "cover", borderRadius: 10, flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.12)" }} />
                     ))}
                   </div>
                 </div>
               )}
+
+              {/* Locations */}
               {spProfileView.locations?.length > 0 && (
-                <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 16px" }}>📍 Serves: {spProfileView.locations.join(", ")}</p>
+                <div style={{ marginBottom: 16, padding: "12px 16px", background: "rgba(196,122,46,0.04)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.1)" }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "#7A5535" }}>📍 Serves: </span>
+                  <span style={{ fontSize: 12, color: "#9B7450" }}>{spProfileView.locations.join(", ")}</span>
+                </div>
               )}
+
+              {/* Amenities / highlights if available */}
+              {spProfileView.amenities?.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>Highlights</p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {spProfileView.amenities.slice(0, 8).map((a, i) => (
+                      <span key={i} style={{ fontSize: 11.5, color: "#5a3a1a", background: "rgba(196,122,46,0.06)", borderRadius: 100, padding: "3px 10px", border: "1px solid rgba(196,122,46,0.12)" }}>✓ {a}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Request to Chat CTA */}
+              <button
+                onClick={() => {
+                  setSpProfileView(null);
+                  dispatch(setBookingType("let-us-do-it"));
+                  openVendorChat({ _id: spProfileView._id, name: spProfileView.name, serviceType: spProfileView.serviceType });
+                }}
+                style={{ width: "100%", padding: "14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer" }}>
+                💬 Request to Chat
+              </button>
             </div>
           </div>
         </>
