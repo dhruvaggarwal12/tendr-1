@@ -2054,7 +2054,7 @@ const AdminDashboard = () => {
                               setVendorStats(prev => prev.map(x => x._id === v._id ? { ...x, hasCorporateExperience: newVal } : x));
                             } catch {}
                           }}
-                          title={v.hasCorporateExperience ? "Remove Corporate tag" : "Tag as Corporate Experienced"}
+                          title={v.hasCorporateExperience ? "Remove Corporate tag (vendor still shows in all bookings)" : "Tag as Corporate Experienced — shows in all bookings + corporate filter"}
                           style={{ width: 26, height: 26, borderRadius: "50%", border: `1.5px solid ${v.hasCorporateExperience ? "rgba(124,58,237,0.5)" : "rgba(156,163,175,0.3)"}`, background: v.hasCorporateExperience ? "rgba(124,58,237,0.15)" : "rgba(156,163,175,0.06)", color: v.hasCorporateExperience ? "#7c3aed" : "#9ca3af", cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
                           onMouseEnter={e => { e.currentTarget.style.background = "rgba(124,58,237,0.15)"; e.currentTarget.style.color = "#7c3aed"; }}
                           onMouseLeave={e => { e.currentTarget.style.background = v.hasCorporateExperience ? "rgba(124,58,237,0.15)" : "rgba(156,163,175,0.06)"; e.currentTarget.style.color = v.hasCorporateExperience ? "#7c3aed" : "#9ca3af"; }}

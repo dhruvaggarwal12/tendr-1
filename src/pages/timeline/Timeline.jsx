@@ -1,8 +1,30 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setFilters } from "../../redux/listingFiltersSlice";
+import { setCategoryBudgets } from "../../redux/eventPlanningSlice";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
+
+// Detect vendor type from task text
+function detectServiceFromTask(text = "") {
+  const t = text.toLowerCase();
+  if (t.includes('photograph') || t.includes('videograph')) return 'Photographer';
+  if (t.includes('cater') || t.includes('caterer')) return 'Caterer';
+  if (t.includes('decor') || t.includes('decorator') || t.includes('balloon') || t.includes('floral')) return 'Decorator';
+  if (t.includes(' dj') || t.startsWith('dj') || t.includes('music') || t.includes('entertain')) return 'DJ';
+  return null;
+}
+
+const VENDOR_BUDGET_RANGES = {
+  Caterer:      { min: 5000,  max: 500000, step: 5000,  def: 25000 },
+  Decorator:    { min: 3000,  max: 300000, step: 3000,  def: 15000 },
+  Photographer: { min: 3000,  max: 200000, step: 3000,  def: 15000 },
+  DJ:           { min: 2000,  max: 100000, step: 2000,  def: 10000 },
+};
+const CITIES = ["Delhi", "Noida", "Greater Noida", "Ghaziabad"];
+const fmtINR2 = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
 // Map event type → best plan
 const EVENT_TO_PLAN = {
@@ -216,6 +238,24 @@ const buildFromPlan = (planKey) =>
 export default function Timeline() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
+
+  // Vendor mini form state
+  const [vendorFormOpen, setVendorFormOpen] = useState(false);
+  const [vendorFormService, setVendorFormService] = useState(null);
+  const [vendorForm, setVendorForm] = useState({ eventType: "", city: "", date: "", budget: 25000 });
+  const openVendorForm = (svc) => {
+    const range = VENDOR_BUDGET_RANGES[svc];
+    setVendorFormService(svc); setVendorForm({ eventType: "", city: "", date: "", budget: range.def });
+    setVendorFormOpen(true);
+  };
+  const submitVendorForm = (e) => {
+    e.preventDefault();
+    dispatch(setFilters({ serviceType: vendorFormService, eventType: vendorForm.eventType, locationType: vendorForm.city, date: vendorForm.date }));
+    dispatch(setCategoryBudgets({ [vendorFormService]: vendorForm.budget }));
+    setVendorFormOpen(false);
+    navigate(`/listings?serviceType=${vendorFormService}`, { state: { fromBudgetAllocator: true, budgetMax: vendorForm.budget } });
+  };
   const routeEventType = location.state?.eventType;
   const routePlanKey   = routeEventType ? (EVENT_TO_PLAN[routeEventType] || "30day") : null;
 
@@ -391,12 +431,20 @@ export default function Timeline() {
                             style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${task.done ? "#15803d" : "rgba(196,122,46,0.3)"}`, background: task.done ? "#15803d" : "#fff", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, marginTop: 1, transition: "all 0.15s" }}>
                             {task.done ? "✓" : ""}
                           </button>
-                          <input
-                            value={task.text}
-                            onChange={e => updateTaskText(phase.id, task.id, e.target.value)}
-                            placeholder="Task..."
-                            style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontFamily: font, fontSize: 14, color: task.done ? "#bbb" : "#2C1A0E", textDecoration: task.done ? "line-through" : "none" }}
-                          />
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <input
+                              value={task.text}
+                              onChange={e => updateTaskText(phase.id, task.id, e.target.value)}
+                              placeholder="Task..."
+                              style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: font, fontSize: 14, color: task.done ? "#bbb" : "#2C1A0E", textDecoration: task.done ? "line-through" : "none" }}
+                            />
+                            {!task.done && (() => { const svc = detectServiceFromTask(task.text); return svc ? (
+                              <button onClick={(e) => { e.stopPropagation(); openVendorForm(svc); }}
+                                style={{ marginTop: 3, padding: "2px 9px", borderRadius: 100, border: `1px solid ${phase.color}40`, background: `${phase.color}10`, color: phase.color, fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                                🔍 Find {svc === "Photographer" ? "Photographer" : svc}
+                              </button>
+                            ) : null; })()}
+                          </div>
                           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
                             <button
                               onClick={() => setExpandedNote(expandedNote === task.id ? null : task.id)}
@@ -445,6 +493,61 @@ export default function Timeline() {
 
       </div>
       </div>
+
+      {/* Vendor mini form modal */}
+      {vendorFormOpen && vendorFormService && (() => {
+        const range = VENDOR_BUDGET_RANGES[vendorFormService];
+        return (
+          <>
+            <div onClick={() => setVendorFormOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9998, backdropFilter: "blur(3px)" }} />
+            <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 9999, background: "#FFFCF5", borderRadius: 20, width: "min(95vw,440px)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font, overflow: "hidden" }}>
+              <div style={{ padding: "16px 22px 12px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Find {vendorFormService === "Photographer" ? "Photographers" : vendorFormService + "s"}</div>
+                <p style={{ fontSize: 11.5, color: "#9B7450", margin: 0 }}>3 quick questions + your budget</p>
+              </div>
+              <form onSubmit={submitVendorForm} style={{ padding: "16px 22px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Type *</label>
+                  <select required value={vendorForm.eventType} onChange={e => setVendorForm(p => ({ ...p, eventType: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                    <option value="">Select event type</option>
+                    {["Birthday", "Wedding", "Anniversary", "Pre Wedding", "Corporate Event", "Party / Get-together", "Others"].map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>City *</label>
+                  <select required value={vendorForm.city} onChange={e => setVendorForm(p => ({ ...p, city: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                    <option value="">Select city</option>
+                    {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Date *</label>
+                  <input required type="date" value={vendorForm.date} min={new Date().toISOString().split("T")[0]}
+                    onChange={e => setVendorForm(p => ({ ...p, date: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <label style={{ fontSize: 11.5, fontWeight: 700, color: "#6B3A1F" }}>{vendorFormService} Budget</label>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtINR2(vendorForm.budget)}</span>
+                  </div>
+                  <input type="range" min={range.min} max={range.max} step={range.step} value={vendorForm.budget}
+                    onChange={e => setVendorForm(p => ({ ...p, budget: Number(e.target.value) }))}
+                    style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 4 }} />
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                    <span>{fmtINR2(range.min)}</span><span>{fmtINR2(range.max)}</span>
+                  </div>
+                </div>
+                <button type="submit" style={{ width: "100%", marginTop: 2, padding: "12px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+                  Browse {vendorFormService === "Photographer" ? "Photographers" : vendorFormService + "s"} →
+                </button>
+              </form>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

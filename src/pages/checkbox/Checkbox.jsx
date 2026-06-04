@@ -33,6 +33,15 @@ function detectService(name = "") {
   }
   return null;
 }
+// Detect vendor type from individual task text (for inline Find button)
+function detectServiceFromTask(text = "") {
+  const t = text.toLowerCase();
+  if (t.includes('photograph') || t.includes('videograph') || t.includes('photo')) return 'Photographer';
+  if (t.includes('cater') || t.includes('caterer')) return 'Caterer';
+  if (t.includes('decor') || t.includes('decorator') || t.includes('balloon') || t.includes('floral')) return 'Decorator';
+  if (t.includes(' dj') || t.startsWith('dj') || t.includes('music') || t.includes('entertain')) return 'DJ';
+  return null;
+}
 
 // Vendor suggestion panel (reused from BudgetAllocator pattern)
 function VendorPanel({ serviceType, catName, onClose }) {
@@ -104,115 +113,88 @@ const font = "'Outfit', sans-serif";
 
 const TEMPLATES = {
   birthday: {
-    label: "Birthday Party", icon: "🎂", timelineLabel: "14 Days Timeline",
-    phases: [
-      { days: 14, tasks: ["Set budget", "Create guest list", "Book venue (if needed)"] },
-      { days: 10, tasks: ["Book decorator", "Book photographer", "Plan theme"] },
-      { days: 7,  tasks: ["Send invitations", "Order cake"] },
-      { days: 3,  tasks: ["Confirm RSVPs", "Arrange return gifts"] },
-      { days: 1,  tasks: ["Vendor confirmations", "Buy party supplies"] },
+    label: "Birthday Party", icon: "🎂",
+    categories: [
+      { name: "📋 Must Do", items: ["Set budget", "Create guest list", "Select venue", "Send invitations", "Track RSVPs", "Order cake", "Arrange food & drinks"] },
+      { name: "⭐ Recommended", items: ["Book decorator", "Book photographer", "Choose party theme", "Arrange seating"] },
+      { name: "🎁 Nice to Have", items: ["Return gifts", "Entertainment / Games", "Customized backdrop", "Photo booth"] },
     ],
   },
   wedding: {
-    label: "Wedding", icon: "💒", timelineLabel: "90 Days Timeline",
-    phases: [
-      { days: 90, tasks: ["Finalize venue", "Set budget", "Create guest list"] },
-      { days: 75, tasks: ["Book photographer", "Book caterer", "Book decorator"] },
-      { days: 60, tasks: ["Start outfit shopping", "Plan ceremonies"] },
-      { days: 45, tasks: ["Design invitations", "Arrange accommodation"] },
-      { days: 30, tasks: ["Send invitations", "Finalize menu"] },
-      { days: 15, tasks: ["Vendor review", "Confirm logistics"] },
-      { days: 7,  tasks: ["Final RSVPs", "Final vendor confirmations"] },
-      { days: 1,  tasks: ["Venue walkthrough", "Wedding day briefing"] },
+    label: "Wedding", icon: "💒",
+    categories: [
+      { name: "📋 Must Do", items: ["Set budget", "Finalize wedding date", "Book venue", "Book caterer", "Create guest list", "Send invitations", "Track RSVPs", "Arrange transportation", "Finalize menu"] },
+      { name: "⭐ Recommended", items: ["Book photographer / videographer", "Book decorator", "Book makeup artist", "Arrange accommodation for guests", "Wedding website / invitation page"] },
+      { name: "🎁 Nice to Have", items: ["Pre-wedding shoot", "Live streaming", "Customized gifts / favors", "Guest welcome kits", "Digital guestbook"] },
     ],
   },
   anniversary: {
-    label: "Anniversary", icon: "💕", timelineLabel: "14 Days Timeline",
-    phases: [
-      { days: 14, tasks: ["Decide celebration plan", "Set budget"] },
-      { days: 10, tasks: ["Book venue or restaurant", "Plan gift"] },
-      { days: 7,  tasks: ["Invite guests", "Order cake"] },
-      { days: 3,  tasks: ["Confirm reservations"] },
-      { days: 1,  tasks: ["Flowers, gifts, final preparations"] },
+    label: "Anniversary", icon: "💕",
+    categories: [
+      { name: "📋 Must Do", items: ["Decide celebration style", "Set budget", "Select venue / restaurant", "Invite guests", "Order cake"] },
+      { name: "⭐ Recommended", items: ["Decorations", "Photographer", "Gift planning", "Special dining setup"] },
+      { name: "🎁 Nice to Have", items: ["Memory slideshow", "Couple photoshoot", "Personalized gifts", "Live music"] },
     ],
   },
   prewedding: {
-    label: "Pre-Wedding Function", icon: "💍", timelineLabel: "30 Days Timeline",
-    phases: [
-      { days: 30, tasks: ["Set budget", "Fix date and venue", "Finalize guest list"] },
-      { days: 21, tasks: ["Book caterer", "Book decorator", "Book photographer"] },
-      { days: 14, tasks: ["Book DJ / live music", "Book mehendi artist"] },
-      { days: 7,  tasks: ["Send invitations", "Plan performances"] },
-      { days: 3,  tasks: ["Confirm RSVPs", "Final vendor check"] },
-      { days: 1,  tasks: ["Venue walkthrough", "Brief all teams"] },
+    label: "Pre-Wedding Function", icon: "💍",
+    categories: [
+      { name: "📋 Must Do", items: ["Set budget", "Fix date and venue", "Finalize guest list", "Send invitations", "Track RSVPs", "Book caterer"] },
+      { name: "⭐ Recommended", items: ["Book decorator", "Book photographer / videographer", "Book DJ or live music", "Book mehendi artist", "Plan performances"] },
+      { name: "🎁 Nice to Have", items: ["Drone coverage", "Pre-wedding shoot", "Welcome kits for guests", "Custom stage backdrop"] },
     ],
   },
   corporate: {
-    label: "Corporate Event", icon: "🏢", timelineLabel: "60 Days Timeline",
-    phases: [
-      { days: 60, tasks: ["Define objective", "Approve budget", "Book venue"] },
-      { days: 45, tasks: ["Confirm speakers", "Start registrations"] },
-      { days: 30, tasks: ["Book vendors", "Arrange branding materials"] },
-      { days: 21, tasks: ["Finalize agenda"] },
-      { days: 14, tasks: ["Logistics planning", "Team assignment"] },
-      { days: 7,  tasks: ["Technical rehearsal", "Confirm attendance"] },
-      { days: 1,  tasks: ["Venue setup", "Final briefing"] },
+    label: "Corporate Event", icon: "🏢",
+    categories: [
+      { name: "📋 Must Do", items: ["Define objective", "Set budget", "Book venue", "Confirm attendee count", "Arrange AV equipment", "Finalize agenda", "Arrange catering"] },
+      { name: "⭐ Recommended", items: ["Speaker management", "Branding materials", "Registration desk", "Event photographer"] },
+      { name: "🎁 Nice to Have", items: ["Event merchandise", "Networking lounge", "Employee awards", "Feedback kiosk", "Live event streaming"] },
     ],
   },
   party: {
-    label: "Party / Get-together", icon: "🎉", timelineLabel: "7 Days Timeline",
-    phases: [
-      { days: 7, tasks: ["Create guest list", "Select venue"] },
-      { days: 5, tasks: ["Send invitations"] },
-      { days: 3, tasks: ["Arrange food and drinks"] },
-      { days: 2, tasks: ["Confirm attendance"] },
-      { days: 1, tasks: ["Decorations", "Playlist setup"] },
+    label: "Party / Get-together", icon: "🎉",
+    categories: [
+      { name: "📋 Must Do", items: ["Create guest list", "Select venue", "Arrange food & drinks", "Send invitations"] },
+      { name: "⭐ Recommended", items: ["Decorations", "Music / Playlist", "Seating arrangement"] },
+      { name: "🎁 Nice to Have", items: ["Games & activities", "Theme-based decor", "Photo corner", "Customized party favors"] },
     ],
   },
   // Custom event templates by size
   "custom-small": {
-    label: "Custom Event (Small)", icon: "✨", timelineLabel: "14 Days Timeline",
-    phases: [
-      { days: 14, tasks: ["Define event requirements", "Set budget"] },
-      { days: 10, tasks: ["Book venue", "Shortlist vendors"] },
-      { days: 7,  tasks: ["Send invitations", "Confirm vendors"] },
-      { days: 3,  tasks: ["Review logistics", "Confirm guest count"] },
-      { days: 1,  tasks: ["Final event setup"] },
+    label: "Custom Event (Small)", icon: "✨",
+    categories: [
+      { name: "📋 Must Do", items: ["Define event purpose", "Set budget", "Select venue", "Create guest list", "Send invitations", "Arrange required vendors"] },
+      { name: "⭐ Recommended", items: ["Decorations", "Photographer", "Event coordinator", "Transportation planning"] },
+      { name: "🎁 Nice to Have", items: ["Personalized branding", "Event souvenirs", "Special entertainment", "Social media coverage"] },
     ],
   },
   "custom-medium": {
-    label: "Custom Event (Medium)", icon: "✨", timelineLabel: "30 Days Timeline",
-    phases: [
-      { days: 30, tasks: ["Define event requirements", "Set budget"] },
-      { days: 21, tasks: ["Book venue", "Shortlist vendors"] },
-      { days: 14, tasks: ["Confirm vendors", "Send invitations"] },
-      { days: 7,  tasks: ["Review logistics", "Confirm guest count"] },
-      { days: 3,  tasks: ["Vendor follow-up"] },
-      { days: 1,  tasks: ["Final event setup"] },
+    label: "Custom Event (Medium)", icon: "✨",
+    categories: [
+      { name: "📋 Must Do", items: ["Define event purpose", "Set budget", "Book venue", "Create guest list", "Send invitations", "Confirm all vendors"] },
+      { name: "⭐ Recommended", items: ["Decorations", "Photographer", "Event coordinator", "Transportation planning"] },
+      { name: "🎁 Nice to Have", items: ["Personalized branding", "Event souvenirs", "Special entertainment", "Social media coverage"] },
     ],
   },
   "custom-large": {
-    label: "Custom Event (Large)", icon: "✨", timelineLabel: "90 Days Timeline",
-    phases: [
-      { days: 90, tasks: ["Define event requirements", "Set budget", "Book venue"] },
-      { days: 60, tasks: ["Shortlist and confirm major vendors"] },
-      { days: 45, tasks: ["Send invitations", "Arrange logistics"] },
-      { days: 30, tasks: ["Finalize all vendors", "Marketing / promotion"] },
-      { days: 14, tasks: ["Review logistics", "Confirm guest count", "Brief all teams"] },
-      { days: 7,  tasks: ["Technical rehearsal", "Final vendor confirmations"] },
-      { days: 1,  tasks: ["Final event setup", "Day-of briefing"] },
+    label: "Custom Event (Large)", icon: "✨",
+    categories: [
+      { name: "📋 Must Do", items: ["Define event purpose", "Set budget", "Book venue", "Create guest list", "Send invitations", "Confirm all major vendors", "Arrange logistics"] },
+      { name: "⭐ Recommended", items: ["Decorator", "Photographer", "Event coordinator", "Transportation planning", "Accommodation for guests"] },
+      { name: "🎁 Nice to Have", items: ["Live streaming", "Personalized branding", "Event souvenirs", "Special entertainment", "Social media coverage"] },
     ],
   },
 };
 
 const buildFromTemplate = (templateKey) => {
   const tpl = TEMPLATES[templateKey];
-  if (!tpl?.phases) return [];
-  return tpl.phases.map((phase, pi) => ({
-    id: `phase_${pi}_${Date.now()}`,
-    name: `${phase.days} Days Before Event`,
-    items: phase.tasks.map((text, ti) => ({
-      id: `item_${pi}_${ti}_${Date.now()}`,
+  if (!tpl?.categories) return [];
+  return tpl.categories.map((cat, ci) => ({
+    id: `cat_${ci}_${Date.now()}`,
+    name: cat.name,
+    items: cat.items.map((text, ti) => ({
+      id: `item_${ci}_${ti}_${Date.now()}`,
       text,
       done: false,
     })),
@@ -412,7 +394,7 @@ export default function CheckBox() {
             </button>
             <div>
               <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                {customMode ? "Custom Checklist" : (tpl?.timelineLabel || "Event Checklist")}
+                {customMode ? "Custom Checklist" : "Event Checklist"}
               </div>
               <h1 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0, letterSpacing: "-0.01em" }}>
                 {customMode ? "✏️ Your Checklist" : `${tpl?.icon || ""} ${tpl?.label || ""}`}
@@ -543,12 +525,21 @@ export default function CheckBox() {
                       style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${item.done ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: item.done ? "#C47A2E" : "#fff", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, transition: "all 0.15s" }}>
                       {item.done ? "✓" : ""}
                     </button>
-                    <input
-                      value={item.text}
-                      onChange={e => updateItemText(cat.id, item.id, e.target.value)}
-                      placeholder="Task description..."
-                      style={{ flex: 1, background: "transparent", border: "none", outline: "none", fontFamily: font, fontSize: 14, color: item.done ? "#bbb" : "#2C1A0E", textDecoration: item.done ? "line-through" : "none", transition: "all 0.15s" }}
-                    />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <input
+                        value={item.text}
+                        onChange={e => updateItemText(cat.id, item.id, e.target.value)}
+                        placeholder="Task description..."
+                        style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: font, fontSize: 14, color: item.done ? "#bbb" : "#2C1A0E", textDecoration: item.done ? "line-through" : "none", transition: "all 0.15s" }}
+                      />
+                      {/* Inline vendor button for relevant tasks */}
+                      {!item.done && (() => { const svc = detectServiceFromTask(item.text); return svc ? (
+                        <button onClick={(e) => { e.stopPropagation(); openVendorForm(svc); }}
+                          style={{ marginTop: 3, padding: "2px 9px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "inline-flex", alignItems: "center", gap: 3 }}>
+                          🔍 Find {svc === "Photographer" ? "Photographer" : svc}
+                        </button>
+                      ) : null; })()}
+                    </div>
                     <button onClick={() => deleteItem(cat.id, item.id)}
                       style={{ background: "none", border: "none", color: "#ddd", cursor: "pointer", fontSize: 14, padding: 0, opacity: 0.7, flexShrink: 0 }}>✕</button>
                   </div>
