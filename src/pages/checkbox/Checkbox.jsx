@@ -1,8 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setFilters } from "../../redux/listingFiltersSlice";
+import { setCategoryBudgets } from "../../redux/eventPlanningSlice";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
+
+// Budget ranges per service category (for vendor mini form slider)
+const VENDOR_BUDGET_RANGES = {
+  Caterer:      { min: 5000,  max: 500000, step: 5000,  def: 25000 },
+  Decorator:    { min: 3000,  max: 300000, step: 3000,  def: 15000 },
+  Photographer: { min: 3000,  max: 200000, step: 3000,  def: 15000 },
+  DJ:           { min: 2000,  max: 100000, step: 2000,  def: 10000 },
+};
+const CITIES = ["Delhi", "Noida", "Greater Noida", "Ghaziabad"];
+const fmtINR = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -94,63 +107,63 @@ const TEMPLATES = {
     label: "Birthday Party",
     icon: "🎂",
     categories: [
-      { name: "Planning & Booking", items: ["Set date and guest count", "Finalize budget", "Book venue", "Book caterer", "Book photographer", "Book DJ / musician"] },
-      { name: "Venue & Decor", items: ["Confirm venue booking", "Plan seating arrangement", "Finalize decoration theme", "Book balloon / floral decorator", "Arrange photo booth setup", "Confirm lighting and ambience"] },
-      { name: "Food & Catering", items: ["Finalize menu", "Confirm serving style (buffet / live counter)", "Order birthday cake", "Arrange beverages and mocktails", "Confirm serving staff count"] },
-      { name: "Photography & Media", items: ["Share shot list with photographer", "Confirm videographer if needed", "Plan Reels / story content", "Setup backdrop for portraits"] },
-      { name: "Entertainment", items: ["Finalize DJ set and playlist", "Plan games or activities for guests", "Arrange mic and sound system", "Plan surprise moment if any"] },
-      { name: "Guests & Invites", items: ["Create final guest list", "Send WhatsApp invites", "Track RSVPs", "Arrange parking passes if needed"] },
-      { name: "Day-of", items: ["Confirm vendor arrival times", "Do a final venue walkthrough", "Brief all vendor teams", "Enjoy!"] },
+      { name: "📋 Must Do", items: ["Set budget", "Create guest list", "Select venue", "Send invitations", "Track RSVPs", "Order cake", "Arrange food & drinks"] },
+      { name: "⭐ Recommended", items: ["Book decorator", "Book photographer", "Choose party theme", "Arrange seating"] },
+      { name: "🎁 Nice to Have", items: ["Return gifts", "Entertainment / Games", "Customized backdrop", "Photo booth"] },
     ],
   },
   prewedding: {
     label: "Pre-Wedding Function",
     icon: "💍",
     categories: [
-      { name: "Planning", items: ["Fix date and venue", "Finalize guest list", "Set budget", "Book all vendors"] },
-      { name: "Venue & Decor", items: ["Book venue", "Choose theme (floral / festive / modern)", "Finalize draping and lighting", "Arrange entrance decor", "Organize sitting arrangement"] },
-      { name: "Catering", items: ["Finalize menu (North Indian / fusion)", "Arrange welcome drinks", "Confirm live counters", "Arrange mithai and desserts"] },
-      { name: "Entertainment & Music", items: ["Book DJ", "Plan sangeet / mehendi performances", "Arrange dhol / live music", "Plan special dance segment"] },
-      { name: "Photography & Media", items: ["Brief photographer on must-have shots", "Pre-wedding shoot (if applicable)", "Arrange candid videographer", "Drone coverage if needed"] },
-      { name: "Mehendi & Beauty", items: ["Book mehendi artist", "Arrange touch-up team for bride", "Setup beauty station if needed"] },
-      { name: "Invites & Guests", items: ["Send e-invites", "WhatsApp wedding group", "RSVP tracking", "Arrange guest pick-up if needed"] },
+      { name: "📋 Must Do", items: ["Set budget", "Fix date and venue", "Finalize guest list", "Send invitations", "Track RSVPs", "Book caterer"] },
+      { name: "⭐ Recommended", items: ["Book decorator", "Book photographer / videographer", "Book DJ or live music", "Book mehendi artist", "Plan performances (sangeet / dance)"] },
+      { name: "🎁 Nice to Have", items: ["Drone coverage", "Pre-wedding shoot", "Welcome kits for guests", "Custom stage backdrop"] },
     ],
   },
   wedding: {
-    label: "Wedding Day",
-    icon: "👰",
+    label: "Wedding",
+    icon: "💒",
     categories: [
-      { name: "Venue & Logistics", items: ["Final venue walkthrough", "Confirm mandap setup timing", "Arrange parking management", "Brief event coordinator", "Floral and décor final setup"] },
-      { name: "Catering", items: ["Confirm head count with caterer", "Confirm menu", "Arrange cocktail/welcome area", "Confirm number of servers", "Arrange separate kids menu if needed"] },
-      { name: "Photography & Media", items: ["Confirm photographer arrival time", "Brief on ceremony moments", "Drone coverage plan", "Live streaming setup if needed", "Same-day edit arrangements"] },
-      { name: "Bridal & Groom Prep", items: ["Bridal makeup and hair", "Bridal outfit final fitting", "Groom outfit ironing/steaming", "Family outfits coordination"] },
-      { name: "Ceremony", items: ["Pandit / priest confirmed", "Mandap setup complete", "Varmala and pheras sequence", "Ring ceremony if planned"] },
-      { name: "Payments & Admin", items: ["All vendor balance payments ready", "Contracts filed", "Thank-you gifts for family", "Emergency fund in cash"] },
+      { name: "📋 Must Do", items: ["Set budget", "Finalize wedding date", "Book venue", "Book caterer", "Create guest list", "Send invitations", "Track RSVPs", "Arrange transportation", "Finalize menu"] },
+      { name: "⭐ Recommended", items: ["Book photographer / videographer", "Book decorator", "Book makeup artist", "Arrange accommodation for guests", "Wedding website / invitation page"] },
+      { name: "🎁 Nice to Have", items: ["Pre-wedding shoot", "Live streaming", "Customized gifts / favors", "Guest welcome kits", "Digital guestbook"] },
+    ],
+  },
+  anniversary: {
+    label: "Anniversary",
+    icon: "💕",
+    categories: [
+      { name: "📋 Must Do", items: ["Decide celebration style", "Set budget", "Select venue / restaurant", "Invite guests", "Order cake"] },
+      { name: "⭐ Recommended", items: ["Decorations", "Photographer", "Gift planning", "Special dining setup"] },
+      { name: "🎁 Nice to Have", items: ["Memory slideshow", "Couple photoshoot", "Personalized gifts", "Live music"] },
     ],
   },
   corporate: {
     label: "Corporate Event",
     icon: "🏢",
     categories: [
-      { name: "Pre-Event Approvals & Admin", items: ["Get budget approved from management", "Obtain venue permission letter / NOC", "Share event brief with all stakeholders", "Create and circulate event agenda", "Confirm headcount and dietary preferences from HR"] },
-      { name: "Venue & AV Setup", items: ["Book conference hall or banquet", "Confirm AV equipment — projector, mics, speakers", "Arrange stage / podium setup", "Setup registration / check-in desk", "Place company branding and signage", "Arrange backup power / generator if outdoor"] },
-      { name: "Catering", items: ["Finalize menu — veg / non-veg / jain options", "Arrange tea-coffee breaks", "Confirm catering headcount and serving style", "Arrange welcome drinks / mocktails", "Note allergy or special dietary requirements"] },
-      { name: "Entertainment & Program", items: ["Confirm MC / anchor", "Prepare run-of-show document", "Brief all performers and speakers", "Arrange music and sound check", "Plan award or recognition ceremony if applicable", "Prepare prizes / trophies / certificates"] },
-      { name: "Transport & Logistics", items: ["Arrange employee drop and pick-up if needed", "Confirm parking capacity at venue", "Share travel details with all attendees", "Arrange accommodation if outstation event"] },
-      { name: "Guest Management & Invites", items: ["Send official invitations via email / WhatsApp", "Set up RSVP tracker", "Prepare printed name badges", "Create seating plan", "Brief front-desk team on check-in process"] },
-      { name: "Photography & Media", items: ["Book corporate event photographer", "Brief photographer on key moments to capture", "Plan group photo slot in the agenda", "Arrange media / press coverage if needed", "Setup photo sharing link for post-event"] },
-      { name: "Day-of Execution", items: ["Arrive 1 hour early for setup check", "Brief all vendor teams together", "Do final AV and mic check", "Confirm catering setup and serving timeline", "Keep event day contact list handy", "Collect feedback from attendees post-event"] },
+      { name: "📋 Must Do", items: ["Define objective", "Set budget", "Book venue", "Confirm attendee count", "Arrange AV equipment", "Finalize agenda", "Arrange catering"] },
+      { name: "⭐ Recommended", items: ["Speaker management", "Branding materials", "Registration desk", "Event photographer"] },
+      { name: "🎁 Nice to Have", items: ["Event merchandise", "Networking lounge", "Employee awards", "Feedback kiosk", "Live event streaming"] },
+    ],
+  },
+  party: {
+    label: "Party / Get-together",
+    icon: "🎉",
+    categories: [
+      { name: "📋 Must Do", items: ["Create guest list", "Select venue", "Arrange food & drinks", "Send invitations"] },
+      { name: "⭐ Recommended", items: ["Decorations", "Music / Playlist", "Seating arrangement"] },
+      { name: "🎁 Nice to Have", items: ["Games & activities", "Theme-based decor", "Photo corner", "Customized party favors"] },
     ],
   },
   custom: {
     label: "Custom Event",
     icon: "✨",
     categories: [
-      { name: "Planning", items: ["Set date and budget", "Finalize guest list", "Book key vendors"] },
-      { name: "Venue & Decor", items: ["Book venue", "Finalize décor theme"] },
-      { name: "Catering", items: ["Book caterer", "Finalize menu"] },
-      { name: "Media", items: ["Book photographer"] },
-      { name: "Guests", items: ["Send invitations", "Track RSVPs"] },
+      { name: "📋 Must Do", items: ["Define event purpose", "Set budget", "Select venue", "Create guest list", "Send invitations", "Arrange required vendors"] },
+      { name: "⭐ Recommended", items: ["Decorations", "Photographer", "Event coordinator", "Transportation planning"] },
+      { name: "🎁 Nice to Have", items: ["Personalized branding", "Event souvenirs", "Special entertainment", "Social media coverage"] },
     ],
   },
 };
@@ -171,10 +184,30 @@ const buildFromTemplate = (templateKey) => {
 export default function CheckBox() {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
   const routeTemplateKey = location.state?.templateKey;  // from CheckboxPicker step 2
   const customMode       = location.state?.customMode === true; // blank custom checklist
 
   const [vendorPanel, setVendorPanel] = useState(null);
+  // Vendor mini form (shown when clicking Find Vendors category)
+  const [vendorFormOpen, setVendorFormOpen] = useState(false);
+  const [vendorFormService, setVendorFormService] = useState(null); // "Caterer" | "Decorator" etc.
+  const [vendorForm, setVendorForm] = useState({ eventType: "", city: "", date: "", budget: 25000 });
+  const openVendorForm = (svc) => {
+    const range = VENDOR_BUDGET_RANGES[svc];
+    setVendorFormService(svc);
+    setVendorForm({ eventType: "", city: "", date: "", budget: range.def });
+    setVendorFormOpen(true);
+  };
+  const submitVendorForm = (e) => {
+    e.preventDefault();
+    dispatch(setFilters({ serviceType: vendorFormService, eventType: vendorForm.eventType, locationType: vendorForm.city, date: vendorForm.date }));
+    dispatch(setCategoryBudgets({ [vendorFormService]: vendorForm.budget }));
+    setVendorFormOpen(false);
+    navigate(`/listings?serviceType=${vendorFormService}`, {
+      state: { fromChecklist: true, budgetMax: vendorForm.budget, fromBudgetAllocator: true },
+    });
+  };
   const [checklistSaved, setChecklistSaved] = useState(() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } });
   const [templateKey, setTemplateKey] = useState(routeTemplateKey || "birthday");
   const [categories, setCategories] = useState([]);
@@ -457,8 +490,89 @@ export default function CheckBox() {
           </button>
         </div>
 
+        {/* ── Find Vendors section ── */}
+        <div style={{ marginTop: 32, padding: "24px", background: "#FFFCF5", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
+          <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px" }}>🛍️ Find Vendors</h3>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 18px" }}>Set your budget and browse verified vendors for your event.</p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
+            {Object.entries(VENDOR_BUDGET_RANGES).map(([svc, range]) => (
+              <button key={svc} onClick={() => openVendorForm(svc)}
+                style={{ padding: "14px 10px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.transform = "translateY(0)"; }}
+              >
+                <span style={{ fontSize: 24 }}>{svc === "Caterer" ? "🍽️" : svc === "Decorator" ? "🎀" : svc === "Photographer" ? "📸" : "🎵"}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{svc === "Photographer" ? "Photography" : svc}</span>
+                <span style={{ fontSize: 10, color: "#9B7450" }}>from {fmtINR(range.min)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
       </div>
       </div>
+
+      {/* ── Vendor mini form modal ── */}
+      {vendorFormOpen && vendorFormService && (() => {
+        const range = VENDOR_BUDGET_RANGES[vendorFormService];
+        return (
+          <>
+            <div onClick={() => setVendorFormOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9998, backdropFilter: "blur(3px)" }} />
+            <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 9999, background: "#FFFCF5", borderRadius: 20, width: "min(95vw,440px)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font, overflow: "hidden" }}>
+              <div style={{ padding: "16px 22px 12px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>
+                  {vendorFormService === "Caterer" ? "🍽️" : vendorFormService === "Decorator" ? "🎀" : vendorFormService === "Photographer" ? "📸" : "🎵"} Find {vendorFormService === "Photographer" ? "Photographers" : vendorFormService + "s"}
+                </div>
+                <p style={{ fontSize: 11.5, color: "#9B7450", margin: 0 }}>3 quick questions + your budget</p>
+              </div>
+              <form onSubmit={submitVendorForm} style={{ padding: "16px 22px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                {/* Event Type */}
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Type *</label>
+                  <select required value={vendorForm.eventType} onChange={e => setVendorForm(p => ({ ...p, eventType: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                    <option value="">Select event type</option>
+                    {["Birthday", "Wedding", "Anniversary", "Pre Wedding", "Corporate Event", "Party / Get-together", "Others"].map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                </div>
+                {/* City */}
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>City *</label>
+                  <select required value={vendorForm.city} onChange={e => setVendorForm(p => ({ ...p, city: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
+                    <option value="">Select city</option>
+                    {CITIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                {/* Date */}
+                <div>
+                  <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Date *</label>
+                  <input required type="date" value={vendorForm.date} min={new Date().toISOString().split("T")[0]}
+                    onChange={e => setVendorForm(p => ({ ...p, date: e.target.value }))}
+                    style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                {/* Budget slider */}
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                    <label style={{ fontSize: 11.5, fontWeight: 700, color: "#6B3A1F" }}>{vendorFormService} Budget</label>
+                    <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtINR(vendorForm.budget)}</span>
+                  </div>
+                  <input type="range" min={range.min} max={range.max} step={range.step} value={vendorForm.budget}
+                    onChange={e => setVendorForm(p => ({ ...p, budget: Number(e.target.value) }))}
+                    style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 4 }} />
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                    <span>{fmtINR(range.min)}</span><span>{fmtINR(range.max)}</span>
+                  </div>
+                </div>
+                <button type="submit"
+                  style={{ width: "100%", marginTop: 2, padding: "12px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+                  Browse {vendorFormService === "Photographer" ? "Photographers" : vendorFormService + "s"} →
+                </button>
+              </form>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }

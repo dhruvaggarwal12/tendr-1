@@ -22,10 +22,12 @@ const INTRO = {
 
 const EVENT_TYPES = [
   { id: "birthday",    label: "Birthday Party",        icon: "🎂" },
+  { id: "wedding",     label: "Wedding",               icon: "💒" },
+  { id: "anniversary", label: "Anniversary",           icon: "💕" },
   { id: "prewedding",  label: "Pre-Wedding Function",  icon: "💍" },
-  { id: "wedding",     label: "Wedding Day",            icon: "👰" },
+  { id: "party",       label: "Party / Get-together",  icon: "🎉" },
   { id: "corporate",   label: "Corporate Event",        icon: "🏢" },
-  { id: "custom",      label: "Other / Custom Event",   icon: "✨" },
+  { id: "custom",      label: "Custom Event",           icon: "✨" },
 ];
 
 export default function CheckboxPicker() {
@@ -108,16 +110,16 @@ export default function CheckboxPicker() {
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginBottom: 32 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, marginBottom: 32 }}>
             {EVENT_TYPES.map(({ id, label, icon }) => (
               <button key={id}
                 onClick={() => navigate("/prebuilt-checklist", { state: { templateKey: id } })}
-                style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 16px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, textAlign: "center", transition: "all 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
+                style={{ background: "#FFFCF5", borderRadius: 20, padding: "32px 20px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(139,69,19,0.07)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 12, textAlign: "center", transition: "all 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.18)"; e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.background = "rgba(196,122,46,0.03)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.boxShadow = "0 3px 14px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.background = "#FFFCF5"; }}
               >
-                <span style={{ fontSize: 36 }}>{icon}</span>
-                <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{label}</span>
+                <span style={{ fontSize: 44 }}>{icon}</span>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>{label}</span>
               </button>
             ))}
           </div>
