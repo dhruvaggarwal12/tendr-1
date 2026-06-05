@@ -204,35 +204,38 @@ export function buildSummaryMessage(formAnswers, botAnswers, vendorName, service
     botAnswers.queryType          ? `  ❓ Query: ${botAnswers.queryType}` : null,
     botAnswers.eventTiming        ? `  🕐 Timing: ${botAnswers.eventTiming}` : null,
     botAnswers.venueAddress       ? `  📌 Address: ${botAnswers.venueAddress}` : null,
+    botAnswers.selectedPackage    ? `  📦 Package: ${botAnswers.selectedPackage}` : null,
   ].filter(Boolean);
   return lines.join("\n");
 }
 
+/** Packages per service type — used in chat wizard and admin send-packages */
+export const CHAT_PACKAGES = {
+  Caterer: [
+    { tier: "Basic",    desc: "Buffet · Up to 40 guests · Veg menu · Basic serving" },
+    { tier: "Standard", desc: "Live counters · Up to 80 guests · Veg/Non-Veg · Staff included" },
+    { tier: "Premium",  desc: "Custom menu · 80+ guests · Live counters · Fine dining setup" },
+  ],
+  Photographer: [
+    { tier: "Basic",    desc: "2-3 hrs coverage · 1 photographer · 100+ edited photos" },
+    { tier: "Standard", desc: "4-6 hrs · 1 photographer · 300+ photos · Highlight reel" },
+    { tier: "Premium",  desc: "Full day · 2 photographers · 500+ photos · Teaser video" },
+  ],
+  Decorator: [
+    { tier: "Basic",    desc: "Balloon & fairy lights · Basic backdrop · Table decor" },
+    { tier: "Standard", desc: "Themed backdrop · Floral decor · Custom signage · Lighting" },
+    { tier: "Premium",  desc: "Full venue styling · Custom installations · Stage setup" },
+  ],
+  DJ: [
+    { tier: "Basic",    desc: "3 hrs set · 1 DJ · Standard sound system" },
+    { tier: "Standard", desc: "5 hrs · 1 DJ · Pro sound · LED lighting · Wireless mic" },
+    { tier: "Premium",  desc: "Full night · DJ + assistant · Premium sound · Fog machine" },
+  ],
+};
+
 /** Build the auto package MCQ message for a service type */
 export function buildAutoPackageMessage(serviceType) {
-  const PACKAGES = {
-    Caterer:      [
-      { tier: "Basic",    desc: "Buffet · Up to 40 guests · Veg menu · Basic serving" },
-      { tier: "Standard", desc: "Live counters · Up to 80 guests · Veg/Non-Veg · Staff included" },
-      { tier: "Premium",  desc: "Custom menu · 80+ guests · Live counters · Fine dining setup" },
-    ],
-    Photographer: [
-      { tier: "Basic",    desc: "2-3 hrs coverage · 1 photographer · 100+ edited photos" },
-      { tier: "Standard", desc: "4-6 hrs · 1 photographer · 300+ photos · Highlight reel" },
-      { tier: "Premium",  desc: "Full day · 2 photographers · 500+ photos · Teaser video" },
-    ],
-    Decorator:    [
-      { tier: "Basic",    desc: "Balloon & fairy lights · Basic backdrop · Table decor" },
-      { tier: "Standard", desc: "Themed backdrop · Floral decor · Custom signage · Lighting" },
-      { tier: "Premium",  desc: "Full venue styling · Custom installations · Stage setup" },
-    ],
-    DJ:           [
-      { tier: "Basic",    desc: "3 hrs set · 1 DJ · Standard sound system" },
-      { tier: "Standard", desc: "5 hrs · 1 DJ · Pro sound · LED lighting · Wireless mic" },
-      { tier: "Premium",  desc: "Full night · DJ + assistant · Premium sound · Fog machine" },
-    ],
-  };
-  const pkgs = PACKAGES[serviceType];
+  const pkgs = CHAT_PACKAGES[serviceType];
   if (!pkgs) return null;
   const lines = [
     `📦 Package Options for ${serviceType}`,

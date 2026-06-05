@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import router from "../router";
 import { io } from "socket.io-client";
-import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION } from "../utils/chatbot";
+import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION, CHAT_PACKAGES } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 
@@ -415,6 +415,13 @@ export default function VendorChatModal() {
   const botAnswersRef = useRef({});
   const botDoneRef = useRef(isExistingChat || botFlow.length === 0);
   const summarySentRef = useRef(false);
+  // Package step — shown after last bot question, before chat opens (vendor chats only)
+  const PACKAGE_SERVICES = ['Caterer', 'Photographer', 'Decorator', 'DJ'];
+  const shouldShowPkgStep = !isConcierge && PACKAGE_SERVICES.includes(vendor?.serviceType) && !isExistingChat;
+  const [showPkgStep, setShowPkgStep] = useState(false);
+  const [pkgExpanded, setPkgExpanded] = useState({});
+  const [selectedPkg, setSelectedPkg] = useState(null);
+  const chatPackages = CHAT_PACKAGES[vendor?.serviceType] || [];
 
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
@@ -629,11 +636,25 @@ export default function VendorChatModal() {
     botAnswersRef.current = newAnswers;
     if (botStep + 1 < botFlow.length) {
       setBotStep(p => p + 1);
+    } else if (shouldShowPkgStep) {
+      // Show package selection before opening chat
+      setBotAnswers(newAnswers);
+      botAnswersRef.current = newAnswers;
+      setShowPkgStep(true);
     } else {
       setBotDone(true);
       botDoneRef.current = true;
       openConversation(newAnswers);
     }
+  };
+
+  const handlePkgConfirm = (tier) => {
+    const answersWithPkg = { ...botAnswersRef.current, selectedPackage: tier ? `${tier} Package — ${chatPackages.find(p => p.tier === tier)?.desc || ""}` : null };
+    setSelectedPkg(tier);
+    setShowPkgStep(false);
+    setBotDone(true);
+    botDoneRef.current = true;
+    openConversation(answersWithPkg);
   };
 
   const handleFinalise = () => {
@@ -920,6 +941,50 @@ export default function VendorChatModal() {
             </>
           )}
 
+          {/* Package selection step */}
+          {showPkgStep && !botDone && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "4px 0" }}>
+              <div style={{ alignSelf: "flex-start", maxWidth: "84%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.5 }}>
+                📦 Would you like to choose a package? This helps us give you a faster quote.
+              </div>
+              {chatPackages.map(p => {
+                const key = p.tier;
+                const open = !!pkgExpanded[key];
+                const sel = selectedPkg === key;
+                return (
+                  <div key={key} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden", cursor: "pointer" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 14px" }}
+                      onClick={() => setSelectedPkg(sel ? null : key)}>
+                      <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        {sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}
+                      </div>
+                      <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{key}</div>
+                      <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }}
+                        style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
+                    </div>
+                    {open && (
+                      <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                        <p style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.6, margin: "8px 0 0" }}>{p.desc}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                {selectedPkg && (
+                  <button onClick={() => handlePkgConfirm(selectedPkg)}
+                    style={{ flex: 2, padding: "11px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    Continue with {selectedPkg} →
+                  </button>
+                )}
+                <button onClick={() => handlePkgConfirm(null)}
+                  style={{ flex: 1, padding: "11px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                  Skip
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Waiting state */}
           {botDone && !approved && (
             <div style={{ textAlign: "center", padding: "40px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
@@ -1125,7 +1190,7 @@ export default function VendorChatModal() {
             </>
           ) : (
             <div style={{ textAlign: "center", fontSize: 12, color: "#9B7450", padding: "4px 0" }}>
-              {botDone ? "Waiting for team approval…" : "Answer the questions above to continue"}
+              {botDone ? "Waiting for team approval…" : showPkgStep ? "Choose a package or skip to continue" : "Answer the questions above to continue"}
             </div>
           )}
         </div>

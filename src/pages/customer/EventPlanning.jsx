@@ -526,7 +526,10 @@ const EventPlanning = () => {
             </div>
             {/* Packages — expandable cards */}
             <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>📦 Choose a Package</div>
+                <button onClick={() => setWizardStep(s => s + 1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#9B7450", padding: 0, fontFamily: "'Outfit',sans-serif" }}>Skip →</button>
+              </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {CAT_PACKAGES.Caterer.map(p => {
                   const sel = selectedPackages.Caterer === p.tier;
