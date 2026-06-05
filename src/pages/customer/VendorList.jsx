@@ -533,6 +533,13 @@ const VendorList = () => {
             </div>
           </div>
 
+          {/* Corporate filter active indicator */}
+          {formEventType === "Corporate Event" && (
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 13px", borderRadius: 100, background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", fontSize: 11, fontWeight: 600, color: "#7c3aed", marginBottom: 10 }}>
+              🏢 Showing corporate-experienced vendors — based on your Corporate Event type
+            </div>
+          )}
+
           {/* How to book strip — shown for all users */}
           {showHint && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", marginBottom: 16, fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
