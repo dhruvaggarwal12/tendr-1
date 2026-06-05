@@ -47,6 +47,8 @@ const VendorList = () => {
     additionalInfo,
     budget: formBudget,
   } = useSelector((state) => state.eventPlanning.formData);
+  const bookingType = useSelector((s) => s.eventPlanning.bookingType || "");
+  const isNormalFlow = bookingType === "you-do-it";
   const categoryBudgets = useSelector((s) => s.eventPlanning.categoryBudgets || {});
 
   // Categories from event planning flow — persists in Redux
@@ -73,6 +75,7 @@ const VendorList = () => {
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
   const [showHint, setShowHint] = useState(true);
+  const [showTip, setShowTip] = useState(false); // 20-sec tip popup
   const [vendorList, setVendorList] = useState([]);
   const [paginationInfo, setPaginationInfo] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -190,6 +193,12 @@ const VendorList = () => {
     navigate("/booking", { replace: true });
   }, []); // eslint-disable-line
 
+  // 20-sec tip popup (compare or save depending on flow)
+  useEffect(() => {
+    const t = setTimeout(() => setShowTip(true), 20000);
+    return () => clearTimeout(t);
+  }, []);
+
   // Restore saved scroll position after vendors load (not on mount — vendors aren't rendered yet)
   const [pendingScroll, setPendingScroll] = useState(() => {
     const saved = sessionStorage.getItem("listings_scroll_y");
@@ -211,7 +220,7 @@ const VendorList = () => {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
       ...(currentCatBudget && { maxPrice: currentCatBudget }),
-      ...(corporateOnly && { hasCorporateExperience: true }),
+      ...((corporateOnly || formEventType === "Corporate Event") && { hasCorporateExperience: true }),
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
     return getVendors(payload)
@@ -227,7 +236,7 @@ const VendorList = () => {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
       ...(currentCatBudget && { maxPrice: currentCatBudget }),
-      ...(corporateOnly && { hasCorporateExperience: true }),
+      ...((corporateOnly || formEventType === "Corporate Event") && { hasCorporateExperience: true }),
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
     getVendors(payload)
@@ -384,7 +393,8 @@ const VendorList = () => {
               @media (max-width: 639px) { .mobile-cat-switcher { display: block !important; } }
             `}</style>
 
-            <div style={{ marginBottom: 10 }}>
+            <div style={{ marginBottom: 10 }} className="vendor-heading-wrap">
+              <style>{`@media(max-width:639px){.vendor-heading-wrap h1{display:none!important}}`}</style>
               <h1 style={{ fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 26, color: "#1a1a1a", margin: 0, lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.5)", textUnderlineOffset: 5 }}>
                 {serviceType || "All"} Vendors
               </h1>
@@ -406,16 +416,16 @@ const VendorList = () => {
                     key={label}
                     style={{
                       fontFamily: "'Outfit', sans-serif",
-                      fontSize: 13,
+                      fontSize: 11,
                       fontWeight: 500,
-                      padding: "5px 14px",
+                      padding: "3px 10px",
                       borderRadius: 100,
                       background: "#f5f0e8",
                       color: "#4a2c0e",
                       border: "1px solid rgba(139,69,19,0.18)",
                       display: "inline-flex",
                       alignItems: "center",
-                      gap: 5,
+                      gap: 4,
                     }}
                   >
                     {showLabel && (
@@ -432,32 +442,19 @@ const VendorList = () => {
               {/* Sort controls — left */}
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
-                >
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                   <option value="rankingScore">Best Match</option>
                   <option value="rating">Rating</option>
                   <option value="price">Price</option>
                   <option value="experience">Experience</option>
                 </select>
-                <select
-                  value={sortOrder}
-                  onChange={(e) => setSortOrder(e.target.value)}
-                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
-                >
+                <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                   <option value="desc">High to Low</option>
                   <option value="asc">Low to High</option>
                 </select>
-                {/* Corporate filter — admin only */}
-                {user?.isAdmin && (
-                  <button
-                    onClick={() => dispatch(setFilters({ corporateOnly: !corporateOnly }))}
-                    style={{ fontSize: 11, padding: "4px 12px", borderRadius: 100, border: `1.5px solid ${corporateOnly ? "rgba(124,58,237,0.5)" : "rgba(124,58,237,0.2)"}`, background: corporateOnly ? "rgba(124,58,237,0.1)" : "#fff", color: "#7c3aed", cursor: "pointer", fontFamily: "'Outfit',sans-serif", fontWeight: 700 }}>
-                    🏢 Corporate Exp. {corporateOnly ? "✓" : ""}
-                  </button>
-                )}
+                {/* Corporate filter is now auto-applied when eventType === "Corporate Event" — no manual toggle */}
               </div>
 
               {/* Filters button — right side, slightly inset */}
@@ -536,38 +533,37 @@ const VendorList = () => {
             </div>
           </div>
 
-          {/* What to do next hint — horizontal single-line banner */}
-          {token && showHint && (
-            <div style={{
-              display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap",
-              background: "linear-gradient(135deg,#2C1A0E,#4A2810)",
-              borderRadius: 12, padding: "11px 16px", marginBottom: 16,
-              fontFamily: "'Outfit', sans-serif",
-              boxShadow: "0 4px 16px rgba(44,26,14,0.18)",
-            }}>
+          {/* How to book strip — shown for all users */}
+          {showHint && (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", marginBottom: 16, fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
               <span style={{ fontSize: 16, flexShrink: 0 }}>💡</span>
               <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500, flexShrink: 0 }}>How to book:</span>
-              {[
-                { step: "1", label: "Quick View" },
-                { step: "→" },
-                { step: "2", label: "Request to Chat" },
-                { step: "→" },
-                { step: "3", label: "Finalise Vendor" },
-                { step: "→" },
-                { step: "4", label: "Review & Pay" },
-              ].map((item, i) =>
+              {[{ step: "1", label: "Quick View" }, { step: "→" }, { step: "2", label: "Request to Chat" }, { step: "→" }, { step: "3", label: "Finalise Vendor" }, { step: "→" }, { step: "4", label: "Review & Pay" }].map((item, i) =>
                 item.label ? (
-                  <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap" }}>
-                    {item.step}. {item.label}
-                  </span>
+                  <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap" }}>{item.step}. {item.label}</span>
                 ) : (
                   <span key={i} style={{ color: "rgba(204,171,74,0.4)", fontSize: 11, flexShrink: 0 }}>›</span>
                 )
               )}
-              <button
-                onClick={() => setShowHint(false)}
-                style={{ marginLeft: "auto", background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 12, width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
-              >✕</button>
+              <button onClick={() => setShowHint(false)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 12, width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+            </div>
+          )}
+
+          {/* 20-sec tip popup */}
+          {showTip && (
+            <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 9000, background: "#FFFCF5", borderRadius: 14, padding: "14px 18px", boxShadow: "0 8px 32px rgba(44,26,14,0.2)", border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit',sans-serif", maxWidth: 320, width: "90%" }}>
+              <button onClick={() => setShowTip(false)} style={{ position: "absolute", top: 8, right: 10, background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 14, lineHeight: 1 }}>✕</button>
+              {isNormalFlow ? (
+                <>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>💡 Compare vendors side by side</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>Tap the <strong>♡ heart icon</strong> on any vendor card to add them to compare. Then check Compare Vendors in the sidebar.</div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>💡 Don't lose a great vendor</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>Tap the <strong>Save button</strong> on any vendor card to bookmark them. Find saved vendors in the sidebar anytime.</div>
+                </>
+              )}
             </div>
           )}
 

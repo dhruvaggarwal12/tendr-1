@@ -868,6 +868,18 @@ const EventPlanning = () => {
             );
           })()}
 
+          {/* How to book strip — smart planning */}
+          <div style={{ width: "100%", maxWidth: 1100, marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
+              <span style={{ fontSize: 16, flexShrink: 0 }}>💡</span>
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500, flexShrink: 0 }}>How this works:</span>
+              {[{ step: "1", label: "Quick View" }, { step: "→" }, { step: "2", label: "Confirm Package" }, { step: "→" }, { step: "3", label: "Team Coordinates" }, { step: "→" }, { step: "4", label: "Review & Pay" }].map((item, i) =>
+                item.label ? <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap" }}>{item.step}. {item.label}</span>
+                : <span key={i} style={{ color: "rgba(204,171,74,0.4)", fontSize: 11, flexShrink: 0 }}>›</span>
+              )}
+            </div>
+          </div>
+
           {/* Vendor cards — 4-column compact, normal flow style */}
           <style>{`@media(max-width:900px){.smart-vendor-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:540px){.smart-vendor-grid{grid-template-columns:1fr!important}}`}</style>
           <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }} className="smart-vendor-grid">
@@ -1682,9 +1694,8 @@ const EventPlanning = () => {
                 value={formData[currentQuestion.id] || ""}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box", display: "block" }}
-                className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A]
-              rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                style={{ width: "100%", boxSizing: "border-box", display: "block", maxWidth: "100%", minWidth: 0 }}
+                className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
               />
             )}
 

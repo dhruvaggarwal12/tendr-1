@@ -399,7 +399,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           )}
 
           {/* My Services checklist — only in normal (you-do-it) booking flow */}
-          {selectedVendors.length > 0 && isOnVendorFlow && bookingType === 'you-do-it' && (
+          {selectedVendors.length > 0 && location.pathname.startsWith('/listings') && bookingType === 'you-do-it' && (
             <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
               <p style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>My Services</p>
               {selectedVendors.map(svc => {
@@ -778,7 +778,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
 
             {/* My Services — only in normal (you-do-it) booking flow */}
-            {selectedVendors.length > 0 && isOnVendorFlow && bookingType === 'you-do-it' && (
+            {selectedVendors.length > 0 && location.pathname.startsWith('/listings') && bookingType === 'you-do-it' && (
               <div style={{ padding: "10px 16px", borderTop: "1px solid rgba(196,122,46,0.12)", background: "rgba(196,122,46,0.04)" }}>
                 <p style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 7px" }}>My Services</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>

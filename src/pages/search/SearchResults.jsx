@@ -28,6 +28,9 @@ export default function SearchResults() {
   const [activeCat, setActiveCat] = useState(rawCats[0] || "");
   const [activeLoc, setActiveLoc] = useState(rawLocs[0] || "");
   const [topRatedOnly, setTopRatedOnly] = useState(false);
+  const [showTip, setShowTip] = useState(false);
+  const [showHowToBook, setShowHowToBook] = useState(true);
+  useEffect(() => { const t = setTimeout(() => setShowTip(true), 20000); return () => clearTimeout(t); }, []);
 
   // Re-sync when URL changes (user searches again from this page)
   useEffect(() => {
@@ -169,6 +172,26 @@ export default function SearchResults() {
         {rawBudget > 0 && (
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 100, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontWeight: 600, color: "#7A5535", marginBottom: 16 }}>
             💰 Budget: up to ₹{Number(rawBudget).toLocaleString("en-IN")}
+          </div>
+        )}
+
+        {/* How to book strip */}
+        {showHowToBook && (
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", marginBottom: 16, fontFamily: font, boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
+            <span style={{ fontSize: 16, flexShrink: 0 }}>💡</span>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500, flexShrink: 0 }}>How to book:</span>
+            {[{ step: "1", label: "Quick View" }, { step: "→" }, { step: "2", label: "Request to Chat" }, { step: "→" }, { step: "3", label: "Finalise Vendor" }, { step: "→" }, { step: "4", label: "Review & Pay" }].map((item, i) =>
+              item.label ? <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap" }}>{item.step}. {item.label}</span>
+              : <span key={i} style={{ color: "rgba(204,171,74,0.4)", fontSize: 11, flexShrink: 0 }}>›</span>
+            )}
+            <button onClick={() => setShowHowToBook(false)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 12, width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+          </div>
+        )}
+        {showTip && (
+          <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 9000, background: "#FFFCF5", borderRadius: 14, padding: "14px 18px", boxShadow: "0 8px 32px rgba(44,26,14,0.2)", border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, maxWidth: 320, width: "90%" }}>
+            <button onClick={() => setShowTip(false)} style={{ position: "absolute", top: 8, right: 10, background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 14, lineHeight: 1 }}>✕</button>
+            <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>💡 Don't lose a great vendor</div>
+            <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>Tap the <strong>Save button</strong> on any vendor card to bookmark them. Find saved vendors in the sidebar anytime.</div>
           </div>
         )}
 

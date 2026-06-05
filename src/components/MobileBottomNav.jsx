@@ -191,17 +191,22 @@ function BottomNavInner() {
             </div>
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Products</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
-              {PRODUCTS.map(({ emoji, label, href, newTab, path }) => (
-                <button key={label}
-                  onClick={() => { if (newTab) { window.open(path, "_blank"); } else { navigate(href); } setProductsOpen(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
-                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
-                  onTouchEnd={e => e.currentTarget.style.background = "#fff"}
-                >
-                  <span style={{ fontSize: 22, lineHeight: 1 }}>{emoji}</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3 }}>{label}</span>
-                </button>
-              ))}
+              {PRODUCTS.map(({ emoji, label, href, newTab, path }) => {
+                const savedKey = label === "Checklist" ? "tendr_checklist_saved" : label === "Timeline" ? "tendr_timeline_saved" : label === "Budget Allocator" ? "tendr_budget_saved" : null;
+                const isSaved = savedKey ? (() => { try { return localStorage.getItem(savedKey) === "true"; } catch { return false; } })() : false;
+                return (
+                  <button key={label}
+                    onClick={() => { if (newTab) { window.open(path, "_blank"); } else { navigate(href); } setProductsOpen(false); }}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "13px 14px", borderRadius: 14, border: `1.5px solid ${isSaved ? "rgba(34,197,94,0.3)" : "rgba(196,122,46,0.15)"}`, background: isSaved ? "rgba(34,197,94,0.04)" : "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", position: "relative" }}
+                    onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                    onTouchEnd={e => e.currentTarget.style.background = isSaved ? "rgba(34,197,94,0.04)" : "#fff"}
+                  >
+                    <span style={{ fontSize: 22, lineHeight: 1 }}>{emoji}</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3, flex: 1 }}>{label}</span>
+                    {isSaved && <span style={{ fontSize: 9, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.12)", borderRadius: 100, padding: "2px 7px", flexShrink: 0 }}>✓ Saved</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </>
@@ -259,6 +264,14 @@ function BottomNavInner() {
           const active = isActive(paths);
           const Icon = NAV_ICONS[label];
           const isBrowseActive = label === "Browse" && browseOpen;
+          // Green dot: Products tab gets a dot if any tool has been saved
+          const hasProductsSaved = label === "Products" && (() => {
+            try {
+              return localStorage.getItem("tendr_checklist_saved") === "true" ||
+                     localStorage.getItem("tendr_timeline_saved") === "true" ||
+                     localStorage.getItem("tendr_budget_saved") === "true";
+            } catch { return false; }
+          })();
           return (
             <button
               key={label}
@@ -282,7 +295,13 @@ function BottomNavInner() {
                 background: (active || isBrowseActive) ? "#C47A2E" : "transparent",
                 transition: "background 0.2s",
               }} />
-              {Icon(active || isBrowseActive)}
+              {/* Icon wrapper with green dot */}
+              <div style={{ position: "relative" }}>
+                {Icon(active || isBrowseActive)}
+                {hasProductsSaved && (
+                  <div style={{ position: "absolute", top: -2, right: -3, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: "1.5px solid #FFFCF5" }} />
+                )}
+              </div>
               <span style={{
                 fontSize: 10, fontWeight: (active || isBrowseActive) ? 700 : 400,
                 color: (active || isBrowseActive) ? "#C47A2E" : "#999",
