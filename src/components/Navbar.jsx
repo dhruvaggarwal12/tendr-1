@@ -91,12 +91,12 @@ function SavedVendorsInline({ asStrip = false }) {
           🔀 Compare ({compareSelected.length})
         </button>
       ) : (
-        <button onClick={() => navigate("/listings")}
-          style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+        <button onClick={() => setOpen(true)}
+          style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}>
-          Compare Vendors
-          <span style={{ background: "#CCAB4A", color: "#fff", borderRadius: 100, padding: "1px 8px", fontSize: 12, fontWeight: 800 }}>{compareSelected.length}</span>
+          🔀 Compare
+          <span style={{ background: "#CCAB4A", color: "#fff", borderRadius: 100, padding: "1px 7px", fontSize: 11, fontWeight: 800 }}>{compareSelected.length}</span>
         </button>
       )}
 

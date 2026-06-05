@@ -315,13 +315,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             )}
           </div>
 
-          {/* Compare Vendors (below search, if any) */}
+          {/* Compare Vendors (below search) */}
           {compareSelected.length > 0 && (
             <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
-              <button onClick={() => setSavedOpen(true)}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.08)", cursor: "pointer", fontFamily: font }}>
+              <button onClick={() => { setSavedOpen(false); setTimeout(() => setSavedOpen(true), 10); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.1)", cursor: "pointer", fontFamily: font }}>
                 <span style={{ fontSize: 13 }}>🔀</span>
-                <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#CCAB4A", textAlign: "left" }}>Compare Vendors</span>
+                <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#C47A2E", textAlign: "left" }}>Compare Vendors</span>
                 <span style={{ fontSize: 11, fontWeight: 800, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{compareSelected.length}</span>
               </button>
             </div>
@@ -529,7 +529,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         )}
 
         {/* Compare Vendors modal — sidebar mode */}
-        {savedOpen && compareSelected.length > 0 && (
+        {savedOpen && (
           <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
             onClick={() => setSavedOpen(false)}>
             <div style={{ width: "92%", maxWidth: 540, background: "#fff", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font }}
@@ -888,7 +888,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       )}
 
       {/* Saved vendors modal */}
-      {savedOpen && compareSelected.length > 0 && (
+      {savedOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
           onClick={() => setSavedOpen(false)}>
           <div style={{ width: "92%", maxWidth: 540, background: "#fff", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font }}
