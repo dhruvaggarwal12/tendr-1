@@ -743,34 +743,7 @@ const Home = () => {
                 ›
               </button>
 
-              {/* Dot indicators */}
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 18,
-                  right: 18,
-                  display: "flex",
-                  gap: 6,
-                  zIndex: 2,
-                }}
-              >
-                {galleryLoaded && heroPhotos.map((_, i) => (
-                  <button
-                    key={i}
-                    onClick={() => goToSlide(i)}
-                    style={{
-                      width: i === heroIndex ? 20 : 7,
-                      height: 7,
-                      borderRadius: 4,
-                      background: i === heroIndex ? "#fff" : "rgba(255,255,255,0.5)",
-                      border: "none",
-                      cursor: "pointer",
-                      transition: "all 0.3s ease",
-                      padding: 0,
-                    }}
-                  />
-                ))}
-              </div>
+              {/* Dot indicators removed */}
             </div>
           </div>
         </div>
