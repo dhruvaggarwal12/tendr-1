@@ -391,6 +391,66 @@ const AdminDashboard = () => {
   const [smartPlanExpanded, setSmartPlanExpanded] = useState(null);
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
+
+  // ── Invoice state ─────────────────────────────────────────────────────────
+  const [invoiceSearch,   setInvoiceSearch]   = useState("");
+  const [invoiceModal,    setInvoiceModal]     = useState(null); // null | { mode:"create"|"edit", planId:string|null }
+  const [invoiceForm,     setInvoiceForm]      = useState({});
+  const [customInvoices,  setCustomInvoices]   = useState([]);
+  const blankInvoiceForm = () => ({
+    customerName:"", phone:"", eventType:"", eventDate:"", location:"", guests:"",
+    orderId:`INV-${Date.now()}`, paymentId:"", status:"paid", notes:"",
+    services:[{ category:"", amount:"" }], totalOverride:"",
+  });
+  const openCreateInvoice = () => { setInvoiceForm(blankInvoiceForm()); setInvoiceModal({ mode:"create", planId:null }); };
+  const openEditInvoice   = (plan) => {
+    const vendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({ category: v.serviceType || v.name || "", amount: "" }));
+    setInvoiceForm({
+      customerName: plan.customerId?.name || "", phone: plan.customerId?.phoneNumber || "",
+      eventType: plan.eventType || "", eventDate: plan.date || "",
+      location: plan.location || "", guests: plan.guests || "",
+      orderId: plan.orderId || plan._id?.slice(-10) || "", paymentId: plan.paymentId || "",
+      status: plan.status === "completed" ? "paid" : "paid", notes: "",
+      services: vendors.length ? vendors : [{ category:"", amount:"" }],
+      totalOverride: plan.totalAmount ? String(plan.totalAmount) : "",
+    });
+    setInvoiceModal({ mode:"edit", planId: plan._id });
+  };
+  const invFieldSet = (key, val) => setInvoiceForm(f => ({ ...f, [key]: val }));
+  const invServiceSet = (i, key, val) => setInvoiceForm(f => {
+    const s = [...f.services]; s[i] = { ...s[i], [key]: val }; return { ...f, services: s };
+  });
+  const invServiceAdd    = () => setInvoiceForm(f => ({ ...f, services: [...f.services, { category:"", amount:"" }] }));
+  const invServiceRemove = (i) => setInvoiceForm(f => ({ ...f, services: f.services.filter((_,j) => j !== i) }));
+  const invTotal = (form) => {
+    if (form.totalOverride) return Number(form.totalOverride);
+    return form.services.reduce((s, sv) => s + (Number(sv.amount) || 0), 0);
+  };
+  const downloadInvoiceFromForm = (form) => {
+    const total = invTotal(form);
+    setPdfGenerating(true);
+    try {
+      generateInvoicePDF({
+        eventSummary: { eventType: form.eventType, date: form.eventDate, location: form.location, guests: form.guests },
+        confirmedVendors: [],
+        serviceAmounts: form.services.filter(s => s.category).map(s => ({ category: s.category, amount: Number(s.amount) || 0 })),
+        amount: total, orderId: form.orderId, paymentId: form.paymentId, userName: form.customerName,
+      });
+    } finally { setPdfGenerating(false); }
+  };
+  const whatsAppInvoice = (form) => {
+    downloadInvoiceFromForm(form);
+    const phone = form.phone.replace(/\D/g, "");
+    if (!phone) { alert("Add the customer's phone number to send via WhatsApp."); return; }
+    const total = invTotal(form);
+    const msg = encodeURIComponent(
+      `Hello ${form.customerName || "there"},\n\nYour invoice from *Tendr* is ready!\n\n` +
+      `📋 *Event:* ${form.eventType || "—"}\n📅 *Date:* ${form.eventDate || "—"}\n` +
+      `💰 *Total:* ₹${Number(total).toLocaleString("en-IN")}\n🔖 *Order ID:* ${form.orderId || "—"}\n\n` +
+      `Your invoice PDF has been downloaded. Please check your device downloads.\n\n— Tendr Team`
+    );
+    window.open(`https://wa.me/91${phone}?text=${msg}`, "_blank");
+  };
   const [pinnedByPlan, setPinnedByPlan] = useState({}); // { [planId]: { loading, messages } }
 
   // Notified tracking — persisted to localStorage so it survives page refresh
@@ -3917,65 +3977,294 @@ const AdminDashboard = () => {
 
         {/* ── Invoices ── */}
         {activeDropdown === "invoices" && (() => {
-          const invoicePlans = eventPlans.filter(p => p.status === "in_progress" || p.status === "completed");
+          const F = "'Outfit', sans-serif";
+          const GOLD = "#C47A2E"; const BROWN = "#2C1A0E";
+
+          // All invoices: confirmed/completed plans + admin-created ones
+          const planInvoices = eventPlans.filter(p => p.status === "in_progress" || p.status === "completed");
+          const allRows = [
+            ...customInvoices.map(c => ({ ...c, _source: "custom" })),
+            ...planInvoices.map(p => ({ ...p, _source: "plan" })),
+          ];
+          const searchQ = invoiceSearch.trim().toLowerCase();
+          const filtered = searchQ
+            ? allRows.filter(r => {
+                const name = r._source === "custom" ? r.customerName : (r.customerId?.name || "");
+                return name.toLowerCase().includes(searchQ) ||
+                  (r.eventType || "").toLowerCase().includes(searchQ) ||
+                  (r.orderId || "").toLowerCase().includes(searchQ);
+              })
+            : allRows;
+
+          const statusStyle = (s) => ({
+            paid:    { bg:"#f0fdf4", color:"#15803d", border:"#bbf7d0", label:"✓ Paid" },
+            pending: { bg:"#fffbeb", color:"#d97706", border:"#fde68a", label:"⏳ Pending" },
+            partial: { bg:"#eff6ff", color:"#0369a1", border:"#bfdbfe", label:"◑ Partial" },
+            completed: { bg:"#f0fdf4", color:"#15803d", border:"#bbf7d0", label:"✓ Completed" },
+            in_progress: { bg:"#eff6ff", color:"#0369a1", border:"#bfdbfe", label:"⚡ Confirmed" },
+          }[s] || { bg:"#F3F4F6", color:"#6B7280", border:"#E5E7EB", label: s || "—" });
+
+          const inp = (val, onChange, ph, type="text", style={}) => (
+            <input type={type} value={val} onChange={e => onChange(e.target.value)} placeholder={ph}
+              style={{ width:"100%", padding:"9px 11px", borderRadius:9, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", boxSizing:"border-box", ...style }} />
+          );
+
           return (
-            <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl text-[#d08f4e] my-4">
-                🧾 Invoices
+            <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto" style={{ fontFamily:F }}>
+
+              {/* Header */}
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", gap:12, flexWrap:"wrap", marginBottom:6, marginTop:16 }}>
+                <div>
+                  <h2 style={{ fontSize:28, fontWeight:900, color:GOLD, margin:"0 0 4px" }}>🧾 Invoices</h2>
+                  <p style={{ fontSize:13, color:"#9B7450", margin:0 }}>Manage, edit and send invoices to customers.</p>
+                </div>
+                <button onClick={openCreateInvoice}
+                  style={{ padding:"10px 22px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${GOLD},#CCAB4A)`, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:F, boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
+                  + Create Invoice
+                </button>
               </div>
-              <p style={{ fontSize: 14, color: "#9B7450", marginBottom: 20 }}>All confirmed and completed bookings — download invoice or event details PDF.</p>
-              {invoicePlans.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "48px", color: "#9B7450", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>No confirmed bookings yet.</div>
+
+              {/* Search */}
+              <div style={{ position:"relative", marginBottom:18 }}>
+                <span style={{ position:"absolute", left:12, top:"50%", transform:"translateY(-50%)", fontSize:15, pointerEvents:"none" }}>🔍</span>
+                <input value={invoiceSearch} onChange={e => setInvoiceSearch(e.target.value)}
+                  placeholder="Search by customer name, event type or order ID…"
+                  style={{ width:"100%", padding:"10px 14px 10px 36px", borderRadius:12, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", boxSizing:"border-box" }} />
+              </div>
+
+              {filtered.length === 0 ? (
+                <div style={{ textAlign:"center", padding:"56px 24px", color:"#9B7450", background:"#fff", borderRadius:16, border:"1.5px solid #CCAB4A" }}>
+                  <div style={{ fontSize:40, marginBottom:12 }}>🧾</div>
+                  <p style={{ fontSize:15, fontWeight:700, margin:"0 0 6px" }}>{invoiceSearch ? "No invoices match your search." : "No invoices yet."}</p>
+                  <p style={{ fontSize:13, margin:0 }}>Create your first invoice using the button above.</p>
+                </div>
               ) : (
-                <div className="bg-white border-2 border-[#CCAB4A] rounded-[16px] overflow-x-auto">
-                  <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "'Outfit', sans-serif" }}>
-                    <thead>
-                      <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
-                        {["Customer", "Event Type", "Date", "Amount", "Order ID", "Status", "Downloads"].map(h => (
-                          <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {invoicePlans.map((plan, i) => {
-                        const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
-                        const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({ name: v.vendorName || v.name || "", serviceType: v.serviceType || "" })).filter(v => v.name);
-                        return (
-                          <tr key={plan._id} style={{ borderBottom: i < invoicePlans.length - 1 ? "1px solid rgba(204,171,74,0.15)" : "none", background: i % 2 === 0 ? "#fffcf5" : "#fff" }}>
-                            <td style={{ padding: "10px 14px", fontSize: 13, fontWeight: 700, color: "#2C1A0E", whiteSpace: "nowrap" }}>{plan.customerId?.name || "—"}</td>
-                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a" }}>{plan.eventType || "—"}</td>
-                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>{plan.date || "—"}</td>
-                            <td style={{ padding: "10px 14px", fontSize: 13, color: "#5a3a1a", whiteSpace: "nowrap" }}>
-                              {plan.totalAmount ? `₹${Number(plan.totalAmount).toLocaleString("en-IN")}` : "—"}
-                            </td>
-                            <td style={{ padding: "10px 14px", fontSize: 11, color: "#9B7450", fontFamily: "'Courier New', monospace" }}>{plan.orderId || plan._id?.slice(-8) || "—"}</td>
-                            <td style={{ padding: "10px 14px" }}>
-                              <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100,
-                                background: plan.status === "completed" ? "#f0fdf4" : "#eff6ff",
-                                color: plan.status === "completed" ? "#15803d" : "#0369a1",
-                                border: `1px solid ${plan.status === "completed" ? "#bbf7d0" : "#bfdbfe"}` }}>
-                                {plan.status === "completed" ? "Completed" : "Confirmed"}
-                              </span>
-                            </td>
-                            <td style={{ padding: "10px 14px" }}>
-                              <div style={{ display: "flex", gap: 6 }}>
-                                <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name }); } finally { setPdfGenerating(false); } }}
-                                  style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                  🧾 Invoice
-                                </button>
-                                <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: {}, userName: plan.customerId?.name, orderId: plan.orderId }); } finally { setPdfGenerating(false); } }}
-                                  style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                  📋 Event PDF
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                <div style={{ background:"#fff", borderRadius:16, border:"1.5px solid #CCAB4A", overflow:"hidden" }}>
+                  {/* Desktop table */}
+                  <div style={{ overflowX:"auto" }}>
+                    <table style={{ width:"100%", borderCollapse:"collapse", fontFamily:F }}>
+                      <thead>
+                        <tr style={{ background:"#fffaf0", borderBottom:"1.5px solid #CCAB4A" }}>
+                          {["Customer","Event","Date","Amount","Order ID","Status","Actions"].map(h => (
+                            <th key={h} style={{ padding:"10px 13px", textAlign:"left", fontSize:11, fontWeight:800, color:"#7A5535", whiteSpace:"nowrap", textTransform:"uppercase", letterSpacing:"0.05em" }}>{h}</th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {filtered.map((row, i) => {
+                          const isCustom = row._source === "custom";
+                          const name   = isCustom ? row.customerName : (row.customerId?.name || "—");
+                          const evType = isCustom ? row.eventType : (row.eventType || "—");
+                          const date   = isCustom ? row.eventDate  : (row.date || "—");
+                          const amount = isCustom ? invTotal(row)   : (row.totalAmount || 0);
+                          const oid    = isCustom ? row.orderId     : (row.orderId || row._id?.slice(-8) || "—");
+                          const stat   = isCustom ? (row.status || "paid") : row.status;
+                          const ss     = statusStyle(stat);
+
+                          return (
+                            <tr key={row._id || row.orderId || i}
+                              style={{ borderBottom: i < filtered.length-1 ? "1px solid rgba(204,171,74,0.12)" : "none", background: i%2===0 ? "#fffcf5" : "#fff" }}>
+                              <td style={{ padding:"10px 13px", fontSize:13, fontWeight:700, color:BROWN, whiteSpace:"nowrap" }}>{name || "—"}</td>
+                              <td style={{ padding:"10px 13px", fontSize:13, color:"#5a3a1a" }}>{evType || "—"}</td>
+                              <td style={{ padding:"10px 13px", fontSize:13, color:"#5a3a1a", whiteSpace:"nowrap" }}>{date || "—"}</td>
+                              <td style={{ padding:"10px 13px", fontSize:13, fontWeight:700, color:BROWN, whiteSpace:"nowrap" }}>
+                                {amount ? `₹${Number(amount).toLocaleString("en-IN")}` : "—"}
+                              </td>
+                              <td style={{ padding:"10px 13px", fontSize:11, color:"#9B7450", fontFamily:"'Courier New',monospace" }}>{oid}</td>
+                              <td style={{ padding:"10px 13px" }}>
+                                <span style={{ fontSize:11, fontWeight:700, padding:"3px 10px", borderRadius:100, background:ss.bg, color:ss.color, border:`1px solid ${ss.border}` }}>{ss.label}</span>
+                              </td>
+                              <td style={{ padding:"10px 13px" }}>
+                                <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+                                  {/* Edit */}
+                                  <button onClick={() => isCustom ? (setInvoiceForm(row), setInvoiceModal({ mode:"edit", planId: row.orderId })) : openEditInvoice(row)}
+                                    style={{ padding:"5px 10px", borderRadius:8, border:"1.5px solid rgba(44,26,14,0.15)", background:"#fff", color:BROWN, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:F }}>
+                                    ✏️ Edit
+                                  </button>
+                                  {/* Download */}
+                                  <button disabled={pdfGenerating}
+                                    onClick={() => isCustom ? downloadInvoiceFromForm(row) : (() => {
+                                      setPdfGenerating(true);
+                                      try { generateInvoicePDF({ eventSummary:{ eventType:row.eventType, date:row.date, location:row.location, guests:row.guests }, confirmedVendors:[], amount:row.totalAmount||0, orderId:row.orderId, paymentId:row.paymentId, userName:row.customerId?.name }); }
+                                      finally { setPdfGenerating(false); }
+                                    })()}
+                                    style={{ padding:"5px 10px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fffcf5", color:GOLD, fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:F }}>
+                                    🧾 PDF
+                                  </button>
+                                  {/* WhatsApp */}
+                                  <button
+                                    onClick={() => {
+                                      const form = isCustom ? row : {
+                                        customerName: row.customerId?.name || "", phone: row.customerId?.phoneNumber || "",
+                                        eventType: row.eventType || "", eventDate: row.date || "",
+                                        orderId: row.orderId || "", totalOverride: String(row.totalAmount || 0),
+                                        services:[], status:"paid",
+                                      };
+                                      whatsAppInvoice(form);
+                                    }}
+                                    style={{ padding:"5px 10px", borderRadius:8, border:"1.5px solid #22c55e30", background:"#f0fdf4", color:"#15803d", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:F }}>
+                                    📲 WhatsApp
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
+
+              {/* ── Create / Edit Invoice Modal ──────────────────────────────── */}
+              {invoiceModal && (
+                <>
+                  <div onClick={() => setInvoiceModal(null)}
+                    style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:1000, backdropFilter:"blur(3px)" }} />
+                  <div style={{ position:"fixed", top:"50%", left:"50%", transform:"translate(-50%,-50%)",
+                    width:"min(96vw,640px)", maxHeight:"90vh", overflowY:"auto",
+                    background:"#FFFCF5", borderRadius:20, zIndex:1001, fontFamily:F,
+                    boxShadow:"0 28px 70px rgba(0,0,0,0.22)" }}>
+
+                    {/* Modal header */}
+                    <div style={{ padding:"18px 22px 16px", borderBottom:"1.5px solid rgba(44,26,14,0.07)", display:"flex", justifyContent:"space-between", alignItems:"center", position:"sticky", top:0, background:"#FFFCF5", zIndex:2 }}>
+                      <div>
+                        <h3 style={{ fontSize:17, fontWeight:900, color:BROWN, margin:0 }}>
+                          {invoiceModal.mode === "create" ? "Create New Invoice" : "Edit Invoice"}
+                        </h3>
+                        <p style={{ fontSize:12, color:"#9B7450", margin:"3px 0 0" }}>
+                          {invoiceModal.mode === "create" ? "Fill in the details to generate a downloadable invoice." : "Make changes and re-download or re-send."}
+                        </p>
+                      </div>
+                      <button onClick={() => setInvoiceModal(null)}
+                        style={{ width:32, height:32, borderRadius:"50%", border:"1.5px solid rgba(44,26,14,0.12)", background:"#fff", color:"#9B7450", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F }}>×</button>
+                    </div>
+
+                    <div style={{ padding:"20px 22px 24px" }}>
+                      {/* Row helper */}
+                      {(() => {
+                        const label = (t) => <label style={{ fontSize:12, fontWeight:700, color:BROWN, display:"block", marginBottom:5 }}>{t}</label>;
+                        const row2  = (a,b) => (
+                          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14 }}>{a}{b}</div>
+                        );
+
+                        return (
+                          <>
+                            {/* Customer */}
+                            <p style={{ fontSize:11, fontWeight:800, color:GOLD, textTransform:"uppercase", letterSpacing:"0.1em", margin:"0 0 10px" }}>Customer</p>
+                            {row2(
+                              <div>{label("Name")}{inp(invoiceForm.customerName, v => invFieldSet("customerName",v), "Customer name")}</div>,
+                              <div>{label("Phone (WhatsApp)")}{inp(invoiceForm.phone, v => invFieldSet("phone",v), "e.g. 9XXXXXXXXX")}</div>
+                            )}
+
+                            {/* Event */}
+                            <p style={{ fontSize:11, fontWeight:800, color:GOLD, textTransform:"uppercase", letterSpacing:"0.1em", margin:"0 0 10px" }}>Event Details</p>
+                            {row2(
+                              <div>{label("Event Type")}{inp(invoiceForm.eventType, v => invFieldSet("eventType",v), "e.g. Wedding")}</div>,
+                              <div>{label("Date")}{inp(invoiceForm.eventDate, v => invFieldSet("eventDate",v), "", "date")}</div>
+                            )}
+                            {row2(
+                              <div>{label("Location")}{inp(invoiceForm.location, v => invFieldSet("location",v), "Venue / City")}</div>,
+                              <div>{label("Guests")}{inp(invoiceForm.guests, v => invFieldSet("guests",v), "e.g. 200")}</div>
+                            )}
+
+                            {/* Invoice IDs + Status */}
+                            <p style={{ fontSize:11, fontWeight:800, color:GOLD, textTransform:"uppercase", letterSpacing:"0.1em", margin:"0 0 10px" }}>Invoice Info</p>
+                            {row2(
+                              <div>{label("Order / Invoice ID")}{inp(invoiceForm.orderId, v => invFieldSet("orderId",v), "INV-XXXXX")}</div>,
+                              <div>{label("Payment ID")}{inp(invoiceForm.paymentId, v => invFieldSet("paymentId",v), "Optional")}</div>
+                            )}
+                            <div style={{ marginBottom:14 }}>
+                              {label("Status")}
+                              <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                                {[["paid","✓ Paid","#15803d","#f0fdf4"],["pending","⏳ Pending","#d97706","#fffbeb"],["partial","◑ Partial","#0369a1","#eff6ff"]].map(([k,l,c,bg]) => (
+                                  <button key={k} onClick={() => invFieldSet("status",k)}
+                                    style={{ padding:"7px 16px", borderRadius:100, border:`1.5px solid ${invoiceForm.status===k ? c : "rgba(44,26,14,0.1)"}`,
+                                      background: invoiceForm.status===k ? bg : "#fff",
+                                      color: invoiceForm.status===k ? c : "#9B7450",
+                                      fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:F }}>
+                                    {l}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Services */}
+                            <p style={{ fontSize:11, fontWeight:800, color:GOLD, textTransform:"uppercase", letterSpacing:"0.1em", margin:"0 0 10px" }}>Services</p>
+                            <div style={{ background:"rgba(196,122,46,0.04)", borderRadius:12, padding:"12px 14px", marginBottom:14 }}>
+                              {invoiceForm.services?.map((sv, i) => (
+                                <div key={i} style={{ display:"flex", gap:8, marginBottom:8, alignItems:"center" }}>
+                                  <input value={sv.category} onChange={e => invServiceSet(i,"category",e.target.value)}
+                                    placeholder="Service (e.g. Catering)"
+                                    style={{ flex:2, padding:"8px 10px", borderRadius:8, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, outline:"none" }} />
+                                  <input type="number" value={sv.amount} onChange={e => invServiceSet(i,"amount",e.target.value)}
+                                    placeholder="₹ Amount"
+                                    style={{ flex:1, padding:"8px 10px", borderRadius:8, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, outline:"none" }} />
+                                  <button onClick={() => invServiceRemove(i)}
+                                    style={{ width:28, height:28, borderRadius:8, border:"1.5px solid #FEE2E2", background:"#FEF2F2", color:"#DC2626", fontSize:14, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>×</button>
+                                </div>
+                              ))}
+                              <button onClick={invServiceAdd}
+                                style={{ fontSize:12, fontWeight:700, color:GOLD, background:"none", border:"none", cursor:"pointer", fontFamily:F, padding:"2px 0" }}>
+                                + Add Service
+                              </button>
+                            </div>
+
+                            {/* Total */}
+                            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14, alignItems:"end" }}>
+                              <div>
+                                {label("Total Override (optional)")}
+                                <input type="number" value={invoiceForm.totalOverride} onChange={e => invFieldSet("totalOverride",e.target.value)}
+                                  placeholder="Auto-calculated from services"
+                                  style={{ width:"100%", padding:"9px 11px", borderRadius:9, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", boxSizing:"border-box" }} />
+                              </div>
+                              <div style={{ background:"linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius:12, padding:"12px 16px", textAlign:"center" }}>
+                                <div style={{ fontSize:11, color:"rgba(255,255,255,0.5)", marginBottom:3, fontWeight:700 }}>TOTAL AMOUNT</div>
+                                <div style={{ fontSize:20, fontWeight:900, color:"#CCAB4A" }}>
+                                  ₹{Number(invTotal(invoiceForm)).toLocaleString("en-IN")}
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Notes */}
+                            <div style={{ marginBottom:20 }}>
+                              {label("Notes (optional)")}
+                              <textarea value={invoiceForm.notes||""} onChange={e => invFieldSet("notes",e.target.value)}
+                                rows={2} placeholder="Any additional notes for this invoice…"
+                                style={{ width:"100%", padding:"9px 11px", borderRadius:9, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", resize:"vertical", boxSizing:"border-box" }} />
+                            </div>
+
+                            {/* Action buttons */}
+                            <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                              <button onClick={() => downloadInvoiceFromForm(invoiceForm)} disabled={pdfGenerating}
+                                style={{ flex:1, minWidth:140, padding:"12px", borderRadius:12, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fffcf5", color:GOLD, fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F }}>
+                                🧾 Download PDF
+                              </button>
+                              <button onClick={() => whatsAppInvoice(invoiceForm)}
+                                style={{ flex:1, minWidth:140, padding:"12px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#16a34a,#22c55e)", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F, boxShadow:"0 4px 14px rgba(34,197,94,0.3)" }}>
+                                📲 Send WhatsApp
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (invoiceModal.mode === "create") {
+                                    setCustomInvoices(prev => [{ ...invoiceForm, _id:`cust-${Date.now()}` }, ...prev]);
+                                  } else {
+                                    setCustomInvoices(prev => prev.map(c => c.orderId === invoiceModal.planId ? { ...invoiceForm } : c));
+                                  }
+                                  setInvoiceModal(null);
+                                }}
+                                style={{ flex:1, minWidth:140, padding:"12px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${GOLD},#CCAB4A)`, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F, boxShadow:"0 4px 14px rgba(196,122,46,0.3)" }}>
+                                {invoiceModal.mode === "create" ? "Save Invoice" : "Save Changes"}
+                              </button>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                </>
+              )}
+
             </div>
           );
         })()}
