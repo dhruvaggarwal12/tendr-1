@@ -238,6 +238,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     { label: "Company", items: [
       { label: "About Us",             href: "/about-us" },
       { label: "Contact Us",           href: "/contact-us" },
+      ...(user?.isAdmin ? [{ label: "🌟 Community Wall",    href: "/community" }] : []),
+      ...(user?.isAdmin ? [{ label: "🎉 Celebration Hub",  href: "/celebration-hub" }] : []),
     ]},
   ];
 

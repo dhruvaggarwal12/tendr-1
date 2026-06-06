@@ -8,7 +8,17 @@ import SEO from "../../components/SEO";
 const font = "'Outfit', sans-serif";
 const fmt = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
-const CAT_ICONS = { Decoration: "🎀", Catering: "🍽", Photography: "📸", DJ: "🎵" };
+const CAT_ICONS = { Decoration: "🎀", Catering: "🍽", Photography: "📸", DJ: "🎵" }
+
+const DetailRow = ({ icon, label, value, positive }) => (
+  <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+    <span style={{ fontSize: 15, flexShrink: 0, lineHeight: 1.3 }}>{icon}</span>
+    <div>
+      <div style={{ fontSize: 10.5, color: "#9B7450", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
+      <div style={{ fontSize: 12.5, fontWeight: 700, color: positive === false ? "#dc2626" : positive === true ? "#16a34a" : "#2C1A0E", marginTop: 1 }}>{value}</div>
+    </div>
+  </div>
+);;
 const CAT_DESC = {
   Decoration: "Choose a decor package — our team will set up and take down everything.",
   Catering: "All food prepared fresh on-site by our verified catering partners.",
@@ -170,6 +180,54 @@ export default function PartyPlaceProfile() {
               </div>
             </div>
 
+            {/* Property Details — villa and flat only */}
+            {(place.type === "villa" || place.type === "flat") && place.checkIn && (
+              <div style={{ background: "#fff", borderRadius: 16, padding: "20px 22px", border: "1.5px solid rgba(196,122,46,0.1)", marginBottom: 20 }}>
+                <h3 style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 16px" }}>Property Details</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                  <DetailRow icon="🚗" label="Parking"
+                    value={place.parking?.available
+                      ? `Available${place.parking.spots ? ` · ${place.parking.spots} spots` : ""}`
+                      : "Not available"}
+                    positive={place.parking?.available} />
+                  {place.bhk && <DetailRow icon="🏠" label="BHK" value={place.bhk} />}
+                  <DetailRow icon="🕐" label="Check-in" value={place.checkIn} />
+                  <DetailRow icon="🕙" label="Check-out" value={place.checkOut} />
+                  <DetailRow icon="👷" label="Caretaker"
+                    value={place.caretaker ? "Available" : "Not available"}
+                    positive={place.caretaker} />
+                  <DetailRow icon="🛡️" label="Security Guard"
+                    value={place.securityGuard ? "Available" : "Not available"}
+                    positive={place.securityGuard} />
+                  {place.type === "flat" && place.bhkType && (
+                    <DetailRow icon="🏢" label="BHK Type" value={place.bhkType} />
+                  )}
+                  {place.type === "flat" && place.floorNumber != null && (
+                    <DetailRow icon="📶" label="Floor" value={`${place.floorNumber}th Floor`} />
+                  )}
+                  {place.type === "flat" && place.liftAvailable != null && (
+                    <DetailRow icon="🛗" label="Lift"
+                      value={place.liftAvailable ? "Available" : "Not available"}
+                      positive={place.liftAvailable} />
+                  )}
+                </div>
+
+                {/* Allowed services chips */}
+                {place.allowedServices?.length > 0 && (
+                  <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+                    <div style={{ fontSize: 10.5, color: "#9B7450", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 8 }}>Services Available Here</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                      {place.allowedServices.map(svc => (
+                        <span key={svc} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 700, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "4px 12px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                          {CAT_ICONS[svc]} {svc}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Rules */}
             <div style={{ background: "#fff", borderRadius: 16, padding: "20px 22px", border: "1.5px solid rgba(196,122,46,0.1)", marginBottom: 20 }}>
               <h3 style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 12px" }}>Rules & Regulations</h3>
@@ -191,7 +249,9 @@ export default function PartyPlaceProfile() {
                 </span>
               </div>
 
-              {Object.keys(place.packages).map(cat => (
+              {Object.keys(place.packages)
+                .filter(cat => !place.allowedServices || place.allowedServices.includes(cat))
+                .map(cat => (
                 <div key={cat} style={{ background: "#fff", borderRadius: 16, border: `1.5px solid ${openCats[cat] ? "#C47A2E" : "rgba(196,122,46,0.12)"}`, marginBottom: 10, overflow: "hidden", transition: "border-color 0.2s" }}>
                   {/* Category header */}
                   <button onClick={() => toggleCat(cat)}

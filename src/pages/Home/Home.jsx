@@ -1463,6 +1463,42 @@ const Home = () => {
         <style>{`.partner-grid { } @media (max-width: 768px) { .partner-grid { grid-template-columns: 1fr !important; gap: 48px !important; } }`}</style>
       </section>
 
+      {/* ── Join the Celebration Hub — admin preview only ── */}
+      {user?.isAdmin && (
+        <section style={{ background: "linear-gradient(160deg,#2C1A0E 0%,#3D2010 55%,#5A3018 100%)", padding: "72px 24px 76px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+          {/* Decorative circles */}
+          <div style={{ position:"absolute", top:-80, right:-80, width:320, height:320, borderRadius:"50%", background:"rgba(196,122,46,0.07)", pointerEvents:"none" }} />
+          <div style={{ position:"absolute", bottom:-100, left:-50, width:250, height:250, borderRadius:"50%", background:"rgba(204,171,74,0.05)", pointerEvents:"none" }} />
+
+          <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center", position: "relative" }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"6px 16px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:20 }}>
+              <span style={{ fontSize:12, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 New · Admin Preview</span>
+            </div>
+            <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.8rem,4.5vw,3rem)", fontWeight:400, color:"#fff", margin:"0 0 16px", letterSpacing:"0.01em", lineHeight:1.25 }}>
+              Join the Celebration Hub
+            </h2>
+            <p style={{ fontSize:"clamp(14px,2vw,16px)", color:"rgba(255,255,255,0.55)", margin:"0 auto 32px", lineHeight:1.75, maxWidth:520 }}>
+              Share ideas, discover inspiration, discuss event challenges, and help shape the future of celebrations.
+            </p>
+
+            {/* Feature pills */}
+            <div style={{ display:"flex", flexWrap:"wrap", gap:10, justifyContent:"center", marginBottom:36 }}>
+              {["💬 50 Discussions", "💡 Idea Board", "📊 Live Polls", "🙋 Community Q&A", "🔥 Trending Topics"].map(f => (
+                <span key={f} style={{ padding:"7px 16px", borderRadius:100, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.7)", fontSize:13, fontWeight:600 }}>{f}</span>
+              ))}
+            </div>
+
+            <button
+              onClick={() => navigate("/celebration-hub")}
+              style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"14px 36px", borderRadius:14, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:16, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 6px 22px rgba(196,122,46,0.4)", transition:"opacity 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
+              onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+              Explore Discussions →
+            </button>
+          </div>
+        </section>
+      )}
+
       {/* ── FAQ ── */}
       <FaqSection />
 

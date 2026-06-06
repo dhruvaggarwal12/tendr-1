@@ -201,12 +201,96 @@ const buildFromTemplate = (templateKey) => {
   }));
 };
 
+// ── Personalized checklist builder ──────────────────────────────────────────
+function buildPersonalizedChecklist({ eventType = "birthday", eventDate, guestCount = "medium", venueType = "banquet", services = [] }) {
+  const daysLeft = eventDate
+    ? Math.max(0, Math.ceil((new Date(eventDate) - new Date()) / 86400000))
+    : 90;
+
+  const cats = [];
+
+  // Urgency category when < 14 days
+  if (eventDate && daysLeft <= 14) {
+    cats.push({
+      name: `🚨 Urgent — ${daysLeft} day${daysLeft === 1 ? "" : "s"} left!`,
+      items: [
+        "Confirm all vendor bookings and arrival times",
+        "Finalize headcount with caterer",
+        "Send final reminder to guests",
+        "Prepare vendor payment envelopes",
+        "Print event-day schedule and share with helpers",
+      ],
+    });
+  }
+
+  // Core tasks by event type
+  const coreMap = {
+    wedding:     ["Finalize wedding date & time", "Set total wedding budget", "Book wedding venue", "Finalize guest list", "Send wedding invitations", "Track RSVPs", "Finalize menu", "Arrange accommodation for outstation guests"],
+    birthday:    ["Set event budget", "Finalize guest list", "Choose venue", "Send invitations", "Track RSVPs", "Order birthday cake"],
+    anniversary: ["Decide celebration style (intimate or party)", "Set budget", "Choose venue / restaurant", "Invite guests", "Order special cake"],
+    prewedding:  ["Set budget", "Fix date and venue", "Finalize guest list", "Send invitations", "Track RSVPs"],
+    party:       ["Create guest list", "Select venue", "Arrange food & drinks", "Send invitations", "Track RSVPs"],
+    corporate:   ["Define event objective", "Set budget", "Book venue", "Confirm attendee count", "Finalize agenda", "Arrange AV equipment"],
+    custom:      ["Define event purpose & goals", "Set budget", "Choose venue", "Create guest list", "Send invitations"],
+  };
+  cats.push({ name: "📋 Core Tasks", items: coreMap[eventType] || coreMap.custom });
+
+  // Venue-specific tasks
+  const venueMap = {
+    home:      ["Prepare and rearrange home space", "Plan guest parking", "Set up audio/speaker system", "Check power supply for appliances"],
+    banquet:   ["Book banquet hall", "Confirm capacity and facilities", "Review vendor access / entry timings", "Check parking availability"],
+    hotel:     ["Book hotel event room", "Check catering policy (in-house vs external)", "Confirm AV equipment availability", "Block rooms for outstation guests"],
+    outdoor:   ["Book outdoor / garden venue", "Arrange tents or marquee", "Check weather forecast + have backup plan", "Arrange power supply / generator"],
+    farmhouse: ["Book farmhouse venue", "Arrange guest transport to/from venue", "Confirm overnight stay if needed", "Check kitchen and catering facilities"],
+    tbd:       ["Research and shortlist venues", "Compare venue quotes and capacity", "Finalize venue within 1–2 weeks"],
+  };
+  cats.push({ name: "🏛️ Venue & Logistics", items: venueMap[venueType] || venueMap.banquet });
+
+  // Service-specific categories
+  const serviceMap = {
+    Catering:    { name: "🍽️ Catering",       items: ["Shortlist caterers", "Book caterer", "Finalize menu", "Confirm dietary restrictions / allergies", "Confirm final headcount with caterer"] },
+    Decoration:  { name: "🎨 Decoration",      items: ["Shortlist decorators", "Book decorator", "Finalize decoration theme", "Approve design mockup", "Confirm setup and teardown times"] },
+    Photography: { name: "📸 Photography",     items: ["Shortlist photographers", "Book photographer / videographer", "Discuss coverage hours and deliverables", "Share shot list / key moments", "Confirm photo delivery timeline"] },
+    DJ:          { name: "🎵 DJ & Music",       items: ["Shortlist DJs", "Book DJ", "Share music genre preferences", "Share 'do not play' list", "Confirm sound system and setup time"] },
+    Anchor:      { name: "🎤 Anchor / MC",      items: ["Shortlist and book anchor / MC", "Brief anchor on event flow and program", "Share key announcements and pronunciations", "Rehearsal run-through"] },
+    Mehendi:     { name: "🌿 Mehendi",          items: ["Book mehendi artist", "Share design preferences (bridal/regular)", "Confirm session timing", "Arrange comfortable seating area"] },
+    Makeup:      { name: "💄 Makeup & Hair",    items: ["Book makeup artist", "Schedule makeup trial session", "Confirm final look and references", "Confirm event-day arrival time"] },
+    Transport:   { name: "🚗 Transport",         items: ["Arrange transport for out-of-city guests", "Confirm pickup times and points", "Share venue location / Google Maps link", "Arrange parking at venue"] },
+  };
+  services.forEach(svc => { if (serviceMap[svc]) cats.push(serviceMap[svc]); });
+
+  // Guest management scaled to size
+  const gmItems = guestCount === "large"
+    ? ["Track RSVPs (set a deadline)", "Plan seating arrangement", "Create name cards / table placards", "Arrange registration desk", "Brief ushers / helpers"]
+    : guestCount === "medium"
+    ? ["Track RSVPs", "Plan seating arrangement", "Create name cards"]
+    : ["Send WhatsApp / digital invites", "Track RSVPs"];
+  cats.push({ name: "👥 Guest Management", items: gmItems });
+
+  // Budget & payments
+  cats.push({ name: "💰 Budget & Payments", items: ["Create detailed budget spreadsheet", "Pay advance to all booked vendors", "Track expenses vs budget", "Set aside 10–15% emergency buffer"] });
+
+  // Final checks (always)
+  cats.push({ name: "✅ Final Checks", items: ["Full venue walkthrough the day before", "Confirm all vendor arrival times", "Charge cameras, phones, batteries", "Share event-day schedule with helpers", "Rest well the night before! 🌙"] });
+
+  return cats.map((cat, ci) => ({
+    id: `cat_${ci}_${Date.now()}`,
+    name: cat.name,
+    items: cat.items.map((text, ti) => ({
+      id: `item_${ci}_${ti}_${Date.now()}`,
+      text,
+      done: false,
+    })),
+  }));
+}
+
 export default function CheckBox() {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const routeTemplateKey = location.state?.templateKey;  // from CheckboxPicker step 2
-  const customMode       = location.state?.customMode === true; // blank custom checklist
+  const routeTemplateKey     = location.state?.templateKey;        // legacy picker
+  const personalizationData  = location.state?.personalizationData; // new picker
+  const customMode           = location.state?.customMode === true;
 
   const [vendorPanel, setVendorPanel] = useState(null);
   // Custom event size step — shown before checklist when custom is selected
@@ -236,50 +320,93 @@ export default function CheckBox() {
     window.open(`/listings?${params}`, "_blank");
   };
   const [checklistSaved, setChecklistSaved] = useState(() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } });
-  const [templateKey, setTemplateKey] = useState(routeTemplateKey || "birthday");
+  const [templateKey, setTemplateKey] = useState(routeTemplateKey || personalizationData?.eventType || "birthday");
+  const [personalized, setPersonalized] = useState(null); // stores personalizationData for banner + TTL
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
 
   const TTL_7D = 7 * 24 * 60 * 60 * 1000;
 
+  // Compute expiry: event date + 1 day if known, else 7 days
+  const computeExpiry = (pd) => {
+    const ed = pd?.eventDate || personalized?.eventDate;
+    if (ed) {
+      const expiry = new Date(ed).getTime() + 24 * 60 * 60 * 1000;
+      if (expiry > Date.now()) return expiry;
+    }
+    return Date.now() + TTL_7D;
+  };
+
   useEffect(() => {
     if (customMode) {
-      // Custom: start completely blank
       setTemplateKey("custom");
       setCategories([]);
       setLoaded(true);
       return;
     }
+    if (personalizationData) {
+      // New personalized flow from CheckboxPicker
+      setPersonalized(personalizationData);
+      setTemplateKey(personalizationData.eventType || "birthday");
+      setCategories(buildPersonalizedChecklist(personalizationData));
+      setLoaded(true);
+      return;
+    }
     if (routeTemplateKey) {
-      // Coming from picker with chosen event type
+      // Legacy picker — build from template
       setTemplateKey(routeTemplateKey);
       setCategories(buildFromTemplate(routeTemplateKey));
       setLoaded(true);
       return;
     }
-    // Restore from localStorage if no route state
+    // Restore from localStorage
     try {
       const raw = localStorage.getItem("tendr_checklist_v2");
       if (raw) {
         const saved = JSON.parse(raw);
         if (saved.__expiresAt && Date.now() > saved.__expiresAt) {
           localStorage.removeItem("tendr_checklist_v2");
-          setCategories(buildFromTemplate("birthday"));
+          // Try to reload from stored form data
+          const formRaw = localStorage.getItem("tendr_checklist_form");
+          if (formRaw) {
+            const fd = JSON.parse(formRaw);
+            setPersonalized(fd);
+            setTemplateKey(fd.eventType || "birthday");
+            setCategories(buildPersonalizedChecklist(fd));
+          } else {
+            setCategories(buildFromTemplate("birthday"));
+          }
         } else {
+          if (saved.personalized) setPersonalized(saved.personalized);
           setTemplateKey(saved.templateKey || "birthday");
           setCategories(saved.categories || []);
         }
       } else {
-        setCategories(buildFromTemplate("birthday"));
+        // Try form data for first load
+        const formRaw = localStorage.getItem("tendr_checklist_form");
+        if (formRaw) {
+          const fd = JSON.parse(formRaw);
+          setPersonalized(fd);
+          setTemplateKey(fd.eventType || "birthday");
+          setCategories(buildPersonalizedChecklist(fd));
+        } else {
+          setCategories(buildFromTemplate("birthday"));
+        }
       }
     } catch { setCategories(buildFromTemplate("birthday")); }
     setLoaded(true);
-  }, []);
+  }, []); // eslint-disable-line
 
   useEffect(() => {
     if (!loaded) return;
-    localStorage.setItem("tendr_checklist_v2", JSON.stringify({ templateKey, categories, __expiresAt: Date.now() + TTL_7D }));
-  }, [categories, templateKey, loaded]);
+    const pd = personalized || personalizationData;
+    localStorage.setItem("tendr_checklist_v2", JSON.stringify({
+      templateKey,
+      categories,
+      personalized: pd || null,
+      __expiresAt: computeExpiry(pd),
+    }));
+  }, [categories, templateKey, loaded]); // eslint-disable-line
 
   const applyTemplate = (key) => {
     setTemplateKey(key);
@@ -385,19 +512,44 @@ export default function CheckBox() {
 
       {/* Fixed top: header + progress */}
       <div style={{ flexShrink: 0 }}>
+        {/* Personalization banner */}
+        {personalized?.eventDate && (() => {
+          const dl = Math.max(0, Math.ceil((new Date(personalized.eventDate) - new Date()) / 86400000));
+          return (
+            <div style={{ background: dl <= 7 ? "linear-gradient(90deg,#c0392b,#e74c3c)" : dl <= 14 ? "linear-gradient(90deg,#b45309,#C47A2E)" : "linear-gradient(90deg,#2C1A0E,#4A2810)", padding: "10px 24px" }}>
+              <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 16 }}>{dl <= 7 ? "🚨" : dl <= 14 ? "⚡" : "📅"}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+                    {dl === 0 ? "Today is your event! 🎉" : dl === 1 ? "1 day to go!" : `${dl} days to go`}
+                  </span>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
+                    {new Date(personalized.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {(personalized.services || []).map(s => (
+                    <span key={s} style={{ padding: "3px 10px", borderRadius: 100, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{s}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Header */}
         <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "14px 24px" }}>
           <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", gap: 14 }}>
-            <button onClick={() => navigate("/checklist-picker")}
+            <button onClick={() => { localStorage.removeItem("tendr_checklist_v2"); localStorage.removeItem("tendr_checklist_form"); navigate("/checklist-picker"); }}
               style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, backdropFilter: "blur(4px)" }}>
-              ← Back
+              ← Redo
             </button>
             <div>
               <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
-                {customMode ? "Custom Checklist" : "Event Checklist"}
+                {customMode ? "Custom Checklist" : personalized ? "Personalized Checklist" : "Event Checklist"}
               </div>
               <h1 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0, letterSpacing: "-0.01em" }}>
-                {customMode ? "✏️ Your Checklist" : `${tpl?.icon || ""} ${tpl?.label || ""}`}
+                {customMode ? "✏️ Your Checklist" : personalized ? `✨ ${personalized.eventType ? (personalized.eventType.charAt(0).toUpperCase() + personalized.eventType.slice(1)) : "My"} Checklist` : `${tpl?.icon || ""} ${tpl?.label || ""}`}
               </h1>
             </div>
           </div>

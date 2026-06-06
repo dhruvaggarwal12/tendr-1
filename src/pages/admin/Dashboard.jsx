@@ -373,6 +373,8 @@ const AdminDashboard = () => {
   const [vendorFilterStatus, setVendorFilterStatus] = useState("all");
   const [vendorFilterTopRated, setVendorFilterTopRated] = useState("all");
   const [vendorFilterCorporate, setVendorFilterCorporate] = useState("all");
+  const [vendorSubTab, setVendorSubTab] = useState("list");
+  const [vendorAnalyticsSortBy, setVendorAnalyticsSortBy] = useState("requestCount");
   // Reviews
   const [reviews, setReviews] = useState([]);
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
@@ -1872,6 +1874,17 @@ const AdminDashboard = () => {
                 </label>
               </div>
             </div>
+
+            {/* ── Vendor sub-tabs ── */}
+            <div style={{ display: "flex", gap: 6, margin: "14px 0 18px", borderBottom: "2px solid rgba(196,122,46,0.15)", paddingBottom: 14 }}>
+              {[["list", "📋 All Vendors"], ["analytics", "📊 Vendor Analytics"]].map(([key, label]) => (
+                <button key={key} onClick={() => setVendorSubTab(key)}
+                  style={{ padding: "7px 20px", borderRadius: 100, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", border: "2px solid #CCAB4A", background: vendorSubTab === key ? "#CCAB4A" : "transparent", color: vendorSubTab === key ? "#fff" : "#CCAB4A", transition: "all 0.15s" }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+
             {seedResult && (
               <div style={{ marginBottom: 16, padding: "12px 16px", borderRadius: 10, background: seedResult.error ? "#fff5f5" : "#f0fdf4", border: `1px solid ${seedResult.error ? "#fca5a5" : "#bbf7d0"}`, fontSize: 13, fontFamily: "'Outfit', sans-serif" }}>
                 {seedResult.error ? `❌ ${seedResult.error}` : (
@@ -1902,6 +1915,7 @@ const AdminDashboard = () => {
               </div>
             )}
 
+            {vendorSubTab === "list" && <>
             {/* CSV format reminder */}
             <div style={{ background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 16px", marginBottom: 20, fontSize: 12, color: "#7A5535", fontFamily: "'Outfit', sans-serif" }}>
               <strong>How to import:</strong> Download the CSV template → fill it in Excel or Google Sheets → save as CSV → click "Import from CSV".
@@ -2456,6 +2470,354 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
+            </>}
+
+            {/* ════════════════════════════════════════
+                VENDOR ANALYTICS TAB
+            ════════════════════════════════════════ */}
+            {vendorSubTab === "analytics" && vendorStats.length > 0 && (() => {
+              const font = "'Outfit', sans-serif";
+              const thSt = { padding: "10px 14px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: "2px solid rgba(196,122,46,0.15)", background: "rgba(196,122,46,0.04)", whiteSpace: "nowrap" };
+              const tdSt = { padding: "10px 14px", fontSize: 13, color: "#2C1A0E", borderBottom: "1px solid rgba(196,122,46,0.08)" };
+              const cardSt = { background: "#fff", border: "2px solid #CCAB4A", borderRadius: 16, overflow: "hidden" };
+              const svcIcon = { Caterer: "🍽️", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
+
+              // ── aggregates ──
+              const totalReqs  = vendorStats.reduce((s, v) => s + (v.requestCount || 0), 0);
+              const totalChats = vendorStats.reduce((s, v) => s + (v.chatCount    || 0), 0);
+              const engPct     = totalReqs > 0 ? ((totalChats / totalReqs) * 100).toFixed(1) : null;
+              const ratedVs    = vendorStats.filter(v => v.avgReviewScore > 0);
+              const avgRating  = ratedVs.length > 0
+                ? (ratedVs.reduce((s, v) => s + v.avgReviewScore, 0) / ratedVs.length).toFixed(2)
+                : null;
+              const approvedCount  = vendorStats.filter(v => v.status === "approved").length;
+              const topRatedCount  = vendorStats.filter(v => v.isTopRated).length;
+              const corpCount      = vendorStats.filter(v => v.hasCorporateExperience).length;
+
+              // ── by service type ──
+              const svcTypes = ["Caterer", "Decorator", "Photographer", "DJ"];
+              const byType = svcTypes.map(t => {
+                const vs = vendorStats.filter(v => v.serviceType === t);
+                if (!vs.length) return null;
+                const reqs  = vs.reduce((s, v) => s + (v.requestCount || 0), 0);
+                const chats = vs.reduce((s, v) => s + (v.chatCount    || 0), 0);
+                const rated = vs.filter(v => v.avgReviewScore > 0);
+                return {
+                  type: t, count: vs.length,
+                  approved: vs.filter(v => v.status === "approved").length,
+                  totalReqs: reqs,
+                  avgReqs:  (reqs / vs.length).toFixed(1),
+                  avgChats: (chats / vs.length).toFixed(1),
+                  engRate:  reqs > 0 ? ((chats / reqs) * 100).toFixed(1) : null,
+                  avgRating: rated.length
+                    ? (rated.reduce((s, v) => s + v.avgReviewScore, 0) / rated.length).toFixed(1)
+                    : null,
+                  topRated: vs.filter(v => v.isTopRated).length,
+                };
+              }).filter(Boolean);
+
+              // ── by city ──
+              const cities = [...new Set(vendorStats.map(v => v.city).filter(Boolean))].sort();
+              const byCity = cities.map(c => {
+                const vs    = vendorStats.filter(v => v.city === c);
+                const reqs  = vs.reduce((s, v) => s + (v.requestCount || 0), 0);
+                const rated = vs.filter(v => v.avgReviewScore > 0);
+                return {
+                  city: c, count: vs.length,
+                  approved: vs.filter(v => v.status === "approved").length,
+                  totalReqs: reqs,
+                  avgReqs:  (reqs / vs.length).toFixed(1),
+                  avgRating: rated.length
+                    ? (rated.reduce((s, v) => s + v.avgReviewScore, 0) / rated.length).toFixed(1)
+                    : null,
+                };
+              }).sort((a, b) => b.count - a.count);
+
+              // ── sorted leaderboard ──
+              const sortedVs = [...vendorStats].sort((a, b) => {
+                if (vendorAnalyticsSortBy === "avgReviewScore") return (b.avgReviewScore || 0) - (a.avgReviewScore || 0);
+                if (vendorAnalyticsSortBy === "chatCount")      return (b.chatCount      || 0) - (a.chatCount      || 0);
+                if (vendorAnalyticsSortBy === "engRate") {
+                  const ea = a.requestCount > 0 ? (a.chatCount || 0) / a.requestCount : 0;
+                  const eb = b.requestCount > 0 ? (b.chatCount || 0) / b.requestCount : 0;
+                  return eb - ea;
+                }
+                return (b.requestCount || 0) - (a.requestCount || 0);
+              });
+
+              // ── rating distribution ──
+              const rateDist = [
+                { label: "4.0 – 5.0  ★★★★", count: vendorStats.filter(v => v.avgReviewScore >= 4).length,                               color: "#22a055" },
+                { label: "3.0 – 3.9  ★★★",  count: vendorStats.filter(v => v.avgReviewScore >= 3 && v.avgReviewScore < 4).length,        color: "#f59e0b" },
+                { label: "Below 3.0  ★★",   count: vendorStats.filter(v => v.avgReviewScore > 0 && v.avgReviewScore < 3).length,         color: "#ef4444" },
+                { label: "Not yet rated",    count: vendorStats.filter(v => !v.avgReviewScore || v.avgReviewScore === 0).length,           color: "#9ca3af" },
+              ];
+              const maxRD = Math.max(...rateDist.map(r => r.count), 1);
+
+              // ── flags ──
+              const inactive  = vendorStats.filter(v => !v.requestCount);
+              const lowEng    = vendorStats.filter(v => v.requestCount > 0 && ((v.chatCount || 0) / v.requestCount) < 0.3);
+              const lowRating = vendorStats.filter(v => v.avgReviewScore > 0 && v.avgReviewScore < 3);
+
+              const ColBtn = ({ k, label }) => (
+                <th style={{ ...thSt, cursor: "pointer", userSelect: "none" }} onClick={() => setVendorAnalyticsSortBy(k)}>
+                  {label} {vendorAnalyticsSortBy === k ? "▼" : ""}
+                </th>
+              );
+
+              const engColor = (pct) =>
+                pct === null ? "#9ca3af" : parseFloat(pct) >= 50 ? "#22a055" : parseFloat(pct) >= 30 ? "#f59e0b" : "#ef4444";
+
+              return (
+                <div style={{ fontFamily: font, paddingBottom: 32 }}>
+
+                  {/* ── Summary cards ── */}
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(155px,1fr))", gap: 14, marginBottom: 24 }}>
+                    {[
+                      { label: "Total Vendors",     value: vendorStats.length,           icon: "👥" },
+                      { label: "Approved",           value: approvedCount,                icon: "✅" },
+                      { label: "Total Requests",     value: totalReqs,                    icon: "📨" },
+                      { label: "Total Chats",        value: totalChats,                   icon: "💬" },
+                      { label: "Engagement Rate",    value: engPct ? `${engPct}%` : "—", icon: "📈" },
+                      { label: "Avg Rating",         value: avgRating ? `${avgRating} ★` : "—", icon: "⭐" },
+                      { label: "Top Rated",          value: topRatedCount,                icon: "🏅" },
+                      { label: "Corporate Ready",    value: corpCount,                    icon: "🏢" },
+                    ].map((s, i) => (
+                      <div key={i} style={{ background: "#fff", border: "2px solid #CCAB4A", borderRadius: 14, padding: "14px 16px", textAlign: "center" }}>
+                        <div style={{ fontSize: 20, marginBottom: 5 }}>{s.icon}</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>{s.label}</div>
+                        <div style={{ fontSize: 24, fontWeight: 900, color: "#CCAB4A", lineHeight: 1 }}>{s.value}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* ── By service type ── */}
+                  <div style={{ ...cardSt, marginBottom: 20 }}>
+                    <div style={{ padding: "13px 20px", borderBottom: "2px solid rgba(196,122,46,0.15)", fontWeight: 700, fontSize: 15, color: "#2C1A0E" }}>
+                      📊 Performance by Service Type
+                    </div>
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr>
+                            {["Service","Vendors","Approved","Total Requests","Avg Requests","Avg Chats","Engagement %","Avg Rating","Top Rated"].map(h => (
+                              <th key={h} style={thSt}>{h}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {byType.map((row, i) => (
+                            <tr key={row.type} style={{ background: i % 2 === 0 ? "#fff" : "rgba(196,122,46,0.02)" }}>
+                              <td style={{ ...tdSt, fontWeight: 700 }}>{svcIcon[row.type] || "🔧"} {row.type}</td>
+                              <td style={tdSt}>{row.count}</td>
+                              <td style={{ ...tdSt, color: "#22a055", fontWeight: 600 }}>{row.approved}</td>
+                              <td style={{ ...tdSt, fontWeight: 700, color: "#d08f4e" }}>{row.totalReqs}</td>
+                              <td style={tdSt}>{row.avgReqs}</td>
+                              <td style={tdSt}>{row.avgChats}</td>
+                              <td style={{ ...tdSt, fontWeight: 700, color: engColor(row.engRate) }}>
+                                {row.engRate !== null ? `${row.engRate}%` : "—"}
+                              </td>
+                              <td style={{ ...tdSt, fontWeight: 700 }}>
+                                {row.avgRating ? <span style={{ color: "#d08f4e" }}>{row.avgRating} ★</span> : <span style={{ color: "#9ca3af" }}>—</span>}
+                              </td>
+                              <td style={tdSt}>{row.topRated}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* ── By city + rating dist ── */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+                    {/* By city */}
+                    <div style={cardSt}>
+                      <div style={{ padding: "13px 20px", borderBottom: "2px solid rgba(196,122,46,0.15)", fontWeight: 700, fontSize: 15, color: "#2C1A0E" }}>
+                        📍 Performance by City
+                      </div>
+                      <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                          <thead>
+                            <tr>
+                              {["City","Vendors","Approved","Total Req.","Avg Req.","Avg Rating"].map(h => (
+                                <th key={h} style={thSt}>{h}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {byCity.map((row, i) => (
+                              <tr key={row.city} style={{ background: i % 2 === 0 ? "#fff" : "rgba(196,122,46,0.02)" }}>
+                                <td style={{ ...tdSt, fontWeight: 700 }}>📍 {row.city}</td>
+                                <td style={tdSt}>{row.count}</td>
+                                <td style={{ ...tdSt, color: "#22a055", fontWeight: 600 }}>{row.approved}</td>
+                                <td style={{ ...tdSt, color: "#d08f4e", fontWeight: 700 }}>{row.totalReqs}</td>
+                                <td style={tdSt}>{row.avgReqs}</td>
+                                <td style={{ ...tdSt, fontWeight: 700 }}>
+                                  {row.avgRating ? <span style={{ color: "#d08f4e" }}>{row.avgRating} ★</span> : <span style={{ color: "#9ca3af" }}>—</span>}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* Rating distribution */}
+                    <div style={cardSt}>
+                      <div style={{ padding: "13px 20px", borderBottom: "2px solid rgba(196,122,46,0.15)", fontWeight: 700, fontSize: 15, color: "#2C1A0E" }}>
+                        ⭐ Rating Distribution
+                      </div>
+                      <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                        {rateDist.map(r => (
+                          <div key={r.label}>
+                            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6, fontFamily: font }}>
+                              <span style={{ color: "#2C1A0E" }}>{r.label}</span>
+                              <span style={{ fontWeight: 700, color: r.color }}>{r.count} vendors</span>
+                            </div>
+                            <div style={{ background: "rgba(196,122,46,0.1)", borderRadius: 100, height: 9, overflow: "hidden" }}>
+                              <div style={{ width: `${(r.count / maxRD) * 100}%`, height: "100%", background: r.color, borderRadius: 100 }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ── Individual leaderboard ── */}
+                  <div style={{ ...cardSt, marginBottom: 20 }}>
+                    <div style={{ padding: "13px 20px", borderBottom: "2px solid rgba(196,122,46,0.15)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E" }}>🏆 All Vendor Performance</div>
+                      <div style={{ fontSize: 12, color: "#9B7450" }}>Click column headers to sort</div>
+                    </div>
+                    <div style={{ overflowX: "auto" }}>
+                      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                          <tr>
+                            <th style={thSt}>#</th>
+                            <th style={thSt}>Name</th>
+                            <th style={thSt}>Type</th>
+                            <th style={thSt}>City</th>
+                            <th style={thSt}>Status</th>
+                            <ColBtn k="requestCount" label="Requests" />
+                            <ColBtn k="chatCount"    label="Chats" />
+                            <ColBtn k="engRate"      label="Engagement" />
+                            <ColBtn k="avgReviewScore" label="Rating" />
+                            <th style={thSt}>Flags</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {sortedVs.map((v, i) => {
+                            const eng = v.requestCount > 0
+                              ? ((v.chatCount || 0) / v.requestCount * 100).toFixed(1)
+                              : null;
+                            const flags = [];
+                            if (!v.requestCount) flags.push("💤 Inactive");
+                            if (eng !== null && parseFloat(eng) < 30) flags.push("📉 Low eng.");
+                            if (v.avgReviewScore > 0 && v.avgReviewScore < 3) flags.push("⚠️ Low rating");
+                            return (
+                              <tr key={v._id} style={{ background: i % 2 === 0 ? "#fff" : "rgba(196,122,46,0.02)" }}>
+                                <td style={{ ...tdSt, color: "#9B7450", fontWeight: 600 }}>{i + 1}</td>
+                                <td style={{ ...tdSt, fontWeight: 700 }}>
+                                  {v.name}
+                                  {v.isTopRated && (
+                                    <span style={{ marginLeft: 5, fontSize: 10, background: "rgba(196,122,46,0.15)", color: "#8B6914", borderRadius: 100, padding: "1px 6px", fontWeight: 700 }}>TOP</span>
+                                  )}
+                                </td>
+                                <td style={tdSt}>{svcIcon[v.serviceType] || ""} {v.serviceType}</td>
+                                <td style={tdSt}>{v.city || "—"}</td>
+                                <td style={tdSt}>
+                                  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: v.status === "approved" ? "rgba(34,160,85,0.1)" : "rgba(239,68,68,0.1)", color: v.status === "approved" ? "#22a055" : "#ef4444" }}>
+                                    {v.status || "unknown"}
+                                  </span>
+                                </td>
+                                <td style={{ ...tdSt, fontWeight: 700, color: "#d08f4e" }}>{v.requestCount || 0}</td>
+                                <td style={tdSt}>{v.chatCount || 0}</td>
+                                <td style={{ ...tdSt, fontWeight: 700, color: engColor(eng) }}>
+                                  {eng !== null ? `${eng}%` : "—"}
+                                </td>
+                                <td style={{ ...tdSt, fontWeight: 700 }}>
+                                  {v.avgReviewScore > 0
+                                    ? <span style={{ color: "#d08f4e" }}>{v.avgReviewScore.toFixed(1)} ★</span>
+                                    : <span style={{ color: "#9ca3af" }}>—</span>}
+                                </td>
+                                <td style={{ ...tdSt, fontSize: 11 }}>
+                                  {flags.length > 0 ? flags.join("  ") : <span style={{ color: "#9ca3af" }}>—</span>}
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  {/* ── Attention flags ── */}
+                  {(inactive.length > 0 || lowEng.length > 0 || lowRating.length > 0) && (
+                    <div style={{ ...cardSt, marginBottom: 24 }}>
+                      <div style={{ padding: "13px 20px", borderBottom: "2px solid rgba(196,122,46,0.15)", fontWeight: 700, fontSize: 15, color: "#2C1A0E" }}>
+                        ⚠️ Attention Required
+                      </div>
+                      <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                        {inactive.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#6B7280", marginBottom: 8 }}>
+                              💤 Inactive Vendors ({inactive.length}) — 0 requests received
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                              {inactive.map(v => (
+                                <span key={v._id} style={{ fontSize: 12, background: "rgba(156,163,175,0.12)", color: "#4B5563", borderRadius: 100, padding: "3px 10px", border: "1px solid rgba(156,163,175,0.25)" }}>
+                                  {v.name} · {v.serviceType}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {lowEng.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#f59e0b", marginBottom: 8 }}>
+                              📉 Low Engagement ({lowEng.length}) — Chat rate below 30% of requests
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                              {lowEng.map(v => {
+                                const e = ((v.chatCount || 0) / v.requestCount * 100).toFixed(0);
+                                return (
+                                  <span key={v._id} style={{ fontSize: 12, background: "rgba(245,158,11,0.1)", color: "#92400e", borderRadius: 100, padding: "3px 10px", border: "1px solid rgba(245,158,11,0.25)" }}>
+                                    {v.name} · {e}%
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                        {lowRating.length > 0 && (
+                          <div>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444", marginBottom: 8 }}>
+                              ⭐ Low Rating ({lowRating.length}) — Average below 3.0
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                              {lowRating.map(v => (
+                                <span key={v._id} style={{ fontSize: 12, background: "rgba(239,68,68,0.1)", color: "#991b1b", borderRadius: 100, padding: "3px 10px", border: "1px solid rgba(239,68,68,0.2)" }}>
+                                  {v.name} · {v.avgReviewScore.toFixed(1)} ★
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
+            {vendorSubTab === "analytics" && vendorStats.length === 0 && (
+              <div style={{ textAlign: "center", padding: "60px 20px", color: "#9B7450", fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>📊</div>
+                <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 6 }}>No vendor data yet</div>
+                <div style={{ fontSize: 13 }}>Analytics will appear once vendors are added to the platform.</div>
+              </div>
+            )}
+
           </div>
           );
         })()}

@@ -1,5 +1,6 @@
 import { createBrowserRouter, Outlet, ScrollRestoration } from "react-router-dom";
 import { lazy } from "react";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 
 // Root layout — FloatingChatButton + VendorChatModal remain in App.jsx
 // because they already use router.state + router.navigate() directly
@@ -8,6 +9,7 @@ function RootLayout() {
   return (
     <>
       <ScrollRestoration />
+      <PWAInstallPrompt />
       <Outlet />
     </>
   );
@@ -81,6 +83,8 @@ const OccasionsPage       = lazy(() => import("./pages/occasions/OccasionsPage.j
 const OccasionDetail      = lazy(() => import("./pages/occasions/OccasionDetail.jsx"));
 const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesPage.jsx"));
 const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
+const CommunityWall       = lazy(() => import("./pages/community/CommunityWall.jsx"));
+const CelebrationHub      = lazy(() => import("./pages/celebration-hub/CelebrationHub.jsx"));
 
 
 const router = createBrowserRouter([
@@ -348,6 +352,16 @@ const router = createBrowserRouter([
   {
     path: "/party-places/:id",
     element: <PartyPlaceProfile />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/community",
+    element: <CommunityWall />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/celebration-hub",
+    element: <CelebrationHub />,
     errorElement: <ErrorPage />,
   },
 

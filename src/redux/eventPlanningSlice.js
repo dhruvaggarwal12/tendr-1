@@ -99,18 +99,27 @@ export const submitEventPlan = createAsyncThunk(
 );
 
 const SESSION_KEY = 'tendr_ep_session';
-const SESSION_TTL = 24 * 60 * 60 * 1000; // 24h inactivity — timer resets on every form interaction
+const SESSION_TTL = 24 * 60 * 60 * 1000; // fallback: 24h when no event date is set
 
 const loadSession = () => {
   try {
-    // Try localStorage first (persistent), fall back to sessionStorage (legacy)
     const raw = localStorage.getItem(SESSION_KEY) || sessionStorage.getItem('tendr_session');
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    // Check TTL
-    if (parsed.__savedAt && Date.now() - parsed.__savedAt > SESSION_TTL) {
-      localStorage.removeItem(SESSION_KEY);
-      return null;
+    const eventDate = parsed.formData?.date;
+    if (eventDate) {
+      // Keep session until event date + 1 day so chat progress is never lost before the event
+      const eventExpiry = new Date(eventDate).getTime() + 24 * 60 * 60 * 1000;
+      if (Date.now() > eventExpiry) {
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+      }
+    } else {
+      // No event date set yet: use 24h sliding TTL
+      if (parsed.__savedAt && Date.now() - parsed.__savedAt > SESSION_TTL) {
+        localStorage.removeItem(SESSION_KEY);
+        return null;
+      }
     }
     return parsed;
   } catch { return null; }

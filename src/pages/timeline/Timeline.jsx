@@ -235,6 +235,65 @@ const buildFromPlan = (planKey) =>
     })),
   }));
 
+// ── Personalized timeline builder ───────────────────────────────────────────
+function buildPersonalizedTimeline({ eventType = "birthday", eventDate, services = [], booked = [] }) {
+  const daysLeft = eventDate
+    ? Math.max(0, Math.ceil((new Date(eventDate) - new Date()) / 86400000))
+    : 90;
+
+  const planKey = daysLeft > 60 ? "90day" : daysLeft > 21 ? "30day" : "7day";
+  const plan = PLANS[planKey];
+
+  // Service keywords filter
+  const svcCheck = {
+    Catering:    t => t.includes("cater") || t.includes("menu") || t.includes("food"),
+    Photography: t => t.includes("photograph") || t.includes("videograph") || t.includes("shot list"),
+    Decoration:  t => t.includes("decor") || t.includes("floral") || t.includes("balloon"),
+    DJ:          t => t.includes(" dj") || t.startsWith("dj") || (t.includes("music") && !t.includes("live music")),
+    Mehendi:     t => t.includes("mehendi"),
+    Makeup:      t => t.includes("makeup") || t.includes("hair"),
+    Transport:   t => t.includes("transport") || t.includes("accommodation"),
+    Anchor:      t => t.includes("anchor") || t.includes("mc"),
+  };
+
+  const isTaskRelevant = (text) => {
+    const t = text.toLowerCase();
+    for (const [svc, check] of Object.entries(svcCheck)) {
+      if (check(t) && !services.includes(svc)) return false;
+    }
+    return true;
+  };
+
+  const isTaskDone = (text) => {
+    const t = text.toLowerCase();
+    return (
+      (booked.includes("Catering")    && svcCheck.Catering(t))    ||
+      (booked.includes("Photography") && svcCheck.Photography(t)) ||
+      (booked.includes("Decoration")  && svcCheck.Decoration(t))  ||
+      (booked.includes("DJ")          && svcCheck.DJ(t))          ||
+      (booked.includes("Mehendi")     && svcCheck.Mehendi(t))     ||
+      (booked.includes("Makeup")      && svcCheck.Makeup(t))      ||
+      (booked.includes("Transport")   && svcCheck.Transport(t))
+    );
+  };
+
+  return plan.phases
+    .map((phase, pi) => ({
+      id: `phase_${pi}_${Date.now()}`,
+      label: phase.label,
+      color: phase.color,
+      tasks: phase.tasks
+        .filter(isTaskRelevant)
+        .map((text, ti) => ({
+          id: `task_${pi}_${ti}_${Date.now()}`,
+          text,
+          done: isTaskDone(text),
+          note: "",
+        })),
+    }))
+    .filter(p => p.tasks.length > 0);
+}
+
 export default function Timeline() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -254,15 +313,17 @@ export default function Timeline() {
     dispatch(setFilters({ serviceType: vendorFormService, eventType: vendorForm.eventType, locationType: vendorForm.city, date: vendorForm.date }));
     dispatch(setCategoryBudgets({ [vendorFormService]: vendorForm.budget }));
     setVendorFormOpen(false);
-    // Open in new tab so timeline progress is preserved
     window.open(`/listings?serviceType=${vendorFormService}`, "_blank");
   };
-  const routeEventType = location.state?.eventType;
-  const routePlanKey   = routeEventType ? (EVENT_TO_PLAN[routeEventType] || "30day") : null;
 
-  const [planKey, setPlanKey] = useState(routePlanKey || "90day");
-  const [phases, setPhases] = useState([]);
-  const [loaded, setLoaded] = useState(false);
+  const personalizationData = location.state?.personalizationData;
+  const routeEventType      = location.state?.eventType; // legacy
+  const routePlanKey        = routeEventType ? (EVENT_TO_PLAN[routeEventType] || "30day") : null;
+
+  const [planKey, setPlanKey]   = useState(routePlanKey || "90day");
+  const [phases, setPhases]     = useState([]);
+  const [loaded, setLoaded]     = useState(false);
+  const [personalized, setPersonalized] = useState(null);
   const [expandedNote, setExpandedNote] = useState(null);
   const [timelineSaved, setTimelineSaved] = useState(() => { try { return localStorage.getItem("tendr_timeline_saved") === "true"; } catch { return false; } });
 
@@ -272,9 +333,29 @@ export default function Timeline() {
     window.dispatchEvent(new CustomEvent("tendr:timeline-saved"));
   };
 
+  const TTL_7D = 7 * 24 * 60 * 60 * 1000;
+  const computeExpiry = (pd) => {
+    const ed = pd?.eventDate;
+    if (ed) {
+      const expiry = new Date(ed).getTime() + 24 * 60 * 60 * 1000;
+      if (expiry > Date.now()) return expiry;
+    }
+    return Date.now() + TTL_7D;
+  };
+
   useEffect(() => {
+    if (personalizationData) {
+      const daysLeft = personalizationData.eventDate
+        ? Math.max(0, Math.ceil((new Date(personalizationData.eventDate) - new Date()) / 86400000))
+        : 90;
+      const pk = daysLeft > 60 ? "90day" : daysLeft > 21 ? "30day" : "7day";
+      setPersonalized(personalizationData);
+      setPlanKey(pk);
+      setPhases(buildPersonalizedTimeline(personalizationData));
+      setLoaded(true);
+      return;
+    }
     if (routePlanKey) {
-      // Came from picker with event type — always use the matched plan
       setPlanKey(routePlanKey);
       setPhases(buildFromPlan(routePlanKey));
       setLoaded(true);
@@ -284,10 +365,37 @@ export default function Timeline() {
       const raw = localStorage.getItem("tendr_timeline_v2");
       if (raw) {
         const saved = JSON.parse(raw);
-        setPlanKey(saved.planKey || "90day");
-        setPhases(saved.phases || []);
+        if (saved.__expiresAt && Date.now() > saved.__expiresAt) {
+          localStorage.removeItem("tendr_timeline_v2");
+          // Try stored form data
+          const formRaw = localStorage.getItem("tendr_timeline_form");
+          if (formRaw) {
+            const fd = JSON.parse(formRaw);
+            setPersonalized(fd);
+            const dl = fd.eventDate ? Math.max(0, Math.ceil((new Date(fd.eventDate) - new Date()) / 86400000)) : 90;
+            const pk = dl > 60 ? "90day" : dl > 21 ? "30day" : "7day";
+            setPlanKey(pk);
+            setPhases(buildPersonalizedTimeline(fd));
+          } else {
+            setPhases(buildFromPlan("90day"));
+          }
+        } else {
+          if (saved.personalized) setPersonalized(saved.personalized);
+          setPlanKey(saved.planKey || "90day");
+          setPhases(saved.phases || []);
+        }
       } else {
-        setPhases(buildFromPlan("90day"));
+        const formRaw = localStorage.getItem("tendr_timeline_form");
+        if (formRaw) {
+          const fd = JSON.parse(formRaw);
+          setPersonalized(fd);
+          const dl = fd.eventDate ? Math.max(0, Math.ceil((new Date(fd.eventDate) - new Date()) / 86400000)) : 90;
+          const pk = dl > 60 ? "90day" : dl > 21 ? "30day" : "7day";
+          setPlanKey(pk);
+          setPhases(buildPersonalizedTimeline(fd));
+        } else {
+          setPhases(buildFromPlan("90day"));
+        }
       }
     } catch { setPhases(buildFromPlan("90day")); }
     setLoaded(true);
@@ -295,8 +403,14 @@ export default function Timeline() {
 
   useEffect(() => {
     if (!loaded) return;
-    localStorage.setItem("tendr_timeline_v2", JSON.stringify({ planKey, phases }));
-  }, [phases, planKey, loaded]);
+    const pd = personalized || personalizationData;
+    localStorage.setItem("tendr_timeline_v2", JSON.stringify({
+      planKey,
+      phases,
+      personalized: pd || null,
+      __expiresAt: computeExpiry(pd),
+    }));
+  }, [phases, planKey, loaded]); // eslint-disable-line
 
   const applyPlan = (key) => {
     setPlanKey(key);
@@ -342,15 +456,48 @@ export default function Timeline() {
 
       {/* Fixed top: header + progress */}
       <div style={{ flexShrink: 0 }}>
+        {/* Personalization / days-left banner */}
+        {personalized?.eventDate && (() => {
+          const dl = Math.max(0, Math.ceil((new Date(personalized.eventDate) - new Date()) / 86400000));
+          const barW = Math.max(0, Math.min(100, dl > 90 ? 100 : Math.round((dl / 90) * 100)));
+          return (
+            <div style={{ background: dl <= 7 ? "linear-gradient(90deg,#c0392b,#e74c3c)" : dl <= 14 ? "linear-gradient(90deg,#b45309,#C47A2E)" : "linear-gradient(90deg,#2C1A0E,#3D2210)", padding: "10px 24px" }}>
+              <div style={{ maxWidth: 760, margin: "0 auto" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 15 }}>{dl <= 7 ? "🚨" : dl <= 14 ? "⚡" : "📅"}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>
+                      {dl === 0 ? "Today is your event! 🎉" : `${dl} day${dl === 1 ? "" : "s"} to go`}
+                    </span>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>
+                      {new Date(personalized.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                    {(personalized.services || []).map(s => (
+                      <span key={s} style={{ padding: "3px 10px", borderRadius: 100, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{s}</span>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ height: 3, background: "rgba(255,255,255,0.1)", borderRadius: 100, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${barW}%`, background: "rgba(255,255,255,0.4)", borderRadius: 100 }} />
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* Header */}
         <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "14px 24px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 14 }}>
-            <button onClick={() => navigate("/timeline-picker")}
+            <button onClick={() => { localStorage.removeItem("tendr_timeline_v2"); localStorage.removeItem("tendr_timeline_form"); navigate("/timeline-picker"); }}
               style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
-              ← Back
+              ← Redo
             </button>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>Event Timeline</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+                {personalized ? "Personalized Timeline" : "Event Timeline"}
+              </div>
               <h1 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0 }}>
                 {plan.icon} {plan.label} <span style={{ fontSize: 13, fontWeight: 500, opacity: 0.75 }}>— {plan.subtitle}</span>
               </h1>
