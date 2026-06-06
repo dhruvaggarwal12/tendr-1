@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -673,16 +673,19 @@ export default function CelebrationHub() {
   const navigate = useNavigate();
   const { user } = useSelector(s => s.auth);
 
-  if (!user?.isAdmin) { navigate("/"); return null; }
-
+  // All hooks MUST come before any conditional return
   const [activeTab,  setActiveTab]  = useState("feed");
   const [reactions,  setReactions]  = useState({});
   const [modStatus,  setModStatus]  = useState({});
   const [userPosts,  setUserPosts]  = useState([]);
-
-  // unused tab state kept here so the code compiles — tabs hidden from UI
   const [pollVotes,  setPollVotes]  = useState({});
   const [savedIdeas, setSavedIdeas] = useState(new Set());
+
+  useEffect(() => {
+    if (!user?.isAdmin) navigate("/");
+  }, [user, navigate]);
+
+  if (!user?.isAdmin) return null;
 
   const handleReact   = (postId, reaction) =>
     setReactions(prev => ({ ...prev, [postId]: prev[postId] === reaction ? null : reaction }));
