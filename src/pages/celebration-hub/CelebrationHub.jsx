@@ -31,6 +31,12 @@ const REACTIONS = [
 function catColor(catId) { return CATEGORY_COLORS[catId] || "#6B7280"; }
 function catInfo(catId)  { return CATEGORIES.find(c => c.id === catId) || {}; }
 
+// Only these two tabs are visible — rest stay in code for later
+const VISIBLE_TABS = [
+  { id:"feed",  label:"💬 Discussions" },
+  { id:"admin", label:"🔑 Moderate"    },
+];
+
 function Pill({ label, color = GOLD, onClick, active, small }) {
   return (
     <button onClick={onClick} style={{
@@ -71,14 +77,14 @@ function ReactionBar({ post, myReaction, onReact }) {
   );
 }
 
-function PostCard({ post, myReaction, onReact, compact }) {
+function PostCard({ post, myReaction, onReact, onCatClick }) {
   const [expanded, setExpanded] = useState(false);
   const cat = catInfo(post.category);
   const color = catColor(post.category);
   return (
     <div style={{
       background:"#fff", borderRadius:16, border:"1.5px solid rgba(44,26,14,0.07)",
-      padding:compact ? "14px 16px" : "18px 20px",
+      padding:"18px 20px",
       boxShadow:"0 2px 12px rgba(44,26,14,0.05)",
       position:"relative", transition:"box-shadow 0.2s",
     }}
@@ -87,12 +93,17 @@ function PostCard({ post, myReaction, onReact, compact }) {
     >
       {/* Badges row */}
       <div style={{ display:"flex", gap:6, marginBottom:10, flexWrap:"wrap", alignItems:"center" }}>
-        <span style={{ padding:"3px 9px", borderRadius:100, background:`${color}15`, color, fontSize:11, fontWeight:700 }}>
+        {/* Clickable category chip — filters the feed */}
+        <button onClick={() => onCatClick?.(post.category)}
+          style={{ padding:"3px 10px", borderRadius:100, background:`${color}15`, color, fontSize:11, fontWeight:700, border:"none", cursor:"pointer", fontFamily:F, transition:"background 0.15s" }}
+          onMouseEnter={e => e.currentTarget.style.background=`${color}28`}
+          onMouseLeave={e => e.currentTarget.style.background=`${color}15`}>
           {cat.emoji} {cat.label}
-        </span>
-        {post.isPinned  && <span style={{ padding:"3px 9px", borderRadius:100, background:"#FEF9C3", color:"#92400E", fontSize:11, fontWeight:700 }}>📌 Pinned</span>}
+        </button>
+        {post.isPinned   && <span style={{ padding:"3px 9px", borderRadius:100, background:"#FEF9C3", color:"#92400E", fontSize:11, fontWeight:700 }}>📌 Pinned</span>}
         {post.isFeatured && <span style={{ padding:"3px 9px", borderRadius:100, background:"#FEF3C7", color:"#D97706", fontSize:11, fontWeight:700 }}>⭐ Featured</span>}
         {post.isAnonymous && <span style={{ padding:"3px 9px", borderRadius:100, background:"#F3F4F6", color:"#6B7280", fontSize:11, fontWeight:600 }}>🕵️ Anonymous</span>}
+        {post.isNew      && <span style={{ padding:"3px 9px", borderRadius:100, background:"#DCFCE7", color:"#15803D", fontSize:11, fontWeight:700 }}>🆕 New</span>}
       </div>
 
       {/* Title */}
@@ -126,52 +137,121 @@ function PostCard({ post, myReaction, onReact, compact }) {
   );
 }
 
+// ── POST TYPE CARDS for modal step 1 ──────────────────────────────────────
+const POST_TYPES = CATEGORIES.filter(c => c.id !== "all").map(c => ({
+  ...c,
+  desc: {
+    "event-ideas":    "Share a creative idea or theme",
+    "event-problems": "Discuss a challenge you faced",
+    "budget":         "Tips, breakdowns, savings advice",
+    "decoration":     "Decor ideas and inspiration",
+    "venues":         "Venue tips, reviews, hidden gems",
+    "food":           "Catering, menus, live stations",
+    "photography":    "Photographer tips and advice",
+    "corporate":      "Work events and team activities",
+    "festivals":      "Festival and seasonal events",
+    "general":        "Anything about celebrating",
+  }[c.id] || "",
+}));
+
 // ── FEED TAB ───────────────────────────────────────────────────────────────
-function FeedTab({ posts, reactions, onReact }) {
-  const [cat, setCat] = useState("all");
-  const [search, setSearch] = useState("");
-  const [showNewPost, setShowNewPost] = useState(false);
+function FeedTab({ posts, reactions, onReact, onAddPost }) {
+  const [cat,        setCat]        = useState("all");
+  const [search,     setSearch]     = useState("");
+  const [modalStep,  setModalStep]  = useState(null); // null | "type" | "form"
+  const [chosenType, setChosenType] = useState(null);
+  const [form,       setForm]       = useState({ title:"", body:"", anon:false });
 
   const filtered = useMemo(() => {
     let r = cat === "all" ? posts : posts.filter(p => p.category === cat);
     if (search.trim()) {
       const q = search.toLowerCase();
-      r = r.filter(p => p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q) || p.tags.some(t => t.includes(q)));
+      r = r.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.tags?.some(t => t.includes(q))
+      );
     }
     return [...r].sort((a, b) => (b.isPinned ? 1 : 0) - (a.isPinned ? 1 : 0));
   }, [cat, search, posts]);
 
+  const openModal = () => { setModalStep("type"); setChosenType(null); setForm({ title:"", body:"", anon:false }); };
+  const closeModal = () => setModalStep(null);
+
+  const selectType = (type) => { setChosenType(type); setModalStep("form"); };
+
+  const submitPost = () => {
+    if (!form.title.trim()) return;
+    onAddPost({
+      id: Date.now(),
+      title: form.title.trim(),
+      description: form.body.trim() || "No description provided.",
+      category: chosenType.id,
+      vendorCategory: null,
+      author: form.anon ? "Anonymous" : "You",
+      isAnonymous: form.anon,
+      isNew: true,
+      date: "just now",
+      reactions: { agree:0, facedThis:0, greatIdea:0, loveThis:0 },
+      isPinned: false, isFeatured: false, isApproved: false,
+      tags: [], answers: 0,
+    });
+    closeModal();
+  };
+
+  const postType = chosenType ? catInfo(chosenType.id) : null;
+
   return (
     <div>
-      {/* Search + new post row */}
-      <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
-        <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Search discussions…"
-          style={{ flex:1, minWidth:160, padding:"10px 14px", borderRadius:12, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none" }} />
-        <button onClick={() => setShowNewPost(true)}
-          style={{ padding:"10px 20px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${GOLD},#CCAB4A)`, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:F, whiteSpace:"nowrap", boxShadow:"0 4px 12px rgba(196,122,46,0.25)" }}>
-          + New Post
-        </button>
+      {/* ── Share Your Experience box ──────────────────────────────────── */}
+      <div style={{ background:"#fff", borderRadius:16, border:"1.5px solid rgba(44,26,14,0.07)", padding:"16px 18px", marginBottom:20, boxShadow:"0 2px 8px rgba(44,26,14,0.04)" }}>
+        <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+          <div style={{ width:40, height:40, borderRadius:"50%", background:`linear-gradient(135deg,${GOLD},#CCAB4A)`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:18, flexShrink:0 }}>✨</div>
+          <button onClick={openModal}
+            style={{ flex:1, padding:"11px 14px", borderRadius:12, border:"1.5px solid rgba(44,26,14,0.1)", background:"#F9F5F0", color:"#9B7450", fontSize:13, textAlign:"left", cursor:"pointer", fontFamily:F }}>
+            Share your experience, idea, or challenge…
+          </button>
+          <button onClick={openModal}
+            style={{ padding:"11px 20px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${GOLD},#CCAB4A)`, color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:F, whiteSpace:"nowrap", boxShadow:"0 4px 12px rgba(196,122,46,0.25)", flexShrink:0 }}>
+            Share →
+          </button>
+        </div>
       </div>
 
-      {/* Category filter */}
-      <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:6, marginBottom:20, scrollbarWidth:"none" }}>
-        {CATEGORIES.map(c => (
-          <Pill key={c.id} label={`${c.emoji} ${c.label}`} color={cat === c.id ? catColor(c.id) || GOLD : GOLD}
-            active={cat === c.id} onClick={() => setCat(c.id)} />
-        ))}
+      {/* ── Search bar ────────────────────────────────────────────────── */}
+      <input value={search} onChange={e => setSearch(e.target.value)}
+        placeholder="Search discussions…"
+        style={{ width:"100%", padding:"10px 14px", borderRadius:12, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", boxSizing:"border-box", marginBottom:14 }} />
+
+      {/* ── Category filter chips ─────────────────────────────────────── */}
+      <div style={{ display:"flex", gap:8, overflowX:"auto", paddingBottom:6, marginBottom:18, scrollbarWidth:"none" }}>
+        {CATEGORIES.map(c => {
+          const active = cat === c.id;
+          const col    = catColor(c.id) || GOLD;
+          return (
+            <button key={c.id} onClick={() => setCat(c.id)}
+              style={{ display:"inline-flex", alignItems:"center", gap:5, padding:"6px 13px", borderRadius:100,
+                border:`1.5px solid ${active ? col : "rgba(44,26,14,0.1)"}`,
+                background: active ? col : "#fff",
+                color: active ? "#fff" : "#6B3A1F",
+                fontSize:12, fontWeight:700, fontFamily:F, cursor:"pointer",
+                whiteSpace:"nowrap", transition:"all 0.15s", flexShrink:0 }}>
+              {c.emoji} {c.label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Results count */}
-      <p style={{ fontSize:12, color:"#9B7450", marginBottom:16 }}>
+      {/* ── Count ─────────────────────────────────────────────────────── */}
+      <p style={{ fontSize:12, color:"#9B7450", marginBottom:14 }}>
         {filtered.length} discussion{filtered.length !== 1 ? "s" : ""}
         {search ? ` for "${search}"` : cat !== "all" ? ` in ${catInfo(cat).label}` : ""}
       </p>
 
-      {/* Posts */}
+      {/* ── Posts ─────────────────────────────────────────────────────── */}
       <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
         {filtered.map(p => (
-          <PostCard key={p.id} post={p} myReaction={reactions[p.id]} onReact={onReact} />
+          <PostCard key={p.id} post={p} myReaction={reactions[p.id]} onReact={onReact} onCatClick={setCat} />
         ))}
         {filtered.length === 0 && (
           <div style={{ textAlign:"center", padding:"48px 24px", color:"#9B7450" }}>
@@ -181,50 +261,92 @@ function FeedTab({ posts, reactions, onReact }) {
         )}
       </div>
 
-      {/* New post preview modal */}
-      {showNewPost && (
+      {/* ── New Post Modal ────────────────────────────────────────────── */}
+      {modalStep && (
         <>
-          <div onClick={() => setShowNewPost(false)} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.4)", zIndex:1000, backdropFilter:"blur(3px)" }} />
-          <div style={{ position:"fixed", bottom:"50%", left:"50%", transform:"translate(-50%,50%)", width:"min(95vw,500px)", background:CREAM, borderRadius:22, zIndex:1001, fontFamily:F, overflow:"hidden", boxShadow:"0 24px 60px rgba(0,0,0,0.2)" }}>
-            <div style={{ background:`linear-gradient(135deg,${BROWN},#4A2810)`, padding:"20px 24px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-              <div>
-                <h3 style={{ color:"#fff", margin:0, fontSize:17, fontWeight:900 }}>New Discussion</h3>
-                <p style={{ color:"rgba(255,255,255,0.5)", margin:"4px 0 0", fontSize:12 }}>Community posting — coming at launch</p>
+          <div onClick={closeModal} style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:1000, backdropFilter:"blur(4px)" }} />
+          <div style={{ position:"fixed", top:"50%", left:"50%", transform:"translate(-50%,-50%)", width:"min(95vw,520px)", background:CREAM, borderRadius:22, zIndex:1001, fontFamily:F, overflow:"hidden", boxShadow:"0 28px 70px rgba(0,0,0,0.22)", maxHeight:"90vh", overflowY:"auto" }}>
+
+            {/* Modal header */}
+            <div style={{ padding:"18px 20px 16px", borderBottom:"1.5px solid rgba(44,26,14,0.07)", display:"flex", alignItems:"center", justifyContent:"space-between", gap:12 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                {modalStep === "form" && (
+                  <button onClick={() => setModalStep("type")}
+                    style={{ width:30, height:30, borderRadius:"50%", border:"1.5px solid rgba(44,26,14,0.12)", background:"#fff", color:BROWN, fontSize:14, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F }}>←</button>
+                )}
+                <div>
+                  <h3 style={{ fontSize:16, fontWeight:900, color:BROWN, margin:0 }}>
+                    {modalStep === "type" ? "What type of post is this?" : `New ${chosenType?.label} Post`}
+                  </h3>
+                  {modalStep === "type" && <p style={{ fontSize:12, color:"#9B7450", margin:"3px 0 0" }}>Choose a category to get started</p>}
+                  {modalStep === "form" && chosenType && (
+                    <span style={{ display:"inline-flex", alignItems:"center", gap:4, padding:"2px 9px", borderRadius:100, background:`${catColor(chosenType.id)}15`, color:catColor(chosenType.id), fontSize:11, fontWeight:700, marginTop:4 }}>
+                      {chosenType.emoji} {chosenType.label}
+                    </span>
+                  )}
+                </div>
               </div>
-              <button onClick={() => setShowNewPost(false)} style={{ width:28, height:28, borderRadius:"50%", border:"1px solid rgba(255,255,255,0.15)", background:"rgba(255,255,255,0.08)", color:"rgba(255,255,255,0.6)", fontSize:14, cursor:"pointer", fontFamily:F }}>×</button>
+              <button onClick={closeModal}
+                style={{ width:30, height:30, borderRadius:"50%", border:"1.5px solid rgba(44,26,14,0.12)", background:"#fff", color:"#9B7450", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F, flexShrink:0 }}>×</button>
             </div>
-            <div style={{ padding:"20px 24px 24px" }}>
-              <div style={{ background:"rgba(196,122,46,0.08)", border:"1.5px solid rgba(196,122,46,0.2)", borderRadius:12, padding:"14px 16px", marginBottom:16 }}>
-                <p style={{ fontSize:13, color:"#7C4010", margin:0, lineHeight:1.6 }}>
-                  🚧 <strong>Admin Preview Mode</strong> — Community posting will be live at launch. This form is a preview of what users will see.
-                </p>
-              </div>
-              {[{ label:"Title", ph:"What's on your mind?", type:"input" },{ label:"Description", ph:"Share more details…", type:"textarea" }].map(f => (
-                <div key={f.label} style={{ marginBottom:14 }}>
-                  <label style={{ fontSize:12, fontWeight:700, color:BROWN, display:"block", marginBottom:6 }}>{f.label}</label>
-                  {f.type === "input"
-                    ? <input placeholder={f.ph} style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", boxSizing:"border-box" }} />
-                    : <textarea placeholder={f.ph} rows={3} style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", resize:"vertical", boxSizing:"border-box" }} />
-                  }
-                </div>
-              ))}
-              <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginBottom:14 }}>
-                <div style={{ flex:1, minWidth:130 }}>
-                  <label style={{ fontSize:12, fontWeight:700, color:BROWN, display:"block", marginBottom:6 }}>Category</label>
-                  <select style={{ width:"100%", padding:"10px 12px", borderRadius:10, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none" }}>
-                    {CATEGORIES.filter(c => c.id !== "all").map(c => <option key={c.id} value={c.id}>{c.emoji} {c.label}</option>)}
-                  </select>
-                </div>
-                <div style={{ flex:1, minWidth:130, display:"flex", flexDirection:"column", justifyContent:"flex-end" }}>
-                  <label style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:BROWN, cursor:"pointer", paddingBottom:10 }}>
-                    <input type="checkbox" /> Post anonymously
-                  </label>
+
+            {/* Step 1 — Post type grid */}
+            {modalStep === "type" && (
+              <div style={{ padding:"18px 20px 22px" }}>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+                  {POST_TYPES.map(type => {
+                    const col = catColor(type.id);
+                    return (
+                      <button key={type.id} onClick={() => selectType(type)}
+                        style={{ padding:"14px 14px", borderRadius:14, border:`1.5px solid ${col}22`,
+                          background:`${col}08`, textAlign:"left", cursor:"pointer", fontFamily:F,
+                          transition:"all 0.15s" }}
+                        onMouseEnter={e => { e.currentTarget.style.background=`${col}15`; e.currentTarget.style.borderColor=`${col}55`; e.currentTarget.style.transform="translateY(-1px)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background=`${col}08`; e.currentTarget.style.borderColor=`${col}22`; e.currentTarget.style.transform="translateY(0)"; }}>
+                        <div style={{ fontSize:22, marginBottom:6 }}>{type.emoji}</div>
+                        <div style={{ fontSize:13, fontWeight:800, color:BROWN, marginBottom:3, lineHeight:1.3 }}>{type.label}</div>
+                        <div style={{ fontSize:11, color:"#9B7450", lineHeight:1.4 }}>{type.desc}</div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-              <button style={{ width:"100%", padding:"12px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${GOLD},#CCAB4A)`, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F }}>
-                Post Discussion →
-              </button>
-            </div>
+            )}
+
+            {/* Step 2 — Form */}
+            {modalStep === "form" && (
+              <div style={{ padding:"18px 20px 22px" }}>
+                <div style={{ marginBottom:14 }}>
+                  <label style={{ fontSize:12, fontWeight:700, color:BROWN, display:"block", marginBottom:6 }}>Title *</label>
+                  <input value={form.title} onChange={e => setForm(f => ({...f, title:e.target.value}))}
+                    placeholder={`What's your ${chosenType?.label?.toLowerCase()} about?`}
+                    style={{ width:"100%", padding:"11px 13px", borderRadius:11, border:`1.5px solid ${form.title ? catColor(chosenType?.id) : "rgba(44,26,14,0.12)"}`, fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", boxSizing:"border-box", transition:"border-color 0.15s" }} />
+                </div>
+                <div style={{ marginBottom:16 }}>
+                  <label style={{ fontSize:12, fontWeight:700, color:BROWN, display:"block", marginBottom:6 }}>Details <span style={{ fontWeight:400, color:"#9B7450" }}>(optional)</span></label>
+                  <textarea value={form.body} onChange={e => setForm(f => ({...f, body:e.target.value}))}
+                    placeholder="Share the full story, tips, or questions…"
+                    rows={4}
+                    style={{ width:"100%", padding:"11px 13px", borderRadius:11, border:"1.5px solid rgba(44,26,14,0.12)", fontFamily:F, fontSize:13, color:BROWN, background:"#fff", outline:"none", resize:"vertical", boxSizing:"border-box" }} />
+                </div>
+                <label style={{ display:"flex", alignItems:"center", gap:10, fontSize:13, color:BROWN, cursor:"pointer", marginBottom:18, userSelect:"none" }}>
+                  <div onClick={() => setForm(f => ({...f, anon:!f.anon}))}
+                    style={{ width:20, height:20, borderRadius:5, border:`2px solid ${form.anon ? GOLD : "rgba(44,26,14,0.2)"}`, background: form.anon ? GOLD : "#fff", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.15s" }}>
+                    {form.anon && <span style={{ color:"#fff", fontSize:11, fontWeight:900 }}>✓</span>}
+                  </div>
+                  <span>Post anonymously <span style={{ fontSize:11, color:"#9B7450" }}>— your name won't be shown</span></span>
+                </label>
+                <button onClick={submitPost} disabled={!form.title.trim()}
+                  style={{ width:"100%", padding:"13px", borderRadius:12, border:"none",
+                    background: form.title.trim() ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "#E5E7EB",
+                    color: form.title.trim() ? "#fff" : "#9CA3AF",
+                    fontSize:14, fontWeight:800, cursor: form.title.trim() ? "pointer" : "not-allowed",
+                    fontFamily:F, transition:"all 0.15s",
+                    boxShadow: form.title.trim() ? "0 4px 14px rgba(196,122,46,0.3)" : "none" }}>
+                  Post to Community →
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -555,117 +677,74 @@ export default function CelebrationHub() {
 
   const [activeTab,  setActiveTab]  = useState("feed");
   const [reactions,  setReactions]  = useState({});
+  const [modStatus,  setModStatus]  = useState({});
+  const [userPosts,  setUserPosts]  = useState([]);
+
+  // unused tab state kept here so the code compiles — tabs hidden from UI
   const [pollVotes,  setPollVotes]  = useState({});
   const [savedIdeas, setSavedIdeas] = useState(new Set());
-  const [modStatus,  setModStatus]  = useState({});
 
-  const handleReact = (postId, reaction) =>
+  const handleReact   = (postId, reaction) =>
     setReactions(prev => ({ ...prev, [postId]: prev[postId] === reaction ? null : reaction }));
 
-  const handleVote = (pollId, optIdx) =>
-    setPollVotes(prev => ({ ...prev, [pollId]: optIdx }));
+  const handleAddPost = (post) =>
+    setUserPosts(prev => [post, ...prev]);
 
-  const handleSave = (ideaId) =>
-    setSavedIdeas(prev => { const n = new Set(prev); n.has(ideaId) ? n.delete(ideaId) : n.add(ideaId); return n; });
-
-  const handleFilterFeed = (cat) => {
-    setActiveTab("feed");
-    // feed tab picks up the category filter via its own state — we'll pass a trigger
-  };
-
-  // live posts (exclude admin-deleted)
-  const livePosts = useMemo(() =>
-    POSTS.filter(p => !modStatus[p.id]?.deleted),
-    [modStatus]
+  const allPosts = useMemo(() =>
+    [...userPosts, ...POSTS].filter(p => !modStatus[p.id]?.deleted),
+    [userPosts, modStatus]
   );
 
   return (
     <div style={{ minHeight:"100vh", background:"#F5EFE7", fontFamily:F }}>
       <HamburgerNav />
 
-      {/* Admin Preview Banner */}
-      <div style={{ background:`linear-gradient(135deg,${BROWN},#4A2810)`, padding:"10px 20px", textAlign:"center" }}>
-        <span style={{ fontSize:12, color:"rgba(255,255,255,0.7)", fontWeight:600 }}>
-          🔒 Admin Preview Mode — Celebration Hub · Visible to admins only before public launch
+      {/* Admin preview strip */}
+      <div style={{ background:"rgba(196,122,46,0.1)", borderBottom:"1px solid rgba(196,122,46,0.2)", padding:"8px 20px", textAlign:"center" }}>
+        <span style={{ fontSize:12, color:GOLD, fontWeight:700 }}>
+          🔒 Admin Preview — Celebration Hub · Not visible to users yet
         </span>
       </div>
 
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section style={{ background:`linear-gradient(160deg,${BROWN} 0%,#3D2010 60%,#5A3018 100%)`, padding:"52px 24px 44px", position:"relative", overflow:"hidden" }}>
-        {/* Decorative circles */}
-        <div style={{ position:"absolute", top:-60, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.08)", pointerEvents:"none" }} />
-        <div style={{ position:"absolute", bottom:-80, left:-40, width:200, height:200, borderRadius:"50%", background:"rgba(204,171,74,0.06)", pointerEvents:"none" }} />
-
-        <div style={{ maxWidth:780, margin:"0 auto", textAlign:"center", position:"relative" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"6px 16px", borderRadius:100, border:"1px solid rgba(204,171,74,0.3)", background:"rgba(196,122,46,0.12)", marginBottom:18 }}>
-            <span style={{ fontSize:12, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 Celebration Hub — Admin Preview</span>
-          </div>
-          <h1 style={{ fontSize:"clamp(1.8rem,5vw,3rem)", fontWeight:900, color:"#fff", margin:"0 0 14px", lineHeight:1.2, letterSpacing:"-0.02em" }}>
-            Where celebrations<br />
-            <span style={{ background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
-              start before they happen.
-            </span>
-          </h1>
-          <p style={{ fontSize:"clamp(13px,2vw,16px)", color:"rgba(255,255,255,0.6)", margin:"0 0 28px", lineHeight:1.7, maxWidth:520, margin:"0 auto 28px" }}>
-            Share ideas, discover inspiration, discuss event challenges,<br className="desktop-only" /> and help shape the future of celebrations.
+      {/* ── Light header ─────────────────────────────────────────────────── */}
+      <div style={{ background:"#fff", borderBottom:"1.5px solid rgba(44,26,14,0.07)", padding:"28px 24px 22px" }}>
+        <div style={{ maxWidth:860, margin:"0 auto" }}>
+          <p style={{ fontSize:11, fontWeight:700, color:GOLD, textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>
+            🎉 Community
           </p>
-
-          {/* Stats */}
-          <div style={{ display:"flex", justifyContent:"center", gap:clamp(20,32), flexWrap:"wrap" }}>
-            {[
-              { n:"50+",   l:"Discussions" },
-              { n:"20",    l:"Inspiration Ideas" },
-              { n:"6",     l:"Community Polls" },
-              { n:"5",     l:"Q&A Threads" },
-            ].map(({ n, l }) => (
-              <div key={l} style={{ textAlign:"center" }}>
-                <div style={{ fontSize:"clamp(1.3rem,3vw,1.8rem)", fontWeight:900, color:"#CCAB4A", lineHeight:1 }}>{n}</div>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,0.45)", fontWeight:600, marginTop:3 }}>{l}</div>
-              </div>
-            ))}
-          </div>
+          <h1 style={{ fontSize:"clamp(1.5rem,4vw,2.2rem)", fontWeight:900, color:BROWN, margin:"0 0 8px", letterSpacing:"-0.02em", lineHeight:1.2 }}>
+            Celebration Hub
+          </h1>
+          <p style={{ fontSize:14, color:"#9B7450", margin:0, lineHeight:1.65, maxWidth:520 }}>
+            Share ideas, discover inspiration, discuss event challenges, and help shape the future of celebrations.
+          </p>
         </div>
-      </section>
+      </div>
 
-      {/* ── Tab Navigation ────────────────────────────────────────────────── */}
+      {/* ── Tab bar — only Feed + Moderate ───────────────────────────────── */}
       <div style={{ background:"#fff", borderBottom:"1.5px solid rgba(44,26,14,0.08)", position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:1160, margin:"0 auto" }}>
-          <div style={{ display:"flex", overflowX:"auto", scrollbarWidth:"none", padding:"0 16px" }}>
-            {TABS.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                style={{
-                  padding:"14px 16px", border:"none", background:"transparent",
-                  borderBottom:`3px solid ${activeTab === tab.id ? GOLD : "transparent"}`,
-                  color: activeTab === tab.id ? GOLD : "#9B7450",
-                  fontSize:13, fontWeight: activeTab === tab.id ? 800 : 600,
-                  cursor:"pointer", fontFamily:F, whiteSpace:"nowrap",
-                  transition:"all 0.15s", flexShrink:0,
-                }}>
-                {tab.label}
-              </button>
-            ))}
-          </div>
+        <div style={{ maxWidth:860, margin:"0 auto", padding:"0 20px", display:"flex" }}>
+          {VISIBLE_TABS.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              style={{ padding:"13px 18px", border:"none", background:"transparent",
+                borderBottom:`2.5px solid ${activeTab === tab.id ? GOLD : "transparent"}`,
+                color: activeTab === tab.id ? GOLD : "#9B7450",
+                fontSize:13, fontWeight: activeTab === tab.id ? 800 : 600,
+                cursor:"pointer", fontFamily:F, whiteSpace:"nowrap", transition:"all 0.15s" }}>
+              {tab.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ── Tab Content ───────────────────────────────────────────────────── */}
-      <div style={{ maxWidth:1160, margin:"0 auto", padding:"28px 16px 60px" }}>
-        {activeTab === "feed"     && <FeedTab     posts={livePosts}  reactions={reactions} onReact={handleReact} />}
-        {activeTab === "ideas"    && <IdeasTab    savedIdeas={savedIdeas} onSave={handleSave} />}
-        {activeTab === "polls"    && <PollsTab    votes={pollVotes} onVote={handleVote} />}
-        {activeTab === "ask"      && <AskTab />}
-        {activeTab === "trending" && <TrendingTab onFilterFeed={handleFilterFeed} />}
-        {activeTab === "admin"    && <AdminTab    posts={POSTS} modStatus={modStatus} setModStatus={setModStatus} />}
+      {/* ── Content ──────────────────────────────────────────────────────── */}
+      <div style={{ maxWidth:860, margin:"0 auto", padding:"24px 16px 64px" }}>
+        {activeTab === "feed"  && <FeedTab posts={allPosts} reactions={reactions} onReact={handleReact} onAddPost={handleAddPost} />}
+        {activeTab === "admin" && <AdminTab posts={[...userPosts, ...POSTS]} modStatus={modStatus} setModStatus={setModStatus} />}
       </div>
 
-      <style>{`
-        .desktop-only { display: none; }
-        @media(min-width:640px){ .desktop-only { display: inline; } }
-        ::-webkit-scrollbar { width: 0; height: 0; }
-      `}</style>
+      {/* Hidden tab components kept for future launch — not rendered above */}
+      <style>{`::-webkit-scrollbar { width:0; height:0; }`}</style>
     </div>
   );
 }
-
-// tiny helper to avoid ternary noise
-function clamp(a, b) { return b; }
