@@ -107,7 +107,7 @@ function PostCard({ post, myReaction, onReact, onCatClick }) {
       </div>
 
       {/* Title */}
-      <h3 style={{ fontSize: compact ? 14 : 15, fontWeight:800, color:BROWN, margin:"0 0 8px", lineHeight:1.4, cursor:"pointer" }}
+      <h3 style={{ fontSize:15, fontWeight:800, color:BROWN, margin:"0 0 8px", lineHeight:1.4, cursor:"pointer" }}
         onClick={() => setExpanded(!expanded)}>
         {post.title}
       </h3>
@@ -681,6 +681,11 @@ export default function CelebrationHub() {
   const [pollVotes,  setPollVotes]  = useState({});
   const [savedIdeas, setSavedIdeas] = useState(new Set());
 
+  const allPosts = useMemo(() =>
+    [...userPosts, ...POSTS].filter(p => !modStatus[p.id]?.deleted),
+    [userPosts, modStatus]
+  );
+
   useEffect(() => {
     if (!user?.isAdmin) navigate("/");
   }, [user, navigate]);
@@ -692,11 +697,6 @@ export default function CelebrationHub() {
 
   const handleAddPost = (post) =>
     setUserPosts(prev => [post, ...prev]);
-
-  const allPosts = useMemo(() =>
-    [...userPosts, ...POSTS].filter(p => !modStatus[p.id]?.deleted),
-    [userPosts, modStatus]
-  );
 
   return (
     <div style={{ minHeight:"100vh", background:"#F5EFE7", fontFamily:F }}>
