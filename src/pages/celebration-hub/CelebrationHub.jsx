@@ -141,16 +141,16 @@ function PostCard({ post, myReaction, onReact, onCatClick }) {
 const POST_TYPES = CATEGORIES.filter(c => c.id !== "all").map(c => ({
   ...c,
   desc: {
-    "event-ideas":    "Share a creative idea or theme",
-    "event-problems": "Discuss a challenge you faced",
-    "budget":         "Tips, breakdowns, savings advice",
-    "decoration":     "Decor ideas and inspiration",
-    "venues":         "Venue tips, reviews, hidden gems",
-    "food":           "Catering, menus, live stations",
-    "photography":    "Photographer tips and advice",
-    "corporate":      "Work events and team activities",
-    "festivals":      "Festival and seasonal events",
-    "general":        "Anything about celebrating",
+    "surprise":    "An unexpected magical moment you want to share",
+    "love-story":  "A proposal, romance, or heartwarming wedding memory",
+    "epic-fail":   "What went hilariously wrong (and somehow still worked)",
+    "emotional":   "Moments that moved everyone to happy tears",
+    "hidden-gem":  "A vendor, venue, or trick nobody else is talking about",
+    "wow-factor":  "Jaw-dropping setup, decor, or performance reveal",
+    "money-saved": "Smart budget hack or vendor negotiation win",
+    "real-talk":   "Honest review or warning — what nobody tells you",
+    "shoutout":    "Praising someone who made your event unforgettable",
+    "my-story":    "Your full journey from planning to the big day",
   }[c.id] || "",
 }));
 
