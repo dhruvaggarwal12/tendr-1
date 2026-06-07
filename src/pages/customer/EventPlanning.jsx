@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useRef, lazy, Suspense } from "react";
-const FunActivitiesSection = lazy(() => import("../../components/FunActivitiesSection"));
+import React, { useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useChatOverlay } from "../../context/ChatContext";
@@ -1371,25 +1370,6 @@ const EventPlanning = () => {
               );
             })}
           </div>
-
-          {/* ── Book a Fun Activity — admin preview only ── */}
-          {authUser?.isAdmin && (
-            <div className="w-full" style={{ maxWidth:1100, marginBottom:36 }}>
-              <div style={{ borderRadius:20, border:"1.5px solid rgba(124,58,237,0.18)", background:"rgba(124,58,237,0.03)", padding:"24px 20px" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18, flexWrap:"wrap", gap:10 }}>
-                  <div>
-                    <p style={{ fontSize:11, fontWeight:800, color:"#7C3AED", textTransform:"uppercase", letterSpacing:"0.12em", margin:"0 0 5px", fontFamily:"'Outfit',sans-serif" }}>🎭 Optional Add-on</p>
-                    <h3 style={{ fontSize:18, fontWeight:900, color:"#2C1A0E", margin:0, fontFamily:"'Outfit',sans-serif" }}>Book a Fun Activity</h3>
-                    <p style={{ fontSize:13, color:"#9B7450", margin:"4px 0 0", fontFamily:"'Outfit',sans-serif" }}>Fixed-price entertainment — magic shows, counters, live bands & more</p>
-                  </div>
-                  <span style={{ fontSize:10, fontWeight:800, color:"#7C3AED", background:"rgba(124,58,237,0.1)", padding:"4px 12px", borderRadius:100, fontFamily:"'Outfit',sans-serif", letterSpacing:"0.08em" }}>ADMIN PREVIEW</span>
-                </div>
-                <Suspense fallback={<div style={{ height:200, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450", fontFamily:"'Outfit',sans-serif" }}>Loading…</div>}>
-                  <FunActivitiesSection />
-                </Suspense>
-              </div>
-            </div>
-          )}
 
           {/* Need anything else? — always visible, same for both flows */}
           <div className="w-full mt-2" style={{ maxWidth: 1100, marginBottom: 32 }}>
