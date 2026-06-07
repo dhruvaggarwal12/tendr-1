@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, lazy, Suspense } from "react";
+const FunActivitiesSection = lazy(() => import("../../components/FunActivitiesSection"));
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, selectCartTotal, clearCart, removeFromCart } from "../../redux/giftHamperCartSlice";
@@ -990,6 +991,23 @@ const BookingReviewPage = () => {
           </div>
         </div>
       </div>
+
+      {/* ── People Like This — fun activities suggestion (admin only) ── */}
+      {currentUser?.isAdmin && (
+        <div style={{ maxWidth:1200, margin:"0 auto", padding:"8px 24px 64px", fontFamily:"'Outfit',sans-serif" }}>
+          <div style={{ borderRadius:20, border:"1.5px solid rgba(124,58,237,0.15)", background:"rgba(124,58,237,0.03)", padding:"28px 24px" }}>
+            <div style={{ marginBottom:20 }}>
+              <p style={{ fontSize:11, fontWeight:800, color:"#7C3AED", textTransform:"uppercase", letterSpacing:"0.12em", margin:"0 0 6px" }}>🎭 People Also Love This</p>
+              <h3 style={{ fontSize:20, fontWeight:900, color:"#2C1A0E", margin:"0 0 5px" }}>Add a Fun Activity to Your Event</h3>
+              <p style={{ fontSize:13, color:"#9B7450", margin:0 }}>Fixed-price entertainment add-ons — no negotiations, confirmed within 2 hours.</p>
+            </div>
+            <Suspense fallback={<div style={{ height:200, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450" }}>Loading…</div>}>
+              <FunActivitiesSection />
+            </Suspense>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

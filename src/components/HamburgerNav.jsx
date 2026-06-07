@@ -219,6 +219,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       ...(user?.isAdmin ? [
         { label: "🎉 Plan by Occasion", onClickOverride: () => { close(); window.open("/occasions", "_blank"); } },
         { label: "🏡 Party Places",     href: "/party-places" },
+        { label: "🎭 Fun Activities",   href: "/fun-activities" },
       ] : []),
       { label: "Checklist",        href: "/checklist-picker", activePaths: ["/checklist-picker","/checklist","/prebuilt-checklist"],
         onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_checklist_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.categories?.length > 0 ? "/prebuilt-checklist" : "/checklist-picker"); } catch { navigate("/checklist-picker"); } } },

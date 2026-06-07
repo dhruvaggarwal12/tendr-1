@@ -85,6 +85,7 @@ const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesP
 const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
 const CommunityWall       = lazy(() => import("./pages/community/CommunityWall.jsx"));
 const CelebrationHub      = lazy(() => import("./pages/celebration-hub/CelebrationHub.jsx"));
+const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivitiesPage.jsx"));
 
 
 const router = createBrowserRouter([
@@ -362,6 +363,11 @@ const router = createBrowserRouter([
   {
     path: "/celebration-hub",
     element: <CelebrationHub />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/fun-activities",
+    element: <FunActivitiesPage />,
     errorElement: <ErrorPage />,
   },
 

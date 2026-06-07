@@ -1,28 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { setFilters } from "../../redux/listingFiltersSlice";
 import HamburgerNav from "../../components/HamburgerNav";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
+import FunActivitiesSection from "../../components/FunActivitiesSection";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 const PLATFORM_CATEGORIES = ["Caterer", "Decorator", "Photographer", "DJ"];
 const PLATFORM_LOCATIONS  = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida", "Faridabad"];
-const CAT_EMOJI = { Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", DJ: "🎵" };
+const CAT_EMOJI = { Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", DJ: "🎵", "Fun Activities": "🎭" };
 
 export default function SearchResults() {
   const [searchParams] = useSearchParams();
   const navigate       = useNavigate();
   const dispatch       = useDispatch();
 
+  const { user } = useSelector(s => s.auth);
   const rawCats    = (searchParams.get("categories") || "").split(",").filter(Boolean);
   const rawLocs    = (searchParams.get("locations")  || "").split(",").filter(Boolean);
   const rawBudget  = searchParams.get("budget") ? Number(searchParams.get("budget")) : null;
   const rawQuery   = searchParams.get("q") || "";
   const isUnknown  = searchParams.get("unknown") === "1";
+  const allCategories = user?.isAdmin ? [...PLATFORM_CATEGORIES, "Fun Activities"] : PLATFORM_CATEGORIES;
 
   // Active filter state (for swap chips) — sync whenever URL params change
   const [activeCat, setActiveCat] = useState(rawCats[0] || "");
@@ -104,11 +107,12 @@ export default function SearchResults() {
             We currently cover four service categories for events in Delhi NCR. Here's what we offer:
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
-            {PLATFORM_CATEGORIES.map(cat => (
-              <button key={cat} onClick={() => navigate(`/top-rated/${cat}`)}
-                style={{ padding: "16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, textAlign: "center", transition: "all 0.18s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.background = "rgba(196,122,46,0.04)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; e.currentTarget.style.background = "#fff"; }}>
+            {allCategories.map(cat => (
+              <button key={cat}
+                onClick={() => cat === "Fun Activities" ? navigate("/fun-activities") : navigate(`/top-rated/${cat}`)}
+                style={{ padding: "16px", borderRadius: 14, border: `1.5px solid ${cat === "Fun Activities" ? "rgba(124,58,237,0.25)" : "rgba(196,122,46,0.2)"}`, background: cat === "Fun Activities" ? "rgba(124,58,237,0.04)" : "#fff", cursor: "pointer", fontFamily: font, textAlign: "center", transition: "all 0.18s" }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = cat === "Fun Activities" ? "#7C3AED" : "#C47A2E"; e.currentTarget.style.background = cat === "Fun Activities" ? "rgba(124,58,237,0.08)" : "rgba(196,122,46,0.04)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = cat === "Fun Activities" ? "rgba(124,58,237,0.25)" : "rgba(196,122,46,0.2)"; e.currentTarget.style.background = cat === "Fun Activities" ? "rgba(124,58,237,0.04)" : "#fff"; }}>
                 <div style={{ fontSize: 28, marginBottom: 6 }}>{CAT_EMOJI[cat]}</div>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{cat}</div>
               </button>
@@ -195,33 +199,55 @@ export default function SearchResults() {
           </div>
         )}
 
-        {/* Vendor results */}
-        {!loading && vendors.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "60px 24px" }}>
-            <div style={{ fontSize: 40, marginBottom: 14 }}>🔍</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No vendors found</h3>
-            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px" }}>
-              {rawBudget ? "Try increasing your budget or removing the budget filter." : "Try a different location or category."}
-            </p>
-            {rawBudget && (
-              <button onClick={() => navigate(`/search?categories=${rawCats.join(",")}&locations=${rawLocs.join(",")}&q=${encodeURIComponent(rawQuery)}`)}
-                style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                Search without budget filter →
-              </button>
-            )}
+        {/* Fun Activities category chip (admin only) */}
+        {user?.isAdmin && (
+          <div style={{ marginBottom: 16 }}>
+            <button onClick={() => { setActiveCat(c => c === "Fun Activities" ? "" : "Fun Activities"); setCurrentPage(1); }}
+              style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:100, border:`2px solid ${activeCat === "Fun Activities" ? "#7C3AED" : "rgba(124,58,237,0.25)"}`, background: activeCat === "Fun Activities" ? "rgba(124,58,237,0.08)" : "rgba(124,58,237,0.04)", color: activeCat === "Fun Activities" ? "#7C3AED" : "#5B21B6", fontSize:14, fontWeight: activeCat === "Fun Activities" ? 800 : 600, cursor:"pointer", fontFamily:font, transition:"all 0.18s" }}>
+              <span style={{ fontSize:16 }}>🎭</span> Fun Activities
+              {activeCat === "Fun Activities" && <span style={{ fontSize:10, fontWeight:700 }}>✓</span>}
+            </button>
+          </div>
+        )}
+
+        {/* Fun Activities results panel */}
+        {activeCat === "Fun Activities" ? (
+          <div style={{ background:"#fff", borderRadius:18, border:"1.5px solid rgba(124,58,237,0.15)", padding:"24px 20px" }}>
+            <FunActivitiesSection
+              heading="🎭 Fun Activities"
+              subheading="Fixed-price entertainment add-ons · Confirmed within 2 hours"
+              grid={true}
+            />
           </div>
         ) : (
-          <VendorList_ListingPage
-            vendors={vendors}
-            serviceType={activeCat}
-            locationType={rawLocs.length === 1 ? rawLocs[0] : ""}
-            isLoading={loading}
-            paginationInfo={pagination}
-            handleShowMore={() => setCurrentPage(p => p + 1)}
-            isLoggedIn={true}
-            hideCompare={true}
-            requireFormBeforeChat={true}
-          />
+          /* Vendor results */
+          !loading && vendors.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "60px 24px" }}>
+              <div style={{ fontSize: 40, marginBottom: 14 }}>🔍</div>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No vendors found</h3>
+              <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px" }}>
+                {rawBudget ? "Try increasing your budget or removing the budget filter." : "Try a different location or category."}
+              </p>
+              {rawBudget && (
+                <button onClick={() => navigate(`/search?categories=${rawCats.join(",")}&locations=${rawLocs.join(",")}&q=${encodeURIComponent(rawQuery)}`)}
+                  style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Search without budget filter →
+                </button>
+              )}
+            </div>
+          ) : (
+            <VendorList_ListingPage
+              vendors={vendors}
+              serviceType={activeCat}
+              locationType={rawLocs.length === 1 ? rawLocs[0] : ""}
+              isLoading={loading}
+              paginationInfo={pagination}
+              handleShowMore={() => setCurrentPage(p => p + 1)}
+              isLoggedIn={true}
+              hideCompare={true}
+              requireFormBeforeChat={true}
+            />
+          )
         )}
       </div>
     </div>

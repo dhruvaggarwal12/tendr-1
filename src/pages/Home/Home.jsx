@@ -753,7 +753,7 @@ const Home = () => {
       {(() => {
         const GROUPS = [
           { icon: "🏙", label: "Cities", color: "#7A4A1E", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Faridabad", "Greater Noida"] },
-          { icon: "🎯", label: "Services", color: "#C47A2E", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup"] },
+          { icon: "🎯", label: "Services", color: "#C47A2E", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup", "Fun Activities"] },
           { icon: "🎉", label: "Events", color: "#8B4513", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
           { icon: "✨", label: "Platform", color: "#C47A2E", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
         ];
@@ -1498,6 +1498,36 @@ const Home = () => {
           </div>
         </section>
       )}
+
+      {/* ── Fun Activities — admin preview only ── */}
+      {user?.isAdmin && (() => {
+        const FunActivitiesSection = React.lazy(() => import("../../components/FunActivitiesSection"));
+        return (
+          <section style={{ background:"#fff", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
+            <div style={{ maxWidth:1100, margin:"0 auto" }}>
+              {/* Header */}
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
+                <div>
+                  <p style={{ fontSize:11, fontWeight:800, color:"#7C3AED", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 New · Admin Preview</p>
+                  <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
+                    Add Some Magic<br /><span style={{ color:"#7C3AED" }}>Fun Activities</span>
+                  </h2>
+                  <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
+                    Fixed-price entertainment add-ons — magic shows, live counters, game zones and more. Confirmed within 2 hours.
+                  </p>
+                </div>
+                <button onClick={() => window.open("/fun-activities","_blank")}
+                  style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#7C3AED,#9333EA)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(124,58,237,0.3)", whiteSpace:"nowrap" }}>
+                  See All Activities →
+                </button>
+              </div>
+              <React.Suspense fallback={<div style={{ height:220, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450", fontSize:14 }}>Loading activities…</div>}>
+                <FunActivitiesSection />
+              </React.Suspense>
+            </div>
+          </section>
+        );
+      })()}
 
       {/* ── FAQ ── */}
       <FaqSection />
