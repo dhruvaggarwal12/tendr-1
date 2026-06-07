@@ -4,7 +4,7 @@ import { FUN_ACTIVITIES } from "../data/funActivitiesData";
 const F  = "'Outfit', sans-serif";
 const GOLD  = "#C47A2E";
 const BROWN = "#2C1A0E";
-const PURPLE = "#7C3AED";
+const PURPLE = "#C47A2E";
 
 // ── Booking Panel (slides in from right) ─────────────────────────────────────
 function BookingPanel({ activity, onClose }) {
@@ -42,7 +42,7 @@ function BookingPanel({ activity, onClose }) {
             <button onClick={onClose} style={{ width:32, height:32, borderRadius:"50%", border:"1.5px solid rgba(44,26,14,0.1)", background:"#fff", color:"#9B7450", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontFamily:F }}>×</button>
           </div>
           {/* Price strip */}
-          <div style={{ marginTop:12, background:`linear-gradient(135deg,${PURPLE},#9333EA)`, borderRadius:12, padding:"10px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+          <div style={{ marginTop:12, background:`linear-gradient(135deg,${PURPLE},#CCAB4A)`, borderRadius:12, padding:"10px 16px", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
             <div>
               <p style={{ fontSize:10, color:"rgba(255,255,255,0.7)", margin:0, fontWeight:700, letterSpacing:"0.08em", fontFamily:F }}>FIXED PRICE — NO SURPRISES</p>
               <p style={{ fontSize:22, fontWeight:900, color:"#fff", margin:"2px 0 0", fontFamily:F }}>₹{activity.price.toLocaleString("en-IN")}</p>
@@ -62,13 +62,13 @@ function BookingPanel({ activity, onClose }) {
               <p style={{ fontSize:14, color:"#9B7450", lineHeight:1.65, margin:"0 0 24px", fontFamily:F }}>
                 We'll confirm the <strong>{activity.name}</strong> booking and WhatsApp you within 2 hours.
               </p>
-              <div style={{ background:"rgba(124,58,237,0.06)", borderRadius:12, padding:"12px 16px", marginBottom:20, textAlign:"left" }}>
+              <div style={{ background:"rgba(196,122,46,0.06)", borderRadius:12, padding:"12px 16px", marginBottom:20, textAlign:"left" }}>
                 <p style={{ fontSize:12, color:PURPLE, fontWeight:700, margin:"0 0 6px", fontFamily:F }}>Booking Summary</p>
                 <p style={{ fontSize:13, color:BROWN, margin:"0 0 3px", fontFamily:F }}>📅 {form.date} at {form.time}</p>
                 <p style={{ fontSize:13, color:BROWN, margin:"0 0 3px", fontFamily:F }}>📍 {form.address}</p>
                 <p style={{ fontSize:13, color:BROWN, margin:0, fontFamily:F }}>💰 ₹{activity.price.toLocaleString("en-IN")} fixed</p>
               </div>
-              <button onClick={onClose} style={{ width:"100%", padding:"12px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${PURPLE},#9333EA)`, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F }}>
+              <button onClick={onClose} style={{ width:"100%", padding:"12px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${PURPLE},#CCAB4A)`, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F }}>
                 Done
               </button>
             </div>
@@ -93,7 +93,7 @@ function BookingPanel({ activity, onClose }) {
                   onBlur={e => e.target.style.borderColor="rgba(44,26,14,0.12)"} />
               </div>
               <button onClick={() => { if (valid) setSubmitted(true); }} disabled={!valid}
-                style={{ width:"100%", padding:"13px", borderRadius:12, border:"none", background: valid ? `linear-gradient(135deg,${PURPLE},#9333EA)` : "#E5E7EB", color: valid ? "#fff" : "#9CA3AF", fontSize:14, fontWeight:800, cursor: valid ? "pointer" : "not-allowed", fontFamily:F, boxShadow: valid ? "0 4px 14px rgba(124,58,237,0.35)" : "none", transition:"all 0.15s" }}>
+                style={{ width:"100%", padding:"13px", borderRadius:12, border:"none", background: valid ? `linear-gradient(135deg,${PURPLE},#CCAB4A)` : "#E5E7EB", color: valid ? "#fff" : "#9CA3AF", fontSize:14, fontWeight:800, cursor: valid ? "pointer" : "not-allowed", fontFamily:F, boxShadow: valid ? "0 4px 14px rgba(196,122,46,0.35)" : "none", transition:"all 0.15s" }}>
                 Confirm Booking →
               </button>
               <p style={{ fontSize:11, color:"#9B7450", textAlign:"center", margin:"10px 0 0", fontFamily:F }}>
@@ -121,7 +121,7 @@ function ActivityModal({ activity, onClose, onBook }) {
           <button onClick={onClose} style={{ position:"absolute", top:14, right:14, width:32, height:32, borderRadius:"50%", border:"1.5px solid rgba(44,26,14,0.1)", background:"#fff", color:"#9B7450", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>×</button>
           <div style={{ fontSize:56, marginBottom:12 }}>{activity.emoji}</div>
           <h2 style={{ fontSize:20, fontWeight:900, color:BROWN, margin:"0 0 6px", fontFamily:F }}>{activity.name}</h2>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:`linear-gradient(135deg,${PURPLE},#9333EA)`, borderRadius:100, padding:"6px 18px" }}>
+          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:`linear-gradient(135deg,${PURPLE},#CCAB4A)`, borderRadius:100, padding:"6px 18px" }}>
             <span style={{ fontSize:14, fontWeight:900, color:"#fff", fontFamily:F }}>₹{activity.price.toLocaleString("en-IN")}</span>
             <span style={{ fontSize:10, color:"rgba(255,255,255,0.7)", fontWeight:700, letterSpacing:"0.08em", fontFamily:F }}>FIXED PRICE</span>
           </div>
@@ -148,7 +148,7 @@ function ActivityModal({ activity, onClose, onBook }) {
           {/* Full profile extras */}
           {fullProfile && (
             <>
-              <div style={{ background:"rgba(124,58,237,0.04)", borderRadius:14, padding:"14px 16px", marginBottom:16, border:`1px solid ${PURPLE}18` }}>
+              <div style={{ background:"rgba(196,122,46,0.04)", borderRadius:14, padding:"14px 16px", marginBottom:16, border:`1px solid ${PURPLE}18` }}>
                 <p style={{ fontSize:12, fontWeight:800, color:PURPLE, textTransform:"uppercase", letterSpacing:"0.08em", margin:"0 0 10px", fontFamily:F }}>What's Included</p>
                 {activity.includes.map((item, i) => (
                   <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:8, marginBottom:6 }}>
@@ -185,7 +185,7 @@ function ActivityModal({ activity, onClose, onBook }) {
 
           {/* Book Now CTA */}
           <button onClick={() => { onClose(); onBook(activity); }}
-            style={{ width:"100%", padding:"13px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${PURPLE},#9333EA)`, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F, boxShadow:"0 4px 14px rgba(124,58,237,0.35)" }}>
+            style={{ width:"100%", padding:"13px", borderRadius:12, border:"none", background:`linear-gradient(135deg,${PURPLE},#CCAB4A)`, color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:F, boxShadow:"0 4px 14px rgba(196,122,46,0.35)" }}>
             Book Now — ₹{activity.price.toLocaleString("en-IN")} Fixed →
           </button>
           <p style={{ fontSize:11, color:"#9B7450", textAlign:"center", margin:"8px 0 0", fontFamily:F }}>
@@ -201,7 +201,7 @@ function ActivityModal({ activity, onClose, onBook }) {
 export function FunActivityCard({ activity, onQuickView, onBook }) {
   return (
     <div style={{ background:"#fff", borderRadius:18, border:"1.5px solid rgba(44,26,14,0.07)", overflow:"hidden", boxShadow:"0 2px 12px rgba(44,26,14,0.06)", transition:"all 0.2s", display:"flex", flexDirection:"column", minWidth:240, flex:"0 0 auto" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow="0 8px 28px rgba(124,58,237,0.14)"; e.currentTarget.style.transform="translateY(-3px)"; }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow="0 8px 28px rgba(196,122,46,0.14)"; e.currentTarget.style.transform="translateY(-3px)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow="0 2px 12px rgba(44,26,14,0.06)"; e.currentTarget.style.transform="translateY(0)"; }}>
 
       {/* Emoji header */}
@@ -209,7 +209,7 @@ export function FunActivityCard({ activity, onQuickView, onBook }) {
         <div style={{ fontSize:40, marginBottom:8 }}>{activity.emoji}</div>
         {/* Price badge */}
         <div style={{ position:"absolute", top:10, right:10 }}>
-          <div style={{ background:`linear-gradient(135deg,${PURPLE},#9333EA)`, color:"#fff", fontSize:13, fontWeight:900, padding:"4px 12px", borderRadius:"100px 100px 100px 4px", fontFamily:F }}>
+          <div style={{ background:`linear-gradient(135deg,${PURPLE},#CCAB4A)`, color:"#fff", fontSize:13, fontWeight:900, padding:"4px 12px", borderRadius:"100px 100px 100px 4px", fontFamily:F }}>
             ₹{activity.price.toLocaleString("en-IN")}
           </div>
           <div style={{ fontSize:9, color:PURPLE, fontWeight:800, letterSpacing:"0.1em", textAlign:"center", marginTop:2, fontFamily:F }}>FIXED</div>
@@ -240,7 +240,7 @@ export function FunActivityCard({ activity, onQuickView, onBook }) {
             Quick View
           </button>
           <button onClick={() => onBook(activity)}
-            style={{ flex:1, padding:"8px 0", borderRadius:9, border:"none", background:`linear-gradient(135deg,${PURPLE},#9333EA)`, color:"#fff", fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:F, boxShadow:"0 3px 10px rgba(124,58,237,0.3)" }}>
+            style={{ flex:1, padding:"8px 0", borderRadius:9, border:"none", background:`linear-gradient(135deg,${PURPLE},#CCAB4A)`, color:"#fff", fontSize:11, fontWeight:800, cursor:"pointer", fontFamily:F, boxShadow:"0 3px 10px rgba(196,122,46,0.3)" }}>
             Book Now
           </button>
         </div>

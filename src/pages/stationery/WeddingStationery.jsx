@@ -33,7 +33,11 @@ export default function WeddingStationery() {
       <BasicSpeedDial />
       <HamburgerNav title="Wedding Stationery" />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "48px 24px 80px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px 80px" }}>
+        {/* Back button */}
+        <button onClick={() => navigate(-1)} style={{ display: "inline-flex", alignItems: "center", gap: 6, marginBottom: 24, background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 8, color: "#C47A2E", fontSize: 12, fontWeight: 600, padding: "6px 12px", cursor: "pointer", fontFamily: font }}>
+          ← Back
+        </button>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 52 }}>
           <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#C9A84C", marginBottom: 10 }}>

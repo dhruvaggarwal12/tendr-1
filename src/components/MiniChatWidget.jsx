@@ -217,8 +217,8 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
     <div style={{
       position: "fixed",
       bottom: 80,
-      right: 24,
-      width: 380,
+      right: 16,
+      width: "min(380px, calc(100vw - 32px))",
       height: 520,
       background: "#FFFCF5",
       borderRadius: 20,

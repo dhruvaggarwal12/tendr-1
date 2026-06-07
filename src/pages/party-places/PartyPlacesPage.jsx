@@ -40,6 +40,9 @@ export default function PartyPlacesPage() {
           style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 35%" }}
         />
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,4,0,0.92) 0%,rgba(30,15,5,0.55) 55%,rgba(10,4,0,0.2) 100%)" }} />
+        <button onClick={() => navigate(-1)} style={{ position: "absolute", top: 14, left: 18, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, padding: "5px 11px", cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}>
+          ← Back
+        </button>
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 28px 24px" }}>
           <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>🏡 Admin Preview</p>
           <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", fontWeight: 900, color: "#fff", margin: "0 0 5px", letterSpacing: "-0.02em" }}>

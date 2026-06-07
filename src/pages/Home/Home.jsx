@@ -28,6 +28,8 @@ import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import { useSelector } from "react-redux";
 
+const FunActivitiesLazy = React.lazy(() => import("../../components/FunActivitiesSection"));
+
 const HERO_FEATURES = [
   {
     tag: "Smart Planning Tools",
@@ -1118,6 +1120,56 @@ const Home = () => {
 
       <JourneyFlow />
 
+      {/* ── Plan by Occasion — admin preview only ── */}
+      {user?.isAdmin && (() => {
+        const OCC_CHIPS = [
+          { id: "baby-shower",     icon: "🍼", name: "Baby Shower",     bg: "#FFF0F8", accent: "#F472B6" },
+          { id: "newborn-welcome", icon: "👶", name: "Newborn Welcome",  bg: "#FFFBEB", accent: "#F59E0B" },
+          { id: "first-birthday",  icon: "🎂", name: "1st Birthday",    bg: "#EFF6FF", accent: "#60A5FA" },
+          { id: "anniversary",     icon: "💍", name: "Anniversary",      bg: "#FFF5F0", accent: "#FB923C" },
+          { id: "housewarming",    icon: "🏠", name: "Housewarming",     bg: "#F0FDF4", accent: "#4ADE80" },
+          { id: "graduation",      icon: "🎓", name: "Graduation",       bg: "#F5F3FF", accent: "#A78BFA" },
+        ];
+        return (
+          <section style={{ background: "linear-gradient(160deg,#FFF5F0 0%,#FFF3FA 50%,#F5F8FF 100%)", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 6px" }}>🎉 Admin Preview</p>
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,3vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "0.01em" }}>
+                    What are you celebrating?
+                  </h2>
+                  <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>Décor, gifts & checklists for every moment.</p>
+                </div>
+                <button onClick={() => window.open("/occasions", "_blank")}
+                  style={{ padding: "9px 22px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", transition: "all 0.15s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  All Occasions ↗
+                </button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }} className="occ-chip-grid">
+                {OCC_CHIPS.map(({ id, icon, name, bg, accent }) => (
+                  <button key={id} onClick={() => window.open(`/occasions/${id}`, "_blank")}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "18px 8px 16px", borderRadius: 18, border: `1.5px solid ${accent}30`, background: bg, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "transform 0.15s, box-shadow 0.15s", outline: "none" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 8px 22px ${accent}28`; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                    <span style={{ fontSize: 34 }}>{icon}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{name}</span>
+                    <span style={{ fontSize: 10, color: accent, fontWeight: 700 }}>Explore ↗</span>
+                  </button>
+                ))}
+              </div>
+              <style>{`
+                @media (max-width: 640px) { .occ-chip-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; } }
+                @media (max-width: 640px) { .occ-chip-grid button { padding: 14px 6px 12px !important; border-radius: 14px !important; } }
+                @media (max-width: 640px) { .occ-chip-grid button span:first-child { font-size: 28px !important; } }
+              `}</style>
+            </div>
+          </section>
+        );
+      })()}
+
       {/* ── Book a Party Place — admin preview only ── */}
       {user?.isAdmin && (
         <section style={{ position: "relative", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
@@ -1208,57 +1260,31 @@ const Home = () => {
         </section>
       )}
 
-      {/* ── Plan by Occasion — admin preview only ── */}
-      {user?.isAdmin && (() => {
-        const OCC_CHIPS = [
-          { id: "baby-shower",     icon: "🍼", name: "Baby Shower",     bg: "#FFF0F8", accent: "#F472B6" },
-          { id: "newborn-welcome", icon: "👶", name: "Newborn Welcome",  bg: "#FFFBEB", accent: "#F59E0B" },
-          { id: "first-birthday",  icon: "🎂", name: "1st Birthday",    bg: "#EFF6FF", accent: "#60A5FA" },
-          { id: "anniversary",     icon: "💍", name: "Anniversary",      bg: "#FFF5F0", accent: "#FB923C" },
-          { id: "housewarming",    icon: "🏠", name: "Housewarming",     bg: "#F0FDF4", accent: "#4ADE80" },
-          { id: "graduation",      icon: "🎓", name: "Graduation",       bg: "#F5F3FF", accent: "#A78BFA" },
-        ];
-        return (
-          <section style={{ background: "linear-gradient(160deg,#FFF5F0 0%,#FFF3FA 50%,#F5F8FF 100%)", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
-            <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 6px" }}>🎉 Admin Preview</p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,3vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "0.01em" }}>
-                    What are you celebrating?
-                  </h2>
-                  <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>Décor, gifts & checklists for every moment.</p>
-                </div>
-                <button onClick={() => window.open("/occasions", "_blank")}
-                  style={{ padding: "9px 22px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", transition: "all 0.15s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  All Occasions ↗
-                </button>
+      {/* ── Fun Activities — admin preview only ── */}
+      {user?.isAdmin && (
+        <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
+          <div style={{ maxWidth:1100, margin:"0 auto" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
+              <div>
+                <p style={{ fontSize:11, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 New · Admin Preview</p>
+                <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
+                  Add Some Magic<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
+                </h2>
+                <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
+                  Fixed-price entertainment add-ons — magic shows, live counters, game zones and more. Confirmed within 2 hours.
+                </p>
               </div>
-
-              {/* 6-col chip grid on desktop → 3-col on mobile */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }} className="occ-chip-grid">
-                {OCC_CHIPS.map(({ id, icon, name, bg, accent }) => (
-                  <button key={id} onClick={() => window.open(`/occasions/${id}`, "_blank")}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "18px 8px 16px", borderRadius: 18, border: `1.5px solid ${accent}30`, background: bg, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "transform 0.15s, box-shadow 0.15s", outline: "none" }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 8px 22px ${accent}28`; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                    <span style={{ fontSize: 34 }}>{icon}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{name}</span>
-                    <span style={{ fontSize: 10, color: accent, fontWeight: 700 }}>Explore ↗</span>
-                  </button>
-                ))}
-              </div>
-              <style>{`
-                @media (max-width: 640px) { .occ-chip-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; } }
-                @media (max-width: 640px) { .occ-chip-grid button { padding: 14px 6px 12px !important; border-radius: 14px !important; } }
-                @media (max-width: 640px) { .occ-chip-grid button span:first-child { font-size: 28px !important; } }
-              `}</style>
+              <button onClick={() => window.open("/fun-activities","_blank")}
+                style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
+                See All Activities →
+              </button>
             </div>
-          </section>
-        );
-      })()}
+            <React.Suspense fallback={<div style={{ height:220, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450", fontSize:14 }}>Loading activities…</div>}>
+              <FunActivitiesLazy />
+            </React.Suspense>
+          </div>
+        </section>
+      )}
 
       {/* ── Memories Section — admin preview only ── */}
       {user?.isAdmin && (() => {
@@ -1470,6 +1496,61 @@ const Home = () => {
         `}</style>
       </section>
 
+      {/* ── Join the Celebration Hub — admin preview only ── */}
+      {user?.isAdmin && (
+        <section style={{ background: "linear-gradient(160deg,#0F172A 0%,#1E293B 60%,#0F172A 100%)", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+          <div style={{ position:"absolute", top:-80, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.06)", pointerEvents:"none" }} />
+          <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32, gap:24, flexWrap:"wrap" }}>
+              <div>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:14 }}>
+                  <span style={{ fontSize:11, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 New · Admin Preview</span>
+                </div>
+                <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.6rem,3.5vw,2.6rem)", fontWeight:400, color:"#fff", margin:"0 0 10px", letterSpacing:"0.01em", lineHeight:1.25 }}>
+                  Join the Celebration Hub
+                </h2>
+                <p style={{ fontSize:14, color:"rgba(255,255,255,0.5)", margin:0, maxWidth:460, lineHeight:1.7 }}>
+                  Share ideas, get inspiration, discuss event challenges — a space shaped by the community.
+                </p>
+              </div>
+              <button onClick={() => navigate("/celebration-hub")}
+                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 28px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 18px rgba(196,122,46,0.38)", whiteSpace:"nowrap", transition:"opacity 0.2s", flexShrink:0 }}
+                onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
+                onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+                Enter the Hub →
+              </button>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }} className="ch-cat-grid">
+              {[
+                { icon:"💡", cat:"Ideas & Decor",    desc:"Share themes, mood boards and vendor finds with the community.", count:"50+ posts", color:"#CCAB4A" },
+                { icon:"🔥", cat:"Trending Now",     desc:"See what real couples are discussing and voting on this week.", count:"12 active threads", color:"#F97316" },
+                { icon:"📊", cat:"Polls & Opinions", desc:"Vote on colour palettes, setups and event choices. Real answers.", count:"Live polls", color:"#8B5CF6" },
+              ].map(({ icon, cat, desc, count, color }) => (
+                <button key={cat} onClick={() => navigate("/celebration-hub")}
+                  style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:10, padding:"20px 18px", borderRadius:18, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.09)", cursor:"pointer", fontFamily:"'Outfit',sans-serif", textAlign:"left", transition:"background 0.18s" }}
+                  onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.09)"}
+                  onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.05)"}>
+                  <span style={{ fontSize:30 }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:800, color:"#fff", marginBottom:5, lineHeight:1.2 }}>{cat}</div>
+                    <p style={{ fontSize:12, color:"rgba(255,255,255,0.48)", margin:"0 0 10px", lineHeight:1.55 }}>{desc}</p>
+                    <span style={{ fontSize:10.5, fontWeight:700, color, background:`${color}18`, borderRadius:100, padding:"3px 10px" }}>{count}</span>
+                  </div>
+                  <div style={{ width:32, height:2, background:color, borderRadius:100, marginTop:"auto" }} />
+                </button>
+              ))}
+            </div>
+            <style>{`
+              @media(max-width:640px){
+                .ch-cat-grid{display:flex!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important;gap:12px!important;padding:4px 2px 12px!important;margin:0 -24px!important;padding-left:24px!important;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+                .ch-cat-grid::-webkit-scrollbar{display:none}
+                .ch-cat-grid>button{flex:0 0 78%!important;scroll-snap-align:start!important;}
+              }
+            `}</style>
+          </div>
+        </section>
+      )}
+
       {/* Become a Partner Section */}
       <section style={{ background: "#2C1A0E", padding: "96px 24px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }} className="partner-grid">
@@ -1531,106 +1612,6 @@ const Home = () => {
 
         <style>{`.partner-grid { } @media (max-width: 768px) { .partner-grid { grid-template-columns: 1fr !important; gap: 48px !important; } }`}</style>
       </section>
-
-      {/* ── Join the Celebration Hub — admin preview only ── */}
-      {user?.isAdmin && (
-        <section style={{ background: "#2C1A0E", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-          <div style={{ position:"absolute", top:-80, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.06)", pointerEvents:"none" }} />
-
-          <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
-            {/* Top: heading + CTA side by side on desktop */}
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32, gap:24, flexWrap:"wrap" }}>
-              <div>
-                <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:14 }}>
-                  <span style={{ fontSize:11, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 New · Admin Preview</span>
-                </div>
-                <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.6rem,3.5vw,2.6rem)", fontWeight:400, color:"#fff", margin:"0 0 10px", letterSpacing:"0.01em", lineHeight:1.25 }}>
-                  Join the Celebration Hub
-                </h2>
-                <p style={{ fontSize:14, color:"rgba(255,255,255,0.5)", margin:0, maxWidth:460, lineHeight:1.7 }}>
-                  Share ideas, get inspiration, discuss event challenges — a space shaped by the community.
-                </p>
-              </div>
-              <button
-                onClick={() => navigate("/celebration-hub")}
-                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 28px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 18px rgba(196,122,46,0.38)", whiteSpace:"nowrap", transition:"opacity 0.2s", flexShrink:0 }}
-                onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
-                onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-                Enter the Hub →
-              </button>
-            </div>
-
-            {/* 3 category preview cards — horizontal scroll on mobile */}
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }} className="ch-cat-grid">
-              {[
-                { icon:"💡", cat:"Ideas & Decor",    desc:"Share themes, mood boards and vendor finds with the community.", count:"50+ posts", color:"#CCAB4A" },
-                { icon:"🔥", cat:"Trending Now",     desc:"See what real couples are discussing and voting on this week.", count:"12 active threads", color:"#F97316" },
-                { icon:"📊", cat:"Polls & Opinions", desc:"Vote on colour palettes, setups and event choices. Real answers.", count:"Live polls", color:"#8B5CF6" },
-              ].map(({ icon, cat, desc, count, color }) => (
-                <button key={cat} onClick={() => navigate("/celebration-hub")}
-                  style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:10, padding:"20px 18px", borderRadius:18, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.09)", cursor:"pointer", fontFamily:"'Outfit',sans-serif", textAlign:"left", transition:"background 0.18s" }}
-                  onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.09)"}
-                  onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.05)"}>
-                  <span style={{ fontSize:30 }}>{icon}</span>
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:800, color:"#fff", marginBottom:5, lineHeight:1.2 }}>{cat}</div>
-                    <p style={{ fontSize:12, color:"rgba(255,255,255,0.48)", margin:"0 0 10px", lineHeight:1.55 }}>{desc}</p>
-                    <span style={{ fontSize:10.5, fontWeight:700, color:color, background:`${color}18`, borderRadius:100, padding:"3px 10px" }}>{count}</span>
-                  </div>
-                  <div style={{ width:32, height:2, background:color, borderRadius:100, marginTop:"auto" }} />
-                </button>
-              ))}
-            </div>
-            <style>{`
-              @media(max-width:640px){
-                .ch-cat-grid{
-                  display:flex!important;
-                  overflow-x:auto!important;
-                  scroll-snap-type:x mandatory!important;
-                  gap:12px!important;
-                  padding:4px 2px 12px!important;
-                  margin:0 -24px!important;
-                  padding-left:24px!important;
-                  -webkit-overflow-scrolling:touch;
-                  scrollbar-width:none;
-                }
-                .ch-cat-grid::-webkit-scrollbar{display:none}
-                .ch-cat-grid>button{flex:0 0 78%!important;scroll-snap-align:start!important;}
-              }
-            `}</style>
-          </div>
-        </section>
-      )}
-
-      {/* ── Fun Activities — admin preview only ── */}
-      {user?.isAdmin && (() => {
-        const FunActivitiesSection = React.lazy(() => import("../../components/FunActivitiesSection"));
-        return (
-          <section style={{ background:"linear-gradient(180deg,#F4EEFF 0%,#F8FCFF 60%,#fff 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
-            <div style={{ maxWidth:1100, margin:"0 auto" }}>
-              {/* Header */}
-              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
-                <div>
-                  <p style={{ fontSize:11, fontWeight:800, color:"#7C3AED", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 New · Admin Preview</p>
-                  <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
-                    Add Some Magic<br /><span style={{ color:"#7C3AED" }}>Fun Activities</span>
-                  </h2>
-                  <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
-                    Fixed-price entertainment add-ons — magic shows, live counters, game zones and more. Confirmed within 2 hours.
-                  </p>
-                </div>
-                <button onClick={() => window.open("/fun-activities","_blank")}
-                  style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#7C3AED,#9333EA)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(124,58,237,0.3)", whiteSpace:"nowrap" }}>
-                  See All Activities →
-                </button>
-              </div>
-              <React.Suspense fallback={<div style={{ height:220, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450", fontSize:14 }}>Loading activities…</div>}>
-                <FunActivitiesSection />
-              </React.Suspense>
-            </div>
-          </section>
-        );
-      })()}
 
       {/* ── FAQ ── */}
       <FaqSection />

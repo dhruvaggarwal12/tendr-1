@@ -12,6 +12,7 @@ export default function OccasionDetail() {
   const navigate  = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const [popup, setPopup] = useState(null);
+  const [activeTab, setActiveTab] = useState("decor");
 
   const occasion = getOccasionById(slug);
 
@@ -92,70 +93,92 @@ export default function OccasionDetail() {
         </div>
       </div>
 
-      {/* Scrollable sections */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "24px 24px 40px" }}>
+      {/* Tab bar */}
+      <div style={{ display: "flex", borderBottom: "1.5px solid rgba(196,122,46,0.12)", background: "#F8F4EF", flexShrink: 0, overflowX: "auto", scrollbarWidth: "none" }}>
+        {[
+          { id: "decor",      icon: "🎨", label: "Décor",      count: occasion.decorThemes.length },
+          { id: "gifts",      icon: "🎁", label: "Gifts",      count: occasion.giftIdeas.length },
+          { id: "activities", icon: "🎯", label: "Activities",  count: occasion.activities.length },
+          { id: "checklist",  icon: "✅", label: "Checklist",   count: occasion.checklist.length },
+        ].map(t => (
+          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
+            flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+            padding: "10px 4px 8px", border: "none", background: "transparent", cursor: "pointer",
+            fontFamily: font, borderBottom: `2.5px solid ${activeTab === t.id ? "#C47A2E" : "transparent"}`,
+            transition: "border-color 0.18s", minWidth: 72, whiteSpace: "nowrap",
+          }}>
+            <span style={{ fontSize: 17 }}>{t.icon}</span>
+            <span style={{ fontSize: 10, fontWeight: activeTab === t.id ? 800 : 500, color: activeTab === t.id ? "#C47A2E" : "#9B7450" }}>{t.label}</span>
+            <span style={{ fontSize: 9, color: "rgba(196,122,46,0.5)", fontWeight: 600 }}>({t.count})</span>
+          </button>
+        ))}
+      </div>
 
-        {/* Decor Themes */}
-        <Section title={`🎨 Decor Themes (${occasion.decorThemes.length})`}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
-            {occasion.decorThemes.map((t, i) => (
-              <Card key={i} onClick={() => setPopup({ type: "decor", item: t })}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 3 }}>{t.name}</div>
-                <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.45, marginBottom: 6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.desc}</div>
-                <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 4 }}>
-                  {(t.tags || []).slice(0, 3).map(tag => (
-                    <span key={tag} style={{ fontSize: 10, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "2px 6px" }}>#{tag}</span>
-                  ))}
-                </div>
-                <div style={{ fontSize: 10, color: "rgba(196,122,46,0.55)", fontWeight: 600 }}>Tap for details →</div>
-              </Card>
-            ))}
-          </div>
-        </Section>
+      {/* Scrollable sections — one tab at a time */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 18px 40px" }}>
 
-        {/* Gift Ideas */}
-        <Section title={`🎁 Gift Ideas (${occasion.giftIdeas.length})`}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
-            {occasion.giftIdeas.map((g, i) => (
-              <Card key={i} onClick={() => setPopup({ type: "gift", item: g })}>
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                  <span style={{ fontSize: 18, flexShrink: 0 }}>🎁</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{g.name}</div>
-                    <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{g.desc}</div>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E" }}>{g.price}</div>
+        {activeTab === "decor" && (
+          <Section title="Décor Themes">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+              {occasion.decorThemes.map((t, i) => (
+                <Card key={i} onClick={() => setPopup({ type: "decor", item: t })}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 3 }}>{t.name}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.45, marginBottom: 6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.desc}</div>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {(t.tags || []).slice(0, 3).map(tag => (
+                      <span key={tag} style={{ fontSize: 10, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "2px 6px" }}>#{tag}</span>
+                    ))}
                   </div>
+                </Card>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {activeTab === "gifts" && (
+          <Section title="Gift Ideas">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+              {occasion.giftIdeas.map((g, i) => (
+                <Card key={i} onClick={() => setPopup({ type: "gift", item: g })}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                    <span style={{ fontSize: 18, flexShrink: 0 }}>🎁</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{g.name}</div>
+                      <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{g.desc}</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E" }}>{g.price}</div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {activeTab === "activities" && (
+          <Section title="Activities">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+              {occasion.activities.map((a, i) => (
+                <Card key={i} onClick={() => setPopup({ type: "activity", item: a })}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 3 }}>{a.name}</div>
+                  <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.desc}</div>
+                </Card>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {activeTab === "checklist" && (
+          <Section title="Planning Checklist">
+            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+              {occasion.checklist.map((item, i) => (
+                <div key={i} style={{ display: "flex", gap: 11, alignItems: "center", padding: "10px 13px", background: "#fff", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.08)" }}>
+                  <span style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(196,122,46,0.3)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#C47A2E" }}>{i + 1}</span>
+                  <span style={{ fontSize: 13, color: "#2C1A0E", lineHeight: 1.4 }}>{item}</span>
                 </div>
-                <div style={{ marginTop: 6, fontSize: 10, color: "rgba(196,122,46,0.55)", fontWeight: 600 }}>Tap for details →</div>
-              </Card>
-            ))}
-          </div>
-        </Section>
-
-        {/* Activities */}
-        <Section title={`🎯 Activities (${occasion.activities.length})`}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
-            {occasion.activities.map((a, i) => (
-              <Card key={i} onClick={() => setPopup({ type: "activity", item: a })}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 3 }}>{a.name}</div>
-                <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.desc}</div>
-                <div style={{ marginTop: 6, fontSize: 10, color: "rgba(196,122,46,0.55)", fontWeight: 600 }}>Tap for details →</div>
-              </Card>
-            ))}
-          </div>
-        </Section>
-
-        {/* Checklist */}
-        <Section title={`✅ Planning Checklist (${occasion.checklist.length} items)`}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-            {occasion.checklist.map((item, i) => (
-              <div key={i} style={{ display: "flex", gap: 11, alignItems: "center", padding: "10px 13px", background: "#fff", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.08)" }}>
-                <span style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(196,122,46,0.3)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#C47A2E" }}>{i + 1}</span>
-                <span style={{ fontSize: 13, color: "#2C1A0E", lineHeight: 1.4 }}>{item}</span>
-              </div>
-            ))}
-          </div>
-        </Section>
+              ))}
+            </div>
+          </Section>
+        )}
 
       </div>
 

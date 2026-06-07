@@ -76,6 +76,7 @@ function BottomNavInner() {
   const [visible, setVisible] = useState(true);
   const [browseOpen, setBrowseOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
   const scrollTimer = useRef(null);
 
   // Hide while scrolling, show when stopped
@@ -94,6 +95,7 @@ function BottomNavInner() {
     setVisible(true);
     setBrowseOpen(false);
     setProductsOpen(false);
+    setPlanOpen(false);
   }, [location.pathname]);
 
   const shouldHide = HIDE_PATHS.some((p) => location.pathname.startsWith(p));
@@ -114,7 +116,7 @@ function BottomNavInner() {
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
     { label: "Browse",   paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setBrowseOpen(o => !o); } },
     { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setProductsOpen(o => !o); } },
-    { label: "Plan",     paths: ["/booking","/plan-event"],           onTap: () => navigate("/booking") },
+    { label: "Plan",     paths: ["/booking","/plan-event","/occasions"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
 
@@ -149,7 +151,12 @@ function BottomNavInner() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 12 }}>
               {[
                 ...CATEGORIES,
-                ...(user?.isAdmin ? [{ emoji: "🎉", label: "Plan by Occasion", path: null, newTab: true }] : []),
+                ...(user?.isAdmin ? [
+                  { emoji: "🎉", label: "Plan by Occasion", path: null, newTab: true },
+                  { emoji: "🏡", label: "Party Places",     path: "/party-places" },
+                  { emoji: "🎭", label: "Fun Activities",   path: "/fun-activities" },
+                  { emoji: "💌", label: "Memories",         path: "/stationery" },
+                ] : []),
               ].map(({ emoji, label, path, newTab }) => (
                 <button key={label}
                   onClick={() => { if (newTab) { window.open("/occasions", "_blank"); setBrowseOpen(false); } else { navigate(path); setBrowseOpen(false); } }}
@@ -184,6 +191,44 @@ function BottomNavInner() {
               }}>
               Browse All Vendors →
             </button>
+          </div>
+        </>
+      )}
+
+      {/* Plan options sheet */}
+      {planOpen && (
+        <>
+          <div onClick={() => setPlanOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991 }} />
+          <div style={{ position: "fixed", bottom: 60, left: 0, right: 0, zIndex: 99992, background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
+            </div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>How do you want to plan?</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button onClick={() => { navigate("/booking"); setPlanOpen(false); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
+                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                onTouchEnd={e => e.currentTarget.style.background = "#fff"}>
+                <span style={{ fontSize: 28 }}>📋</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Normal Booking</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Browse and book vendors directly</div>
+                </div>
+              </button>
+              {user?.isAdmin && (
+                <button onClick={() => { navigate("/occasions"); setPlanOpen(false); }}
+                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.3)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.1)", textAlign: "left" }}
+                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.12)"}
+                  onTouchEnd={e => e.currentTarget.style.background = "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))"}>
+                  <span style={{ fontSize: 28 }}>🎉</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Plan by Occasion</div>
+                    <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Get décor, gifts & vendor ideas by occasion</div>
+                  </div>
+                </button>
+              )}
+            </div>
           </div>
         </>
       )}
