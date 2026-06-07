@@ -14,7 +14,7 @@ export default function PartyPlacesPage() {
   const navigate = useNavigate();
   const { user } = useSelector((s) => s.auth);
   const [activeType, setActiveType] = useState("all");
-  const [form, setForm] = useState({ date: "", guests: "", location: "", occasion: "" });
+  const [form, setForm] = useState({ date: "", guests: "", location: "" });
   const [savedIds, setSavedIds] = useState(() => getSaved());
 
   if (!user?.isAdmin) { navigate("/"); return null; }
@@ -32,14 +32,23 @@ export default function PartyPlacesPage() {
       <SEO title="Book a Party Place — Tendr" description="Villas, farmhouses, flats and venues for your celebration" path="/party-places" noIndex />
       <HamburgerNav />
 
-      {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "36px 24px 32px", textAlign: "center" }}>
-        <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", fontWeight: 900, color: "#fff", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-          Book a Party Place
-        </h1>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: 0 }}>
-          Villas and flats — fully decorated, catered and ready for your celebration.
-        </p>
+      {/* Header — venue photo hero */}
+      <div style={{ position: "relative", overflow: "hidden", height: 220 }}>
+        <img
+          src="https://images.unsplash.com/photo-1613977257592-4871e5fcd7c4?w=1200&q=80"
+          alt="Party venue"
+          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 35%" }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(10,4,0,0.92) 0%,rgba(30,15,5,0.55) 55%,rgba(10,4,0,0.2) 100%)" }} />
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "0 28px 24px" }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>🏡 Admin Preview</p>
+          <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", fontWeight: 900, color: "#fff", margin: "0 0 5px", letterSpacing: "-0.02em" }}>
+            Book a Party Place
+          </h1>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.6)", margin: 0 }}>
+            Villas and flats — fully decorated, catered and ready for your celebration.
+          </p>
+        </div>
       </div>
 
       {/* Type filter — big icon tiles, only Villa and Flat */}
@@ -65,21 +74,12 @@ export default function PartyPlacesPage() {
               { label: "Event Date", field: "date", type: "date", placeholder: "" },
               { label: "Number of Guests", field: "guests", type: "number", placeholder: "e.g. 50" },
               { label: "Location / Area", field: "location", type: "text", placeholder: "e.g. Noida, Delhi" },
-              { label: "Occasion Type", field: "occasion", type: "select", options: ["Birthday", "Anniversary", "Get-together", "Corporate", "Pre-wedding", "Baby Shower", "House Party", "Other"] },
-            ].map(({ label, field, type, placeholder, options }) => (
+            ].map(({ label, field, type, placeholder }) => (
               <div key={field}>
                 <label style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "#6B3A1F", marginBottom: 5 }}>{label}</label>
-                {type === "select" ? (
-                  <select value={form[field]} onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))}
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff", boxSizing: "border-box" }}>
-                    <option value="">Select occasion</option>
-                    {options.map(o => <option key={o} value={o}>{o}</option>)}
-                  </select>
-                ) : (
-                  <input type={type} value={form[field]} placeholder={placeholder} min={type === "date" ? today : undefined}
-                    onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))}
-                    style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
-                )}
+                <input type={type} value={form[field]} placeholder={placeholder} min={type === "date" ? today : undefined}
+                  onChange={e => setForm(p => ({ ...p, [field]: e.target.value }))}
+                  style={{ width: "100%", padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
               </div>
             ))}
           </div>

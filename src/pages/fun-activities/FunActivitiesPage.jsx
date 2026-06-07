@@ -17,12 +17,12 @@ export default function FunActivitiesPage() {
   if (!user?.isAdmin) return null;
 
   return (
-    <div style={{ minHeight:"100vh", background:"#F8F4EF", fontFamily:F }}>
+    <div style={{ minHeight:"100vh", background:"#0F0A1A", fontFamily:F }}>
       <HamburgerNav />
 
       {/* Admin strip */}
-      <div style={{ background:`${PURPLE}12`, borderBottom:`1px solid ${PURPLE}25`, padding:"8px 20px", textAlign:"center" }}>
-        <span style={{ fontSize:12, color:PURPLE, fontWeight:700, fontFamily:F }}>
+      <div style={{ background:"rgba(124,58,237,0.18)", borderBottom:"1px solid rgba(124,58,237,0.25)", padding:"8px 20px", textAlign:"center" }}>
+        <span style={{ fontSize:12, color:"#C4B5FD", fontWeight:700, fontFamily:F }}>
           🔒 Admin Preview — Fun Activities · Not visible to users yet
         </span>
       </div>
@@ -50,7 +50,7 @@ export default function FunActivitiesPage() {
       </div>
 
       {/* Activities grid */}
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 20px 80px" }}>
+      <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 20px 80px", background:"transparent" }}>
         <FunActivitiesSection grid={true} />
       </div>
     </div>

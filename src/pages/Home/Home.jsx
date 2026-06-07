@@ -1219,7 +1219,7 @@ const Home = () => {
           { id: "graduation",      icon: "🎓", name: "Graduation",       bg: "#F5F3FF", accent: "#A78BFA" },
         ];
         return (
-          <section style={{ background: "#fff", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
+          <section style={{ background: "linear-gradient(160deg,#FFF5F0 0%,#FFF3FA 50%,#F5F8FF 100%)", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ maxWidth: 1100, margin: "0 auto" }}>
               <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
                 <div>
@@ -1534,7 +1534,7 @@ const Home = () => {
 
       {/* ── Join the Celebration Hub — admin preview only ── */}
       {user?.isAdmin && (
-        <section style={{ background: "linear-gradient(160deg,#1A0D05 0%,#2C1A0E 50%,#3D2010 100%)", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        <section style={{ background: "#2C1A0E", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
           <div style={{ position:"absolute", top:-80, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.06)", pointerEvents:"none" }} />
 
           <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
@@ -1606,7 +1606,7 @@ const Home = () => {
       {user?.isAdmin && (() => {
         const FunActivitiesSection = React.lazy(() => import("../../components/FunActivitiesSection"));
         return (
-          <section style={{ background:"#fff", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
+          <section style={{ background:"linear-gradient(180deg,#F4EEFF 0%,#F8FCFF 60%,#fff 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
             <div style={{ maxWidth:1100, margin:"0 auto" }}>
               {/* Header */}
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
