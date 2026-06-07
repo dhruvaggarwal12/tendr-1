@@ -1123,13 +1123,14 @@ const Home = () => {
         <section style={{ position: "relative", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
           <style>{`
             @media (max-width: 767px) {
-              .pp-home-content { padding: 32px 20px !important; flex-direction: column !important; gap: 20px !important; }
-              .pp-home-title { font-size: 1.5rem !important; margin-bottom: 10px !important; }
-              .pp-home-desc { font-size: 13px !important; margin-bottom: 16px !important; }
-              .pp-home-pills { margin-bottom: 16px !important; }
+              .pp-home-content { padding: 28px 20px 24px !important; flex-direction: column !important; gap: 16px !important; }
+              .pp-home-title { font-size: 1.45rem !important; margin-bottom: 8px !important; }
+              .pp-home-desc { font-size: 12.5px !important; margin-bottom: 12px !important; max-width: 100% !important; }
+              .pp-home-pills { display: none !important; }
               .pp-home-stats { display: none !important; }
               .pp-home-ctas { gap: 8px !important; }
-              .pp-home-ctas button { padding: 10px 16px !important; font-size: 13px !important; }
+              .pp-home-ctas button { padding: 9px 16px !important; font-size: 13px !important; }
+              .pp-mobile-types { display: flex !important; }
             }
           `}</style>
           {/* Split background — villa left, flat right */}
@@ -1186,84 +1187,74 @@ const Home = () => {
             </div>
 
           </div>
+
+          {/* Mobile-only: horizontal venue type tiles */}
+          <div className="pp-mobile-types" style={{ display: "none", position: "relative", zIndex: 2, gap: 10, padding: "0 20px 24px" }}>
+            {[
+              { icon: "🏡", label: "Villas", sub: "Spacious · Pool · Garden" },
+              { icon: "🏢", label: "Party Flats", sub: "Decorated · City View" },
+            ].map(({ icon, label, sub }) => (
+              <button key={label} onClick={() => window.open("/party-places", "_blank")}
+                style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(10px)", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textAlign: "left" }}>
+                <span style={{ fontSize: 28 }}>{icon}</span>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>{label}</div>
+                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{sub}</div>
+                </div>
+              </button>
+            ))}
+          </div>
+
         </section>
       )}
 
       {/* ── Plan by Occasion — admin preview only ── */}
       {user?.isAdmin && (() => {
-        const occScrollRef = React.createRef();
-        const scrollOcc = (dir) => {
-          if (occScrollRef.current) occScrollRef.current.scrollBy({ left: dir * 220, behavior: "smooth" });
-        };
-        const OCC_CARDS = [
-          { id: "baby-shower",    icon: "🍼", name: "Baby Shower",    img: "https://images.unsplash.com/photo-1544078751-58fee2d8a03b?w=400&q=70" },
-          { id: "newborn-welcome",icon: "👶", name: "Newborn Welcome", img: "https://images.unsplash.com/photo-1519689680058-324335c77eba?w=400&q=70" },
-          { id: "first-birthday", icon: "🎂", name: "First Birthday",  img: "https://images.unsplash.com/photo-1602631985686-1bb0e6a8696e?w=400&q=70" },
-          { id: "anniversary",    icon: "💍", name: "Anniversary",     img: "https://images.unsplash.com/photo-1469371670807-013ccf25f16a?w=400&q=70" },
-          { id: "housewarming",   icon: "🏠", name: "Housewarming",    img: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=400&q=70" },
-          { id: "graduation",     icon: "🎓", name: "Graduation",      img: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=400&q=70" },
+        const OCC_CHIPS = [
+          { id: "baby-shower",     icon: "🍼", name: "Baby Shower",     bg: "#FFF0F8", accent: "#F472B6" },
+          { id: "newborn-welcome", icon: "👶", name: "Newborn Welcome",  bg: "#FFFBEB", accent: "#F59E0B" },
+          { id: "first-birthday",  icon: "🎂", name: "1st Birthday",    bg: "#EFF6FF", accent: "#60A5FA" },
+          { id: "anniversary",     icon: "💍", name: "Anniversary",      bg: "#FFF5F0", accent: "#FB923C" },
+          { id: "housewarming",    icon: "🏠", name: "Housewarming",     bg: "#F0FDF4", accent: "#4ADE80" },
+          { id: "graduation",      icon: "🎓", name: "Graduation",       bg: "#F5F3FF", accent: "#A78BFA" },
         ];
         return (
-          <section style={{ background: "#F8F4EF", padding: "56px 0 60px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
-            <div style={{ maxWidth: 1160, margin: "0 auto", padding: "0 24px" }}>
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28, gap: 16, flexWrap: "wrap" }}>
+          <section style={{ background: "#fff", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
                 <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>
-                    🎉 Admin Preview
-                  </p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.02em" }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 6px" }}>🎉 Admin Preview</p>
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,3vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "0.01em" }}>
                     What are you celebrating?
                   </h2>
-                  <p style={{ fontSize: 14, color: "#9B7450", margin: 0, maxWidth: 440 }}>
-                    Every moment deserves a perfect plan — décor, gifts, activities and checklists for each occasion.
-                  </p>
+                  <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>Décor, gifts & checklists for every moment.</p>
                 </div>
-                {/* Arrow controls */}
-                <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                  <button onClick={() => scrollOcc(-1)}
-                    style={{ width: 40, height: 40, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.18s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>‹</button>
-                  <button onClick={() => scrollOcc(1)}
-                    style={{ width: 40, height: 40, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.18s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>›</button>
-                </div>
+                <button onClick={() => window.open("/occasions", "_blank")}
+                  style={{ padding: "9px 22px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", transition: "all 0.15s" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                  All Occasions ↗
+                </button>
               </div>
-            </div>
 
-            {/* Cards — no scrollbar, arrow-controlled */}
-            <div style={{ position: "relative" }}>
-              <div ref={occScrollRef}
-                style={{ display: "flex", gap: 16, overflowX: "auto", padding: "4px 24px 12px", scrollbarWidth: "none", msOverflowStyle: "none", maxWidth: 1208, margin: "0 auto" }}>
-                <style>{`.occ-strip::-webkit-scrollbar { display: none; }`}</style>
-                {OCC_CARDS.map(({ id, icon, name, img }) => (
-                  <button key={id} className="occ-strip"
-                    onClick={() => window.open(`/occasions/${id}`, "_blank")}
-                    style={{ flex: "0 0 195px", borderRadius: 18, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.12)", cursor: "pointer", background: "#fff", textAlign: "left", boxShadow: "0 4px 18px rgba(139,69,19,0.08)", transition: "transform 0.2s", fontFamily: "'Outfit', sans-serif" }}
-                    onMouseEnter={e => e.currentTarget.style.transform = "translateY(-4px)"}
-                    onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}>
-                    <div style={{ height: 140, position: "relative", overflow: "hidden" }}>
-                      <img src={img} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 55%)" }} />
-                      <span style={{ position: "absolute", top: 10, left: 12, fontSize: 24 }}>{icon}</span>
-                    </div>
-                    <div style={{ padding: "11px 14px 13px" }}>
-                      <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>{name}</div>
-                      <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600 }}>Décor · Gifts · Checklist ↗</div>
-                    </div>
+              {/* 6-col chip grid on desktop → 3-col on mobile */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }} className="occ-chip-grid">
+                {OCC_CHIPS.map(({ id, icon, name, bg, accent }) => (
+                  <button key={id} onClick={() => window.open(`/occasions/${id}`, "_blank")}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "18px 8px 16px", borderRadius: 18, border: `1.5px solid ${accent}30`, background: bg, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "transform 0.15s, box-shadow 0.15s", outline: "none" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 8px 22px ${accent}28`; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                    <span style={{ fontSize: 34 }}>{icon}</span>
+                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{name}</span>
+                    <span style={{ fontSize: 10, color: accent, fontWeight: 700 }}>Explore ↗</span>
                   </button>
                 ))}
               </div>
-            </div>
-
-            <div style={{ textAlign: "center", marginTop: 20, padding: "0 24px" }}>
-              <button onClick={() => window.open("/occasions", "_blank")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 26px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.18s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; }}>
-                View All Occasions ↗
-              </button>
+              <style>{`
+                @media (max-width: 640px) { .occ-chip-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; } }
+                @media (max-width: 640px) { .occ-chip-grid button { padding: 14px 6px 12px !important; border-radius: 14px !important; } }
+                @media (max-width: 640px) { .occ-chip-grid button span:first-child { font-size: 28px !important; } }
+              `}</style>
             </div>
           </section>
         );
@@ -1382,8 +1373,21 @@ const Home = () => {
               </div>
             </div>
             <style>{`
-              @media(max-width:900px){.memories-grid{grid-template-columns:repeat(2,1fr)!important;gap:16px!important;}}
-              @media(max-width:480px){.memories-grid{grid-template-columns:1fr!important;}}
+              @media(max-width:900px){.memories-grid{grid-template-columns:repeat(2,1fr)!important;gap:14px!important;}}
+              @media(max-width:560px){
+                .memories-grid{
+                  display:flex!important;
+                  overflow-x:auto!important;
+                  scroll-snap-type:x mandatory!important;
+                  gap:14px!important;
+                  padding:4px 24px 14px!important;
+                  margin:0 -24px!important;
+                  -webkit-overflow-scrolling:touch;
+                  scrollbar-width:none;
+                }
+                .memories-grid::-webkit-scrollbar{display:none}
+                .memories-grid>div{flex:0 0 75%!important;scroll-snap-align:start!important;min-width:0!important;}
+              }
             `}</style>
           </section>
         );
@@ -1530,36 +1534,70 @@ const Home = () => {
 
       {/* ── Join the Celebration Hub — admin preview only ── */}
       {user?.isAdmin && (
-        <section style={{ background: "linear-gradient(160deg,#2C1A0E 0%,#3D2010 55%,#5A3018 100%)", padding: "72px 24px 76px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-          {/* Decorative circles */}
-          <div style={{ position:"absolute", top:-80, right:-80, width:320, height:320, borderRadius:"50%", background:"rgba(196,122,46,0.07)", pointerEvents:"none" }} />
-          <div style={{ position:"absolute", bottom:-100, left:-50, width:250, height:250, borderRadius:"50%", background:"rgba(204,171,74,0.05)", pointerEvents:"none" }} />
+        <section style={{ background: "linear-gradient(160deg,#1A0D05 0%,#2C1A0E 50%,#3D2010 100%)", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+          <div style={{ position:"absolute", top:-80, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.06)", pointerEvents:"none" }} />
 
-          <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center", position: "relative" }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"6px 16px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:20 }}>
-              <span style={{ fontSize:12, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 New · Admin Preview</span>
+          <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
+            {/* Top: heading + CTA side by side on desktop */}
+            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32, gap:24, flexWrap:"wrap" }}>
+              <div>
+                <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:14 }}>
+                  <span style={{ fontSize:11, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 New · Admin Preview</span>
+                </div>
+                <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.6rem,3.5vw,2.6rem)", fontWeight:400, color:"#fff", margin:"0 0 10px", letterSpacing:"0.01em", lineHeight:1.25 }}>
+                  Join the Celebration Hub
+                </h2>
+                <p style={{ fontSize:14, color:"rgba(255,255,255,0.5)", margin:0, maxWidth:460, lineHeight:1.7 }}>
+                  Share ideas, get inspiration, discuss event challenges — a space shaped by the community.
+                </p>
+              </div>
+              <button
+                onClick={() => navigate("/celebration-hub")}
+                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 28px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 18px rgba(196,122,46,0.38)", whiteSpace:"nowrap", transition:"opacity 0.2s", flexShrink:0 }}
+                onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
+                onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+                Enter the Hub →
+              </button>
             </div>
-            <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.8rem,4.5vw,3rem)", fontWeight:400, color:"#fff", margin:"0 0 16px", letterSpacing:"0.01em", lineHeight:1.25 }}>
-              Join the Celebration Hub
-            </h2>
-            <p style={{ fontSize:"clamp(14px,2vw,16px)", color:"rgba(255,255,255,0.55)", margin:"0 auto 32px", lineHeight:1.75, maxWidth:520 }}>
-              Share ideas, discover inspiration, discuss event challenges, and help shape the future of celebrations.
-            </p>
 
-            {/* Feature pills */}
-            <div style={{ display:"flex", flexWrap:"wrap", gap:10, justifyContent:"center", marginBottom:36 }}>
-              {["💬 50 Discussions", "💡 Idea Board", "📊 Live Polls", "🙋 Community Q&A", "🔥 Trending Topics"].map(f => (
-                <span key={f} style={{ padding:"7px 16px", borderRadius:100, border:"1px solid rgba(255,255,255,0.12)", background:"rgba(255,255,255,0.06)", color:"rgba(255,255,255,0.7)", fontSize:13, fontWeight:600 }}>{f}</span>
+            {/* 3 category preview cards — horizontal scroll on mobile */}
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }} className="ch-cat-grid">
+              {[
+                { icon:"💡", cat:"Ideas & Decor",    desc:"Share themes, mood boards and vendor finds with the community.", count:"50+ posts", color:"#CCAB4A" },
+                { icon:"🔥", cat:"Trending Now",     desc:"See what real couples are discussing and voting on this week.", count:"12 active threads", color:"#F97316" },
+                { icon:"📊", cat:"Polls & Opinions", desc:"Vote on colour palettes, setups and event choices. Real answers.", count:"Live polls", color:"#8B5CF6" },
+              ].map(({ icon, cat, desc, count, color }) => (
+                <button key={cat} onClick={() => navigate("/celebration-hub")}
+                  style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:10, padding:"20px 18px", borderRadius:18, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.09)", cursor:"pointer", fontFamily:"'Outfit',sans-serif", textAlign:"left", transition:"background 0.18s" }}
+                  onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.09)"}
+                  onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.05)"}>
+                  <span style={{ fontSize:30 }}>{icon}</span>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:800, color:"#fff", marginBottom:5, lineHeight:1.2 }}>{cat}</div>
+                    <p style={{ fontSize:12, color:"rgba(255,255,255,0.48)", margin:"0 0 10px", lineHeight:1.55 }}>{desc}</p>
+                    <span style={{ fontSize:10.5, fontWeight:700, color:color, background:`${color}18`, borderRadius:100, padding:"3px 10px" }}>{count}</span>
+                  </div>
+                  <div style={{ width:32, height:2, background:color, borderRadius:100, marginTop:"auto" }} />
+                </button>
               ))}
             </div>
-
-            <button
-              onClick={() => navigate("/celebration-hub")}
-              style={{ display:"inline-flex", alignItems:"center", gap:10, padding:"14px 36px", borderRadius:14, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:16, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 6px 22px rgba(196,122,46,0.4)", transition:"opacity 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
-              onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-              Explore Discussions →
-            </button>
+            <style>{`
+              @media(max-width:640px){
+                .ch-cat-grid{
+                  display:flex!important;
+                  overflow-x:auto!important;
+                  scroll-snap-type:x mandatory!important;
+                  gap:12px!important;
+                  padding:4px 2px 12px!important;
+                  margin:0 -24px!important;
+                  padding-left:24px!important;
+                  -webkit-overflow-scrolling:touch;
+                  scrollbar-width:none;
+                }
+                .ch-cat-grid::-webkit-scrollbar{display:none}
+                .ch-cat-grid>button{flex:0 0 78%!important;scroll-snap-align:start!important;}
+              }
+            `}</style>
           </div>
         </section>
       )}

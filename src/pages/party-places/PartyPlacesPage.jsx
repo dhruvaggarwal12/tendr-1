@@ -97,8 +97,24 @@ export default function PartyPlacesPage() {
           </div>
         ) : (
           <>
-          <style>{`@media(max-width:639px){.pp-card{border-radius:14px!important}.pp-photo{height:140px!important}.pp-info{padding:12px 14px!important}}`}</style>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+          <style>{`
+            @media(max-width:639px){
+              .pp-card{border-radius:14px!important}
+              .pp-photo{height:150px!important}
+              .pp-info{padding:10px 12px!important}
+            }
+            @media(max-width:560px){
+              .pp-page-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important;}
+              .pp-card .pp-photo{height:120px!important}
+              .pp-tagline{display:none!important}
+              .pp-chips{display:none!important}
+              .pp-card .pp-info{padding:8px 10px 10px!important}
+              .pp-card-name{font-size:12px!important}
+              .pp-card-loc{font-size:10px!important}
+              .pp-card-btns button{font-size:11px!important;padding:7px 6px!important}
+            }
+          `}</style>
+          <div className="pp-page-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
             {places.map(place => (
               <div key={place.id} className="pp-card" style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", transition: "transform 0.2s, box-shadow 0.2s" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.12)"; }}
@@ -111,19 +127,19 @@ export default function PartyPlacesPage() {
                     {PLACE_TYPES.find(t => t.id === place.type)?.icon} {PLACE_TYPES.find(t => t.id === place.type)?.label}
                   </div>
                   <div style={{ position: "absolute", bottom: 12, left: 14 }}>
-                    <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 2 }}>{place.name}</div>
-                    <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.8)" }}>📍 {place.location}</div>
+                    <div className="pp-card-name" style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 2 }}>{place.name}</div>
+                    <div className="pp-card-loc" style={{ fontSize: 11.5, color: "rgba(255,255,255,0.8)" }}>📍 {place.location}</div>
                   </div>
                 </div>
 
                 {/* Info */}
                 <div className="pp-info" style={{ padding: "16px 18px" }}>
-                  <p style={{ fontSize: 12.5, color: "#7A5535", margin: "0 0 10px", lineHeight: 1.5 }}>{place.tagline}</p>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
+                  <p className="pp-tagline" style={{ fontSize: 12.5, color: "#7A5535", margin: "0 0 10px", lineHeight: 1.5 }}>{place.tagline}</p>
+                  <div className="pp-chips" style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 14 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "3px 10px" }}>👥 {place.minGuests}–{place.maxGuests} guests</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "3px 10px" }}>📐 {place.area}</span>
                   </div>
-                  <div style={{ display: "flex", gap: 8 }}>
+                  <div className="pp-card-btns" style={{ display: "flex", gap: 8 }}>
                     <button
                       onClick={(e) => { e.stopPropagation(); const s = getSaved(); const next = s.includes(place.id) ? s.filter(x => x !== place.id) : [...s, place.id]; setSaved(next); setSavedIds(next); }}
                       style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1.5px solid ${savedIds.includes(place.id) ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: savedIds.includes(place.id) ? "rgba(196,122,46,0.08)" : "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>

@@ -62,7 +62,9 @@ export default function OccasionsPage() {
             <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Try a different search term</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
+          <>
+          <style>{`@media(max-width:600px){.occ-page-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important;}.occ-page-cover{height:90px!important;}.occ-page-info{padding:9px 10px 11px!important;}.occ-page-info .occ-name{font-size:13px!important;}.occ-page-chips{display:none!important;}}`}</style>
+          <div className="occ-page-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
             {filtered.map(occasion => (
               <button
                 key={occasion.id}
@@ -77,20 +79,20 @@ export default function OccasionsPage() {
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(139,69,19,0.06)"; }}
               >
                 {/* Cover */}
-                <div style={{ height: 120, overflow: "hidden", position: "relative", background: occasion.color + "22" }}>
+                <div className="occ-page-cover" style={{ height: 120, overflow: "hidden", position: "relative", background: occasion.color + "22" }}>
                   <img src={occasion.coverImage} alt={occasion.name}
                     style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.85 }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 55%)" }} />
                   <span style={{ position: "absolute", top: 10, left: 12, fontSize: 24 }}>{occasion.icon}</span>
                 </div>
                 {/* Info */}
-                <div style={{ padding: "12px 14px" }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>{occasion.name}</div>
+                <div className="occ-page-info" style={{ padding: "12px 14px" }}>
+                  <div className="occ-name" style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>{occasion.name}</div>
                   {occasion.localName && (
                     <div style={{ fontSize: 10.5, color: "#C47A2E", fontWeight: 600, marginBottom: 4 }}>{occasion.localName}</div>
                   )}
-                  <p style={{ fontSize: 11.5, color: "#9B7450", margin: "0 0 10px", lineHeight: 1.45 }}>{occasion.tagline}</p>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <p style={{ fontSize: 11.5, color: "#9B7450", margin: "0 0 8px", lineHeight: 1.45 }}>{occasion.tagline}</p>
+                  <div className="occ-page-chips" style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 10, fontWeight: 600, color: "#7A5535", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "2px 8px" }}>
                       👥 {occasion.typicalGuests}
                     </span>
@@ -105,6 +107,7 @@ export default function OccasionsPage() {
               </button>
             ))}
           </div>
+          </>
         )}
 
       </div>
