@@ -20,38 +20,46 @@ const CATEGORIES = [
   { emoji: "🎁", label: "Gift Hampers",path: "/gift-hampers-cakes" },
 ];
 
+const NAV_COLORS = {
+  Home:     { active: "#F59E0B", bg: "rgba(245,158,11,0.12)",  shadow: "rgba(245,158,11,0.4)" },
+  Browse:   { active: "#F97316", bg: "rgba(249,115,22,0.12)",  shadow: "rgba(249,115,22,0.4)" },
+  Products: { active: "#EC4899", bg: "rgba(236,72,153,0.12)",  shadow: "rgba(236,72,153,0.4)" },
+  Plan:     { active: "#8B5CF6", bg: "rgba(139,92,246,0.12)",  shadow: "rgba(139,92,246,0.4)" },
+  Profile:  { active: "#0EA5E9", bg: "rgba(14,165,233,0.12)",  shadow: "rgba(14,165,233,0.4)" },
+};
+
 const NAV_ICONS = {
-  Home: (on) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={on ? "#C47A2E" : "none"} stroke={on ? "#C47A2E" : "#aaa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  Home: (on, color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill={on ? color : "none"} stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/>
       <polyline points="9 21 9 12 15 12 15 21"/>
     </svg>
   ),
-  Browse: (on) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? "#C47A2E" : "#aaa"} strokeWidth="2" strokeLinecap="round">
+  Browse: (on, color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2.2" strokeLinecap="round">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
   ),
-  Plan: (on) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? "#C47A2E" : "#aaa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  Plan: (on, color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="2"/>
       <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
       <line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
-  Chats: (on) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? "#C47A2E" : "#aaa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  Chats: (on, color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
     </svg>
   ),
-  Profile: (on) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? "#C47A2E" : "#aaa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  Profile: (on, color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
       <circle cx="12" cy="7" r="4"/>
     </svg>
   ),
-  Products: (on) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? "#C47A2E" : "#aaa"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  Products: (on, color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="9" y="3" width="6" height="6" rx="1"/><rect x="16" y="3" width="6" height="6" rx="1"/>
       <rect x="2" y="11" width="6" height="6" rx="1"/><rect x="9" y="11" width="6" height="6" rx="1"/><rect x="16" y="11" width="6" height="6" rx="1"/>
     </svg>
@@ -264,6 +272,8 @@ function BottomNavInner() {
           const active = isActive(paths);
           const Icon = NAV_ICONS[label];
           const isBrowseActive = label === "Browse" && browseOpen;
+          const isOn = active || isBrowseActive;
+          const navColor = NAV_COLORS[label] || NAV_COLORS.Home;
           // Green dot: Products tab gets a dot if any tool has been saved
           const hasProductsSaved = label === "Products" && (() => {
             try {
@@ -280,33 +290,40 @@ function BottomNavInner() {
                 flex: 1, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",
                 gap: 3, border: "none",
-                background: isBrowseActive ? "rgba(196,122,46,0.06)" : "none",
+                background: isOn ? navColor.bg : "transparent",
                 cursor: "pointer", padding: "6px 0 4px",
                 position: "relative",
                 WebkitTapHighlightColor: "transparent",
                 outline: "none", fontFamily: font,
-                transition: "background 0.15s",
+                transition: "background 0.18s",
               }}
             >
-              {/* Active pill at top */}
+              {/* Active bar at top */}
               <div style={{
                 position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)",
-                width: 28, height: 3, borderRadius: "0 0 4px 4px",
-                background: (active || isBrowseActive) ? "#C47A2E" : "transparent",
-                transition: "background 0.2s",
+                width: isOn ? 32 : 0, height: 3, borderRadius: "0 0 6px 6px",
+                background: navColor.active,
+                boxShadow: isOn ? `0 2px 8px ${navColor.shadow}` : "none",
+                transition: "width 0.22s cubic-bezier(0.4,0,0.2,1), box-shadow 0.22s",
               }} />
-              {/* Icon wrapper with green dot */}
-              <div style={{ position: "relative" }}>
-                {Icon(active || isBrowseActive)}
+              {/* Icon wrapper with colored glow ring when active */}
+              <div style={{
+                position: "relative",
+                padding: isOn ? "4px 6px" : "0",
+                borderRadius: 10,
+                background: isOn ? `${navColor.active}18` : "transparent",
+                transition: "all 0.18s",
+              }}>
+                {Icon(isOn, navColor.active)}
                 {hasProductsSaved && (
-                  <div style={{ position: "absolute", top: -2, right: -3, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: "1.5px solid #FFFCF5" }} />
+                  <div style={{ position: "absolute", top: isOn ? 2 : -2, right: isOn ? 3 : -3, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: "1.5px solid #FFFCF5" }} />
                 )}
               </div>
               <span style={{
-                fontSize: 10, fontWeight: (active || isBrowseActive) ? 700 : 400,
-                color: (active || isBrowseActive) ? "#C47A2E" : "#999",
+                fontSize: 10, fontWeight: isOn ? 800 : 400,
+                color: isOn ? navColor.active : "#999",
                 lineHeight: 1, letterSpacing: "0.01em",
-                transition: "color 0.2s",
+                transition: "color 0.18s, font-weight 0.18s",
               }}>
                 {label}
               </span>

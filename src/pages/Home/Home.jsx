@@ -244,6 +244,13 @@ const Home = () => {
     setInstallPrompt(null);
   };
 
+  const [heroSearch, setHeroSearch] = useState("");
+  const handleHeroSearch = (e) => {
+    e.preventDefault();
+    const q = heroSearch.trim();
+    navigate(q ? `/search?q=${encodeURIComponent(q)}` : "/search");
+  };
+
   const [heroIndex, setHeroIndex] = useState(0);
   const [heroPrev, setHeroPrev] = useState(null);
   const [heroFading, setHeroFading] = useState(false);
@@ -669,6 +676,31 @@ const Home = () => {
                 }}
               />
 
+              {/* Mobile glass search bar — absolute overlay on photos, hidden on desktop via CSS */}
+              <form
+                onSubmit={handleHeroSearch}
+                className="mobile-hero-search"
+                style={{ display: "none" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2.5" strokeLinecap="round" flexShrink="0" style={{ flexShrink: 0 }}>
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                  type="text"
+                  value={heroSearch}
+                  onChange={e => setHeroSearch(e.target.value)}
+                  placeholder="Search vendors, decorators, DJ..."
+                  className="mobile-hero-search-input"
+                />
+                {heroSearch && (
+                  <button
+                    type="button"
+                    onClick={() => setHeroSearch("")}
+                    style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", cursor: "pointer", padding: 0, fontSize: 16, lineHeight: 1, flexShrink: 0 }}
+                  >×</button>
+                )}
+              </form>
+
               {/* Event label */}
               <div
                 style={{
@@ -889,9 +921,10 @@ const Home = () => {
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
                 <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
 
-                {/* Connector arrow */}
+                {/* Connector arrow — hidden on mobile via CSS */}
                 {i < 4 && (
                   <motion.div
+                    className="htw-connector"
                     initial={{ opacity: 0, x: -8 }}
                     whileInView={{ opacity: 1, x: 0 }}
                     viewport={{ once: true }}
@@ -931,15 +964,28 @@ const Home = () => {
         </div>
 
         <style>{`
-          @media (max-width: 860px) {
+          @media (max-width: 860px) and (min-width: 541px) {
             .htw-row { flex-wrap: wrap !important; }
             .htw-row > div { flex: 0 0 calc(33% - 10px) !important; }
           }
           @media (max-width: 540px) {
-            .htw-row > div { flex: 0 0 calc(50% - 8px) !important; }
-          }
-          @media (max-width: 360px) {
-            .htw-row > div { flex: 0 0 100% !important; }
+            .htw-row {
+              flex-wrap: nowrap !important;
+              overflow-x: auto !important;
+              scroll-snap-type: x mandatory !important;
+              gap: 12px !important;
+              padding: 4px 24px 16px !important;
+              margin: 0 -24px !important;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: none;
+            }
+            .htw-row::-webkit-scrollbar { display: none; }
+            .htw-row > div {
+              flex: 0 0 76% !important;
+              scroll-snap-align: center !important;
+              min-width: 0 !important;
+            }
+            .htw-connector { display: none !important; }
           }
         `}</style>
       </section>
@@ -1370,7 +1416,7 @@ const Home = () => {
               const img = catPhotos[imgIdx]?.imageUrl || GALLERY_FALLBACKS[title];
               return (
               <div key={title} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", height: 220, background: "#2C1A0E" }}>
+                <div className="portfolio-img-wrap" style={{ position: "relative", borderRadius: 16, overflow: "hidden", height: 220, background: "#2C1A0E" }}>
                   <img key={img} src={img} alt={title}
                     style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", animation: "glimpseFade 0.6s ease" }} />
                   <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)", display: "flex", alignItems: "flex-end", padding: "14px 18px" }}>
@@ -1396,7 +1442,26 @@ const Home = () => {
         </div>
         <style>{`
           @media (max-width: 768px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } }
-          @media (max-width: 480px) { .events-portfolio-grid { grid-template-columns: 1fr !important; } }
+          @media (max-width: 520px) {
+            .events-portfolio-grid {
+              display: flex !important;
+              overflow-x: auto !important;
+              scroll-snap-type: x mandatory !important;
+              gap: 14px !important;
+              padding: 4px 2px 14px !important;
+              margin: 0 -24px !important;
+              padding-left: 24px !important;
+              -webkit-overflow-scrolling: touch;
+              scrollbar-width: none;
+            }
+            .events-portfolio-grid::-webkit-scrollbar { display: none; }
+            .events-portfolio-grid > div {
+              flex: 0 0 72% !important;
+              scroll-snap-align: start !important;
+              min-width: 0 !important;
+            }
+            .portfolio-img-wrap { height: 160px !important; }
+          }
           @keyframes glimpseFade { from { opacity: 0.4; } to { opacity: 1; } }
         `}</style>
       </section>

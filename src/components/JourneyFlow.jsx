@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
@@ -46,6 +46,15 @@ const SIDE_OFFSET = 390;
 const JourneyFlow = () => {
   const navigate = useNavigate();
   const [activeIndex, setActiveIndex] = useState(0);
+  const [isMobileView, setIsMobileView] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768
+  );
+
+  useEffect(() => {
+    const handler = () => setIsMobileView(window.innerWidth < 768);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
 
   const prev = () =>
     setActiveIndex((i) => (i - 1 + steps.length) % steps.length);
@@ -89,272 +98,125 @@ const JourneyFlow = () => {
         Top Rated Vendors
       </h2>
 
-      {/* Carousel */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 20,
-          width: "100%",
-          justifyContent: "center",
-          position: "relative",
-        }}
-      >
-        {/* Left Arrow */}
-        <button
-          onClick={prev}
-          style={{
-            flexShrink: 0,
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            border: "2px solid rgba(139,69,19,0.25)",
-            background: "#fff",
-            color: "#6B3A1F",
-            fontSize: 18,
-            cursor: "pointer",
+      {/* ── Mobile: horizontal snap-scroll compact cards ── */}
+      {isMobileView ? (
+        <>
+          <div style={{
             display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 20,
-            boxShadow: "0 2px 10px rgba(139,69,19,0.1)",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#C47A2E";
-            e.currentTarget.style.color = "#fff";
-            e.currentTarget.style.borderColor = "#C47A2E";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#fff";
-            e.currentTarget.style.color = "#6B3A1F";
-            e.currentTarget.style.borderColor = "rgba(139,69,19,0.25)";
-          }}
-        >
-          ‹
-        </button>
-
-        {/* Cards track */}
-        <div
-          style={{
-            position: "relative",
-            width: "100%",
-            maxWidth: 900,
-            height: CARD_H + 40,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {steps.map((step, idx) => {
-            const offset = (idx - activeIndex + steps.length) % steps.length;
-            const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
-
-            let scale = 0.75;
-            let opacity = 0;
-            let zIndex = 0;
-            let xPos = 0;
-
-            if (isMobile) {
-              if (offset === 0) { scale = 1; opacity = 1; zIndex = 10; xPos = 0; }
-              else { opacity = 0; scale = 0.6; }
-            } else {
-              if (offset === 0) {
-                scale = 1; opacity = 1; zIndex = 10; xPos = 0;
-              } else if (offset === 1 || offset === steps.length - 1) {
-                scale = 0.82;
-                opacity = 0.65;
-                zIndex = 5;
-                xPos = offset === 1 ? SIDE_OFFSET : -SIDE_OFFSET;
-              }
-            }
-
-            return (
-              <motion.div
+            overflowX: "auto",
+            scrollSnapType: "x mandatory",
+            gap: 12,
+            padding: "4px 24px 16px",
+            margin: "0 -24px",
+            WebkitOverflowScrolling: "touch",
+            scrollbarWidth: "none",
+            width: "100vw",
+          }}>
+            <style>{`.jf-scroll::-webkit-scrollbar{display:none}`}</style>
+            {steps.map((step, idx) => (
+              <div
                 key={idx}
-                animate={{ opacity, scale, x: xPos }}
-                transition={{ duration: 0.45, ease: "easeInOut" }}
+                className="jf-scroll"
+                onClick={() => navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`)}
                 style={{
-                  position: "absolute",
-                  width: CARD_W,
-                  height: CARD_H,
-                  borderRadius: 24,
+                  flex: "0 0 calc(50% - 18px)",
+                  scrollSnapAlign: "start",
+                  borderRadius: 16,
                   overflow: "hidden",
-                  zIndex,
-                  boxShadow:
-                    offset === 0
-                      ? "0 20px 56px rgba(0,0,0,0.22)"
-                      : "0 8px 24px rgba(0,0,0,0.12)",
-                  cursor: offset !== 0 ? "pointer" : "default",
-                }}
-                onClick={() => {
-                  if (offset !== 0) { setActiveIndex(idx); }
-                  else { navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`); }
+                  cursor: "pointer",
+                  boxShadow: "0 4px 18px rgba(0,0,0,0.18)",
+                  minWidth: 0,
                 }}
               >
-                {/* Background image */}
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    backgroundImage: `url(${step.image})`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
-                    filter: offset === 0 ? "none" : "brightness(0.7)",
-                    transition: "filter 0.4s",
-                  }}
-                />
-
-                {/* Bottom gradient for text legibility */}
-                <div
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background:
-                      "linear-gradient(to top, rgba(10,5,0,0.82) 0%, rgba(10,5,0,0.3) 45%, transparent 75%)",
-                  }}
-                />
-
-                {/* Text */}
-                <div
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    padding: "28px 24px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: 8,
-                  }}
-                >
-                  {/* Category pill */}
-                  <span
-                    style={{
-                      display: "inline-block",
-                      width: "fit-content",
-                      background: "rgba(196,122,46,0.85)",
-                      color: "#fff",
-                      fontSize: 11,
-                      fontWeight: 700,
-                      letterSpacing: "0.1em",
-                      textTransform: "uppercase",
-                      padding: "4px 10px",
-                      borderRadius: 100,
-                      marginBottom: 4,
-                    }}
-                  >
+                <div style={{ position: "relative", height: 120 }}>
+                  <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${step.image})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,5,0,0.78) 0%, transparent 55%)" }} />
+                  <span style={{ position: "absolute", bottom: 8, left: 10, fontSize: 10, fontWeight: 700, color: "#fff", background: "rgba(196,122,46,0.88)", padding: "3px 9px", borderRadius: 100, letterSpacing: "0.08em", textTransform: "uppercase" }}>
                     {step.title}
                   </span>
-
-                  <h3
-                    style={{
-                      color: "#ffffff",
-                      fontSize: 22,
-                      fontWeight: 800,
-                      letterSpacing: "-0.01em",
-                      lineHeight: 1.2,
-                      margin: 0,
-                      textShadow: "0 1px 6px rgba(0,0,0,0.5)",
-                    }}
-                  >
-                    {step.title}
-                  </h3>
-
-                  <p
-                    style={{
-                      color: "rgba(255,255,255,0.88)",
-                      fontSize: 14,
-                      fontWeight: 400,
-                      lineHeight: 1.55,
-                      margin: "0 0 12px",
-                      textShadow: "0 1px 4px rgba(0,0,0,0.4)",
-                    }}
-                  >
-                    {step.description}
-                  </p>
-                  {offset === 0 && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`);
-                      }}
-                      style={{
-                        background: "rgba(196,122,46,0.9)",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: 8,
-                        padding: "8px 18px",
-                        fontSize: 13,
-                        fontWeight: 700,
-                        fontFamily: "'Outfit', sans-serif",
-                        cursor: "pointer",
-                        backdropFilter: "blur(8px)",
-                      }}
-                    >
-                      Explore Vendors →
-                    </button>
-                  )}
                 </div>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        {/* Right Arrow */}
-        <button
-          onClick={next}
-          style={{
-            flexShrink: 0,
-            width: 44,
-            height: 44,
-            borderRadius: "50%",
-            border: "2px solid rgba(139,69,19,0.25)",
-            background: "#fff",
-            color: "#6B3A1F",
-            fontSize: 18,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 20,
-            boxShadow: "0 2px 10px rgba(139,69,19,0.1)",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = "#C47A2E";
-            e.currentTarget.style.color = "#fff";
-            e.currentTarget.style.borderColor = "#C47A2E";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = "#fff";
-            e.currentTarget.style.color = "#6B3A1F";
-            e.currentTarget.style.borderColor = "rgba(139,69,19,0.25)";
-          }}
-        >
-          ›
-        </button>
-      </div>
-
-      {/* Dot indicators */}
-      <div style={{ display: "flex", gap: 8, marginTop: 36 }}>
-        {steps.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => setActiveIndex(i)}
+                <div style={{ background: "#2C1A0E", padding: "10px 12px 12px" }}>
+                  <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.72)", margin: "0 0 7px", lineHeight: 1.45 }}>{step.description}</p>
+                  <p style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700, margin: 0 }}>Explore →</p>
+                </div>
+              </div>
+            ))}
+            {/* Right padding spacer */}
+            <div style={{ flex: "0 0 12px" }} />
+          </div>
+        </>
+      ) : (
+        /* ── Desktop: existing centered carousel ── */
+        <>
+          <div
             style={{
-              width: i === activeIndex ? 24 : 8,
-              height: 8,
-              borderRadius: 4,
-              border: "none",
-              background: i === activeIndex ? "#C47A2E" : "rgba(139,69,19,0.2)",
-              cursor: "pointer",
-              padding: 0,
-              transition: "all 0.3s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: 20,
+              width: "100%",
+              justifyContent: "center",
+              position: "relative",
             }}
-          />
-        ))}
-      </div>
+          >
+            {/* Left Arrow */}
+            <button
+              onClick={prev}
+              style={{ flexShrink: 0, width: 44, height: 44, borderRadius: "50%", border: "2px solid rgba(139,69,19,0.25)", background: "#fff", color: "#6B3A1F", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20, boxShadow: "0 2px 10px rgba(139,69,19,0.1)", transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#6B3A1F"; e.currentTarget.style.borderColor = "rgba(139,69,19,0.25)"; }}
+            >‹</button>
+
+            {/* Cards track */}
+            <div style={{ position: "relative", width: "100%", maxWidth: 900, height: CARD_H + 40, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {steps.map((step, idx) => {
+                const offset = (idx - activeIndex + steps.length) % steps.length;
+                let scale = 0.75, opacity = 0, zIndex = 0, xPos = 0;
+                if (offset === 0) { scale = 1; opacity = 1; zIndex = 10; xPos = 0; }
+                else if (offset === 1 || offset === steps.length - 1) { scale = 0.82; opacity = 0.65; zIndex = 5; xPos = offset === 1 ? SIDE_OFFSET : -SIDE_OFFSET; }
+                return (
+                  <motion.div
+                    key={idx}
+                    animate={{ opacity, scale, x: xPos }}
+                    transition={{ duration: 0.45, ease: "easeInOut" }}
+                    style={{ position: "absolute", width: CARD_W, height: CARD_H, borderRadius: 24, overflow: "hidden", zIndex, boxShadow: offset === 0 ? "0 20px 56px rgba(0,0,0,0.22)" : "0 8px 24px rgba(0,0,0,0.12)", cursor: offset !== 0 ? "pointer" : "default" }}
+                    onClick={() => { if (offset !== 0) setActiveIndex(idx); else navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`); }}
+                  >
+                    <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${step.image})`, backgroundSize: "cover", backgroundPosition: "center", filter: offset === 0 ? "none" : "brightness(0.7)", transition: "filter 0.4s" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,5,0,0.82) 0%, rgba(10,5,0,0.3) 45%, transparent 75%)" }} />
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "28px 24px", display: "flex", flexDirection: "column", gap: 8 }}>
+                      <span style={{ display: "inline-block", width: "fit-content", background: "rgba(196,122,46,0.85)", color: "#fff", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", padding: "4px 10px", borderRadius: 100, marginBottom: 4 }}>{step.title}</span>
+                      <h3 style={{ color: "#ffffff", fontSize: 22, fontWeight: 800, letterSpacing: "-0.01em", lineHeight: 1.2, margin: 0, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>{step.title}</h3>
+                      <p style={{ color: "rgba(255,255,255,0.88)", fontSize: 14, fontWeight: 400, lineHeight: 1.55, margin: "0 0 12px", textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>{step.description}</p>
+                      {offset === 0 && (
+                        <button onClick={(e) => { e.stopPropagation(); navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`); }}
+                          style={{ background: "rgba(196,122,46,0.9)", color: "#fff", border: "none", borderRadius: 8, padding: "8px 18px", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", backdropFilter: "blur(8px)" }}>
+                          Explore Vendors →
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Right Arrow */}
+            <button
+              onClick={next}
+              style={{ flexShrink: 0, width: 44, height: 44, borderRadius: "50%", border: "2px solid rgba(139,69,19,0.25)", background: "#fff", color: "#6B3A1F", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 20, boxShadow: "0 2px 10px rgba(139,69,19,0.1)", transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#6B3A1F"; e.currentTarget.style.borderColor = "rgba(139,69,19,0.25)"; }}
+            >›</button>
+          </div>
+
+          {/* Dot indicators */}
+          <div style={{ display: "flex", gap: 8, marginTop: 36 }}>
+            {steps.map((_, i) => (
+              <button key={i} onClick={() => setActiveIndex(i)}
+                style={{ width: i === activeIndex ? 24 : 8, height: 8, borderRadius: 4, border: "none", background: i === activeIndex ? "#C47A2E" : "rgba(139,69,19,0.2)", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }} />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 };
