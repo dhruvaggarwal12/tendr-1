@@ -283,54 +283,64 @@ button:active:not(:disabled) { transform: scale(0.97); }
   }
 }
 
-/* ── Vendor cards — horizontal layout on mobile ── */
+/* ── Vendor cards — full-bleed layout on mobile ── */
 @media (max-width: 639px) {
-  /* Force single column */
   .vendor-list-grid {
     grid-template-columns: 1fr !important;
-    gap: 10px !important;
+    gap: 12px !important;
   }
-  /* Horizontal card: image left, info right */
   .vendor-card {
-    display: flex !important;
-    flex-direction: row !important;
-    min-height: 120px !important;
-    border-radius: 16px !important;
+    display: block !important;
+    position: relative !important;
+    border-radius: 18px !important;
+    overflow: hidden !important;
+    min-height: unset !important;
   }
   .vendor-card-img {
-    width: 110px !important;
-    min-width: 110px !important;
-    height: auto !important;
-    min-height: 120px !important;
+    width: 100% !important;
+    height: 200px !important;
+    min-height: 200px !important;
     flex-shrink: 0 !important;
     border-radius: 0 !important;
   }
   .vendor-card-img img {
     width: 100% !important;
     height: 100% !important;
-    min-height: 120px !important;
+    min-height: 200px !important;
+    object-fit: cover !important;
   }
-  /* Hide service type label and gradient on mobile (saves space) */
-  .vendor-card-img span:last-child {
+  /* Show the mobile text overlay inside the image */
+  .vendor-card-mobile-overlay {
+    display: block !important;
+  }
+  /* Hide desktop text on mobile — keep only the action buttons */
+  .vendor-card-info-text {
     display: none !important;
   }
   .vendor-card-info {
-    padding: 10px 12px !important;
+    padding: 8px 12px 10px !important;
     display: flex !important;
     flex-direction: column !important;
-    justify-content: space-between !important;
-    flex: 1 !important;
-    min-width: 0 !important;
+    gap: 0 !important;
   }
-  .vendor-card-info h3 {
-    font-size: 13px !important;
-    margin: 0 0 4px !important;
+  /* Tap press feedback */
+  .vendor-card:active {
+    transform: scale(0.97) !important;
+    transition: transform 0.1s !important;
   }
-  /* Reduce review badge text */
-  .vendor-card-info > div:nth-child(3) span {
-    font-size: 10px !important;
-    padding: 2px 8px !important;
-  }
+}
+
+/* ── Sticky sort/filter bar on listing pages ── */
+.listings-sort-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: rgba(255, 252, 245, 0.97);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  padding: 8px 0 10px;
+  border-bottom: 1px solid rgba(196, 122, 46, 0.08);
+  margin-top: 6px;
 }
 
 /* ── Prevent iOS auto-zoom on input focus (requires font-size >= 16px) ── */

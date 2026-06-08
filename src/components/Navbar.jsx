@@ -430,7 +430,30 @@ const Navbar = ({
               {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, padding: 0 }}>✕</button>}
             </div>
             {showSuggestions && (
-              <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
+              <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, minWidth: 280, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
+                {/* Category chips — always shown on focus */}
+                <div style={{ padding: "6px 6px 4px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "0 4px 6px" }}>Browse by category</div>
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                    {[
+                      { id: "Caterer",      emoji: "🍽", label: "Catering" },
+                      { id: "Decorator",    emoji: "🎀", label: "Decoration" },
+                      { id: "Photographer", emoji: "📸", label: "Photography" },
+                      { id: "DJ",           emoji: "🎵", label: "DJ" },
+                    ].map(({ id, emoji, label }) => (
+                      <button key={id}
+                        onMouseDown={e => e.preventDefault()}
+                        onClick={() => { navigate(`/search?categories=${id}`); setShowSuggestions(false); setSearchQuery(""); }}
+                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 11px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.04)", color: "#5a3a1a", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s", whiteSpace: "nowrap" }}
+                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.12)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; }}
+                      >
+                        <span>{emoji}</span> {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "6px 0 2px" }} />
                 {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
                 {filteredSuggestions.map((s, i) => (
                   <button key={i}
@@ -443,7 +466,7 @@ const Navbar = ({
                     {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
                   </button>
                 ))}
-                {filteredSuggestions.length === 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>Press Enter to search</div>}
+                {filteredSuggestions.length === 0 && searchQuery.length > 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>Press Enter to search</div>}
               </div>
             )}
           </div>

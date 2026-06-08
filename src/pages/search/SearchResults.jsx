@@ -31,6 +31,8 @@ export default function SearchResults() {
   const [activeCat, setActiveCat] = useState(rawCats[0] || "");
   const [activeLoc, setActiveLoc] = useState(rawLocs[0] || "");
   const [topRatedOnly, setTopRatedOnly] = useState(false);
+  const [sortBy, setSortBy]             = useState("rankingScore");
+  const [sortOrder, setSortOrder]       = useState("desc");
   const [showTip, setShowTip] = useState(false);
   const [showHowToBook, setShowHowToBook] = useState(true);
   useEffect(() => { const t = setTimeout(() => setShowTip(true), 20000); return () => clearTimeout(t); }, []);
@@ -144,16 +146,32 @@ export default function SearchResults() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px 80px" }}>
 
         {/* Page header */}
-        <div style={{ marginBottom: 20 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: 0, textTransform: "capitalize" }}>
-              {rawQuery || (activeCat
-                ? `${activeCat}s${activeLoc ? ` in ${activeLoc}` : ""}${rawBudget ? ` under ₹${Number(rawBudget).toLocaleString("en-IN")}` : ""}`
-                : "Search Results")}
-            </h1>
+        <div style={{ marginBottom: 12 }}>
+          <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 12px", textTransform: "capitalize" }}>
+            {rawQuery || (activeCat
+              ? `${activeCat}s${activeLoc ? ` in ${activeLoc}` : ""}${rawBudget ? ` under ₹${Number(rawBudget).toLocaleString("en-IN")}` : ""}`
+              : "Search Results")}
+          </h1>
+          {/* Sticky sort + filter row */}
+          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "space-between", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: font, fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
+              <select value={sortBy} onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
+                style={{ fontFamily: font, fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                <option value="rankingScore">Best Match</option>
+                <option value="rating">Rating</option>
+                <option value="price">Price</option>
+                <option value="experience">Experience</option>
+              </select>
+              <select value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}
+                style={{ fontFamily: font, fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                <option value="desc">High to Low</option>
+                <option value="asc">Low to High</option>
+              </select>
+            </div>
             <button
               onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
-              style={{ padding: "7px 16px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 5 }}>
+              style={{ padding: "5px 14px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 5 }}>
               ⭐ Top Rated {topRatedOnly ? "✓" : ""}
             </button>
           </div>
@@ -243,6 +261,10 @@ export default function SearchResults() {
               isLoading={loading}
               paginationInfo={pagination}
               handleShowMore={() => setCurrentPage(p => p + 1)}
+              sortBy={sortBy}
+              sortOrder={sortOrder}
+              setSortBy={setSortBy}
+              setSortOrder={setSortOrder}
               isLoggedIn={true}
               hideCompare={true}
               requireFormBeforeChat={true}

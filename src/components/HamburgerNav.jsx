@@ -306,6 +306,28 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             {/* Suggestions dropdown */}
             {showSuggest && (
               <div style={{ background: "rgba(20,10,5,0.97)", border: "1px solid rgba(255,255,255,0.08)", borderTop: "none", borderRadius: "0 0 8px 8px", overflow: "hidden", marginBottom: 8 }}>
+                {/* Category chips */}
+                <div style={{ padding: "8px 10px 6px" }}>
+                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Browse by category</div>
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
+                    {[
+                      { id: "Caterer",      emoji: "🍽", label: "Catering" },
+                      { id: "Decorator",    emoji: "🎀", label: "Decor" },
+                      { id: "Photographer", emoji: "📸", label: "Photo" },
+                      { id: "DJ",           emoji: "🎵", label: "DJ" },
+                    ].map(({ id, emoji, label }) => (
+                      <button key={id}
+                        onMouseDown={() => { navigate(`/search?categories=${id}`); setShowSuggest(false); setSearchQuery(""); }}
+                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.08)", color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+                        onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.22)"}
+                        onMouseLeave={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
+                      >
+                        {emoji} {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                {filteredSuggestions.length > 0 && <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "2px 0" }} />}
                 {filteredSuggestions.map((s, i) => (
                   <button key={i}
                     onMouseDown={() => { handleNavSearch(s.text); setShowSuggest(false); }}

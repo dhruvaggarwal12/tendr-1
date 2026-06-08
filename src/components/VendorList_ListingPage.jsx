@@ -100,17 +100,16 @@ const VendorList_ListingPage = ({
           {isLoading ? (
             <div className="vendor-list-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 py-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                /* Skeleton matches horizontal card layout on mobile, vertical on desktop */
                 <div key={i} className="vendor-card animate-pulse"
-                  style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.08)", overflow: "hidden", display: "flex" }}>
-                  {/* Image placeholder */}
+                  style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.08)", overflow: "hidden" }}>
+                  {/* Image placeholder — full width on mobile, fixed height on desktop */}
                   <div className="vendor-card-img"
-                    style={{ width: 110, minWidth: 110, height: "auto", minHeight: 120, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", flexShrink: 0 }} />
+                    style={{ background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
                   {/* Info placeholder */}
-                  <div className="vendor-card-info" style={{ padding: "12px 14px", flex: 1, display: "flex", flexDirection: "column", gap: 8, justifyContent: "center" }}>
+                  <div className="vendor-card-info" style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
                     <div style={{ height: 14, width: "65%", borderRadius: 6, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
                     <div style={{ height: 11, width: "45%", borderRadius: 6, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-                    <div style={{ height: 30, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", marginTop: 4 }} />
+                    <div style={{ height: 32, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", marginTop: 2 }} />
                   </div>
                 </div>
               ))}
@@ -179,7 +178,7 @@ const VendorList_ListingPage = ({
                     onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.12)"; }}
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}
                   >
-                    {/* Image — 60% of card */}
+                    {/* Image — full bleed */}
                     <div className="vendor-card-img" style={{ height: 220, overflow: "hidden", position: "relative" }}>
                       <img
                         src={vendor.image || vendor.portfolioPhotos?.[0] || FALLBACK_IMG}
@@ -189,15 +188,15 @@ const VendorList_ListingPage = ({
                         onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
                         loading="lazy"
                       />
-                      {/* Gradient overlay */}
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.55) 0%, transparent 55%)", pointerEvents: "none" }} />
+                      {/* Gradient overlay — stronger at bottom for mobile text legibility */}
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(12,4,0,0.88) 0%, rgba(12,4,0,0.3) 45%, transparent 100%)", pointerEvents: "none" }} />
                       {/* Top Rated star badge */}
                       {vendor.isTopRated && (
                         <div style={{ position: "absolute", top: 10, left: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, boxShadow: "0 2px 8px rgba(196,122,46,0.5)" }}>
                           ⭐ Top Rated
                         </div>
                       )}
-                      {/* Rating badge — only if has real reviews; else Verified badge */}
+                      {/* Rating badge */}
                       {rating != null && rating > 0 ? (
                         <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", color: "#FFCC55", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                           ★ {Number(rating).toFixed(1)}
@@ -207,47 +206,71 @@ const VendorList_ListingPage = ({
                           ✓ Verified
                         </div>
                       )}
-                      {/* Service type at bottom-left over image */}
+                      {/* Service type badge — desktop only (hidden on mobile via CSS) */}
                       <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>
                         {vendor.serviceType}
                       </span>
+                      {/* Mobile-only full-bleed text overlay */}
+                      <div className="vendor-card-mobile-overlay" style={{
+                        display: "none",
+                        position: "absolute", bottom: 0, left: 0, right: 0,
+                        padding: "52px 12px 12px",
+                        background: "linear-gradient(to top, rgba(12,4,0,0.92) 0%, transparent 100%)",
+                        pointerEvents: "none",
+                      }}>
+                        <h3 style={{ fontSize: 14, fontWeight: 800, color: "#fff", margin: "0 0 4px", lineHeight: 1.2, textShadow: "0 1px 4px rgba(0,0,0,0.4)" }}>
+                          {vendor.name}
+                        </h3>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>{vendor.serviceType}</span>
+                          {(vendor.city || vendor.locations?.[0]) && (
+                            <>
+                              <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>·</span>
+                              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>📍 {vendor.city || vendor.locations?.[0]}</span>
+                            </>
+                          )}
+                          {rating > 0 && (
+                            <span style={{ marginLeft: "auto", fontSize: 12, color: "#FFCC55", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
 
-                    {/* Info — redesigned layout */}
+                    {/* Info */}
                     <div className="vendor-card-info" style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: 6 }}>
 
-                      {/* Service category + verified badge */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                        <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 9px", borderRadius: 20 }}>
-                          {vendor.serviceType}
-                        </span>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)", padding: "2px 8px", borderRadius: 20 }}>
-                          ✓ Verified
-                        </span>
-                        {vendor.isTopRated && (
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "#ca8a04", background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.25)", padding: "2px 8px", borderRadius: 20 }}>⭐ Top</span>
-                        )}
-                      </div>
-
-                      {/* Name */}
-                      <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: 0, lineHeight: 1.25 }}>{vendor.name}</h3>
-
-                      {/* Exp + Team size */}
-                      <div style={{ display: "flex", gap: 10, fontSize: 11.5, color: "#9B7450", flexWrap: "wrap" }}>
-                        {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
-                        {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
-                        {rating > 0 && <span style={{ color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
-                      </div>
-
-                      {/* Locations served */}
-                      {(vendor.locations?.length > 0 || vendor.city) && (
-                        <div style={{ fontSize: 11, color: "#9B7450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                          📍 {vendor.locations?.length > 0 ? vendor.locations.slice(0,3).join(", ") : vendor.city}
-                          {vendor.locations?.length > 3 && ` +${vendor.locations.length - 3}`}
+                      {/* Desktop text block — hidden on mobile (info shown as image overlay instead) */}
+                      <div className="vendor-card-info-text" style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        {/* Name — first */}
+                        <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: 0, lineHeight: 1.25 }}>{vendor.name}</h3>
+                        {/* Category + verified */}
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 9px", borderRadius: 20 }}>
+                            {vendor.serviceType}
+                          </span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)", padding: "2px 8px", borderRadius: 20 }}>
+                            ✓ Verified
+                          </span>
+                          {vendor.isTopRated && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#ca8a04", background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.25)", padding: "2px 8px", borderRadius: 20 }}>⭐ Top</span>
+                          )}
                         </div>
-                      )}
+                        {/* Location */}
+                        {(vendor.locations?.length > 0 || vendor.city) && (
+                          <div style={{ fontSize: 11, color: "#9B7450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                            📍 {vendor.locations?.length > 0 ? vendor.locations.slice(0,3).join(", ") : vendor.city}
+                            {vendor.locations?.length > 3 && ` +${vendor.locations.length - 3}`}
+                          </div>
+                        )}
+                        {/* Rating + Exp + Team */}
+                        <div style={{ display: "flex", gap: 10, fontSize: 11.5, color: "#9B7450", flexWrap: "wrap" }}>
+                          {rating > 0 && <span style={{ color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
+                          {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
+                          {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
+                        </div>
+                      </div>
 
-                      {/* Quick View + Save/Compare — side by side */}
+                      {/* Action buttons — always visible on both mobile and desktop */}
                       <div style={{ display: "flex", gap: 7, marginTop: 2 }}>
                         <button
                           onClick={(e) => { e.stopPropagation(); setQuickViewVendor(vendor); }}

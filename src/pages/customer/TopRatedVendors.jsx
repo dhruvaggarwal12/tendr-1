@@ -215,8 +215,8 @@ export default function TopRatedVendors() {
         }}
       />
       <HamburgerNav />
-      {/* Category bar — chips on desktop, dropdown on mobile */}
-      <div style={{ background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 12px" }}>
+      {/* Category bar — chips on desktop, dropdown on mobile — sticky */}
+      <div style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,252,245,0.97)", borderBottom: "1px solid rgba(139,69,19,0.1)", padding: "0 12px", WebkitBackdropFilter: "blur(10px)", backdropFilter: "blur(10px)" }}>
         <div style={{ maxWidth: 1280, margin: "0 auto", height: 52, display: "flex", alignItems: "center", gap: 8 }}>
 
           {/* Mobile: compact dropdown */}
