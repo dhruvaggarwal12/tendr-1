@@ -354,25 +354,26 @@ const VendorDetailsPage = () => {
       {/* Sticky bottom CTA — mobile only */}
       {vendor && (
         <div className="vendor-sticky-cta" style={{ display: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 12, maxWidth: 500, margin: "0 auto", padding: "0 16px" }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
-              <div style={{ fontSize: 11, color: "#9B7450" }}>{vendor.serviceType}</div>
-            </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, maxWidth: 500, margin: "0 auto", padding: "0 16px" }}>
+            {/* Icon-only: Share */}
+            <button onClick={handleShare}
+              title={shareCopied ? "Copied!" : "Share"}
+              style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: "1.5px solid rgba(0,0,0,0.1)", background: "#fff", color: shareCopied ? "#16a34a" : "#5a3a1a", fontSize: 17, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              {shareCopied ? "✓" : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>}
+            </button>
+            {/* Primary CTA — fills remaining space */}
             <button
               onClick={() => {
                 if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
                 if (hasEventContext) {
-                  // Normal booking flow: event data in Redux — open chat directly, wizard runs
                   dispatch(setBookingType("you-do-it"));
                   openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                 } else {
-                  // Top Rated / Search: show all-at-once form first
                   setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
                   setChatFormOpen(true);
                 }
               }}
-              style={{ flexShrink: 0, padding: "11px 22px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.35)", whiteSpace: "nowrap" }}
+              style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 14px rgba(196,122,46,0.4)" }}
             >
               💬 Request to Chat
             </button>

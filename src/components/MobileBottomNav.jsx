@@ -367,13 +367,20 @@ function BottomNavInner() {
                 )}
               </div>
               <span style={{
-                fontSize: 10, fontWeight: isOn ? 800 : 400,
+                fontSize: 9, fontWeight: isOn ? 700 : 400,
                 color: isOn ? navColor.active : "#B08060",
                 lineHeight: 1, letterSpacing: "0.01em",
                 transition: "color 0.18s, font-weight 0.18s",
               }}>
                 {label}
               </span>
+              {/* Active dot below label */}
+              <div style={{
+                width: isOn ? 4 : 0, height: 4, borderRadius: "50%",
+                background: navColor.active,
+                marginTop: 2,
+                transition: "width 0.22s cubic-bezier(0.4,0,0.2,1)",
+              }} />
             </button>
           );
         })}

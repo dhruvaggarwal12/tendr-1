@@ -170,8 +170,8 @@ const VendorList_ListingPage = ({
                     onClick={() => setQuickViewVendor(vendor)}
                     style={{
                       background: "#FFFCF5", borderRadius: 20,
-                      border: "1.5px solid rgba(196,122,46,0.12)",
-                      boxShadow: "0 4px 20px rgba(139,69,19,0.07)",
+                      border: "1.5px solid rgba(0,0,0,0.07)",
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
                       overflow: "hidden", transition: "transform 0.2s, box-shadow 0.2s",
                       fontFamily: font, cursor: "pointer",
                     }}
@@ -179,7 +179,7 @@ const VendorList_ListingPage = ({
                     onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}
                   >
                     {/* Image — full bleed */}
-                    <div className="vendor-card-img" style={{ height: 220, overflow: "hidden", position: "relative" }}>
+                    <div className="vendor-card-img" style={{ height: 260, overflow: "hidden", position: "relative" }}>
                       <img
                         src={vendor.image || vendor.portfolioPhotos?.[0] || FALLBACK_IMG}
                         alt={vendor.name}
@@ -243,16 +243,13 @@ const VendorList_ListingPage = ({
                       <div className="vendor-card-info-text" style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         {/* Name — first */}
                         <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: 0, lineHeight: 1.25 }}>{vendor.name}</h3>
-                        {/* Category + verified */}
+                        {/* Category + top rated */}
                         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 9px", borderRadius: 20 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#9B7450", padding: "2px 0" }}>
                             {vendor.serviceType}
                           </span>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "#15803d", background: "rgba(21,128,61,0.08)", border: "1px solid rgba(21,128,61,0.2)", padding: "2px 8px", borderRadius: 20 }}>
-                            ✓ Verified
-                          </span>
                           {vendor.isTopRated && (
-                            <span style={{ fontSize: 10, fontWeight: 700, color: "#ca8a04", background: "rgba(234,179,8,0.1)", border: "1px solid rgba(234,179,8,0.25)", padding: "2px 8px", borderRadius: 20 }}>⭐ Top</span>
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.08)", padding: "2px 8px", borderRadius: 20 }}>⭐ Top Rated</span>
                           )}
                         </div>
                         {/* Location */}
@@ -283,7 +280,7 @@ const VendorList_ListingPage = ({
                           <button
                             onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
                             title={isSelected ? "In compare list" : "Add to compare"}
-                            style={{ padding: "9px 12px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: isSelected ? "rgba(196,122,46,0.1)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 15, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}
+                            style={{ padding: "9px 13px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(0,0,0,0.12)"}`, background: isSelected ? "rgba(196,122,46,0.08)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 16, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}
                           >
                             {isSelected ? "♥" : "♡"}
                           </button>
@@ -292,9 +289,9 @@ const VendorList_ListingPage = ({
                             <button
                               onClick={(e) => { e.stopPropagation(); handleToggleSave(vendor); }}
                               title={saved ? "Saved" : "Save vendor"}
-                              style={{ padding: "7px 12px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(139,69,19,0.2)"}`, background: saved ? "rgba(196,122,46,0.1)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 700, cursor: "pointer", flexShrink: 0, fontFamily: font }}
+                              style={{ padding: "9px 13px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(0,0,0,0.12)"}`, background: saved ? "rgba(196,122,46,0.08)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 16, cursor: "pointer", flexShrink: 0 }}
                             >
-                              {saved ? "♥ Saved" : "Save"}
+                              {saved ? "♥" : "♡"}
                             </button>
                           ); })()
                         )}

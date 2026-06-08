@@ -491,3 +491,89 @@ button:active:not(:disabled) { transform: scale(0.97); }
     max-height: none !important;
   }
 }
+
+/* ─── Global design system refinements ─── */
+
+/* Gold accent: keep ONLY on CTA buttons, active nav, star ratings */
+/* Neutralize any gold-tinted card/section borders elsewhere */
+.vendor-card,
+.vendor-card-listing {
+  border-color: rgba(0,0,0,0.07) !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05) !important;
+}
+
+/* Section dividers & containers — neutral borders, no gold */
+.section-divider,
+hr {
+  border-color: rgba(0,0,0,0.08) !important;
+}
+
+/* ─── More whitespace between major sections ─── */
+.home-section,
+.listings-section,
+.search-section {
+  padding-top: 48px !important;
+  padding-bottom: 48px !important;
+}
+
+/* ─── Bigger, bolder section headings ─── */
+.section-heading,
+.listings-heading,
+h1.page-title {
+  font-size: clamp(26px, 4vw, 40px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.5px !important;
+  line-height: 1.15 !important;
+}
+
+h2.section-title,
+.section-subtitle-heading {
+  font-size: clamp(20px, 3vw, 30px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.3px !important;
+}
+
+/* ─── Button style consolidation ─── */
+/* Primary filled — gold gradient */
+.btn-primary,
+button.btn-primary {
+  background: linear-gradient(135deg, #C47A2E, #CCAB4A) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 12px !important;
+  font-weight: 700 !important;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  opacity: 0.9 !important;
+}
+
+/* Ghost — neutral outlined */
+.btn-ghost,
+button.btn-ghost {
+  background: transparent !important;
+  color: #2C1A0E !important;
+  border: 1.5px solid rgba(0,0,0,0.15) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer;
+}
+.btn-ghost:hover {
+  border-color: rgba(0,0,0,0.3) !important;
+  background: rgba(0,0,0,0.03) !important;
+}
+
+/* Text link */
+.btn-text,
+button.btn-text {
+  background: transparent !important;
+  border: none !important;
+  color: #C47A2E !important;
+  font-weight: 600 !important;
+  text-decoration: underline !important;
+  cursor: pointer;
+  padding: 0 !important;
+}
+.btn-text:hover {
+  color: #2C1A0E !important;
+}
