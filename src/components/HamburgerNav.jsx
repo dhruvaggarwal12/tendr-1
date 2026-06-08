@@ -678,15 +678,15 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         padding: "0 16px",
         fontFamily: font,
       }}>
-        {/* Left: Back arrow on mobile (not on home), logo on desktop */}
-        <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} className="hamburger-logo" style={{ height: 18, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
-        {location.pathname !== "/" && (
+        {/* Left: Logo on home, back arrow on all other pages */}
+        {location.pathname === "/" ? (
+          <img src={tendrLogo} alt="Tendr" onClick={() => navigate("/")} style={{ height: 18, cursor: "pointer", objectFit: "contain", flexShrink: 0 }} />
+        ) : (
           <button
-            className="mobile-back-btn"
             onClick={() => navigate(-1)}
-            style={{ display: "none", alignItems: "center", justifyContent: "center", width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.05)", cursor: "pointer", flexShrink: 0, color: "#6B3A1F", fontSize: 16 }}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.05)", cursor: "pointer", flexShrink: 0, color: "#6B3A1F", fontSize: 18, fontWeight: 400 }}
           >
-            ←
+            ‹
           </button>
         )}
 

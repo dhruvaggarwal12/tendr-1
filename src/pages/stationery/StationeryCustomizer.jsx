@@ -146,11 +146,25 @@ export default function StationeryCustomizer() {
   const template = TEMPLATES.find(t => t.id === id);
   const Renderer = RENDERERS[id];
 
-  const [data, setData] = useState({ ...BLANK });
-  const [palette, setPalette] = useState(0);   // index into COLOR_PALETTES
-  const [fontIdx, setFontIdx] = useState(0);   // index into FONT_PAIRS
-  const [sizeIdx, setSizeIdx] = useState(1);   // 0=S 1=M 2=L
+  const _sk = `tendr_stationery_${id}`;
+  const [data, setData] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(_sk) || 'null'); return s?.data ?? { ...BLANK }; } catch { return { ...BLANK }; }
+  });
+  const [palette, setPalette] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(_sk) || 'null'); return s?.palette ?? 0; } catch { return 0; }
+  });
+  const [fontIdx, setFontIdx] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(_sk) || 'null'); return s?.fontIdx ?? 0; } catch { return 0; }
+  });
+  const [sizeIdx, setSizeIdx] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(_sk) || 'null'); return s?.sizeIdx ?? 1; } catch { return 1; }
+  });
   const [designTab, setDesignTab] = useState("text"); // "text"|"style"
+
+  // Persist state changes
+  React.useEffect(() => {
+    try { localStorage.setItem(_sk, JSON.stringify({ data, palette, fontIdx, sizeIdx })); } catch {}
+  }, [data, palette, fontIdx, sizeIdx]);
 
   // Load font when changed
   React.useEffect(() => {

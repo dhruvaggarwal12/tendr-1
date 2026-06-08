@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import SEO from '../../components/SEO';
 import HamburgerNav from '../../components/HamburgerNav';
@@ -8,18 +8,22 @@ const AftermovieCustomizer = () => {
   const navigate = useNavigate();
   const { aftermovieType } = useParams();
   const fileInputRef = useRef(null);
-  const [currentStep, setCurrentStep] = useState(1);
+  const _amk = `tendr_aftermovie_${aftermovieType}`;
+  const [currentStep, setCurrentStep] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(_amk) || 'null'); return s?.currentStep ?? 1; } catch { return 1; }
+  });
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [customizationData, setCustomizationData] = useState({
-    style: '',
-    description: '',
-    textCustomization: '',
-    musicPreference: '',
-    colorScheme: '',
-    transitionStyle: '',
-    duration: ''
+  const [customizationData, setCustomizationData] = useState(() => {
+    try {
+      const s = JSON.parse(localStorage.getItem(_amk) || 'null');
+      return s?.customizationData ?? { style: '', description: '', textCustomization: '', musicPreference: '', colorScheme: '', transitionStyle: '', duration: '' };
+    } catch { return { style: '', description: '', textCustomization: '', musicPreference: '', colorScheme: '', transitionStyle: '', duration: '' }; }
   });
+
+  useEffect(() => {
+    try { localStorage.setItem(_amk, JSON.stringify({ currentStep, customizationData })); } catch {}
+  }, [currentStep, customizationData]);
 
   const aftermovieTypeData = {
     'reel': {

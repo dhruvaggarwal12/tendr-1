@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -221,11 +221,20 @@ function BotanicalFlyer({ data, onChange }) {
 /* ─── Page ──────────────────────────────────────────────────────────────────── */
 export default function InvitationCustomizer() {
   const navigate = useNavigate();
-  const [data, setData] = useState({ eventTitle: "", date: "", time: "", venue: "", rsvp: "" });
-  const [copies, setCopies] = useState(50);
+  const _ik = "tendr_invitation_draft";
+  const [data, setData] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(_ik) || 'null'); return s?.data ?? { eventTitle: "", date: "", time: "", venue: "", rsvp: "" }; } catch { return { eventTitle: "", date: "", time: "", venue: "", rsvp: "" }; }
+  });
+  const [copies, setCopies] = useState(() => {
+    try { const s = JSON.parse(localStorage.getItem(_ik) || 'null'); return s?.copies ?? 50; } catch { return 50; }
+  });
   const [ordered, setOrdered] = useState(false);
 
   const change = (k, v) => setData(p => ({ ...p, [k]: v }));
+
+  useEffect(() => {
+    try { localStorage.setItem(_ik, JSON.stringify({ data, copies })); } catch {}
+  }, [data, copies]);
   const allFilled = data.date && data.time && data.venue;
 
   return (
