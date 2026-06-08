@@ -207,6 +207,7 @@ const CustomTemplateRequest = () => {
                     type="date"
                     value={formData.eventDate}
                     onChange={(e) => handleInputChange('eventDate', e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent"
                     required
                   />

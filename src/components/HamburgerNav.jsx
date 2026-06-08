@@ -8,6 +8,7 @@ import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa";
 import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
+import CompareModal from "./CompareModal";
 
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
@@ -60,6 +61,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // All state declared before any useEffect that references them
   const [sidebarOpen,   setSidebarOpen]   = useState(true);
   const [drawerOpen,    setDrawerOpen]    = useState(false);
+  const [compareModalOpen, setCompareModalOpen] = useState(false);
   const [profileOpen,   setProfileOpen]   = useState(false);
   const [savedOpen,       setSavedOpen]       = useState(false);
   const [searchOverlay,   setSearchOverlay]   = useState(false);
@@ -321,7 +323,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           {/* Compare Vendors (below search) */}
           {compareSelected.length > 0 && (
             <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
-              <button onClick={() => { setSavedOpen(false); setTimeout(() => setSavedOpen(true), 10); }}
+              <button onClick={() => setCompareModalOpen(true)}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.1)", cursor: "pointer", fontFamily: font }}>
                 <span style={{ fontSize: 13 }}>🔀</span>
                 <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#C47A2E", textAlign: "left" }}>Compare Vendors</span>
@@ -531,42 +533,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           </div>
         )}
 
-        {/* Compare Vendors modal — sidebar mode */}
-        {savedOpen && (
-          <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
-            onClick={() => setSavedOpen(false)}>
-            <div style={{ width: "92%", maxWidth: 540, background: "#fff", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font }}
-              onClick={e => e.stopPropagation()}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
-                <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Compare Vendors ({compareSelected.length})</h3>
-                <button onClick={() => setSavedOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18 }}>×</button>
-              </div>
-              <div style={{ overflowY: "auto", padding: "12px 24px", flex: 1 }}>
-                {compareSelected.map((v) => (
-                  <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: "1.5px solid #f0e8dc", background: "#fffcf5", marginBottom: 8 }}>
-                    <img src={v.image || FALLBACK} alt={v.name} style={{ width: 46, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
-                      {v.city && <div style={{ fontSize: 12, color: "#9B7450" }}>{v.serviceType || v.city}</div>}
-                    </div>
-                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                      <button onClick={() => { setSavedOpen(false); navigate(`/vendor/${v._id}`); }}
-                        style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>View</button>
-                      <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
-                        style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 24px", borderTop: "1px solid #f0e8dc" }}>
-                <button onClick={() => { dispatch(clearVendorCompare()); setSavedOpen(false); }}
-                  style={{ fontSize: 13, padding: "7px 16px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#555", cursor: "pointer" }}>Clear All</button>
-                <button onClick={() => { setSavedOpen(false); navigate("/listings"); }}
-                  style={{ fontSize: 13, fontWeight: 700, padding: "7px 22px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer" }}>Go to Listings</button>
-              </div>
-            </div>
-          </div>
-        )}
+        {/* Compare Vendors modal — proper side-by-side comparison */}
+        <CompareModal open={compareModalOpen} onClose={() => setCompareModalOpen(false)} vendors={compareSelected} />
 
         {/* Saved Vendors modal — sidebar mode */}
         {bookmarksOpen && (() => { const savedList = getSavedVendors(); return (
@@ -890,45 +858,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         </>
       )}
 
-      {/* Saved vendors modal */}
-      {savedOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.5)" }}
-          onClick={() => setSavedOpen(false)}>
-          <div style={{ width: "92%", maxWidth: 540, background: "#fff", borderRadius: 20, maxHeight: "80vh", display: "flex", flexDirection: "column", fontFamily: font }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 24px", borderBottom: "1px solid #f0e8dc" }}>
-              <h3 style={{ fontSize: 17, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Compare Vendors ({compareSelected.length})</h3>
-              <button onClick={() => setSavedOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18 }}>×</button>
-            </div>
-            <div style={{ overflowY: "auto", padding: "12px 24px", flex: 1 }}>
-              {compareSelected.map((v) => (
-                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 12, border: "1.5px solid #f0e8dc", background: "#fffcf5", marginBottom: 8 }}>
-                  <img src={v.image || FALLBACK} alt={v.name} style={{ width: 46, height: 38, objectFit: "cover", borderRadius: 8, flexShrink: 0 }} />
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
-                    {v.city && <div style={{ fontSize: 12, color: "#9B7450" }}>{v.serviceType || v.city}</div>}
-                  </div>
-                  <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-                    <button
-                      onClick={() => { setSavedOpen(false); navigate(`/vendor/${v._id}`); }}
-                      style={{ fontSize: 12, padding: "5px 10px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>
-                      View
-                    </button>
-                    <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
-                      style={{ fontSize: 14, padding: "4px 8px", borderRadius: 7, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#888", cursor: "pointer" }}>×</button>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 24px", borderTop: "1px solid #f0e8dc" }}>
-              <button onClick={() => { dispatch(clearVendorCompare()); setSavedOpen(false); }}
-                style={{ fontSize: 13, padding: "7px 16px", borderRadius: 8, border: "1.5px solid rgba(0,0,0,0.1)", background: "#f5f5f5", color: "#555", cursor: "pointer" }}>Clear All</button>
-              <button onClick={() => { setSavedOpen(false); navigate("/listings"); }}
-                style={{ fontSize: 13, fontWeight: 700, padding: "7px 22px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer" }}>Go to Listings</button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Compare Vendors modal — drawer mode */}
+      <CompareModal open={compareModalOpen} onClose={() => setCompareModalOpen(false)} vendors={compareSelected} />
 
       {/* Saved Vendors panel */}
       {bookmarksOpen && (() => { const savedList = getSavedVendors(); return (

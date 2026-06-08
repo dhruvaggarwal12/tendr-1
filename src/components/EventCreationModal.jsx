@@ -196,6 +196,7 @@ const EventCreationModal = ({ isOpen, onClose, onSubmit }) => {
             name="date"
             value={formData.date}
             onChange={handleInputChange}
+            min={new Date().toISOString().split('T')[0]}
             className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>

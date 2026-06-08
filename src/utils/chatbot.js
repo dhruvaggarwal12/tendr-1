@@ -212,24 +212,72 @@ export function buildSummaryMessage(formAnswers, botAnswers, vendorName, service
 /** Packages per service type — used in chat wizard and admin send-packages */
 export const CHAT_PACKAGES = {
   Caterer: [
-    { tier: "Basic",    desc: "Buffet · Up to 40 guests · Veg menu · Basic serving" },
-    { tier: "Standard", desc: "Live counters · Up to 80 guests · Veg/Non-Veg · Staff included" },
-    { tier: "Premium",  desc: "Custom menu · 80+ guests · Live counters · Fine dining setup" },
+    {
+      tier: "Basic", guests: "20–40",
+      desc: "Veg Menu · 2 Starters · 1 Main Course · 1 Dessert · Basic Serving",
+      items: ["Veg Menu", "2 Starters", "1 Main Course", "1 Dessert", "Basic Serving"],
+    },
+    {
+      tier: "Standard", guests: "40–80",
+      desc: "Veg/Non-Veg · 3 Starters · 2 Main Course · 2 Desserts · Live Counter · Professional Staff",
+      items: ["Veg/Non-Veg", "3 Starters", "2 Main Course", "2 Desserts", "Live Counter", "Professional Staff"],
+    },
+    {
+      tier: "Premium", guests: "80+",
+      desc: "Custom Menu · 4+ Starters · 3+ Main Course · 3+ Desserts · Live Counters · Fine Dining Setup",
+      items: ["Custom Menu", "4+ Starters", "3+ Main Course", "3+ Desserts", "Live Counters", "Fine Dining Setup"],
+    },
   ],
   Photographer: [
-    { tier: "Basic",    desc: "2-3 hrs coverage · 1 photographer · 100+ edited photos" },
-    { tier: "Standard", desc: "4-6 hrs · 1 photographer · 300+ photos · Highlight reel" },
-    { tier: "Premium",  desc: "Full day · 2 photographers · 500+ photos · Teaser video" },
+    {
+      tier: "Basic", guests: "20–40",
+      desc: "2–3 Hrs Coverage · 1 Photographer · 100+ Edited Photos · Online Gallery",
+      items: ["2–3 Hrs Coverage", "1 Photographer", "100+ Edited Photos", "Online Gallery"],
+    },
+    {
+      tier: "Standard", guests: "40–80",
+      desc: "4–6 Hrs Coverage · 1 Photographer · 300+ Edited Photos · Candid + Group · Highlight Reel",
+      items: ["4–6 Hrs Coverage", "1 Photographer", "300+ Edited Photos", "Candid + Group", "Highlight Reel"],
+    },
+    {
+      tier: "Premium", guests: "80+",
+      desc: "Full Day Coverage · 2 Photographers · 500+ Photos · Candid + Group · Highlight Reel · Teaser Video",
+      items: ["Full Day Coverage", "2 Photographers", "500+ Photos", "Candid + Group", "Highlight Reel", "Teaser Video"],
+    },
   ],
   Decorator: [
-    { tier: "Basic",    desc: "Balloon & fairy lights · Basic backdrop · Table decor" },
-    { tier: "Standard", desc: "Themed backdrop · Floral decor · Custom signage · Lighting" },
-    { tier: "Premium",  desc: "Full venue styling · Custom installations · Stage setup" },
+    {
+      tier: "Basic", guests: "20–40",
+      desc: "Basic Backdrop · Balloon Decor · Table Decor · Fairy Lights",
+      items: ["Basic Backdrop", "Balloon Decor", "Table Decor", "Fairy Lights"],
+    },
+    {
+      tier: "Standard", guests: "40–80",
+      desc: "Themed Backdrop · Balloon & Floral · Table & Entrance Decor · Custom Signage · Lighting Setup",
+      items: ["Themed Backdrop", "Balloon & Floral", "Table & Entrance Decor", "Custom Signage", "Lighting Setup"],
+    },
+    {
+      tier: "Premium", guests: "80+",
+      desc: "Premium Theme Decor · Floral & Balloon Design · Stage Setup · Custom Installations · Full Venue Styling",
+      items: ["Premium Theme Decor", "Floral & Balloon Design", "Stage Setup", "Custom Installations", "Full Venue Styling"],
+    },
   ],
   DJ: [
-    { tier: "Basic",    desc: "3 hrs set · 1 DJ · Standard sound system" },
-    { tier: "Standard", desc: "5 hrs · 1 DJ · Pro sound · LED lighting · Wireless mic" },
-    { tier: "Premium",  desc: "Full night · DJ + assistant · Premium sound · Fog machine" },
+    {
+      tier: "Basic", guests: "20–40",
+      desc: "3 Hrs Set · 1 DJ · Basic Sound System · Standard Lighting",
+      items: ["3 Hrs Set", "1 DJ", "Basic Sound System", "Standard Lighting"],
+    },
+    {
+      tier: "Standard", guests: "40–80",
+      desc: "5 Hrs Set · 1 DJ · Professional Sound · LED Lighting · Wireless Mic",
+      items: ["5 Hrs Set", "1 DJ", "Professional Sound", "LED Lighting", "Wireless Mic"],
+    },
+    {
+      tier: "Premium", guests: "80+",
+      desc: "Full Event Coverage · 1 DJ + Assistant · Premium Sound System · Dance Floor Lighting · Wireless Mics · Fog Machine",
+      items: ["Full Event Coverage", "1 DJ + Assistant", "Premium Sound System", "Dance Floor Lighting", "Wireless Mics", "Fog Machine"],
+    },
   ],
 };
 

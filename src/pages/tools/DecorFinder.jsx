@@ -551,7 +551,7 @@ export default function DecorFinder() {
               </div>
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 8 }}>Event date</label>
-                <input type="date" value={chatForm.date} onChange={e => setChatForm(p => ({ ...p, date: e.target.value }))}
+                <input type="date" value={chatForm.date} onChange={e => setChatForm(p => ({ ...p, date: e.target.value }))} min={new Date().toISOString().split('T')[0]}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
               </div>
               <div>

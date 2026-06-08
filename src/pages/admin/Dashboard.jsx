@@ -3236,7 +3236,17 @@ const AdminDashboard = () => {
                           {svcType === "Caterer" && (
                             <button onClick={() => {
                               if (!selectedChat?._id || !adminSocketRef.current) return;
-                              const payload = { pkg: "Free", cuisines: ["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Sweets","Italian"] };
+                              const conv = currentConversation || [];
+                              const pkgMsg = [...conv].reverse().find(m =>
+                                /I'd like the (Basic|Standard|Premium) package:/i.test(m.content || "") ||
+                                /Package: (Basic|Standard|Premium)/i.test(m.content || "")
+                              );
+                              const pkgMatch = pkgMsg
+                                ? (pkgMsg.content.match(/I'd like the (Basic|Standard|Premium) package:/i) ||
+                                   pkgMsg.content.match(/Package: (Basic|Standard|Premium)/i))
+                                : null;
+                              const detectedPkg = pkgMatch ? pkgMatch[1] : "Free";
+                              const payload = { pkg: detectedPkg, cuisines: ["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Sweets","Italian"] };
                               const msgText = `[FULL_MENU:${JSON.stringify(payload)}]`;
                               const m = { conversationId: selectedChat._id, sender: 'customer-care', content: msgText };
                               adminSocketRef.current.emit('send_message', m);

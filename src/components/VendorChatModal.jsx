@@ -86,8 +86,8 @@ const CATERER_DISHES = {
 };
 
 const PACKAGE_LIMITS = {
-  Basic:    { Starters: 2, Mains: 2, Breads: 2, Rice: 1, Desserts: 1, Beverages: 0 },
-  Standard: { Starters: 4, Mains: 3, Breads: 3, Rice: 1, Desserts: 2, Beverages: 1 },
+  Basic:    { Starters: 2, Mains: 1, Breads: 1, Rice: 1, Desserts: 1, Beverages: 0 },
+  Standard: { Starters: 3, Mains: 2, Breads: 2, Rice: 1, Desserts: 2, Beverages: 1 },
   Premium:  { Starters: 99, Mains: 99, Breads: 99, Rice: 99, Desserts: 99, Beverages: 99 },
   Free:     { Starters: 99, Mains: 99, Breads: 99, Rice: 99, Desserts: 99, Beverages: 99 },
 };
@@ -962,13 +962,26 @@ export default function VendorChatModal() {
                       <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                         {sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}
                       </div>
-                      <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{key}</div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{key}</div>
+                        {p.guests && <div style={{ fontSize: 10, color: "#9B7450", marginTop: 1 }}>{p.guests} guests</div>}
+                      </div>
                       <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }}
                         style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
                     </div>
                     {open && (
                       <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
-                        <p style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.6, margin: "8px 0 0" }}>{p.desc}</p>
+                        {p.items ? (
+                          <ul style={{ margin: "8px 0 0", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 3 }}>
+                            {p.items.map(item => (
+                              <li key={item} style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.5, display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ color: "#C47A2E", fontSize: 10 }}>•</span>{item}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.6, margin: "8px 0 0" }}>{p.desc}</p>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1099,21 +1112,6 @@ export default function VendorChatModal() {
             );
           })()}
 
-          {/* ── Admin: Send Full Menu (Catering chats + Concierge with Caterer) ── */}
-          {currentUser?.isAdmin && (approved || isExistingChat) &&
-           (vendor?.serviceType === "Caterer" || (isConcierge && selectedVendorTypes.includes("Caterer"))) && (
-            <button
-              onClick={() => {
-                const pkgMatch = [...messages].reverse().find(m => /I'd like the (Basic|Standard|Premium) package:/.test(m.text || ""));
-                const detectedPkg = pkgMatch ? pkgMatch.text.match(/I'd like the (Basic|Standard|Premium) package:/)[1] : "Free";
-                const msg = `[FULL_MENU:${JSON.stringify({ pkg: detectedPkg, cuisines: ALL_MENU_CUISINES })}]`;
-                sendText(msg);
-              }}
-              style={{ display: "block", width: "100%", textAlign: "center", padding: "8px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, marginBottom: 8 }}
-            >
-              🍽️ Send Menu
-            </button>
-          )}
 
           {(approved || isExistingChat) ? (
             <>
