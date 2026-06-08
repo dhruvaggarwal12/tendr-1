@@ -339,7 +339,7 @@ const VendorList_ListingPage = ({
             </div>
 
             {/* Content */}
-            <div style={{ padding: "22px 24px 80px" }}>{/* 80px bottom padding clears mobile bottom nav */}
+            <div style={{ padding: "22px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
               {/* Name + type */}
               <div style={{ marginBottom: 14 }}>
                 <h2 style={{ fontSize: 21, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "-0.01em" }}>

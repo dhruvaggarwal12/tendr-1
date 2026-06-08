@@ -7,6 +7,171 @@ import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
 
+const BASE_URL  = import.meta.env.VITE_BASE_URL;
+
+// Phase label → days before event (mirrors backend PHASE_DAYS_CRON)
+const PHASE_DAYS_FE = {
+  '3 months before':   90,
+  '2 months before':   60,
+  '1 month before':    30,
+  '3 weeks before':    21,
+  '2 weeks before':    14,
+  '1 week before':      7,
+  'day 1–2':            6,
+  'day 3–4':            4,
+  'day 5–6':            2,
+  'day before':         1,
+  'day of':             0,
+  'day 7 (event day)':  0,
+};
+function phaseDays(label = '') {
+  const k = label.toLowerCase().trim();
+  if (k in PHASE_DAYS_FE) return PHASE_DAYS_FE[k];
+  for (const [key, val] of Object.entries(PHASE_DAYS_FE)) {
+    if (k.includes(key)) return val;
+  }
+  return null;
+}
+function reminderDate(eventDate, phaseLabel) {
+  const d = phaseDays(phaseLabel);
+  if (d === null || !eventDate) return null;
+  const lead = d === 0 ? 0 : 2;
+  const r = new Date(eventDate);
+  r.setDate(r.getDate() - d - lead);
+  return r;
+}
+function fmtReminderDate(d) {
+  if (!d) return null;
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+// ── Notification modal ───────────────────────────────────────────────────────
+function NotifyModal({ phases, eventDate, eventType, planKey, onClose }) {
+  const [phone,    setPhone]    = useState('');
+  const [status,   setStatus]   = useState('idle'); // idle | loading | success | error
+  const [errMsg,   setErrMsg]   = useState('');
+
+  const schedule = phases
+    .map(p => {
+      const rd = reminderDate(eventDate, p.label);
+      if (!rd || rd < new Date()) return null;
+      const lead = (phaseDays(p.label) || 0) === 0 ? 0 : 2;
+      return { label: p.label, remindOn: rd, lead };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.remindOn - b.remindOn);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const cleaned = phone.replace(/[^0-9]/g, '');
+    if (cleaned.length < 10) { setErrMsg('Enter a valid 10-digit number'); return; }
+    setStatus('loading');
+    setErrMsg('');
+    try {
+      const payload = {
+        phone:     cleaned,
+        eventDate: new Date(eventDate).toISOString(),
+        eventType: eventType || 'event',
+        planKey:   planKey   || '30day',
+        phases:    phases.map(p => ({ label: p.label, tasks: (p.tasks || []).map(t => t.text || t).filter(Boolean) })),
+      };
+      const res = await fetch(`${BASE_URL}/api/timeline-notifications`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setStatus('success');
+        try { localStorage.setItem('tendr_notify_phone', cleaned); } catch {}
+      } else {
+        setErrMsg(data.error || 'Something went wrong');
+        setStatus('error');
+      }
+    } catch {
+      setErrMsg('Network error — please try again');
+      setStatus('error');
+    }
+  };
+
+  const F = "'Outfit', sans-serif";
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.52)', zIndex: 2000, backdropFilter: 'blur(4px)' }} />
+      <div style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: 'min(95vw,440px)', background: '#FFFCF5', borderRadius: 22, zIndex: 2001, fontFamily: F, overflow: 'hidden', boxShadow: '0 28px 70px rgba(0,0,0,0.22)', maxHeight: '88vh', overflowY: 'auto' }}>
+
+        {/* Header */}
+        <div style={{ background: 'linear-gradient(135deg,#2C1A0E,#4A2810)', padding: '20px 22px 18px', position: 'relative' }}>
+          <button onClick={onClose} style={{ position: 'absolute', top: 12, right: 14, width: 28, height: 28, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)', fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: F }}>×</button>
+          <div style={{ fontSize: 32, marginBottom: 10 }}>🔔</div>
+          <h3 style={{ fontSize: 17, fontWeight: 900, color: '#fff', margin: '0 0 5px' }}>Get WhatsApp Reminders</h3>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', margin: 0, lineHeight: 1.5 }}>
+            We'll WhatsApp you 2 days before each planning phase — so you never miss a task.
+          </p>
+        </div>
+
+        <div style={{ padding: '18px 22px 22px' }}>
+
+          {status === 'success' ? (
+            <div style={{ textAlign: 'center', padding: '16px 0' }}>
+              <div style={{ fontSize: 44, marginBottom: 12 }}>✅</div>
+              <h4 style={{ fontSize: 16, fontWeight: 900, color: '#15803d', margin: '0 0 6px' }}>You're all set!</h4>
+              <p style={{ fontSize: 12.5, color: '#6B3A1F', margin: '0 0 16px', lineHeight: 1.6 }}>
+                We'll send WhatsApp reminders to <strong>+91 {phone.replace(/[^0-9]/g,'').slice(-10)}</strong> before each phase. Check your schedule below.
+              </p>
+              <button onClick={onClose} style={{ padding: '10px 28px', borderRadius: 10, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 13, fontWeight: 800, cursor: 'pointer', fontFamily: F }}>Done</button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              {/* Phone input */}
+              <label style={{ fontSize: 12, fontWeight: 700, color: '#2C1A0E', display: 'block', marginBottom: 6 }}>Your WhatsApp number</label>
+              <div style={{ display: 'flex', alignItems: 'center', border: `1.5px solid ${errMsg ? '#ef4444' : 'rgba(44,26,14,0.18)'}`, borderRadius: 11, overflow: 'hidden', background: '#fff', marginBottom: 6 }}>
+                <span style={{ padding: '11px 12px', fontSize: 13, fontWeight: 700, color: '#9B7450', background: 'rgba(196,122,46,0.05)', borderRight: '1px solid rgba(44,26,14,0.1)', flexShrink: 0 }}>🇮🇳 +91</span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={phone}
+                  onChange={e => { setPhone(e.target.value); setErrMsg(''); }}
+                  placeholder="98765 43210"
+                  maxLength={10}
+                  style={{ flex: 1, padding: '11px 12px', border: 'none', outline: 'none', fontFamily: F, fontSize: 14, color: '#2C1A0E', background: 'transparent' }}
+                />
+              </div>
+              {errMsg && <p style={{ fontSize: 11.5, color: '#ef4444', margin: '0 0 10px' }}>{errMsg}</p>}
+              <p style={{ fontSize: 11, color: '#9B7450', margin: '0 0 14px' }}>Messages sent via Tendr's WhatsApp. Reply STOP anytime to unsubscribe.</p>
+
+              <button type="submit" disabled={status === 'loading'}
+                style={{ width: '100%', padding: '12px', borderRadius: 11, border: 'none', background: status === 'loading' ? '#E5E7EB' : 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: status === 'loading' ? '#9CA3AF' : '#fff', fontSize: 14, fontWeight: 800, cursor: status === 'loading' ? 'not-allowed' : 'pointer', fontFamily: F, boxShadow: status === 'loading' ? 'none' : '0 4px 14px rgba(196,122,46,0.3)', marginBottom: 18 }}>
+                {status === 'loading' ? 'Setting up…' : 'Notify Me →'}
+              </button>
+            </form>
+          )}
+
+          {/* Schedule preview */}
+          {schedule.length > 0 && (
+            <div style={{ borderTop: '1.5px solid rgba(44,26,14,0.08)', paddingTop: 14 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 10px' }}>Your reminder schedule</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {schedule.map((s, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 9, background: 'rgba(196,122,46,0.05)', border: '1px solid rgba(196,122,46,0.1)' }}>
+                    <span style={{ fontSize: 14 }}>{s.lead === 0 ? '🎉' : '📅'}</span>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: 11.5, fontWeight: 700, color: '#2C1A0E' }}>{s.lead === 0 ? 'Event Day' : `${s.lead} days before: ${s.label}`}</div>
+                      <div style={{ fontSize: 10.5, color: '#9B7450' }}>{fmtReminderDate(s.remindOn)}</div>
+                    </div>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#C47A2E', background: 'rgba(196,122,46,0.1)', padding: '2px 8px', borderRadius: 100 }}>WhatsApp</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 // Detect vendor type from task text
 function detectServiceFromTask(text = "") {
   const t = text.toLowerCase();
@@ -325,7 +490,9 @@ export default function Timeline() {
   const [loaded, setLoaded]     = useState(false);
   const [personalized, setPersonalized] = useState(null);
   const [expandedNote, setExpandedNote] = useState(null);
-  const [timelineSaved, setTimelineSaved] = useState(() => { try { return localStorage.getItem("tendr_timeline_saved") === "true"; } catch { return false; } });
+  const [timelineSaved, setTimelineSaved]   = useState(() => { try { return localStorage.getItem("tendr_timeline_saved") === "true"; } catch { return false; } });
+  const [notifyOpen,    setNotifyOpen]       = useState(false);
+  const [notifyDone,    setNotifyDone]       = useState(() => { try { return !!localStorage.getItem('tendr_notify_phone'); } catch { return false; } });
 
   const saveTimeline = () => {
     try { localStorage.setItem("tendr_timeline_saved", "true"); } catch {}
@@ -520,13 +687,32 @@ export default function Timeline() {
               </div>
               <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>{done} of {total} tasks done</div>
             </div>
-            <button onClick={saveTimeline}
-              style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: timelineSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: timelineSaved ? "rgba(34,197,94,0.08)" : "#fff", color: timelineSaved ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-              {timelineSaved ? "✓ Saved" : "💾 Save"}
-            </button>
+            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+              <button onClick={saveTimeline}
+                style={{ padding: "8px 14px", borderRadius: 10, border: timelineSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: timelineSaved ? "rgba(34,197,94,0.08)" : "#fff", color: timelineSaved ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+                {timelineSaved ? "✓ Saved" : "💾 Save"}
+              </button>
+              <button onClick={() => setNotifyOpen(true)}
+                style={{ padding: "8px 14px", borderRadius: 10, border: notifyDone ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.35)", background: notifyDone ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", color: notifyDone ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap" }}>
+                {notifyDone ? "🔔 Notified" : "🔔 Get Notified"}
+              </button>
+            </div>
           </div>
         </div>
       </div>
+
+      {notifyOpen && (
+        <NotifyModal
+          phases={phases}
+          eventDate={personalized?.eventDate || personalizationData?.eventDate}
+          eventType={personalized?.eventType || personalizationData?.eventType}
+          planKey={planKey}
+          onClose={() => {
+            setNotifyOpen(false);
+            try { if (localStorage.getItem('tendr_notify_phone')) setNotifyDone(true); } catch {}
+          }}
+        />
+      )}
 
       {/* Scrollable timeline */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 40px" }}>
