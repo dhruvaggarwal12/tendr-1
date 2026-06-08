@@ -959,6 +959,7 @@ const VendorDetailsPage = () => {
                   guests: chatEventForm.guests,
                   date: chatEventForm.date,
                   location: chatEventForm.location,
+                  token,
                 }));
                 dispatch(setBookingType("you-do-it"));
                 setChatFormOpen(false);

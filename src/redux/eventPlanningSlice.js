@@ -65,7 +65,28 @@
 
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { saveUserEventData, loadUserEventData } from "../apis/userApi";
 const LOGOUT_TYPE = 'auth/logout/fulfilled';
+
+/** Load saved event data from backend on login */
+export const fetchEventData = createAsyncThunk(
+  "eventPlanning/fetchEventData",
+  async (token, { rejectWithValue }) => {
+    try {
+      const formData = await loadUserEventData(token);
+      return formData;
+    } catch (err) {
+      return rejectWithValue(err?.message);
+    }
+  }
+);
+
+let _saveTimer = null;
+const debouncedSaveToBackend = (formData, token) => {
+  if (!token) return;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => saveUserEventData(token, formData), 1500);
+};
 
 const loadFormData = () => {
   try {
@@ -164,17 +185,20 @@ const eventPlanningSlice = createSlice({
   initialState,
   reducers: {
     setFormData: (state, action) => {
-      const { field, value } = action.payload;
+      const { field, value, token } = action.payload;
       state.formData[field] = value;
       saveFormData(state.formData);
       saveSession(state);
+      debouncedSaveToBackend(state.formData, token);
     },
     setMultipleFormData: (state, action) => {
-      Object.entries(action.payload || {}).forEach(([k, v]) => {
+      const { token, ...fields } = action.payload || {};
+      Object.entries(fields).forEach(([k, v]) => {
         if (k in state.formData) state.formData[k] = v;
       });
       saveFormData(state.formData);
       saveSession(state);
+      debouncedSaveToBackend(state.formData, token);
     },
     setBookingType: (state, action) => {
       state.bookingType = action.payload || "you-do-it";
@@ -256,6 +280,18 @@ const eventPlanningSlice = createSlice({
       .addCase(submitEventPlan.rejected, (state, action) => {
         state.submitting = false;
         state.submitError = action.payload || "Submit failed";
+      })
+      .addCase(fetchEventData.fulfilled, (state, action) => {
+        // Merge backend data, but only overwrite if backend has values (don't clobber local edits)
+        const remote = action.payload;
+        if (!remote) return;
+        Object.entries(remote).forEach(([k, v]) => {
+          if (v && k in state.formData && !state.formData[k]) {
+            state.formData[k] = v;
+          }
+        });
+        saveFormData(state.formData);
+        saveSession(state);
       });
   },
 });

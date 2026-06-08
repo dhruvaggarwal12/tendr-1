@@ -101,6 +101,38 @@ export const resendOtp = async ({phoneNumber, name, email, password}) => {
     throw error;
 }};
 
+export const saveUserEventData = async (token, formData) => {
+  try {
+    const response = await fetch(`${BASE_URL}/consumers/event-data`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      credentials: 'include',
+      body: JSON.stringify({ formData }),
+    });
+    const result = await response.json().catch(() => ({}));
+    return result;
+  } catch { /* silently fail — localStorage is the fallback */ }
+};
+
+export const loadUserEventData = async (token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/consumers/event-data`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
+      credentials: 'include',
+    });
+    if (!response.ok) return null;
+    const result = await response.json();
+    return result?.formData || null;
+  } catch { return null; }
+};
+
 export const getUserProfile = async (token) => {
   try {
     const response = await fetch(`${BASE_URL}/consumers/profile`, {

@@ -5,6 +5,7 @@ import logo from "../../assets/logos/tendr-logo-secondary.png";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { clearError, signup, login } from "../../redux/authSlice";
+import { fetchEventData } from "../../redux/eventPlanningSlice";
 
 const font = "'Outfit', sans-serif";
 
@@ -142,6 +143,8 @@ const Auth = () => {
       }));
       if (login.fulfilled.match(result)) {
         const loggedUser = result.payload?.consumer;
+        const token = result.payload?.token;
+        if (token) dispatch(fetchEventData(token));
         const returnTo = location.state?.returnTo;
         navigate(loggedUser?.isAdmin ? "/AdminDashboard" : (returnTo || "/"));
       } else {

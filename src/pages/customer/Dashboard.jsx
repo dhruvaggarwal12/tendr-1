@@ -101,6 +101,7 @@ export default function CustomerDashboard() {
       eventType: plan.eventType || "",
       guests:    plan.guests    || "",
       location:  plan.location  || "",
+      token,
     }));
     if (plan.categoryBudgets && Object.keys(plan.categoryBudgets).length > 0) {
       dispatch(setCategoryBudgets(plan.categoryBudgets));

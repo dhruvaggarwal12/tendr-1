@@ -341,7 +341,7 @@ const EventPlanning = () => {
   }, [showVendorScreen]);
 
   const handleInputChange = (field, value) => {
-    dispatch(setFormData({ field, value }));
+    dispatch(setFormData({ field, value, token }));
   };
 
   const handleKeyDown = (e) => {
@@ -388,7 +388,7 @@ const EventPlanning = () => {
 
   // Called when user picks a select option or a date — saves value then auto-advances
   const selectAndAdvance = (field, value) => {
-    dispatch(setFormData({ field, value }));
+    dispatch(setFormData({ field, value, token }));
     setTimeout(advance, 350);
   };
 

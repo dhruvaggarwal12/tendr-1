@@ -1,6 +1,17 @@
 import { createBrowserRouter, Outlet, ScrollRestoration } from "react-router-dom";
-import { lazy } from "react";
+import { lazy, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import { fetchEventData } from "./redux/eventPlanningSlice";
+
+function AppInit() {
+  const dispatch = useDispatch();
+  const token = useSelector((s) => s.auth.token);
+  useEffect(() => {
+    if (token) dispatch(fetchEventData(token));
+  }, [token, dispatch]);
+  return null;
+}
 
 // Root layout — FloatingChatButton + VendorChatModal remain in App.jsx
 // because they already use router.state + router.navigate() directly
@@ -8,6 +19,7 @@ import PWAInstallPrompt from "./components/PWAInstallPrompt";
 function RootLayout() {
   return (
     <>
+      <AppInit />
       <ScrollRestoration />
       <PWAInstallPrompt />
       <Outlet />

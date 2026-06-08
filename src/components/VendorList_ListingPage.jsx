@@ -553,6 +553,7 @@ const VendorList_ListingPage = ({
                   guests: chatEventForm.guests,
                   date: chatEventForm.date,
                   location: chatEventForm.location,
+                  token,
                 }));
                 dispatch(setBookingType("you-do-it"));
                 openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
