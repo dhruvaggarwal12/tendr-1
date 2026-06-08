@@ -98,53 +98,47 @@ const JourneyFlow = () => {
         Top Rated Vendors
       </h2>
 
-      {/* ── Mobile: horizontal snap-scroll compact cards ── */}
+      {/* ── Mobile: single card with prev/next arrows ── */}
       {isMobileView ? (
-        <>
-          <div style={{
-            display: "flex",
-            overflowX: "auto",
-            scrollSnapType: "x mandatory",
-            gap: 12,
-            padding: "4px 24px 16px",
-            margin: "0 -24px",
-            WebkitOverflowScrolling: "touch",
-            scrollbarWidth: "none",
-            width: "100vw",
-          }}>
-            <style>{`.jf-scroll::-webkit-scrollbar{display:none}`}</style>
-            {steps.map((step, idx) => (
-              <div
-                key={idx}
-                className="jf-scroll"
-                onClick={() => navigate(`/top-rated/${CATEGORY_KEYS[step.title] || step.title}`)}
-                style={{
-                  flex: "0 0 calc(50% - 18px)",
-                  scrollSnapAlign: "start",
-                  borderRadius: 16,
-                  overflow: "hidden",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 18px rgba(0,0,0,0.18)",
-                  minWidth: 0,
-                }}
-              >
-                <div style={{ position: "relative", height: 120 }}>
-                  <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${step.image})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,5,0,0.78) 0%, transparent 55%)" }} />
-                  <span style={{ position: "absolute", bottom: 8, left: 10, fontSize: 10, fontWeight: 700, color: "#fff", background: "rgba(196,122,46,0.88)", padding: "3px 9px", borderRadius: 100, letterSpacing: "0.08em", textTransform: "uppercase" }}>
-                    {step.title}
-                  </span>
-                </div>
-                <div style={{ background: "#2C1A0E", padding: "10px 12px 12px" }}>
-                  <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.72)", margin: "0 0 7px", lineHeight: 1.45 }}>{step.description}</p>
-                  <p style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700, margin: 0 }}>Explore →</p>
-                </div>
+        <div style={{ width: "100%", padding: "0 32px", boxSizing: "border-box" }}>
+          <div style={{ position: "relative" }}>
+            {/* Left arrow */}
+            <button onClick={prev}
+              style={{ position:"absolute", left:-14, top:"50%", transform:"translateY(-50%)", zIndex:10, width:34, height:34, borderRadius:"50%", border:"2px solid rgba(139,69,19,0.25)", background:"#fff", color:"#6B3A1F", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 10px rgba(139,69,19,0.15)", transition:"all 0.2s" }}
+              onTouchStart={e => { e.currentTarget.style.background="#C47A2E"; e.currentTarget.style.color="#fff"; }}
+              onTouchEnd={e => { e.currentTarget.style.background="#fff"; e.currentTarget.style.color="#6B3A1F"; }}>‹</button>
+
+            {/* Card */}
+            <div onClick={() => navigate(`/top-rated/${CATEGORY_KEYS[steps[activeIndex].title] || steps[activeIndex].title}`)}
+              style={{ borderRadius:20, overflow:"hidden", cursor:"pointer", boxShadow:"0 8px 28px rgba(0,0,0,0.2)" }}>
+              <div style={{ position:"relative", height:190 }}>
+                <div style={{ position:"absolute", inset:0, backgroundImage:`url(${steps[activeIndex].image})`, backgroundSize:"cover", backgroundPosition:"center" }} />
+                <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(10,5,0,0.82) 0%, transparent 55%)" }} />
+                <span style={{ position:"absolute", top:12, left:14, fontSize:10, fontWeight:700, color:"#fff", background:"rgba(196,122,46,0.88)", padding:"4px 12px", borderRadius:100, letterSpacing:"0.08em", textTransform:"uppercase" }}>
+                  {steps[activeIndex].title}
+                </span>
               </div>
-            ))}
-            {/* Right padding spacer */}
-            <div style={{ flex: "0 0 12px" }} />
+              <div style={{ background:"#2C1A0E", padding:"14px 16px 16px" }}>
+                <p style={{ fontSize:13, color:"rgba(255,255,255,0.78)", margin:"0 0 10px", lineHeight:1.5 }}>{steps[activeIndex].description}</p>
+                <p style={{ fontSize:12, color:"#CCAB4A", fontWeight:700, margin:0 }}>Explore Top Rated Vendors →</p>
+              </div>
+            </div>
+
+            {/* Right arrow */}
+            <button onClick={next}
+              style={{ position:"absolute", right:-14, top:"50%", transform:"translateY(-50%)", zIndex:10, width:34, height:34, borderRadius:"50%", border:"2px solid rgba(139,69,19,0.25)", background:"#fff", color:"#6B3A1F", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 10px rgba(139,69,19,0.15)", transition:"all 0.2s" }}
+              onTouchStart={e => { e.currentTarget.style.background="#C47A2E"; e.currentTarget.style.color="#fff"; }}
+              onTouchEnd={e => { e.currentTarget.style.background="#fff"; e.currentTarget.style.color="#6B3A1F"; }}>›</button>
           </div>
-        </>
+
+          {/* Dot indicators */}
+          <div style={{ display:"flex", gap:6, justifyContent:"center", marginTop:18 }}>
+            {steps.map((_, i) => (
+              <button key={i} onClick={() => setActiveIndex(i)}
+                style={{ width:i===activeIndex?24:8, height:8, borderRadius:4, border:"none", background:i===activeIndex?"#C47A2E":"rgba(139,69,19,0.2)", cursor:"pointer", padding:0, transition:"all 0.3s ease" }} />
+            ))}
+          </div>
+        </div>
       ) : (
         /* ── Desktop: existing centered carousel ── */
         <>

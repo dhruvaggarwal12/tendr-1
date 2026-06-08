@@ -131,14 +131,14 @@ export default function PWAInstallPrompt() {
       {/* Main popup */}
       <div style={{
         position: "fixed",
-        bottom: source === "signup" ? "50%" : 20,
+        bottom: source === "signup" ? "50%" : 16,
         left: source === "signup" ? "50%" : "auto",
-        right: source === "signup" ? "auto" : 16,
+        right: source === "signup" ? "auto" : 12,
         transform: source === "signup" ? "translate(-50%, 50%)" : "none",
-        width: source === "signup" ? "min(93vw, 400px)" : "min(93vw, 360px)",
+        width: source === "signup" ? "min(93vw, 400px)" : "min(82vw, 300px)",
         background: "#FFFCF5",
-        borderRadius: 22,
-        boxShadow: "0 24px 60px rgba(28,10,0,0.22)",
+        borderRadius: 18,
+        boxShadow: "0 16px 48px rgba(28,10,0,0.2)",
         border: "1.5px solid rgba(196,122,46,0.18)",
         zIndex: 9998,
         fontFamily: font,
@@ -147,13 +147,13 @@ export default function PWAInstallPrompt() {
       }}>
 
         {/* Dark header */}
-        <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "20px 22px 18px", position: "relative" }}>
-          <button onClick={dismiss} style={{ position: "absolute", top: 12, right: 14, width: 28, height: 28, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>📲</div>
-          <h3 style={{ fontSize: 17, fontWeight: 900, color: "#fff", margin: "0 0 4px", letterSpacing: "-0.01em" }}>
+        <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: source === "signup" ? "20px 22px 18px" : "14px 18px 12px", position: "relative" }}>
+          <button onClick={dismiss} style={{ position: "absolute", top: 10, right: 12, width: 26, height: 26, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
+          <div style={{ fontSize: source === "signup" ? 36 : 26, marginBottom: 8 }}>📲</div>
+          <h3 style={{ fontSize: source === "signup" ? 17 : 14, fontWeight: 900, color: "#fff", margin: "0 0 3px", letterSpacing: "-0.01em" }}>
             {source === "signup" ? "Welcome to Tendr! 🎉" : "Install Tendr App"}
           </h3>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", margin: 0 }}>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: 0 }}>
             {source === "signup"
               ? "Add us to your home screen for the best experience."
               : "Get instant access from your home screen."}
@@ -161,7 +161,7 @@ export default function PWAInstallPrompt() {
         </div>
 
         {/* Body */}
-        <div style={{ padding: "18px 22px 20px" }}>
+        <div style={{ padding: source === "signup" ? "18px 22px 20px" : "12px 16px 14px" }}>
 
           {/* iOS Steps */}
           {showIOSSteps || ios ? (
@@ -184,26 +184,25 @@ export default function PWAInstallPrompt() {
           ) : (
             <div>
               {/* Benefits */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 18 }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
                 {[
                   { icon: "⚡", text: "Opens instantly, no browser needed" },
-                  { icon: "🔔", text: "Get notifications for bookings & chats" },
-                  { icon: "📶", text: "Works even on slow connections" },
+                  { icon: "🔔", text: "Notifications for bookings & chats" },
                 ].map(({ icon, text }) => (
-                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 16, flexShrink: 0 }}>{icon}</span>
-                    <span style={{ fontSize: 13, color: "#4A2810", fontWeight: 500 }}>{text}</span>
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
+                    <span style={{ fontSize: 12, color: "#4A2810", fontWeight: 500 }}>{text}</span>
                   </div>
                 ))}
               </div>
 
               {/* Buttons */}
               <button onClick={handleInstall} disabled={installing}
-                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: installing ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: installing ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 800, cursor: installing ? "not-allowed" : "pointer", fontFamily: font, boxShadow: installing ? "none" : "0 4px 14px rgba(196,122,46,0.35)", marginBottom: 8 }}>
+                style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: installing ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: installing ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 800, cursor: installing ? "not-allowed" : "pointer", fontFamily: font, boxShadow: installing ? "none" : "0 4px 14px rgba(196,122,46,0.35)", marginBottom: 6 }}>
                 {installing ? "Installing…" : "📲 Install Tendr — Free"}
               </button>
               <button onClick={dismiss}
-                style={{ width: "100%", padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                style={{ width: "100%", padding: "8px", borderRadius: 10, border: "none", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                 Not now
               </button>
             </div>

@@ -13,7 +13,7 @@ const CATEGORIES = [
   { label: "All Vendors",   emoji: "🔍",  path: "/listings" },
 ];
 
-const POPULAR_LOCATIONS = ["Delhi", "Noida", "Greater Noida", "Ghaziabad"];
+const POPULAR_LOCATIONS = ["Delhi", "Noida", "Ghaziabad", "Greater Noida"];
 
 const SVC_KW = { caterer:"Caterer", catering:"Caterer", food:"Caterer", decorator:"Decorator", decoration:"Decorator", decor:"Decorator", photographer:"Photographer", photography:"Photographer", photo:"Photographer", dj:"DJ", music:"DJ", entertainment:"DJ" };
 const LOC_KW = { delhi:"Delhi", noida:"Noida", gurgaon:"Gurgaon", gurugram:"Gurgaon", ghaziabad:"Ghaziabad", "greater noida":"Greater Noida" };
@@ -124,7 +124,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
         </div>
 
         {/* Category quick chips */}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 0 14px" }}>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 0 10px", scrollbarWidth: "none" }}>
           {CATEGORIES.map(c => (
             <button key={c.label}
               onMouseDown={e => e.preventDefault()}
@@ -133,6 +133,21 @@ export default function SearchOverlay({ isOpen, onClose }) {
               <span style={{ fontSize: 15 }}>{c.emoji}</span> {c.label}
             </button>
           ))}
+        </div>
+
+        {/* Location quick chips — always visible in header */}
+        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 10, paddingBottom: 14 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>Browse by location</p>
+          <div style={{ display: "flex", gap: 7, overflowX: "auto", scrollbarWidth: "none" }}>
+            {POPULAR_LOCATIONS.map(loc => (
+              <button key={loc}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => { navigate(`/search?locations=${loc}&q=${loc}`); onClose(); }}
+                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.05)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 600, color: "#6B3A1F", flexShrink: 0, whiteSpace: "nowrap" }}>
+                📍 {loc}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 

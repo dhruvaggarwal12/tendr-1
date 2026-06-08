@@ -121,7 +121,7 @@ function FaqSection() {
   const [open, setOpen] = React.useState(null);
   const navigate = useNavigate();
   return (
-    <section style={{ background: "linear-gradient(180deg,#FFF8F2 0%,#F5E6CC 100%)", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
+    <section style={{ background: "linear-gradient(180deg,#FFF8F0 0%,#F0EBE3 100%)", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
       <div style={{ maxWidth: 800, margin: "0 auto" }}>
 
         {/* Heading */}
@@ -616,9 +616,9 @@ const Home = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <button
                 onClick={() => navigate("/booking")}
-                style={{ background: "linear-gradient(135deg, #E8820C 0%, #CCAB4A 100%)", color: "#fff", fontSize: 17, fontWeight: 800, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(232,130,12,0.55)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", alignSelf: "flex-start" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(232,130,12,0.65)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(232,130,12,0.55)"; }}
+                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 17, fontWeight: 800, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(196,122,46,0.45)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", alignSelf: "flex-start" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.55)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(196,122,46,0.45)"; }}
               >
                 Start Planning →
               </button>
@@ -876,7 +876,7 @@ const Home = () => {
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.02em" }}>
               How Tendr Works
             </h2>
-            <p style={{ fontSize: 15, color: "#9B7450", maxWidth: 400, margin: "0 auto" }}>
+            <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 400, margin: "0 auto" }}>
               From idea to celebration in five steps.
             </p>
           </motion.div>
@@ -948,7 +948,7 @@ const Home = () => {
             transition={{ duration: 0.5, delay: 0.6 }}
             style={{ textAlign: "center", marginTop: 52 }}
           >
-            <p style={{ fontSize: 13.5, color: "#9B7450", marginBottom: 24, maxWidth: 520, margin: "0 auto 28px" }}>
+            <p style={{ fontSize: 13.5, color: "#6B4226", marginBottom: 24, maxWidth: 520, margin: "0 auto 28px" }}>
               Choose <strong style={{ color: "#C47A2E" }}>I'll Find My Vendors</strong> to explore yourself, or{" "}
               <strong style={{ color: "#C47A2E" }}>Tendr Plans It For Me</strong> and we handle everything.
             </p>
@@ -993,7 +993,7 @@ const Home = () => {
       </section>
 
       {/* ── 5s Rotating Feature Carousel ── */}
-      <section style={{ background: "#FFFCF5", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
+      <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
         {/* Decorative background blobs — no photos, warm light tones */}
         <div style={{ position: "absolute", top: -60, right: -60, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: -40, left: -40, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
@@ -1002,7 +1002,7 @@ const Home = () => {
           {/* Section heading */}
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.01em" }}>What We Offer</h2>
-            <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>Everything you need for a perfect event — in one place</p>
+            <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Everything you need for a perfect event — in one place</p>
           </div>
 
           {(() => {
@@ -1420,12 +1420,12 @@ const Home = () => {
       })()}
 
       {/* Events Portfolio Gallery */}
-      <section style={{ background: "#F0EBE3", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#FFFFFF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Vendor Portfolio</p>
             <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>What Our Vendors Can Do</h2>
-            <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>We're just getting started — but the vendors on Tendr aren't. These are real photos from their portfolios, showing exactly what they're capable of delivering for your event.</p>
+            <p style={{ fontSize: 16, color: "#6B4226", maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>We're just getting started — but the vendors on Tendr aren't. These are real photos from their portfolios, showing exactly what they're capable of delivering for your event.</p>
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 

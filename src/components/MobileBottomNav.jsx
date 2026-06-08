@@ -21,45 +21,45 @@ const CATEGORIES = [
 ];
 
 const NAV_COLORS = {
-  Home:     { active: "#F59E0B", bg: "rgba(245,158,11,0.12)",  shadow: "rgba(245,158,11,0.4)" },
-  Browse:   { active: "#F97316", bg: "rgba(249,115,22,0.12)",  shadow: "rgba(249,115,22,0.4)" },
-  Products: { active: "#EC4899", bg: "rgba(236,72,153,0.12)",  shadow: "rgba(236,72,153,0.4)" },
-  Plan:     { active: "#8B5CF6", bg: "rgba(139,92,246,0.12)",  shadow: "rgba(139,92,246,0.4)" },
-  Profile:  { active: "#0EA5E9", bg: "rgba(14,165,233,0.12)",  shadow: "rgba(14,165,233,0.4)" },
+  Home:     { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
+  Browse:   { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
+  Products: { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
+  Plan:     { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
+  Profile:  { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
 };
 
 const NAV_ICONS = {
   Home: (on, color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill={on ? color : "none"} stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill={on ? color : "none"} stroke={on ? color : "#BFA080"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/>
       <polyline points="9 21 9 12 15 12 15 21"/>
     </svg>
   ),
   Browse: (on, color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2.2" strokeLinecap="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#BFA080"} strokeWidth="2.2" strokeLinecap="round">
       <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
     </svg>
   ),
   Plan: (on, color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#BFA080"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="2"/>
       <line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/>
       <line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
   Chats: (on, color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#BFA080"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
     </svg>
   ),
   Profile: (on, color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#BFA080"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
       <circle cx="12" cy="7" r="4"/>
     </svg>
   ),
   Products: (on, color) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#bbb"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#BFA080"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="9" y="3" width="6" height="6" rx="1"/><rect x="16" y="3" width="6" height="6" rx="1"/>
       <rect x="2" y="11" width="6" height="6" rx="1"/><rect x="9" y="11" width="6" height="6" rx="1"/><rect x="16" y="11" width="6" height="6" rx="1"/>
     </svg>
@@ -304,9 +304,9 @@ function BottomNavInner() {
           zIndex: 99990,
           height: 60,
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
-          background: "#FFFCF5",
-          borderTop: "1px solid rgba(196,122,46,0.14)",
-          boxShadow: "0 -2px 20px rgba(139,69,19,0.08)",
+          background: "linear-gradient(180deg, #FFF8EF 0%, #FFF3E4 100%)",
+          borderTop: "1.5px solid rgba(196,122,46,0.28)",
+          boxShadow: "0 -4px 24px rgba(139,69,19,0.16)",
           display: "flex",
           transform: visible ? "translateY(0)" : "translateY(100%)",
           transition: "transform 0.22s ease",
@@ -366,7 +366,7 @@ function BottomNavInner() {
               </div>
               <span style={{
                 fontSize: 10, fontWeight: isOn ? 800 : 400,
-                color: isOn ? navColor.active : "#999",
+                color: isOn ? navColor.active : "#B08060",
                 lineHeight: 1, letterSpacing: "0.01em",
                 transition: "color 0.18s, font-weight 0.18s",
               }}>
