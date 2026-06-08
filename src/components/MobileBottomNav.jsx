@@ -132,7 +132,7 @@ function BottomNavInner() {
           />
           {/* Sheet — sits just above the nav bar */}
           <div style={{
-            position: "fixed", bottom: 60, left: 0, right: 0,
+            position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0,
             zIndex: 99992,
             background: "#FFFCF5",
             borderRadius: "20px 20px 0 0",
@@ -269,7 +269,7 @@ function BottomNavInner() {
       {(finalisedCount > 0 || ghCartCount > 0) && (
         <div style={{
           position: "fixed",
-          bottom: 60,
+          bottom: "calc(60px + env(safe-area-inset-bottom, 0px))",
           left: 0, right: 0,
           zIndex: 89990,
           background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
@@ -302,15 +302,17 @@ function BottomNavInner() {
           position: "fixed",
           bottom: 0, left: 0, right: 0,
           zIndex: 99990,
-          height: 60,
+          height: "calc(60px + env(safe-area-inset-bottom, 0px))",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
           background: "linear-gradient(180deg, #FFF8EF 0%, #FFF3E4 100%)",
           borderTop: "1.5px solid rgba(196,122,46,0.28)",
           boxShadow: "0 -4px 24px rgba(139,69,19,0.16)",
           display: "flex",
+          alignItems: "flex-start",
           transform: visible ? "translateY(0)" : "translateY(100%)",
           transition: "transform 0.22s ease",
           fontFamily: font,
+          boxSizing: "border-box",
         }}
       >
         {items.map(({ label, paths, onTap }) => {
