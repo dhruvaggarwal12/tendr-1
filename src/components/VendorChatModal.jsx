@@ -829,13 +829,14 @@ export default function VendorChatModal() {
         onClick={e => e.stopPropagation()}
         style={{
           position: "fixed",
-          top: "50%",
+          top: isMobile ? 6 : "50%",
+          bottom: isMobile ? "calc(60px + env(safe-area-inset-bottom, 0px))" : "auto",
           left: "50%",
-          transform: "translate(-50%, -50%)",
+          transform: isMobile ? "translateX(-50%)" : "translate(-50%, -50%)",
           zIndex: 1201,
           width:  isMobile ? "96vw" : "min(94vw, 660px)",
-          height: isMobile ? "calc(100vh - 140px)" : "min(86vh, 700px)",
-          maxHeight: isMobile ? "calc(100vh - 140px)" : "min(86vh, 700px)",
+          height: isMobile ? "auto" : "min(86vh, 700px)",
+          maxHeight: isMobile ? "none" : "min(86vh, 700px)",
           background: "#FFFCF5",
           borderRadius: 20,
           boxShadow: "0 32px 80px rgba(44,26,14,0.22), 0 4px 20px rgba(0,0,0,0.1)",
