@@ -272,3 +272,43 @@ export const updateVendorSlot = async (vendorId, date, slot, available, token) =
     });
   } catch {}
 };
+
+// Hold a slot when customer finalises vendor (pending payment)
+// holdUntil = 2 hours from now; backend auto-releases if payment not received
+export const holdVendorSlot = async (vendorId, date, slot, token) => {
+  try {
+    const holdUntil = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+    const res = await fetch(`${BASE_URL}/vendors/${vendorId}/availability/hold`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include",
+      body: JSON.stringify({ date, slot, holdUntil }),
+    });
+    if (!res.ok) return { success: false };
+    return { success: true, slot };
+  } catch { return { success: false }; }
+};
+
+// Confirm slot after successful payment
+export const confirmVendorSlot = async (vendorId, date, slot, bookingId, token) => {
+  try {
+    await fetch(`${BASE_URL}/vendors/${vendorId}/availability/confirm`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include",
+      body: JSON.stringify({ date, slot, bookingId }),
+    });
+  } catch {}
+};
+
+// Release a held slot (if user abandons payment)
+export const releaseVendorSlot = async (vendorId, date, slot, token) => {
+  try {
+    await fetch(`${BASE_URL}/vendors/${vendorId}/availability/release`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include",
+      body: JSON.stringify({ date, slot }),
+    });
+  } catch {}
+};

@@ -4,6 +4,7 @@ import router from "../router";
 import { io } from "socket.io-client";
 import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION, CHAT_PACKAGES } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
+import { getVendorAvailability, holdVendorSlot } from "../apis/vendorApi";
 import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -661,10 +662,38 @@ export default function VendorChatModal() {
     openConversation(answersWithPkg);
   };
 
-  const handleFinalise = () => {
+  const handleFinalise = async () => {
     if (!chatCompleted || !vendor) return;
+
+    // Hold a slot on the vendor's availability calendar for the event date
+    const eventDate = reduxFormData?.date;
+    if (eventDate && vendor._id && authToken) {
+      const monthKey = eventDate.slice(0, 7); // "YYYY-MM"
+      const availability = await getVendorAvailability(vendor._id, monthKey, authToken);
+      const daySlots = availability[eventDate] || {};
+
+      // Pick first available slot (slot1 → slot2)
+      const slotToHold = daySlots.slot1 !== false ? "slot1"
+        : daySlots.slot2 !== false ? "slot2"
+        : null;
+
+      if (!slotToHold) {
+        setMessages(prev => [...prev, {
+          text: `⚠️ No available slots left for ${vendor.name} on ${eventDate}. Please choose a different date or vendor.`,
+          sender: "system", ts: Date.now(),
+        }]);
+        return;
+      }
+
+      await holdVendorSlot(vendor._id, eventDate, slotToHold, authToken);
+
+      // Persist held slot info so BookingConfirmation can confirm it on payment
+      localStorage.setItem(`tendr:held:${vendor._id}`, JSON.stringify({
+        date: eventDate, slot: slotToHold, heldAt: Date.now(),
+      }));
+    }
+
     dispatch(setFinalisedVendor(vendor));
-    // Notify admin via chat
     if (socketRef.current && conversationId) {
       socketRef.current.emit("send_message", {
         conversationId,
@@ -673,7 +702,7 @@ export default function VendorChatModal() {
       });
     }
     setMessages(prev => [...prev, {
-      text: `✅ ${vendor.name} added to your booking. Tap "Review & Pay" when ready.`,
+      text: `✅ ${vendor.name} added to your booking. Slot held for 2 hours. Tap "Review & Pay" when ready.`,
       sender: "system", ts: Date.now(),
     }]);
   };

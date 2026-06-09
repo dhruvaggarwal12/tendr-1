@@ -1,15 +1,29 @@
 // src/pages/confirmation/BookingConfirmationPage.jsx
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
+import { confirmVendorSlot } from "../../apis/vendorApi";
 
 const BookingConfirmationPage = () => {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const booking = state?.booking;  // 🔹 backend se aayi booking
-  const amount = state?.amount;    // 🔹 total payment amount
+  const booking = state?.booking;
+  const amount = state?.amount;
+  const token = useSelector(s => s.auth.token);
+
+  // Confirm the held slot now that payment is done
+  useEffect(() => {
+    if (!booking) return;
+    const vendorId = booking.vendorId || booking.vendor?._id;
+    if (!vendorId) return;
+    const held = (() => { try { return JSON.parse(localStorage.getItem(`tendr:held:${vendorId}`) || "null"); } catch { return null; } })();
+    if (!held) return;
+    confirmVendorSlot(vendorId, held.date, held.slot, booking._id, token);
+    localStorage.removeItem(`tendr:held:${vendorId}`);
+  }, [booking]);
 
   if (!booking) {
     return (

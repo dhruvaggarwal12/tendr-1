@@ -64,6 +64,7 @@ export default function VendorAvailabilityCalendar({ vendorId, isVendorView = fa
     if (isPast(ds)) return "past";
     const day = availability[ds];
     if (!day) return "available";
+    if (day[slot] === "held") return "held";
     return day[slot] !== false ? "available" : "booked";
   };
 
@@ -93,7 +94,10 @@ export default function VendorAvailabilityCalendar({ vendorId, isVendorView = fa
   ];
 
   const slotColor = (status) =>
-    status === "available" ? "#22c55e" : status === "booked" ? "#ef4444" : "#d1d5db";
+    status === "available" ? "#22c55e"
+    : status === "booked"  ? "#ef4444"
+    : status === "held"    ? "#f59e0b"
+    : "#d1d5db";
 
   return (
     <div style={{ fontFamily: font, position: "relative" }} onClick={() => setTooltip(null)}>
@@ -182,6 +186,7 @@ export default function VendorAvailabilityCalendar({ vendorId, isVendorView = fa
       <div style={{ display: "flex", alignItems: "center", gap: 14, marginTop: 12, fontSize: 11, color: "#9B7450", flexWrap: "wrap" }}>
         {[
           { color: "#22c55e", label: "Available" },
+          { color: "#f59e0b", label: "Held (pending payment)" },
           { color: "#ef4444", label: "Booked" },
           { color: "#d1d5db", label: "Past" },
         ].map(({ color, label }) => (
