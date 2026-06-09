@@ -140,7 +140,7 @@ export default function TimelinePicker() {
         <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", transition: "width 0.35s ease" }} />
       </div>
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "44px 24px 80px" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "clamp(20px,5vw,44px) clamp(14px,3vw,24px) 80px" }}>
 
         {/* Step indicators */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, justifyContent: "center" }}>
@@ -198,9 +198,9 @@ export default function TimelinePicker() {
                 const sel = services.includes(s.id);
                 return (
                   <button key={s.id} onClick={() => toggleService(s.id)}
-                    style={{ background: sel ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", border: sel ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, padding: "18px 12px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s", position: "relative" }}>
+                    style={{ background: sel ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", border: sel ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, padding: "clamp(10px,2.5vw,18px) 12px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s", position: "relative" }}>
                     {sel && <span style={{ position: "absolute", top: 8, right: 10, fontSize: 11, color: "#C47A2E", fontWeight: 800 }}>✓</span>}
-                    <span style={{ fontSize: 28 }}>{s.icon}</span>
+                    <span style={{ fontSize: "clamp(20px,4vw,28px)" }}>{s.icon}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{s.label}</span>
                   </button>
                 );
@@ -222,9 +222,9 @@ export default function TimelinePicker() {
                   const sel = booked.includes(sid);
                   return (
                     <button key={sid} onClick={() => toggleBooked(sid)}
-                      style={{ background: sel ? "rgba(34,197,94,0.1)" : "#FFFCF5", border: sel ? "2px solid #16a34a" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, padding: "18px 12px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s", position: "relative" }}>
+                      style={{ background: sel ? "rgba(34,197,94,0.1)" : "#FFFCF5", border: sel ? "2px solid #16a34a" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, padding: "clamp(10px,2.5vw,18px) 12px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s", position: "relative" }}>
                       {sel && <span style={{ position: "absolute", top: 8, right: 10, fontSize: 11, color: "#16a34a", fontWeight: 800 }}>✓ Done</span>}
-                      <span style={{ fontSize: 28 }}>{s.icon}</span>
+                      <span style={{ fontSize: "clamp(20px,4vw,28px)" }}>{s.icon}</span>
                       <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{s.label}</span>
                     </button>
                   );
@@ -277,11 +277,11 @@ function StepWrapper({ label, title, sub, children }) {
 function OptionCard({ icon, label, selected, onClick }) {
   return (
     <button onClick={onClick}
-      style={{ background: selected ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", borderRadius: 18, padding: "28px 16px", border: selected ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", boxShadow: selected ? "0 4px 16px rgba(196,122,46,0.2)" : "0 3px 12px rgba(139,69,19,0.06)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, transition: "all 0.2s" }}
+      style={{ background: selected ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", borderRadius: 18, padding: "clamp(12px,3.5vw,28px) 16px", border: selected ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", boxShadow: selected ? "0 4px 16px rgba(196,122,46,0.2)" : "0 3px 12px rgba(139,69,19,0.06)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: "clamp(6px,1.5vw,10px)", transition: "all 0.2s" }}
       onMouseEnter={e => { if (!selected) { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
       onMouseLeave={e => { if (!selected) { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(0)"; } }}>
-      <span style={{ fontSize: 40 }}>{icon}</span>
-      <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
+      <span style={{ fontSize: "clamp(26px,5vw,40px)" }}>{icon}</span>
+      <span style={{ fontSize: "clamp(12px,2vw,14px)", fontWeight: 800, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
     </button>
   );
 }

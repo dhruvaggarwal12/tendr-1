@@ -167,7 +167,7 @@ export default function CheckboxPicker() {
               { icon: "✨", title: "Personalized Checklist", sub: "Recommended", desc: "Answer 5 quick questions and we'll generate a checklist tailored to your event type, date, venue, and services needed.", steps: ["Tell us about your event", "We generate tailored tasks", "Edit freely anytime"], primary: true, action: () => setStep(1) },
               { icon: "✏️", title: "Blank Checklist", sub: "Full control", desc: "Start from scratch. Add your own categories and tasks exactly how you want them.", steps: ["Start with a blank canvas", "Add your own tasks", "Organize by category"], primary: false, action: () => navigate("/checklist", { state: { customMode: true } }) },
             ].map(({ icon, title, sub, desc, steps, primary, action }) => (
-              <div key={title} style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", border: primary ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.12)", boxShadow: primary ? "0 6px 24px rgba(196,122,46,0.15)" : "0 4px 16px rgba(139,69,19,0.07)", display: "flex", flexDirection: "column" }}>
+              <div key={title} style={{ background: "#FFFCF5", borderRadius: 20, padding: "clamp(16px,3.5vw,28px) clamp(14px,3vw,24px)", border: primary ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.12)", boxShadow: primary ? "0 6px 24px rgba(196,122,46,0.15)" : "0 4px 16px rgba(139,69,19,0.07)", display: "flex", flexDirection: "column" }}>
                 <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 14 }}>{icon}</div>
                 <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>{title}</h2>
                 <p style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E", margin: "0 0 12px" }}>{sub}</p>
@@ -203,7 +203,7 @@ export default function CheckboxPicker() {
         <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", transition: "width 0.35s ease" }} />
       </div>
 
-      <div style={{ maxWidth: 680, margin: "0 auto", padding: "44px 24px 80px" }}>
+      <div style={{ maxWidth: 680, margin: "0 auto", padding: "clamp(20px,5vw,44px) clamp(14px,3vw,24px) 80px" }}>
         {/* Step indicator */}
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 32, justifyContent: "center" }}>
           {Array.from({ length: TOTAL_STEPS }, (_, i) => (
@@ -253,8 +253,8 @@ export default function CheckboxPicker() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }} className="guest-grid">
               {GUEST_SIZES.map(g => (
                 <button key={g.id} onClick={() => { setGuestCount(g.id); setTimeout(() => setStep(4), 240); }}
-                  style={{ background: guestCount === g.id ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.15))" : "#FFFCF5", border: guestCount === g.id ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 18, padding: "28px 16px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "all 0.2s" }}>
-                  <span style={{ fontSize: 36 }}>{g.icon}</span>
+                  style={{ background: guestCount === g.id ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.15))" : "#FFFCF5", border: guestCount === g.id ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 18, padding: "clamp(14px,3.5vw,28px) 16px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, transition: "all 0.2s" }}>
+                  <span style={{ fontSize: "clamp(24px,4.5vw,36px)" }}>{g.icon}</span>
                   <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>{g.label}</span>
                   <span style={{ fontSize: 12, color: "#9B7450", textAlign: "center" }}>{g.sub}</span>
                 </button>
@@ -282,9 +282,9 @@ export default function CheckboxPicker() {
                 const sel = services.includes(s.id);
                 return (
                   <button key={s.id} onClick={() => toggleService(s.id)}
-                    style={{ background: sel ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", border: sel ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, padding: "18px 12px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s", position: "relative" }}>
+                    style={{ background: sel ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", border: sel ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", borderRadius: 14, padding: "clamp(10px,2.5vw,18px) 12px", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, transition: "all 0.15s", position: "relative" }}>
                     {sel && <span style={{ position: "absolute", top: 8, right: 10, fontSize: 11, color: "#C47A2E", fontWeight: 800 }}>✓</span>}
-                    <span style={{ fontSize: 28 }}>{s.icon}</span>
+                    <span style={{ fontSize: "clamp(20px,4vw,28px)" }}>{s.icon}</span>
                     <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{s.label}</span>
                   </button>
                 );
@@ -341,11 +341,11 @@ function StepWrapper({ label, title, sub, children }) {
 function OptionCard({ icon, label, selected, onClick }) {
   return (
     <button onClick={onClick}
-      style={{ background: selected ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", borderRadius: 18, padding: "28px 16px", border: selected ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", boxShadow: selected ? "0 4px 16px rgba(196,122,46,0.2)" : "0 3px 12px rgba(139,69,19,0.06)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: 10, transition: "all 0.2s" }}
+      style={{ background: selected ? "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.12))" : "#FFFCF5", borderRadius: 18, padding: "clamp(12px,3.5vw,28px) 16px", border: selected ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.15)", boxShadow: selected ? "0 4px 16px rgba(196,122,46,0.2)" : "0 3px 12px rgba(139,69,19,0.06)", cursor: "pointer", fontFamily: font, display: "flex", flexDirection: "column", alignItems: "center", gap: "clamp(6px,1.5vw,10px)", transition: "all 0.2s" }}
       onMouseEnter={e => { if (!selected) { e.currentTarget.style.borderColor = "#C47A2E"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
       onMouseLeave={e => { if (!selected) { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(0)"; } }}>
-      <span style={{ fontSize: 40 }}>{icon}</span>
-      <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
+      <span style={{ fontSize: "clamp(26px,5vw,40px)" }}>{icon}</span>
+      <span style={{ fontSize: "clamp(12px,2vw,14px)", fontWeight: 800, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{label}</span>
     </button>
   );
 }

@@ -377,16 +377,16 @@ export default function BudgetAllocator() {
       <HamburgerNav title="Budget Allocator" />
 
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "22px 40px 20px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", gap: 16 }}>
+      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "clamp(14px,3vw,22px) clamp(16px,4vw,40px) clamp(12px,2.5vw,20px)" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", gap: "clamp(8px,2vw,16px)", flexWrap: "wrap" }}>
           <button onClick={() => navigate("/budget-picker")}
             style={{ padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, backdropFilter: "blur(4px)" }}>
             ← Back
           </button>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Planning Tool</div>
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#fff", margin: "0 0 2px", letterSpacing: "-0.02em" }}>Budget Allocator</h1>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", margin: 0 }}>
+            <h1 style={{ fontSize: "clamp(17px,3.5vw,24px)", fontWeight: 900, color: "#fff", margin: "0 0 2px", letterSpacing: "-0.02em" }}>Budget Allocator</h1>
+            <p style={{ fontSize: "clamp(10px,1.8vw,12px)", color: "rgba(255,255,255,0.75)", margin: 0 }}>
               {EVENT_TYPES[eventKey]?.icon} {EVENT_TYPES[eventKey]?.label} · Plan spend · track actuals
               {isCorporate && planFormData.companyName && <span style={{ marginLeft: 8, background: "rgba(204,171,74,0.2)", border: "1px solid rgba(204,171,74,0.4)", borderRadius: 100, padding: "1px 8px", fontSize: 10, fontWeight: 700, color: "#CCAB4A" }}>🏢 {planFormData.companyName}</span>}
             </p>
@@ -419,7 +419,7 @@ export default function BudgetAllocator() {
         </div>
 
         {/* Summary cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 24 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))", gap: 10, marginBottom: 20 }}>
           {summaryCards.map(({ label, value, color, bg }) => (
             <div key={label} style={{ background: bg, borderRadius: 14, padding: "16px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{label}</div>
@@ -457,7 +457,7 @@ export default function BudgetAllocator() {
           {/* Category rows */}
           <div style={{ flex: 1, minWidth: 280 }}>
             <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", overflow: "hidden" }}>
-              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "grid", gridTemplateColumns: "1fr 70px 100px 120px 32px", gap: 8, fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <div className="budget-table-hdr" style={{ padding: "14px 20px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "grid", gridTemplateColumns: "1fr 70px 100px 120px 32px", gap: 8, fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 <span>Category</span>
                 <span>%</span>
                 <span>Allocated</span>
@@ -469,8 +469,8 @@ export default function BudgetAllocator() {
                 const spentPct   = allocated > 0 ? Math.min(100, (c.spent / allocated) * 100) : 0;
                 const tl         = trafficLight(c.spent, allocated);
                 return (
-                  <div key={c.id} style={{ borderBottom: "1px solid rgba(196,122,46,0.06)", padding: "12px 20px", background: tl ? tl.bg : "transparent", transition: "background 0.2s" }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 64px 100px 120px 28px", gap: 8, alignItems: "center", marginBottom: 6 }}>
+                  <div key={c.id} className="budget-cat-row" style={{ borderBottom: "1px solid rgba(196,122,46,0.06)", padding: "12px 20px", background: tl ? tl.bg : "transparent", transition: "background 0.2s" }}>
+                    <div className="budget-cat-inner" style={{ display: "grid", gridTemplateColumns: "1fr 64px 100px 120px 28px", gap: 8, alignItems: "center", marginBottom: 6 }}>
                       {/* Name + traffic light dot */}
                       <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0 }}>
                         <div style={{ width: 10, height: 10, borderRadius: 3, background: c.color, flexShrink: 0 }} />
@@ -488,7 +488,7 @@ export default function BudgetAllocator() {
                         onChange={e => updatePct(c.id, e.target.value)}
                         style={{ border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 7, padding: "4px 8px", fontSize: 13, fontWeight: 700, fontFamily: font, color: "#2C1A0E", outline: "none", width: "100%", textAlign: "center" }}
                       />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{formatINR(allocated)}</span>
+                      <span className="budget-cat-alloc" style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{formatINR(allocated)}</span>
                       <input
                         type="number" min="0" value={c.spent}
                         onChange={e => updateSpent(c.id, e.target.value)}
@@ -546,13 +546,13 @@ export default function BudgetAllocator() {
               </button>
             </div>
 
-            <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+            <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
               <button onClick={() => applyEventType(eventKey)}
-                style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                Reset to {EVENT_TYPES[eventKey]?.label} defaults
+                style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: "clamp(12px,2vw,14px)", fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                Reset to defaults
               </button>
               <button onClick={() => navigate("/budget-picker")}
-                style={{ padding: "10px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#C47A2E", fontSize: "clamp(12px,2vw,14px)", fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                 ← Change Event Type
               </button>
             </div>
@@ -560,6 +560,18 @@ export default function BudgetAllocator() {
         </div>
       </div>
     </div>
+
+    <style>{`
+      @media (max-width: 639px) {
+        .budget-table-hdr { display: none !important; }
+        .budget-cat-row { padding: 10px 12px !important; }
+        .budget-cat-inner {
+          grid-template-columns: 1fr 52px 90px 24px !important;
+          gap: 5px !important;
+        }
+        .budget-cat-alloc { display: none !important; }
+      }
+    `}</style>
 
     {/* ── Vendor suggestion panel ── */}
 

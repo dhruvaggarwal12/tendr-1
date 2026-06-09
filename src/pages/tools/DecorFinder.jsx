@@ -568,7 +568,7 @@ export default function DecorFinder() {
         </div>
       )}
 
-      <div style={{ maxWidth: step === 1 ? 1100 : 660, margin: "0 auto", padding: "32px 16px 80px", transition: "max-width 0.3s" }}>
+      <div style={{ maxWidth: step === 1 ? 1100 : 660, margin: "0 auto", padding: "clamp(16px,3.5vw,32px) clamp(12px,3vw,16px) 80px", transition: "max-width 0.3s" }}>
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>
@@ -585,7 +585,7 @@ export default function DecorFinder() {
               <div style={{ height: "100%", width: `${((qIdx + 1) / QUIZ_STEPS.length) * 100}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", transition: "width 0.35s ease", borderRadius: 4 }} />
             </div>
 
-            <div style={{ padding: "28px 26px 24px" }}>
+            <div style={{ padding: "clamp(16px,4vw,28px) clamp(14px,3.5vw,26px) clamp(14px,3.5vw,24px)" }}>
               {/* Step indicator */}
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 18 }}>
                 <div style={{ display: "flex", gap: 5 }}>
@@ -721,6 +721,7 @@ export default function DecorFinder() {
                         <div style={{ position: "relative", background: "#1a0a00" }}>
                           {curPhoto && (
                             <img key={curVid} src={curPhoto.imageUrl} alt={theme}
+                              className="decor-result-photo"
                               style={{ width: "100%", height: 200, objectFit: "cover", display: "block", opacity: 0.92, animation: "photoFadeIn 0.3s ease" }} />
                           )}
                           {curPhoto && <a href={curPhoto.imageUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}
@@ -820,7 +821,10 @@ export default function DecorFinder() {
             </div>
 
             <style>{`
-              @media(max-width:600px){.decor-result-grid{grid-template-columns:1fr!important;}}
+              @media(max-width:600px){
+                .decor-result-grid{grid-template-columns:1fr!important;}
+                .decor-result-photo{height:160px!important;}
+              }
               @keyframes photoFadeIn { from{opacity:0;transform:scale(1.02)} to{opacity:0.92;transform:scale(1)} }
             `}</style>
           </div>
