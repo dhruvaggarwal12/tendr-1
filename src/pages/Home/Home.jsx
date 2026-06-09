@@ -266,9 +266,15 @@ const Home = () => {
   const [featureVisible, setFeatureVisible] = useState(true);
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideVisible, setSlideVisible] = useState(true);
-  const [faAutoIdx, setFaAutoIdx] = useState(0);
   const faCarouselRef = useRef(null);
   const [faModal, setFaModal] = useState(null);
+  const scrollFaCarousel = (dir) => {
+    const el = faCarouselRef.current;
+    if (!el) return;
+    const card = el.querySelector(".fa-carousel-card");
+    const cardW = card ? card.offsetWidth + 16 : 220;
+    el.scrollBy({ left: dir * cardW, behavior: "smooth" });
+  };
 
   const FEATURE_SLIDES = [
     { id: "smart-planner",  tag: "Smart Planner",        icon: "✨", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", headline: "Your complete vendor package, built in seconds",          desc: "Tell us your event once. We match caterers, decorators, photographers and DJs within your budget. You confirm, we coordinate everything.", where: "Booking → Tendr Plans It For Me", href: "/booking",          accent: "#C47A2E" },
@@ -390,22 +396,6 @@ const Home = () => {
     return () => clearInterval(t);
   }, []);
 
-  // Auto-advance fun activities carousel
-  useEffect(() => {
-    const t = setInterval(() => setFaAutoIdx(i => i + 1), 3000);
-    return () => clearInterval(t);
-  }, []);
-  useEffect(() => {
-    if (!faCarouselRef.current) return;
-    const el = faCarouselRef.current;
-    const cards = el.querySelectorAll(".fa-carousel-card");
-    if (!cards.length) return;
-    const cardW = cards[0].offsetWidth + 16;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    const target = (faAutoIdx * cardW) % (maxScroll + cardW);
-    if (target > maxScroll) { el.scrollTo({ left: 0, behavior: "smooth" }); }
-    else { el.scrollTo({ left: target, behavior: "smooth" }); }
-  }, [faAutoIdx]);
 
   // Logo should navigate to the home route (works from other pages as well)
   const handleLogoClick = (e) => {
@@ -903,73 +893,6 @@ const Home = () => {
         }
       `}</style>
 
-      {/* ── Fun Activities — auto-scrolling carousel ── */}
-      <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
-        <div style={{ maxWidth:1100, margin:"0 auto" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
-            <div>
-              <p style={{ fontSize:11, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 Live Entertainment Add-ons</p>
-              <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
-                Add Some Magic<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
-              </h2>
-              <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
-                Fixed-price entertainment add-ons — magic shows, game zones, live counters and more. Confirmed within 2 hours.
-              </p>
-            </div>
-            <button onClick={() => navigate("/fun-activities")}
-              style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
-              See All Activities →
-            </button>
-          </div>
-
-          {/* Auto-scrolling cards — no manual scroll on mobile */}
-          <div
-            ref={faCarouselRef}
-            className="fa-carousel-track"
-            style={{ display:"flex", gap:16, overflowX:"auto", scrollbarWidth:"none", msOverflowStyle:"none", paddingBottom:8, cursor:"grab" }}
-          >
-            {[...FUN_ACTIVITIES, ...FUN_ACTIVITIES].map((act, i) => (
-              <div
-                key={i}
-                className="fa-carousel-card"
-                onClick={() => setFaModal(act)}
-                style={{
-                  flexShrink:0, width:200, background:"#fff",
-                  borderRadius:18, border:"1.5px solid rgba(196,122,46,0.15)",
-                  boxShadow:"0 4px 16px rgba(196,122,46,0.1)",
-                  padding:"22px 18px 18px",
-                  display:"flex", flexDirection:"column", alignItems:"center", gap:10,
-                  cursor:"pointer", transition:"transform 0.2s, box-shadow 0.2s",
-                  fontFamily:"'Outfit',sans-serif",
-                }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.2)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
-              >
-                <div style={{ fontSize:44, lineHeight:1 }}>{act.emoji}</div>
-                <h4 style={{ fontSize:14, fontWeight:800, color:"#2C1A0E", margin:0, textAlign:"center", lineHeight:1.3 }}>{act.name}</h4>
-                <div style={{ fontSize:13, fontWeight:700, color:"#C47A2E" }}>
-                  ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:10, fontWeight:500, color:"#9B7450" }}> /{act.unitLabel}</span> : ""}
-                </div>
-                <p style={{ fontSize:11, color:"#9B7450", margin:0, textAlign:"center", lineHeight:1.5, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{act.desc}</p>
-                <span style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", marginTop:"auto" }}>View Details →</span>
-              </div>
-            ))}
-          </div>
-          <style>{`
-            .fa-carousel-track::-webkit-scrollbar { display:none; }
-            @media (max-width: 640px) {
-              .fa-carousel-track { touch-action: none !important; cursor: default !important; }
-              .fa-carousel-card { width: 148px !important; padding: 14px 12px 12px !important; gap: 7px !important; }
-              .fa-carousel-card > div:first-child { font-size: 34px !important; }
-              .fa-carousel-card h4 { font-size: 12px !important; }
-              .fa-carousel-card > div:nth-child(3) { font-size: 12px !important; }
-              .fa-carousel-card p { font-size: 10px !important; }
-              .fa-carousel-card span { font-size: 10px !important; padding: 2px 8px !important; }
-            }
-          `}</style>
-        </div>
-      </section>
-
       {/* How Tendr Works */}
       <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -1209,6 +1132,82 @@ const Home = () => {
           })()}
         </div>
         <style>{`@keyframes kit-pulse { 0%,100%{opacity:1}50%{opacity:0.4} }`}</style>
+      </section>
+
+      {/* ── Live Entertainment Add-ons ── */}
+      <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
+            <div>
+              <p style={{ fontSize:11, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 Live Entertainment Add-ons</p>
+              <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
+                Add Some Magic<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
+              </h2>
+              <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
+                Fixed-price entertainment add-ons — magic shows, game zones, live counters and more. Confirmed within 2 hours.
+              </p>
+            </div>
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <button onClick={() => scrollFaCarousel(-1)}
+                style={{ width:38, height:38, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#C47A2E", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(196,122,46,0.1)", flexShrink:0, transition:"all 0.2s" }}
+                onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.color="#C47A2E";}}>‹</button>
+              <button onClick={() => scrollFaCarousel(1)}
+                style={{ width:38, height:38, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#C47A2E", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(196,122,46,0.1)", flexShrink:0, transition:"all 0.2s" }}
+                onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
+                onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.color="#C47A2E";}}>›</button>
+              <button onClick={() => navigate("/fun-activities")}
+                style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
+                See All →
+              </button>
+            </div>
+          </div>
+
+          {/* Arrow-navigated cards */}
+          <div
+            ref={faCarouselRef}
+            className="fa-carousel-track"
+            style={{ display:"flex", gap:16, overflowX:"auto", scrollbarWidth:"none", msOverflowStyle:"none", paddingBottom:8 }}
+          >
+            {FUN_ACTIVITIES.map((act) => (
+              <div
+                key={act.id}
+                className="fa-carousel-card"
+                onClick={() => setFaModal(act)}
+                style={{
+                  flexShrink:0, width:200, background:"#fff",
+                  borderRadius:18, border:"1.5px solid rgba(196,122,46,0.15)",
+                  boxShadow:"0 4px 16px rgba(196,122,46,0.1)",
+                  padding:"22px 18px 18px",
+                  display:"flex", flexDirection:"column", alignItems:"center", gap:10,
+                  cursor:"pointer", transition:"transform 0.2s, box-shadow 0.2s",
+                  fontFamily:"'Outfit',sans-serif",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.2)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
+              >
+                <div style={{ fontSize:44, lineHeight:1 }}>{act.emoji}</div>
+                <h4 style={{ fontSize:14, fontWeight:800, color:"#2C1A0E", margin:0, textAlign:"center", lineHeight:1.3 }}>{act.name}</h4>
+                <div style={{ fontSize:13, fontWeight:700, color:"#C47A2E" }}>
+                  ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:10, fontWeight:500, color:"#9B7450" }}> /{act.unitLabel}</span> : ""}
+                </div>
+                <p style={{ fontSize:11, color:"#9B7450", margin:0, textAlign:"center", lineHeight:1.5, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{act.desc}</p>
+                <span style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", marginTop:"auto" }}>View Details →</span>
+              </div>
+            ))}
+          </div>
+          <style>{`
+            .fa-carousel-track::-webkit-scrollbar { display:none; }
+            @media (max-width: 640px) {
+              .fa-carousel-card { width: 148px !important; padding: 14px 12px 12px !important; gap: 7px !important; }
+              .fa-carousel-card > div:first-child { font-size: 34px !important; }
+              .fa-carousel-card h4 { font-size: 12px !important; }
+              .fa-carousel-card > div:nth-child(3) { font-size: 12px !important; }
+              .fa-carousel-card p { font-size: 10px !important; }
+              .fa-carousel-card span { font-size: 10px !important; padding: 2px 8px !important; }
+            }
+          `}</style>
+        </div>
       </section>
 
       {/* ── Trust bar ── */}
