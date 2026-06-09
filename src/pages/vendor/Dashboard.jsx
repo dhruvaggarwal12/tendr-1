@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
+import VendorAvailabilityCalendar from '../../components/VendorAvailabilityCalendar';
 import { logout } from '../../redux/authSlice';
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import ChatIcon from '@mui/icons-material/Chat';
@@ -96,7 +97,7 @@ const fetchVendorStats = async () => {
 const VendorDashboard = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth);
 
   const [chats, setChats] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -375,7 +376,7 @@ const VendorDashboard = () => {
                 <p className="text-sm text-gray-600">Manage customer conversations</p>
               </div>
             </button>
-            
+
             <button
               onClick={() => navigate("/vendor/bookings")}
               className="flex items-center space-x-3 p-4 border border-gray-200 rounded-xl hover:bg-yellow-50 transition-colors"
@@ -386,7 +387,7 @@ const VendorDashboard = () => {
                 <p className="text-sm text-gray-600">Check all your bookings</p>
               </div>
             </button>
-            
+
             <button
               onClick={() => navigate("/vendor/profile")}
               className="flex items-center space-x-3 p-4 border border-gray-200 rounded-xl hover:bg-yellow-50 transition-colors"
@@ -398,6 +399,20 @@ const VendorDashboard = () => {
               </div>
             </button>
           </div>
+        </div>
+
+        {/* Manage Availability */}
+        <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-2">Manage Availability</h2>
+          <p className="text-sm text-gray-500 mb-6">
+            Set which slots you're available. Customers will see this on your profile before reaching out.
+            Each day has 2 slots — <strong>Morning (10AM–2PM)</strong> and <strong>Evening (4PM–9PM)</strong>.
+          </p>
+          <VendorAvailabilityCalendar
+            vendorId={user?._id || user?.id}
+            isVendorView={true}
+            token={token}
+          />
         </div>
       </div>
     </div>

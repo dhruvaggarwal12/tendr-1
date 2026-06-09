@@ -15,6 +15,7 @@ import main4 from "../../assets/vendor-details/main-4.avif";
 import main5 from "../../assets/vendor-details/main-5.avif";
 
 import { getVendorById } from "../../apis/vendorApi";
+import VendorAvailabilityCalendar from "../../components/VendorAvailabilityCalendar";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import { useSelector, useDispatch } from "react-redux";
 import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice";
@@ -736,6 +737,21 @@ const VendorDetailsPage = () => {
           </div>
         </div>
       </div>
+
+      {/* ── Availability Calendar ── */}
+      {vendor && (
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 40px" }}>
+          <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.18)", padding: "24px 28px" }}>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", fontFamily: "'Outfit', sans-serif" }}>
+              📅 Availability
+            </h2>
+            <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 20px", fontFamily: "'Outfit', sans-serif" }}>
+              2 slots per day — Morning (10AM–2PM) and Evening (4PM–9PM)
+            </p>
+            <VendorAvailabilityCalendar vendorId={vendor._id} isVendorView={false} token={token} />
+          </div>
+        </div>
+      )}
 
       {/* Selected Vendors Modal (same as VendorList) */}
       <CompareModal

@@ -33,6 +33,7 @@ export default function SearchResults() {
   const [topRatedOnly, setTopRatedOnly] = useState(false);
   const [sortBy, setSortBy]             = useState("rankingScore");
   const [sortOrder, setSortOrder]       = useState("desc");
+  const [dateFilter, setDateFilter]     = useState("");
   const [showTip, setShowTip] = useState(false);
   const [showHowToBook, setShowHowToBook] = useState(true);
   useEffect(() => { const t = setTimeout(() => setShowTip(true), 20000); return () => clearTimeout(t); }, []);
@@ -78,6 +79,7 @@ export default function SearchResults() {
     // If multiple locations or none — no location filter (show all)
     if (rawBudget) params.set("maxPrice", rawBudget);
     if (topRatedOnly) params.set("isTopRated", "true");
+    if (dateFilter)   params.set("date", dateFilter);
     params.set("sortBy", "rankingScore");
     params.set("limit", "20");
     params.set("page", currentPage);
@@ -87,7 +89,7 @@ export default function SearchResults() {
       .then(d => { setVendors(d.vendors || []); setPagination(d.pagination || {}); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [activeCat, activeLoc, rawBudget, currentPage, topRatedOnly]);
+  }, [activeCat, activeLoc, rawBudget, currentPage, topRatedOnly, dateFilter]);
 
   // Sync to Redux so vendor cards work
   useEffect(() => {
@@ -168,6 +170,22 @@ export default function SearchResults() {
                 <option value="desc">High to Low</option>
                 <option value="asc">Low to High</option>
               </select>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <span style={{ fontFamily: font, fontSize: 12, fontWeight: 600, color: "#9B7450" }}>📅</span>
+              <input
+                type="date"
+                value={dateFilter}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
+                style={{ fontFamily: font, fontSize: 11, padding: "3px 8px", borderRadius: 100, border: `1.5px solid ${dateFilter ? "#C47A2E" : "rgba(204,171,74,0.6)"}`, background: dateFilter ? "rgba(196,122,46,0.07)" : "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
+              />
+              {dateFilter && (
+                <button
+                  onClick={() => { setDateFilter(""); setCurrentPage(1); }}
+                  style={{ fontSize: 11, color: "#9B7450", background: "none", border: "none", cursor: "pointer", padding: "2px 4px" }}
+                >✕</button>
+              )}
             </div>
             <button
               onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}

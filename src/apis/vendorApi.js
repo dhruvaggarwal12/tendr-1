@@ -249,3 +249,26 @@ export const updateSmartPlanVendorStatus = async (planId, category, status, toke
   if (!response.ok) throw new Error('Failed to update status');
   return response.json();
 };
+
+export const getVendorAvailability = async (vendorId, month, token) => {
+  try {
+    const res = await fetch(`${BASE_URL}/vendors/${vendorId}/availability?month=${month}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: "include",
+    });
+    if (!res.ok) return {};
+    const d = await res.json();
+    return d?.availability || {};
+  } catch { return {}; }
+};
+
+export const updateVendorSlot = async (vendorId, date, slot, available, token) => {
+  try {
+    await fetch(`${BASE_URL}/vendors/${vendorId}/availability`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      credentials: "include",
+      body: JSON.stringify({ date, slot, available }),
+    });
+  } catch {}
+};
