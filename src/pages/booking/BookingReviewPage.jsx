@@ -72,6 +72,7 @@ const BookingReviewPage = () => {
   const ghTotal   = useSelector(selectCartTotal);
   const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
   const isGHMode  = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
+  const faBooking = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking") || "null"); } catch { return null; } })();
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
@@ -281,6 +282,7 @@ const BookingReviewPage = () => {
     return acc;
   }, {});
   const confirmedTotal = Object.values(prices).filter(p => p !== null).reduce((a, b) => a + b, 0);
+  const faTotal = faBooking?.totalPrice || 0;
   const allConfirmed = vendorEntries.every(([, v]) => isConfirmed(v));
   const anyPriceUnset = vendorEntries.some(([, v]) => getPrice(v) === null);
 
@@ -339,8 +341,8 @@ const BookingReviewPage = () => {
     }
   };
 
-  // Only block if BOTH no vendors AND no gift hamper items
-  if (vendorEntries.length === 0 && ghItems.length === 0) {
+  // Only block if BOTH no vendors AND no gift hamper items AND no fun activity
+  if (vendorEntries.length === 0 && ghItems.length === 0 && !faBooking) {
     return (
       <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
@@ -736,8 +738,8 @@ const BookingReviewPage = () => {
                 ))}
 
                 {/* Referral discount line */}
-                {appliedCode && (confirmedTotal + ghTotal) > 0 && (() => {
-                  const { discount } = applyDiscount(confirmedTotal + ghTotal);
+                {appliedCode && (confirmedTotal + ghTotal + faTotal) > 0 && (() => {
+                  const { discount } = applyDiscount(confirmedTotal + ghTotal + faTotal);
                   return (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#15803d" }}>
                       <span style={{ fontWeight: 600 }}>🎁 Referral Discount ({DISCOUNT_PERCENT}%)</span>
@@ -766,8 +768,8 @@ const BookingReviewPage = () => {
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
                   <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
                   <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
-                    {(confirmedTotal + ghTotal) > 0
-                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal))
+                    {(confirmedTotal + ghTotal + faTotal) > 0
+                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal + ghTotal + faTotal).finalTotal : (confirmedTotal + ghTotal + faTotal))
                       : "—"}
                   </span>
                 </div>
@@ -780,10 +782,10 @@ const BookingReviewPage = () => {
                 </p>
 
                 {/* Corporate: cost per head + export button */}
-                {isCorporate && headcount > 0 && (confirmedTotal + ghTotal) > 0 && (
+                {isCorporate && headcount > 0 && (confirmedTotal + ghTotal + faTotal) > 0 && (
                   <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(124,58,237,0.06)", borderRadius: 10, border: "1px solid rgba(124,58,237,0.18)" }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
-                      💼 Cost per Employee: <span style={{ fontSize: 15, fontWeight: 900 }}>{formatINR(Math.round((confirmedTotal + ghTotal) / headcount))}</span>
+                      💼 Cost per Employee: <span style={{ fontSize: 15, fontWeight: 900 }}>{formatINR(Math.round((confirmedTotal + ghTotal + faTotal) / headcount))}</span>
                       <span style={{ fontSize: 11, fontWeight: 500, color: "#9B7450", marginLeft: 6 }}>({headcount} employees)</span>
                     </div>
                     {formData.companyName && <div style={{ fontSize: 11, color: "#7c3aed", marginTop: 2, opacity: 0.8 }}>🏢 {formData.companyName}</div>}
@@ -792,7 +794,7 @@ const BookingReviewPage = () => {
                 {isCorporate && (
                   <button
                     onClick={() => {
-                      const total = confirmedTotal + ghTotal;
+                      const total = confirmedTotal + ghTotal + faTotal;
                       const lines = [
                         "CORPORATE EVENT — APPROVAL SUMMARY",
                         "=".repeat(40),
@@ -865,6 +867,36 @@ const BookingReviewPage = () => {
                       📦 Deliver to: {ghDelivery.address}, {ghDelivery.city}
                     </div>
                   )}
+                </div>
+              )}
+
+              {/* Fun Activity booking — shown when navigated from FunActivitiesSection */}
+              {faBooking && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 14px" }} />
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎭 Fun Activity</div>
+                  <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 12, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.14)", marginBottom: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                      <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14 }}>
+                        {faBooking.activity.emoji} {faBooking.activity.name}
+                        {faBooking.activity.perUnit && faBooking.form.qty > 1 && (
+                          <span style={{ fontSize: 12, color: "#9B7450", fontWeight: 500, marginLeft: 6 }}>× {faBooking.form.qty}</span>
+                        )}
+                      </div>
+                      <span style={{ fontWeight: 800, color: "#2C1A0E", fontSize: 14 }}>₹{faBooking.totalPrice.toLocaleString("en-IN")}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: "#9B7450", display: "flex", flexDirection: "column", gap: 3 }}>
+                      <span>📅 {faBooking.form.date} at {faBooking.form.time}</span>
+                      <span>📍 {faBooking.form.address}</span>
+                      <span>👤 {faBooking.form.name} · {faBooking.form.phone}</span>
+                      {faBooking.form.notes && <span>📝 {faBooking.form.notes}</span>}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => { try { sessionStorage.removeItem("fa_booking"); } catch {} navigate(-1); }}
+                    style={{ fontSize: 11, color: "#c0392b", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "'Outfit',sans-serif" }}>
+                    ✕ Remove activity
+                  </button>
                 </div>
               )}
 
@@ -960,7 +992,7 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
-                          const grandTotal = confirmedTotal + ghTotal;
+                          const grandTotal = confirmedTotal + ghTotal + faTotal;
                           const finalAmount = appliedCode ? applyDiscount(grandTotal).finalTotal : grandTotal;
                           // Only pass the selected vendor per category to payment, not the full array
                           const selectedVendorsForPayment = {};
