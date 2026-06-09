@@ -647,10 +647,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                 {[
-                  { emoji: "🎨", label: "Decorator",      href: "/listings?serviceType=Decorator" },
-                  { emoji: "🍽️", label: "Caterer",        href: "/listings?serviceType=Caterer" },
-                  { emoji: "📸", label: "Photographer",   href: "/listings?serviceType=Photographer" },
-                  { emoji: "🎵", label: "DJ",             href: "/listings?serviceType=DJ" },
+                  { emoji: "🎨", label: "Decorator",      href: "/search?categories=Decorator" },
+                  { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
+                  { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
+                  { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
                   { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
                   { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
                 ].map(cat => (
@@ -1012,10 +1012,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
               {[
-                { emoji: "🎨", label: "Decorator",      href: "/listings?serviceType=Decorator" },
-                { emoji: "🍽️", label: "Caterer",        href: "/listings?serviceType=Caterer" },
-                { emoji: "📸", label: "Photographer",   href: "/listings?serviceType=Photographer" },
-                { emoji: "🎵", label: "DJ",             href: "/listings?serviceType=DJ" },
+                { emoji: "🎨", label: "Decorator",      href: "/search?categories=Decorator" },
+                { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
+                { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
+                { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
                 { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
                 { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
               ].map(cat => (
