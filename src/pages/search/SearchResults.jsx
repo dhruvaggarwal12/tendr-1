@@ -162,7 +162,7 @@ export default function SearchResults() {
           </h1>
 
           {/* ── Filter bar ── */}
-          <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "14px 16px", marginBottom: 10 }}>
+          <div className="search-filter-bar" style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "14px 16px", marginBottom: 10 }}>
             {/* Location row */}
             <div style={{ marginBottom: 10 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>📍 Location</span>
@@ -171,6 +171,7 @@ export default function SearchResults() {
                   const active = loc === "All" ? !localLoc : localLoc === loc;
                   return (
                     <button key={loc}
+                      className="search-filter-chip"
                       onClick={() => { setLocalLoc(loc === "All" ? "" : loc); setCurrentPage(1); }}
                       style={{ padding: "5px 14px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s" }}>
                       {loc}
@@ -191,6 +192,7 @@ export default function SearchResults() {
                     value={dateFilter}
                     min={todayStr}
                     onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
+                    className="search-date-input"
                     style={{ fontFamily: font, fontSize: 12, padding: "5px 11px", borderRadius: 100, border: `1.5px solid ${dateFilter ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: dateFilter ? "rgba(196,122,46,0.07)" : "transparent", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
                   />
                   {dateFilter && (
@@ -200,7 +202,7 @@ export default function SearchResults() {
               </div>
 
               {/* Budget */}
-              <div style={{ flex: 1, minWidth: 200 }}>
+              <div className="search-filter-budget-wrapper" style={{ flex: 1, minWidth: 200 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>💰 Budget (per vendor)</span>
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 7 }}>
                   {[
@@ -212,6 +214,7 @@ export default function SearchResults() {
                     const active = localBudget === val || (!localBudget && rawBudget === val);
                     return (
                       <button key={val}
+                        className="search-filter-chip"
                         onClick={() => { setLocalBudget(active ? null : val); setCurrentPage(1); }}
                         style={{ padding: "5px 13px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "all 0.15s" }}>
                         {label}
@@ -241,6 +244,7 @@ export default function SearchResults() {
               </select>
             </div>
             <button
+              className="search-filter-chip"
               onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
               style={{ padding: "5px 14px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 5 }}>
               ⭐ Top Rated {topRatedOnly ? "✓" : ""}
@@ -252,7 +256,7 @@ export default function SearchResults() {
         {rawCats.length > 1 && (
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
             {rawCats.map(cat => (
-              <button key={cat} onClick={() => { setActiveCat(cat); setCurrentPage(1); }}
+              <button key={cat} className="search-cat-chip" onClick={() => { setActiveCat(cat); setCurrentPage(1); }}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 100, border: `2px solid ${activeCat === cat ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: activeCat === cat ? "rgba(196,122,46,0.08)" : "#fff", color: activeCat === cat ? "#C47A2E" : "#7A5535", fontSize: 14, fontWeight: activeCat === cat ? 800 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.18s", boxShadow: activeCat === cat ? "0 3px 10px rgba(196,122,46,0.2)" : "none" }}>
                 <span style={{ fontSize: 16 }}>{CAT_EMOJI[cat] || "🏷"}</span> {cat}
                 {activeCat === cat && <span style={{ fontSize: 10, fontWeight: 700 }}>✓</span>}
@@ -291,7 +295,7 @@ export default function SearchResults() {
         {/* Fun Activities category chip (admin only) */}
         {user?.isAdmin && (
           <div style={{ marginBottom: 16 }}>
-            <button onClick={() => { setActiveCat(c => c === "Fun Activities" ? "" : "Fun Activities"); setCurrentPage(1); }}
+            <button className="search-cat-chip" onClick={() => { setActiveCat(c => c === "Fun Activities" ? "" : "Fun Activities"); setCurrentPage(1); }}
               style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"8px 18px", borderRadius:100, border:`2px solid ${activeCat === "Fun Activities" ? "#7C3AED" : "rgba(124,58,237,0.25)"}`, background: activeCat === "Fun Activities" ? "rgba(124,58,237,0.08)" : "rgba(124,58,237,0.04)", color: activeCat === "Fun Activities" ? "#7C3AED" : "#5B21B6", fontSize:14, fontWeight: activeCat === "Fun Activities" ? 800 : 600, cursor:"pointer", fontFamily:font, transition:"all 0.18s" }}>
               <span style={{ fontSize:16 }}>🎭</span> Fun Activities
               {activeCat === "Fun Activities" && <span style={{ fontSize:10, fontWeight:700 }}>✓</span>}
@@ -343,6 +347,15 @@ export default function SearchResults() {
           )
         )}
       </div>
+      <style>{`
+        @media (max-width: 639px) {
+          .search-filter-bar { padding: 10px 12px !important; margin-bottom: 8px !important; }
+          .search-filter-chip { padding: 3px 9px !important; font-size: 10px !important; }
+          .search-date-input { padding: 3px 9px !important; font-size: 10px !important; }
+          .search-cat-chip { padding: 6px 13px !important; font-size: 12px !important; }
+          .search-filter-budget-wrapper { min-width: 0 !important; }
+        }
+      `}</style>
     </div>
   );
 }

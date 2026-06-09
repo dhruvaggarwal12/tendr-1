@@ -283,45 +283,56 @@ button:active:not(:disabled) { transform: scale(0.97); }
   }
 }
 
-/* ── Vendor cards — full-bleed layout on mobile ── */
+/* ── Vendor cards — compact 2-column layout on mobile ── */
 @media (max-width: 639px) {
   .vendor-list-grid {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
   }
   .vendor-card {
     display: block !important;
     position: relative !important;
-    border-radius: 18px !important;
+    border-radius: 14px !important;
     overflow: hidden !important;
     min-height: unset !important;
   }
   .vendor-card-img {
     width: 100% !important;
-    height: 200px !important;
-    min-height: 200px !important;
+    height: 150px !important;
+    min-height: 150px !important;
     flex-shrink: 0 !important;
     border-radius: 0 !important;
   }
   .vendor-card-img img {
     width: 100% !important;
     height: 100% !important;
-    min-height: 200px !important;
+    min-height: 150px !important;
     object-fit: cover !important;
   }
   /* Show the mobile text overlay inside the image */
   .vendor-card-mobile-overlay {
     display: block !important;
+    padding: 32px 8px 8px !important;
+  }
+  .vendor-card-mobile-overlay h3 {
+    font-size: 12px !important;
+    margin: 0 0 2px !important;
   }
   /* Hide desktop text on mobile — keep only the action buttons */
   .vendor-card-info-text {
     display: none !important;
   }
   .vendor-card-info {
-    padding: 8px 12px 10px !important;
+    padding: 6px 8px 8px !important;
     display: flex !important;
     flex-direction: column !important;
     gap: 0 !important;
+  }
+  /* Compact action buttons */
+  .vendor-card-info button {
+    padding: 7px 4px !important;
+    font-size: 11px !important;
+    border-radius: 8px !important;
   }
   /* Tap press feedback */
   .vendor-card:active {
