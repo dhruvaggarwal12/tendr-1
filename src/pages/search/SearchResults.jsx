@@ -20,6 +20,7 @@ export default function SearchResults() {
   const dispatch       = useDispatch();
 
   const { user } = useSelector(s => s.auth);
+  const formData  = useSelector(s => s.eventPlanning?.formData || {});
   const rawCats    = (searchParams.get("categories") || "").split(",").filter(Boolean);
   const rawLocs    = (searchParams.get("locations")  || "").split(",").filter(Boolean);
   const rawBudget  = searchParams.get("budget") ? Number(searchParams.get("budget")) : null;
@@ -29,19 +30,22 @@ export default function SearchResults() {
 
   // Active filter state — sync whenever URL params change
   const [activeCat,   setActiveCat]   = useState(rawCats[0] || "");
-  const [localLoc,    setLocalLoc]    = useState(rawLocs[0] || "");
+  const [localLoc,    setLocalLoc]    = useState(rawLocs[0] || formData.location || "");
   const [localBudget, setLocalBudget] = useState(null);
   const [topRatedOnly, setTopRatedOnly] = useState(false);
   const [sortBy, setSortBy]             = useState("rankingScore");
   const [sortOrder, setSortOrder]       = useState("desc");
-  const [dateFilter, setDateFilter]     = useState("");
+  const [dateFilter, setDateFilter]     = useState(formData.date || "");
   const [showTip, setShowTip] = useState(false);
   const [showHowToBook, setShowHowToBook] = useState(true);
   const todayStr = new Date().toISOString().split("T")[0];
   useEffect(() => { const t = setTimeout(() => setShowTip(true), 20000); return () => clearTimeout(t); }, []);
 
-  // Re-sync when URL changes (user searches again from this page)
+  // Re-sync when URL changes (user searches again from this page).
+  // Skip on first mount so formData-based defaults are preserved.
+  const isFirstMountRef = useRef(true);
   useEffect(() => {
+    if (isFirstMountRef.current) { isFirstMountRef.current = false; return; }
     setActiveCat(rawCats[0] || "");
     setLocalLoc(rawLocs[0] || "");
     setLocalBudget(null);
@@ -60,7 +64,7 @@ export default function SearchResults() {
   const overlayText = (() => {
     const parts = [];
     if (activeCat) parts.push(`${activeCat.toLowerCase()}s`);
-    if (activeLoc) parts.push(`in ${activeLoc}`);
+    if (localLoc) parts.push(`in ${localLoc}`);
     if (rawBudget)  parts.push(`under ₹${Number(rawBudget).toLocaleString("en-IN")}`);
     return parts.length ? `Showing ${parts.join(" ")}...` : "Finding the best vendors...";
   })();

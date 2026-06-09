@@ -46,9 +46,12 @@ const VendorList_ListingPage = ({
   const dispatch = useDispatch();
   const { openVendorChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
+  const formData = useSelector(s => s.eventPlanning?.formData || {});
+  const hasEventDetails = !!(formData.eventType && formData.guests && formData.date && formData.location);
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
+  const [pendingProfileVendorId, setPendingProfileVendorId] = useState(null);
   const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
   const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
 
@@ -63,7 +66,7 @@ const VendorList_ListingPage = ({
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") {
-        if (chatFormVendor) { setChatFormVendor(null); return; }
+        if (chatFormVendor) { setChatFormVendor(null); setPendingProfileVendorId(null); return; }
         if (quickViewVendor) { setQuickViewVendor(null); return; }
       }
       if (!quickViewVendor || vendors.length < 2) return;
@@ -481,7 +484,17 @@ const VendorList_ListingPage = ({
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
-                    onClick={(e) => { closePanel(); handleViewProfile(e, quickViewVendor._id); }}
+                    onClick={(e) => {
+                      if (requireFormBeforeChat && !hasEventDetails) {
+                        closePanel();
+                        setPendingProfileVendorId(quickViewVendor._id);
+                        setChatFormVendor(quickViewVendor);
+                        setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", location: formData.location || "" });
+                      } else {
+                        closePanel();
+                        handleViewProfile(e, quickViewVendor._id);
+                      }
+                    }}
                     style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
                   >
                     View Full Profile →
@@ -513,9 +526,10 @@ const VendorList_ListingPage = ({
                       navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } });
                       return;
                     }
-                    if (requireFormBeforeChat) {
+                    if (requireFormBeforeChat && !hasEventDetails) {
+                      setPendingProfileVendorId(null);
                       setChatFormVendor(quickViewVendor);
-                      setChatEventForm({ eventType: "", guests: "", date: "", location: "" });
+                      setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", location: formData.location || "" });
                       closePanel();
                     } else {
                       closePanel();
@@ -540,15 +554,17 @@ const VendorList_ListingPage = ({
       {/* Pre-chat event form (shown when requireFormBeforeChat=true) */}
       {chatFormVendor && (
         <div style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}
-          onClick={() => setChatFormVendor(null)}>
+          onClick={() => { setChatFormVendor(null); setPendingProfileVendorId(null); }}>
           <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px", maxWidth: 480, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
               <div>
                 <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Your Event Details</h2>
-                <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Tell us about your event — this goes to {chatFormVendor.name}</p>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>
+                  {pendingProfileVendorId ? `Quick details before viewing ${chatFormVendor.name}` : `Tell us about your event — this goes to ${chatFormVendor.name}`}
+                </p>
               </div>
-              <button onClick={() => setChatFormVendor(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
+              <button onClick={() => { setChatFormVendor(null); setPendingProfileVendorId(null); }} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
@@ -567,7 +583,6 @@ const VendorList_ListingPage = ({
             </div>
             <button
               onClick={() => {
-                // Save event details to Redux so wizard skips already-answered questions
                 dispatch(setMultipleFormData({
                   eventType: chatEventForm.eventType,
                   guests: chatEventForm.guests,
@@ -576,11 +591,21 @@ const VendorList_ListingPage = ({
                   token,
                 }));
                 dispatch(setBookingType("you-do-it"));
-                openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
-                setChatFormVendor(null);
+                if (pendingProfileVendorId) {
+                  const vid = pendingProfileVendorId;
+                  setPendingProfileVendorId(null);
+                  setChatFormVendor(null);
+                  const url = `/vendor/${vid}`;
+                  const st = { from: "search", filters: { eventType: chatEventForm.eventType, date: chatEventForm.date, location: chatEventForm.location } };
+                  if (window.innerWidth >= 768) window.open(url, "_blank");
+                  else navigate(url, { state: st });
+                } else {
+                  openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
+                  setChatFormVendor(null);
+                }
               }}
               style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-              Request to Chat with {chatFormVendor.name} →
+              {pendingProfileVendorId ? `View Profile of ${chatFormVendor.name} →` : `Request to Chat with ${chatFormVendor.name} →`}
             </button>
           </div>
         </div>
