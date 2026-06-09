@@ -501,14 +501,28 @@ const AdminDashboard = () => {
       .catch(() => window.alert("Network error — chat not deleted. Please check your connection."));
   };
 
-  // 24-hour inactivity TTL — filter and auto-delete inactive conversations
+  // TTL fallback for chats with no event date — 24h inactivity
   const TTL_MS = 24 * 60 * 60 * 1000;
   const isClosed = (c) => c.status === 'CLOSED' || c.status === 'closed';
   const isExpired = (c) => {
+    const eventDate = c.eventDetails?.date;
+    if (eventDate) {
+      // Keep until end of event day + 1 buffer day
+      const expiry = new Date(eventDate + "T23:59:59");
+      expiry.setDate(expiry.getDate() + 1);
+      return Date.now() > expiry.getTime();
+    }
     const last = c.updatedAt || c.lastMessageAt || c.createdAt;
     return last && (Date.now() - new Date(last).getTime()) > TTL_MS;
   };
   const hoursLeft = (c) => {
+    const eventDate = c.eventDetails?.date;
+    if (eventDate) {
+      const expiry = new Date(eventDate + "T23:59:59");
+      expiry.setDate(expiry.getDate() + 1);
+      const remaining = expiry.getTime() - Date.now();
+      return remaining > 0 ? Math.ceil(remaining / 3600000) : 0;
+    }
     const last = c.updatedAt || c.lastMessageAt || c.createdAt;
     if (!last) return null;
     const remaining = TTL_MS - (Date.now() - new Date(last).getTime());
@@ -531,19 +545,6 @@ const AdminDashboard = () => {
     }
   }, [adminChats, pendingConciergeId]);
 
-  // Auto-delete expired conversations from DB — skip CLOSED ones (admin reviews those)
-  useEffect(() => {
-    if (!token || !user?.isAdmin) return;
-    const expired = [...rawRecentChats, ...rawSupportChats, ...rawAdminChats].filter(c => isExpired(c) && !isClosed(c));
-    if (!expired.length) return;
-    expired.forEach(c => {
-      fetch(`${BASE_URL}/admin/conversations/${c._id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      }).catch(() => {});
-    });
-  }, [rawRecentChats, rawSupportChats, rawAdminChats, token]);
 
   // Fetch real stats from backend
   useEffect(() => {
@@ -579,15 +580,6 @@ const AdminDashboard = () => {
       .then((r) => r.json())
       .then((data) => {
         const all = data.conversations || [];
-        // Auto-delete expired chat requests (>24hr inactive) — skip CLOSED ones
-        const expired = all.filter(c => isExpired(c) && !isClosed(c));
-        expired.forEach(c => {
-          fetch(`${BASE_URL}/admin/conversations/${c._id}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-            credentials: "include",
-          }).catch(() => {});
-        });
         setChatRequests(all.filter(c => !isExpired(c) || isClosed(c)));
       })
       .catch(() => {});
@@ -599,13 +591,6 @@ const AdminDashboard = () => {
       .then((r) => r.json())
       .then((data) => setVendorStats(data.vendors || []))
       .catch(() => {});
-
-    // Run 24hr inactivity cleanup on every dashboard load
-    fetch(`${BASE_URL}/admin/cleanup-inactive`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    }).catch(() => {});
 
     // Fetch real top vendors
     fetch(`${BASE_URL}/admin/top-vendors`, {
