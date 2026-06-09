@@ -211,9 +211,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // Mobile: cluster on ALL pages but only when there are active items
   const shouldRenderCluster = isDesktop ? (isHomePage && hasActiveActions) : hasActiveActions;
 
+  const [vendorPickerOpen, setVendorPickerOpen] = useState(false);
+
   const handleBrowseVendors = () => {
-    // Always land on flow-choosing page so user picks You Do It vs Smart Planner
-    navigate("/booking");
+    setVendorPickerOpen(true);
   };
 
 
@@ -314,28 +315,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             {/* Suggestions dropdown */}
             {showSuggest && (
               <div style={{ background: "rgba(20,10,5,0.97)", border: "1px solid rgba(255,255,255,0.08)", borderTop: "none", borderRadius: "0 0 8px 8px", overflow: "hidden", marginBottom: 8 }}>
-                {/* Category chips */}
-                <div style={{ padding: "8px 10px 6px" }}>
-                  <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Browse by category</div>
-                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                    {[
-                      { id: "Caterer",      emoji: "🍽", label: "Catering" },
-                      { id: "Decorator",    emoji: "🎀", label: "Decor" },
-                      { id: "Photographer", emoji: "📸", label: "Photo" },
-                      { id: "DJ",           emoji: "🎵", label: "DJ" },
-                    ].map(({ id, emoji, label }) => (
-                      <button key={id}
-                        onMouseDown={() => { navigate(`/search?categories=${id}`); setShowSuggest(false); setSearchQuery(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.08)", color: "rgba(255,255,255,0.8)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
-                        onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.22)"}
-                        onMouseLeave={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
-                      >
-                        {emoji} {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                {filteredSuggestions.length > 0 && <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "2px 0" }} />}
+                {filteredSuggestions.length === 0 && <div style={{ padding: "10px 12px", fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Type to search...</div>}
                 {filteredSuggestions.map((s, i) => (
                   <button key={i}
                     onMouseDown={() => { handleNavSearch(s.text); setShowSuggest(false); }}
@@ -655,6 +635,38 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         )}
 
         <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
+
+        {/* Vendor picker popup — sidebar mode */}
+        {vendorPickerOpen && (
+          <>
+            <div onClick={() => setVendorPickerOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 500, backdropFilter: "blur(4px)" }} />
+            <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, background: "#FFFCF5", borderRadius: 20, padding: "24px", width: "min(90vw,480px)", boxShadow: "0 20px 60px rgba(139,69,19,0.22)", fontFamily: font }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+                <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Find a Vendor</h3>
+                <button onClick={() => setVendorPickerOpen(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+                {[
+                  { emoji: "🎨", label: "Decorator",      href: "/listings?serviceType=Decorator" },
+                  { emoji: "🍽️", label: "Caterer",        href: "/listings?serviceType=Caterer" },
+                  { emoji: "📸", label: "Photographer",   href: "/listings?serviceType=Photographer" },
+                  { emoji: "🎵", label: "DJ",             href: "/listings?serviceType=DJ" },
+                  { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
+                  { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
+                ].map(cat => (
+                  <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 8px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
+                  >
+                    <span style={{ fontSize: 28 }}>{cat.emoji}</span>
+                    <span style={{ fontSize: 12.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* ── Floating action cluster (desktop: home page; mobile: all pages) ── */}
         {shouldRenderCluster && (
@@ -988,6 +1000,39 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       )}
 
       <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
+
+      {/* Vendor picker popup — drawer mode */}
+      {vendorPickerOpen && (
+        <>
+          <div onClick={() => setVendorPickerOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 500, backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, background: "#FFFCF5", borderRadius: 20, padding: "24px", width: "min(92vw,400px)", boxShadow: "0 20px 60px rgba(139,69,19,0.22)", fontFamily: font }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Find a Vendor</h3>
+              <button onClick={() => setVendorPickerOpen(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
+              {[
+                { emoji: "🎨", label: "Decorator",      href: "/listings?serviceType=Decorator" },
+                { emoji: "🍽️", label: "Caterer",        href: "/listings?serviceType=Caterer" },
+                { emoji: "📸", label: "Photographer",   href: "/listings?serviceType=Photographer" },
+                { emoji: "🎵", label: "DJ",             href: "/listings?serviceType=DJ" },
+                { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
+                { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
+              ].map(cat => (
+                <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "14px 6px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
+                >
+                  <span style={{ fontSize: 26 }}>{cat.emoji}</span>
+                  <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
       <style>{`@keyframes drawerSlideIn { from { transform: translateX(-100%) } to { transform: translateX(0) } }`}</style>
 
       {/* Review & Pay popup */}

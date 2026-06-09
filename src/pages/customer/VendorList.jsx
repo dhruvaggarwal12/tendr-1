@@ -394,6 +394,7 @@ const VendorList = () => {
                 .mobile-cat-switcher { display: block !important; }
                 .vendor-filter-chips { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; padding-bottom: 4px !important; }
                 .vendor-filter-chips::-webkit-scrollbar { display: none; }
+                .vendor-filter-chips span { font-size: 10px !important; padding: 2px 7px !important; }
                 .vendor-sort-row { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; justify-content: flex-start !important; gap: 6px !important; }
                 .vendor-sort-row::-webkit-scrollbar { display: none; }
               }

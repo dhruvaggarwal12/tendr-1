@@ -274,10 +274,18 @@ const Navbar = ({
   const NAV_ITEMS = [
     {
       label: "Vendors",
+      megaMenu: true,
       items: [
-        { label: "Top Rated Vendors",  href: "/top-rated/Photographer" },
-        { label: "Browse Vendors",     href: "/listings", disabled: browseDisabled },
-        { label: "Register as Vendor", href: "/vendor/register" },
+        { id: "Decorator",    emoji: "🎨", label: "Decorator",      href: "/listings?serviceType=Decorator" },
+        { id: "Caterer",      emoji: "🍽️", label: "Caterer",        href: "/listings?serviceType=Caterer" },
+        { id: "Photographer", emoji: "📸", label: "Photographer",   href: "/listings?serviceType=Photographer" },
+        { id: "DJ",           emoji: "🎵", label: "DJ",             href: "/listings?serviceType=DJ" },
+        { id: "gifts",        emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
+        { id: "activities",   emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
+      ],
+      sideItems: [
+        { label: "⭐ Top Rated Vendors",  href: "/top-rated/Photographer" },
+        { label: "🤝 Register as Vendor", href: "/vendor/register" },
       ],
     },
     {
@@ -432,29 +440,6 @@ const Navbar = ({
             </div>
             {showSuggestions && (
               <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, minWidth: 280, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
-                {/* Category chips — always shown on focus */}
-                <div style={{ padding: "6px 6px 4px" }}>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "0 4px 6px" }}>Browse by category</div>
-                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                    {[
-                      { id: "Caterer",      emoji: "🍽", label: "Catering" },
-                      { id: "Decorator",    emoji: "🎀", label: "Decoration" },
-                      { id: "Photographer", emoji: "📸", label: "Photography" },
-                      { id: "DJ",           emoji: "🎵", label: "DJ" },
-                    ].map(({ id, emoji, label }) => (
-                      <button key={id}
-                        onMouseDown={e => e.preventDefault()}
-                        onClick={() => { navigate(`/search?categories=${id}`); setShowSuggestions(false); setSearchQuery(""); }}
-                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "5px 11px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.04)", color: "#5a3a1a", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s", whiteSpace: "nowrap" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.12)"; e.currentTarget.style.borderColor = "#C47A2E"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; }}
-                      >
-                        <span>{emoji}</span> {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "6px 0 2px" }} />
                 {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
                 {filteredSuggestions.map((s, i) => (
                   <button key={i}
@@ -525,53 +510,87 @@ const Navbar = ({
                   style={{
                     position: "absolute",
                     top: "calc(100% + 8px)",
-                    left: "50%",
-                    transform: activeDropdown === group.label
-                      ? "translateX(-50%) translateY(0)"
-                      : "translateX(-50%) translateY(-6px)",
+                    left: group.megaMenu ? "0" : "50%",
+                    transform: group.megaMenu
+                      ? (activeDropdown === group.label ? "translateY(0)" : "translateY(-6px)")
+                      : (activeDropdown === group.label ? "translateX(-50%) translateY(0)" : "translateX(-50%) translateY(-6px)"),
                     background: "#FFFEF9",
-                    borderRadius: 12,
-                    boxShadow: "0 8px 32px rgba(139,69,19,0.11), 0 2px 8px rgba(0,0,0,0.05)",
+                    borderRadius: 14,
+                    boxShadow: "0 8px 32px rgba(139,69,19,0.13), 0 2px 8px rgba(0,0,0,0.06)",
                     border: "1px solid rgba(139,69,19,0.08)",
-                    minWidth: 210,
-                    padding: "6px",
+                    minWidth: group.megaMenu ? 460 : 210,
+                    padding: group.megaMenu ? "14px" : "6px",
                     opacity: activeDropdown === group.label ? 1 : 0,
                     visibility: activeDropdown === group.label ? "visible" : "hidden",
                     transition: "opacity 0.2s ease, transform 0.2s ease, visibility 0.2s",
                     zIndex: 999,
                   }}
                 >
-                  {group.items.map((item) =>
-                    item.comingSoon ? (
-                      <div key={item.label} style={{ ...dropdownItemStyle, cursor: "default", opacity: 0.55, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span>{item.label}</span>
-                        <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.12)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20, marginLeft: 8, whiteSpace: "nowrap" }}>Soon</span>
+                  {group.megaMenu ? (
+                    <div style={{ display: "flex", gap: 14 }}>
+                      {/* Left: 2×3 vendor category grid */}
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Find a Vendor</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                          {group.items.map(item => (
+                            <a key={item.id} href={item.href}
+                              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "13px 8px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.12)", background: "#fff", textDecoration: "none", cursor: "pointer", transition: "all 0.15s" }}
+                              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
+                              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; }}
+                            >
+                              <span style={{ fontSize: 22 }}>{item.emoji}</span>
+                              <span style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{item.label}</span>
+                            </a>
+                          ))}
+                        </div>
                       </div>
-                    ) : item.disabled ? (
-                      <div key={item.label} title="Fill your event details first" style={{ ...dropdownItemStyle, cursor: "not-allowed", opacity: 0.45, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span>{item.label}</span>
-                        <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", marginLeft: 8, whiteSpace: "nowrap" }}>fill form first</span>
+                      {/* Vertical divider */}
+                      <div style={{ width: 1, background: "rgba(196,122,46,0.13)", flexShrink: 0 }} />
+                      {/* Right: Top Rated + Register */}
+                      <div style={{ minWidth: 160, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4 }}>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6, paddingLeft: 4 }}>Quick Links</div>
+                        {group.sideItems.map(item => (
+                          <a key={item.label} href={item.href}
+                            style={{ ...dropdownItemStyle, borderRadius: 8 }}
+                            onMouseEnter={hoverOn}
+                            onMouseLeave={hoverOff}
+                          >{item.label}</a>
+                        ))}
                       </div>
-                    ) : item.href ? (
-                      <a
-                        key={item.label}
-                        href={item.href}
-                        style={dropdownItemStyle}
-                        onMouseEnter={hoverOn}
-                        onMouseLeave={hoverOff}
-                      >
-                        {item.label}
-                      </a>
-                    ) : (
-                      <button
-                        key={item.label}
-                        onClick={item.onClick}
-                        style={dropdownItemStyle}
-                        onMouseEnter={hoverOn}
-                        onMouseLeave={hoverOff}
-                      >
-                        {item.label}
-                      </button>
+                    </div>
+                  ) : (
+                    group.items.map((item) =>
+                      item.comingSoon ? (
+                        <div key={item.label} style={{ ...dropdownItemStyle, cursor: "default", opacity: 0.55, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span>{item.label}</span>
+                          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.12)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20, marginLeft: 8, whiteSpace: "nowrap" }}>Soon</span>
+                        </div>
+                      ) : item.disabled ? (
+                        <div key={item.label} title="Fill your event details first" style={{ ...dropdownItemStyle, cursor: "not-allowed", opacity: 0.45, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                          <span>{item.label}</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", marginLeft: 8, whiteSpace: "nowrap" }}>fill form first</span>
+                        </div>
+                      ) : item.href ? (
+                        <a
+                          key={item.label}
+                          href={item.href}
+                          style={dropdownItemStyle}
+                          onMouseEnter={hoverOn}
+                          onMouseLeave={hoverOff}
+                        >
+                          {item.label}
+                        </a>
+                      ) : (
+                        <button
+                          key={item.label}
+                          onClick={item.onClick}
+                          style={dropdownItemStyle}
+                          onMouseEnter={hoverOn}
+                          onMouseLeave={hoverOff}
+                        >
+                          {item.label}
+                        </button>
+                      )
                     )
                   )}
                 </div>
