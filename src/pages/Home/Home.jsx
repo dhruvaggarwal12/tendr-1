@@ -27,6 +27,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import Navbar from "../../components/Navbar.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import { useSelector } from "react-redux";
+import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 
 const FunActivitiesLazy = React.lazy(() => import("../../components/FunActivitiesSection"));
 
@@ -216,6 +217,8 @@ const Home = () => {
   const formEventName = useSelector((s) => s.eventPlanning.formData.eventName);
   const showVendorScreen = useSelector((s) => s.eventPlanning.showVendorScreen);
   const { user } = useSelector((s) => s.auth);
+  const formData = useSelector((s) => s.eventPlanning.formData);
+  const hasEventDetails = !!(formData.eventType && formData.guests && formData.date && formData.location);
 
   const handlePlanEvent = () => {
     // If form already filled and service screen was shown, go back to service selection
@@ -263,6 +266,8 @@ const Home = () => {
   const [featureVisible, setFeatureVisible] = useState(true);
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideVisible, setSlideVisible] = useState(true);
+  const [faAutoIdx, setFaAutoIdx] = useState(0);
+  const faCarouselRef = useRef(null);
 
   const FEATURE_SLIDES = [
     { id: "smart-planner",  tag: "Smart Planner",        icon: "✨", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", headline: "Your complete vendor package, built in seconds",          desc: "Tell us your event once. We match caterers, decorators, photographers and DJs within your budget. You confirm, we coordinate everything.", where: "Booking → Tendr Plans It For Me", href: "/booking",          accent: "#C47A2E" },
@@ -272,6 +277,7 @@ const Home = () => {
     { id: "decor-finder",   tag: "Decor Finder",          icon: "🎨", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Discover your decoration style before you book",          desc: "Take a short quiz → get your perfect theme. Browse real vendor photos by style and go straight from inspiration to booking.", where: "Our Products → Decor Finder", href: "/decor-finder",    accent: "#C47A2E" },
     { id: "budget",         tag: "Budget Allocator",      icon: "💰", iconBg: "linear-gradient(135deg,#7A4A1E,#CCAB4A)",  headline: "Know exactly what you can afford — before you start",     desc: "Set your budget per service. We filter and sort vendors so every option you see is within reach.", where: "Our Products → Budget Allocator", href: "/budget-picker",    accent: "#7A4A1E" },
     { id: "gift-hampers",   tag: "Gift Hampers & Cakes",  icon: "🎁", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)",  headline: "The perfect gift, delivered to the door",                 desc: "Curated hampers and custom cakes for birthdays, anniversaries and corporate celebrations.", where: "Gift & Hampers", href: "/gift-hampers-cakes",  accent: "#C47A2E" },
+    { id: "fun-activities",  tag: "Fun Activities",        icon: "🎭", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Add magic, games & live entertainment to any event",     desc: "Magic shows, game coordinators, dhol players, live teddy, stone art and more — fixed prices, confirmed in 2 hours.", where: "Fun Activities", href: "/fun-activities", accent: "#C47A2E" },
     { id: "celebration-kit",tag: "Tendr Celebration Kit", icon: "🎉", iconBg: "linear-gradient(135deg,#2C1A0E,#C47A2E)",  headline: "Everything for a home celebration — under ₹1,499",        desc: "Balloons, fairy lights, games, decor disposals and a letter from Tendr. Unbox and celebrate.", where: "Coming Soon", href: null, accent: "#2C1A0E", isKit: true },
   ];
 
@@ -382,6 +388,23 @@ const Home = () => {
     const t = setInterval(() => setGlimpseCounter(c => c + 1), 2500);
     return () => clearInterval(t);
   }, []);
+
+  // Auto-advance fun activities carousel
+  useEffect(() => {
+    const t = setInterval(() => setFaAutoIdx(i => i + 1), 3000);
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    if (!faCarouselRef.current) return;
+    const el = faCarouselRef.current;
+    const cards = el.querySelectorAll(".fa-carousel-card");
+    if (!cards.length) return;
+    const cardW = cards[0].offsetWidth + 16;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    const target = (faAutoIdx * cardW) % (maxScroll + cardW);
+    if (target > maxScroll) { el.scrollTo({ left: 0, behavior: "smooth" }); }
+    else { el.scrollTo({ left: target, behavior: "smooth" }); }
+  }, [faAutoIdx]);
 
   // Logo should navigate to the home route (works from other pages as well)
   const handleLogoClick = (e) => {
@@ -624,6 +647,33 @@ const Home = () => {
               </button>
 
             </div>
+
+            {/* Mobile only: search bar + service icon chips below CTA */}
+            <div className="hero-mobile-search-section" style={{ display: "none", flexDirection: "column", gap: 12, marginTop: 20 }}>
+              <form onSubmit={handleHeroSearch} style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "2px solid #C47A2E", borderRadius: 14, padding: "10px 14px", boxShadow: "0 4px 16px rgba(196,122,46,0.15)" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" value={heroSearch} onChange={e => setHeroSearch(e.target.value)} placeholder="Search vendors, DJ, Decoration..."
+                  style={{ flex: 1, border: "none", outline: "none", fontSize: 14, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", background: "transparent" }} />
+                {heroSearch && <button type="button" onClick={() => setHeroSearch("")} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", padding: 0, fontSize: 16 }}>×</button>}
+              </form>
+              <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
+                {[
+                  { emoji: "🍽", label: "Catering",       path: "/top-rated/Caterer" },
+                  { emoji: "🎀", label: "Decoration",     path: "/top-rated/Decorator" },
+                  { emoji: "📸", label: "Photography",    path: "/top-rated/Photographer" },
+                  { emoji: "🎵", label: "DJ",             path: "/top-rated/DJ" },
+                  { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes" },
+                  { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
+                ].map(({ emoji, label, path }) => (
+                  <button key={label} onClick={() => navigate(path)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#2C1A0E", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, flexShrink: 0, whiteSpace: "nowrap", boxShadow: "0 2px 6px rgba(196,122,46,0.08)" }}>
+                    {emoji} {label}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* ── Right: photo carousel ── */}
@@ -846,16 +896,13 @@ const Home = () => {
           }
           .hero-split > div:first-child {
             flex: unset !important;
-            padding: 40px 28px 32px !important;
+            padding: 28px 22px 24px !important;
           }
           .hero-split > div:last-child {
-            flex: unset !important;
-            position: relative !important;
-            height: 340px !important;
-            width: 100% !important;
+            display: none !important;
           }
-          .hero-split > div:last-child > div {
-            border-radius: 0 !important;
+          .hero-mobile-search-section {
+            display: flex !important;
           }
         }
       `}</style>
@@ -1057,12 +1104,19 @@ const Home = () => {
                         <span style={{ fontSize: 12, fontWeight: 800, color: "#fff", background: slide.iconBg, borderRadius: 100, padding: "4px 14px", boxShadow: `0 3px 10px ${slide.accent}30` }}>Under ₹1,499</span>
                       </div>
                     ) : slide.href ? (
-                      <a href={slide.href}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#fff", textDecoration: "none", background: slide.iconBg, padding: "9px 18px", borderRadius: 10, boxShadow: `0 4px 14px ${slide.accent}30`, alignSelf: "flex-start", transition: "opacity 0.2s" }}
+                      <button
+                        onClick={() => {
+                          if ((slide.id === "browse-vendors" || slide.id === "smart-planner") && !hasEventDetails) {
+                            navigate("/booking");
+                          } else {
+                            navigate(slide.href);
+                          }
+                        }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#fff", border: "none", background: slide.iconBg, padding: "9px 18px", borderRadius: 10, boxShadow: `0 4px 14px ${slide.accent}30`, alignSelf: "flex-start", transition: "opacity 0.2s", cursor: "pointer" }}
                         onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
                         onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
                         Explore {slide.tag} →
-                      </a>
+                      </button>
                     ) : null}
                   </div>
                 </div>
@@ -1260,31 +1314,60 @@ const Home = () => {
         </section>
       )}
 
-      {/* ── Fun Activities — admin preview only ── */}
-      {user?.isAdmin && (
-        <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
-          <div style={{ maxWidth:1100, margin:"0 auto" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
-              <div>
-                <p style={{ fontSize:11, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 New · Admin Preview</p>
-                <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
-                  Add Some Magic<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
-                </h2>
-                <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
-                  Fixed-price entertainment add-ons — magic shows, live counters, game zones and more. Confirmed within 2 hours.
-                </p>
-              </div>
-              <button onClick={() => window.open("/fun-activities","_blank")}
-                style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
-                See All Activities →
-              </button>
+      {/* ── Fun Activities — auto-scrolling carousel ── */}
+      <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
+            <div>
+              <p style={{ fontSize:11, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 Live Entertainment Add-ons</p>
+              <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
+                Add Some Magic<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
+              </h2>
+              <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
+                Fixed-price entertainment add-ons — magic shows, game zones, live counters and more. Confirmed within 2 hours.
+              </p>
             </div>
-            <React.Suspense fallback={<div style={{ height:220, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450", fontSize:14 }}>Loading activities…</div>}>
-              <FunActivitiesLazy />
-            </React.Suspense>
+            <button onClick={() => navigate("/fun-activities")}
+              style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
+              See All Activities →
+            </button>
           </div>
-        </section>
-      )}
+
+          {/* Auto-scrolling cards */}
+          <div
+            ref={faCarouselRef}
+            style={{ display:"flex", gap:16, overflowX:"auto", scrollbarWidth:"none", msOverflowStyle:"none", paddingBottom:8, cursor:"grab" }}
+          >
+            {[...FUN_ACTIVITIES, ...FUN_ACTIVITIES].map((act, i) => (
+              <div
+                key={i}
+                className="fa-carousel-card"
+                onClick={() => navigate("/fun-activities")}
+                style={{
+                  flexShrink:0, width:200, background:"#fff",
+                  borderRadius:18, border:"1.5px solid rgba(196,122,46,0.15)",
+                  boxShadow:"0 4px 16px rgba(196,122,46,0.1)",
+                  padding:"22px 18px 18px",
+                  display:"flex", flexDirection:"column", alignItems:"center", gap:10,
+                  cursor:"pointer", transition:"transform 0.2s, box-shadow 0.2s",
+                  fontFamily:"'Outfit',sans-serif",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.2)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
+              >
+                <div style={{ fontSize:44, lineHeight:1 }}>{act.emoji}</div>
+                <h4 style={{ fontSize:14, fontWeight:800, color:"#2C1A0E", margin:0, textAlign:"center", lineHeight:1.3 }}>{act.name}</h4>
+                <div style={{ fontSize:13, fontWeight:700, color:"#C47A2E" }}>
+                  ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:10, fontWeight:500, color:"#9B7450" }}> /{act.unitLabel}</span> : ""}
+                </div>
+                <p style={{ fontSize:11, color:"#9B7450", margin:0, textAlign:"center", lineHeight:1.5, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{act.desc}</p>
+                <span style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", marginTop:"auto" }}>Book Now →</span>
+              </div>
+            ))}
+          </div>
+          <style>{`.fa-carousel-card::-webkit-scrollbar { display:none; }`}</style>
+        </div>
+      </section>
 
       {/* ── Memories Section — admin preview only ── */}
       {user?.isAdmin && (() => {

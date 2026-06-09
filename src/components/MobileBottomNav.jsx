@@ -104,17 +104,20 @@ function BottomNavInner() {
   const isActive = (paths) =>
     paths.some((p) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p));
 
+  const isHomePage = location.pathname === "/";
+
   const PRODUCTS = [
     { emoji: "✅", label: "Checklist",        href: "/checklist-picker" },
     { emoji: "⏱️", label: "Timeline",         href: "/timeline-picker" },
     { emoji: "💰", label: "Budget Allocator", href: "/budget-picker" },
     { emoji: "🎨", label: "Decor Finder",     href: "/decor-finder" },
+    { emoji: "🎭", label: "Fun Activities",   href: "/fun-activities" },
     ...(user?.isAdmin ? [{ emoji: "🎉", label: "Occasions", href: null, newTab: true, path: "/occasions" }] : []),
   ];
 
   const items = [
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
-    { label: "Browse",   paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setBrowseOpen(o => !o); } },
+    ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setBrowseOpen(o => !o); } }] : []),
     { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan",     paths: ["/booking","/plan-event","/occasions"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
@@ -151,10 +154,10 @@ function BottomNavInner() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 12 }}>
               {[
                 ...CATEGORIES,
+                { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
                 ...(user?.isAdmin ? [
                   { emoji: "🎉", label: "Plan by Occasion", path: null, newTab: true },
                   { emoji: "🏡", label: "Party Places",     path: "/party-places" },
-                  { emoji: "🎭", label: "Fun Activities",   path: "/fun-activities" },
                   { emoji: "💌", label: "Memories",         path: "/stationery" },
                 ] : []),
               ].map(({ emoji, label, path, newTab }) => (

@@ -658,7 +658,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
         {/* ── Floating action cluster (desktop: home page; mobile: all pages) ── */}
         {shouldRenderCluster && (
-          <div style={{ position: "fixed", bottom: 28, right: 24, zIndex: 9500, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          <div style={{ position: "fixed", bottom: 28, right: 24, zIndex: 9500, display: "flex", flexDirection: "row", alignItems: "center", gap: 10 }}>
             {(finalisedCount > 0 || ghCartCount > 0) && (
               <button onClick={() => navigate("/booking/review")} title="Review & Pay"
                 style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(21,128,61,0.45)", color: "#fff" }}>
@@ -962,7 +962,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
       {/* ── Floating action cluster — mobile: above bottom nav when active ── */}
       {shouldRenderCluster && (
-        <div style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom, 0px))", right: 16, zIndex: 9500, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+        <div style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom, 0px))", right: 16, zIndex: 9500, display: "flex", flexDirection: "row", alignItems: "center", gap: 10 }}>
           {(finalisedCount > 0 || ghCartCount > 0) && (
             <button onClick={() => setReviewPopup(true)} title="Review & Pay"
               style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(21,128,61,0.45)", color: "#fff" }}>

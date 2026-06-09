@@ -6,11 +6,12 @@ const RECENT_KEY = "tendr_recent_searches";
 const MAX_RECENT = 5;
 
 const CATEGORIES = [
-  { label: "Photographers", emoji: "📸", id: "Photographer" },
-  { label: "Catering",      emoji: "🍽",  id: "Caterer" },
-  { label: "DJs",           emoji: "🎵",  id: "DJ" },
-  { label: "Decoration",    emoji: "🎀",  id: "Decorator" },
-  { label: "All Vendors",   emoji: "🔍",  id: null },
+  { label: "Photographers",  emoji: "📸", id: "Photographer" },
+  { label: "Catering",       emoji: "🍽",  id: "Caterer" },
+  { label: "DJs",            emoji: "🎵",  id: "DJ" },
+  { label: "Decoration",     emoji: "🎀",  id: "Decorator" },
+  { label: "Fun Activities", emoji: "🎭", id: null, href: "/fun-activities" },
+  { label: "All Vendors",    emoji: "🔍",  id: null },
 ];
 
 const POPULAR_LOCATIONS = ["Delhi", "Noida", "Ghaziabad", "Greater Noida"];
@@ -18,11 +19,13 @@ const POPULAR_LOCATIONS = ["Delhi", "Noida", "Ghaziabad", "Greater Noida"];
 // Same popular suggestions as desktop search bar
 const POPULAR_SEARCHES = [
   { text: "Photographers in Delhi" },
+  { text: "Photographer under ₹10,000" },
   { text: "Caterers in Noida" },
+  { text: "Decorator in Noida" },
   { text: "DJ in Gurgaon" },
+  { text: "Fun Activities for birthday party", type: "page", href: "/fun-activities" },
   { text: "Gift Hampers & Cakes",              type: "page", href: "/gift-hampers-cakes" },
   { text: "Budget Allocator",                   type: "page", href: "/budget-picker" },
-  { text: "Decor Finder",                       type: "page", href: "/decor-finder" },
   { text: "Decorators under ₹30,000" },
   { text: "Photographer and caterer in Noida" },
 ];
@@ -131,32 +134,34 @@ export default function SearchOverlay({ isOpen, onClose }) {
           )}
         </div>
 
-        {/* Category quick chips — navigate to /search?categories=X (same as desktop) */}
-        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 0 10px", scrollbarWidth: "none" }}>
-          {CATEGORIES.map(c => (
-            <button key={c.label}
-              onMouseDown={e => e.preventDefault()}
-              onClick={() => { navigate(c.id ? `/search?categories=${c.id}` : "/listings"); onClose(); }}
-              style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, fontSize: 13, fontWeight: 600, color: "#6B3A1F", flexShrink: 0, whiteSpace: "nowrap" }}>
-              <span style={{ fontSize: 15 }}>{c.emoji}</span> {c.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Location quick chips — always visible in header */}
-        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 10, paddingBottom: 14 }}>
-          <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>Browse by location</p>
-          <div style={{ display: "flex", gap: 7, overflowX: "auto", scrollbarWidth: "none" }}>
-            {POPULAR_LOCATIONS.map(loc => (
-              <button key={loc}
+        {/* Category quick chips + location chips — desktop only */}
+        <div className="search-overlay-desktop-chips">
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 0 10px", scrollbarWidth: "none" }}>
+            {CATEGORIES.map(c => (
+              <button key={c.label}
                 onMouseDown={e => e.preventDefault()}
-                onClick={() => { navigate(`/search?locations=${loc}&q=${loc}`); onClose(); }}
-                style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.05)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 600, color: "#6B3A1F", flexShrink: 0, whiteSpace: "nowrap" }}>
-                📍 {loc}
+                onClick={() => { if (c.href) { navigate(c.href); } else { navigate(c.id ? `/search?categories=${c.id}` : "/listings"); } onClose(); }}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, fontSize: 13, fontWeight: 600, color: "#6B3A1F", flexShrink: 0, whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 15 }}>{c.emoji}</span> {c.label}
               </button>
             ))}
           </div>
+
+          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 10, paddingBottom: 14 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>Browse by location</p>
+            <div style={{ display: "flex", gap: 7, overflowX: "auto", scrollbarWidth: "none" }}>
+              {POPULAR_LOCATIONS.map(loc => (
+                <button key={loc}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { navigate(`/search?locations=${loc}&q=${loc}`); onClose(); }}
+                  style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.05)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 600, color: "#6B3A1F", flexShrink: 0, whiteSpace: "nowrap" }}>
+                  📍 {loc}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+        <style>{`@media (max-width: 767px) { .search-overlay-desktop-chips { display: none !important; } }`}</style>
       </div>
 
       {/* Results body */}

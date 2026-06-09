@@ -318,20 +318,17 @@ body {
   .hero-split > div:first-child {
     flex: none !important;
     width: 100% !important;
-    padding: 28px 22px 32px !important;
+    padding: 28px 22px 24px !important;
     justify-content: flex-start !important;
-    order: 2;
-  }
-  .hero-split > div:last-child {
-    flex: none !important;
-    width: 100% !important;
-    height: 56vw !important;
-    min-height: 220px !important;
-    max-height: 360px !important;
-    position: relative !important;
     order: 1;
   }
-
+  /* Hide photo carousel on mobile — replaced by poster/search section */
+  .hero-split > div:last-child {
+    display: none !important;
+  }
+  .hero-mobile-search-section {
+    display: flex !important;
+  }
 }
 
 /* Responsive Design */

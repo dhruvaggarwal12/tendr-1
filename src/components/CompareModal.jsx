@@ -41,32 +41,34 @@ const CompareModal = ({ open, onClose, vendors = [] }) => {
         fontFamily: font, overflow: "hidden",
       }}>
         {/* Header */}
-        <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "16px 24px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+        <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#fff", margin: 0 }}>Compare Vendors</h2>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", margin: "3px 0 0" }}>Side-by-side to help you decide</p>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", margin: 0 }}>Compare Vendors</h2>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: "2px 0 0" }}>Side-by-side to help you decide</p>
           </div>
-          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "24px" }}>
-          {loading ? (
-            <div style={{ display: "grid", gridTemplateColumns: `repeat(${vendors.length}, 1fr)`, gap: 16 }}>
-              {vendors.map((_, i) => (
-                <div key={i} style={{ borderRadius: 16, overflow: "hidden", border: "1.5px solid rgba(201,168,76,0.12)" }}>
-                  <div style={{ height: 140, background: "#E8DFD0", animation: "skeleton-pulse 1.4s ease-in-out infinite" }} />
-                  <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
-                    {[80, 60, 90, 50].map((w, j) => (
-                      <div key={j} style={{ height: 12, width: `${w}%`, background: "#E8DFD0", borderRadius: 6, animation: "skeleton-pulse 1.4s ease-in-out infinite" }} />
-                    ))}
+        <div style={{ flex: 1, overflow: "auto", padding: "12px 10px" }}>
+          <div style={{ minWidth: vendors.length > 1 ? `${Math.max(vendors.length * 200, 360)}px` : "auto" }}>
+            {loading ? (
+              <div style={{ display: "grid", gridTemplateColumns: `repeat(${vendors.length}, 1fr)`, gap: 16 }}>
+                {vendors.map((_, i) => (
+                  <div key={i} style={{ borderRadius: 16, overflow: "hidden", border: "1.5px solid rgba(201,168,76,0.12)" }}>
+                    <div style={{ height: 140, background: "#E8DFD0", animation: "skeleton-pulse 1.4s ease-in-out infinite" }} />
+                    <div style={{ padding: 14, display: "flex", flexDirection: "column", gap: 8 }}>
+                      {[80, 60, 90, 50].map((w, j) => (
+                        <div key={j} style={{ height: 12, width: `${w}%`, background: "#E8DFD0", borderRadius: 6, animation: "skeleton-pulse 1.4s ease-in-out infinite" }} />
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <ComparisonMatrix vendors={fullVendors} />
-          )}
+                ))}
+              </div>
+            ) : (
+              <ComparisonMatrix vendors={fullVendors} />
+            )}
+          </div>
         </div>
       </div>
 
