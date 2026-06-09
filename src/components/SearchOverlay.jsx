@@ -6,14 +6,26 @@ const RECENT_KEY = "tendr_recent_searches";
 const MAX_RECENT = 5;
 
 const CATEGORIES = [
-  { label: "Photographers", emoji: "📸", path: "/top-rated/Photographer" },
-  { label: "Catering",      emoji: "🍽",  path: "/top-rated/Caterer" },
-  { label: "DJs",           emoji: "🎵",  path: "/top-rated/DJ" },
-  { label: "Decoration",    emoji: "🎀",  path: "/top-rated/Decorator" },
-  { label: "All Vendors",   emoji: "🔍",  path: "/listings" },
+  { label: "Photographers", emoji: "📸", id: "Photographer" },
+  { label: "Catering",      emoji: "🍽",  id: "Caterer" },
+  { label: "DJs",           emoji: "🎵",  id: "DJ" },
+  { label: "Decoration",    emoji: "🎀",  id: "Decorator" },
+  { label: "All Vendors",   emoji: "🔍",  id: null },
 ];
 
 const POPULAR_LOCATIONS = ["Delhi", "Noida", "Ghaziabad", "Greater Noida"];
+
+// Same popular suggestions as desktop search bar
+const POPULAR_SEARCHES = [
+  { text: "Photographers in Delhi" },
+  { text: "Caterers in Noida" },
+  { text: "DJ in Gurgaon" },
+  { text: "Gift Hampers & Cakes",              type: "page", href: "/gift-hampers-cakes" },
+  { text: "Budget Allocator",                   type: "page", href: "/budget-picker" },
+  { text: "Decor Finder",                       type: "page", href: "/decor-finder" },
+  { text: "Decorators under ₹30,000" },
+  { text: "Photographer and caterer in Noida" },
+];
 
 const SVC_KW = { caterer:"Caterer", catering:"Caterer", food:"Caterer", decorator:"Decorator", decoration:"Decorator", decor:"Decorator", photographer:"Photographer", photography:"Photographer", photo:"Photographer", dj:"DJ", music:"DJ", entertainment:"DJ" };
 const LOC_KW = { delhi:"Delhi", noida:"Noida", gurgaon:"Gurgaon", gurugram:"Gurgaon", ghaziabad:"Ghaziabad", "greater noida":"Greater Noida" };
@@ -67,14 +79,10 @@ export default function SearchOverlay({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const suggestions = q.trim().length > 0
-    ? [
-        { text: `${q} photographers`, tag: null },
-        { text: `${q} caterers`, tag: null },
-        { text: `${q} decorators`, tag: null },
-        { text: `${q} DJs`, tag: null },
-      ].filter(s => s.text.toLowerCase().includes(q.toLowerCase().slice(0,3)))
-    : [];
+  // Filter popular searches by query (same logic as desktop)
+  const filteredSuggestions = q.trim().length > 0
+    ? POPULAR_SEARCHES.filter(s => s.text.toLowerCase().includes(q.toLowerCase()))
+    : POPULAR_SEARCHES.slice(0, 5);
 
   const doSearch = (text) => {
     if (!text.trim()) return;
@@ -123,12 +131,12 @@ export default function SearchOverlay({ isOpen, onClose }) {
           )}
         </div>
 
-        {/* Category quick chips */}
+        {/* Category quick chips — navigate to /search?categories=X (same as desktop) */}
         <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 0 10px", scrollbarWidth: "none" }}>
           {CATEGORIES.map(c => (
             <button key={c.label}
               onMouseDown={e => e.preventDefault()}
-              onClick={() => { navigate(c.path); onClose(); }}
+              onClick={() => { navigate(c.id ? `/search?categories=${c.id}` : "/listings"); onClose(); }}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, fontSize: 13, fontWeight: 600, color: "#6B3A1F", flexShrink: 0, whiteSpace: "nowrap" }}>
               <span style={{ fontSize: 15 }}>{c.emoji}</span> {c.label}
             </button>
@@ -156,26 +164,32 @@ export default function SearchOverlay({ isOpen, onClose }) {
         style={{ flex: 1, background: "#FFFCF5", overflowY: "auto", padding: "4px 0 40px" }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Typed suggestions */}
+        {/* Typed query — "Search X" row + filtered popular suggestions */}
         {q.trim().length > 0 ? (
           <div>
             <button
               onMouseDown={e => e.preventDefault()}
               onClick={() => doSearch(q)}
               style={{ width: "100%", textAlign: "left", padding: "14px 20px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(196,122,46,0.07)", fontFamily: font }}>
-              <span style={{ fontSize: 18, color: "#C47A2E" }}>🔍</span>
+              <span style={{ fontSize: 16, color: "#C47A2E" }}>🔍</span>
               <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>{q}</span>
               <span style={{ marginLeft: "auto", fontSize: 12, color: "#9B7450" }}>Search →</span>
             </button>
-            {suggestions.slice(0, 3).map((s, i) => (
+            {filteredSuggestions.map((s, i) => (
               <button key={i}
                 onMouseDown={e => e.preventDefault()}
-                onClick={() => handleSuggestionClick(s.text)}
-                style={{ width: "100%", textAlign: "left", padding: "12px 20px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, borderBottom: "1px solid rgba(196,122,46,0.05)", fontFamily: font }}>
-                <span style={{ fontSize: 16, color: "#9B7450" }}>↗</span>
-                <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
+                onClick={() => { if (s.href) { navigate(s.href); onClose(); } else handleSuggestionClick(s.text); }}
+                style={{ width: "100%", textAlign: "left", padding: "12px 20px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, borderBottom: "1px solid rgba(196,122,46,0.05)", fontFamily: font }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 14, color: "#9B7450" }}>↗</span>
+                  <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
+                </div>
+                {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
               </button>
             ))}
+            {filteredSuggestions.length === 0 && (
+              <div style={{ padding: "12px 20px", fontSize: 13, color: "#9B7450", fontFamily: font }}>Press Search to continue</div>
+            )}
           </div>
         ) : (
           <>
@@ -191,26 +205,28 @@ export default function SearchOverlay({ isOpen, onClose }) {
                     onMouseDown={e => e.preventDefault()}
                     onClick={() => { setQ(r); doSearch(r); }}
                     style={{ width: "100%", textAlign: "left", padding: "10px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.06)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: font }}>
-                    <span style={{ fontSize: 16, color: "#C47A2E" }}>🕐</span>
+                    <span style={{ fontSize: 15, color: "#C47A2E" }}>🕐</span>
                     <span style={{ fontSize: 14, color: "#2C1A0E" }}>{r}</span>
                   </button>
                 ))}
               </div>
             )}
 
-            {/* Popular locations */}
+            {/* Popular searches — same as desktop */}
             <div style={{ padding: "20px 20px 0" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px" }}>Browse by location</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {POPULAR_LOCATIONS.map(loc => (
-                  <button key={loc}
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => { navigate(`/search?locations=${loc}&q=${loc}`); onClose(); }}
-                    style={{ padding: "8px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", cursor: "pointer", fontFamily: font, fontSize: 13, fontWeight: 600, color: "#6B3A1F" }}>
-                    📍 {loc}
-                  </button>
-                ))}
-              </div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Popular searches</p>
+              {POPULAR_SEARCHES.map((s, i) => (
+                <button key={i}
+                  onMouseDown={e => e.preventDefault()}
+                  onClick={() => { if (s.href) { navigate(s.href); onClose(); } else handleSuggestionClick(s.text); }}
+                  style={{ width: "100%", textAlign: "left", padding: "11px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.06)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, fontFamily: font }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <span style={{ fontSize: 14, color: "#9B7450" }}>↗</span>
+                    <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
+                  </div>
+                  {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
+                </button>
+              ))}
             </div>
           </>
         )}

@@ -27,21 +27,24 @@ export default function SearchResults() {
   const isUnknown  = searchParams.get("unknown") === "1";
   const allCategories = user?.isAdmin ? [...PLATFORM_CATEGORIES, "Fun Activities"] : PLATFORM_CATEGORIES;
 
-  // Active filter state (for swap chips) — sync whenever URL params change
-  const [activeCat, setActiveCat] = useState(rawCats[0] || "");
-  const [activeLoc, setActiveLoc] = useState(rawLocs[0] || "");
+  // Active filter state — sync whenever URL params change
+  const [activeCat,   setActiveCat]   = useState(rawCats[0] || "");
+  const [localLoc,    setLocalLoc]    = useState(rawLocs[0] || "");
+  const [localBudget, setLocalBudget] = useState(null);
   const [topRatedOnly, setTopRatedOnly] = useState(false);
   const [sortBy, setSortBy]             = useState("rankingScore");
   const [sortOrder, setSortOrder]       = useState("desc");
   const [dateFilter, setDateFilter]     = useState("");
   const [showTip, setShowTip] = useState(false);
   const [showHowToBook, setShowHowToBook] = useState(true);
+  const todayStr = new Date().toISOString().split("T")[0];
   useEffect(() => { const t = setTimeout(() => setShowTip(true), 20000); return () => clearTimeout(t); }, []);
 
   // Re-sync when URL changes (user searches again from this page)
   useEffect(() => {
     setActiveCat(rawCats[0] || "");
-    setActiveLoc(rawLocs[0] || "");
+    setLocalLoc(rawLocs[0] || "");
+    setLocalBudget(null);
     setCurrentPage(1);
     setTopRatedOnly(false);
   }, [searchParams.toString()]);
@@ -67,17 +70,16 @@ export default function SearchResults() {
     return () => clearTimeout(t);
   }, []);
 
-  // Fetch vendors when filters change — show all vendors if no category detected
+  // Fetch vendors when filters change
   useEffect(() => {
-    if (isUnknown) return; // unknown screen handled separately
+    if (isUnknown) return;
     setLoading(true);
     const params = new URLSearchParams();
     if (activeCat) params.set("serviceTypes", activeCat);
-    // Pass first location only (backend filters by single location)
-    // If multiple locations, we fetch per-location and merge — for now use first
-    if (rawLocs.length === 1) params.set("location", rawLocs[0]);
-    // If multiple locations or none — no location filter (show all)
-    if (rawBudget) params.set("maxPrice", rawBudget);
+    const effectiveLoc = localLoc || (rawLocs.length === 1 ? rawLocs[0] : "");
+    if (effectiveLoc) params.set("location", effectiveLoc);
+    const effectiveBudget = localBudget || rawBudget;
+    if (effectiveBudget) params.set("maxPrice", effectiveBudget);
     if (topRatedOnly) params.set("isTopRated", "true");
     if (dateFilter)   params.set("date", dateFilter);
     params.set("sortBy", "rankingScore");
@@ -89,12 +91,12 @@ export default function SearchResults() {
       .then(d => { setVendors(d.vendors || []); setPagination(d.pagination || {}); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [activeCat, activeLoc, rawBudget, currentPage, topRatedOnly, dateFilter]);
+  }, [activeCat, localLoc, rawBudget, localBudget, currentPage, topRatedOnly, dateFilter]);
 
   // Sync to Redux so vendor cards work
   useEffect(() => {
-    if (activeCat) dispatch(setFilters({ serviceType: activeCat, locationType: activeLoc || "" }));
-  }, [activeCat, activeLoc]);
+    if (activeCat) dispatch(setFilters({ serviceType: activeCat, locationType: localLoc || "" }));
+  }, [activeCat, localLoc]);
 
   // Unknown search screen
   if (isUnknown) {
@@ -151,10 +153,73 @@ export default function SearchResults() {
         <div style={{ marginBottom: 12 }}>
           <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 12px", textTransform: "capitalize" }}>
             {rawQuery || (activeCat
-              ? `${activeCat}s${activeLoc ? ` in ${activeLoc}` : ""}${rawBudget ? ` under ₹${Number(rawBudget).toLocaleString("en-IN")}` : ""}`
+              ? `${activeCat}s${localLoc ? ` in ${localLoc}` : ""}${(localBudget || rawBudget) ? ` under ₹${Number(localBudget || rawBudget).toLocaleString("en-IN")}` : ""}`
               : "Search Results")}
           </h1>
-          {/* Sticky sort + filter row */}
+
+          {/* ── Filter bar ── */}
+          <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "14px 16px", marginBottom: 10 }}>
+            {/* Location row */}
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>📍 Location</span>
+              <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", marginTop: 7, paddingBottom: 2 }}>
+                {["All", ...PLATFORM_LOCATIONS].map(loc => {
+                  const active = loc === "All" ? !localLoc : localLoc === loc;
+                  return (
+                    <button key={loc}
+                      onClick={() => { setLocalLoc(loc === "All" ? "" : loc); setCurrentPage(1); }}
+                      style={{ padding: "5px 14px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s" }}>
+                      {loc}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Date + Budget row */}
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-start" }}>
+              {/* Date */}
+              <div>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>📅 Date</span>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 7 }}>
+                  <input
+                    type="date"
+                    value={dateFilter}
+                    min={todayStr}
+                    onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
+                    style={{ fontFamily: font, fontSize: 12, padding: "5px 11px", borderRadius: 100, border: `1.5px solid ${dateFilter ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: dateFilter ? "rgba(196,122,46,0.07)" : "transparent", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
+                  />
+                  {dateFilter && (
+                    <button onClick={() => { setDateFilter(""); setCurrentPage(1); }} style={{ fontSize: 13, color: "#9B7450", background: "none", border: "none", cursor: "pointer", padding: "2px 4px", lineHeight: 1 }}>✕</button>
+                  )}
+                </div>
+              </div>
+
+              {/* Budget */}
+              <div style={{ flex: 1, minWidth: 200 }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>💰 Budget (per vendor)</span>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 7 }}>
+                  {[
+                    { label: "Under ₹10k",  val: 10000 },
+                    { label: "Under ₹25k",  val: 25000 },
+                    { label: "Under ₹50k",  val: 50000 },
+                    { label: "Under ₹1L",   val: 100000 },
+                  ].map(({ label, val }) => {
+                    const active = localBudget === val || (!localBudget && rawBudget === val);
+                    return (
+                      <button key={val}
+                        onClick={() => { setLocalBudget(active ? null : val); setCurrentPage(1); }}
+                        style={{ padding: "5px 13px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "all 0.15s" }}>
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sort row */}
           <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "space-between", flexWrap: "wrap" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <span style={{ fontFamily: font, fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
@@ -170,22 +235,6 @@ export default function SearchResults() {
                 <option value="desc">High to Low</option>
                 <option value="asc">Low to High</option>
               </select>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontFamily: font, fontSize: 12, fontWeight: 600, color: "#9B7450" }}>📅</span>
-              <input
-                type="date"
-                value={dateFilter}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
-                style={{ fontFamily: font, fontSize: 11, padding: "3px 8px", borderRadius: 100, border: `1.5px solid ${dateFilter ? "#C47A2E" : "rgba(204,171,74,0.6)"}`, background: dateFilter ? "rgba(196,122,46,0.07)" : "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
-              />
-              {dateFilter && (
-                <button
-                  onClick={() => { setDateFilter(""); setCurrentPage(1); }}
-                  style={{ fontSize: 11, color: "#9B7450", background: "none", border: "none", cursor: "pointer", padding: "2px 4px" }}
-                >✕</button>
-              )}
             </div>
             <button
               onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
@@ -209,9 +258,9 @@ export default function SearchResults() {
         )}
 
         {/* Budget badge */}
-        {rawBudget > 0 && (
+        {(localBudget || rawBudget) > 0 && (
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 14px", borderRadius: 100, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", fontSize: 12, fontWeight: 600, color: "#7A5535", marginBottom: 16 }}>
-            💰 Budget: up to ₹{Number(rawBudget).toLocaleString("en-IN")}
+            💰 Budget: up to ₹{Number(localBudget || rawBudget).toLocaleString("en-IN")}
           </div>
         )}
 
