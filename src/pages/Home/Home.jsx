@@ -1587,59 +1587,36 @@ const Home = () => {
       </section>
 
       {/* ── Join the Celebration Hub — admin preview only ── */}
-      {user?.isAdmin && (
-        <section style={{ background: "linear-gradient(160deg,#0F172A 0%,#1E293B 60%,#0F172A 100%)", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-          <div style={{ position:"absolute", top:-80, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.06)", pointerEvents:"none" }} />
-          <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative" }}>
-            <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:32, gap:24, flexWrap:"wrap" }}>
-              <div>
-                <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:14 }}>
-                  <span style={{ fontSize:11, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 New · Admin Preview</span>
-                </div>
-                <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.6rem,3.5vw,2.6rem)", fontWeight:400, color:"#fff", margin:"0 0 10px", letterSpacing:"0.01em", lineHeight:1.25 }}>
-                  Join the Celebration Hub
-                </h2>
-                <p style={{ fontSize:14, color:"rgba(255,255,255,0.5)", margin:0, maxWidth:460, lineHeight:1.7 }}>
-                  Share ideas, get inspiration, discuss event challenges — a space shaped by the community.
-                </p>
-              </div>
-              <button onClick={() => navigate("/celebration-hub")}
-                style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"12px 28px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 18px rgba(196,122,46,0.38)", whiteSpace:"nowrap", transition:"opacity 0.2s", flexShrink:0 }}
-                onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
-                onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-                Enter the Hub →
-              </button>
+      {/* ── Celebration Hub — Community CTA ── */}
+      <section style={{ background: "linear-gradient(160deg,#0F172A 0%,#1E293B 60%,#0F172A 100%)", padding: "56px 24px 64px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        <div style={{ position:"absolute", top:-80, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.06)", pointerEvents:"none" }} />
+        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", display:"flex", alignItems:"center", justifyContent:"space-between", gap:32, flexWrap:"wrap" }}>
+          <div style={{ maxWidth: 520 }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:16 }}>
+              <span style={{ fontSize:11, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 Community</span>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }} className="ch-cat-grid">
-              {[
-                { icon:"💡", cat:"Ideas & Decor",    desc:"Share themes, mood boards and vendor finds with the community.", count:"50+ posts", color:"#CCAB4A" },
-                { icon:"🔥", cat:"Trending Now",     desc:"See what real couples are discussing and voting on this week.", count:"12 active threads", color:"#F97316" },
-                { icon:"📊", cat:"Polls & Opinions", desc:"Vote on colour palettes, setups and event choices. Real answers.", count:"Live polls", color:"#8B5CF6" },
-              ].map(({ icon, cat, desc, count, color }) => (
-                <button key={cat} onClick={() => navigate("/celebration-hub")}
-                  style={{ display:"flex", flexDirection:"column", alignItems:"flex-start", gap:10, padding:"20px 18px", borderRadius:18, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.09)", cursor:"pointer", fontFamily:"'Outfit',sans-serif", textAlign:"left", transition:"background 0.18s" }}
-                  onMouseEnter={e => e.currentTarget.style.background="rgba(255,255,255,0.09)"}
-                  onMouseLeave={e => e.currentTarget.style.background="rgba(255,255,255,0.05)"}>
-                  <span style={{ fontSize:30 }}>{icon}</span>
-                  <div>
-                    <div style={{ fontSize:14, fontWeight:800, color:"#fff", marginBottom:5, lineHeight:1.2 }}>{cat}</div>
-                    <p style={{ fontSize:12, color:"rgba(255,255,255,0.48)", margin:"0 0 10px", lineHeight:1.55 }}>{desc}</p>
-                    <span style={{ fontSize:10.5, fontWeight:700, color, background:`${color}18`, borderRadius:100, padding:"3px 10px" }}>{count}</span>
-                  </div>
-                  <div style={{ width:32, height:2, background:color, borderRadius:100, marginTop:"auto" }} />
-                </button>
-              ))}
-            </div>
-            <style>{`
-              @media(max-width:640px){
-                .ch-cat-grid{display:flex!important;overflow-x:auto!important;scroll-snap-type:x mandatory!important;gap:12px!important;padding:4px 2px 12px!important;margin:0 -24px!important;padding-left:24px!important;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-                .ch-cat-grid::-webkit-scrollbar{display:none}
-                .ch-cat-grid>button{flex:0 0 78%!important;scroll-snap-align:start!important;}
-              }
-            `}</style>
+            <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,4.5vw,3.2rem)", fontWeight:400, color:"#fff", margin:"0 0 12px", letterSpacing:"0.01em", lineHeight:1.2 }}>
+              Join the Celebration Hub
+            </h2>
+            <p style={{ fontSize:15, color:"rgba(255,255,255,0.55)", margin:0, lineHeight:1.75 }}>
+              Share ideas, get inspiration, discuss event challenges — a space shaped by the community.
+            </p>
           </div>
-        </section>
-      )}
+          <div style={{ display:"flex", flexDirection:"column", gap:12, flexShrink:0 }}>
+            <button onClick={() => navigate("/celebration-hub")}
+              style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"15px 36px", borderRadius:14, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:16, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 18px rgba(196,122,46,0.38)", whiteSpace:"nowrap", transition:"opacity 0.2s" }}
+              onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
+              onMouseLeave={e => e.currentTarget.style.opacity="1"}>
+              Enter the Hub →
+            </button>
+            <a href="https://www.reddit.com/r/tendrcommunity/s/4eThHd2V80" target="_blank" rel="noopener noreferrer"
+              style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"15px 36px", borderRadius:14, background:"#FF4500", color:"#fff", fontSize:16, fontWeight:800, textDecoration:"none", boxShadow:"0 4px 14px rgba(255,69,0,0.35)", whiteSpace:"nowrap" }}>
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="#fff"><path d="M16.67 10a1.46 1.46 0 00-2.47-1 7.12 7.12 0 00-3.85-1.23l.65-3.08 2.13.45a1 1 0 101.07-1 1 1 0 00-.96.68l-2.38-.5a.27.27 0 00-.32.2l-.73 3.44a7.14 7.14 0 00-3.89 1.23 1.46 1.46 0 10-1.61 2.39 2.87 2.87 0 000 .44c0 2.24 2.61 4.06 5.83 4.06s5.83-1.82 5.83-4.06a2.87 2.87 0 000-.44 1.46 1.46 0 00.61-1.58zM7.27 11a1 1 0 111 1 1 1 0 01-1-1zm5.58 2.65a3.56 3.56 0 01-2.85.57 3.56 3.56 0 01-2.85-.57.19.19 0 01.27-.27 3.2 3.2 0 002.58.43 3.2 3.2 0 002.58-.43.19.19 0 01.27.27zm-.14-1.65a1 1 0 111-1 1 1 0 01-1 1z"/></svg>
+              Join Reddit Community
+            </a>
+          </div>
+        </div>
+      </section>
 
       {/* Become a Partner Section */}
       <section style={{ background: "#2C1A0E", padding: "96px 24px", fontFamily: "'Outfit', sans-serif" }}>
