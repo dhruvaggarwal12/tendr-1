@@ -202,13 +202,14 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // Pages where the user is deep in the vendor flow — always send to listings
   const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/top-rated", "/search"];
   const isOnVendorFlow = vendorFlowPaths.some(p => location.pathname.startsWith(p));
+  const isHomePage = location.pathname === "/";
 
   // Floating cluster helpers
   const savedVendorCount = (() => { void bookmarkTick; return getSavedVendors().length; })();
   const hasActiveActions = finalisedCount > 0 || ghCartCount > 0 || compareSelected.length > 0 || savedVendorCount > 0;
-  // Desktop: cluster on non-vendor pages (home etc.) — chat icon always, action icons when active
+  // Desktop: cluster only on home page; sidebar shows them on all other pages
   // Mobile: cluster on ALL pages but only when there are active items
-  const shouldRenderCluster = isDesktop ? !isOnVendorFlow : hasActiveActions;
+  const shouldRenderCluster = isDesktop ? (isHomePage && hasActiveActions) : hasActiveActions;
 
   const handleBrowseVendors = () => {
     // Always land on flow-choosing page so user picks You Do It vs Smart Planner
@@ -350,7 +351,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           </div>
 
           {/* Compare Vendors (below search) */}
-          {isOnVendorFlow && compareSelected.length > 0 && (
+          {!isHomePage && compareSelected.length > 0 && (
             <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
               <button onClick={() => setCompareModalOpen(true)}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.1)", cursor: "pointer", fontFamily: font }}>
@@ -362,7 +363,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           )}
 
           {/* Saved Vendors (below compare, if any) */}
-          {isOnVendorFlow && (() => { const sv = getSavedVendors(); return sv.length > 0 ? (
+          {!isHomePage && (() => { const sv = getSavedVendors(); return sv.length > 0 ? (
             <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
               <button onClick={() => setBookmarksOpen(true)}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.08)", cursor: "pointer", fontFamily: font }}>
@@ -424,7 +425,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 <button onClick={() => navigate("/dashboard")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
               </div>
               {/* Review & Pay if vendors finalised or gift hampers in cart */}
-              {isOnVendorFlow && (finalisedCount > 0 || ghCartCount > 0) && (
+              {!isHomePage && (finalisedCount > 0 || ghCartCount > 0) && (
                 <button onClick={() => navigate("/booking/review")} style={{ width: "100%", marginTop: 7, padding: "7px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Review & Pay ({finalisedCount}) →
                 </button>
