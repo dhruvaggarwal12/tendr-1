@@ -70,7 +70,7 @@ export default function CheckboxPicker() {
     } catch {}
   }, []); // eslint-disable-line
 
-  const [step, setStep]         = useState(0);  // 0 = flow choice
+  const [step, setStep]         = useState(1);
   const [eventType, setEventType]   = useState("");
   const [eventDate, setEventDate]   = useState("");
   const [guestCount, setGuestCount] = useState("");
@@ -82,7 +82,7 @@ export default function CheckboxPicker() {
   const timerRef = useRef(null);
 
   const TOTAL_STEPS = 5;
-  const progress = step === 0 ? 0 : Math.round((step / TOTAL_STEPS) * 100);
+  const progress = Math.round((step / TOTAL_STEPS) * 100);
 
   const toggleService = (id) =>
     setServices(prev => prev.includes(id) ? prev.filter(s => s !== id) : [...prev, id]);
@@ -145,49 +145,6 @@ export default function CheckboxPicker() {
           {services.map(s => <Chip key={s} label={s} />)}
         </div>
         <style>{`@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}`}</style>
-      </div>
-    );
-  }
-
-  // ── Step 0: Flow choice ────────────────────────────────────────────────────
-  if (step === 0) {
-    return (
-      <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
-        <SEO title="Event Checklist — Personalize Your Plan" description="Create a personalized event checklist based on your event type, date, and services." path="/checklist-picker" />
-        <ToolNav title="Event Checklist" />
-        <div style={{ maxWidth: 780, margin: "0 auto", padding: "52px 24px 80px" }}>
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
-            <span style={{ display: "inline-block", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "5px 16px", fontSize: 11, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>Event Checklist</span>
-            <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>Build Your Checklist</h1>
-            <p style={{ fontSize: 15, color: "#9B7450" }}>Personalized to your event — never miss a detail.</p>
-            <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
-          </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24 }} className="picker-grid">
-            {[
-              { icon: "✨", title: "Personalized Checklist", sub: "Recommended", desc: "Answer 5 quick questions and we'll generate a checklist tailored to your event type, date, venue, and services needed.", steps: ["Tell us about your event", "We generate tailored tasks", "Edit freely anytime"], primary: true, action: () => setStep(1) },
-              { icon: "✏️", title: "Blank Checklist", sub: "Full control", desc: "Start from scratch. Add your own categories and tasks exactly how you want them.", steps: ["Start with a blank canvas", "Add your own tasks", "Organize by category"], primary: false, action: () => navigate("/checklist", { state: { customMode: true } }) },
-            ].map(({ icon, title, sub, desc, steps, primary, action }) => (
-              <div key={title} style={{ background: "#FFFCF5", borderRadius: 20, padding: "clamp(16px,3.5vw,28px) clamp(14px,3vw,24px)", border: primary ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.12)", boxShadow: primary ? "0 6px 24px rgba(196,122,46,0.15)" : "0 4px 16px rgba(139,69,19,0.07)", display: "flex", flexDirection: "column" }}>
-                <div style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 14 }}>{icon}</div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>{title}</h2>
-                <p style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E", margin: "0 0 12px" }}>{sub}</p>
-                <p style={{ fontSize: 14, color: "#7A5535", lineHeight: 1.65, margin: "0 0 16px", flex: 1 }}>{desc}</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 20 }}>
-                  {steps.map((s, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <span style={{ width: 20, height: 20, borderRadius: "50%", background: primary ? "#C47A2E" : "rgba(139,69,19,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: primary ? "#fff" : "#C47A2E", flexShrink: 0 }}>{i + 1}</span>
-                      <span style={{ fontSize: 13, color: "#5a3a1a", fontWeight: 500 }}>{s}</span>
-                    </div>
-                  ))}
-                </div>
-                <button onClick={action} style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: primary ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.1)", color: primary ? "#fff" : "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: primary ? "0 4px 14px rgba(196,122,46,0.3)" : "none" }}>
-                  {primary ? "Personalize My Checklist →" : "Start Blank →"}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-        <style>{`@media(max-width:600px){.picker-grid{grid-template-columns:1fr !important;}}`}</style>
       </div>
     );
   }
@@ -306,7 +263,7 @@ export default function CheckboxPicker() {
         {/* Nav buttons */}
         {step >= 1 && (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 36 }}>
-            <button onClick={() => step === 1 ? setStep(0) : setStep(s => s - 1)}
+            <button onClick={() => step === 1 ? navigate(-1) : setStep(s => s - 1)}
               style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
               ← Back
             </button>

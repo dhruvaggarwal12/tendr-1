@@ -648,31 +648,24 @@ const Home = () => {
 
             </div>
 
-            {/* Mobile only: search bar + service icon chips below CTA */}
-            <div className="hero-mobile-search-section" style={{ display: "none", flexDirection: "column", gap: 12, marginTop: 20 }}>
-              <form onSubmit={handleHeroSearch} style={{ display: "flex", alignItems: "center", gap: 10, background: "#fff", border: "2px solid #C47A2E", borderRadius: 14, padding: "10px 14px", boxShadow: "0 4px 16px rgba(196,122,46,0.15)" }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                  <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                </svg>
-                <input type="text" value={heroSearch} onChange={e => setHeroSearch(e.target.value)} placeholder="Search vendors, DJ, Decoration..."
-                  style={{ flex: 1, border: "none", outline: "none", fontSize: 14, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", background: "transparent" }} />
-                {heroSearch && <button type="button" onClick={() => setHeroSearch("")} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", padding: 0, fontSize: 16 }}>×</button>}
-              </form>
-              <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
-                {[
-                  { emoji: "🍽", label: "Catering",       path: "/top-rated/Caterer" },
-                  { emoji: "🎀", label: "Decoration",     path: "/top-rated/Decorator" },
-                  { emoji: "📸", label: "Photography",    path: "/top-rated/Photographer" },
-                  { emoji: "🎵", label: "DJ",             path: "/top-rated/DJ" },
-                  { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes" },
-                  { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
-                ].map(({ emoji, label, path }) => (
-                  <button key={label} onClick={() => navigate(path)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#2C1A0E", cursor: "pointer", fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, flexShrink: 0, whiteSpace: "nowrap", boxShadow: "0 2px 6px rgba(196,122,46,0.08)" }}>
-                    {emoji} {label}
-                  </button>
-                ))}
-              </div>
+            {/* Mobile only: Swiggy-style category icon chips */}
+            <div className="hero-mobile-cats" style={{ display: "none", gap: 0, marginTop: 20, overflowX: "auto", scrollbarWidth: "none" }}>
+              {[
+                { emoji: "🎀", label: "Decorator",    path: "/top-rated/Decorator",    bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)" },
+                { emoji: "🍽", label: "Caterer",      path: "/top-rated/Caterer",      bg: "linear-gradient(135deg,#FFF8E1,#FFF0C2)" },
+                { emoji: "📸", label: "Photographer", path: "/top-rated/Photographer", bg: "linear-gradient(135deg,#F0F8FF,#E0F0FF)" },
+                { emoji: "🎵", label: "DJ",           path: "/top-rated/DJ",           bg: "linear-gradient(135deg,#F0F0FF,#E8E8FF)" },
+                { emoji: "🎁", label: "Gift Hampers", path: "/gift-hampers-cakes",     bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
+                { emoji: "🎭", label: "Fun Activities",path: "/fun-activities",        bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
+              ].map(({ emoji, label, path, bg }) => (
+                <button key={label} onClick={() => navigate(path)}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 8px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, minWidth: 68 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 16, background: bg, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 8px rgba(196,122,46,0.1)" }}>
+                    {emoji}
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2, maxWidth: 60 }}>{label}</span>
+                </button>
+              ))}
             </div>
           </div>
 
@@ -901,9 +894,10 @@ const Home = () => {
           .hero-split > div:last-child {
             display: none !important;
           }
-          .hero-mobile-search-section {
+          .hero-mobile-cats {
             display: flex !important;
           }
+          .hero-mobile-cats::-webkit-scrollbar { display: none; }
         }
       `}</style>
 
@@ -1501,6 +1495,44 @@ const Home = () => {
           </section>
         );
       })()}
+
+      {/* ── "What are you in the mood for?" — Swiggy-style Fun Activities chips ── */}
+      <section style={{ background: "#FFF8EF", padding: "40px 24px 44px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 24 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 6px" }}>🎭 Entertainment Add-ons</p>
+            <h2 style={{ fontSize: "clamp(1.3rem,2.8vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "-0.01em" }}>What are you in the mood for?</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Fixed-price entertainment — confirmed in 2 hours</p>
+          </div>
+          <div style={{ display: "flex", gap: 0, overflowX: "auto", scrollbarWidth: "none", justifyContent: "center", flexWrap: "wrap" }} className="fa-mood-row">
+            {FUN_ACTIVITIES.slice(0, 8).map((act) => (
+              <button key={act.id} onClick={() => navigate("/fun-activities")}
+                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "10px 12px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0 }}>
+                <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#FFF3E0,#FFE0B2)", border: "2px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, boxShadow: "0 4px 14px rgba(196,122,46,0.12)", transition: "transform 0.18s, box-shadow 0.18s" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(196,122,46,0.22)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(196,122,46,0.12)"; }}>
+                  {act.emoji}
+                </div>
+                <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.25, maxWidth: 72 }}>{act.name}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <button onClick={() => navigate("/fun-activities")}
+              style={{ padding: "9px 24px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
+              onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
+              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+              See All Activities →
+            </button>
+          </div>
+        </div>
+        <style>{`
+          .fa-mood-row::-webkit-scrollbar { display: none; }
+          @media (max-width: 640px) {
+            .fa-mood-row { flex-wrap: nowrap !important; justify-content: flex-start !important; }
+          }
+        `}</style>
+      </section>
 
       {/* Events Portfolio Gallery */}
       <section style={{ background: "#FFFFFF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>

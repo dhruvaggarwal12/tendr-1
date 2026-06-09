@@ -390,7 +390,13 @@ const VendorList = () => {
               </div>
             </div>
             <style>{`
-              @media (max-width: 639px) { .mobile-cat-switcher { display: block !important; } }
+              @media (max-width: 639px) {
+                .mobile-cat-switcher { display: block !important; }
+                .vendor-filter-chips { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; padding-bottom: 4px !important; }
+                .vendor-filter-chips::-webkit-scrollbar { display: none; }
+                .vendor-sort-row { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; justify-content: flex-start !important; gap: 6px !important; }
+                .vendor-sort-row::-webkit-scrollbar { display: none; }
+              }
             `}</style>
 
             <div style={{ marginBottom: 10 }} className="vendor-heading-wrap">
@@ -400,7 +406,7 @@ const VendorList = () => {
               </h1>
             </div>
 
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            <div className="vendor-filter-chips" style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {[
                 eventName ? { label: "Event", value: eventName, showLabel: false } : null,
                 (formEventType || eventType) ? { label: "Type", value: formEventType || eventType, showLabel: false } : null,
@@ -438,7 +444,7 @@ const VendorList = () => {
                 ))}
             </div>
 
-            <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
+            <div className="listings-sort-sticky vendor-sort-row" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
               {/* Sort controls — left */}
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
