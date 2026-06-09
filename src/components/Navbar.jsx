@@ -301,6 +301,7 @@ const Navbar = ({
     {
       label: "Booking",
       items: [
+        ...(user?.isAdmin ? [{ label: "🏠 Home Wedding Planner", href: "/home-wedding-planner" }] : []),
         { label: "Plan Your Event", href: "/booking" },
       ],
     },

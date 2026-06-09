@@ -1718,32 +1718,49 @@ const EventPlanning = () => {
             )}
 
             {currentQuestion.type === "select" && (
-              <div className="space-y-3">
-                {currentQuestion.options.map((option, index) => (
-                  <button
-                    type="button"
-                    key={index}
-                    tabIndex={0}
-                    onClick={() => selectAndAdvance(currentQuestion.id, option)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        selectAndAdvance(currentQuestion.id, option);
-                      }
-                    }}
-                    className={`w-full text-lg sm:text-xl p-4 text-left rounded-2xl transition-all duration-200
-                    border-2 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:ring-offset-2
-                    ${
-                      formData[currentQuestion.id] === option
-                        ? "border-[#C47A2E] text-gray-800 shadow-md"
-                        : "bg-white border-[#e5d4b3] text-gray-700 hover:border-[#CCAB4A]"
-                    }`}
-                    style={formData[currentQuestion.id] === option ? {background:"rgba(196,122,46,0.1)"} : {}}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
+              <>
+                <div
+                  className={currentQuestion.id !== "eventType" ? "space-y-3" : ""}
+                  style={currentQuestion.id === "eventType" ? { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } : undefined}
+                >
+                  {currentQuestion.options.map((option, index) => (
+                    <button
+                      type="button"
+                      key={index}
+                      tabIndex={0}
+                      onClick={() => selectAndAdvance(currentQuestion.id, option)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          selectAndAdvance(currentQuestion.id, option);
+                        }
+                      }}
+                      className={`w-full text-left rounded-2xl transition-all duration-200
+                      border-2 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:ring-offset-2
+                      ${currentQuestion.id === "eventType" ? "text-base p-3" : "text-lg sm:text-xl p-4"}
+                      ${
+                        formData[currentQuestion.id] === option
+                          ? "border-[#C47A2E] text-gray-800 shadow-md"
+                          : "bg-white border-[#e5d4b3] text-gray-700 hover:border-[#CCAB4A]"
+                      }`}
+                      style={formData[currentQuestion.id] === option ? {background:"rgba(196,122,46,0.1)"} : {}}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+                {currentQuestion.id === "eventType" && (
+                  <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: 12, background: "rgba(196,122,46,0.05)", border: "1.5px dashed rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>🏠 Planning a home wedding or multi-day rituals?</div>
+                      <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3 }}>Haldi · Mehendi · Wedding — plan all days together</div>
+                    </div>
+                    <button onClick={() => navigate("/home-wedding-planner")} style={{ padding: "8px 16px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, border: "none", fontFamily: "'Outfit',sans-serif", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
+                      Plan Now →
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
