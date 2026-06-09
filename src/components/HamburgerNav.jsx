@@ -200,8 +200,15 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const browseDisabled = false;
 
   // Pages where the user is deep in the vendor flow — always send to listings
-  const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/top-rated"];
+  const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/top-rated", "/search"];
   const isOnVendorFlow = vendorFlowPaths.some(p => location.pathname.startsWith(p));
+
+  // Floating cluster helpers
+  const savedVendorCount = (() => { void bookmarkTick; return getSavedVendors().length; })();
+  const hasActiveActions = finalisedCount > 0 || ghCartCount > 0 || compareSelected.length > 0 || savedVendorCount > 0;
+  // Desktop: cluster on non-vendor pages (home etc.) — chat icon always, action icons when active
+  // Mobile: cluster on ALL pages but only when there are active items
+  const shouldRenderCluster = isDesktop ? !isOnVendorFlow : hasActiveActions;
 
   const handleBrowseVendors = () => {
     // Always land on flow-choosing page so user picks You Do It vs Smart Planner
@@ -343,7 +350,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           </div>
 
           {/* Compare Vendors (below search) */}
-          {compareSelected.length > 0 && (
+          {isOnVendorFlow && compareSelected.length > 0 && (
             <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
               <button onClick={() => setCompareModalOpen(true)}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.1)", cursor: "pointer", fontFamily: font }}>
@@ -355,7 +362,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           )}
 
           {/* Saved Vendors (below compare, if any) */}
-          {(() => { const sv = getSavedVendors(); return sv.length > 0 ? (
+          {isOnVendorFlow && (() => { const sv = getSavedVendors(); return sv.length > 0 ? (
             <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
               <button onClick={() => setBookmarksOpen(true)}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.08)", cursor: "pointer", fontFamily: font }}>
@@ -417,7 +424,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 <button onClick={() => navigate("/dashboard")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
               </div>
               {/* Review & Pay if vendors finalised or gift hampers in cart */}
-              {(finalisedCount > 0 || ghCartCount > 0) && (
+              {isOnVendorFlow && (finalisedCount > 0 || ghCartCount > 0) && (
                 <button onClick={() => navigate("/booking/review")} style={{ width: "100%", marginTop: 7, padding: "7px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Review & Pay ({finalisedCount}) →
                 </button>
@@ -647,6 +654,38 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         )}
 
         <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
+
+        {/* ── Floating action cluster (desktop: home page; mobile: all pages) ── */}
+        {shouldRenderCluster && (
+          <div style={{ position: "fixed", bottom: 28, right: 24, zIndex: 9500, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+            {(finalisedCount > 0 || ghCartCount > 0) && (
+              <button onClick={() => navigate("/booking/review")} title="Review & Pay"
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(21,128,61,0.45)", color: "#fff" }}>
+                💳
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9, background: "#166534", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>{finalisedCount || ghCartCount}</span>
+              </button>
+            )}
+            {compareSelected.length > 0 && (
+              <button onClick={() => setCompareModalOpen(true)} title="Compare Vendors"
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(196,122,46,0.45)" }}>
+                🔀
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9, background: "#92400e", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>{compareSelected.length}</span>
+              </button>
+            )}
+            {savedVendorCount > 0 && (
+              <button onClick={() => setBookmarksOpen(true)} title="Saved Vendors"
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#be185d,#ec4899)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(190,24,93,0.35)", color: "#fff" }}>
+                ♥
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9, background: "#9d174d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>{savedVendorCount}</span>
+              </button>
+            )}
+            {/* Chat icon — anchor, desktop only */}
+            <button onClick={() => navigate("/chats")} title="My Chats"
+              style={{ width: 48, height: 48, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "2px solid rgba(196,122,46,0.4)", color: "#CCAB4A", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(44,26,14,0.35)" }}>
+              💬
+            </button>
+          </div>
+        )}
       </>
     );
   }
@@ -919,6 +958,34 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       ); })()}
 
       <MobileBottomNav />
+
+      {/* ── Floating action cluster — mobile: above bottom nav when active ── */}
+      {shouldRenderCluster && (
+        <div style={{ position: "fixed", bottom: "calc(72px + env(safe-area-inset-bottom, 0px))", right: 16, zIndex: 9500, display: "flex", flexDirection: "column", alignItems: "center", gap: 10 }}>
+          {(finalisedCount > 0 || ghCartCount > 0) && (
+            <button onClick={() => setReviewPopup(true)} title="Review & Pay"
+              style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(21,128,61,0.45)", color: "#fff" }}>
+              💳
+              <span style={{ position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9, background: "#166534", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>{finalisedCount || ghCartCount}</span>
+            </button>
+          )}
+          {compareSelected.length > 0 && (
+            <button onClick={() => setCompareModalOpen(true)} title="Compare Vendors"
+              style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(196,122,46,0.45)" }}>
+              🔀
+              <span style={{ position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9, background: "#92400e", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>{compareSelected.length}</span>
+            </button>
+          )}
+          {savedVendorCount > 0 && (
+            <button onClick={() => setBookmarksOpen(true)} title="Saved Vendors"
+              style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#be185d,#ec4899)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, boxShadow: "0 4px 14px rgba(190,24,93,0.35)", color: "#fff" }}>
+              ♥
+              <span style={{ position: "absolute", top: -3, right: -3, minWidth: 17, height: 17, borderRadius: 9, background: "#9d174d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>{savedVendorCount}</span>
+            </button>
+          )}
+        </div>
+      )}
+
       <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
       <style>{`@keyframes drawerSlideIn { from { transform: translateX(-100%) } to { transform: translateX(0) } }`}</style>
 
