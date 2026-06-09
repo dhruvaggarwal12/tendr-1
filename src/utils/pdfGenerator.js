@@ -1,27 +1,62 @@
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
-import tendrLogoUrl     from "../assets/logos/tendr.png";         // dark/gold — for light backgrounds
-import tendrLogoWhite   from "../assets/logos/tendr-logo-secondary.png"; // light — for dark backgrounds
+import tendrLogoUrl   from "../assets/logos/tendr.png";
+import tendrLogoWhite from "../assets/logos/tendr-logo-secondary.png";
 
-const BRAND_DARK   = "#2C1A0E";
-const BRAND_GOLD   = "#C47A2E";
-const BRAND_LIGHT  = "#F8F4EF";
-const BRAND_TAN    = "#9B7450";
+const BRAND_DARK  = "#2C1A0E";
+const BRAND_GOLD  = "#C47A2E";
+const WEBSITE_URL = "https://tendr.in";
 
-// Pre-load logos as base64 at module init so sync PDF functions can use them
+// Pre-load assets at module init so all generator functions can use them synchronously
 let _logoDark  = null;
 let _logoLight = null;
+let _websiteQR = null;
 
 async function _b64(url) {
   try {
     const resp = await fetch(url);
     const blob = await resp.blob();
-    return await new Promise(res => { const r = new FileReader(); r.onloadend = () => res(r.result); r.readAsDataURL(blob); });
+    return await new Promise(res => {
+      const r = new FileReader();
+      r.onloadend = () => res(r.result);
+      r.readAsDataURL(blob);
+    });
   } catch { return null; }
 }
-const _logoReady = Promise.all([_b64(tendrLogoUrl), _b64(tendrLogoWhite)]).then(([d, l]) => { _logoDark = d; _logoLight = l; });
-// Kick off immediately on module load so logos are ready before first click
-_logoReady.catch(() => {});
+
+const _assetsReady = Promise.all([
+  _b64(tendrLogoUrl).then(d => { _logoDark = d; }),
+  _b64(tendrLogoWhite).then(d => { _logoLight = d; }),
+  QRCode.toDataURL(WEBSITE_URL, { width: 80, margin: 1, color: { dark: "#2C1A0E", light: "#FFFCF5" } })
+    .then(d => { _websiteQR = d; })
+    .catch(() => {}),
+]);
+_assetsReady.catch(() => {});
+
+// Replace Rs symbol with "Rs." — Helvetica (Latin-1) cannot render the Rupee symbol
+function sanitize(val) {
+  return String(val ?? "—").replace(/₹/g, "Rs. ");
+}
+
+// Drawn ornamental divider — replaces broken unicode ornament chars
+function drawOrnamentDivider(doc, cx, y) {
+  doc.setDrawColor(196, 122, 46);
+  doc.setLineWidth(0.4);
+  doc.line(cx - 30, y, cx - 11, y);
+  doc.line(cx + 11, y, cx + 30, y);
+  doc.setFillColor(196, 122, 46);
+  [-7.5, 0, 7.5].forEach(dx => doc.circle(cx + dx, y, 1.2, "F"));
+}
+
+// Single center-dot divider — replaces broken heart char
+function drawCenterDot(doc, cx, y) {
+  doc.setDrawColor(196, 122, 46);
+  doc.setLineWidth(0.3);
+  doc.line(cx - 22, y, cx - 3, y);
+  doc.line(cx + 3, y, cx + 22, y);
+  doc.setFillColor(196, 122, 46);
+  doc.circle(cx, y, 1.5, "F");
+}
 
 function addHeader(doc, title) {
   doc.setFillColor(44, 26, 14);
@@ -52,8 +87,12 @@ function addFooter(doc, pageNum, totalPages) {
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(155, 116, 80);
-  doc.text("tendr.in  ·  support@tendr.in  ·  📲 Install app: tendr-1.vercel.app", 14, y + 5);
-  doc.text(`Page ${pageNum} of ${totalPages}`, 196, y + 5, { align: "right" });
+  // Middle dot U+00B7 is in Latin-1 (Helvetica supports it)
+  doc.text("tendr.in  ·  support@tendr.in  ·  tendr-1.vercel.app", 14, y + 5);
+  doc.text(`Page ${pageNum} of ${totalPages}`, 148, y + 5);
+  if (_websiteQR) {
+    doc.addImage(_websiteQR, "PNG", 185, y + 0.5, 10, 10);
+  }
 }
 
 function sectionTitle(doc, label, y) {
@@ -74,15 +113,16 @@ function row(doc, label, value, y, labelX = 14, valueX = 70) {
   doc.text(label, labelX, y);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(44, 26, 14);
-  const lines = doc.splitTextToSize(String(value || "—"), 196 - valueX);
+  const lines = doc.splitTextToSize(sanitize(value), 196 - valueX);
   doc.text(lines, valueX, y);
   return y + lines.length * 5 + 1;
 }
 
 // ── Invoice PDF ──────────────────────────────────────────────────────────────
-// serviceAmounts (optional): [{ category, amount }] — per-service breakdown
-// confirmedVendors: used only to extract unique service categories when serviceAmounts not provided
-export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount, orderId, paymentId, userName, serviceAmounts = null }) {
+// serviceAmounts (optional): [{ category, amount, vendorName? }]
+// confirmedVendors: [{ name, serviceType }] — used when serviceAmounts not provided
+export async function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount, orderId, paymentId, userName, serviceAmounts = null }) {
+  await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -108,13 +148,13 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount
   if (orderId)   doc.text(`Order ID: ${orderId}`, 20, y + 21);
   if (paymentId) doc.text(`Payment ID: ${paymentId}`, 20, y + 26);
 
-  // Status badge
+  // "PAID" badge — no checkmark emoji (Helvetica cannot render it)
   doc.setFillColor(21, 128, 61);
   doc.roundedRect(158, y + 5, 28, 10, 2, 2, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(255, 255, 255);
-  doc.text("✓  PAID", 172, y + 11.5, { align: "center" });
+  doc.text("PAID", 172, y + 11.5, { align: "center" });
 
   y += 36;
 
@@ -123,7 +163,7 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9.5);
   doc.setTextColor(44, 26, 14);
-  doc.text(userName || "Customer", 14, y);
+  doc.text(sanitize(userName || "Customer"), 14, y);
   y += 10;
 
   // Event details
@@ -134,12 +174,11 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount
   if (eventSummary.guests)    y = row(doc, "Guests:",     eventSummary.guests, y);
   y += 4;
 
-  // Build service rows — no vendor names
-  // Prefer serviceAmounts if provided; otherwise dedupe service types from confirmedVendors
+  // Build service rows — include vendor name
   const hasAmounts = serviceAmounts && serviceAmounts.length > 0;
   const serviceRows = hasAmounts
-    ? serviceAmounts
-    : [...new Map(confirmedVendors.map(v => [v.serviceType, { category: v.serviceType }])).values()];
+    ? serviceAmounts.map(s => ({ label: s.category || s.serviceType, vendorName: s.vendorName || null, amount: s.amount }))
+    : confirmedVendors.map(v => ({ label: v.serviceType, vendorName: v.name }));
 
   if (serviceRows.length > 0) {
     y = sectionTitle(doc, "Services Booked", y);
@@ -150,7 +189,8 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount
     doc.setFont("helvetica", "bold");
     doc.setFontSize(8.5);
     doc.setTextColor(92, 58, 26);
-    doc.text("Service Category", 18, y);
+    doc.text("Service", 18, y);
+    doc.text("Vendor", 85, y);
     if (hasAmounts) doc.text("Amount", 178, y, { align: "right" });
     y += 3;
     doc.setDrawColor(204, 171, 74);
@@ -159,20 +199,29 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount
     y += 4;
 
     serviceRows.forEach((s, i) => {
+      const rowH = 8;
       if (i % 2 === 0) {
         doc.setFillColor(255, 252, 247);
-        doc.rect(14, y - 3.5, 182, 6.5, "F");
+        doc.rect(14, y - 3.5, 182, rowH + 1, "F");
       }
-      doc.setFont("helvetica", "normal");
+      doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
       doc.setTextColor(44, 26, 14);
-      doc.text(s.category || s.serviceType || "", 18, y);
+      doc.text(sanitize(s.label), 18, y);
+
+      if (s.vendorName) {
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8.5);
+        doc.setTextColor(92, 58, 26);
+        doc.text(sanitize(s.vendorName), 85, y);
+      }
+
       if (hasAmounts && s.amount) {
         doc.setFont("helvetica", "bold");
         doc.setTextColor(196, 122, 46);
-        doc.text(`₹${Number(s.amount).toLocaleString("en-IN")}`, 192, y, { align: "right" });
+        doc.text(`Rs. ${Number(s.amount).toLocaleString("en-IN")}`, 192, y, { align: "right" });
       }
-      y += 7;
+      y += rowH;
     });
     y += 4;
   }
@@ -186,15 +235,15 @@ export function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount
   doc.text("Total Amount Paid:", 20, y + 10);
   doc.setFontSize(13);
   doc.setTextColor(255, 255, 255);
-  doc.text(`₹${Number(amount || 0).toLocaleString("en-IN")}`, 190, y + 10, { align: "right" });
+  doc.text(`Rs. ${Number(amount || 0).toLocaleString("en-IN")}`, 190, y + 10, { align: "right" });
 
   addFooter(doc, 1, 1);
   doc.save("tendr-invoice.pdf");
 }
 
 // ── Event Details PDF ────────────────────────────────────────────────────────
-export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages, userName, orderId, vendorPricing = {} }) {
-  await _logoReady;
+export async function generateEventDetailsPDF({ eventSummary, confirmedVendors = [], pinnedMessages = {}, userName, orderId, vendorPricing = {} }) {
+  await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
 
@@ -213,7 +262,7 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
     }
   };
 
-  // Hero greeting box
+  // Hero greeting box — no emoji (Helvetica cannot render them)
   doc.setFillColor(255, 252, 247);
   doc.setDrawColor(196, 122, 46);
   doc.setLineWidth(0.4);
@@ -221,7 +270,7 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
   doc.setTextColor(44, 26, 14);
-  doc.text(`Hi ${userName || "there"}! Your event is confirmed 🎉`, 20, y + 8);
+  doc.text(`Hi ${sanitize(userName || "there")}! Your event is confirmed.`, 20, y + 8);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(92, 58, 26);
@@ -230,15 +279,14 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
 
   // Event summary
   y = sectionTitle(doc, "Event Summary", y);
-  if (eventSummary.eventType)   y = row(doc, "Event Type:",    eventSummary.eventType, y);
-  if (eventSummary.date)        y = row(doc, "Event Date:",    eventSummary.date, y);
-  if (eventSummary.location)    y = row(doc, "Location:",      eventSummary.location, y);
-  if (eventSummary.guests)      y = row(doc, "Guests:",        eventSummary.guests, y);
-  if (eventSummary.bookingType) y = row(doc, "Booking Type:",  eventSummary.bookingType === "let-us-do-it" ? "Let Us Do It" : "You Do It", y);
-  // Per-category budgets
+  if (eventSummary.eventType)   y = row(doc, "Event Type:",   eventSummary.eventType, y);
+  if (eventSummary.date)        y = row(doc, "Event Date:",   eventSummary.date, y);
+  if (eventSummary.location)    y = row(doc, "Location:",     eventSummary.location, y);
+  if (eventSummary.guests)      y = row(doc, "Guests:",       eventSummary.guests, y);
+  if (eventSummary.bookingType) y = row(doc, "Booking Type:", eventSummary.bookingType === "let-us-do-it" ? "Let Us Do It" : "You Do It", y);
   if (eventSummary.categoryBudgets && Object.keys(eventSummary.categoryBudgets).length > 0) {
     Object.entries(eventSummary.categoryBudgets).forEach(([cat, amt]) => {
-      y = row(doc, `${cat} Budget:`, `₹${Number(amt).toLocaleString("en-IN")}`, y);
+      y = row(doc, `${cat} Budget:`, `Rs. ${Number(amt).toLocaleString("en-IN")}`, y);
     });
   } else if (eventSummary.budget && eventSummary.budget !== "See category budgets") {
     y = row(doc, "Budget:", eventSummary.budget, y);
@@ -252,35 +300,33 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
 
     confirmedVendors.forEach((v, i) => {
       checkPageBreak(10);
-      // Vendor pill card
       doc.setFillColor(i % 2 === 0 ? 255 : 253, i % 2 === 0 ? 252 : 249, i % 2 === 0 ? 247 : 240);
       doc.roundedRect(14, y - 4, 182, 9, 2, 2, "F");
 
-      // Initials circle
       doc.setFillColor(196, 122, 46);
       doc.circle(22, y + 0.5, 3.5, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(8);
       doc.setTextColor(255, 255, 255);
-      doc.text(v.name[0].toUpperCase(), 22, y + 1.2, { align: "center" });
+      doc.text((v.name?.[0] || "V").toUpperCase(), 22, y + 1.2, { align: "center" });
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9.5);
       doc.setTextColor(44, 26, 14);
-      doc.text(v.name, 29, y + 1);
+      doc.text(sanitize(v.name), 29, y + 1);
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8.5);
       doc.setTextColor(92, 58, 26);
-      doc.text(v.serviceType, 29, y + 5);
+      doc.text(sanitize(v.serviceType), 29, y + 5);
 
-      // Confirmed badge
+      // "Confirmed" badge — no checkmark emoji
       doc.setFillColor(240, 253, 244);
       doc.roundedRect(168, y - 2, 24, 7, 2, 2, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(7.5);
       doc.setTextColor(21, 128, 61);
-      doc.text("✓ Confirmed", 180, y + 2.5, { align: "center" });
+      doc.text("Confirmed", 180, y + 2.5, { align: "center" });
 
       y += 11;
     });
@@ -299,14 +345,13 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
       doc.setTextColor(44, 26, 14);
-      doc.text(name, 18, y);
+      doc.text(sanitize(name), 18, y);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(196, 122, 46);
-      doc.text(`₹${Number(price).toLocaleString("en-IN")}`, 196, y, { align: "right" });
+      doc.text(`Rs. ${Number(price).toLocaleString("en-IN")}`, 196, y, { align: "right" });
       totalPrice += Number(price) || 0;
       y += 7;
     });
-    // Total row
     doc.setFillColor(44, 26, 14);
     doc.roundedRect(14, y, 182, 10, 2, 2, "F");
     doc.setFont("helvetica", "bold");
@@ -315,29 +360,28 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
     doc.text("Total Estimated Cost", 18, y + 6.5);
     doc.setFontSize(10);
     doc.setTextColor(255, 255, 255);
-    doc.text(`₹${totalPrice.toLocaleString("en-IN")}`, 192, y + 6.5, { align: "right" });
+    doc.text(`Rs. ${totalPrice.toLocaleString("en-IN")}`, 192, y + 6.5, { align: "right" });
     y += 16;
   }
 
-  // Pinned messages per vendor
+  // Pinned messages — no emoji in section title
   const vendorsWithPins = confirmedVendors.filter(v => (pinnedMessages[v._id || v.name] || []).length > 0);
   if (vendorsWithPins.length > 0) {
     checkPageBreak(20);
-    y = sectionTitle(doc, "📌 Pinned Messages from Vendor Chats", y);
+    y = sectionTitle(doc, "Pinned Messages from Vendor Chats", y);
 
     vendorsWithPins.forEach(v => {
-      const pins = pinnedMessages[v._id || v.name] || [];
-      if (!pins.length) return;
-
+      const msgs = pinnedMessages[v._id || v.name] || [];
+      if (!msgs.length) return;
       checkPageBreak(10);
       doc.setFont("helvetica", "bold");
       doc.setFontSize(9);
       doc.setTextColor(196, 122, 46);
-      doc.text(`${v.name} — ${v.serviceType}`, 14, y);
+      doc.text(`${sanitize(v.name)} - ${sanitize(v.serviceType)}`, 14, y);
       y += 5;
 
-      pins.forEach(msg => {
-        const lines = doc.splitTextToSize(`• ${msg}`, 176);
+      msgs.forEach(msg => {
+        const lines = doc.splitTextToSize(`- ${sanitize(msg)}`, 176);
         checkPageBreak(lines.length * 5 + 3);
         doc.setFillColor(255, 250, 240);
         doc.setDrawColor(196, 122, 46);
@@ -357,13 +401,12 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
   checkPageBreak(30);
   y += 2;
   y = sectionTitle(doc, "What Happens Next", y);
-  const nexts = [
+  [
     "Our team will contact you within 24 hours to confirm logistics and vendor timings.",
     "Your confirmed vendors will be notified. Keep your dashboard open for updates.",
-    "Just show up and celebrate — we handle the rest.",
-  ];
-  nexts.forEach(n => {
-    const lines = doc.splitTextToSize(`• ${n}`, 175);
+    "Just show up and celebrate - we handle the rest.",
+  ].forEach(n => {
+    const lines = doc.splitTextToSize(`- ${n}`, 175);
     checkPageBreak(lines.length * 5 + 2);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
@@ -376,29 +419,25 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors, 
   doc.save("tendr-event-details.pdf");
 }
 
-// ── Timeline Slip (compact 100×200mm receipt-style) ──────────────────────────
+// ── Timeline Slip (compact 100mm-wide receipt style) ──────────────────────────
 export async function generateTimelinePDF({ slots = [], eventSummary = {}, userName = "" }) {
-  await _logoReady;
-  // Dynamic height — enough for all slots, minimum 160mm
-  const slotH = 11;
+  await _assetsReady;
+  const slotH   = 11;
   const headerH = 42;
-  const footerH = 18;
-  const H = Math.max(160, headerH + slots.length * slotH + footerH);
+  const footerH = 30;
+  const H = Math.max(170, headerH + slots.length * slotH + footerH);
   const W = 100;
   const doc = new jsPDF({ unit: "mm", format: [W, H] });
   const CX = W / 2;
 
-  // ── Background
   doc.setFillColor(255, 252, 247);
   doc.rect(0, 0, W, H, "F");
 
-  // ── Dark header band
   doc.setFillColor(44, 26, 14);
   doc.rect(0, 0, W, 30, "F");
   doc.setFillColor(204, 171, 74);
   doc.rect(0, 30, W, 1.2, "F");
 
-  // Logo or text in header
   if (_logoLight) {
     doc.addImage(_logoLight, "PNG", CX - 18, 5, 36, 13);
   } else {
@@ -418,7 +457,6 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
 
   let y = 38;
 
-  // Event title + date line
   const title = eventSummary.eventType ? eventSummary.eventType.toUpperCase() : "YOUR EVENT";
   doc.setFont("helvetica", "bold");
   doc.setFontSize(10);
@@ -434,7 +472,6 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
     y += 5;
   }
 
-  // Divider
   doc.setDrawColor(204, 171, 74);
   doc.setLineWidth(0.3);
   doc.line(8, y, W - 8, y);
@@ -444,26 +481,22 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
     doc.setTextColor(155, 116, 80);
-    doc.text("No slots yet — build your timeline", CX, y + 6, { align: "center" });
+    doc.text("No slots yet - build your timeline", CX, y + 6, { align: "center" });
   } else {
     slots.forEach((slot, i) => {
       const isDone = !!slot.done;
-      // Alternate row tint
       if (i % 2 === 0) {
         doc.setFillColor(255, 249, 240);
         doc.rect(5, y - 3, W - 10, slotH - 1, "F");
       }
-      // Time pill
       doc.setFillColor(isDone ? 21 : 44, isDone ? 128 : 26, isDone ? 61 : 14);
       doc.roundedRect(6, y - 2.5, 17, 6, 1.5, 1.5, "F");
       doc.setFont("helvetica", "bold");
       doc.setFontSize(6.5);
       doc.setTextColor(isDone ? 255 : 204, isDone ? 255 : 171, isDone ? 255 : 74);
       doc.text(slot.time || "--:--", 14.5, y + 1.3, { align: "center" });
-      // Status dot
       doc.setFillColor(isDone ? 21 : 196, isDone ? 128 : 122, isDone ? 61 : 46);
       doc.circle(27, y - 0.2, 1.2, "F");
-      // Title
       doc.setFont("helvetica", isDone ? "normal" : "bold");
       doc.setFontSize(7.5);
       doc.setTextColor(isDone ? 155 : 44, isDone ? 116 : 26, isDone ? 80 : 14);
@@ -479,7 +512,7 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
     });
   }
 
-  // ── Footer
+  // Footer
   const footerY = H - footerH;
   doc.setDrawColor(196, 122, 46);
   doc.setLineWidth(0.3);
@@ -487,18 +520,26 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6.5);
   doc.setTextColor(155, 116, 80);
-  doc.text("tendr.in  ·  contacttendr@gmail.com  ·  +91 9211668427", CX, footerY + 5, { align: "center" });
+  doc.text("tendr.in  ·  contacttendr@gmail.com", CX, footerY + 5, { align: "center" });
   doc.setFont("helvetica", "italic");
   doc.setFontSize(6);
   doc.setTextColor(196, 122, 46);
   doc.text("We Curate, You Celebrate", CX, footerY + 10, { align: "center" });
 
+  if (_websiteQR) {
+    doc.addImage(_websiteQR, "PNG", CX - 7, footerY + 13, 14, 14);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6);
+    doc.setTextColor(196, 122, 46);
+    doc.text("tendr.in", CX, footerY + 29, { align: "center" });
+  }
+
   doc.save("tendr-day-schedule.pdf");
 }
 
 // ── Invitation Template PDF ──────────────────────────────────────────────────
-export async function generateInvitationPDF({ eventSummary = {}, confirmedVendors = [], userName = "", giftHamperUrl = "" }) {
-  await _logoReady;
+export async function generateInvitationPDF({ eventSummary = {}, confirmedVendors = [], userName = "" }) {
+  await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = 210, H = 297, CX = W / 2;
 
@@ -515,10 +556,10 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
 
   let y = 24;
 
-  // Tendr logo (dark/gold — reads on cream)
+  // Logo — larger than before for more impact
   if (_logoDark) {
-    doc.addImage(_logoDark, "PNG", CX - 22, y, 44, 17);
-    y += 25;
+    doc.addImage(_logoDark, "PNG", CX - 27, y, 54, 21);
+    y += 30;
   } else {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
@@ -531,67 +572,59 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
     y += 26;
   }
 
-  // "YOU ARE CORDIALLY INVITED TO"
+  // Tagline
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(155, 116, 80);
   doc.text("YOU ARE CORDIALLY INVITED TO", CX, y, { align: "center", charSpace: 1.5 });
   y += 9;
 
-  // Gold ornamental divider
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(12);
-  doc.setTextColor(196, 122, 46);
-  doc.text("─── ✦ ✦ ✦ ───", CX, y, { align: "center" });
-  y += 13;
+  // Top ornamental divider — drawn, not unicode chars
+  drawOrnamentDivider(doc, CX, y);
+  y += 10;
 
-  // "YOU'RE" — large bold dark
+  // "YOU'RE"
   doc.setFont("helvetica", "bold");
   doc.setFontSize(40);
   doc.setTextColor(44, 26, 14);
   doc.text("YOU'RE", CX, y, { align: "center" });
   y += 13;
 
-  // "Invited!" — bold italic gold
+  // "Invited!"
   doc.setFont("helvetica", "bolditalic");
   doc.setFontSize(36);
   doc.setTextColor(196, 122, 46);
   doc.text("Invited!", CX, y, { align: "center" });
   y += 15;
 
-  // Heart divider
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(196, 122, 46);
-  doc.text("── ♥ ──", CX, y, { align: "center" });
-  y += 13;
+  // Center-dot divider — drawn, not unicode heart
+  drawCenterDot(doc, CX, y);
+  y += 10;
 
-  // "YOU ARE INVITED TO THE [EVENT TYPE]"
+  // Event type
   const eventTypeUpper = (eventSummary.eventType || "SPECIAL CELEBRATION").toUpperCase();
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(44, 26, 14);
-  const eventLine = `YOU ARE INVITED TO THE ${eventTypeUpper}`;
-  const eventLineWrapped = doc.splitTextToSize(eventLine, W - 56);
+  const eventLineWrapped = doc.splitTextToSize(`YOU ARE INVITED TO THE ${eventTypeUpper}`, W - 56);
   doc.text(eventLineWrapped, CX, y, { align: "center", charSpace: 0.3 });
   y += eventLineWrapped.length * 6.5 + 4;
 
-  // Hosted by
   if (userName) {
     doc.setFont("helvetica", "italic");
     doc.setFontSize(9.5);
     doc.setTextColor(155, 116, 80);
-    doc.text(`Hosted by ${userName}`, CX, y, { align: "center" });
+    doc.text(`Hosted by ${sanitize(userName)}`, CX, y, { align: "center" });
     y += 9;
   }
 
-  // Thin divider
+  // Divider
   doc.setDrawColor(196, 122, 46);
   doc.setLineWidth(0.4);
   doc.line(45, y, W - 45, y);
   y += 12;
 
-  // Info rows with circle icon: DATE, VENUE, RSVP
+  // Date / Venue / RSVP rows
   const infoRows = [
     eventSummary.date     && { label: "DATE",  val: eventSummary.date },
     eventSummary.location && { label: "VENUE", val: eventSummary.location },
@@ -615,66 +648,58 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
     doc.setTextColor(44, 26, 14);
-    const valLines = doc.splitTextToSize(val, W - (circleX + 8) - 20);
+    const valLines = doc.splitTextToSize(sanitize(val), W - (circleX + 8) - 20);
     doc.text(valLines, circleX + 8, y + 3);
     y += Math.max(14, valLines.length * 5 + 8);
   });
 
-  // Thin divider
+  // Divider
   doc.setDrawColor(196, 122, 46);
   doc.setLineWidth(0.4);
   doc.line(45, y, W - 45, y);
   y += 12;
 
-  // "We look forward to" italic
   doc.setFont("helvetica", "italic");
   doc.setFontSize(11);
   doc.setTextColor(155, 116, 80);
   doc.text("We look forward to", CX, y, { align: "center" });
   y += 9;
 
-  // "CELEBRATING WITH YOU!" bold
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
   doc.setTextColor(44, 26, 14);
   doc.text("CELEBRATING WITH YOU!", CX, y, { align: "center", charSpace: 0.5 });
   y += 14;
 
-  // Bottom ornament
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(12);
-  doc.setTextColor(196, 122, 46);
-  doc.text("─── ✦ ✦ ✦ ───", CX, y, { align: "center" });
+  // Bottom ornamental divider — drawn, not unicode chars
+  drawOrnamentDivider(doc, CX, y);
   y += 10;
 
-  // Gift hampers box (only if URL provided)
-  if (giftHamperUrl) {
-    const ghTop = Math.max(y + 6, 224);
-    doc.setFillColor(255, 248, 235);
+  // Website QR section — replaces gift hampers box
+  const webQRTop = Math.max(y + 6, 222);
+  if (_websiteQR) {
+    doc.setFillColor(255, 252, 247);
     doc.setDrawColor(196, 122, 46);
     doc.setLineWidth(0.8);
-    doc.roundedRect(20, ghTop, W - 40, 38, 3, 3, "FD");
+    doc.roundedRect(20, webQRTop, W - 40, 38, 3, 3, "FD");
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.setTextColor(44, 26, 14);
-    doc.text(`🛍  BOOK GIFT HAMPERS FOR ${eventTypeUpper}`, 28, ghTop + 9);
+    doc.text("PLAN YOUR NEXT EVENT WITH TENDR", 30, webQRTop + 9);
+
+    doc.addImage(_websiteQR, "PNG", W - 52, webQRTop + 5, 24, 24);
 
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setTextColor(196, 122, 46);
-    doc.text(giftHamperUrl, 28, ghTop + 16);
-
-    try {
-      const qrDataUrl = await QRCode.toDataURL(giftHamperUrl, { width: 120, margin: 1, color: { dark: "#2C1A0E", light: "#FFF8EB" } });
-      doc.addImage(qrDataUrl, "PNG", W - 52, ghTop + 3, 28, 28);
-    } catch {}
+    doc.text("tendr.in", 30, webQRTop + 18);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7.5);
     doc.setTextColor(155, 116, 80);
-    doc.text("Scan QR to browse & book →", 28, ghTop + 23);
-    doc.text("Surprise your guests with curated gift hampers!", 28, ghTop + 30);
+    doc.text("Scan the QR to browse & book vendors", 30, webQRTop + 25);
+    doc.text("tendr - We Curate, You Celebrate", 30, webQRTop + 32);
   }
 
   // Footer dark strip

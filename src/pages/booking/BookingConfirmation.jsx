@@ -6,6 +6,12 @@ import SEO from "../../components/SEO";
 import logo from "../../assets/logos/tendr-logo-secondary.png";
 import Footer from "../../components/Footer";
 import { confirmVendorSlot } from "../../apis/vendorApi";
+import {
+  generateInvoicePDF,
+  generateEventDetailsPDF,
+  generateTimelinePDF,
+  generateInvitationPDF,
+} from "../../utils/pdfGenerator";
 
 const BookingConfirmationPage = () => {
   const navigate = useNavigate();
@@ -13,6 +19,8 @@ const BookingConfirmationPage = () => {
   const booking = state?.booking;
   const amount = state?.amount;
   const token = useSelector(s => s.auth.token);
+  const authUser = useSelector(s => s.auth.user);
+  const formData = useSelector(s => s.eventPlanning?.formData || {});
 
   // Confirm the held slot now that payment is done
   useEffect(() => {
@@ -35,6 +43,64 @@ const BookingConfirmationPage = () => {
     );
   }
 
+  const userName = authUser?.name || authUser?.email || "Customer";
+
+  const eventSummary = {
+    eventType: formData.eventType || booking.offerName,
+    date: formData.date || booking.schedule?.date,
+    location: formData.location,
+    guests: formData.guests,
+  };
+
+  const confirmedVendors = booking.vendorName
+    ? [{ name: booking.vendorName, serviceType: booking.serviceType || "Vendor" }]
+    : [];
+
+  const pdfDocs = [
+    {
+      label: "Invoice",
+      desc: "Payment receipt",
+      fn: () => generateInvoicePDF({
+        eventSummary,
+        confirmedVendors,
+        amount,
+        orderId: booking._id,
+        paymentId: booking.paymentId,
+        userName,
+      }),
+    },
+    {
+      label: "Event Details",
+      desc: "Vendor summary",
+      fn: () => generateEventDetailsPDF({
+        eventSummary,
+        confirmedVendors,
+        pinnedMessages: {},
+        userName,
+        orderId: booking._id,
+        vendorPricing: {},
+      }),
+    },
+    {
+      label: "Day Schedule",
+      desc: "Timeline slip",
+      fn: () => generateTimelinePDF({
+        slots: [],
+        eventSummary,
+        userName,
+      }),
+    },
+    {
+      label: "Invitation",
+      desc: "Share with guests",
+      fn: () => generateInvitationPDF({
+        eventSummary,
+        confirmedVendors,
+        userName,
+      }),
+    },
+  ];
+
   return (
     <div className="min-h-screen w-full flex flex-col bg-[#FFF6EF]">
       <SEO title="Booking Confirmed" description="Your Tendr event booking is confirmed." path="/booking/confirmation" noIndex={true} />
@@ -50,7 +116,7 @@ const BookingConfirmationPage = () => {
 
           {/* Title */}
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#2e1b0f] mb-3">
-            🎉 Booking Confirmed!
+            Booking Confirmed!
           </h2>
           <p className="text-gray-700 text-base sm:text-lg mb-8">
             Your payment was successful and your booking has been confirmed.
@@ -77,25 +143,34 @@ const BookingConfirmationPage = () => {
               <strong>Plan:</strong> {booking.plan || "Custom Plan"}
             </p>
             <p className="text-gray-800">
-              <strong>Amount Paid:</strong> ₹{amount}
+              <strong>Amount Paid:</strong> Rs. {amount}
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4">
-            <button
-              className="flex-1 bg-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-green-700 transition"
-              onClick={() => alert("Downloading Ticket...")}
-            >
-              Download Ticket
-            </button>
-            <button
-              className="flex-1 bg-[#2e1b0f] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#2e1b0f]/80 transition"
-              onClick={() => navigate("/dashboard")}
-            >
-              Go to Dashboard
-            </button>
+          {/* Download Documents */}
+          <div className="mb-8">
+            <p className="text-sm font-semibold text-[#2e1b0f] mb-3 text-left">Download Documents</p>
+            <div className="grid grid-cols-2 gap-3">
+              {pdfDocs.map(({ label, desc, fn }) => (
+                <button
+                  key={label}
+                  onClick={fn}
+                  className="bg-[#FFF8EE] border border-[#C47A2E]/30 rounded-xl p-3 text-left hover:bg-[#FFF0D6] active:scale-95 transition"
+                >
+                  <div className="font-semibold text-[#2e1b0f] text-sm">{label}</div>
+                  <div className="text-xs text-gray-500 mt-0.5">{desc}</div>
+                </button>
+              ))}
+            </div>
           </div>
+
+          {/* Dashboard */}
+          <button
+            className="w-full bg-[#2e1b0f] text-white py-3 px-6 rounded-xl font-semibold hover:bg-[#2e1b0f]/80 transition"
+            onClick={() => navigate("/dashboard")}
+          >
+            Go to Dashboard
+          </button>
         </div>
       </div>
 
