@@ -268,6 +268,7 @@ const Home = () => {
   const [slideVisible, setSlideVisible] = useState(true);
   const [faAutoIdx, setFaAutoIdx] = useState(0);
   const faCarouselRef = useRef(null);
+  const [faModal, setFaModal] = useState(null);
 
   const FEATURE_SLIDES = [
     { id: "smart-planner",  tag: "Smart Planner",        icon: "✨", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", headline: "Your complete vendor package, built in seconds",          desc: "Tell us your event once. We match caterers, decorators, photographers and DJs within your budget. You confirm, we coordinate everything.", where: "Booking → Tendr Plans It For Me", href: "/booking",          accent: "#C47A2E" },
@@ -616,6 +617,26 @@ const Home = () => {
           {/* ── Left: fixed hero headline + CTA ── */}
           <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
 
+            {/* Mobile only: Swiggy-style category icon chips — first thing below navbar */}
+            <div className="hero-mobile-cats" style={{ display: "none", gap: 0, marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
+              {[
+                { emoji: "🎀", label: "Decorator",     path: "/top-rated/Decorator",    bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)" },
+                { emoji: "🍽", label: "Caterer",        path: "/top-rated/Caterer",      bg: "linear-gradient(135deg,#FFF8E1,#FFF0C2)" },
+                { emoji: "📸", label: "Photographer",   path: "/top-rated/Photographer", bg: "linear-gradient(135deg,#F0F8FF,#E0F0FF)" },
+                { emoji: "🎵", label: "DJ",             path: "/top-rated/DJ",           bg: "linear-gradient(135deg,#F0F0FF,#E8E8FF)" },
+                { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes",     bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
+                { emoji: "🎭", label: "Fun Activities", path: "/fun-activities",         bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
+              ].map(({ emoji, label, path, bg }) => (
+                <button key={label} onClick={() => navigate(path)}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 8px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, minWidth: 68 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 16, background: bg, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 8px rgba(196,122,46,0.1)" }}>
+                    {emoji}
+                  </div>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2, maxWidth: 60 }}>{label}</span>
+                </button>
+              ))}
+            </div>
+
             {/* Fixed headline block */}
             <div style={{ marginBottom: 36 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
@@ -648,25 +669,6 @@ const Home = () => {
 
             </div>
 
-            {/* Mobile only: Swiggy-style category icon chips */}
-            <div className="hero-mobile-cats" style={{ display: "none", gap: 0, marginTop: 20, overflowX: "auto", scrollbarWidth: "none" }}>
-              {[
-                { emoji: "🎀", label: "Decorator",    path: "/top-rated/Decorator",    bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)" },
-                { emoji: "🍽", label: "Caterer",      path: "/top-rated/Caterer",      bg: "linear-gradient(135deg,#FFF8E1,#FFF0C2)" },
-                { emoji: "📸", label: "Photographer", path: "/top-rated/Photographer", bg: "linear-gradient(135deg,#F0F8FF,#E0F0FF)" },
-                { emoji: "🎵", label: "DJ",           path: "/top-rated/DJ",           bg: "linear-gradient(135deg,#F0F0FF,#E8E8FF)" },
-                { emoji: "🎁", label: "Gift Hampers", path: "/gift-hampers-cakes",     bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
-                { emoji: "🎭", label: "Fun Activities",path: "/fun-activities",        bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
-              ].map(({ emoji, label, path, bg }) => (
-                <button key={label} onClick={() => navigate(path)}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 8px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, minWidth: 68 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 16, background: bg, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 8px rgba(196,122,46,0.1)" }}>
-                    {emoji}
-                  </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2, maxWidth: 60 }}>{label}</span>
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* ── Right: photo carousel ── */}
@@ -1336,7 +1338,7 @@ const Home = () => {
               <div
                 key={i}
                 className="fa-carousel-card"
-                onClick={() => navigate("/fun-activities")}
+                onClick={() => setFaModal(act)}
                 style={{
                   flexShrink:0, width:200, background:"#fff",
                   borderRadius:18, border:"1.5px solid rgba(196,122,46,0.15)",
@@ -1495,44 +1497,6 @@ const Home = () => {
           </section>
         );
       })()}
-
-      {/* ── "What are you in the mood for?" — Swiggy-style Fun Activities chips ── */}
-      <section style={{ background: "#FFF8EF", padding: "40px 24px 44px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 6px" }}>🎭 Entertainment Add-ons</p>
-            <h2 style={{ fontSize: "clamp(1.3rem,2.8vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "-0.01em" }}>What are you in the mood for?</h2>
-            <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Fixed-price entertainment — confirmed in 2 hours</p>
-          </div>
-          <div style={{ display: "flex", gap: 0, overflowX: "auto", scrollbarWidth: "none", justifyContent: "center", flexWrap: "wrap" }} className="fa-mood-row">
-            {FUN_ACTIVITIES.slice(0, 8).map((act) => (
-              <button key={act.id} onClick={() => navigate("/fun-activities")}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "10px 12px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0 }}>
-                <div style={{ width: 72, height: 72, borderRadius: "50%", background: "linear-gradient(135deg,#FFF3E0,#FFE0B2)", border: "2px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 34, boxShadow: "0 4px 14px rgba(196,122,46,0.12)", transition: "transform 0.18s, box-shadow 0.18s" }}
-                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 20px rgba(196,122,46,0.22)"; }}
-                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(196,122,46,0.12)"; }}>
-                  {act.emoji}
-                </div>
-                <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.25, maxWidth: 72 }}>{act.name}</span>
-              </button>
-            ))}
-          </div>
-          <div style={{ textAlign: "center", marginTop: 16 }}>
-            <button onClick={() => navigate("/fun-activities")}
-              style={{ padding: "9px 24px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.15s" }}
-              onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
-              onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-              See All Activities →
-            </button>
-          </div>
-        </div>
-        <style>{`
-          .fa-mood-row::-webkit-scrollbar { display: none; }
-          @media (max-width: 640px) {
-            .fa-mood-row { flex-wrap: nowrap !important; justify-content: flex-start !important; }
-          }
-        `}</style>
-      </section>
 
       {/* Events Portfolio Gallery */}
       <section style={{ background: "#FFFFFF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
@@ -1733,6 +1697,45 @@ const Home = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* ── Fun Activity detail modal ── */}
+      {faModal && (
+        <>
+          <div onClick={() => setFaModal(null)} style={{ position: "fixed", inset: 0, zIndex: 2000, background: "rgba(0,0,0,0.46)", backdropFilter: "blur(3px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 2001, width: "min(92vw,440px)", borderRadius: 22, background: "#FFFCF5", boxShadow: "0 24px 72px rgba(44,26,14,0.28)", overflow: "hidden", fontFamily: "'Outfit',sans-serif" }}>
+            {/* Gradient photo header */}
+            <div style={{ background: "linear-gradient(135deg,#FFF3E0,#FFE0B2)", padding: "32px 24px 24px", position: "relative", textAlign: "center" }}>
+              <div style={{ fontSize: 64, lineHeight: 1, marginBottom: 12 }}>{faModal.emoji}</div>
+              <h3 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px", lineHeight: 1.2 }}>{faModal.name}</h3>
+              <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap" }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "#C47A2E" }}>₹{faModal.price.toLocaleString()}{faModal.perUnit ? <span style={{ fontSize: 11, fontWeight: 500 }}> /{faModal.unitLabel}</span> : ""}</span>
+                {faModal.duration && <span style={{ fontSize: 12, color: "#9B7450", alignSelf: "center" }}>· {faModal.duration}</span>}
+                {faModal.guests && <span style={{ fontSize: 12, color: "#9B7450", alignSelf: "center" }}>· {faModal.guests}</span>}
+              </div>
+              <button onClick={() => setFaModal(null)} style={{ position: "absolute", top: 12, right: 14, width: 30, height: 30, borderRadius: "50%", background: "rgba(44,26,14,0.12)", border: "none", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#2C1A0E" }}>✕</button>
+            </div>
+            {/* Body */}
+            <div style={{ padding: "20px 24px 24px" }}>
+              <p style={{ fontSize: 13.5, color: "#4A2810", lineHeight: 1.65, margin: "0 0 16px" }}>{faModal.desc}</p>
+              {faModal.includes?.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>What's Included</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {faModal.includes.map((item, idx) => (
+                      <span key={idx} style={{ fontSize: 11.5, background: "rgba(196,122,46,0.08)", color: "#2C1A0E", borderRadius: 100, padding: "3px 10px", fontWeight: 600 }}>✓ {item}</span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <button
+                onClick={() => { setFaModal(null); navigate("/fun-activities"); }}
+                style={{ width: "100%", padding: "13px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.35)", letterSpacing: "0.01em" }}>
+                Book Now →
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

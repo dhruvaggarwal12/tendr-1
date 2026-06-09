@@ -124,6 +124,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           <div onClick={() => setShowActiveChats(false)} style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.38)", backdropFilter: "blur(2px)" }} />
           <div
             onClick={e => e.stopPropagation()}
+            className="active-chats-modal"
             style={{
               position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
               zIndex: 1201, width: "min(94vw,660px)", height: "min(86vh,700px)",
@@ -330,7 +331,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         @media (max-width: 767px) {
           /* Position above the 60px bottom nav bar */
           .floating-chat-btn {
-            bottom: 72px !important;
+            bottom: 80px !important;
             right: 14px !important;
             padding: 12px !important;
             width: 50px !important;
@@ -342,7 +343,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             left: 12px !important;
             min-width: unset !important;
             max-width: unset !important;
-            bottom: 130px !important;
+            bottom: 140px !important;
+          }
+          /* Shift Active Chats modal up so it clears the 60px bottom nav */
+          .active-chats-modal {
+            top: calc(50% - 36px) !important;
+            height: min(78vh, 640px) !important;
           }
         }
       `}</style>
