@@ -8,16 +8,14 @@ const GOLD  = "#C47A2E";
 const BROWN = "#2C1A0E";
 
 const CEREMONIES = [
-  { key: "haldi",      label: "Haldi",           emoji: "💛" },
-  { key: "mehendi",    label: "Mehendi",          emoji: "🌿" },
-  { key: "sangeet",    label: "Sangeet / Dance",  emoji: "🎶" },
-  { key: "wedding",    label: "Wedding Ceremony", emoji: "💍" },
-  { key: "reception",  label: "Reception",        emoji: "🥂" },
-  { key: "tilak",      label: "Tilak / Sagan",    emoji: "🪔" },
-  { key: "engagement", label: "Engagement",       emoji: "💫" },
-  { key: "pooja",      label: "Pooja / Havan",    emoji: "🙏" },
-  { key: "dinner",     label: "Family Dinner",    emoji: "🍽️" },
-  { key: "custom",     label: "Something Else",   emoji: "✏️" },
+  { key: "haldi",     label: "Haldi",           emoji: "💛" },
+  { key: "mehendi",   label: "Mehendi",          emoji: "🌿" },
+  { key: "sangeet",   label: "Sangeet / Dance",  emoji: "🎶" },
+  { key: "reception", label: "Reception",        emoji: "🥂" },
+  { key: "tilak",     label: "Tilak / Sagan",    emoji: "🪔" },
+  { key: "pooja",     label: "Pooja / Havan",    emoji: "🙏" },
+  { key: "dinner",    label: "Family Dinner",    emoji: "🍽️" },
+  { key: "custom",    label: "Something Else",   emoji: "✏️" },
 ];
 
 const MEALS = [
@@ -80,7 +78,7 @@ export default function HomeWeddingPlanner() {
   const [couple2,   setCouple2]  = useState("");
   const [days,      setDays]     = useState(() => Array.from({ length: 4 }, blankDay));
 
-  const dayIdx = step - 1;
+  const dayIdx = step - 2;
   const plan   = days[dayIdx] || blankDay();
 
   const updateDay = (field, value) =>
@@ -196,8 +194,78 @@ export default function HomeWeddingPlanner() {
     );
   }
 
-  // ── Steps 1..numDays ────────────────────────────────────────────────────────
-  if (step <= numDays) {
+  // ── Step 1 ─ Home Decoration (all days) ─────────────────────────────────────
+  if (step === 1) {
+    const allSet = days.slice(0, numDays).every(d => d.decoration !== null);
+    return (
+      <div style={{ minHeight: "100vh", background: "#FFF8EE", fontFamily: font }}>
+        <HamburgerNav />
+        <div style={{ maxWidth: 560, margin: "0 auto", padding: "40px 20px 100px" }}>
+
+          <button onClick={() => { goTop(); setStep(0); }}
+            style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, fontWeight: 600, padding: 0, fontFamily: font, marginBottom: 28, display: "block" }}>
+            ← Basic Info
+          </button>
+
+          <div style={{ marginBottom: 28 }}>
+            <div style={{ fontSize: 36, marginBottom: 10 }}>🌸</div>
+            <h2 style={{ fontSize: "clamp(1.4rem,4vw,2rem)", fontWeight: 900, color: BROWN, margin: "0 0 8px", letterSpacing: "-0.02em" }}>
+              Home Decoration
+            </h2>
+            <p style={{ color: "#9B7450", fontSize: 15, margin: 0, lineHeight: 1.6 }}>
+              Do you want to decorate your home or venue for any of the days? We'll arrange a decorator accordingly.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 28 }}>
+            {Array.from({ length: numDays }).map((_, i) => {
+              const dateStr = fmtDate(startDate, i);
+              const decVal  = days[i].decoration;
+              return (
+                <div key={i} style={card}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontWeight: 800, color: BROWN, fontSize: 15 }}>Day {i + 1}</div>
+                      {dateStr && <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>{dateStr}</div>}
+                    </div>
+                    <div style={{ display: "flex", gap: 8 }}>
+                      {[{ val: true, label: "Yes ✨" }, { val: false, label: "No" }].map(({ val, label }) => (
+                        <button key={String(val)} type="button"
+                          onClick={() => setDays(prev => prev.map((d, idx) => idx === i ? { ...d, decoration: val } : d))}
+                          style={{
+                            padding: "9px 22px", borderRadius: 10,
+                            border: `2px solid ${decVal === val ? GOLD : "rgba(196,122,46,0.2)"}`,
+                            background: decVal === val ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "#fff",
+                            color: decVal === val ? "#fff" : BROWN,
+                            fontWeight: 700, fontFamily: font, fontSize: 14, cursor: "pointer",
+                          }}>{label}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <button
+            disabled={!allSet}
+            onClick={() => advance()}
+            style={{
+              padding: "15px", borderRadius: 12, border: "none", width: "100%",
+              background: allSet ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "rgba(44,26,14,0.1)",
+              color: allSet ? "#fff" : "#9B7450", fontWeight: 800, fontFamily: font, fontSize: 15,
+              cursor: allSet ? "pointer" : "not-allowed",
+              boxShadow: allSet ? "0 4px 14px rgba(196,122,46,0.3)" : "none",
+            }}>
+            Let's Plan Day 1 →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Steps 2..numDays+1 (day forms) ──────────────────────────────────────────
+  if (step >= 2 && step <= numDays + 1) {
     const dateStr     = fmtDate(startDate, dayIdx);
     const hasCaterer  = plan.vendors.includes("caterer");
 
@@ -210,21 +278,21 @@ export default function HomeWeddingPlanner() {
           <div style={{ marginBottom: 28 }}>
             <button onClick={() => { goTop(); setStep(step - 1); }}
               style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, fontWeight: 600, padding: 0, fontFamily: font, marginBottom: 14, display: "block" }}>
-              ← {step === 1 ? "Basic Info" : `Day ${dayIdx}`}
+              ← {step === 2 ? "Home Decoration" : `Day ${dayIdx}`}
             </button>
             <div style={{ display: "flex", gap: 6 }}>
               {Array.from({ length: numDays }).map((_, i) => (
                 <div key={i} style={{ height: 5, flex: 1, borderRadius: 100, background: i < dayIdx ? `linear-gradient(90deg,${GOLD},#CCAB4A)` : i === dayIdx ? GOLD : "rgba(44,26,14,0.12)", transition: "background 0.3s" }} />
               ))}
             </div>
-            <div style={{ fontSize: 12, color: "#9B7450", marginTop: 8, fontWeight: 600 }}>Day {step} of {numDays}</div>
+            <div style={{ fontSize: 12, color: "#9B7450", marginTop: 8, fontWeight: 600 }}>Day {dayIdx + 1} of {numDays}</div>
           </div>
 
           {/* Day header */}
           <div style={{ marginBottom: 24 }}>
             {dateStr && <div style={{ fontSize: 13, color: "#9B7450", fontWeight: 600, marginBottom: 4 }}>{dateStr}</div>}
             <h2 style={{ fontSize: "clamp(1.4rem,4vw,1.9rem)", fontWeight: 900, color: BROWN, margin: 0, letterSpacing: "-0.02em" }}>
-              What's planned for Day {step}?
+              What's planned for Day {dayIdx + 1}?
             </h2>
           </div>
 
@@ -359,26 +427,38 @@ export default function HomeWeddingPlanner() {
             )}
 
             {/* 5. Home / venue decoration */}
-            <div style={card}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                <span style={{ fontSize: 20 }}>🌸</span>
-                <div style={{ ...labelSm }}>Home / venue decoration for this day?</div>
-              </div>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>
-                Floral arrangements, lighting, backdrops, entrance décor — we'll include a Decorator in your requirements.
-              </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                {[{ val: true, label: "Yes, decorate! ✨" }, { val: false, label: "No, skip" }].map(({ val, label }) => (
-                  <button key={String(val)} type="button" onClick={() => updateDay("decoration", val)} style={{
-                    flex: 1, padding: "13px 0", borderRadius: 12,
-                    border: `2px solid ${plan.decoration === val ? GOLD : "rgba(196,122,46,0.2)"}`,
-                    background: plan.decoration === val ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "#fff",
-                    color: plan.decoration === val ? "#fff" : BROWN,
-                    fontWeight: 700, fontFamily: font, fontSize: 14, cursor: "pointer",
-                  }}>{label}</button>
-                ))}
-              </div>
-            </div>
+            {(() => {
+              const funcNames = plan.ceremonies
+                .filter(k => k !== "custom")
+                .map(k => CEREMONIES.find(c => c.key === k)?.label)
+                .filter(Boolean);
+              if (plan.ceremonies.includes("custom") && plan.customCeremony) funcNames.push(plan.customCeremony);
+              const decorLabel = funcNames.length > 0
+                ? `Do you want decoration for ${funcNames.join(" & ")}?`
+                : "Home / venue decoration for this day?";
+              return (
+                <div style={card}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                    <span style={{ fontSize: 20 }}>🌸</span>
+                    <div style={{ ...labelSm }}>{decorLabel}</div>
+                  </div>
+                  <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>
+                    Floral arrangements, lighting, backdrops, entrance décor — we'll include a Decorator in your requirements.
+                  </p>
+                  <div style={{ display: "flex", gap: 10 }}>
+                    {[{ val: true, label: "Yes, decorate! ✨" }, { val: false, label: "No, skip" }].map(({ val, label }) => (
+                      <button key={String(val)} type="button" onClick={() => updateDay("decoration", val)} style={{
+                        flex: 1, padding: "13px 0", borderRadius: 12,
+                        border: `2px solid ${plan.decoration === val ? GOLD : "rgba(196,122,46,0.2)"}`,
+                        background: plan.decoration === val ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "#fff",
+                        color: plan.decoration === val ? "#fff" : BROWN,
+                        fontWeight: 700, fontFamily: font, fontSize: 14, cursor: "pointer",
+                      }}>{label}</button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* 6. Notes */}
             <div style={card}>
@@ -400,7 +480,7 @@ export default function HomeWeddingPlanner() {
                 cursor: canNextDay ? "pointer" : "not-allowed",
                 boxShadow: canNextDay ? "0 4px 14px rgba(196,122,46,0.3)" : "none",
               }}>
-              {step < numDays ? `Done — Plan Day ${step + 1} →` : "See Full Summary →"}
+              {step < numDays + 1 ? `Done — Plan Day ${dayIdx + 2} →` : "See Full Summary →"}
             </button>
           </div>
         </div>
@@ -420,7 +500,7 @@ export default function HomeWeddingPlanner() {
       <HamburgerNav />
       <div style={{ maxWidth: 620, margin: "0 auto", padding: "40px 20px 100px" }}>
 
-        <button onClick={() => { goTop(); setStep(numDays); }}
+        <button onClick={() => { goTop(); setStep(numDays + 1); }}
           style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, fontWeight: 600, padding: 0, fontFamily: font, marginBottom: 28, display: "block" }}>
           ← Edit Day {numDays}
         </button>
@@ -449,7 +529,7 @@ export default function HomeWeddingPlanner() {
                     </div>
                     {dateStr && <div style={{ fontSize: 12, color: "#9B7450" }}>{dateStr}</div>}
                   </div>
-                  <button onClick={() => { goTop(); setStep(i + 1); }}
+                  <button onClick={() => { goTop(); setStep(i + 2); }}
                     style={{ fontSize: 12, color: GOLD, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 8, padding: "4px 12px", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>
                     Edit
                   </button>

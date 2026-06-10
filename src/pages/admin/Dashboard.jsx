@@ -271,9 +271,19 @@ const sidebar_arr = [
   { label: "Occasions",       icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "Occasions" },
 ];
 
-// Simple inline markdown renderer — handles *bold*, _italic_, line breaks
+// Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
 function RenderMessage({ text }) {
   if (!text) return null;
+  if (text.startsWith("[img:")) {
+    const src = text.slice(5, -1);
+    return (
+      <img
+        src={src}
+        alt="shared"
+        style={{ maxWidth: "min(220px, 100%)", maxHeight: 220, borderRadius: 10, display: "block", objectFit: "contain" }}
+      />
+    );
+  }
   const lines = text.split("\n");
   return (
     <div style={{ whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.6 }}>

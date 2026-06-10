@@ -424,6 +424,15 @@ export default function VendorChatModal() {
   const [selectedPkg, setSelectedPkg] = useState(null);
   const chatPackages = CHAT_PACKAGES[vendor?.serviceType] || [];
 
+  // Photo reference step (Decorator only)
+  const [showPhotoStep, setShowPhotoStep] = useState(false);
+  const [selectedRefPhotos, setSelectedRefPhotos] = useState([]);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+  const [gallerySelected, setGallerySelected] = useState([]);
+  const refPhotosRef = useRef([]);
+
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
@@ -587,6 +596,16 @@ export default function VendorChatModal() {
         setTimeout(() => {
           socket.emit("send_message", { conversationId: _id, sender: "user", content: fullMsg });
         }, 400);
+
+        if (refPhotosRef.current.length > 0) {
+          refPhotosRef.current.forEach((photo, idx) => {
+            setTimeout(() => {
+              const content = `[img:${photo.src}]`;
+              socket.emit("send_message", { conversationId: _id, sender: "user", content });
+              setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() + idx }]);
+            }, 900 + idx * 300);
+          });
+        }
       }
 
       try {
@@ -655,11 +674,56 @@ export default function VendorChatModal() {
 
   const handlePkgConfirm = (tier) => {
     const answersWithPkg = { ...botAnswersRef.current, selectedPackage: tier ? `${tier} Package — ${chatPackages.find(p => p.tier === tier)?.desc || ""}` : null };
+    setBotAnswers(answersWithPkg);
+    botAnswersRef.current = answersWithPkg;
     setSelectedPkg(tier);
     setShowPkgStep(false);
+    if (vendor?.serviceType === 'Decorator') {
+      setShowPhotoStep(true);
+    } else {
+      setBotDone(true);
+      botDoneRef.current = true;
+      openConversation(answersWithPkg);
+    }
+  };
+
+  const handlePhotoConfirm = (photos) => {
+    refPhotosRef.current = photos;
+    setSelectedRefPhotos(photos);
+    setShowPhotoStep(false);
+    setGalleryOpen(false);
     setBotDone(true);
     botDoneRef.current = true;
-    openConversation(answersWithPkg);
+    openConversation(botAnswersRef.current);
+  };
+
+  const handlePhotoUpload = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    Promise.all(
+      files.map(file => new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = ev => resolve({ src: ev.target.result });
+        reader.readAsDataURL(file);
+      }))
+    ).then(photos => setSelectedRefPhotos(prev => [...prev, ...photos]));
+    e.target.value = "";
+  };
+
+  const openGallery = async () => {
+    setGalleryOpen(true);
+    if (galleryPhotos.length > 0) return;
+    setGalleryLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/gallery`);
+      const data = await res.json();
+      setGalleryPhotos((data.grouped?.["Decoration"] || []).filter(p => p.imageUrl));
+    } catch {}
+    setGalleryLoading(false);
+  };
+
+  const toggleGallerySelect = (url) => {
+    setGallerySelected(prev => prev.includes(url) ? prev.filter(u => u !== url) : [...prev, url]);
   };
 
   const handleFinalise = async () => {
@@ -733,7 +797,7 @@ export default function VendorChatModal() {
     if (!text) return null;
     if (text.startsWith("[img:")) {
       const src = text.replace("[img:", "").replace(/\]$/, "");
-      return <img src={src} alt="sent" style={{ maxWidth: "100%", borderRadius: 8, display: "block" }} />;
+      return <img src={src} alt="sent" style={{ maxWidth: "100%", maxHeight: 240, borderRadius: 8, display: "block", objectFit: "contain" }} />;
     }
     if (text.startsWith("[FINALISED]")) {
       return <span style={{ color: "#15803d", fontWeight: 600 }}>{text.replace("[FINALISED] ", "")}</span>;
@@ -1033,6 +1097,47 @@ export default function VendorChatModal() {
             </div>
           )}
 
+          {/* Reference photo step (Decorator only) */}
+          {showPhotoStep && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "4px 0" }}>
+              <div style={{ alignSelf: "flex-start", maxWidth: "84%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.5 }}>
+                🖼️ Would you like to add reference photos? It helps the decorator understand your style.
+              </div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <label style={{ flex: 1, padding: "10px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                  📷 Upload
+                  <input type="file" multiple accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
+                </label>
+                <button onClick={openGallery}
+                  style={{ flex: 2, padding: "10px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  🖼️ Choose from Gallery
+                </button>
+              </div>
+              {selectedRefPhotos.length > 0 && (
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", marginBottom: 6 }}>{selectedRefPhotos.length} photo{selectedRefPhotos.length !== 1 ? "s" : ""} selected</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 6 }}>
+                    {selectedRefPhotos.map((p, i) => (
+                      <img key={i} src={p.src} alt="" style={{ width: "100%", aspectRatio: "1 / 1", objectFit: "cover", borderRadius: 8, display: "block" }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+                {selectedRefPhotos.length > 0 && (
+                  <button onClick={() => handlePhotoConfirm(selectedRefPhotos)}
+                    style={{ flex: 2, padding: "10px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    Send {selectedRefPhotos.length} photo{selectedRefPhotos.length !== 1 ? "s" : ""} →
+                  </button>
+                )}
+                <button onClick={() => handlePhotoConfirm([])}
+                  style={{ flex: 1, padding: "10px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                  Skip
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* Waiting state */}
           {botDone && !approved && (
             <div style={{ textAlign: "center", padding: "40px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
@@ -1266,6 +1371,81 @@ export default function VendorChatModal() {
           </div>
         )}
       </div>
+
+      {/* Gallery Picker Modal */}
+      {galleryOpen && (
+        <>
+          {!isMobile && (
+            <div onClick={() => setGalleryOpen(false)}
+              style={{ position: "fixed", inset: 0, zIndex: 1300, background: "rgba(0,0,0,0.45)" }} />
+          )}
+          <div style={isMobile ? {
+            position: "fixed", left: 0, right: 0,
+            bottom: "calc(60px + env(safe-area-inset-bottom, 0px))",
+            zIndex: 1301, background: "#FFFCF5",
+            borderRadius: "20px 20px 0 0", maxHeight: "70vh",
+            display: "flex", flexDirection: "column",
+            boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
+          } : {
+            position: "fixed", top: "50%", left: "50%",
+            transform: "translate(-50%,-50%)",
+            zIndex: 1301, background: "#FFFCF5",
+            borderRadius: 20, width: "min(94vw, 640px)",
+            maxHeight: "80vh", display: "flex", flexDirection: "column",
+            boxShadow: "0 32px 80px rgba(44,26,14,0.22)",
+          }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 18px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", fontFamily: font }}>Decoration Gallery</div>
+                <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2, fontFamily: font }}>
+                  Tap to select{gallerySelected.length > 0 ? ` · ${gallerySelected.length} selected` : ""}
+                </div>
+              </div>
+              <button onClick={() => setGalleryOpen(false)}
+                style={{ background: "none", border: "none", fontSize: 18, color: "#9B7450", cursor: "pointer", padding: "4px 8px" }}>✕</button>
+            </div>
+            {/* Photo grid */}
+            <div style={{ flex: 1, overflowY: "auto", padding: 14 }}>
+              {galleryLoading ? (
+                <div style={{ textAlign: "center", padding: 40, color: "#9B7450", fontFamily: font }}>Loading…</div>
+              ) : galleryPhotos.length === 0 ? (
+                <div style={{ textAlign: "center", padding: 40, color: "#9B7450", fontFamily: font }}>No photos available</div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+                  {galleryPhotos.map(p => {
+                    const sel = gallerySelected.includes(p.imageUrl);
+                    return (
+                      <div key={p.imageUrl} onClick={() => toggleGallerySelect(p.imageUrl)}
+                        style={{ position: "relative", aspectRatio: "1 / 1", borderRadius: 10, overflow: "hidden", cursor: "pointer", border: `2.5px solid ${sel ? "#C47A2E" : "transparent"}` }}>
+                        <img src={p.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        {sel && (
+                          <div style={{ position: "absolute", inset: 0, background: "rgba(196,122,46,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 15, fontWeight: 900 }}>✓</div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+            {/* Footer */}
+            <div style={{ padding: "14px 16px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0, display: "flex", gap: 8 }}>
+              {gallerySelected.length > 0 && (
+                <button onClick={() => { setSelectedRefPhotos(gallerySelected.map(url => ({ src: url }))); setGalleryOpen(false); }}
+                  style={{ flex: 2, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Add {gallerySelected.length} photo{gallerySelected.length !== 1 ? "s" : ""} →
+                </button>
+              )}
+              <button onClick={() => setGalleryOpen(false)}
+                style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                Close
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   );
 }

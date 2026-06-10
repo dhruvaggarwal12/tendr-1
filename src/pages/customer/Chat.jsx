@@ -790,7 +790,7 @@ const Chat = () => {
                     // Render inline image messages
                     if (msg.text?.startsWith("[img:")) {
                       const src = msg.text.replace("[img:", "").replace(/\]$/, "");
-                      return <img src={src} alt="shared" style={{ maxWidth: 260, borderRadius: 10, display: "block" }} />;
+                      return <img src={src} alt="shared" style={{ maxWidth: "min(260px, 100%)", maxHeight: 240, borderRadius: 10, display: "block", objectFit: "contain" }} />;
                     }
                     // System finalised message → green
                     if (msg.text?.startsWith("[FINALISED]")) {
