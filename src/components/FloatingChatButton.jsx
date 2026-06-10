@@ -77,7 +77,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     path === "/listings" &&
     activeServiceType === "Decorator";
 
-  // Fetch approved vendor conversations
+  // Fetch all active conversations (pending + approved, all types)
   const fetchVendorChats = useCallback(() => {
     if (!token || !user?._id) return;
     fetch(`${BASE_URL}/conversations`, {
@@ -86,11 +86,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     })
       .then((r) => r.ok ? r.json() : { conversations: [] })
       .then((data) => {
-        // Include approved vendor chats + concierge/support chats
-        const approved = (data.conversations || []).filter(
-          (c) => c.chatApproved && (c.chatType === "vendor" || c.chatType === "concierge" || c.chatType === "support")
+        // Show all non-rejected chats regardless of approval state or chat type
+        const active = (data.conversations || []).filter(
+          (c) => !c.chatRejected && c.chatType !== undefined
         );
-        setVendorChats(approved);
+        setVendorChats(active);
       })
       .catch(() => {});
   }, [token, user?._id]);
@@ -204,10 +204,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                         {(convo.vendorName || "V")[0].toUpperCase()}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || "Vendor"}</div>
-                        <div style={{ fontSize: 12, color: "#9B7450" }}>{convo.serviceType || "Chat"}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || (convo.chatType === "support" ? "Support" : convo.chatType === "concierge" ? "Tendr Concierge" : "Vendor")}</div>
+                        <div style={{ fontSize: 12, color: "#9B7450" }}>{convo.serviceType || (convo.chatType === "support" ? "Support Chat" : convo.chatType === "concierge" ? "Concierge" : "Chat")}</div>
                       </div>
-                      <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", flexShrink: 0 }}>Active →</span>
+                      {convo.chatApproved ? (
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", flexShrink: 0 }}>Active →</span>
+                      ) : (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#b45309", background: "rgba(180,83,9,0.08)", border: "1px solid rgba(180,83,9,0.2)", borderRadius: 20, padding: "2px 8px", flexShrink: 0 }}>Pending</span>
+                      )}
                     </div>
                   ))}
                 </div>

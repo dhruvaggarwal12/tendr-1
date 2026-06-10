@@ -5,6 +5,19 @@ import { useSelector, useDispatch } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+const CHAT_TTL_MS = 24 * 60 * 60 * 1000;
+const chatSaveKey = (id) => `tendr:chat_req:${id}`;
+const getChatSave = (id) => {
+  try {
+    const s = JSON.parse(localStorage.getItem(chatSaveKey(id)) || "null");
+    return s && Date.now() - s.submittedAt < CHAT_TTL_MS ? s : null;
+  } catch { return null; }
+};
+const setChatSave = (id, data) => {
+  try { localStorage.setItem(chatSaveKey(id), JSON.stringify({ ...data, submittedAt: Date.now() })); } catch {}
+};
+
 const SAVED_KEY = "tendr_saved_vendors";
 const getSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
 const isSaved = (id) => getSaved().some(v => v._id === id);
@@ -45,13 +58,13 @@ const VendorList_ListingPage = ({
 }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { openVendorChat } = useChatOverlay();
+  const { openVendorChat, openExistingChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
   const formData = useSelector(s => s.eventPlanning?.formData || {});
-  const hasEventDetails = !!(formData.eventType && formData.guests && formData.date && formData.location);
+  const hasEventDetails = !!(formData.eventType && formData.guests && formData.date && formData.budget);
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
-  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
+  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "" });
   const [pendingProfileVendorId, setPendingProfileVendorId] = useState(null);
   const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
   const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
@@ -523,20 +536,42 @@ const VendorList_ListingPage = ({
                   })()}
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!token) {
                       navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } });
                       return;
                     }
-                    if (requireFormBeforeChat && !hasEventDetails) {
-                      setPendingProfileVendorId(null);
-                      setChatFormVendor(quickViewVendor);
-                      setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", location: formData.location || "" });
-                      closePanel();
-                    } else {
-                      closePanel();
-                      openVendorChat({ _id: quickViewVendor._id, name: quickViewVendor.name, serviceType: quickViewVendor.serviceType });
+                    const vendor = quickViewVendor;
+                    closePanel();
+                    // Check 24h save for this vendor
+                    const saved = getChatSave(vendor._id);
+                    if (saved) {
+                      // Already submitted within 24h — open existing conversation
+                      try {
+                        const res = await fetch(`${BASE_URL}/conversations`, {
+                          headers: { Authorization: `Bearer ${token}` },
+                          credentials: "include",
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          const convo = (data.conversations || []).find(c => {
+                            const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
+                            return String(cvid) === String(vendor._id);
+                          });
+                          if (convo) {
+                            openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved });
+                            return;
+                          }
+                        }
+                      } catch {}
+                      // Fallback if conversation not found yet
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      return;
                     }
+                    // No save — show the event details form
+                    setPendingProfileVendorId(null);
+                    setChatFormVendor(vendor);
+                    setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "" });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
@@ -571,14 +606,15 @@ const VendorList_ListingPage = ({
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               {[
                 { label: "What's the occasion?", field: "eventType", placeholder: "e.g. Birthday, Wedding, Anniversary..." },
-                { label: "Guest count", field: "guests", placeholder: "Approx. number of guests" },
-                { label: "Event date", field: "date", placeholder: "", type: "date" },
-                { label: "Location", field: "location", placeholder: "City / area" },
-              ].map(({ label, field, placeholder, type }) => (
+                { label: "Event date", field: "date", placeholder: "", type: "date", extra: { min: new Date().toISOString().split("T")[0] } },
+                { label: "Guest count", field: "guests", placeholder: "Approx. number of guests", type: "number" },
+                { label: "Budget", field: "budget", placeholder: "e.g. ₹50,000 – ₹1,00,000" },
+              ].map(({ label, field, placeholder, type, extra }) => (
                 <div key={field}>
                   <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>{label}</label>
                   <input type={type || "text"} placeholder={placeholder} value={chatEventForm[field]}
                     onChange={e => setChatEventForm(p => ({ ...p, [field]: e.target.value }))}
+                    {...(extra || {})}
                     style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
                 </div>
               ))}
@@ -589,7 +625,7 @@ const VendorList_ListingPage = ({
                   eventType: chatEventForm.eventType,
                   guests: chatEventForm.guests,
                   date: chatEventForm.date,
-                  location: chatEventForm.location,
+                  budget: chatEventForm.budget,
                   token,
                 }));
                 dispatch(setBookingType("you-do-it"));
@@ -598,10 +634,17 @@ const VendorList_ListingPage = ({
                   setPendingProfileVendorId(null);
                   setChatFormVendor(null);
                   const url = `/vendor/${vid}`;
-                  const st = { from: "search", filters: { eventType: chatEventForm.eventType, date: chatEventForm.date, location: chatEventForm.location } };
+                  const st = { from: "search", filters: { eventType: chatEventForm.eventType, date: chatEventForm.date, budget: chatEventForm.budget } };
                   if (window.innerWidth >= 768) window.open(url, "_blank");
                   else navigate(url, { state: st });
                 } else {
+                  // Save per-vendor 24h record before opening chat
+                  setChatSave(chatFormVendor._id, {
+                    eventType: chatEventForm.eventType,
+                    date: chatEventForm.date,
+                    guests: chatEventForm.guests,
+                    budget: chatEventForm.budget,
+                  });
                   openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
                   setChatFormVendor(null);
                 }
