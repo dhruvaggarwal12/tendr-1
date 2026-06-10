@@ -63,6 +63,11 @@ export default function SearchResults() {
   const [loading, setLoading]         = useState(true);
   const [pagination, setPagination]   = useState({});
   const [currentPage, setCurrentPage] = useState(1);
+  const [pendingScroll, setPendingScroll] = useState(() => {
+    const saved = sessionStorage.getItem("listings_scroll_y");
+    if (saved) { sessionStorage.removeItem("listings_scroll_y"); return Number(saved); }
+    return null;
+  });
 
   // Loading overlay (1.5s on first mount)
   const [showOverlay, setShowOverlay] = useState(true);
@@ -106,6 +111,15 @@ export default function SearchResults() {
   useEffect(() => {
     if (activeCat) dispatch(setFilters({ serviceType: activeCat, locationType: localLoc || "" }));
   }, [activeCat, localLoc]);
+
+  // Restore scroll position when returning from a vendor profile page
+  useEffect(() => {
+    if (pendingScroll !== null && !loading && vendors.length > 0) {
+      const y = pendingScroll;
+      setPendingScroll(null);
+      requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" })));
+    }
+  }, [loading, vendors.length, pendingScroll]);
 
   // Unknown search screen
   if (isUnknown) {

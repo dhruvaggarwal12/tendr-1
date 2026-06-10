@@ -154,6 +154,11 @@ export default function TopRatedVendors() {
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
+  const [pendingScroll, setPendingScroll] = useState(() => {
+    const saved = sessionStorage.getItem("listings_scroll_y");
+    if (saved) { sessionStorage.removeItem("listings_scroll_y"); return Number(saved); }
+    return null;
+  });
   useEffect(() => { const t = setTimeout(() => setShowTip(true), 20000); return () => clearTimeout(t); }, []);
 
   const info = CATEGORY_MAP[category] || { label: `${category} Vendors`, color: "#C47A2E" };
@@ -169,9 +174,17 @@ export default function TopRatedVendors() {
   };
 
   useEffect(() => {
-    window.scrollTo(0, 0);
+    if (!pendingScroll) window.scrollTo(0, 0);
     loadVendors();
   }, [category]);
+
+  useEffect(() => {
+    if (pendingScroll !== null && !loading && vendors.length > 0) {
+      const y = pendingScroll;
+      setPendingScroll(null);
+      requestAnimationFrame(() => requestAnimationFrame(() => window.scrollTo({ top: y, behavior: "instant" })));
+    }
+  }, [loading, vendors.length, pendingScroll]);
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
