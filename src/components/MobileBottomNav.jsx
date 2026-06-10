@@ -231,18 +231,16 @@ function BottomNavInner() {
                   </div>
                 </button>
               )}
-              {user?.isAdmin && (
-                <button onClick={() => { navigate("/home-wedding-planner"); setPlanOpen(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.3)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.1)", textAlign: "left" }}
-                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.12)"}
-                  onTouchEnd={e => e.currentTarget.style.background = "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))"}>
-                  <span style={{ fontSize: 28 }}>🏠</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Home Wedding Planner</div>
-                    <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Multi-day rituals — Haldi to Reception</div>
-                  </div>
-                </button>
-              )}
+              <button onClick={() => { navigate("/home-wedding-planner"); setPlanOpen(false); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.3)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.1)", textAlign: "left" }}
+                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.12)"}
+                onTouchEnd={e => e.currentTarget.style.background = "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))"}>
+                <span style={{ fontSize: 28 }}>🏠</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Home Wedding Planner</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Multi-day rituals — Haldi to Reception</div>
+                </div>
+              </button>
             </div>
           </div>
         </>

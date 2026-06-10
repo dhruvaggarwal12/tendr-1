@@ -106,7 +106,7 @@ export default function CommunityWall() {
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
   const [adminTagOpen, setAdminTagOpen] = useState({});
   const [formOpen, setFormOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", body: "", category: "story", event: "", city: "" });
+  const [form, setForm] = useState({ title: "", body: "", category: "story", event: "", city: "", authorName: "" });
   const [formSubmitted, setFormSubmitted] = useState(false);
 
   const filtered = activeCategory === "all" ? posts : posts.filter(p => p.category === activeCategory);
@@ -142,7 +142,7 @@ export default function CommunityWall() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const authorName = user?.name || "Community Member";
+    const authorName = form.authorName?.trim() || user?.name || "Community Member";
     const newPost = {
       id: Date.now(),
       ...form,
@@ -156,7 +156,7 @@ export default function CommunityWall() {
       bookmarks: 0,
     };
     setPosts(prev => [newPost, ...prev]);
-    setForm({ title: "", body: "", category: "story", event: "", city: "" });
+    setForm({ title: "", body: "", category: "story", event: "", city: "", authorName: "" });
     setFormSubmitted(true);
     setFormOpen(false);
     setTimeout(() => setFormSubmitted(false), 3000);
@@ -190,7 +190,7 @@ export default function CommunityWall() {
             Real experiences, surprise moments, creative ideas, and honest lessons — shared by people who celebrate with Tendr.
           </p>
           <button
-            onClick={() => { if (!user) { navigate("/login"); return; } setFormOpen(v => !v); }}
+            onClick={() => setFormOpen(v => !v)}
             style={{ padding: "13px 32px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.4)", letterSpacing: "0.01em" }}>
             {formOpen ? "Close Form" : "+ Share Your Story"}
           </button>
@@ -235,6 +235,13 @@ export default function CommunityWall() {
               <textarea required rows={4} placeholder="Tell us what happened, what surprised you, or what you'd suggest..." value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", resize: "vertical", boxSizing: "border-box", lineHeight: 1.6 }} />
             </div>
+            {!user && (
+              <div style={{ marginBottom: 14 }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#6B3A1F", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.06em" }}>Your Name (optional)</label>
+                <input type="text" placeholder="Leave blank to post anonymously" value={form.authorName} onChange={e => setForm(p => ({ ...p, authorName: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+              </div>
+            )}
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
               <button type="submit" style={{ padding: "11px 28px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
                 Post to Wall
