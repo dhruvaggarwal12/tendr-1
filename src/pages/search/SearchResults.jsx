@@ -26,16 +26,17 @@ export default function SearchResults() {
   const rawBudget  = searchParams.get("budget") ? Number(searchParams.get("budget")) : null;
   const rawQuery   = searchParams.get("q") || "";
   const isUnknown  = searchParams.get("unknown") === "1";
-  const allCategories = user?.isAdmin ? [...PLATFORM_CATEGORIES, "Fun Activities"] : PLATFORM_CATEGORIES;
+  const allCategories = [...PLATFORM_CATEGORIES, "Fun Activities"];
+  const rawTopRated = searchParams.get("topRated") === "1";
 
   // Active filter state — sync whenever URL params change
   const [activeCat,   setActiveCat]   = useState(rawCats[0] || "");
-  const [localLoc,    setLocalLoc]    = useState(rawLocs[0] || formData.location || "");
+  const [localLoc,    setLocalLoc]    = useState(rawLocs[0] || "");
   const [localBudget, setLocalBudget] = useState(null);
-  const [topRatedOnly, setTopRatedOnly] = useState(false);
+  const [topRatedOnly, setTopRatedOnly] = useState(rawTopRated);
   const [sortBy, setSortBy]             = useState("rankingScore");
   const [sortOrder, setSortOrder]       = useState("desc");
-  const [dateFilter, setDateFilter]     = useState(formData.date || "");
+  const [dateFilter, setDateFilter]     = useState("");
   const [showTip, setShowTip] = useState(false);
   const [showHowToBook, setShowHowToBook] = useState(true);
   const todayStr = new Date().toISOString().split("T")[0];
@@ -50,7 +51,7 @@ export default function SearchResults() {
     setLocalLoc(rawLocs[0] || "");
     setLocalBudget(null);
     setCurrentPage(1);
-    setTopRatedOnly(false);
+    setTopRatedOnly(searchParams.get("topRated") === "1");
   }, [searchParams.toString()]);
 
   // Vendors state
@@ -114,12 +115,12 @@ export default function SearchResults() {
             "{rawQuery}" isn't on Tendr yet
           </h2>
           <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 32px", lineHeight: 1.65 }}>
-            We currently cover four service categories for events in Delhi NCR. Here's what we offer:
+            We currently cover five service categories for events in Delhi NCR. Here's what we offer:
           </p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 32 }}>
             {allCategories.map(cat => (
               <button key={cat}
-                onClick={() => cat === "Fun Activities" ? navigate("/fun-activities") : navigate(`/top-rated/${cat}`)}
+                onClick={() => cat === "Fun Activities" ? navigate("/fun-activities") : navigate(`/search?categories=${cat}`)}
                 style={{ padding: "16px", borderRadius: 14, border: `1.5px solid ${cat === "Fun Activities" ? "rgba(124,58,237,0.25)" : "rgba(196,122,46,0.2)"}`, background: cat === "Fun Activities" ? "rgba(124,58,237,0.04)" : "#fff", cursor: "pointer", fontFamily: font, textAlign: "center", transition: "all 0.18s" }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = cat === "Fun Activities" ? "#7C3AED" : "#C47A2E"; e.currentTarget.style.background = cat === "Fun Activities" ? "rgba(124,58,237,0.08)" : "rgba(196,122,46,0.04)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = cat === "Fun Activities" ? "rgba(124,58,237,0.25)" : "rgba(196,122,46,0.2)"; e.currentTarget.style.background = cat === "Fun Activities" ? "rgba(124,58,237,0.04)" : "#fff"; }}>
@@ -159,92 +160,80 @@ export default function SearchResults() {
           </h1>
 
           {/* ── Filter bar ── */}
-          <div className="search-filter-bar" style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "14px 16px", marginBottom: 10 }}>
-            {/* Location row */}
-            <div style={{ marginBottom: 10 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>📍 Location</span>
-              <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", marginTop: 7, paddingBottom: 2 }}>
-                {["All", ...PLATFORM_LOCATIONS].map(loc => {
-                  const active = loc === "All" ? !localLoc : localLoc === loc;
-                  return (
-                    <button key={loc}
-                      className="search-filter-chip"
-                      onClick={() => { setLocalLoc(loc === "All" ? "" : loc); setCurrentPage(1); }}
-                      style={{ padding: "5px 14px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s" }}>
-                      {loc}
-                    </button>
-                  );
-                })}
+          <div className="search-filter-bar" style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "10px 14px", marginBottom: 10 }}>
+            {/* All filters in one scrollable row: Location | Budget | Date */}
+            <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2, alignItems: "center" }}>
+              <span style={{ fontSize: 13, flexShrink: 0 }}>📍</span>
+              {["All", ...PLATFORM_LOCATIONS].map(loc => {
+                const active = loc === "All" ? !localLoc : localLoc === loc;
+                return (
+                  <button key={loc}
+                    className="search-filter-chip"
+                    onClick={() => { setLocalLoc(loc === "All" ? "" : loc); setCurrentPage(1); }}
+                    style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap", transition: "all 0.15s" }}>
+                    {loc}
+                  </button>
+                );
+              })}
+              <div style={{ width: 1, height: 20, background: "rgba(196,122,46,0.2)", flexShrink: 0, margin: "0 4px" }} />
+              <span style={{ fontSize: 13, flexShrink: 0 }}>💰</span>
+              {[
+                { label: "₹10k", val: 10000 },
+                { label: "₹25k", val: 25000 },
+                { label: "₹50k", val: 50000 },
+              ].map(({ label, val }) => {
+                const active = localBudget === val || (!localBudget && rawBudget === val);
+                return (
+                  <button key={val}
+                    className="search-filter-chip"
+                    onClick={() => { setLocalBudget(active ? null : val); setCurrentPage(1); }}
+                    style={{ padding: "5px 11px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.15s" }}>
+                    {label}
+                  </button>
+                );
+              })}
+              <div style={{ width: 1, height: 20, background: "rgba(196,122,46,0.2)", flexShrink: 0, margin: "0 4px" }} />
+              <span style={{ fontSize: 13, flexShrink: 0 }}>📅</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                <input
+                  type="date"
+                  value={dateFilter}
+                  min={todayStr}
+                  onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
+                  className="search-date-input"
+                  style={{ fontFamily: font, fontSize: 12, padding: "5px 10px", borderRadius: 100, border: `1.5px solid ${dateFilter ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: dateFilter ? "rgba(196,122,46,0.07)" : "transparent", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
+                />
+                {dateFilter && (
+                  <button onClick={() => { setDateFilter(""); setCurrentPage(1); }} style={{ fontSize: 13, color: "#9B7450", background: "none", border: "none", cursor: "pointer", padding: "2px 4px", lineHeight: 1, flexShrink: 0 }}>✕</button>
+                )}
               </div>
             </div>
-
-            {/* Date + Budget row */}
-            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-start" }}>
-              {/* Date */}
-              <div>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>📅 Date</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 7 }}>
-                  <input
-                    type="date"
-                    value={dateFilter}
-                    min={todayStr}
-                    onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
-                    className="search-date-input"
-                    style={{ fontFamily: font, fontSize: 12, padding: "5px 11px", borderRadius: 100, border: `1.5px solid ${dateFilter ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: dateFilter ? "rgba(196,122,46,0.07)" : "transparent", color: "#4a2c0e", cursor: "pointer", outline: "none" }}
-                  />
-                  {dateFilter && (
-                    <button onClick={() => { setDateFilter(""); setCurrentPage(1); }} style={{ fontSize: 13, color: "#9B7450", background: "none", border: "none", cursor: "pointer", padding: "2px 4px", lineHeight: 1 }}>✕</button>
-                  )}
-                </div>
-              </div>
-
-              {/* Budget */}
-              <div className="search-filter-budget-wrapper" style={{ flex: 1 }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>💰 Budget (per vendor)</span>
-                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 7 }}>
-                  {[
-                    { label: "Under ₹10k",  val: 10000 },
-                    { label: "Under ₹25k",  val: 25000 },
-                    { label: "Under ₹50k",  val: 50000 },
-                  ].map(({ label, val }) => {
-                    const active = localBudget === val || (!localBudget && rawBudget === val);
-                    return (
-                      <button key={val}
-                        className="search-filter-chip"
-                        onClick={() => { setLocalBudget(active ? null : val); setCurrentPage(1); }}
-                        style={{ padding: "5px 13px", borderRadius: 100, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: active ? "rgba(196,122,46,0.1)" : "transparent", color: active ? "#C47A2E" : "#7A5535", fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "all 0.15s" }}>
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
+            {/* Top Rated — own row below filters */}
+            <div style={{ marginTop: 8, display: "flex" }}>
+              <button
+                className="search-filter-chip"
+                onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
+                style={{ padding: "4px 11px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
+                ⭐ Top Rated {topRatedOnly ? "✓" : ""}
+              </button>
             </div>
           </div>
 
           {/* Sort row */}
-          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between", flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-              <span style={{ fontFamily: font, fontSize: 11, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap" }}>Sort:</span>
-              <select value={sortBy} onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
-                style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
-                <option value="rankingScore">Best Match</option>
-                <option value="rating">Rating</option>
-                <option value="price">Price</option>
-                <option value="experience">Experience</option>
-              </select>
-              <select value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}
-                style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
-                <option value="desc">High to Low</option>
-                <option value="asc">Low to High</option>
-              </select>
-            </div>
-            <button
-              className="search-filter-chip"
-              onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
-              style={{ padding: "4px 11px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 4, flexShrink: 0, whiteSpace: "nowrap" }}>
-              ⭐ Top Rated {topRatedOnly ? "✓" : ""}
-            </button>
+          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none" }}>
+            <span style={{ fontFamily: font, fontSize: 11, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap" }}>Sort:</span>
+            <select value={sortBy} onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
+              style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+              <option value="rankingScore">Best Match</option>
+              <option value="rating">Rating</option>
+              <option value="price">Price</option>
+              <option value="experience">Experience</option>
+            </select>
+            <select value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}
+              style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+              <option value="desc">High to Low</option>
+              <option value="asc">Low to High</option>
+            </select>
           </div>
         </div>
 

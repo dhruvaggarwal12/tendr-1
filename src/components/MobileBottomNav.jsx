@@ -13,10 +13,10 @@ const HIDE_PATHS = [
 ];
 
 const CATEGORIES = [
-  { emoji: "📸", label: "Photography", path: "/top-rated/Photographer" },
-  { emoji: "🍽", label: "Catering",    path: "/top-rated/Caterer" },
-  { emoji: "🎵", label: "DJ & Music",  path: "/top-rated/DJ" },
-  { emoji: "🎀", label: "Decoration",  path: "/top-rated/Decorator" },
+  { emoji: "📸", label: "Photography", path: "/search?categories=Photographer" },
+  { emoji: "🍽", label: "Catering",    path: "/search?categories=Caterer" },
+  { emoji: "🎵", label: "DJ & Music",  path: "/search?categories=DJ" },
+  { emoji: "🎀", label: "Decoration",  path: "/search?categories=Decorator" },
   { emoji: "🎁", label: "Gift Hampers",path: "/gift-hampers-cakes" },
 ];
 

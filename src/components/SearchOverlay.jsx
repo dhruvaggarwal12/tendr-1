@@ -53,8 +53,9 @@ function parseSearch(q) {
   const locs = [...new Set(Object.entries(LOC_KW).filter(([k]) => lower.includes(k)).sort((a,b)=>b[0].length-a[0].length).map(([,v]) => v))];
   const budgetM = lower.match(/(?:under|below|₹)\s*(\d[\d,]*)\s*k?/i);
   const budget = budgetM ? parseFloat(budgetM[1].replace(/,/g,"")) * (/k\b/.test(budgetM[0]) ? 1000 : 1) : null;
+  const topRated = /top[\s-]?rated/i.test(lower);
   const isUnknown = q.trim().length > 2 && cats.length === 0 && locs.length === 0 && !budget;
-  return { cats, locs, budget, isUnknown };
+  return { cats, locs, budget, isUnknown, topRated };
 }
 
 function getRecent() {
@@ -69,13 +70,11 @@ function clearRecent() { localStorage.removeItem(RECENT_KEY); }
 export default function SearchOverlay({ isOpen, onClose }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
-  const [recent, setRecent] = useState([]);
   const inputRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
       setQ("");
-      setRecent(getRecent());
       setTimeout(() => inputRef.current?.focus(), 80);
     }
   }, [isOpen]);
@@ -89,14 +88,14 @@ export default function SearchOverlay({ isOpen, onClose }) {
 
   const doSearch = (text) => {
     if (!text.trim()) return;
-    saveRecent(text.trim());
-    const { pageHref, cats, locs, budget, isUnknown } = parseSearch(text);
+    const { pageHref, cats, locs, budget, isUnknown, topRated } = parseSearch(text);
     if (pageHref) { navigate(pageHref); onClose(); return; }
     if (isUnknown) { navigate(`/search?unknown=1&q=${encodeURIComponent(text)}`); onClose(); return; }
     const p = new URLSearchParams();
     if (cats?.length) p.set("categories", cats.join(","));
     if (locs?.length) p.set("locations", locs.join(","));
     if (budget) p.set("budget", budget);
+    if (topRated) p.set("topRated", "1");
     p.set("q", text);
     navigate(`/search?${p.toString()}`);
     onClose();
@@ -169,43 +168,21 @@ export default function SearchOverlay({ isOpen, onClose }) {
             )}
           </div>
         ) : (
-          <>
-            {/* Recent searches */}
-            {recent.length > 0 && (
-              <div style={{ padding: "16px 20px 0" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em" }}>Recent</span>
-                  <button onClick={() => { clearRecent(); setRecent([]); }} style={{ background: "none", border: "none", fontSize: 11, color: "#C47A2E", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>Clear</button>
+          <div style={{ padding: "16px 20px 0" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Popular searches</p>
+            {POPULAR_SEARCHES.map((s, i) => (
+              <button key={i}
+                onMouseDown={e => e.preventDefault()}
+                onClick={() => { if (s.href) { navigate(s.href); onClose(); } else handleSuggestionClick(s.text); }}
+                style={{ width: "100%", textAlign: "left", padding: "11px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.06)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, fontFamily: font }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 14, color: "#9B7450" }}>↗</span>
+                  <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
                 </div>
-                {recent.map((r, i) => (
-                  <button key={i}
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => { setQ(r); doSearch(r); }}
-                    style={{ width: "100%", textAlign: "left", padding: "10px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.06)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 12, fontFamily: font }}>
-                    <span style={{ fontSize: 15, color: "#C47A2E" }}>🕐</span>
-                    <span style={{ fontSize: 14, color: "#2C1A0E" }}>{r}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Popular searches — same as desktop */}
-            <div style={{ padding: "20px 20px 0" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Popular searches</p>
-              {POPULAR_SEARCHES.map((s, i) => (
-                <button key={i}
-                  onMouseDown={e => e.preventDefault()}
-                  onClick={() => { if (s.href) { navigate(s.href); onClose(); } else handleSuggestionClick(s.text); }}
-                  style={{ width: "100%", textAlign: "left", padding: "11px 0", border: "none", borderBottom: "1px solid rgba(196,122,46,0.06)", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, fontFamily: font }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <span style={{ fontSize: 14, color: "#9B7450" }}>↗</span>
-                    <span style={{ fontSize: 14, color: "#3B2F2F" }}>{s.text}</span>
-                  </div>
-                  {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
-                </button>
-              ))}
-            </div>
-          </>
+                {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
+              </button>
+            ))}
+          </div>
         )}
       </div>
     </div>

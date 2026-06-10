@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useNavigationType } from "react-router-dom";
 import SEO from "../../components/SEO";
 import ToolNav from "../../components/ToolNav";
 
@@ -53,9 +53,12 @@ const today = new Date().toISOString().split("T")[0];
 
 export default function CheckboxPicker() {
   const navigate = useNavigate();
+  const navType = useNavigationType();
 
-  // Check if existing personalized checklist exists — skip form if yes
+  // Check if existing personalized checklist exists — skip form if yes.
+  // Skip auto-redirect when user pressed back (POP) so they can leave the page.
   useEffect(() => {
+    if (navType === "POP") return;
     try {
       const raw = localStorage.getItem("tendr_checklist_v2");
       if (!raw) return;

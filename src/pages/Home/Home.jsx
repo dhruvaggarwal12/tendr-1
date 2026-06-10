@@ -611,12 +611,12 @@ const Home = () => {
             <div className="hero-mobile-cats" style={{ display: "none", marginBottom: 14 }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 4 }}>
               {[
-                { emoji: "🎀", label: "Decorator",     path: "/top-rated/Decorator",    bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)" },
-                { emoji: "🍽", label: "Caterer",        path: "/top-rated/Caterer",      bg: "linear-gradient(135deg,#FFF8E1,#FFF0C2)" },
-                { emoji: "📸", label: "Photographer",   path: "/top-rated/Photographer", bg: "linear-gradient(135deg,#F0F8FF,#E0F0FF)" },
-                { emoji: "🎵", label: "DJ",             path: "/top-rated/DJ",           bg: "linear-gradient(135deg,#F0F0FF,#E8E8FF)" },
-                { emoji: "🎁", label: "Gifts",          path: "/gift-hampers-cakes",     bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
-                { emoji: "🎭", label: "Activities",     path: "/fun-activities",         bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
+                { emoji: "🎀", label: "Decorator",     path: "/search?categories=Decorator",    bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)" },
+                { emoji: "🍽", label: "Caterer",        path: "/search?categories=Caterer",      bg: "linear-gradient(135deg,#FFF8E1,#FFF0C2)" },
+                { emoji: "📸", label: "Photographer",   path: "/search?categories=Photographer", bg: "linear-gradient(135deg,#F0F8FF,#E0F0FF)" },
+                { emoji: "🎵", label: "DJ",             path: "/search?categories=DJ",           bg: "linear-gradient(135deg,#F0F0FF,#E8E8FF)" },
+                { emoji: "🎁", label: "Gifts",          path: "/gift-hampers-cakes",             bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
+                { emoji: "🎭", label: "Activities",     path: "/fun-activities",                 bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
               ].map(({ emoji, label, path, bg }) => (
                 <button key={label} onClick={() => navigate(path)}
                   style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>

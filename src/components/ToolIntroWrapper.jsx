@@ -59,12 +59,19 @@ export default function ToolIntroWrapper({ toolId, icon, title, tagline, descrip
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "44px 24px 80px" }}>
 
+        <style>{`
+          @media (max-width: 600px) {
+            .tool-intro-hero { flex-direction: column !important; gap: 20px !important; }
+            .tool-intro-icon { width: 64px !important; height: 64px !important; font-size: 32px !important; border-radius: 18px !important; }
+            .tool-intro-grid { grid-template-columns: 1fr !important; }
+          }
+        `}</style>
         {/* Hero */}
-        <div style={{ display: "flex", gap: 36, alignItems: "flex-start", marginBottom: 48, flexWrap: "wrap" }}>
-          <div style={{ width: 100, height: 100, borderRadius: 28, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, boxShadow: "0 8px 28px rgba(196,122,46,0.35)", flexShrink: 0 }}>
+        <div className="tool-intro-hero" style={{ display: "flex", gap: 36, alignItems: "flex-start", marginBottom: 48, flexWrap: "wrap" }}>
+          <div className="tool-intro-icon" style={{ width: 100, height: 100, borderRadius: 28, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, boxShadow: "0 8px 28px rgba(196,122,46,0.35)", flexShrink: 0 }}>
             {icon}
           </div>
-          <div style={{ flex: 1, minWidth: 260 }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.03em", margin: "0 0 8px", lineHeight: 1.1 }}>{title}</h1>
             <p style={{ fontSize: 16, fontWeight: 700, color: "#C47A2E", margin: "0 0 10px" }}>{tagline}</p>
             <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.7, margin: "0 0 20px", maxWidth: 500 }}>{description}</p>
@@ -81,7 +88,7 @@ export default function ToolIntroWrapper({ toolId, icon, title, tagline, descrip
 
         <div style={{ height: 2, background: "linear-gradient(90deg,#C47A2E,#CCAB4A,transparent)", borderRadius: 100, marginBottom: 40 }} />
 
-        <div style={{ display: "grid", gridTemplateColumns: features.length > 0 ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}>
+        <div className="tool-intro-grid" style={{ display: "grid", gridTemplateColumns: features.length > 0 ? "1fr 1fr" : "1fr", gap: 32, alignItems: "start" }}>
 
           {/* How it works */}
           {steps.length > 0 && (
