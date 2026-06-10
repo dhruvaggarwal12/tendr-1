@@ -344,10 +344,10 @@ const VendorList_ListingPage = ({
       {/* ── Quick-view side panel ── */}
       {quickViewVendor && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — z-index must beat MobileBottomNav (99990) */}
           <div
             onClick={closePanel}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1100, animation: "qv-fade 0.2s ease" }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 99994, animation: "qv-fade 0.2s ease" }}
           />
 
           {/* Panel */}
@@ -355,14 +355,14 @@ const VendorList_ListingPage = ({
             style={window.innerWidth < 768 ? {
               position: "fixed", left: 0, right: 0, bottom: 0, top: 0,
               width: "100vw", height: "100%",
-              background: "#FFFCF5", zIndex: 1101,
+              background: "#FFFCF5", zIndex: 99995,
               overflowY: "auto", fontFamily: font,
               animation: "qv-up 0.32s cubic-bezier(0.4,0,0.2,1)",
               paddingBottom: "env(safe-area-inset-bottom, 16px)",
             } : {
               position: "fixed", right: 0, top: 0, height: "100vh",
               width: 420, maxWidth: "92vw",
-              background: "#FFFCF5", zIndex: 1101,
+              background: "#FFFCF5", zIndex: 99995,
               boxShadow: "-8px 0 48px rgba(139,69,19,0.18)",
               overflowY: "auto", fontFamily: font,
               animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)",
@@ -615,7 +615,7 @@ const VendorList_ListingPage = ({
 
       {/* Pre-chat event form — shown when "Request to Chat" is clicked without event details */}
       {chatFormVendor && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 99996, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}
           onClick={() => setChatFormVendor(null)}>
           <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px", maxWidth: 480, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
             onClick={e => e.stopPropagation()}>
