@@ -506,12 +506,22 @@ const VendorList_ListingPage = ({
                 <div style={{ display: "flex", gap: 8 }}>
                   <button
                     onClick={(e) => {
+                      e.stopPropagation();
+                      const vendorId = quickViewVendor._id || quickViewVendor.id;
+                      if (!vendorId) return;
                       closePanel();
-                      handleViewProfile(e, quickViewVendor._id || quickViewVendor.id);
+                      const url = `/vendor/${vendorId}`;
+                      const state = { from: "listing", compareInProfile, filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder } };
+                      if (window.innerWidth >= 768) {
+                        window.open(url, "_blank");
+                      } else {
+                        sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
+                        navigate(url, { state });
+                      }
                     }}
                     style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
                   >
-                    Finalise
+                    View Full Profile →
                   </button>
                   {/* Share button — uses shareCopiedId from component state (no hooks-in-IIFE) */}
                   {(() => {

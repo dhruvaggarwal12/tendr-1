@@ -101,8 +101,15 @@ function BottomNavInner() {
   const shouldHide = HIDE_PATHS.some((p) => location.pathname.startsWith(p));
   if (shouldHide) return null;
 
-  const isActive = (paths) =>
-    paths.some((p) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p));
+  const fromPlan = location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1";
+
+  const isActive = (paths, label) => {
+    if (fromPlan) {
+      if (label === "Plan") return true;
+      if (label === "Browse") return false;
+    }
+    return paths.some((p) => p === "/" ? location.pathname === "/" : location.pathname.startsWith(p));
+  };
 
   const isHomePage = location.pathname === "/";
 
@@ -329,7 +336,7 @@ function BottomNavInner() {
         }}
       >
         {items.map(({ label, paths, onTap }) => {
-          const active = isActive(paths);
+          const active = isActive(paths, label);
           const Icon = NAV_ICONS[label];
           const isBrowseActive = label === "Browse" && browseOpen;
           const isOn = active || isBrowseActive;

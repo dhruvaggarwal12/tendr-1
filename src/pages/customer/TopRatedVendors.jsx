@@ -151,6 +151,9 @@ export default function TopRatedVendors() {
   const [fetchError, setFetchError] = useState(false);
   const [showTip, setShowTip] = useState(false);
   const [showHowToBook, setShowHowToBook] = useState(true);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
   useEffect(() => { const t = setTimeout(() => setShowTip(true), 20000); return () => clearTimeout(t); }, []);
 
   const info = CATEGORY_MAP[category] || { label: `${category} Vendors`, color: "#C47A2E" };
@@ -281,6 +284,29 @@ export default function TopRatedVendors() {
         </div>
       )}
 
+      {/* See Gallery + Decor Finder — Decorator page, desktop only */}
+      {category === "Decorator" && window.innerWidth >= 768 && (
+        <div style={{ maxWidth: 1280, margin: "0 auto", padding: "16px 16px 0", display: "flex", gap: 8 }}>
+          <button
+            onClick={async () => {
+              setGalleryOpen(true);
+              if (galleryPhotos.length > 0) return;
+              setGalleryLoading(true);
+              try {
+                const res = await fetch(`${BASE_URL}/gallery`);
+                const data = await res.json();
+                setGalleryPhotos((data.grouped?.["Decoration"] || []).map(p => p.imageUrl || p.url || p).filter(Boolean));
+              } catch {} finally { setGalleryLoading(false); }
+            }}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+          >🖼 See Gallery</button>
+          <button
+            onClick={() => window.open("/decor-finder", "_blank")}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+          >🎨 Decor Finder ↗</button>
+        </div>
+      )}
+
       {/* Vendor list — uses same VendorList_ListingPage as Search & Listings for QuickView + pre-chat form */}
       <div style={{ maxWidth: 1280, margin: "0 auto", padding: "32px 16px 80px" }}>
         {/* 20-sec save tip */}
@@ -323,6 +349,34 @@ export default function TopRatedVendors() {
           </div>
         )}
       </div>
+
+      {/* Gallery modal */}
+      {galleryOpen && (
+        <div onClick={() => setGalleryOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#FFFCF5", borderRadius: 20, width: "min(92vw,900px)", maxHeight: "85vh", display: "flex", flexDirection: "column", fontFamily: font, boxShadow: "0 24px 80px rgba(0,0,0,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>🖼 Decoration Gallery</h3>
+              <button onClick={() => setGalleryOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            </div>
+            <div style={{ overflowY: "auto", padding: 16, flex: 1 }}>
+              {galleryLoading ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontSize: 14 }}>Loading gallery...</div>
+              ) : galleryPhotos.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontSize: 14 }}>No photos available.</div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  {galleryPhotos.map((url, i) => (
+                    <div key={i} style={{ position: "relative", borderRadius: 12, overflow: "hidden", aspectRatio: "4/3" }}>
+                      <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      <a href={url} download target="_blank" rel="noreferrer" style={{ position: "absolute", bottom: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, textDecoration: "none" }}>⬇</a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

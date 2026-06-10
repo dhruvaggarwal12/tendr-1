@@ -29,6 +29,10 @@ export default function SearchResults() {
   const allCategories = [...PLATFORM_CATEGORIES, "Fun Activities"];
   const rawTopRated = searchParams.get("topRated") === "1";
 
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
+
   // Active filter state — sync whenever URL params change
   const [activeCat,   setActiveCat]   = useState(rawCats[0] || "");
   const [localLoc,    setLocalLoc]    = useState(rawLocs[0] || "");
@@ -159,10 +163,33 @@ export default function SearchResults() {
               : "Search Results")}
           </h1>
 
+          {/* See Gallery + Decor Finder — Decorator results, desktop only */}
+          {activeCat === "Decorator" && window.innerWidth >= 768 && (
+            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+              <button
+                onClick={async () => {
+                  setGalleryOpen(true);
+                  if (galleryPhotos.length > 0) return;
+                  setGalleryLoading(true);
+                  try {
+                    const res = await fetch(`${BASE_URL}/gallery`);
+                    const data = await res.json();
+                    setGalleryPhotos((data.grouped?.["Decoration"] || []).map(p => p.imageUrl || p.url || p).filter(Boolean));
+                  } catch {} finally { setGalleryLoading(false); }
+                }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+              >🖼 See Gallery</button>
+              <button
+                onClick={() => window.open("/decor-finder", "_blank")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+              >🎨 Decor Finder ↗</button>
+            </div>
+          )}
+
           {/* ── Filter bar ── */}
           <div className="search-filter-bar" style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "10px 14px", marginBottom: 10 }}>
-            {/* All filters in one scrollable row: Location | Budget | Date */}
-            <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2, alignItems: "center" }}>
+            {/* Row 1: Location chips */}
+            <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 6, alignItems: "center" }}>
               <span style={{ fontSize: 13, flexShrink: 0 }}>📍</span>
               {["All", ...PLATFORM_LOCATIONS].map(loc => {
                 const active = loc === "All" ? !localLoc : localLoc === loc;
@@ -175,7 +202,9 @@ export default function SearchResults() {
                   </button>
                 );
               })}
-              <div style={{ width: 1, height: 20, background: "rgba(196,122,46,0.2)", flexShrink: 0, margin: "0 4px" }} />
+            </div>
+            {/* Row 2: Budget chips + Date input on same line */}
+            <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none", paddingTop: 4, alignItems: "center" }}>
               <span style={{ fontSize: 13, flexShrink: 0 }}>💰</span>
               {[
                 { label: "₹10k", val: 10000 },
@@ -192,7 +221,7 @@ export default function SearchResults() {
                   </button>
                 );
               })}
-              <div style={{ width: 1, height: 20, background: "rgba(196,122,46,0.2)", flexShrink: 0, margin: "0 4px" }} />
+              <div style={{ width: 1, height: 18, background: "rgba(196,122,46,0.2)", flexShrink: 0, margin: "0 3px" }} />
               <span style={{ fontSize: 13, flexShrink: 0 }}>📅</span>
               <div style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }}>
                 <input
@@ -208,32 +237,31 @@ export default function SearchResults() {
                 )}
               </div>
             </div>
-            {/* Top Rated — own row below filters */}
-            <div style={{ marginTop: 8, display: "flex" }}>
-              <button
-                className="search-filter-chip"
-                onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
-                style={{ padding: "4px 11px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
-                ⭐ Top Rated {topRatedOnly ? "✓" : ""}
-              </button>
-            </div>
           </div>
 
-          {/* Sort row */}
-          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none" }}>
-            <span style={{ fontFamily: font, fontSize: 11, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap" }}>Sort:</span>
-            <select value={sortBy} onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
-              style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
-              <option value="rankingScore">Best Match</option>
-              <option value="rating">Rating</option>
-              <option value="price">Price</option>
-              <option value="experience">Experience</option>
-            </select>
-            <select value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}
-              style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
-              <option value="desc">High to Low</option>
-              <option value="asc">Low to High</option>
-            </select>
+          {/* Sort row + Top Rated on right */}
+          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <span style={{ fontFamily: font, fontSize: 10, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap" }}>Sort:</span>
+              <select value={sortBy} onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
+                style={{ fontFamily: font, fontSize: 10, padding: "2px 5px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                <option value="rankingScore">Best Match</option>
+                <option value="rating">Rating</option>
+                <option value="price">Price</option>
+                <option value="experience">Experience</option>
+              </select>
+              <select value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}
+                style={{ fontFamily: font, fontSize: 10, padding: "2px 5px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                <option value="desc">High → Low</option>
+                <option value="asc">Low → High</option>
+              </select>
+            </div>
+            <button
+              className="search-filter-chip"
+              onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
+              style={{ padding: "4px 10px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap", flexShrink: 0 }}>
+              ⭐ Top Rated {topRatedOnly ? "✓" : ""}
+            </button>
           </div>
         </div>
 
@@ -341,6 +369,34 @@ export default function SearchResults() {
           .search-filter-budget-wrapper { min-width: 0 !important; }
         }
       `}</style>
+
+      {/* Gallery modal */}
+      {galleryOpen && (
+        <div onClick={() => setGalleryOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: "#FFFCF5", borderRadius: 20, width: "min(92vw,900px)", maxHeight: "85vh", display: "flex", flexDirection: "column", fontFamily: font, boxShadow: "0 24px 80px rgba(0,0,0,0.3)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>🖼 Decoration Gallery</h3>
+              <button onClick={() => setGalleryOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            </div>
+            <div style={{ overflowY: "auto", padding: 16, flex: 1 }}>
+              {galleryLoading ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontSize: 14 }}>Loading gallery...</div>
+              ) : galleryPhotos.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontSize: 14 }}>No photos available.</div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  {galleryPhotos.map((url, i) => (
+                    <div key={i} style={{ position: "relative", borderRadius: 12, overflow: "hidden", aspectRatio: "4/3" }}>
+                      <img src={url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      <a href={url} download target="_blank" rel="noreferrer" style={{ position: "absolute", bottom: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, textDecoration: "none" }}>⬇</a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

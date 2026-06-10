@@ -957,7 +957,7 @@ const EventPlanning = () => {
                   <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Browse Yourself</div>
                   <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, marginBottom: 14, flex: 1 }}>Compare vendor profiles, chat directly, negotiate your own price.</div>
                   <button
-                    onClick={() => { dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType, locationType: formData?.location, date: formData?.date, guestCount: Number(formData?.guests) || 0 })); navigate("/listings", { state: { selectedCategories: selectedVendors } }); }}
+                    onClick={() => { dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType, locationType: formData?.location, date: formData?.date, guestCount: Number(formData?.guests) || 0 })); navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } }); }}
                     style={{ width: "100%", padding: "11px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                     Browse Vendors →
                   </button>
@@ -992,7 +992,7 @@ const EventPlanning = () => {
                   date: formData?.date || "",
                   guestCount: Number(formData?.guests) || 0,
                 }));
-                navigate("/listings", { state: { selectedCategories: selectedVendors } });
+                navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } });
               }}
               style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}>
               Browse All Vendors →
@@ -1553,7 +1553,7 @@ const EventPlanning = () => {
                       onClick={() => {
                         setShowYouDoItBudget(false);
                         dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                        navigate("/listings", { state: { selectedCategories: selectedVendors } });
+                        navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } });
                       }}
                       style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)", marginTop: 2 }}>
                       Browse Vendors →

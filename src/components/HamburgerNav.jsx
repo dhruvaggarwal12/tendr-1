@@ -750,15 +750,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           >
             {[0,1,2].map(i => <div key={i} style={{ width: 13, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
           </button>
-          {/* Saved Vendors button — shows when there are saved vendors */}
-          {(() => { const saved = getSavedVendors(); return saved.length > 0 ? (
-            <button onClick={() => setBookmarksOpen(true)}
-              style={{ position: "relative", width: 34, height: 34, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.07)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0, color: "#C47A2E" }}
-              title="Saved Vendors">
-              ♥
-              <span style={{ position: "absolute", top: -4, right: -4, width: 16, height: 16, borderRadius: "50%", background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center" }}>{saved.length}</span>
-            </button>
-          ) : null; })()}
           {/* Review & Pay button — shows when vendors finalised OR gift hampers in cart */}
           {(finalisedCount > 0 || ghCartCount > 0) && (
             <button

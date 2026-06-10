@@ -248,14 +248,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         </div>
       )}
 
-      {/* ── Desktop: Saved / Compare / Review & Pay cluster — HOME PAGE ONLY ── */}
-      {path === "/" && (savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
+      {/* ── Desktop: Saved / Compare / Review & Pay cluster — ALL PAGES ── */}
+      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
         <>
-          {/* Overlay to close popups on outside click */}
+          <div className="vendor-cluster-desktop" style={{ position: "fixed", bottom: 22, right: 170, zIndex: 899, display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Overlay to close popups on outside click — inside cluster so hidden on mobile */}
           {(savedOpen || compareOpen) && (
             <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 898 }} />
           )}
-          <div className="vendor-cluster-desktop" style={{ position: "fixed", bottom: 22, right: 170, zIndex: 899, display: "flex", alignItems: "center", gap: 10 }}>
 
             {/* Saved vendors */}
             {savedVendors.length > 0 && (
@@ -339,6 +339,69 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               >
                 ✅ Review & Pay
                 <span style={{ background: "#CCAB4A", color: "#2C1A0E", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{Object.keys(finalisedVendors).length}</span>
+              </button>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* Mobile action stack — Saved / Compare / Review & Pay — above chat button */}
+      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
+        <>
+          {(savedOpen || compareOpen) && (
+            <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 897 }} />
+          )}
+          {/* Saved popup */}
+          {savedOpen && (
+            <div className="mobile-saved-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 901, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "10px", minWidth: 240, maxWidth: 300, fontFamily: font, animation: "chatPop 0.18s ease" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "2px 8px 8px" }}>💛 Saved Vendors</div>
+              {savedVendors.map(v => (
+                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px", borderRadius: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
+                  </div>
+                  <button onClick={() => removeSaved(v._id)} style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Compare popup */}
+          {compareOpen && (
+            <div className="mobile-compare-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 901, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "10px", minWidth: 240, maxWidth: 300, fontFamily: font, animation: "chatPop 0.18s ease" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "2px 8px 8px" }}>⚖ Compare List</div>
+              {compareSelected.map(v => (
+                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px", borderRadius: 10 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
+                  </div>
+                  <button onClick={() => dispatch(removeVendorFromCompare(v._id))} style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {/* Button stack — column-reverse so Saved is visual-bottom (closest to chat) */}
+          <div className="mobile-action-stack" style={{ position: "fixed", bottom: 138, right: 14, zIndex: 900, display: "flex", flexDirection: "column-reverse", gap: 8, alignItems: "flex-end" }}>
+            {savedVendors.length > 0 && (
+              <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#be185d,#ec4899)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(190,24,93,0.35)", flexShrink: 0 }}>
+                ♥
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#9d174d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{savedVendors.length}</span>
+              </button>
+            )}
+            {compareSelected.length > 0 && (
+              <button className="mobile-action-btn" onClick={() => { setCompareOpen(v => !v); setSavedOpen(false); }}
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
+                ⚖
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
+              </button>
+            )}
+            {Object.keys(finalisedVendors).length > 0 && (
+              <button className="mobile-action-btn" onClick={() => router.navigate("/booking/review")}
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0 }}>
+                ✅
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{Object.keys(finalisedVendors).length}</span>
               </button>
             )}
           </div>
@@ -454,8 +517,16 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
         .vendor-cluster-desktop { transition: transform 0.15s; }
+        .mobile-action-stack { display: none !important; }
+        .mobile-action-btn { display: none !important; }
+        .mobile-saved-popup { display: none !important; }
+        .mobile-compare-popup { display: none !important; }
         @media (max-width: 767px) {
           .vendor-cluster-desktop { display: none !important; }
+          .mobile-action-stack { display: flex !important; }
+          .mobile-action-btn { display: flex !important; }
+          .mobile-saved-popup { display: block !important; }
+          .mobile-compare-popup { display: block !important; }
           /* Position above the 60px bottom nav bar */
           .floating-chat-btn {
             bottom: 80px !important;

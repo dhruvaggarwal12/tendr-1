@@ -24,6 +24,7 @@ import PullToRefresh from "../../components/PullToRefresh";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const VendorList = () => {
   const navigate = useNavigate();
@@ -75,7 +76,10 @@ const VendorList = () => {
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
 
   const [showHint, setShowHint] = useState(true);
-  const [showTip, setShowTip] = useState(false); // 20-sec tip popup
+  const [showTip, setShowTip] = useState(false);
+  const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryPhotos, setGalleryPhotos] = useState([]);
+  const [galleryLoading, setGalleryLoading] = useState(false);
   const [vendorList, setVendorList] = useState([]);
   const [paginationInfo, setPaginationInfo] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -348,7 +352,7 @@ const VendorList = () => {
               const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
               const val = currentCatBudget || range.max;
               return (
-                <div style={{ marginBottom: 12, display: "inline-flex", alignItems: "center", gap: 12, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif" }}>
+                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "calc(100vw - 40px)", boxSizing: "border-box" }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0 }}>
                     💰 {serviceType}
                   </span>
@@ -357,7 +361,7 @@ const VendorList = () => {
                   ) : (
                     <>
                       <span style={{ fontSize: 11, color: "#9B7450", flexShrink: 0 }}>{fmtBudget(range.min)}</span>
-                      <div style={{ width: 160, flexShrink: 0 }}>
+                      <div style={{ flex: 1, minWidth: 80 }}>
                         <style>{`.budget-sl::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;box-shadow:0 1px 4px rgba(196,122,46,0.4)}.budget-sl::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#C47A2E;cursor:pointer;border:none}.budget-sl{-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;outline:none;border:none}`}</style>
                         <input type="range" min={range.min} max={range.max} step={range.step} value={val}
                           className="budget-sl"
@@ -370,13 +374,30 @@ const VendorList = () => {
                 </div>
               );
             })()}
-            {serviceType === "Decorator" && (
-              <button
-                onClick={() => navigate("/gallery/decoration")}
-                style={{ marginBottom: 12, marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", verticalAlign: "top", whiteSpace: "nowrap" }}
-              >
-                🖼 See Gallery
-              </button>
+            {serviceType === "Decorator" && window.innerWidth >= 768 && (
+              <div style={{ display: "inline-flex", gap: 8, marginBottom: 12, marginLeft: 8, verticalAlign: "top" }}>
+                <button
+                  onClick={async () => {
+                    setGalleryOpen(true);
+                    if (galleryPhotos.length > 0) return;
+                    setGalleryLoading(true);
+                    try {
+                      const res = await fetch(`${BASE_URL}/gallery`);
+                      const data = await res.json();
+                      setGalleryPhotos((data.grouped?.["Decoration"] || []).map(p => p.imageUrl || p.url || p).filter(Boolean));
+                    } catch {} finally { setGalleryLoading(false); }
+                  }}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
+                >
+                  🖼 See Gallery
+                </button>
+                <button
+                  onClick={() => window.open("/decor-finder", "_blank")}
+                  style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
+                >
+                  🎨 Decor Finder ↗
+                </button>
+              </div>
             )}
 
             {/* Category switcher — mobile only dropdown; hidden on desktop (sidebar handles it) */}
@@ -870,6 +891,48 @@ const VendorList = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Gallery modal — Decorator, desktop only */}
+      {galleryOpen && (
+        <div
+          onClick={() => setGalleryOpen(false)}
+          style={{ position: "fixed", inset: 0, zIndex: 9000, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: "#FFFCF5", borderRadius: 20, width: "min(92vw,900px)", maxHeight: "85vh", display: "flex", flexDirection: "column", fontFamily: font, boxShadow: "0 32px 80px rgba(0,0,0,0.3)", overflow: "hidden" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+              <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>🖼 Decoration Gallery</h3>
+              <button onClick={() => setGalleryOpen(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "#f3f4f6", border: "none", cursor: "pointer", fontSize: 17, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            </div>
+            <div style={{ overflowY: "auto", padding: 16, flex: 1 }}>
+              {galleryLoading ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontSize: 14 }}>Loading photos…</div>
+              ) : galleryPhotos.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 0", color: "#9B7450", fontSize: 14 }}>No decoration photos yet.</div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12 }}>
+                  {galleryPhotos.map((url, i) => (
+                    <div key={i} style={{ position: "relative", borderRadius: 12, overflow: "hidden", aspectRatio: "4/3", background: "#f0e8d8" }}>
+                      <img src={url} alt={`Decoration ${i + 1}`} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      <a
+                        href={url}
+                        download
+                        target="_blank"
+                        rel="noreferrer"
+                        style={{ position: "absolute", bottom: 8, right: 8, width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 14, textDecoration: "none" }}
+                        title="Download"
+                        onClick={e => e.stopPropagation()}
+                      >⬇</a>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
