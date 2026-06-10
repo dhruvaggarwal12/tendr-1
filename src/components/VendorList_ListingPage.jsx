@@ -1,6 +1,6 @@
 // src/components/VendorList_ListingPage.jsx
 import React, { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
@@ -57,6 +57,9 @@ const VendorList_ListingPage = ({
   requireFormBeforeChat = false,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // true only when user arrived via planning flow (Save and Browse)
+  const isFromPlanFlow = location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1";
   const dispatch = useDispatch();
   const { openVendorChat, openExistingChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
@@ -65,6 +68,8 @@ const VendorList_ListingPage = ({
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "" });
+  // Page-session pre-fill for search/top-rated — isolated from Redux planning data
+  const [localFormData, setLocalFormData] = useState({ eventType: "", guests: "", date: "", budget: "" });
   const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
   const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
 
@@ -577,9 +582,20 @@ const VendorList_ListingPage = ({
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                       return;
                     }
-                    // No save — show the event details form
+                    // Planning flow with all 4 fields filled → skip form, open chat directly
+                    if (isFromPlanFlow && hasEventDetails) {
+                      setChatSave(vendor._id, { eventType: formData.eventType, date: formData.date, guests: String(formData.guests), budget: formData.budget });
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      return;
+                    }
+                    // Show form — pre-fill from local page state for search/top-rated,
+                    // or from Redux if still in plan flow but details incomplete
                     setChatFormVendor(vendor);
-                    setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "" });
+                    setChatEventForm(
+                      isFromPlanFlow
+                        ? { eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "" }
+                        : { ...localFormData }
+                    );
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
@@ -628,9 +644,16 @@ const VendorList_ListingPage = ({
             </div>
             <button
               onClick={() => {
-                dispatch(setMultipleFormData({ eventType: chatEventForm.eventType, guests: chatEventForm.guests, date: chatEventForm.date, budget: chatEventForm.budget, token }));
-                dispatch(setBookingType("you-do-it"));
-                setChatSave(chatFormVendor._id, { eventType: chatEventForm.eventType, date: chatEventForm.date, guests: chatEventForm.guests, budget: chatEventForm.budget });
+                const { eventType: et, guests: g, date: d, budget: b } = chatEventForm;
+                if (isFromPlanFlow) {
+                  // Planning flow — persist to Redux so planning state stays in sync
+                  dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, token }));
+                  dispatch(setBookingType("you-do-it"));
+                } else {
+                  // Search / top-rated — save locally for subsequent vendors; do NOT touch Redux
+                  setLocalFormData({ eventType: et, guests: g, date: d, budget: b });
+                }
+                setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b });
                 openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
                 setChatFormVendor(null);
               }}
