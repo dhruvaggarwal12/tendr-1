@@ -248,103 +248,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         </div>
       )}
 
-      {/* ── Desktop: Saved / Compare / Review & Pay cluster — ALL PAGES ── */}
-      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
-        <>
-          <div className="vendor-cluster-desktop" style={{ position: "fixed", bottom: 22, right: 170, zIndex: 899, display: "flex", alignItems: "center", gap: 10 }}>
-          {/* Overlay to close popups on outside click — inside cluster so hidden on mobile */}
-          {(savedOpen || compareOpen) && (
-            <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 898 }} />
-          )}
-
-            {/* Saved vendors */}
-            {savedVendors.length > 0 && (
-              <div style={{ position: "relative" }}>
-                <button
-                  onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: `1.5px solid ${savedOpen ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: savedOpen ? "rgba(196,122,46,0.08)" : "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
-                  onMouseEnter={e => { if (!savedOpen) { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
-                  onMouseLeave={e => { if (!savedOpen) { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; } }}
-                >
-                  💛 Saved
-                  <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{savedVendors.length}</span>
-                </button>
-                {savedOpen && (
-                  <div style={{ position: "absolute", bottom: "calc(100% + 10px)", right: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 10px 40px rgba(196,122,46,0.18)", padding: "8px", minWidth: 260, zIndex: 900, animation: "chatPop 0.15s ease" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "4px 10px 8px", fontFamily: font }}>💛 Saved Vendors</div>
-                    {savedVendors.map(v => (
-                      <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "transparent", transition: "background 0.12s" }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.05)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: font }}>{v.name || "Vendor"}</div>
-                          <div style={{ fontSize: 11, color: "#9B7450", fontFamily: font }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
-                        </div>
-                        <button onClick={() => removeSaved(v._id)}
-                          style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, transition: "all 0.12s" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = "#c0392b"; e.currentTarget.style.color = "#fff"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "rgba(192,57,43,0.06)"; e.currentTarget.style.color = "#c0392b"; }}>
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Compare vendors */}
-            {compareSelected.length > 0 && (
-              <div style={{ position: "relative" }}>
-                <button
-                  onClick={() => { setCompareOpen(v => !v); setSavedOpen(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: `1.5px solid ${compareOpen ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: compareOpen ? "rgba(196,122,46,0.08)" : "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
-                  onMouseEnter={e => { if (!compareOpen) { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
-                  onMouseLeave={e => { if (!compareOpen) { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; } }}
-                >
-                  ⚖ Compare
-                  <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{compareSelected.length}</span>
-                </button>
-                {compareOpen && (
-                  <div style={{ position: "absolute", bottom: "calc(100% + 10px)", right: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 10px 40px rgba(196,122,46,0.18)", padding: "8px", minWidth: 260, zIndex: 900, animation: "chatPop 0.15s ease" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "4px 10px 8px", fontFamily: font }}>⚖ Compare List</div>
-                    {compareSelected.map(v => (
-                      <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "transparent", transition: "background 0.12s" }}
-                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.05)")}
-                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: font }}>{v.name || "Vendor"}</div>
-                          <div style={{ fontSize: 11, color: "#9B7450", fontFamily: font }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
-                        </div>
-                        <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
-                          style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, transition: "all 0.12s" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = "#c0392b"; e.currentTarget.style.color = "#fff"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "rgba(192,57,43,0.06)"; e.currentTarget.style.color = "#c0392b"; }}>
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Review & Pay */}
-            {Object.keys(finalisedVendors).length > 0 && (
-              <button
-                onClick={() => router.navigate("/booking/review")}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(44,26,14,0.25)", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
-              >
-                ✅ Review & Pay
-                <span style={{ background: "#CCAB4A", color: "#2C1A0E", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{Object.keys(finalisedVendors).length}</span>
-              </button>
-            )}
-          </div>
-        </>
-      )}
-
       {/* Mobile action stack — Saved / Compare / Review & Pay — above chat button */}
       {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
         <>
@@ -382,7 +285,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             </div>
           )}
           {/* Button stack — column-reverse so Saved is visual-bottom (closest to chat) */}
-          <div className="mobile-action-stack" style={{ position: "fixed", bottom: 138, right: 14, zIndex: 900, display: "flex", flexDirection: "column-reverse", gap: 8, alignItems: "flex-end" }}>
+          <div className="mobile-action-stack">
             {savedVendors.length > 0 && (
               <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
                 style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#be185d,#ec4899)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(190,24,93,0.35)", flexShrink: 0 }}>
@@ -516,17 +419,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           50%  { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(239,68,68,0); }
           100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
-        .vendor-cluster-desktop { transition: transform 0.15s; }
-        .mobile-action-stack { display: none !important; }
-        .mobile-action-btn { display: none !important; }
-        .mobile-saved-popup { display: none !important; }
-        .mobile-compare-popup { display: none !important; }
+        .vendor-cluster-desktop { display: none !important; }
+        /* Action stack — above chat FAB on both desktop and mobile */
+        .mobile-action-stack { display: flex; position: fixed; bottom: 82px; right: 20px; z-index: 900; flex-direction: column-reverse; gap: 8px; align-items: flex-end; }
+        .mobile-action-btn { display: flex !important; }
+        .mobile-saved-popup { display: block; }
+        .mobile-compare-popup { display: block; }
         @media (max-width: 767px) {
-          .vendor-cluster-desktop { display: none !important; }
-          .mobile-action-stack { display: flex !important; }
-          .mobile-action-btn { display: flex !important; }
-          .mobile-saved-popup { display: block !important; }
-          .mobile-compare-popup { display: block !important; }
           /* Position above the 60px bottom nav bar */
           .floating-chat-btn {
             bottom: 80px !important;
@@ -535,6 +434,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             width: 50px !important;
             height: 50px !important;
           }
+          .mobile-action-stack { bottom: 138px !important; right: 14px !important; }
           .chat-btn-text { display: none; }
           .chat-popup {
             right: 12px !important;
