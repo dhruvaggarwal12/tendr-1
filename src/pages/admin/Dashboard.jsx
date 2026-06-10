@@ -326,6 +326,31 @@ const AdminDashboard = () => {
     if (user && !user.isAdmin) { navigate("/login"); return; }
   }, [token, user, navigate]);
 
+  // Check whether this token carries admin rights (works even when user object is null)
+  const isAdminToken = (() => {
+    if (!token) return false;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      return payload.isAdmin === true;
+    } catch { return false; }
+  })();
+
+  // Centralized fetch that auto-detects 401 and redirects to login
+  const adminFetch = async (url, opts = {}) => {
+    const res = await fetch(url, {
+      ...opts,
+      headers: { Authorization: `Bearer ${token}`, ...(opts.headers || {}) },
+      credentials: "include",
+    });
+    if (res.status === 401) {
+      localStorage.removeItem('tendr_token');
+      localStorage.removeItem('tendr_user');
+      navigate("/login");
+      throw new Error('401');
+    }
+    return res;
+  };
+
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeDropdown, setactiveDropdown] = useState(() => {
     const s = new URLSearchParams(adminLocation.search).get("section");
@@ -476,7 +501,7 @@ const AdminDashboard = () => {
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [summaryDraft, setSummaryDraft] = useState("");
 
-  const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats, reload: reloadConversations } = useConversations({ enabled: !!token });
+  const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats, reload: reloadConversations } = useConversations({ enabled: !!token && isAdminToken });
   const [pendingConciergeId, setPendingConciergeId] = useState(null);
   const [deletedChatIds, setDeletedChatIds] = useState(new Set());
 
@@ -548,109 +573,82 @@ const AdminDashboard = () => {
 
   // Fetch real stats from backend
   useEffect(() => {
-    if (!token || !user?.isAdmin) return;
-    fetch(`${BASE_URL}/admin/stats`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    if (!token || !isAdminToken) return;
+
+    adminFetch(`${BASE_URL}/admin/stats`)
       .then((r) => r.json())
       .then((data) => setLiveStats(data))
-      .catch(() => {});
+      .catch((e) => { if (e?.message !== '401') console.error('stats fetch:', e); });
 
-    fetch(`${BASE_URL}/vendor-applications`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    adminFetch(`${BASE_URL}/vendor-applications`)
       .then((r) => r.json())
       .then((data) => setVendorApplications(data.applications || []))
-      .catch(() => {});
+      .catch((e) => { if (e?.message !== '401') console.error('vendor-apps fetch:', e); });
 
-    fetch(`${BASE_URL}/admin/event-plans`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    adminFetch(`${BASE_URL}/admin/event-plans`)
       .then((r) => r.json())
       .then((data) => { setEventPlans(data.plans || []); setLoadingPlans(false); })
-      .catch(() => { setLoadingPlans(false); });
+      .catch((e) => { setLoadingPlans(false); if (e?.message !== '401') console.error('event-plans fetch:', e); });
 
-    fetch(`${BASE_URL}/admin/chat-requests`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    adminFetch(`${BASE_URL}/admin/chat-requests`)
       .then((r) => r.json())
       .then((data) => {
         const all = data.conversations || [];
         setChatRequests(all.filter(c => !isExpired(c) || isClosed(c)));
       })
-      .catch(() => {});
+      .catch((e) => { if (e?.message !== '401') console.error('chat-requests fetch:', e); });
 
-    fetch(`${BASE_URL}/admin/vendor-stats`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    adminFetch(`${BASE_URL}/admin/vendor-stats`)
       .then((r) => r.json())
       .then((data) => setVendorStats(data.vendors || []))
-      .catch(() => {});
+      .catch((e) => { if (e?.message !== '401') console.error('vendor-stats fetch:', e); });
 
-    // Fetch real top vendors
-    fetch(`${BASE_URL}/admin/top-vendors`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    adminFetch(`${BASE_URL}/admin/top-vendors`)
       .then((r) => r.json())
       .then((data) => setTopVendorsReal(data.topVendors || []))
-      .catch(() => {});
+      .catch((e) => { if (e?.message !== '401') console.error('top-vendors fetch:', e); });
 
-    // Fetch payment stats for dashboard
-    fetch(`${BASE_URL}/admin/payments/stats`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    adminFetch(`${BASE_URL}/admin/payments/stats`)
       .then((r) => r.json())
       .then((data) => setPaymentStats(data))
-      .catch(() => {});
-  }, [token, user]);
+      .catch((e) => { if (e?.message !== '401') console.error('payments/stats fetch:', e); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   // Fetch gift hamper orders when tab is active
   useEffect(() => {
-    if (activeDropdown !== 'gifthampers' || !token || !user?.isAdmin) return;
+    if (activeDropdown !== 'gifthampers' || !token || !isAdminToken) return;
     setGhLoading(true);
-    fetch(`${BASE_URL}/admin/gift-hamper-orders`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
-      .then(r => r.ok ? r.json() : { orders: [] })
+    adminFetch(`${BASE_URL}/admin/gift-hamper-orders`)
+      .then(r => r.json())
       .then(d => setGhOrders(d.orders || []))
-      .catch(() => {})
+      .catch((e) => { if (e?.message !== '401') console.error('gift-hampers fetch:', e); })
       .finally(() => setGhLoading(false));
-  }, [activeDropdown, token, user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDropdown, token]);
 
   // Fetch payments when Payments tab is active
   useEffect(() => {
-    if (activeDropdown !== 'payments' || !token || !user?.isAdmin) return;
+    if (activeDropdown !== 'payments' || !token || !isAdminToken) return;
     setLoadingPayments(true);
-    fetch(`${BASE_URL}/admin/payments`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: "include",
-    })
+    adminFetch(`${BASE_URL}/admin/payments`)
       .then((r) => r.json())
       .then((data) => setPaymentsList(data.payments || []))
-      .catch(() => {})
+      .catch((e) => { if (e?.message !== '401') console.error('payments fetch:', e); })
       .finally(() => setLoadingPayments(false));
-  }, [activeDropdown, token, user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDropdown, token]);
 
   // Fetch users when Users tab is active
   useEffect(() => {
-    if (activeDropdown !== 'users' || !token || !user?.isAdmin) return;
+    if (activeDropdown !== 'users' || !token || !isAdminToken) return;
     setLoadingUsers(true);
-    fetch(`${BASE_URL}/admin/users`, {
-      headers: { Authorization: `Bearer ${token}` },
-      credentials: 'include',
-    })
+    adminFetch(`${BASE_URL}/admin/users`)
       .then((r) => r.json())
       .then((d) => setUserList(d.users || []))
-      .catch(() => {})
+      .catch((e) => { if (e?.message !== '401') console.error('users fetch:', e); })
       .finally(() => setLoadingUsers(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDropdown, token]);
 
   const handleDeleteUser = (userId) => {
@@ -694,9 +692,9 @@ const AdminDashboard = () => {
 
   // Real-time socket connection for admin — send/receive messages + chat requests
   useEffect(() => {
-    if (!token || !user?.isAdmin) return;
+    if (!token || !isAdminToken) return;
     const socket = io(BASE_URL, {
-      query: { userId: user._id, role: 'admin' },
+      query: { userId: user?._id || 'admin', role: 'admin' },
       transports: ['websocket', 'polling'],
       withCredentials: true,
     });
@@ -720,7 +718,8 @@ const AdminDashboard = () => {
     });
 
     return () => { socket.disconnect(); adminSocketRef.current = null; };
-  }, [token, user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
 
   const [pricingAmount, setPricingAmount] = useState("");
   const [pricingVendorName, setPricingVendorName] = useState("");
