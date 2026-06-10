@@ -355,7 +355,7 @@ const VendorDetailsPage = () => {
       {/* Sticky bottom CTA — mobile only */}
       {vendor && (
         <div className="vendor-sticky-cta" style={{ display: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, maxWidth: 500, margin: "0 auto", padding: "0 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, maxWidth: 500, margin: "0 auto", padding: "0 72px 0 16px" }}>
             {/* Icon-only: Share */}
             <button onClick={handleShare}
               title={shareCopied ? "Copied!" : "Share"}
