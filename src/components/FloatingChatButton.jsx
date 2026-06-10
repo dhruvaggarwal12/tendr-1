@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { removeVendorFromCompare } from "../redux/listingFiltersSlice";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
 import { useChatOverlay } from "../context/ChatContext";
@@ -15,9 +16,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const compareSelected      = useSelector((s) => s.listingFilters.compareSelected || []);
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
+  const dispatch = useDispatch();
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
+  const [savedOpen, setSavedOpen] = useState(false);
+  const [compareOpen, setCompareOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [vendorChats, setVendorChats] = useState([]);
@@ -61,6 +65,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     window.addEventListener("storage", refresh);
     return () => { window.removeEventListener("tendr:saved-vendors-changed", refresh); window.removeEventListener("storage", refresh); };
   }, []);
+
+  const removeSaved = (id) => {
+    const list = getSavedVendors().filter(v => v._id !== id);
+    try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch {}
+    setSavedVendors(list);
+    window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed"));
+  };
 
   const showDecorChip = !decorDismissed &&
     path === "/listings" &&
@@ -233,43 +244,101 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         </div>
       )}
 
-      {/* ── Desktop: Saved / Compare / Review & Pay cluster ── */}
-      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
-        <div className="vendor-cluster-desktop" style={{ position: "fixed", bottom: 22, right: 170, zIndex: 899, display: "flex", alignItems: "center", gap: 10 }}>
-          {savedVendors.length > 0 && (
-            <button
-              onClick={() => router.navigate("/saved-vendors")}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; }}
-            >
-              💛 Saved
-              <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{savedVendors.length}</span>
-            </button>
+      {/* ── Desktop: Saved / Compare / Review & Pay cluster — HOME PAGE ONLY ── */}
+      {path === "/" && (savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
+        <>
+          {/* Overlay to close popups on outside click */}
+          {(savedOpen || compareOpen) && (
+            <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 898 }} />
           )}
-          {compareSelected.length > 0 && (
-            <button
-              onClick={() => router.navigate("/listings")}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; }}
-            >
-              ⚖ Compare
-              <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{compareSelected.length}</span>
-            </button>
-          )}
-          {Object.keys(finalisedVendors).length > 0 && (
-            <button
-              onClick={() => router.navigate("/review-pay")}
-              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(44,26,14,0.25)", whiteSpace: "nowrap" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
-            >
-              ✅ Review & Pay
-              <span style={{ background: "#CCAB4A", color: "#2C1A0E", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{Object.keys(finalisedVendors).length}</span>
-            </button>
-          )}
-        </div>
+          <div className="vendor-cluster-desktop" style={{ position: "fixed", bottom: 22, right: 170, zIndex: 899, display: "flex", alignItems: "center", gap: 10 }}>
+
+            {/* Saved vendors */}
+            {savedVendors.length > 0 && (
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
+                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: `1.5px solid ${savedOpen ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: savedOpen ? "rgba(196,122,46,0.08)" : "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
+                  onMouseEnter={e => { if (!savedOpen) { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+                  onMouseLeave={e => { if (!savedOpen) { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; } }}
+                >
+                  💛 Saved
+                  <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{savedVendors.length}</span>
+                </button>
+                {savedOpen && (
+                  <div style={{ position: "absolute", bottom: "calc(100% + 10px)", right: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 10px 40px rgba(196,122,46,0.18)", padding: "8px", minWidth: 260, zIndex: 900, animation: "chatPop 0.15s ease" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "4px 10px 8px", fontFamily: font }}>💛 Saved Vendors</div>
+                    {savedVendors.map(v => (
+                      <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "transparent", transition: "background 0.12s" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.05)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: font }}>{v.name || "Vendor"}</div>
+                          <div style={{ fontSize: 11, color: "#9B7450", fontFamily: font }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
+                        </div>
+                        <button onClick={() => removeSaved(v._id)}
+                          style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, transition: "all 0.12s" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = "#c0392b"; e.currentTarget.style.color = "#fff"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = "rgba(192,57,43,0.06)"; e.currentTarget.style.color = "#c0392b"; }}>
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Compare vendors */}
+            {compareSelected.length > 0 && (
+              <div style={{ position: "relative" }}>
+                <button
+                  onClick={() => { setCompareOpen(v => !v); setSavedOpen(false); }}
+                  style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: `1.5px solid ${compareOpen ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: compareOpen ? "rgba(196,122,46,0.08)" : "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
+                  onMouseEnter={e => { if (!compareOpen) { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; } }}
+                  onMouseLeave={e => { if (!compareOpen) { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; } }}
+                >
+                  ⚖ Compare
+                  <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{compareSelected.length}</span>
+                </button>
+                {compareOpen && (
+                  <div style={{ position: "absolute", bottom: "calc(100% + 10px)", right: 0, background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 10px 40px rgba(196,122,46,0.18)", padding: "8px", minWidth: 260, zIndex: 900, animation: "chatPop 0.15s ease" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "4px 10px 8px", fontFamily: font }}>⚖ Compare List</div>
+                    {compareSelected.map(v => (
+                      <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 10px", borderRadius: 10, background: "transparent", transition: "background 0.12s" }}
+                        onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.05)")}
+                        onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontFamily: font }}>{v.name || "Vendor"}</div>
+                          <div style={{ fontSize: 11, color: "#9B7450", fontFamily: font }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
+                        </div>
+                        <button onClick={() => dispatch(removeVendorFromCompare(v._id))}
+                          style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, transition: "all 0.12s" }}
+                          onMouseEnter={e => { e.currentTarget.style.background = "#c0392b"; e.currentTarget.style.color = "#fff"; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = "rgba(192,57,43,0.06)"; e.currentTarget.style.color = "#c0392b"; }}>
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Review & Pay */}
+            {Object.keys(finalisedVendors).length > 0 && (
+              <button
+                onClick={() => router.navigate("/booking/review")}
+                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(44,26,14,0.25)", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
+              >
+                ✅ Review & Pay
+                <span style={{ background: "#CCAB4A", color: "#2C1A0E", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{Object.keys(finalisedVendors).length}</span>
+              </button>
+            )}
+          </div>
+        </>
       )}
 
       {/* Floating button */}
