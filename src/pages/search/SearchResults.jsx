@@ -128,9 +128,6 @@ export default function SearchResults() {
               </button>
             ))}
           </div>
-          <button onClick={() => navigate(-1)} style={{ padding: "10px 24px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-            ← Go back
-          </button>
         </div>
       </div>
     );

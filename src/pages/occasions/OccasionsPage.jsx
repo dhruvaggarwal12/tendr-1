@@ -38,9 +38,6 @@ export default function OccasionsPage() {
         <div style={{ position:"absolute", top:-40, left:-30, width:180, height:180, borderRadius:"50%", background:"rgba(244,114,182,0.08)", pointerEvents:"none" }} />
         <div style={{ position:"absolute", bottom:-30, right:-20, width:140, height:140, borderRadius:"50%", background:"rgba(96,165,250,0.07)", pointerEvents:"none" }} />
 
-        <button onClick={() => navigate(-1)} style={{ position:"absolute", top:14, left:18, background:"rgba(196,122,46,0.12)", border:"1.5px solid rgba(196,122,46,0.25)", borderRadius:8, color:"#C47A2E", fontSize:12, fontWeight:600, padding:"5px 11px", cursor:"pointer", fontFamily:font }}>
-          ← Back
-        </button>
         <div style={{ position:"relative" }}>
           <div style={{ fontSize: 42, letterSpacing: 6, marginBottom: 14, lineHeight: 1 }}>🎂 💍 🍼 🎓</div>
           <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>🎉 Admin Preview</p>

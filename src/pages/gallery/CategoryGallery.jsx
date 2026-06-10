@@ -62,10 +62,6 @@ export default function CategoryGallery() {
       {/* Header */}
       <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "36px 24px 28px" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <button onClick={() => navigate(-1)}
-            style={{ background: "none", border: "none", color: "#9B7450", fontFamily: font, fontSize: 13, cursor: "pointer", padding: "0 0 16px", display: "flex", alignItems: "center", gap: 6 }}>
-            ← Back
-          </button>
           <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
             <span style={{ fontSize: 40 }}>{meta.emoji}</span>
             <div>

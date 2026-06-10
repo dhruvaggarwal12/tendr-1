@@ -27,9 +27,6 @@ export default function FunActivitiesPage() {
       {/* Hero */}
       <div style={{ background:"linear-gradient(135deg,#2C1A0E 0%,#5C2E0A 50%,#C47A2E 100%)", padding:"52px 24px 44px", textAlign:"center", position:"relative", overflow:"hidden" }}>
         <div style={{ position:"absolute", inset:0, backgroundImage:"radial-gradient(circle at 20% 50%, rgba(255,255,255,0.06) 0%, transparent 60%), radial-gradient(circle at 80% 20%, rgba(255,255,255,0.04) 0%, transparent 50%)" }} />
-        <button onClick={() => navigate(-1)} style={{ position:"absolute", top:14, left:18, background:"rgba(255,255,255,0.15)", border:"1px solid rgba(255,255,255,0.3)", borderRadius:8, color:"#fff", fontSize:12, fontWeight:600, padding:"5px 11px", cursor:"pointer", fontFamily:F, backdropFilter:"blur(4px)" }}>
-          ← Back
-        </button>
         <div style={{ position:"relative", maxWidth:640, margin:"0 auto" }}>
           <p style={{ fontSize:11, fontWeight:800, color:"rgba(255,255,255,0.6)", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 12px", fontFamily:F }}>
             🎭 Add Magic to Any Event
