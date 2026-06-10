@@ -49,9 +49,10 @@ function blankDay() {
     ceremonies:    [],
     customCeremony: "",
     guests:        "",
+    vendors:       [],
     meals:         [],
     mealFoodType:  {},
-    vendors:       [],
+    decoration:    null, // null | true | false
     notes:         "",
   };
 }
@@ -72,13 +73,12 @@ const labelSm = { fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform
 export default function HomeWeddingPlanner() {
   const navigate = useNavigate();
 
-  const [step,          setStep]         = useState(0);
-  const [numDays,       setNumDays]      = useState(3);
-  const [startDate,     setStartDate]    = useState("");
-  const [couple1,       setCouple1]      = useState("");
-  const [couple2,       setCouple2]      = useState("");
-  const [wantDecoration,setWantDecoration] = useState(null); // null | true | false
-  const [days,          setDays]         = useState(() => Array.from({ length: 4 }, blankDay));
+  const [step,      setStep]     = useState(0);
+  const [numDays,   setNumDays]  = useState(3);
+  const [startDate, setStartDate] = useState("");
+  const [couple1,   setCouple1]  = useState("");
+  const [couple2,   setCouple2]  = useState("");
+  const [days,      setDays]     = useState(() => Array.from({ length: 4 }, blankDay));
 
   const dayIdx = step - 1;
   const plan   = days[dayIdx] || blankDay();
@@ -125,7 +125,7 @@ export default function HomeWeddingPlanner() {
 
   // ── Step 0 ─────────────────────────────────────────────────────────────────
   if (step === 0) {
-    const ready = !!startDate && wantDecoration !== null;
+    const ready = !!startDate;
     return (
       <div style={{ minHeight: "100vh", background: "#FFF8EE", fontFamily: font }}>
         <SEO title="Multi-Day Home Wedding Planner" description="Plan your home wedding rituals day by day." path="/home-wedding-planner" />
@@ -178,27 +178,6 @@ export default function HomeWeddingPlanner() {
               </div>
             </div>
 
-            {/* Home decoration */}
-            <div style={card}>
-              <label style={{ ...labelSm, display: "block", marginBottom: 6 }}>
-                Do you want home / venue decoration? *
-              </label>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>
-                Floral arrangements, lighting, backdrops, entrance décor — we'll include a Decorator in your vendor plan.
-              </p>
-              <div style={{ display: "flex", gap: 10 }}>
-                {[{ val: true, label: "Yes, decorate!" }, { val: false, label: "No, skip" }].map(({ val, label }) => (
-                  <button key={String(val)} type="button" onClick={() => setWantDecoration(val)} style={{
-                    flex: 1, padding: "13px 0", borderRadius: 12,
-                    border: `2px solid ${wantDecoration === val ? GOLD : "rgba(196,122,46,0.2)"}`,
-                    background: wantDecoration === val ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "#fff",
-                    color: wantDecoration === val ? "#fff" : BROWN,
-                    fontWeight: 700, fontFamily: font, fontSize: 14, cursor: "pointer",
-                  }}>{val ? "✨ " : ""}{label}</button>
-                ))}
-              </div>
-            </div>
-
             <button
               disabled={!ready}
               onClick={() => advance()}
@@ -219,9 +198,8 @@ export default function HomeWeddingPlanner() {
 
   // ── Steps 1..numDays ────────────────────────────────────────────────────────
   if (step <= numDays) {
-    const dateStr = fmtDate(startDate, dayIdx);
-    const needCaterer   = plan.meals.length > 0 && !plan.vendors.includes("caterer");
-    const needDecorator = wantDecoration && !plan.vendors.includes("decorator");
+    const dateStr     = fmtDate(startDate, dayIdx);
+    const hasCaterer  = plan.vendors.includes("caterer");
 
     return (
       <div style={{ minHeight: "100vh", background: "#FFF8EE", fontFamily: font }}>
@@ -299,82 +277,12 @@ export default function HomeWeddingPlanner() {
                 style={{ width: "100%", padding: "13px 16px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 18, fontWeight: 700, color: BROWN, outline: "none", boxSizing: "border-box" }} />
             </div>
 
-            {/* 3. Meals */}
-            <div style={card}>
-              <div style={{ ...labelSm, marginBottom: 6 }}>Meals being served this day?</div>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>
-                Select all meals including snacks — this helps us plan the right caterer for you.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                {MEALS.map(m => {
-                  const sel = plan.meals.includes(m.key);
-                  const ft  = plan.mealFoodType[m.key];
-                  return (
-                    <div key={m.key} style={{ borderRadius: 12, border: `2px solid ${sel ? GOLD : "rgba(196,122,46,0.15)"}`, overflow: "hidden", transition: "border-color 0.2s" }}>
-                      {/* Row */}
-                      <button type="button" onClick={() => toggleMeal(m.key)} style={{
-                        width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
-                        background: sel ? "rgba(196,122,46,0.05)" : "#fff",
-                        border: "none", cursor: "pointer", fontFamily: font,
-                      }}>
-                        <span style={{ fontSize: 22, flexShrink: 0 }}>{m.emoji}</span>
-                        <div style={{ flex: 1, textAlign: "left" }}>
-                          <div style={{ fontSize: 14, fontWeight: 700, color: BROWN }}>{m.label}</div>
-                          <div style={{ fontSize: 11, color: "#9B7450" }}>{m.time}</div>
-                        </div>
-                        <div style={{
-                          width: 22, height: 22, borderRadius: "50%", border: `2px solid ${sel ? GOLD : "rgba(44,26,14,0.2)"}`,
-                          background: sel ? GOLD : "transparent",
-                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                        }}>
-                          {sel && <span style={{ color: "#fff", fontSize: 12, fontWeight: 900 }}>✓</span>}
-                        </div>
-                      </button>
-                      {/* Food type sub-row */}
-                      {sel && (
-                        <div style={{ padding: "10px 14px 12px", background: "rgba(196,122,46,0.04)", borderTop: "1px solid rgba(196,122,46,0.12)" }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", marginBottom: 8 }}>FOOD TYPE FOR {m.label.toUpperCase()}</div>
-                          <div style={{ display: "flex", gap: 8 }}>
-                            {FOOD_TYPES.map(f => (
-                              <button key={f.key} type="button" onClick={() => setMealFood(m.key, f.key)} style={{
-                                flex: 1, padding: "8px 4px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font,
-                                border: `2px solid ${ft === f.key ? f.color : "rgba(44,26,14,0.12)"}`,
-                                background: ft === f.key ? f.bg : "#fff",
-                                color: ft === f.key ? f.color : "#9B7450",
-                              }}>{f.label}</button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Caterer reminder */}
-              {needCaterer && (
-                <div style={{ marginTop: 14, padding: "10px 14px", background: "rgba(196,122,46,0.07)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, color: BROWN, display: "flex", gap: 8, alignItems: "center" }}>
-                  <span style={{ fontSize: 18 }}>🍽️</span>
-                  <span>You have meals planned — <strong>consider adding a Caterer</strong> in the services section below.</span>
-                </div>
-              )}
-            </div>
-
-            {/* 4. Services */}
+            {/* 3. Services */}
             <div style={card}>
               <div style={{ ...labelSm, marginBottom: 6 }}>Which services do you need?</div>
               <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>
-                Select all vendors needed for this day across all functions.
+                Select all vendors needed for this day. Selecting Caterer will let you plan meals next.
               </p>
-
-              {/* Decorator reminder */}
-              {needDecorator && (
-                <div style={{ marginBottom: 12, padding: "10px 14px", background: "rgba(196,122,46,0.07)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", fontSize: 13, color: BROWN, display: "flex", gap: 8, alignItems: "center" }}>
-                  <span style={{ fontSize: 18 }}>🌸</span>
-                  <span>You opted for home decoration — <strong>don't forget the Decorator</strong> below.</span>
-                </div>
-              )}
-
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                 {VENDORS.map(v => {
                   const sel = plan.vendors.includes(v.id);
@@ -395,11 +303,88 @@ export default function HomeWeddingPlanner() {
               </div>
             </div>
 
-            {/* 5. Notes */}
+            {/* 4. Meals — only shown when Caterer is selected */}
+            {hasCaterer && (
+              <div style={{ ...card, border: `2px solid ${GOLD}`, animation: "fadeIn 0.25s ease" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                  <span style={{ fontSize: 20 }}>🍽️</span>
+                  <div style={{ ...labelSm }}>Meals for this day</div>
+                </div>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>
+                  Select all meals being served — including snacks between main meals.
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {MEALS.map(m => {
+                    const sel = plan.meals.includes(m.key);
+                    const ft  = plan.mealFoodType[m.key];
+                    return (
+                      <div key={m.key} style={{ borderRadius: 12, border: `2px solid ${sel ? GOLD : "rgba(196,122,46,0.15)"}`, overflow: "hidden", transition: "border-color 0.2s" }}>
+                        <button type="button" onClick={() => toggleMeal(m.key)} style={{
+                          width: "100%", display: "flex", alignItems: "center", gap: 12, padding: "12px 14px",
+                          background: sel ? "rgba(196,122,46,0.05)" : "#fff", border: "none", cursor: "pointer", fontFamily: font,
+                        }}>
+                          <span style={{ fontSize: 22, flexShrink: 0 }}>{m.emoji}</span>
+                          <div style={{ flex: 1, textAlign: "left" }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: BROWN }}>{m.label}</div>
+                            <div style={{ fontSize: 11, color: "#9B7450" }}>{m.time}</div>
+                          </div>
+                          <div style={{
+                            width: 22, height: 22, borderRadius: "50%", border: `2px solid ${sel ? GOLD : "rgba(44,26,14,0.2)"}`,
+                            background: sel ? GOLD : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                          }}>
+                            {sel && <span style={{ color: "#fff", fontSize: 12, fontWeight: 900 }}>✓</span>}
+                          </div>
+                        </button>
+                        {sel && (
+                          <div style={{ padding: "10px 14px 12px", background: "rgba(196,122,46,0.04)", borderTop: "1px solid rgba(196,122,46,0.12)" }}>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", marginBottom: 8 }}>Food type for {m.label}</div>
+                            <div style={{ display: "flex", gap: 8 }}>
+                              {FOOD_TYPES.map(f => (
+                                <button key={f.key} type="button" onClick={() => setMealFood(m.key, f.key)} style={{
+                                  flex: 1, padding: "8px 4px", borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font,
+                                  border: `2px solid ${ft === f.key ? f.color : "rgba(44,26,14,0.12)"}`,
+                                  background: ft === f.key ? f.bg : "#fff",
+                                  color: ft === f.key ? f.color : "#9B7450",
+                                }}>{f.label}</button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+                <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}`}</style>
+              </div>
+            )}
+
+            {/* 5. Home / venue decoration */}
+            <div style={card}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                <span style={{ fontSize: 20 }}>🌸</span>
+                <div style={{ ...labelSm }}>Home / venue decoration for this day?</div>
+              </div>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.5 }}>
+                Floral arrangements, lighting, backdrops, entrance décor — we'll include a Decorator in your requirements.
+              </p>
+              <div style={{ display: "flex", gap: 10 }}>
+                {[{ val: true, label: "Yes, decorate! ✨" }, { val: false, label: "No, skip" }].map(({ val, label }) => (
+                  <button key={String(val)} type="button" onClick={() => updateDay("decoration", val)} style={{
+                    flex: 1, padding: "13px 0", borderRadius: 12,
+                    border: `2px solid ${plan.decoration === val ? GOLD : "rgba(196,122,46,0.2)"}`,
+                    background: plan.decoration === val ? `linear-gradient(135deg,${GOLD},#CCAB4A)` : "#fff",
+                    color: plan.decoration === val ? "#fff" : BROWN,
+                    fontWeight: 700, fontFamily: font, fontSize: 14, cursor: "pointer",
+                  }}>{label}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* 6. Notes */}
             <div style={card}>
               <div style={{ ...labelSm, marginBottom: 6 }}>Any specific notes? (optional)</div>
               <textarea value={plan.notes} onChange={e => updateDay("notes", e.target.value)}
-                placeholder="e.g. DJ only after 8pm, outdoor setup, outdoor lighting needed, 2 makeup artists…"
+                placeholder="e.g. DJ only after 8pm, outdoor setup, 2 makeup artists…"
                 rows={3}
                 style={{ width: "100%", padding: "11px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 14, color: BROWN, outline: "none", resize: "vertical", lineHeight: 1.6, boxSizing: "border-box" }} />
             </div>
@@ -527,6 +512,13 @@ export default function HomeWeddingPlanner() {
                         ) : null;
                       })}
                     </div>
+                  </div>
+                )}
+
+                {/* Decoration */}
+                {d.decoration !== null && (
+                  <div style={{ marginTop: d.vendors.length > 0 || d.meals.length > 0 ? 10 : 0, fontSize: 13, color: d.decoration ? "#16a34a" : "#9B7450", fontWeight: 600 }}>
+                    🌸 {d.decoration ? "Home / venue decoration planned" : "No decoration needed"}
                   </div>
                 )}
 
