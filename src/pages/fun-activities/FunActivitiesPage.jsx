@@ -1,28 +1,13 @@
-import React, { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import React from "react";
 import HamburgerNav from "../../components/HamburgerNav";
 import FunActivitiesSection from "../../components/FunActivitiesSection";
 
 const F = "'Outfit', sans-serif";
 
 export default function FunActivitiesPage() {
-  const navigate = useNavigate();
-  const { user } = useSelector(s => s.auth);
-
-  useEffect(() => { if (!user?.isAdmin) navigate("/"); }, [user, navigate]);
-  if (!user?.isAdmin) return null;
-
   return (
     <div style={{ minHeight:"100vh", background:"#F8F4EF", fontFamily:F }}>
       <HamburgerNav />
-
-      {/* Admin strip */}
-      <div style={{ background:"rgba(196,122,46,0.1)", borderBottom:"1px solid rgba(196,122,46,0.18)", padding:"8px 20px", textAlign:"center" }}>
-        <span style={{ fontSize:12, color:"#C47A2E", fontWeight:700, fontFamily:F }}>
-          🔒 Admin Preview — Fun Activities · Not visible to users yet
-        </span>
-      </div>
 
       {/* Hero */}
       <div style={{ background:"linear-gradient(135deg,#2C1A0E 0%,#5C2E0A 50%,#C47A2E 100%)", padding:"52px 24px 44px", textAlign:"center", position:"relative", overflow:"hidden" }}>
