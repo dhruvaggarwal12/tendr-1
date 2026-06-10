@@ -14,6 +14,7 @@ const toggleSaved = (vendor) => {
   localStorage.setItem(SAVED_KEY, JSON.stringify(
     exists ? list.filter(v => v._id !== vendor._id) : [...list, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, image: vendor.image || vendor.portfolioPhotos?.[0] || "", city: vendor.city || "" }]
   ));
+  window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed"));
 };
 
 const font = "'Outfit', sans-serif";
@@ -80,6 +81,7 @@ const VendorList_ListingPage = ({
 
   const handleViewProfile = (e, vendorId) => {
     e.stopPropagation();
+    if (!vendorId) return;
     const url = `/vendor/${vendorId}`;
     const state = { from: "listing", compareInProfile, filters: { eventType, serviceType, locationType, date, guestCount, sortBy, sortOrder } };
     if (window.innerWidth >= 768) {
@@ -492,7 +494,7 @@ const VendorList_ListingPage = ({
                         setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", location: formData.location || "" });
                       } else {
                         closePanel();
-                        handleViewProfile(e, quickViewVendor._id);
+                        handleViewProfile(e, quickViewVendor._id || quickViewVendor.id);
                       }
                     }}
                     style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}

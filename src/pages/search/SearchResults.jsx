@@ -202,14 +202,13 @@ export default function SearchResults() {
               </div>
 
               {/* Budget */}
-              <div className="search-filter-budget-wrapper" style={{ flex: 1, minWidth: 200 }}>
+              <div className="search-filter-budget-wrapper" style={{ flex: 1 }}>
                 <span style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em" }}>💰 Budget (per vendor)</span>
                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginTop: 7 }}>
                   {[
                     { label: "Under ₹10k",  val: 10000 },
                     { label: "Under ₹25k",  val: 25000 },
                     { label: "Under ₹50k",  val: 50000 },
-                    { label: "Under ₹1L",   val: 100000 },
                   ].map(({ label, val }) => {
                     const active = localBudget === val || (!localBudget && rawBudget === val);
                     return (
@@ -227,18 +226,18 @@ export default function SearchResults() {
           </div>
 
           {/* Sort row */}
-          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 8, justifyContent: "space-between", flexWrap: "wrap" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ fontFamily: font, fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
+          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "space-between", flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              <span style={{ fontFamily: font, fontSize: 11, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap" }}>Sort:</span>
               <select value={sortBy} onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
-                style={{ fontFamily: font, fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                 <option value="rankingScore">Best Match</option>
                 <option value="rating">Rating</option>
                 <option value="price">Price</option>
                 <option value="experience">Experience</option>
               </select>
               <select value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}
-                style={{ fontFamily: font, fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                style={{ fontFamily: font, fontSize: 10, padding: "3px 6px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                 <option value="desc">High to Low</option>
                 <option value="asc">Low to High</option>
               </select>
@@ -246,7 +245,7 @@ export default function SearchResults() {
             <button
               className="search-filter-chip"
               onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
-              style={{ padding: "5px 14px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 5 }}>
+              style={{ padding: "4px 11px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 4, flexShrink: 0, whiteSpace: "nowrap" }}>
               ⭐ Top Rated {topRatedOnly ? "✓" : ""}
             </button>
           </div>

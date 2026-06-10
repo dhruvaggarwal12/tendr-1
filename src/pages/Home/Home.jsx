@@ -607,24 +607,26 @@ const Home = () => {
           {/* ── Left: fixed hero headline + CTA ── */}
           <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
 
-            {/* Mobile only: Swiggy-style category icon chips — first thing below navbar */}
-            <div className="hero-mobile-cats" style={{ display: "none", gap: 0, marginBottom: 16, overflowX: "auto", scrollbarWidth: "none" }}>
+            {/* Mobile only: 6 category icon chips in one row — no scroll */}
+            <div className="hero-mobile-cats" style={{ display: "none", marginBottom: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 4 }}>
               {[
                 { emoji: "🎀", label: "Decorator",     path: "/top-rated/Decorator",    bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)" },
                 { emoji: "🍽", label: "Caterer",        path: "/top-rated/Caterer",      bg: "linear-gradient(135deg,#FFF8E1,#FFF0C2)" },
                 { emoji: "📸", label: "Photographer",   path: "/top-rated/Photographer", bg: "linear-gradient(135deg,#F0F8FF,#E0F0FF)" },
                 { emoji: "🎵", label: "DJ",             path: "/top-rated/DJ",           bg: "linear-gradient(135deg,#F0F0FF,#E8E8FF)" },
-                { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes",     bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
-                { emoji: "🎭", label: "Fun Activities", path: "/fun-activities",         bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
+                { emoji: "🎁", label: "Gifts",          path: "/gift-hampers-cakes",     bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
+                { emoji: "🎭", label: "Activities",     path: "/fun-activities",         bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
               ].map(({ emoji, label, path, bg }) => (
                 <button key={label} onClick={() => navigate(path)}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 8px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, minWidth: 68 }}>
-                  <div style={{ width: 52, height: 52, borderRadius: 16, background: bg, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 8px rgba(196,122,46,0.1)" }}>
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 13, background: bg, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 2px 6px rgba(196,122,46,0.1)" }}>
                     {emoji}
                   </div>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2, maxWidth: 60 }}>{label}</span>
+                  <span style={{ fontSize: 9, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
                 </button>
               ))}
+              </div>
             </div>
 
             {/* Fixed headline block */}
@@ -1135,7 +1137,7 @@ const Home = () => {
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
-      <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif", overflow:"hidden" }}>
+      <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
             <div>

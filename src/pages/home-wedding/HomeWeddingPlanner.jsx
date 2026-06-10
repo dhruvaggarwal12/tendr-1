@@ -153,7 +153,7 @@ export default function HomeWeddingPlanner() {
 
             <div style={{ marginBottom: 20 }}>
               <label style={labelStyle}>First Day of Events *</label>
-              <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} style={inputStyle} />
+              <input type="date" value={startDate} min={new Date().toISOString().split("T")[0]} onChange={e => setStartDate(e.target.value)} style={inputStyle} />
             </div>
 
             <div style={{ marginBottom: 28 }}>

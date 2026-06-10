@@ -93,9 +93,8 @@ export default function ChooseBooking() {
             style={{
               background: "#FFFCF5",
               border: "2px solid " + flow.borderColor,
-              borderRadius: 24,
-              padding: "32px 28px",
-              minHeight: 400,
+              borderRadius: 20,
+              padding: "20px 20px 16px",
               display: "flex",
               flexDirection: "column",
               boxShadow: "0 4px 24px rgba(139,69,19,0.08)",
@@ -106,26 +105,26 @@ export default function ChooseBooking() {
             onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(139,69,19,0.08)"; }}
           >
             {/* Icon + title */}
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 16, background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, marginBottom: 14 }}>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ width: 40, height: 40, borderRadius: 12, background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>
                 {flow.emoji}
               </div>
-              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "-0.01em" }}>
+              <h2 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 3px", letterSpacing: "-0.01em" }}>
                 {flow.title}
               </h2>
-              <p style={{ fontSize: 13.5, fontWeight: 600, color: flow.accentColor, margin: 0 }}>
+              <p style={{ fontSize: 12.5, fontWeight: 600, color: flow.accentColor, margin: 0 }}>
                 {flow.subtitle}
               </p>
             </div>
 
             {/* Steps — 4 points, prominent */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 32, flex: 1 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 18, flex: 1 }}>
               {flow.steps.map((step, i) => (
-                <div key={step} style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                  <span style={{ width: 32, height: 32, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, fontWeight: 800, color: flow.accentColor, flexShrink: 0 }}>
+                <div key={step} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ width: 24, height: 24, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: flow.accentColor, flexShrink: 0 }}>
                     {i + 1}
                   </span>
-                  <span style={{ fontSize: 15.5, color: "#2C1A0E", fontWeight: 600, lineHeight: 1.35 }}>{step}</span>
+                  <span style={{ fontSize: 13, color: "#2C1A0E", fontWeight: 600, lineHeight: 1.3 }}>{step}</span>
                 </div>
               ))}
             </div>
@@ -135,7 +134,7 @@ export default function ChooseBooking() {
               onClick={() => handleChoose(flow.type)}
               style={{
                 width: "100%",
-                padding: "13px",
+                padding: "11px",
                 borderRadius: 12,
                 border: "none",
                 background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",

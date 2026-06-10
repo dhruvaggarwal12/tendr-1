@@ -234,6 +234,7 @@ export default function TimelineBuilder() {
                     if (!isNaN(t)) return t.toISOString().slice(0,10);
                     return "";
                   })()}
+                  min={new Date().toISOString().split("T")[0]}
                   onChange={e => {
                     const iso = e.target.value; // "YYYY-MM-DD"
                     if (!iso) { setEventDate(""); return; }

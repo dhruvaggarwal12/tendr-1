@@ -6,11 +6,14 @@ import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
+const SAVED_KEY = "tendr_saved_vendors";
+const getSavedVendors = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
   const { user, token }      = useSelector((s) => s.auth);
   const selectedCategories   = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const compareSelected      = useSelector((s) => s.listingFilters.compareSelected || []);
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
@@ -18,6 +21,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [vendorChats, setVendorChats] = useState([]);
+  const [savedVendors, setSavedVendors] = useState(() => getSavedVendors());
   // Persist seen conversation IDs so badge stays gone after viewing
   const [seenIds, setSeenIds] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem("chatBadgeSeenIds") || "[]")); }
@@ -47,6 +51,15 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
       setOpen(false);
     });
     return unsub;
+  }, []);
+
+  // Refresh saved vendors when listing page saves/unsaves
+  useEffect(() => {
+    const refresh = () => setSavedVendors(getSavedVendors());
+    window.addEventListener("tendr:saved-vendors-changed", refresh);
+    // Also poll on storage events (cross-tab)
+    window.addEventListener("storage", refresh);
+    return () => { window.removeEventListener("tendr:saved-vendors-changed", refresh); window.removeEventListener("storage", refresh); };
   }, []);
 
   const showDecorChip = !decorDismissed &&
@@ -220,6 +233,45 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         </div>
       )}
 
+      {/* ── Desktop: Saved / Compare / Review & Pay cluster ── */}
+      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
+        <div className="vendor-cluster-desktop" style={{ position: "fixed", bottom: 22, right: 170, zIndex: 899, display: "flex", alignItems: "center", gap: 10 }}>
+          {savedVendors.length > 0 && (
+            <button
+              onClick={() => router.navigate("/saved-vendors")}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; }}
+            >
+              💛 Saved
+              <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{savedVendors.length}</span>
+            </button>
+          )}
+          {compareSelected.length > 0 && (
+            <button
+              onClick={() => router.navigate("/listings")}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.15)", whiteSpace: "nowrap" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#FFFCF5"; e.currentTarget.style.transform = "none"; }}
+            >
+              ⚖ Compare
+              <span style={{ background: "#C47A2E", color: "#fff", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{compareSelected.length}</span>
+            </button>
+          )}
+          {Object.keys(finalisedVendors).length > 0 && (
+            <button
+              onClick={() => router.navigate("/review-pay")}
+              style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 16px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(44,26,14,0.25)", whiteSpace: "nowrap" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "none"; }}
+            >
+              ✅ Review & Pay
+              <span style={{ background: "#CCAB4A", color: "#2C1A0E", borderRadius: 100, fontSize: 10, fontWeight: 800, padding: "1px 7px", marginLeft: 2 }}>{Object.keys(finalisedVendors).length}</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Floating button */}
       <button
         onClick={handleOpen}
@@ -328,7 +380,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           50%  { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(239,68,68,0); }
           100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
+        .vendor-cluster-desktop { transition: transform 0.15s; }
         @media (max-width: 767px) {
+          .vendor-cluster-desktop { display: none !important; }
           /* Position above the 60px bottom nav bar */
           .floating-chat-btn {
             bottom: 80px !important;

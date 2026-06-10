@@ -195,6 +195,7 @@ const FilterBar = () => {
                   <input
                     type="date"
                     className="text-[#CCAB4A] text-sm sm:text-md font-semibold cursor-pointer"
+                    min={new Date().toISOString().split('T')[0]}
                     onChange={(e) => {
                       setDate(e.target.value);
                       setActiveDropdown(null);
