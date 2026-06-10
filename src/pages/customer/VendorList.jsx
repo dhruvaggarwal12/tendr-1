@@ -370,6 +370,14 @@ const VendorList = () => {
                 </div>
               );
             })()}
+            {serviceType === "Decorator" && (
+              <button
+                onClick={() => navigate("/gallery/decoration")}
+                style={{ marginBottom: 12, marginLeft: 8, display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", verticalAlign: "top", whiteSpace: "nowrap" }}
+              >
+                🖼 See Gallery
+              </button>
+            )}
 
             {/* Category switcher — mobile only dropdown; hidden on desktop (sidebar handles it) */}
             <div className="mobile-cat-switcher" style={{ display: "none", marginBottom: 12 }}>
