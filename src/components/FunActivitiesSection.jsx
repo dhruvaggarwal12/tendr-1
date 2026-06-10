@@ -9,14 +9,16 @@ const BROWN = "#2C1A0E";
 // ── Booking Details Panel ─────────────────────────────────────────────────────
 function BookingPanel({ activity, onClose }) {
   const navigate = useNavigate();
+  const today = new Date().toISOString().split("T")[0];
+  const [done, setDone] = useState(false);
   const [form, setForm] = useState({
     name: "", phone: "", date: "", time: "", address: "", notes: "",
-    qty: 1,
+    qty: 1, eventType: "", guests: "",
   });
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const totalPrice = activity.perUnit ? activity.price * form.qty : activity.price;
-  const valid = form.name && form.phone && form.date && form.time && form.address;
+  const valid = form.name && form.phone && form.date && form.time && form.address && form.eventType && form.guests;
 
   const handleReviewPay = () => {
     if (!valid) return;
@@ -30,20 +32,37 @@ function BookingPanel({ activity, onClose }) {
         totalPrice,
       }));
     } catch {}
-    navigate("/booking/review");
+    setDone(true);
+    setTimeout(() => navigate("/booking/review"), 1600);
   };
 
-  const inp = (label, key, ph, type = "text", req = true) => (
+  const inp = (label, key, ph, type = "text", req = true, extra = {}) => (
     <div style={{ marginBottom: 14 }}>
       <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>
         {label}{req && <span style={{ color: "#DC2626" }}> *</span>}
       </label>
       <input type={type} value={form[key]} onChange={e => set(key, e.target.value)}
-        placeholder={ph} required={req}
+        placeholder={ph} required={req} {...extra}
         style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(44,26,14,0.12)", fontFamily: F, fontSize: 13, color: BROWN, outline: "none", boxSizing: "border-box", background: "#fff" }}
         onFocus={e => (e.target.style.borderColor = GOLD)}
         onBlur={e => (e.target.style.borderColor = "rgba(44,26,14,0.12)")} />
     </div>
+  );
+
+  if (done) return (
+    <>
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, boxShadow: "-8px 0 40px rgba(0,0,0,0.18)" }}>
+        <div style={{ width: 76, height: 76, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 32px rgba(21,128,61,0.35)", animation: "fa-pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275)" }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div style={{ textAlign: "center", padding: "0 24px" }}>
+          <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 6px", fontFamily: F }}>Booking Saved!</h3>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: 0, fontFamily: F }}>Taking you to Review & Pay…</p>
+        </div>
+        <style>{`@keyframes fa-pop{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}`}</style>
+      </div>
+    </>
   );
 
   return (
@@ -98,10 +117,25 @@ function BookingPanel({ activity, onClose }) {
             </div>
           )}
 
+          <div style={{ marginBottom: 14 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>
+              Event Type <span style={{ color: "#DC2626" }}>*</span>
+            </label>
+            <select value={form.eventType} onChange={e => set("eventType", e.target.value)}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(44,26,14,0.12)", fontFamily: F, fontSize: 13, color: form.eventType ? BROWN : "#9B7450", outline: "none", boxSizing: "border-box", background: "#fff", appearance: "none", WebkitAppearance: "none" }}
+              onFocus={e => (e.target.style.borderColor = GOLD)}
+              onBlur={e => (e.target.style.borderColor = "rgba(44,26,14,0.12)")}>
+              <option value="">Select event type…</option>
+              {["Get-together", "Birthday", "Anniversary", "Wedding", "Office Party", "Others"].map(t => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
+          </div>
+          {inp("Total Guests", "guests", "e.g. 50", "number")}
           {inp("Your Name", "name", "Full name")}
           {inp("WhatsApp Number", "phone", "10-digit number", "tel")}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>{inp("Event Date", "date", "", "date")}</div>
+            <div>{inp("Event Date", "date", "", "date", true, { min: today })}</div>
             <div>{inp("Start Time", "time", "", "time")}</div>
           </div>
           {inp("Venue / Address", "address", "Event venue or full address")}

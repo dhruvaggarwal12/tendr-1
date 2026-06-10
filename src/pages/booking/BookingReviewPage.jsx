@@ -886,6 +886,7 @@ const BookingReviewPage = () => {
                       <span style={{ fontWeight: 800, color: "#2C1A0E", fontSize: 14 }}>₹{faBooking.totalPrice.toLocaleString("en-IN")}</span>
                     </div>
                     <div style={{ fontSize: 12, color: "#9B7450", display: "flex", flexDirection: "column", gap: 3 }}>
+                      {faBooking.form.eventType && <span>🎉 {faBooking.form.eventType}{faBooking.form.guests ? ` · ${faBooking.form.guests} guests` : ""}</span>}
                       <span>📅 {faBooking.form.date} at {faBooking.form.time}</span>
                       <span>📍 {faBooking.form.address}</span>
                       <span>👤 {faBooking.form.name} · {faBooking.form.phone}</span>
