@@ -376,7 +376,7 @@ const VendorDetailsPage = () => {
               }}
               style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 14px rgba(196,122,46,0.4)" }}
             >
-              💬 Request to Chat
+              💬 Chat & Finalise
             </button>
           </div>
         </div>
@@ -712,7 +712,7 @@ const VendorDetailsPage = () => {
                   }}
                   style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", marginBottom: 6 }}
                 >
-                  💬 {token ? "Request to Chat" : "Sign In to Chat"}
+                  💬 {token ? "Chat & Finalise" : "Sign In to Chat"}
                 </button>
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 14px", lineHeight: 1.5 }}>
                   Our team reviews and connects you within a few hours

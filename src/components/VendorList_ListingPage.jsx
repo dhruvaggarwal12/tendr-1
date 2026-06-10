@@ -511,7 +511,7 @@ const VendorList_ListingPage = ({
                     }}
                     style={{ flex: 1, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
                   >
-                    View Full Profile →
+                    Finalise
                   </button>
                   {/* Share button — uses shareCopiedId from component state (no hooks-in-IIFE) */}
                   {(() => {
@@ -573,7 +573,7 @@ const VendorList_ListingPage = ({
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
-                  💬 {token ? "Request to Chat" : "Sign In to Chat"}
+                  💬 {token ? "Chat & Finalise" : "Sign In to Chat"}
                 </button>
               </div>
             </div>
@@ -625,7 +625,7 @@ const VendorList_ListingPage = ({
                 setChatFormVendor(null);
               }}
               style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-              Request to Chat with {chatFormVendor.name} →
+              Chat & Finalise with {chatFormVendor.name} →
             </button>
           </div>
         </div>
