@@ -98,8 +98,7 @@ const catColor = {
 export default function CommunityWall() {
   const navigate = useNavigate();
   const { user } = useSelector(s => s.auth);
-
-  if (!user?.isAdmin) { navigate("/"); return null; }
+  const isAdmin = user?.isAdmin === true;
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [posts, setPosts] = useState(SEED_POSTS);
@@ -143,11 +142,12 @@ export default function CommunityWall() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const authorName = user?.name || "Community Member";
     const newPost = {
       id: Date.now(),
       ...form,
-      author: user.name || "Admin",
-      avatar: (user.name || "A")[0].toUpperCase(),
+      author: authorName,
+      avatar: authorName[0].toUpperCase(),
       avatarColor: "#C47A2E",
       date: "just now",
       reactions: { agree: 0, faced: 0, idea: 0, love: 0 },
@@ -168,11 +168,13 @@ export default function CommunityWall() {
     <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font }}>
       <HamburgerNav />
 
-      {/* Admin Preview Banner */}
-      <div style={{ background: "linear-gradient(90deg,#92400e,#C47A2E)", padding: "10px 24px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
-        <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>🔒 Admin Preview Mode</span>
-        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>— Community Wall is not yet publicly visible</span>
-      </div>
+      {/* Admin-only banner */}
+      {isAdmin && (
+        <div style={{ background: "linear-gradient(90deg,#92400e,#C47A2E)", padding: "10px 24px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
+          <span style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "0.02em" }}>🔒 Admin Mode</span>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.75)" }}>— You can apply curated tags to posts below</span>
+        </div>
+      )}
 
       {/* Hero */}
       <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 50%,#6B3A1F 100%)", padding: "52px 24px 44px", textAlign: "center", position: "relative", overflow: "hidden" }}>
@@ -188,7 +190,7 @@ export default function CommunityWall() {
             Real experiences, surprise moments, creative ideas, and honest lessons — shared by people who celebrate with Tendr.
           </p>
           <button
-            onClick={() => setFormOpen(v => !v)}
+            onClick={() => { if (!user) { navigate("/login"); return; } setFormOpen(v => !v); }}
             style={{ padding: "13px 32px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.4)", letterSpacing: "0.01em" }}>
             {formOpen ? "Close Form" : "+ Share Your Story"}
           </button>
