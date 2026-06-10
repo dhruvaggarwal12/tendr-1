@@ -6,119 +6,93 @@ import HamburgerNav from "../../components/HamburgerNav";
 const font = "'Outfit', sans-serif";
 
 const CATEGORIES = [
-  { key: "all",         label: "All",                  emoji: "✨" },
-  { key: "amazing",     label: "Amazing Experiences",  emoji: "🌟" },
-  { key: "surprise",    label: "Surprise Moments",     emoji: "🎉" },
-  { key: "ideas",       label: "Ideas & Suggestions",  emoji: "💡" },
-  { key: "inspiration", label: "Event Inspiration",    emoji: "🎨" },
-  { key: "bad",         label: "Bad Experiences",      emoji: "😔" },
+  { key: "all",   label: "All",               emoji: "✨" },
+  { key: "polls", label: "Polls & Votes",      emoji: "📊" },
+  { key: "ideas", label: "Ideas & Inspo",      emoji: "💡" },
+  { key: "ask",   label: "Ask the Community",  emoji: "🙋" },
+  { key: "story", label: "Share Your Story",   emoji: "🎉" },
+];
+
+const REACTIONS = [
+  { key: "agree", emoji: "👍", label: "Agree"      },
+  { key: "faced", emoji: "🙋", label: "Faced this" },
+  { key: "idea",  emoji: "💡", label: "Great idea" },
+  { key: "love",  emoji: "❤️", label: "Love this"  },
+];
+
+const ADMIN_TAGS = [
+  { key: "realTalk",      label: "Real Talk",      emoji: "💬" },
+  { key: "emotional",     label: "Emotional",      emoji: "🥹" },
+  { key: "hiddenGem",     label: "Hidden Gem",     emoji: "💎" },
+  { key: "mustRead",      label: "Must Read",      emoji: "📌" },
+  { key: "proTip",        label: "Pro Tip",        emoji: "🔑" },
+  { key: "trending",      label: "Trending",       emoji: "🔥" },
+  { key: "wholesome",     label: "Wholesome",      emoji: "🌸" },
+  { key: "controversial", label: "Controversial",  emoji: "⚡" },
 ];
 
 const SEED_POSTS = [
   {
-    id: 1,
-    category: "amazing",
-    author: "Priya S.",
-    avatar: "P",
-    avatarColor: "#C47A2E",
-    event: "Anniversary Dinner",
-    city: "Delhi",
-    date: "2 days ago",
+    id: 1, category: "story",
+    author: "Priya S.", avatar: "P", avatarColor: "#C47A2E",
+    event: "Anniversary Dinner", city: "Delhi", date: "2 days ago",
     title: "The decorator literally transformed our terrace",
     body: "We had a rooftop anniversary dinner for 30 people. The decorator added fairy lights, flower arches, and a photo wall — everything was beyond what we imagined. Guests couldn't stop complimenting. Highly recommend investing in a good decorator!",
-    tags: ["Decoration", "Rooftop", "Anniversary"],
-    likes: 42,
-    comments: 8,
-    bookmarks: 12,
+    reactions: { agree: 15, faced: 3, idea: 8, love: 16 },
+    adminTags: [], comments: 8, bookmarks: 12,
   },
   {
-    id: 2,
-    category: "surprise",
-    author: "Rahul M.",
-    avatar: "R",
-    avatarColor: "#6B3A1F",
-    event: "Birthday Party",
-    city: "Noida",
-    date: "5 days ago",
+    id: 2, category: "story",
+    author: "Rahul M.", avatar: "R", avatarColor: "#6B3A1F",
+    event: "Birthday Party", city: "Noida", date: "5 days ago",
     title: "The DJ played our inside-joke songs without us asking",
     body: "We had given a playlist but the DJ noticed we had some niche 90s songs and actually researched more similar tracks on his own. The surprise throwback set had everyone on the dance floor for 40 straight minutes. Best birthday ever.",
-    tags: ["DJ", "Birthday", "Music"],
-    likes: 67,
-    comments: 14,
-    bookmarks: 23,
+    reactions: { agree: 25, faced: 12, idea: 9, love: 21 },
+    adminTags: [], comments: 14, bookmarks: 23,
   },
   {
-    id: 3,
-    category: "ideas",
-    author: "Neha K.",
-    avatar: "N",
-    avatarColor: "#C47A2E",
-    event: "Get-together",
-    city: "Gurgaon",
-    date: "1 week ago",
+    id: 3, category: "ideas",
+    author: "Neha K.", avatar: "N", avatarColor: "#C47A2E",
+    event: "Get-together", city: "Gurgaon", date: "1 week ago",
     title: "Live food stations are SO much better than buffets",
     body: "We did live pasta and chaat stations instead of a regular buffet — it became an activity itself! People loved watching food being made fresh. It kept the energy high and reduced waste too. Every party should do this.",
-    tags: ["Catering", "Get-together", "Food"],
-    likes: 89,
-    comments: 21,
-    bookmarks: 45,
+    reactions: { agree: 22, faced: 5, idea: 38, love: 24 },
+    adminTags: [], comments: 21, bookmarks: 45,
   },
   {
-    id: 4,
-    category: "bad",
-    author: "Arjun T.",
-    avatar: "A",
-    avatarColor: "#9B7450",
-    event: "Corporate Event",
-    city: "Delhi",
-    date: "1 week ago",
+    id: 4, category: "story",
+    author: "Arjun T.", avatar: "A", avatarColor: "#9B7450",
+    event: "Corporate Event", city: "Delhi", date: "1 week ago",
     title: "Photographer didn't deliver photos for 3 weeks",
     body: "The event went fine but the photographer kept pushing delivery. Finally got photos after following up 8 times over 3 weeks. Some were blurry. Lesson: always put delivery timelines in writing before the event, with a penalty clause.",
-    tags: ["Photography", "Corporate", "Warning"],
-    likes: 34,
-    comments: 29,
-    bookmarks: 18,
+    reactions: { agree: 8, faced: 18, idea: 3, love: 5 },
+    adminTags: [], comments: 29, bookmarks: 18,
   },
   {
-    id: 5,
-    category: "inspiration",
-    author: "Sneha R.",
-    avatar: "S",
-    avatarColor: "#C47A2E",
-    event: "Pre-wedding",
-    city: "Greater Noida",
-    date: "2 weeks ago",
+    id: 5, category: "ideas",
+    author: "Sneha R.", avatar: "S", avatarColor: "#C47A2E",
+    event: "Pre-wedding", city: "Greater Noida", date: "2 weeks ago",
     title: "Garden maze concept for pre-wedding photoshoot",
     body: "Saw this at a wedding expo — the couple had a garden maze set up with flowers and lanterns, and the photoshoot happened as they 'found' each other. The photos were incredible and each frame told a story. Would love to see someone try this in Delhi NCR!",
-    tags: ["Pre-wedding", "Photography", "Decor Ideas"],
-    likes: 112,
-    comments: 33,
-    bookmarks: 67,
+    reactions: { agree: 35, faced: 8, idea: 42, love: 27 },
+    adminTags: [], comments: 33, bookmarks: 67,
   },
   {
-    id: 6,
-    category: "amazing",
-    author: "Vikram D.",
-    avatar: "V",
-    avatarColor: "#6B3A1F",
-    event: "Office Party",
-    city: "Noida",
-    date: "2 weeks ago",
+    id: 6, category: "ideas",
+    author: "Vikram D.", avatar: "V", avatarColor: "#6B3A1F",
+    event: "Office Party", city: "Noida", date: "2 weeks ago",
     title: "Silent disco for 150 people — no complaints from neighbors",
     body: "We were worried about noise for our rooftop office party in an apartment complex. A silent disco setup (wireless headphones, 2 channels) solved everything. People were dancing, others were eating quietly — it worked perfectly for a mixed crowd.",
-    tags: ["DJ", "Office Party", "Innovation"],
-    likes: 78,
-    comments: 17,
-    bookmarks: 34,
+    reactions: { agree: 30, faced: 15, idea: 18, love: 15 },
+    adminTags: [], comments: 17, bookmarks: 34,
   },
 ];
 
 const catColor = {
-  amazing:     { bg: "rgba(34,197,94,0.1)",  border: "rgba(34,197,94,0.25)",  text: "#15803d" },
-  surprise:    { bg: "rgba(234,179,8,0.1)",  border: "rgba(234,179,8,0.25)",  text: "#92400e" },
-  ideas:       { bg: "rgba(59,130,246,0.1)", border: "rgba(59,130,246,0.25)", text: "#1d4ed8" },
-  inspiration: { bg: "rgba(168,85,247,0.1)", border: "rgba(168,85,247,0.25)", text: "#7e22ce" },
-  bad:         { bg: "rgba(239,68,68,0.1)",  border: "rgba(239,68,68,0.25)",  text: "#dc2626" },
+  polls: { bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.25)",  text: "#1d4ed8" },
+  ideas: { bg: "rgba(168,85,247,0.1)",  border: "rgba(168,85,247,0.25)",  text: "#7e22ce" },
+  ask:   { bg: "rgba(234,179,8,0.1)",   border: "rgba(234,179,8,0.25)",   text: "#92400e" },
+  story: { bg: "rgba(34,197,94,0.1)",   border: "rgba(34,197,94,0.25)",   text: "#15803d" },
 };
 
 export default function CommunityWall() {
@@ -129,21 +103,25 @@ export default function CommunityWall() {
 
   const [activeCategory, setActiveCategory] = useState("all");
   const [posts, setPosts] = useState(SEED_POSTS);
-  const [likedIds, setLikedIds] = useState(new Set());
+  const [myReactions, setMyReactions] = useState({});
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
+  const [adminTagOpen, setAdminTagOpen] = useState({});
   const [formOpen, setFormOpen] = useState(false);
-  const [form, setForm] = useState({ title: "", body: "", category: "amazing", event: "", city: "" });
+  const [form, setForm] = useState({ title: "", body: "", category: "story", event: "", city: "" });
   const [formSubmitted, setFormSubmitted] = useState(false);
 
   const filtered = activeCategory === "all" ? posts : posts.filter(p => p.category === activeCategory);
 
-  const toggleLike = (id) => {
-    setLikedIds(prev => {
-      const n = new Set(prev);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, likes: p.likes + (likedIds.has(id) ? -1 : 1) } : p));
+  const handleReaction = (postId, reactionKey) => {
+    const current = myReactions[postId] || null;
+    setMyReactions(prev => ({ ...prev, [postId]: current === reactionKey ? null : reactionKey }));
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      const reactions = { ...p.reactions };
+      if (current) reactions[current] = Math.max(0, (reactions[current] || 0) - 1);
+      if (current !== reactionKey) reactions[reactionKey] = (reactions[reactionKey] || 0) + 1;
+      return { ...p, reactions };
+    }));
   };
 
   const toggleBookmark = (id) => {
@@ -152,6 +130,15 @@ export default function CommunityWall() {
       n.has(id) ? n.delete(id) : n.add(id);
       return n;
     });
+  };
+
+  const handleAdminTag = (postId, tagKey) => {
+    setPosts(prev => prev.map(p => {
+      if (p.id !== postId) return p;
+      const tags = p.adminTags || [];
+      const newTags = tags.includes(tagKey) ? tags.filter(t => t !== tagKey) : [...tags, tagKey];
+      return { ...p, adminTags: newTags };
+    }));
   };
 
   const handleSubmit = (e) => {
@@ -163,13 +150,13 @@ export default function CommunityWall() {
       avatar: (user.name || "A")[0].toUpperCase(),
       avatarColor: "#C47A2E",
       date: "just now",
-      tags: [],
-      likes: 0,
+      reactions: { agree: 0, faced: 0, idea: 0, love: 0 },
+      adminTags: [],
       comments: 0,
       bookmarks: 0,
     };
     setPosts(prev => [newPost, ...prev]);
-    setForm({ title: "", body: "", category: "amazing", event: "", city: "" });
+    setForm({ title: "", body: "", category: "story", event: "", city: "" });
     setFormSubmitted(true);
     setFormOpen(false);
     setTimeout(() => setFormSubmitted(false), 3000);
@@ -276,16 +263,16 @@ export default function CommunityWall() {
         {filtered.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 24px", color: "#9B7450" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🌟</div>
-            <p style={{ fontSize: 15, fontWeight: 600 }}>No stories in this category yet.</p>
+            <p style={{ fontSize: 15, fontWeight: 600 }}>No posts in this category yet.</p>
             <p style={{ fontSize: 13 }}>Be the first to share!</p>
           </div>
         )}
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {filtered.map(post => {
-            const cc = catColor[post.category] || catColor.amazing;
+            const cc = catColor[post.category] || catColor.story;
             const ci = catInfo(post.category);
-            const isLiked = likedIds.has(post.id);
             const isBookmarked = bookmarkedIds.has(post.id);
+            const myReaction = myReactions[post.id] || null;
             return (
               <div key={post.id} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", padding: "24px 28px", boxShadow: "0 2px 16px rgba(196,122,46,0.05)", transition: "box-shadow 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 28px rgba(196,122,46,0.12)"}
@@ -307,43 +294,76 @@ export default function CommunityWall() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, background: cc.bg, border: `1px solid ${cc.border}`, color: cc.text }}>
-                      {ci.emoji} {ci.label}
-                    </span>
-                  </div>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, background: cc.bg, border: `1px solid ${cc.border}`, color: cc.text, flexShrink: 0 }}>
+                    {ci.emoji} {ci.label}
+                  </span>
                 </div>
 
                 {/* Title + Body */}
                 <h3 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px", lineHeight: 1.3 }}>{post.title}</h3>
-                <p style={{ fontSize: 14, color: "#4A2810", lineHeight: 1.7, margin: "0 0 16px" }}>{post.body}</p>
+                <p style={{ fontSize: 14, color: "#4A2810", lineHeight: 1.7, margin: "0 0 14px" }}>{post.body}</p>
 
-                {/* Tags */}
-                {post.tags?.length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
-                    {post.tags.map(tag => (
-                      <span key={tag} style={{ padding: "3px 10px", borderRadius: 100, fontSize: 11, fontWeight: 600, background: "rgba(196,122,46,0.08)", color: "#9B7450", border: "1px solid rgba(196,122,46,0.15)" }}>
-                        #{tag}
-                      </span>
-                    ))}
+                {/* Admin-curated tags — visible to all */}
+                {post.adminTags?.length > 0 && !adminTagOpen[post.id] && (
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 14 }}>
+                    {post.adminTags.map(tagKey => {
+                      const tagInfo = ADMIN_TAGS.find(t => t.key === tagKey);
+                      return tagInfo ? (
+                        <span key={tagKey} style={{ padding: "3px 10px", borderRadius: 100, fontSize: 11, fontWeight: 700, background: "rgba(196,122,46,0.08)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.2)" }}>
+                          {tagInfo.emoji} {tagInfo.label}
+                        </span>
+                      ) : null;
+                    })}
                   </div>
                 )}
 
-                {/* Actions */}
-                <div style={{ display: "flex", alignItems: "center", gap: 6, borderTop: "1px solid rgba(196,122,46,0.08)", paddingTop: 14 }}>
-                  <button onClick={() => toggleLike(post.id)}
-                    style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 100, border: `1.5px solid ${isLiked ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: isLiked ? "rgba(196,122,46,0.1)" : "transparent", color: isLiked ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
-                    {isLiked ? "♥" : "♡"} {post.likes + (isLiked && !SEED_POSTS.find(p => p.id === post.id) ? 0 : 0)}
-                    <span style={{ fontWeight: 400 }}>{post.likes}</span>
-                  </button>
-                  <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.15)", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                    💬 <span>{post.comments}</span>
-                  </button>
-                  <button onClick={() => toggleBookmark(post.id)}
-                    style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 100, border: `1.5px solid ${isBookmarked ? "#CCAB4A" : "rgba(196,122,46,0.15)"}`, background: isBookmarked ? "rgba(204,171,74,0.12)" : "transparent", color: isBookmarked ? "#CCAB4A" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
-                    {isBookmarked ? "🔖" : "🏷️"} <span>{post.bookmarks}</span>
-                  </button>
+                {/* Reactions */}
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", borderTop: "1px solid rgba(196,122,46,0.08)", paddingTop: 14 }}>
+                  {REACTIONS.map(r => {
+                    const isActive = myReaction === r.key;
+                    const count = post.reactions[r.key] || 0;
+                    return (
+                      <button key={r.key} onClick={() => handleReaction(post.id, r.key)}
+                        style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${isActive ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: isActive ? "rgba(196,122,46,0.1)" : "transparent", color: isActive ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: isActive ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+                        <span style={{ fontSize: 13 }}>{r.emoji}</span>
+                        <span style={{ fontWeight: 700 }}>{count}</span>
+                        <span>{r.label}</span>
+                      </button>
+                    );
+                  })}
+                  <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
+                    <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.15)", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      💬 {post.comments}
+                    </button>
+                    <button onClick={() => toggleBookmark(post.id)}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${isBookmarked ? "#CCAB4A" : "rgba(196,122,46,0.15)"}`, background: isBookmarked ? "rgba(204,171,74,0.12)" : "transparent", color: isBookmarked ? "#CCAB4A" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+                      {isBookmarked ? "🔖" : "🏷️"} {post.bookmarks}
+                    </button>
+                  </div>
                 </div>
+
+                {/* Admin: tag management */}
+                {user?.isAdmin && (
+                  <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px dashed rgba(196,122,46,0.15)" }}>
+                    <button onClick={() => setAdminTagOpen(prev => ({ ...prev, [post.id]: !prev[post.id] }))}
+                      style={{ fontSize: 11, color: "#9B7450", background: "none", border: "1px dashed rgba(196,122,46,0.3)", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>
+                      🏷️ {adminTagOpen[post.id] ? "Close" : (post.adminTags?.length > 0 ? `Edit Tags (${post.adminTags.length})` : "Add Tag")}
+                    </button>
+                    {adminTagOpen[post.id] && (
+                      <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        {ADMIN_TAGS.map(tag => {
+                          const isTagged = post.adminTags?.includes(tag.key);
+                          return (
+                            <button key={tag.key} onClick={() => handleAdminTag(post.id, tag.key)}
+                              style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${isTagged ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: isTagged ? "rgba(196,122,46,0.1)" : "transparent", color: isTagged ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: isTagged ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+                              {tag.emoji} {tag.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
