@@ -5,12 +5,6 @@ const font = "'Outfit', sans-serif";
 
 // Tool-specific feature highlights
 const TOOL_FEATURES = {
-  checklist: [
-    { icon: "📋", text: "Must Do, Recommended & Nice to Have tasks" },
-    { icon: "✓", text: "Tick tasks off as you complete them" },
-    { icon: "🔍", text: "Find vendors directly from relevant tasks" },
-    { icon: "💾", text: "Progress auto-saved locally" },
-  ],
   timeline: [
     { icon: "📅", text: "Day-by-day countdown to your event" },
     { icon: "🎯", text: "Tailored plans for each event type" },

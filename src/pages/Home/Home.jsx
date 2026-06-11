@@ -33,14 +33,6 @@ const FunActivitiesLazy = React.lazy(() => import("../../components/FunActivitie
 
 const HERO_FEATURES = [
   {
-    tag: "Smart Planning Tools",
-    headline: "Checklists & timelines built for your event",
-    desc: "Stay on top of every task with personalised checklists and timelines designed around your event date.",
-    where: "Planning Tools → Checklist / Timeline",
-    href: "/checklist-picker",
-    emoji: "✅",
-  },
-  {
     tag: "Budget Allocator",
     headline: "Split your budget across every category",
     desc: "Divide your total budget across catering, decor, photography, DJ and more — and track every rupee in real time.",
@@ -279,7 +271,6 @@ const Home = () => {
   const FEATURE_SLIDES = [
     { id: "smart-planner",  tag: "Smart Planner",        icon: "✨", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", headline: "Your complete vendor package, built in seconds",          desc: "Tell us your event once. We match caterers, decorators, photographers and DJs within your budget. You confirm, we coordinate everything.", where: "Booking → Tendr Plans It For Me", href: "/booking",          accent: "#C47A2E" },
     { id: "browse-vendors", tag: "Browse Vendors",        icon: "🔍", iconBg: "linear-gradient(135deg,#7A4A1E,#C47A2E)",  headline: "Find the right vendor. Compare. Chat. Book.",              desc: "Browse top-rated vendors in Delhi NCR. Compare profiles side by side, chat directly, and lock in your price — all in one place.", where: "Vendors → Browse Vendors", href: "/listings",          accent: "#7A4A1E" },
-    { id: "checklist",      tag: "Event Checklist",       icon: "✅", iconBg: "linear-gradient(135deg,#9B7450,#C47A2E)",  headline: "Never miss a single detail",                              desc: "A personalised checklist sorted by your event date. Every task timed perfectly so nothing falls through the cracks.", where: "Our Products → Checklist", href: "/checklist-picker", accent: "#9B7450" },
     { id: "timeline",       tag: "Event Timeline",        icon: "⏱️", iconBg: "linear-gradient(135deg,#2C1A0E,#7A4A1E)",  headline: "Every milestone, perfectly timed",                        desc: "Build a day-by-day countdown. Download a timeline slip you can share with every vendor on your list.", where: "Our Products → Timeline", href: "/timeline-picker",  accent: "#2C1A0E" },
     { id: "decor-finder",   tag: "Decor Finder",          icon: "🎨", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Discover your decoration style before you book",          desc: "Take a short quiz → get your perfect theme. Browse real vendor photos by style and go straight from inspiration to booking.", where: "Our Products → Decor Finder", href: "/decor-finder",    accent: "#C47A2E" },
     { id: "budget",         tag: "Budget Allocator",      icon: "💰", iconBg: "linear-gradient(135deg,#7A4A1E,#CCAB4A)",  headline: "Know exactly what you can afford — before you start",     desc: "Set your budget per service. We filter and sort vendors so every option you see is within reach.", where: "Our Products → Budget Allocator", href: "/budget-picker",    accent: "#7A4A1E" },
@@ -443,8 +434,6 @@ const Home = () => {
     if (!selectedValue) return;
     if (selectedValue === "timeline") {
       navigate("/timeline-picker");
-    } else if (selectedValue === "checklist") {
-      navigate("/checklist-picker");
     } else if (selectedValue === "Budget Allocator") {
       navigate("/budget-allocator");
     } else if (selectedValue === "invitation") {
@@ -1257,7 +1246,7 @@ const Home = () => {
                   <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,3vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "0.01em" }}>
                     What are you celebrating?
                   </h2>
-                  <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>Décor, gifts & checklists for every moment.</p>
+                  <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>Décor, gifts & activities for every moment.</p>
                 </div>
                 <button onClick={() => window.open("/occasions", "_blank")}
                   style={{ padding: "9px 22px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", transition: "all 0.15s" }}

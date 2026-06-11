@@ -21,7 +21,7 @@ const SEARCH_SUGGESTIONS = [
 // ── Smart search parser ───────────────────────────────────────────────────────
 const SVC_KW = { caterer: "Caterer", catering: "Caterer", food: "Caterer", cook: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", photo: "Photographer", dj: "DJ", music: "DJ", entertainment: "DJ", disc: "DJ" };
 const LOC_KW = { delhi: "Delhi", "new delhi": "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
-const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", invite: "/invitation", stationery: "/stationery", "wedding card": "/stationery", aftermovie: "/aftermovie" };
+const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", invite: "/invitation", stationery: "/stationery", "wedding card": "/stationery", aftermovie: "/aftermovie" };
 const BUDGET_PATTERNS = [
   // "under/below 1 lakh", "1.5 lakh"
   /(?:under|below|within|upto|up to|less than|around|approx\.?|~)?\s*₹?\s*(\d+(?:\.\d+)?)\s*lakh/i,
@@ -292,7 +292,6 @@ const Navbar = ({
       label: "Our Products",
       items: [
         ...(user?.isAdmin ? [{ label: "🎉 Plan by Occasion", onClick: () => window.open("/occasions", "_blank") }] : []),
-        { label: "✅ Checklist",          href: "/checklist-picker" },
         { label: "⏱️ Timeline",           href: "/timeline-picker" },
         { label: "💰 Budget Allocator",   href: "/budget-picker" },
         { label: "🎨 Decor Finder",       href: "/decor-finder" },

@@ -76,7 +76,6 @@ function Chip({ item, selected, onToggle }) {
 // ── Main ─────────────────────────────────────────────────────────────────────
 const FREE_TOOLS = [
   { icon: "📊", title: "Budget Allocator", desc: "Split your budget across services and track spending in real time.", route: "/budget-picker" },
-  { icon: "✅", title: "Event Checklist", desc: "Get a pre-built checklist for your event type — never miss a task.", route: "/prebuilt-checklist" },
   { icon: "⚖️", title: "Compare Vendors", desc: "Add vendors to a comparison board and decide with all data visible.", route: "/listings" },
 ];
 

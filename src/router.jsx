@@ -67,9 +67,6 @@ const CategoryGallery     = lazy(() => import('./pages/gallery/CategoryGallery.j
 const TimelineBuilder     = lazy(() => import('./pages/timeline/TimelineBuilder'));
 const Timeline            = lazy(() => import('./pages/timeline/Timeline'));
 const TimelinePicker      = lazy(() => import('./pages/timeline/TimelinePicker'));
-const Checkbox            = lazy(() => import('./pages/checkbox/Checkbox'));
-const CheckboxPicker      = lazy(() => import('./pages/checkbox/CheckboxPicker.jsx'));
-const PrebuiltCheckbox    = lazy(() => import('./pages/checkbox/PrebuiltCheckbox.jsx'));
 const BudgetPicker        = lazy(() => import('./pages/budget/BudgetPicker.jsx'));
 const BudgetAllocator     = lazy(() => import('./pages/budget/BudgetAllocator.jsx'));
 const AftermoviePicker    = lazy(() => import('./pages/aftermovie/AftermoviePicker.jsx'));
@@ -123,11 +120,6 @@ const router = createBrowserRouter([
   {
     path: '/prebuilt-timeline',
     element: <Timeline />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: '/checklist',
-    element: <Checkbox />,
     errorElement: <ErrorPage />,
   },
   
@@ -399,16 +391,6 @@ const router = createBrowserRouter([
     path: "*", 
     element: <NotFound />, 
     errorElement: <ErrorPage /> 
-  },
-  {
-    path: '/checklist-picker',
-    element: <CheckboxPicker />,
-    errorElement: <ErrorPage />
-  },
-  {
-    path: '/prebuilt-checklist',
-    element: <Checkbox />,
-    errorElement: <ErrorPage />
   },
   {
     path: '/budget-picker',

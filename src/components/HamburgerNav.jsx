@@ -90,7 +90,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
-  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", checklist: "/checklist-picker", timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", stationery: "/stationery", aftermovie: "/aftermovie" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", stationery: "/stationery", aftermovie: "/aftermovie" };
 
   const handleNavSearch = (q) => {
     const query = q || searchQuery;
@@ -146,10 +146,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   useEffect(() => {
     const onSaved = () => setBookmarkTick(t => t + 1);
     window.addEventListener("tendr:saved-updated", onSaved);
-    window.addEventListener("tendr:checklist-saved", onSaved);
     window.addEventListener("tendr:timeline-saved", onSaved);
     window.addEventListener("tendr:budget-saved", onSaved);
-    return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:checklist-saved", onSaved); window.removeEventListener("tendr:timeline-saved", onSaved); window.removeEventListener("tendr:budget-saved", onSaved); };
+    return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:timeline-saved", onSaved); window.removeEventListener("tendr:budget-saved", onSaved); };
   }, []);
 
   // Check backend: if user has a paid EventPlan, silently clear Review & Pay state
@@ -232,8 +231,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         { label: "🏡 Party Places",     href: "/party-places" },
         { label: "🎭 Fun Activities",   href: "/fun-activities" },
       ] : []),
-      { label: "Checklist",        href: "/checklist-picker", activePaths: ["/checklist-picker","/checklist","/prebuilt-checklist"],
-        onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_checklist_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.categories?.length > 0 ? "/prebuilt-checklist" : "/checklist-picker"); } catch { navigate("/checklist-picker"); } } },
       { label: "Timeline",         href: "/timeline-picker",  activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_timeline_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.phases?.length > 0 ? "/prebuilt-timeline" : "/timeline-picker"); } catch { navigate("/timeline-picker"); } } },
       { label: "Budget Allocator", href: "/budget-picker",    activePaths: ["/budget-picker","/budget-allocator"] },
@@ -468,7 +465,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     (item.href !== "/" && location.pathname.startsWith(item.href)) ||
                     (item.activePaths || []).some(p => location.pathname === p || location.pathname.startsWith(p))
                   );
-                  const checklistSaved = item.href === "/checklist-picker" && (() => { try { return localStorage.getItem("tendr_checklist_saved") === "true"; } catch { return false; } })();
                   const timelineSaved  = item.href === "/timeline-picker"  && (() => { try { return localStorage.getItem("tendr_timeline_saved")  === "true"; } catch { return false; } })();
                   const budgetSaved    = item.href === "/budget-picker"     && (() => { try { return localStorage.getItem("tendr_budget_saved")    === "true"; } catch { return false; } })();
                   if (isSoon) {
@@ -505,7 +501,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left", flex: 1 }}>{item.label}</span>
-                      {(checklistSaved || timelineSaved || budgetSaved) && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
+                      {(timelineSaved || budgetSaved) && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
                     </button>
                   );
                 })}

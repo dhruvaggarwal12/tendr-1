@@ -114,7 +114,6 @@ function BottomNavInner() {
   const isHomePage = location.pathname === "/";
 
   const PRODUCTS = [
-    { emoji: "✅", label: "Checklist",        href: "/checklist-picker" },
     { emoji: "⏱️", label: "Timeline",         href: "/timeline-picker" },
     { emoji: "💰", label: "Budget Allocator", href: "/budget-picker" },
     { emoji: "🎨", label: "Decor Finder",     href: "/decor-finder" },
@@ -265,7 +264,7 @@ function BottomNavInner() {
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Products</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
               {PRODUCTS.map(({ emoji, label, href, newTab, path }) => {
-                const savedKey = label === "Checklist" ? "tendr_checklist_saved" : label === "Timeline" ? "tendr_timeline_saved" : label === "Budget Allocator" ? "tendr_budget_saved" : null;
+                const savedKey = label === "Timeline" ? "tendr_timeline_saved" : label === "Budget Allocator" ? "tendr_budget_saved" : null;
                 const isSaved = savedKey ? (() => { try { return localStorage.getItem(savedKey) === "true"; } catch { return false; } })() : false;
                 return (
                   <button key={label}
@@ -344,8 +343,7 @@ function BottomNavInner() {
           // Green dot: Products tab gets a dot if any tool has been saved
           const hasProductsSaved = label === "Products" && (() => {
             try {
-              return localStorage.getItem("tendr_checklist_saved") === "true" ||
-                     localStorage.getItem("tendr_timeline_saved") === "true" ||
+              return localStorage.getItem("tendr_timeline_saved") === "true" ||
                      localStorage.getItem("tendr_budget_saved") === "true";
             } catch { return false; }
           })();

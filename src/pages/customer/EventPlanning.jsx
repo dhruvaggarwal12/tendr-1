@@ -80,10 +80,6 @@ const EventPlanning = () => {
 
 
 
-  // Navigation handlers for checklist and timeline
-  const handleGoToChecklist = () => {
-    navigate('/prebuilt-checklist');
-  };
   const handleGoToTimeline = () => {
     navigate('/prebuilt-timeline');
   };

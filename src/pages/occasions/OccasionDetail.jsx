@@ -99,7 +99,6 @@ export default function OccasionDetail() {
           { id: "decor",      icon: "🎨", label: "Décor",      count: occasion.decorThemes.length },
           { id: "gifts",      icon: "🎁", label: "Gifts",      count: occasion.giftIdeas.length },
           { id: "activities", icon: "🎯", label: "Activities",  count: occasion.activities.length },
-          { id: "checklist",  icon: "✅", label: "Checklist",   count: occasion.checklist.length },
         ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
             flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
@@ -167,18 +166,6 @@ export default function OccasionDetail() {
           </Section>
         )}
 
-        {activeTab === "checklist" && (
-          <Section title="Planning Checklist">
-            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-              {occasion.checklist.map((item, i) => (
-                <div key={i} style={{ display: "flex", gap: 11, alignItems: "center", padding: "10px 13px", background: "#fff", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.08)" }}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", border: "2px solid rgba(196,122,46,0.3)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#C47A2E" }}>{i + 1}</span>
-                  <span style={{ fontSize: 13, color: "#2C1A0E", lineHeight: 1.4 }}>{item}</span>
-                </div>
-              ))}
-            </div>
-          </Section>
-        )}
 
       </div>
 

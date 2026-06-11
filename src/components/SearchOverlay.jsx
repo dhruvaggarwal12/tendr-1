@@ -37,7 +37,6 @@ const PAGE_KW = {
   "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes",
   hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes",
   "decor finder": "/decor-finder",
-  checklist: "/checklist-picker",
   timeline: "/timeline-picker",
   invitation: "/invitation", flyer: "/invitation", invite: "/invitation",
   stationery: "/stationery", "wedding card": "/stationery",
