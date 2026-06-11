@@ -50,12 +50,12 @@ function BookingPanel({ activity, onClose }) {
   );
 
   const panelStyle = window.innerWidth < 768
-    ? { position: "fixed", top: 0, right: 0, bottom: 0, left: 0, background: "#FFFCF5", zIndex: 99997, display: "flex", flexDirection: "column" }
-    : { position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 99997, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)" };
+    ? { position: "fixed", inset: 0, background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column" }
+    : { position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)" };
 
   if (done) return (
     <>
-      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, left: 0, background: "rgba(0,0,0,0.45)", zIndex: 99996, backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
       <div style={{ ...panelStyle, alignItems: "center", justifyContent: "center", gap: 20 }}>
         <div style={{ width: 76, height: 76, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 32px rgba(21,128,61,0.35)", animation: "fa-pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275)" }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -71,7 +71,7 @@ function BookingPanel({ activity, onClose }) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", top: 0, right: 0, bottom: 0, left: 0, background: "rgba(0,0,0,0.45)", zIndex: 99996, backdropFilter: "blur(3px)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
       <div style={{ ...panelStyle, overflowY: "auto" }}>
         {/* Header */}
         <div style={{ padding: "18px 20px 16px", borderBottom: "1.5px solid rgba(44,26,14,0.07)", position: "sticky", top: 0, background: "#FFFCF5", zIndex: 2 }}>
