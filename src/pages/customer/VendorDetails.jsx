@@ -57,8 +57,6 @@ const VendorDetailsPage = () => {
   // Only show compare button when navigated from normal booking flow
   const showCompare = location.state?.compareInProfile === true;
   // Skip pre-chat form if event details already collected (normal booking flow)
-  const hasEventContext = !!(location.state?.compareInProfile && formEventType);
-
   // Redux compare state
   const compareSelected = useSelector((state) => state.listingFilters.compareSelected);
   const { token } = useSelector((s) => s.auth);
@@ -71,6 +69,9 @@ const VendorDetailsPage = () => {
   const formDate = useSelector((state) => state.eventPlanning.formData.date);
   const formBudget = useSelector((state) => state.eventPlanning.formData.budget);
   const formAdditionalInfo = useSelector((state) => state.eventPlanning.formData.additionalInfo);
+
+  // Must come after formEventType declaration to avoid TDZ ReferenceError
+  const hasEventContext = !!(location.state?.compareInProfile && formEventType);
 
   // Selected Vendors modal state
   const [isSelectedModalOpen, setIsSelectedModalOpen] = useState(false);
@@ -355,7 +356,7 @@ const VendorDetailsPage = () => {
       {/* Sticky bottom CTA — mobile only */}
       {vendor && (
         <div className="vendor-sticky-cta" style={{ display: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, maxWidth: 500, margin: "0 auto", padding: "0 72px 0 16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {/* Icon-only: Share */}
             <button onClick={handleShare}
               title={shareCopied ? "Copied!" : "Share"}

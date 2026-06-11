@@ -77,16 +77,16 @@ function BookingPanel({ activity, onClose }) {
         <div style={{ padding: "18px 20px 16px", borderBottom: "1.5px solid rgba(44,26,14,0.07)", position: "sticky", top: 0, background: "#FFFCF5", zIndex: 2 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 3px", fontFamily: F }}>🎭 Fun Activity · Fixed Price</p>
+              <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 3px", fontFamily: F }}>🎭 Fun Activity · {activity.price === 0 ? "Free" : "Fixed Price"}</p>
               <h3 style={{ fontSize: 17, fontWeight: 900, color: BROWN, margin: 0, fontFamily: F }}>{activity.emoji} {activity.name}</h3>
             </div>
             <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
           </div>
           <div style={{ marginTop: 12, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 12, padding: "10px 16px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <p style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", margin: 0, fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>FIXED PRICE — NO SURPRISES</p>
+              <p style={{ fontSize: 10, color: "rgba(255,255,255,0.7)", margin: 0, fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>{totalPrice === 0 ? "FREE — NO SURPRISES" : "FIXED PRICE — NO SURPRISES"}</p>
               <p style={{ fontSize: 22, fontWeight: 900, color: "#fff", margin: "2px 0 0", fontFamily: F }}>
-                ₹{totalPrice.toLocaleString("en-IN")}
+                {totalPrice === 0 ? "Free" : `₹${totalPrice.toLocaleString("en-IN")}`}
                 {activity.perUnit && <span style={{ fontSize: 12, fontWeight: 600, marginLeft: 6 }}>({activity.unitLabel})</span>}
               </p>
             </div>
@@ -182,10 +182,10 @@ function ActivityModal({ activity, onClose, onBook }) {
 
           {/* Pricing */}
           <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 14, padding: "12px 28px" }}>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>FIXED PRICE</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>{activity.price === 0 ? "FREE" : "FIXED PRICE"}</span>
             <span style={{ fontSize: 28, fontWeight: 900, color: "#fff", fontFamily: F }}>
-              ₹{activity.price.toLocaleString("en-IN")}
-              {activity.perUnit && <span style={{ fontSize: 14, fontWeight: 600 }}> {activity.unitLabel}</span>}
+              {activity.price === 0 ? "Free" : `₹${activity.price.toLocaleString("en-IN")}`}
+              {activity.price > 0 && activity.perUnit && <span style={{ fontSize: 14, fontWeight: 600 }}> {activity.unitLabel}</span>}
             </span>
           </div>
         </div>
