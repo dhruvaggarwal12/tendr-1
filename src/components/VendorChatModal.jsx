@@ -1160,76 +1160,6 @@ export default function VendorChatModal() {
                   ))}
                 </div>
               </div>
-              {/* Chat Request Details card */}
-              {(() => {
-                const hasNewData = Object.keys(botAnswers).length > 0;
-                const summaryMsg = !hasNewData
-                  ? messages.find(m => m.sender === "user" && m.text?.startsWith("📋"))
-                  : null;
-                if (!hasNewData && !summaryMsg) return null;
-
-                // Package details for new chats
-                const pkgTier = confirmedPkg?.replace(" Package", "");
-                const pkgData = pkgTier ? chatPackages.find(p => p.tier === pkgTier) : null;
-
-                return (
-                  <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 14, padding: "14px 16px", maxWidth: 320, textAlign: "left", width: "100%", boxShadow: "0 4px 16px rgba(44,26,14,0.3)" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
-                      📋 Chat Request Details
-                    </div>
-                    <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginBottom: 10 }} />
-
-                    {hasNewData ? (
-                      <>
-                        {/* Form details */}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 10 }}>
-                          {[
-                            fd.eventType && `Event: ${fd.eventType}`,
-                            fd.date      && `Date: ${fd.date}`,
-                            fd.guests    && `Guests: ${fd.guests}`,
-                            fd.budget    && `Budget: ${fd.budget}`,
-                            fd.location  && `City: ${fd.location}`,
-                          ].filter(Boolean).map((line, i) => (
-                            <div key={i} style={{ fontSize: 12, color: "rgba(255,255,255,0.82)" }}>{line}</div>
-                          ))}
-                        </div>
-
-                        {/* Wizard Q&A */}
-                        {botFlow.filter(s => botAnswers[s.key]).length > 0 && (
-                          <div style={{ marginBottom: 10 }}>
-                            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Your Answers</div>
-                            {botFlow.filter(s => botAnswers[s.key]).map(s => (
-                              <div key={s.key} style={{ marginBottom: 7 }}>
-                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.4 }}>Q: {s.question}</div>
-                                <div style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 600, lineHeight: 1.4 }}>A: {botAnswers[s.key]}</div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Package with items */}
-                        {confirmedPkg && (
-                          <div style={{ background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 8, padding: "8px 10px" }}>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A", marginBottom: pkgData?.items?.length ? 6 : 0 }}>📦 {confirmedPkg}</div>
-                            {pkgData?.items?.length > 0 && (
-                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
-                                {pkgData.items.map(item => (
-                                  <span key={item} style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", borderRadius: 4, padding: "2px 7px" }}>• {item}</span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </>
-                    ) : (
-                      // Existing chat: show parsed summary message (skip first 2 header lines)
-                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.82)", whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
-                        {summaryMsg.text.split("\n").slice(2).join("\n").trim()}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
 
               {/* Install App highlight */}
               <a href="https://tendr-1.vercel.app" target="_blank" rel="noopener noreferrer"
@@ -1242,6 +1172,30 @@ export default function VendorChatModal() {
                 style={{ marginTop: 4, padding: "9px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                 Minimise & wait
               </button>
+            </div>
+          )}
+
+          {/* Q&A recap as chat bubbles — new chats only, shown below waiting state */}
+          {botDone && !approved && !isExistingChat && botFlow.filter(s => botAnswers[s.key]).length > 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {botFlow.filter(s => botAnswers[s.key]).map((step, i) => (
+                <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <div style={{ alignSelf: "flex-start", maxWidth: "80%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "9px 13px", boxShadow: "0 1px 5px rgba(0,0,0,0.05)", fontSize: 13, color: "#1a1a1a" }}>{step.question}</div>
+                  <div style={{ alignSelf: "flex-end", maxWidth: "80%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: "16px 16px 4px 16px", padding: "9px 13px", fontSize: 13, color: "#fff", fontWeight: 600 }}>{botAnswers[step.key]}</div>
+                </div>
+              ))}
+              {confirmedPkg && (() => {
+                const tier = confirmedPkg.replace(" Package", "");
+                const pkg = chatPackages.find(p => p.tier === tier);
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ alignSelf: "flex-start", maxWidth: "80%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "9px 13px", boxShadow: "0 1px 5px rgba(0,0,0,0.05)", fontSize: 13, color: "#1a1a1a" }}>📦 Which package suits your needs?</div>
+                    <div style={{ alignSelf: "flex-end", maxWidth: "84%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: "16px 16px 4px 16px", padding: "9px 13px", fontSize: 13, color: "#fff", fontWeight: 600, whiteSpace: "pre-wrap" }}>
+                      {confirmedPkg}{pkg?.items?.length ? "\n" + pkg.items.join(" · ") : ""}
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -1285,7 +1239,7 @@ export default function VendorChatModal() {
         </div>
 
         {/* ── Input + action bar ── */}
-        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", flexShrink: 0, background: "#fff", position: "relative" }}>
+        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", paddingBottom: isMobile ? "calc(10px + env(safe-area-inset-bottom, 0px))" : "10px", flexShrink: 0, background: "#fff", position: "relative" }}>
           {/* Suggested questions — hidden by default, toggled by arrow */}
           {(approved || isExistingChat) && !messagesLoading && (() => {
             const QA = {
@@ -1322,19 +1276,20 @@ export default function VendorChatModal() {
             <>
               {/* Message row */}
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-                <label title="Attach image" style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: "pointer", flexShrink: 0 }}>
+                <label title="Attach image" style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: approved ? "pointer" : "not-allowed", flexShrink: 0, opacity: approved ? 1 : 0.4 }}>
                   📌
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={sendImage} />
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={approved ? sendImage : undefined} disabled={!approved} />
                 </label>
                 <input
                   value={text}
-                  onChange={e => setText(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendText()}
-                  placeholder="Write your message…"
-                  style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 13, fontFamily: font, outline: "none", background: "#fff" }}
+                  onChange={e => approved && setText(e.target.value)}
+                  onKeyDown={e => approved && e.key === "Enter" && !e.shiftKey && sendText()}
+                  placeholder={approved ? "Write your message…" : "Waiting for approval…"}
+                  disabled={!approved}
+                  style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: `1.5px solid ${approved ? "rgba(196,122,46,0.22)" : "rgba(0,0,0,0.08)"}`, fontSize: 13, fontFamily: font, outline: "none", background: approved ? "#fff" : "#f5f5f5", color: approved ? "inherit" : "#bbb", cursor: approved ? "text" : "not-allowed" }}
                 />
-                <button onClick={sendText} disabled={!text.trim()}
-                  style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: text.trim() ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: text.trim() ? "pointer" : "not-allowed", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <button onClick={sendText} disabled={!text.trim() || !approved}
+                  style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: text.trim() && approved ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: text.trim() && approved ? "pointer" : "not-allowed", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   ➤
                 </button>
               </div>

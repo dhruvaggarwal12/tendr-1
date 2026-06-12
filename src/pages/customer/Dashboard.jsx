@@ -57,6 +57,22 @@ export default function CustomerDashboard() {
   const selectedServices = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const bookingType = useSelector((s) => s.eventPlanning.bookingType);
 
+  // Remove an event plan from dashboard
+  const [removingPlan, setRemovingPlan] = useState(null);
+  const handleRemovePlan = async (planId) => {
+    if (!window.confirm("Remove this event from your dashboard?")) return;
+    setRemovingPlan(planId);
+    try {
+      await fetch(`${BASE_URL}/event-plans/${planId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+    } catch {}
+    setPlans(prev => prev.filter(p => p._id !== planId));
+    setRemovingPlan(null);
+  };
+
   // Delete a chat request/conversation permanently
   const [deletingChat, setDeletingChat] = useState(null); // conversationId being deleted
   const handleDeleteChat = async (convoId) => {
@@ -275,11 +291,18 @@ export default function CustomerDashboard() {
   // Ongoing: unpaid (submitted/draft) plans whose event date hasn't passed yet
   const isOngoing = (p) => statusMap.Ongoing.includes(p.status) && (!p.date || p.date >= todayStr);
 
+  // An in_progress plan whose event date has already passed moves to Completed view
+  const isDatePassed = (p) => !!(p.date && p.date < todayStr);
+
   const filtered = activeTab === "All"
     ? plans
     : activeTab === "Ongoing"
       ? plans.filter(isOngoing)
-      : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
+      : activeTab === "Upcoming"
+        ? plans.filter(p => p.status === "in_progress" && !isDatePassed(p))
+        : activeTab === "Completed"
+          ? plans.filter(p => p.status === "completed" || (p.status === "in_progress" && isDatePassed(p)))
+          : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
   // Vendor chats expire 24hrs after the customer's last message
   const TWENTY_FOUR_HRS = 24 * 60 * 60 * 1000;
@@ -328,9 +351,9 @@ export default function CustomerDashboard() {
 
   const counts = {
     All:       plans.length,
-    Upcoming:  plans.filter((p) => p.status === "in_progress").length, // payment received, awaiting confirmation
+    Upcoming:  plans.filter(p => p.status === "in_progress" && !isDatePassed(p)).length,
     Ongoing:   plans.filter(isOngoing).length + ongoingVendorChats.length + (showPlanningCard ? 1 : 0),
-    Completed: plans.filter((p) => p.status === "completed").length,
+    Completed: plans.filter(p => p.status === "completed" || (p.status === "in_progress" && isDatePassed(p))).length,
     Cancelled: plans.filter((p) => p.status === "cancelled").length,
     Chats:     visibleChats.length,
     "Gift Hampers": ghOrders.length,
@@ -1042,6 +1065,14 @@ export default function CustomerDashboard() {
                         onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
                       >
                         ↩ Re-book
+                      </button>
+                      <button
+                        onClick={() => handleRemovePlan(plan._id)}
+                        disabled={removingPlan === plan._id}
+                        title="Remove from dashboard"
+                        style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, opacity: removingPlan === plan._id ? 0.6 : 1 }}
+                      >
+                        {removingPlan === plan._id ? "…" : "🗑️"}
                       </button>
                     </div>
                   </div>

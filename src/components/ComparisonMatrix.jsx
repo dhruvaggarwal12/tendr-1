@@ -1,5 +1,5 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
+import router from "../router";
 import { useChatOverlay } from "../context/ChatContext";
 
 const font = "'Outfit', sans-serif";
@@ -109,7 +109,6 @@ function StatRow({ label, values, winIdx, icon }) {
 
 // ── Main ─────────────────────────────────────────────────────────────────────
 const ComparisonMatrix = ({ vendors = [] }) => {
-  const navigate = useNavigate();
   const { openVendorChat } = useChatOverlay();
 
   if (!vendors.length) return null;
@@ -228,7 +227,7 @@ const ComparisonMatrix = ({ vendors = [] }) => {
                     Request Chat →
                   </button>
                   <button
-                    onClick={() => navigate(`/vendor/${v._id}`)}
+                    onClick={() => router.navigate(`/vendor/${v._id}`)}
                     style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}
                   >
                     View Profile
