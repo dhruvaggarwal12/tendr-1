@@ -90,6 +90,8 @@ const AboutUs             = lazy(() => import("./pages/info/AboutUs.jsx"));
 const InstallApp          = lazy(() => import("./pages/install/InstallApp.jsx"));
 const OccasionsPage       = lazy(() => import("./pages/occasions/OccasionsPage.jsx"));
 const OccasionDetail      = lazy(() => import("./pages/occasions/OccasionDetail.jsx"));
+const MemoriesPage        = lazy(() => import("./pages/memories/MemoriesPage.jsx"));
+const MemoryProfile       = lazy(() => import("./pages/memories/MemoryProfile.jsx"));
 const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesPage.jsx"));
 const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
 const CommunityWall       = lazy(() => import("./pages/community/CommunityWall.jsx"));
@@ -407,6 +409,8 @@ const router = createBrowserRouter([
     element: <GiftHampersCakes />,
     errorElement: <ErrorPage />,
   },
+  { path: '/memories', element: <MemoriesPage />, errorElement: <ErrorPage /> },
+  { path: '/memories/:id', element: <MemoryProfile />, errorElement: <ErrorPage /> },
   { path: '/aftermovie', element: <AftermoviePicker />, errorElement: <ErrorPage /> },
   { path: '/aftermovie/customize/:id', element: <AftermovieCustomizer />, errorElement: <ErrorPage /> },
   { path: '/invitation', element: <InvitationFlyerPicker />, errorElement: <ErrorPage /> },

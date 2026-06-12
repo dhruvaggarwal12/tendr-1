@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
 import AddVendorModal from "./AddVendorModal";
+import MemoriesTab from "./MemoriesTab";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
 import { io } from "socket.io-client";
@@ -269,6 +270,7 @@ const sidebar_arr = [
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
   { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
   { label: "Occasions",       icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "Occasions" },
+  { label: "Memories",        icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Memories" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -4761,6 +4763,9 @@ const AdminDashboard = () => {
         </div>
       </>
     )}
+
+        {/* ── Memories ── */}
+        {activeDropdown === "memories" && <MemoriesTab />}
 
         {/* ── Occasions ── */}
         {activeDropdown === "occasions" && (

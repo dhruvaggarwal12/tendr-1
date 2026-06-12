@@ -237,6 +237,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Decor Finder",       href: "/decor-finder" },
     ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
+      { label: "Memories (Preview)", href: "/memories" },
       { label: "Invitation Flyers",  href: "/invitation" },
       { label: "Wedding Stationery", href: "/stationery" },
       { label: "Aftermovie",         href: "/aftermovie" },
