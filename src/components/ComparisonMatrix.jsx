@@ -4,6 +4,8 @@ import { useChatOverlay } from "../context/ChatContext";
 
 const font = "'Outfit', sans-serif";
 const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=80";
+const LABEL_W = 82;   // px — label column
+const COL_W   = 158;  // px — per vendor column
 
 // ── Data extractors ───────────────────────────────────────────────────────────
 const getName     = (v) => v?.name ?? v?.businessName ?? "Vendor";
@@ -26,28 +28,18 @@ const getServices = (v) => {
   if (Array.isArray(s) && s.length) return s.join(", ");
   return v?.serviceType ?? null;
 };
-
-// Speciality: pull the most descriptive discriminator-specific field
 const getSpeciality = (v) => {
-  // Decorator: themes
   if (Array.isArray(v?.themes) && v.themes.length) return v.themes.slice(0, 3).join(", ");
-  // DJ: eventTypes
   if (Array.isArray(v?.eventTypes) && v.eventTypes.length) return v.eventTypes.slice(0, 3).join(", ");
-  // Photographer: photographyType
   if (Array.isArray(v?.photographyType) && v.photographyType.length) return v.photographyType.slice(0, 3).join(", ");
-  // Caterer: cuisine
   if (Array.isArray(v?.cuisine) && v.cuisine.length) return v.cuisine.slice(0, 3).join(", ");
-  // Fallback: typesOfDecoration
   if (Array.isArray(v?.typesOfDecoration) && v.typesOfDecoration.length) return v.typesOfDecoration.slice(0, 3).join(", ");
   return null;
 };
-
-// Availability proxy: max concurrent events
 const getAvailability = (v) => v?.maxConcurrentEvents ?? null;
-
 const fmtINR = (n) => n != null ? `₹${Number(n).toLocaleString("en-IN")}` : null;
 
-// ── Win logic: returns index of winner, or null ───────────────────────────────
+// ── Win logic ─────────────────────────────────────────────────────────────────
 const winnerIndex = (vals, mode) => {
   const nums = vals.map(v => (v != null && !isNaN(Number(v))) ? Number(v) : null);
   const valid = nums.filter(n => n != null);
@@ -59,14 +51,14 @@ const winnerIndex = (vals, mode) => {
 
 // ── Stars ─────────────────────────────────────────────────────────────────────
 function Stars({ rating }) {
-  if (rating == null) return <span style={{ fontSize: 12, color: "#ccc" }}>—</span>;
+  if (rating == null) return <span style={{ fontSize: 11, color: "#ccc" }}>—</span>;
   const n = Number(rating);
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
       {[1,2,3,4,5].map(i => (
-        <span key={i} style={{ fontSize: 14, color: i <= Math.round(n) ? "#F59E0B" : "#E5E7EB" }}>★</span>
+        <span key={i} style={{ fontSize: 12, color: i <= Math.round(n) ? "#F59E0B" : "#E5E7EB" }}>★</span>
       ))}
-      <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginLeft: 4 }}>{n.toFixed(1)}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", marginLeft: 3 }}>{n.toFixed(1)}</span>
     </span>
   );
 }
@@ -77,25 +69,32 @@ function StatRow({ label, values, winIdx, icon }) {
   if (!hasAny) return null;
   return (
     <tr>
-      <td style={{ padding: "11px 16px", fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", whiteSpace: "nowrap", background: "#FDFAF5", borderBottom: "1px solid rgba(201,168,76,0.08)", verticalAlign: "middle" }}>
-        {icon && <span style={{ marginRight: 5 }}>{icon}</span>}{label}
+      <td style={{
+        width: LABEL_W, padding: "10px 8px 10px 10px",
+        fontSize: 10, fontWeight: 700, color: "#9B7450",
+        textTransform: "uppercase", letterSpacing: "0.05em",
+        background: "#FDFAF5", borderBottom: "1px solid rgba(201,168,76,0.08)",
+        verticalAlign: "middle", lineHeight: 1.3,
+      }}>
+        {icon && <span style={{ display: "block", fontSize: 14, marginBottom: 2 }}>{icon}</span>}
+        {label}
       </td>
       {values.map((val, i) => {
         const isWinner = winIdx != null && i === winIdx && val != null;
         return (
           <td key={i} style={{
-            padding: "11px 16px",
+            width: COL_W, padding: "10px 12px",
             background: isWinner ? "rgba(201,168,76,0.1)" : "transparent",
             borderBottom: "1px solid rgba(201,168,76,0.08)",
             verticalAlign: "middle",
             borderLeft: isWinner ? "3px solid #C9A84C" : "3px solid transparent",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <span style={{ fontSize: 13.5, fontWeight: isWinner ? 800 : 500, color: isWinner ? "#2C1A0E" : "#5A3A1A" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
+              <span style={{ fontSize: 12.5, fontWeight: isWinner ? 800 : 500, color: isWinner ? "#2C1A0E" : "#5A3A1A", lineHeight: 1.4 }}>
                 {val ?? <span style={{ color: "#ccc" }}>—</span>}
               </span>
               {isWinner && (
-                <span style={{ fontSize: 10, fontWeight: 700, background: "#C9A84C", color: "#fff", padding: "2px 7px", borderRadius: 20, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
+                <span style={{ fontSize: 9, fontWeight: 700, background: "#C9A84C", color: "#fff", padding: "2px 6px", borderRadius: 20, whiteSpace: "nowrap" }}>
                   Best
                 </span>
               )}
@@ -114,51 +113,56 @@ const ComparisonMatrix = ({ vendors = [] }) => {
   if (!vendors.length) return null;
 
   const n = vendors.length;
-  const colW = `${Math.floor(100 / n)}%`;
+  const tableW = LABEL_W + n * COL_W;
 
   // Stat data
-  const prices        = vendors.map(getPrice);
-  const ratings       = vendors.map(getRating);
-  const exps          = vendors.map(getExp);
-  const events        = vendors.map(getEvents);
-  const teams         = vendors.map(getTeam);
-  const locations     = vendors.map(getLocation);
-  const services      = vendors.map(getServices);
-  const specialities  = vendors.map(getSpeciality);
-  const availability  = vendors.map(getAvailability);
+  const prices       = vendors.map(getPrice);
+  const ratings      = vendors.map(getRating);
+  const exps         = vendors.map(getExp);
+  const events       = vendors.map(getEvents);
+  const teams        = vendors.map(getTeam);
+  const locations    = vendors.map(getLocation);
+  const services     = vendors.map(getServices);
+  const specialities = vendors.map(getSpeciality);
+  const availability = vendors.map(getAvailability);
 
-  // Winner indices
-  const bestPriceIdx   = winnerIndex(prices,       "low");
-  const bestRatingIdx  = winnerIndex(ratings,       "high");
-  const bestExpIdx     = winnerIndex(exps,          "high");
-  const bestEventsIdx  = winnerIndex(events,        "high");
-  const bestSlotsIdx   = winnerIndex(availability,  "high");
+  const bestPriceIdx  = winnerIndex(prices,      "low");
+  const bestRatingIdx = winnerIndex(ratings,      "high");
+  const bestExpIdx    = winnerIndex(exps,         "high");
+  const bestEventsIdx = winnerIndex(events,       "high");
+  const bestSlotsIdx  = winnerIndex(availability, "high");
 
   return (
-    <div style={{ fontFamily: font, overflowX: "auto" }}>
-      <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+    <div style={{ fontFamily: font, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+      <table style={{ width: tableW, minWidth: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
+
+        {/* ── Colgroup — explicit widths ── */}
+        <colgroup>
+          <col style={{ width: LABEL_W }} />
+          {vendors.map((_, i) => <col key={i} style={{ width: COL_W }} />)}
+        </colgroup>
 
         {/* ── Photo + name + rating + price header ── */}
         <thead>
           <tr>
-            {/* Label column */}
-            <th style={{ width: 130, background: "rgba(201,168,76,0.05)", borderBottom: "2px solid rgba(201,168,76,0.15)" }} />
+            {/* Empty label header */}
+            <th style={{ background: "rgba(201,168,76,0.05)", borderBottom: "2px solid rgba(201,168,76,0.15)" }} />
 
             {vendors.map((v, i) => {
-              const photo       = getPhoto(v);
-              const rating      = getRating(v);
-              const reviews     = getReviews(v);
-              const price       = getPrice(v);
-              const isBestPrice = i === bestPriceIdx && price != null;
-              const isBestRating= i === bestRatingIdx && rating != null;
-              const verified    = getVerified(v);
+              const photo        = getPhoto(v);
+              const rating       = getRating(v);
+              const reviews      = getReviews(v);
+              const price        = getPrice(v);
+              const isBestPrice  = i === bestPriceIdx && price != null;
+              const isBestRating = i === bestRatingIdx && rating != null;
+              const verified     = getVerified(v);
 
               return (
-                <th key={v?._id || i} style={{ padding: 0, borderBottom: "2px solid rgba(201,168,76,0.15)", verticalAlign: "top", width: colW }}>
+                <th key={v?._id || i} style={{ padding: 0, borderBottom: "2px solid rgba(201,168,76,0.15)", verticalAlign: "top" }}>
                   <div style={{ background: "#FFFCF7" }}>
 
                     {/* Photo */}
-                    <div style={{ height: 180, position: "relative", overflow: "hidden" }}>
+                    <div style={{ height: 140, position: "relative", overflow: "hidden" }}>
                       <img
                         src={photo || FALLBACK}
                         alt={getName(v)}
@@ -166,35 +170,34 @@ const ComparisonMatrix = ({ vendors = [] }) => {
                       />
                       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.6) 0%, transparent 50%)" }} />
                       {verified && (
-                        <span style={{ position: "absolute", top: 10, left: 10, fontSize: 10, fontWeight: 700, background: "rgba(21,128,61,0.92)", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>
+                        <span style={{ position: "absolute", top: 8, left: 8, fontSize: 9, fontWeight: 700, background: "rgba(21,128,61,0.92)", color: "#fff", padding: "2px 7px", borderRadius: 20 }}>
                           ✓ Verified
                         </span>
                       )}
-                      {/* Best-of badges */}
-                      <div style={{ position: "absolute", bottom: 10, right: 10, display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+                      <div style={{ position: "absolute", bottom: 8, right: 8, display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-end" }}>
                         {isBestRating && (
-                          <span style={{ fontSize: 10, fontWeight: 700, background: "#C9A84C", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>Top Rated</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, background: "#C9A84C", color: "#fff", padding: "2px 7px", borderRadius: 20 }}>Top Rated</span>
                         )}
                         {isBestPrice && (
-                          <span style={{ fontSize: 10, fontWeight: 700, background: "#15803d", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>Best Price</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, background: "#15803d", color: "#fff", padding: "2px 7px", borderRadius: 20 }}>Best Price</span>
                         )}
                       </div>
                     </div>
 
                     {/* Name + rating */}
-                    <div style={{ padding: "14px 16px 10px", textAlign: "left" }}>
-                      <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 5, lineHeight: 1.3 }}>{getName(v)}</div>
+                    <div style={{ padding: "10px 10px 8px", textAlign: "left" }}>
+                      <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 4, lineHeight: 1.3, wordBreak: "break-word" }}>{getName(v)}</div>
                       <Stars rating={rating} />
                       {reviews != null && (
-                        <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>{reviews} review{reviews !== 1 ? "s" : ""}</div>
+                        <div style={{ fontSize: 10, color: "#9B7450", marginTop: 2 }}>{reviews} review{reviews !== 1 ? "s" : ""}</div>
                       )}
                     </div>
 
                     {/* Price */}
-                    <div style={{ margin: "0 14px 14px", padding: "10px 14px", borderRadius: 10, textAlign: "center", background: isBestPrice ? "rgba(21,128,61,0.07)" : "rgba(201,168,76,0.06)", border: `1.5px solid ${isBestPrice ? "rgba(21,128,61,0.25)" : "rgba(201,168,76,0.2)"}` }}>
-                      <div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>Starting at</div>
-                      <div style={{ fontSize: 19, fontWeight: 900, color: isBestPrice ? "#15803d" : "#C9A84C" }}>
-                        {price != null ? fmtINR(price) : <span style={{ color: "#ccc", fontSize: 13 }}>Quote on chat</span>}
+                    <div style={{ margin: "0 10px 10px", padding: "8px 10px", borderRadius: 8, textAlign: "center", background: isBestPrice ? "rgba(21,128,61,0.07)" : "rgba(201,168,76,0.06)", border: `1.5px solid ${isBestPrice ? "rgba(21,128,61,0.25)" : "rgba(201,168,76,0.2)"}` }}>
+                      <div style={{ fontSize: 9, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>Starting at</div>
+                      <div style={{ fontSize: 15, fontWeight: 900, color: isBestPrice ? "#15803d" : "#C9A84C", lineHeight: 1.3 }}>
+                        {price != null ? fmtINR(price) : <span style={{ color: "#bbb", fontSize: 11 }}>Quote on chat</span>}
                       </div>
                     </div>
                   </div>
@@ -206,29 +209,29 @@ const ComparisonMatrix = ({ vendors = [] }) => {
 
         {/* ── Stat rows ── */}
         <tbody>
-          <StatRow label="Location"     icon="📍" values={locations} winIdx={null} />
-          <StatRow label="Speciality"   icon="🌟" values={specialities} winIdx={null} />
-          <StatRow label="Experience"   icon="⏱"  values={exps.map(e => e != null ? `${e} yrs` : null)} winIdx={bestExpIdx} />
-          <StatRow label="Events Done"  icon="🎉" values={events.map(e => e != null ? `${e}+` : null)} winIdx={bestEventsIdx} />
-          <StatRow label="Team Size"    icon="👥" values={teams.map(t => t != null ? `${t} people` : null)} winIdx={null} />
-          <StatRow label="Max Bookings" icon="📅" values={availability.map(a => a != null ? `${a} at once` : null)} winIdx={bestSlotsIdx} />
-          <StatRow label="Services"     icon="✦"  values={services} winIdx={null} />
+          <StatRow label="Location"    icon="📍" values={locations}                                                    winIdx={null} />
+          <StatRow label="Speciality"  icon="🌟" values={specialities}                                                 winIdx={null} />
+          <StatRow label="Experience"  icon="⏱"  values={exps.map(e => e != null ? `${e} yrs` : null)}               winIdx={bestExpIdx} />
+          <StatRow label="Events Done" icon="🎉" values={events.map(e => e != null ? `${e}+` : null)}                 winIdx={bestEventsIdx} />
+          <StatRow label="Team Size"   icon="👥" values={teams.map(t => t != null ? `${t} people` : null)}            winIdx={null} />
+          <StatRow label="Max Slots"   icon="📅" values={availability.map(a => a != null ? `${a} at once` : null)}    winIdx={bestSlotsIdx} />
+          <StatRow label="Services"    icon="✦"  values={services}                                                     winIdx={null} />
 
           {/* CTA row */}
           <tr>
-            <td style={{ padding: "16px", background: "#FDFAF5", borderTop: "1px solid rgba(201,168,76,0.12)" }} />
+            <td style={{ padding: "12px 8px", background: "#FDFAF5", borderTop: "1px solid rgba(201,168,76,0.12)" }} />
             {vendors.map((v, i) => (
-              <td key={v?._id || i} style={{ padding: "14px 14px 18px", background: "#FDFAF5", borderTop: "1px solid rgba(201,168,76,0.12)", verticalAlign: "top" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              <td key={v?._id || i} style={{ padding: "10px 10px 14px", background: "#FDFAF5", borderTop: "1px solid rgba(201,168,76,0.12)", verticalAlign: "top" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                   <button
                     onClick={() => openVendorChat(v)}
-                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
+                    style={{ width: "100%", padding: "9px 6px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}
                   >
                     Request Chat →
                   </button>
                   <button
                     onClick={() => router.navigate(`/vendor/${v._id}`)}
-                    style={{ width: "100%", padding: "10px", borderRadius: 10, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}
+                    style={{ width: "100%", padding: "9px 6px", borderRadius: 9, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, fontFamily: font, cursor: "pointer" }}
                   >
                     View Profile
                   </button>

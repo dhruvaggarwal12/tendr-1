@@ -50,8 +50,8 @@ const CompareModal = ({ open, onClose, vendors = [] }) => {
         </div>
 
         {/* Body */}
-        <div style={{ flex: 1, overflow: "auto", padding: "12px 10px" }}>
-          <div style={{ minWidth: vendors.length > 1 ? `${Math.max(vendors.length * 200, 360)}px` : "auto" }}>
+        <div style={{ flex: 1, overflow: "auto", padding: "12px 6px" }}>
+          <div>
             {loading ? (
               <div style={{ display: "grid", gridTemplateColumns: `repeat(${vendors.length}, 1fr)`, gap: 16 }}>
                 {vendors.map((_, i) => (
