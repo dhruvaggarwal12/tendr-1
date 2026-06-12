@@ -613,8 +613,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>Event Date *</label>
-                  <input required type="date" value={savedMiniForm.date} min={new Date().toISOString().split("T")[0]}
-                    onChange={e => setSavedMiniForm(p => ({ ...p, date: e.target.value }))}
+                  <input required type="date" value={savedMiniForm.date} min={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}
+                    onChange={e => { const d = new Date(); const t = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; if (e.target.value && e.target.value < t) return; setSavedMiniForm(p => ({ ...p, date: e.target.value })); }}
                     style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
                 </div>
                 <div>

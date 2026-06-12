@@ -116,6 +116,11 @@ const EventCreationModal = ({ isOpen, onClose, onSubmit }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === "date" && value) {
+      const d = new Date();
+      const t = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      if (value < t) return;
+    }
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
@@ -196,7 +201,7 @@ const EventCreationModal = ({ isOpen, onClose, onSubmit }) => {
             name="date"
             value={formData.date}
             onChange={handleInputChange}
-            min={new Date().toISOString().split('T')[0]}
+            min={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}
             className="w-full px-2 sm:px-3 py-2 text-xs sm:text-sm border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>

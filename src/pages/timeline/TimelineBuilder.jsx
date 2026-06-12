@@ -234,10 +234,12 @@ export default function TimelineBuilder() {
                     if (!isNaN(t)) return t.toISOString().slice(0,10);
                     return "";
                   })()}
-                  min={new Date().toISOString().split("T")[0]}
+                  min={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}
                   onChange={e => {
-                    const iso = e.target.value; // "YYYY-MM-DD"
+                    const iso = e.target.value;
                     if (!iso) { setEventDate(""); return; }
+                    const nd = new Date(); const t = `${nd.getFullYear()}-${String(nd.getMonth()+1).padStart(2,'0')}-${String(nd.getDate()).padStart(2,'0')}`;
+                    if (iso < t) return;
                     const [y,m,d] = iso.split("-");
                     setEventDate(`${d}/${m}/${y}`);
                   }}

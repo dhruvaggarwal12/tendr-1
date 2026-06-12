@@ -1691,16 +1691,24 @@ const EventPlanning = () => {
               />
             )}
 
-            {currentQuestion.type === "date" && (
-              <input
-                type="date"
-                value={formData[currentQuestion.id] || ""}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={(e) => handleInputChange(currentQuestion.id, e.target.value)}
-                style={{ width: "100%", boxSizing: "border-box", display: "block", maxWidth: "100%", minWidth: 0 }}
-                className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
-              />
-            )}
+            {currentQuestion.type === "date" && (() => {
+              const todayLocal = new Date();
+              todayLocal.setHours(0, 0, 0, 0);
+              const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}-${String(todayLocal.getDate()).padStart(2, "0")}`;
+              return (
+                <input
+                  type="date"
+                  value={formData[currentQuestion.id] || ""}
+                  min={todayStr}
+                  onChange={(e) => {
+                    if (e.target.value && e.target.value < todayStr) return;
+                    handleInputChange(currentQuestion.id, e.target.value);
+                  }}
+                  style={{ width: "100%", boxSizing: "border-box", display: "block", maxWidth: "100%", minWidth: 0 }}
+                  className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                />
+              );
+            })()}
 
             {currentQuestion.type === "textarea" && (
               <textarea

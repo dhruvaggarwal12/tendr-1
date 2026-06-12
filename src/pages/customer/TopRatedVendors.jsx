@@ -116,7 +116,7 @@ function QuickEventForm({ vendor, onClose, onSubmit }) {
 
           <div>
             <label style={labelCls}>Event Date *</label>
-            <input name="date" type="date" value={form.date} onChange={change} style={inputCls("date")} min={new Date().toISOString().split("T")[0]} />
+            <input name="date" type="date" value={form.date} onChange={e => { const d = new Date(); const t = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; if (e.target.value && e.target.value < t) return; change(e); }} style={inputCls("date")} min={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()} />
             {errors.date && <p style={{ fontSize: 11, color: "#c0392b", margin: "3px 0 0" }}>{errors.date}</p>}
           </div>
 

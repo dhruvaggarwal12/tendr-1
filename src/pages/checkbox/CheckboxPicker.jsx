@@ -49,7 +49,7 @@ const LOADING_MSGS = [
   "Almost ready!",
 ];
 
-const today = new Date().toISOString().split("T")[0];
+const getToday = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 
 export default function CheckboxPicker() {
   const navigate = useNavigate();
@@ -191,7 +191,7 @@ export default function CheckboxPicker() {
         {step === 2 && (
           <StepWrapper label="Step 2 of 5" title="When is your event?" sub="Helps us show urgent tasks and saves your checklist until event day.">
             <div style={{ maxWidth: 340, margin: "0 auto" }}>
-              <input type="date" min={today} value={eventDate} onChange={e => setEventDate(e.target.value)}
+              <input type="date" min={getToday()} value={eventDate} onChange={e => { if (e.target.value && e.target.value < getToday()) return; setEventDate(e.target.value); }}
                 style={{ width: "100%", padding: "16px 18px", borderRadius: 14, border: "2px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 16, color: "#2C1A0E", background: "#FFFCF5", outline: "none", boxSizing: "border-box", marginBottom: 12 }} />
               {eventDate && (
                 <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 16px", textAlign: "center" }}>

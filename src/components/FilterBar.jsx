@@ -195,8 +195,10 @@ const FilterBar = () => {
                   <input
                     type="date"
                     className="text-[#CCAB4A] text-sm sm:text-md font-semibold cursor-pointer"
-                    min={new Date().toISOString().split('T')[0]}
+                    min={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}
                     onChange={(e) => {
+                      const d = new Date(); const t = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                      if (e.target.value && e.target.value < t) return;
                       setDate(e.target.value);
                       setActiveDropdown(null);
                     }}

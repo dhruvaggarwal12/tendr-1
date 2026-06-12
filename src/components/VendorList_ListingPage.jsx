@@ -638,8 +638,8 @@ const VendorList_ListingPage = ({
               {/* Date */}
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date *</label>
-                <input type="date" value={chatEventForm.date} min={new Date().toISOString().split("T")[0]}
-                  onChange={e => setChatEventForm(p => ({ ...p, date: e.target.value }))}
+                <input type="date" value={chatEventForm.date} min={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}
+                  onChange={e => { const d = new Date(); const t = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; if (e.target.value && e.target.value < t) return; setChatEventForm(p => ({ ...p, date: e.target.value })); }}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box", background: "#fff" }} />
               </div>
               {/* Guests */}
