@@ -1227,55 +1227,6 @@ const Home = () => {
 
       <JourneyFlow />
 
-      {/* ── Plan by Occasion — admin preview only ── */}
-      {user?.isAdmin && (() => {
-        const OCC_CHIPS = [
-          { id: "baby-shower",     icon: "🍼", name: "Baby Shower",     bg: "#FFF0F8", accent: "#F472B6" },
-          { id: "newborn-welcome", icon: "👶", name: "Newborn Welcome",  bg: "#FFFBEB", accent: "#F59E0B" },
-          { id: "first-birthday",  icon: "🎂", name: "1st Birthday",    bg: "#EFF6FF", accent: "#60A5FA" },
-          { id: "anniversary",     icon: "💍", name: "Anniversary",      bg: "#FFF5F0", accent: "#FB923C" },
-          { id: "housewarming",    icon: "🏠", name: "Housewarming",     bg: "#F0FDF4", accent: "#4ADE80" },
-          { id: "graduation",      icon: "🎓", name: "Graduation",       bg: "#F5F3FF", accent: "#A78BFA" },
-        ];
-        return (
-          <section style={{ background: "linear-gradient(160deg,#FFF5F0 0%,#FFF3FA 50%,#F5F8FF 100%)", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
-            <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 24, gap: 16, flexWrap: "wrap" }}>
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 6px" }}>🎉 Admin Preview</p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,3vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "0.01em" }}>
-                    What are you celebrating?
-                  </h2>
-                  <p style={{ fontSize: 13.5, color: "#9B7450", margin: 0 }}>Décor, gifts & activities for every moment.</p>
-                </div>
-                <button onClick={() => window.open("/occasions", "_blank")}
-                  style={{ padding: "9px 22px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", transition: "all 0.15s" }}
-                  onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
-                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                  All Occasions ↗
-                </button>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 12 }} className="occ-chip-grid">
-                {OCC_CHIPS.map(({ id, icon, name, bg, accent }) => (
-                  <button key={id} onClick={() => window.open(`/occasions/${id}`, "_blank")}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 9, padding: "18px 8px 16px", borderRadius: 18, border: `1.5px solid ${accent}30`, background: bg, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "transform 0.15s, box-shadow 0.15s", outline: "none" }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 8px 22px ${accent}28`; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                    <span style={{ fontSize: 34 }}>{icon}</span>
-                    <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{name}</span>
-                    <span style={{ fontSize: 10, color: accent, fontWeight: 700 }}>Explore ↗</span>
-                  </button>
-                ))}
-              </div>
-              <style>{`
-                @media (max-width: 640px) { .occ-chip-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; } }
-                @media (max-width: 640px) { .occ-chip-grid button { padding: 14px 6px 12px !important; border-radius: 14px !important; } }
-                @media (max-width: 640px) { .occ-chip-grid button span:first-child { font-size: 28px !important; } }
-              `}</style>
-            </div>
-          </section>
-        );
-      })()}
 
       {/* ── Book a Party Place — admin preview only ── */}
       {user?.isAdmin && (

@@ -4,12 +4,13 @@ import { calculatePrice } from "./PricingEngine";
 import CardPreview from "./CardPreview";
 import { getTypeById } from "../data/stationeryTypes";
 
-const Input = ({ label, value, onChange, placeholder, required, type = "text" }) => (
+const Input = ({ label, value, onChange, placeholder, required, type = "text", ...rest }) => (
   <div style={{ marginBottom: 16 }}>
     <label style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#6B5E52", marginBottom: 6 }}>
       {label} {required && <span style={{ color: "#C9A84C" }}>*</span>}
     </label>
     <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} required={required}
+      {...rest}
       style={{ width: "100%", padding: "11px 14px", border: "1.5px solid #EDE6D8", borderRadius: 6, fontSize: 14, fontFamily: "'Lato', sans-serif", color: "#1C1C1C", background: "#FDFAF6", outline: "none", boxSizing: "border-box", transition: "border-color 0.15s" }}
       onFocus={e => (e.currentTarget.style.borderColor = "#C9A84C")}
       onBlur={e => (e.currentTarget.style.borderColor = "#EDE6D8")}
@@ -84,7 +85,7 @@ export default function OrderForm() {
               <Input label="Full Name" value={form.name} onChange={setField("name")} placeholder="Alexandra Smith" required />
               <Input label="Email Address" value={form.email} onChange={setField("email")} placeholder="hello@example.com" type="email" required />
               <Input label="Phone Number" value={form.phone} onChange={setField("phone")} placeholder="+91 98765 43210" required />
-              <Input label="Event Date" value={form.eventDate} onChange={setField("eventDate")} placeholder="14 June 2025" type="date" required />
+              <Input label="Event Date" value={form.eventDate} onChange={setField("eventDate")} placeholder="14 June 2025" type="date" required min={new Date().toISOString().split("T")[0]} />
             </div>
             <div style={{ marginBottom: 16 }}>
               <label style={{ display: "block", fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "#6B5E52", marginBottom: 6 }}>

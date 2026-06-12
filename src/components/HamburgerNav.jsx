@@ -227,7 +227,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
       ...(user?.isAdmin ? [
-        { label: "🎉 Plan by Occasion", onClickOverride: () => { close(); window.open("/occasions", "_blank"); } },
         { label: "🏡 Party Places",     href: "/party-places" },
         { label: "🎭 Fun Activities",   href: "/fun-activities" },
       ] : []),

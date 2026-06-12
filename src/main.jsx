@@ -9,6 +9,9 @@ import './index.css'
 // Setup global error handling
 setupGlobalErrorHandling();
 
+// Disable browser's automatic scroll restoration so SPA pages can restore manually via sessionStorage
+window.history.scrollRestoration = 'manual';
+
 // Global 401 interceptor — if a deleted user makes any API call,
 // their session is cleared automatically and they must sign up again
 const _originalFetch = window.fetch;

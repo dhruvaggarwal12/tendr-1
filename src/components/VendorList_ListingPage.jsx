@@ -120,22 +120,19 @@ const VendorList_ListingPage = ({
 
         <div className="vendor-list">
           {isLoading ? (
-            <div className="vendor-list-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 py-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="vendor-card animate-pulse"
-                  style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.08)", overflow: "hidden" }}>
-                  {/* Image placeholder — full width on mobile, fixed height on desktop */}
-                  <div className="vendor-card-img"
-                    style={{ background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-                  {/* Info placeholder */}
-                  <div className="vendor-card-info" style={{ padding: "12px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
-                    <div style={{ height: 14, width: "65%", borderRadius: 6, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-                    <div style={{ height: 11, width: "45%", borderRadius: 6, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-                    <div style={{ height: 32, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite", marginTop: 2 }} />
-                  </div>
-                </div>
-              ))}
-              <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px 60px", fontFamily: font }}>
+              <div style={{ fontSize: 50, marginBottom: 20, animation: "curateFloat 2s ease-in-out infinite" }}>✨</div>
+              <h3 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>Curating your list...</h3>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 28px" }}>Finding the best vendors for your event</p>
+              <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                {[0, 1, 2].map(i => (
+                  <div key={i} style={{ width: 9, height: 9, borderRadius: "50%", background: "#C47A2E", animation: `curateDot 1.2s ${i * 0.18}s ease-in-out infinite` }} />
+                ))}
+              </div>
+              <style>{`
+                @keyframes curateFloat { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-10px) rotate(5deg); } }
+                @keyframes curateDot { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.2); } }
+              `}</style>
             </div>
           ) : vendors.length === 0 ? (
             <div style={{ textAlign: "center", padding: "60px 24px 40px", fontFamily: font }}>
@@ -583,17 +580,16 @@ const VendorList_ListingPage = ({
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                       return;
                     }
-                    // Planning flow with all 4 fields filled → skip form, open chat directly
-                    if (isFromPlanFlow && hasEventDetails) {
+                    // Normal/smart planning flow with all 4 fields filled → skip form, use Redux data directly
+                    if (!requireFormBeforeChat && hasEventDetails) {
                       setChatSave(vendor._id, { eventType: formData.eventType, date: formData.date, guests: String(formData.guests), budget: formData.budget });
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                       return;
                     }
-                    // Show form — pre-fill from local page state for search/top-rated,
-                    // or from Redux if still in plan flow but details incomplete
+                    // Show form — pre-fill from Redux in normal flow (incomplete details), or from local page state for search/top-rated
                     setChatFormVendor(vendor);
                     setChatEventForm(
-                      isFromPlanFlow
+                      !requireFormBeforeChat
                         ? { eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "" }
                         : { ...localFormData }
                     );
@@ -628,26 +624,67 @@ const VendorList_ListingPage = ({
               <button onClick={() => setChatFormVendor(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              {[
-                { label: "What's the occasion?", field: "eventType", placeholder: "e.g. Birthday, Wedding, Anniversary..." },
-                { label: "Event date", field: "date", placeholder: "", type: "date", extra: { min: new Date().toISOString().split("T")[0] } },
-                { label: "Guest count", field: "guests", placeholder: "Approx. number of guests", type: "number" },
-                { label: "Budget", field: "budget", placeholder: "e.g. ₹50,000 – ₹1,00,000" },
-              ].map(({ label, field, placeholder, type, extra }) => (
-                <div key={field}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>{label}</label>
-                  <input type={type || "text"} placeholder={placeholder} value={chatEventForm[field]}
-                    onChange={e => setChatEventForm(p => ({ ...p, [field]: e.target.value }))}
-                    {...(extra || {})}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+              {/* Occasion */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>What's the occasion?</label>
+                <input type="text" placeholder="e.g. Birthday, Wedding, Anniversary..." value={chatEventForm.eventType}
+                  onChange={e => setChatEventForm(p => ({ ...p, eventType: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                  {["Birthday", "Anniversary", "Wedding", "Corporate", "Get-together", "Others"].map(s => (
+                    <button key={s} type="button"
+                      onClick={() => setChatEventForm(p => ({ ...p, eventType: s }))}
+                      style={{ padding: "4px 11px", borderRadius: 100, border: `1.5px solid ${chatEventForm.eventType === s ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: chatEventForm.eventType === s ? "rgba(196,122,46,0.1)" : "transparent", color: chatEventForm.eventType === s ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      {s}
+                    </button>
+                  ))}
                 </div>
-              ))}
+              </div>
+              {/* Date */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date</label>
+                <input type="date" value={chatEventForm.date} min={new Date().toISOString().split("T")[0]}
+                  onChange={e => setChatEventForm(p => ({ ...p, date: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+              </div>
+              {/* Guests */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Guest count</label>
+                <input type="number" placeholder="Approx. number of guests" value={chatEventForm.guests}
+                  onChange={e => setChatEventForm(p => ({ ...p, guests: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                  {["50", "100", "150", "200", "300+"].map(s => (
+                    <button key={s} type="button"
+                      onClick={() => setChatEventForm(p => ({ ...p, guests: s.replace("+", "") }))}
+                      style={{ padding: "4px 11px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "transparent", color: "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Budget */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Budget</label>
+                <input type="text" placeholder="e.g. ₹50,000 – ₹1,00,000" value={chatEventForm.budget}
+                  onChange={e => setChatEventForm(p => ({ ...p, budget: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                  {["Under ₹10K", "₹10K–₹30K", "₹30K–₹50K", "₹50K–₹1L", "Over ₹1L"].map(s => (
+                    <button key={s} type="button"
+                      onClick={() => setChatEventForm(p => ({ ...p, budget: s }))}
+                      style={{ padding: "4px 11px", borderRadius: 100, border: `1.5px solid ${chatEventForm.budget === s ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: chatEventForm.budget === s ? "rgba(196,122,46,0.1)" : "transparent", color: chatEventForm.budget === s ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
             <button
               onClick={() => {
                 const { eventType: et, guests: g, date: d, budget: b } = chatEventForm;
-                if (isFromPlanFlow) {
-                  // Planning flow — persist to Redux so planning state stays in sync
+                if (!requireFormBeforeChat) {
+                  // Normal/planning flow — persist to Redux so planning state stays in sync
                   dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, token }));
                   dispatch(setBookingType("you-do-it"));
                 } else {

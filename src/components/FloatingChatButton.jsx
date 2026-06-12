@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { removeVendorFromCompare } from "../redux/listingFiltersSlice";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
+import CompareModal from "./CompareModal";
 import { useChatOverlay } from "../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -22,6 +23,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const [open, setOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
+  const [compareCategory, setCompareCategory] = useState("");
+  const [activeCompare, setActiveCompare] = useState([]);
+  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [vendorChats, setVendorChats] = useState([]);
@@ -142,6 +146,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   return (
     <>
       {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
+
+      {isCompareModalOpen && (
+        <CompareModal
+          open={isCompareModalOpen}
+          onClose={() => setIsCompareModalOpen(false)}
+          vendors={compareSelected.filter(v => activeCompare.includes(v._id))}
+        />
+      )}
 
       {/* ── Active Chats panel — same size as VendorChatModal ── */}
       {showActiveChats && (
@@ -282,19 +294,62 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               ))}
             </div>
           )}
-          {/* Compare popup */}
+          {/* Compare popup — category dropdown + per-vendor Add/Remove toggle */}
           {compareOpen && (
-            <div className="mobile-compare-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 901, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "10px", minWidth: 240, maxWidth: 300, fontFamily: font, animation: "chatPop 0.18s ease" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "2px 8px 8px" }}>⚖ Compare List</div>
-              {compareSelected.map(v => (
-                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px", borderRadius: 10 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
-                    <div style={{ fontSize: 11, color: "#9B7450" }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
+            <div className="mobile-compare-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 901, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "12px", minWidth: 280, maxWidth: 320, fontFamily: font, animation: "chatPop 0.18s ease" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "2px 8px 10px" }}>⚖ Compare Vendors</div>
+              {compareSelected.length === 0 ? (
+                <div style={{ padding: "8px 8px 4px", fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>Chat with or save vendors to build your compare list.</div>
+              ) : (
+                <>
+                  <div style={{ padding: "0 8px 10px" }}>
+                    <select
+                      value={compareCategory}
+                      onChange={e => { setCompareCategory(e.target.value); setActiveCompare([]); }}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: compareCategory ? "#2C1A0E" : "#9B7450", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", outline: "none" }}>
+                      <option value="">Select a category</option>
+                      {[...new Set(compareSelected.map(v => v.serviceType || "Other"))].map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
                   </div>
-                  <button onClick={() => dispatch(removeVendorFromCompare(v._id))} style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-                </div>
-              ))}
+                  {compareCategory && (() => {
+                    const vendorsInCat = compareSelected.filter(v => (v.serviceType || "Other") === compareCategory);
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "0 8px" }}>
+                        {vendorsInCat.map(v => {
+                          const isActive = activeCompare.includes(v._id);
+                          return (
+                            <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
+                                <div style={{ fontSize: 11, color: "#9B7450" }}>{v.city || ""}</div>
+                              </div>
+                              <button
+                                onClick={() => setActiveCompare(prev => isActive ? prev.filter(id => id !== v._id) : [...prev, v._id])}
+                                style={{ flexShrink: 0, padding: "4px 10px", borderRadius: 8, border: `1.5px solid ${isActive ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: isActive ? "rgba(196,122,46,0.1)" : "transparent", color: isActive ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                                {isActive ? "✓ Added" : "Add"}
+                              </button>
+                              <button
+                                onClick={() => { dispatch(removeVendorFromCompare(v._id)); setActiveCompare(prev => prev.filter(id => id !== v._id)); }}
+                                style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                ✕
+                              </button>
+                            </div>
+                          );
+                        })}
+                        {activeCompare.length >= 1 && (
+                          <button
+                            onClick={() => { setCompareOpen(false); setIsCompareModalOpen(true); }}
+                            style={{ marginTop: 6, width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+                            Show Comparison ({activeCompare.length}) →
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
             </div>
           )}
           {/* Button stack — column-reverse so Saved is visual-bottom (closest to chat) */}
@@ -307,7 +362,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               </button>
             )}
             {compareSelected.length > 0 && (
-              <button className="mobile-action-btn" onClick={() => { setCompareOpen(v => !v); setSavedOpen(false); }}
+              <button className="mobile-action-btn" onClick={() => { const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
                 style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
                 ⚖
                 <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
