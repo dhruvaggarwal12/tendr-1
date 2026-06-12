@@ -221,6 +221,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // Desktop sidebar: Vendors first (original order)
   // Mobile drawer: Gift & Hampers shown as standalone button above these sections
   const NAV_SECTIONS = [
+    { label: "Booking", items: [
+      { label: "Plan Your Event",      href: "/booking", activePaths: ["/booking", "/plan-event"] },
+    ]},
     { label: "Vendors", items: [
       { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
       { label: "Top Rated Vendors",    href: "/top-rated/Photographer", activePaths: ["/top-rated/"] },
@@ -242,9 +245,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Wedding Stationery", href: "/stationery" },
       { label: "Aftermovie",         href: "/aftermovie" },
     ]}] : []),
-    { label: "Booking", items: [
-      { label: "Plan Your Event",      href: "/booking", activePaths: ["/booking", "/plan-event"] },
-    ]},
     { label: "Company", items: [
       { label: "About Us",             href: "/about-us" },
       { label: "Contact Us",           href: "/contact-us" },
