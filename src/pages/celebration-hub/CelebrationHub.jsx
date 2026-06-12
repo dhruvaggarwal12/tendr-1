@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
-import { POSTS, POLLS, IDEAS, CATEGORY_COLORS, CATEGORIES } from "../../data/celebrationHubData";
+import { POSTS, POLLS, IDEAS, CATEGORY_COLORS } from "../../data/celebrationHubData";
 
 const font = "'Outfit', sans-serif";
 const BROWN = "#2C1A0E";
@@ -20,8 +20,31 @@ const TABS = [
   { id: "stories", label: "Share Your Story",   emoji: "🎉", accent: "#ea580c" },
 ];
 
-// Category options for the new-post modal (exclude "all")
-const POST_CATS = CATEGORIES.filter(c => c.id !== "all");
+// Category options for the new-post modal — aligned with the 4 non-"all" tabs
+const POST_CATS = [
+  { id: "ask",     label: "Ask the Community", emoji: "🙋" },
+  { id: "stories", label: "Share Your Story",  emoji: "🎉" },
+  { id: "polls",   label: "Polls & Votes",     emoji: "📊" },
+  { id: "ideas",   label: "Ideas & Inspo",     emoji: "💡" },
+];
+
+// Human-readable labels for all category IDs (new + legacy static posts)
+const CAT_LABELS = {
+  ask:          "Ask the Community",
+  stories:      "Share Your Story",
+  polls:        "Polls & Votes",
+  ideas:        "Ideas & Inspo",
+  surprise:     "Surprise Moments",
+  "love-story": "Love Story",
+  "epic-fail":  "Epic Fails",
+  emotional:    "Emotional Highlights",
+  "hidden-gem": "Hidden Gem",
+  "wow-factor": "Wow Factor",
+  "money-saved":"Budget Wins",
+  "real-talk":  "Real Talk",
+  shoutout:     "Shoutouts",
+  "my-story":   "My Event Story",
+};
 
 const LIKE_KEY  = "tendr_hub_liked";
 const POSTS_KEY = "tendr_hub_user_posts";
@@ -79,7 +102,7 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment }) {
       {/* Category + badges row */}
       <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: catColor, borderRadius: 100, padding: "2px 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          {post.category?.replace("-", " ")}
+          {CAT_LABELS[post.category] || post.category?.replace(/-/g, " ")}
         </span>
         {post.isPinned   && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD,     background: "rgba(196,122,46,0.1)",   borderRadius: 100, padding: "2px 10px" }}>📌 Pinned</span>}
         {post.isFeatured && <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", background: "rgba(124,58,237,0.08)", borderRadius: 100, padding: "2px 10px" }}>✨ Featured</span>}
@@ -106,12 +129,12 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment }) {
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {/* Like button */}
           <button onClick={() => onLike(post.id || post._id)}
-            style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: liked ? "#e05d2e" : "#9B7450", background: liked ? "rgba(224,93,46,0.08)" : "transparent", border: liked ? "1px solid rgba(224,93,46,0.2)" : "1px solid transparent", borderRadius: 100, padding: "4px 10px", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+            style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: liked ? "#e05d2e" : "#9B7450", background: liked ? "rgba(224,93,46,0.08)" : "transparent", border: liked ? "1px solid rgba(224,93,46,0.2)" : "1px solid transparent", borderRadius: 100, padding: "6px 12px", cursor: "pointer", fontFamily: font, transition: "all 0.15s", touchAction: "manipulation" }}>
             {liked ? "❤️" : "🤍"} {(post.likes || 0) + (liked ? 1 : 0)}
           </button>
           {/* Comments toggle */}
           <button onClick={() => setShowComments(v => !v)}
-            style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>
+            style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: "6px 8px", touchAction: "manipulation" }}>
             💬 {(post.comments?.length || 0) + (post.answers || 0)} replies
           </button>
           {/* Admin remove */}
@@ -145,7 +168,7 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment }) {
               style={{ flex: 1, fontSize: 13, padding: "8px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#FFFCF5", fontFamily: font, color: BROWN, outline: "none" }}
             />
             <button onClick={handleComment}
-              style={{ padding: "8px 14px", borderRadius: 10, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              style={{ padding: "8px 14px", borderRadius: 10, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation", flexShrink: 0 }}>
               Post
             </button>
           </div>
@@ -217,7 +240,7 @@ function IdeaCard({ idea }) {
 
 // ── New Post Modal ──────────────────────────────────────────────────────────
 function NewPostModal({ onClose, onSubmit, authorName }) {
-  const [form, setForm] = useState({ title: "", description: "", category: "surprise", isAnonymous: false });
+  const [form, setForm] = useState({ title: "", description: "", category: "ask", isAnonymous: false });
   const [loading, setLoading] = useState(false);
 
   const handle = async () => {
@@ -294,11 +317,13 @@ export default function CelebrationHub() {
     ? [...allPosts].sort((a, b) => ((b.likes || 0) + (b.reactions?.loveThis || 0)) - ((a.likes || 0) + (a.reactions?.loveThis || 0)))
     : allPosts;
 
-  // Per-tab filtered lists
+  // Per-tab filtered lists — handles both new category IDs and legacy static-post IDs
   const postsForTab = (tab) => {
     if (tab === "all")     return sortedPosts;
-    if (tab === "stories") return sortedPosts.filter(p => p.category === "my-story");
-    if (tab === "ask")     return sortedPosts.filter(p => p.category === "real-talk");
+    if (tab === "stories") return sortedPosts.filter(p => p.category === "stories" || p.category === "my-story");
+    if (tab === "ask")     return sortedPosts.filter(p => p.category === "ask"     || p.category === "real-talk");
+    if (tab === "polls")   return sortedPosts.filter(p => p.category === "polls");
+    if (tab === "ideas")   return sortedPosts.filter(p => p.category === "ideas");
     return sortedPosts;
   };
 
@@ -459,7 +484,7 @@ export default function CelebrationHub() {
         </div>
 
         {/* ── Tab bar ── */}
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", marginBottom: 24, paddingBottom: 4 }}>
+        <div className="ch-tabs" style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", marginBottom: 24, paddingBottom: 4 }}>
           {TABS.map(tab => {
             const active = activeTab === tab.id;
             return (
@@ -494,14 +519,50 @@ export default function CelebrationHub() {
         )}
 
         {activeTab === "polls" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(340px,1fr))", gap: 14 }}>
-            {POLLS.map(poll => <PollCard key={poll.id} poll={poll} />)}
+          <div>
+            {/* User posts tagged "polls" appear above the curated poll cards */}
+            {postsForTab("polls").length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+                {postsForTab("polls").map(post => (
+                  <PostCard
+                    key={post.id || post._id}
+                    post={post}
+                    liked={likedIds.has(String(post.id || post._id))}
+                    onLike={handleLike}
+                    onRemove={handleRemove}
+                    isAdmin={isAdmin}
+                    onAddComment={handleAddComment}
+                  />
+                ))}
+              </div>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(340px,1fr))", gap: 14 }}>
+              {POLLS.map(poll => <PollCard key={poll.id} poll={poll} />)}
+            </div>
           </div>
         )}
 
         {activeTab === "ideas" && (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 14 }}>
-            {IDEAS.map(idea => <IdeaCard key={idea.id} idea={idea} />)}
+          <div>
+            {/* User posts tagged "ideas" appear above the curated idea cards */}
+            {postsForTab("ideas").length > 0 && (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+                {postsForTab("ideas").map(post => (
+                  <PostCard
+                    key={post.id || post._id}
+                    post={post}
+                    liked={likedIds.has(String(post.id || post._id))}
+                    onLike={handleLike}
+                    onRemove={handleRemove}
+                    isAdmin={isAdmin}
+                    onAddComment={handleAddComment}
+                  />
+                ))}
+              </div>
+            )}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 14 }}>
+              {IDEAS.map(idea => <IdeaCard key={idea.id} idea={idea} />)}
+            </div>
           </div>
         )}
 

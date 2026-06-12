@@ -15,6 +15,7 @@ export const CATEGORIES = [
 ];
 
 export const CATEGORY_COLORS = {
+  // legacy category IDs (static posts)
   "surprise":    "#7C3AED",
   "love-story":  "#DB2777",
   "epic-fail":   "#DC2626",
@@ -25,6 +26,11 @@ export const CATEGORY_COLORS = {
   "real-talk":   "#EA580C",
   "shoutout":    "#059669",
   "my-story":    "#1D4ED8",
+  // new tab-aligned category IDs (user-created posts)
+  "ask":         "#16a34a",
+  "stories":     "#ea580c",
+  "polls":       "#C47A2E",
+  "ideas":       "#7c3aed",
 };
 
 export const POSTS = [
