@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { EventIdeasPanel } from "../../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useChatOverlay } from "../../context/ChatContext";
@@ -1727,11 +1728,21 @@ const EventPlanning = () => {
                       type="button"
                       key={index}
                       tabIndex={0}
-                      onClick={() => selectAndAdvance(currentQuestion.id, option)}
+                      onClick={() => {
+                        if (currentQuestion.id === "eventType") {
+                          dispatch(setFormData({ field: "eventType", value: option, token }));
+                        } else {
+                          selectAndAdvance(currentQuestion.id, option);
+                        }
+                      }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
                           e.preventDefault();
-                          selectAndAdvance(currentQuestion.id, option);
+                          if (currentQuestion.id === "eventType") {
+                            dispatch(setFormData({ field: "eventType", value: option, token }));
+                          } else {
+                            selectAndAdvance(currentQuestion.id, option);
+                          }
                         }
                       }}
                       className={`w-full text-left rounded-2xl transition-all duration-200
@@ -1748,6 +1759,9 @@ const EventPlanning = () => {
                     </button>
                   ))}
                 </div>
+                {currentQuestion.id === "eventType" && formData.eventType && (
+                  <EventIdeasPanel eventType={formData.eventType} style={{ marginTop: 16 }} />
+                )}
                 {currentQuestion.id === "eventType" && (
                   <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: 12, background: "rgba(196,122,46,0.05)", border: "1.5px dashed rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
                     <div>

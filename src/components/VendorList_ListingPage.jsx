@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useChatOverlay } from "../context/ChatContext";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
+import { EventIdeasPanel } from "../utils/eventIdeas";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const CHAT_TTL_MS = 24 * 60 * 60 * 1000;
@@ -640,6 +641,7 @@ const VendorList_ListingPage = ({
                   ))}
                 </div>
               </div>
+              <EventIdeasPanel eventType={chatEventForm.eventType} />
               {/* Date */}
               <div>
                 <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date</label>

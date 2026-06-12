@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { EventIdeasPanel } from "../../utils/eventIdeas";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -86,6 +87,7 @@ function QuickEventForm({ vendor, onClose, onSubmit }) {
               {["Get-together","Birthday","1st Birthday","Baby Shower","Newborn Welcome","Office Party","Anniversary","Housewarming","Graduation","Pre Wedding","Festival","Corporate Event","Others"].map(t => <option key={t}>{t}</option>)}
             </select>
             {errors.eventType && <p style={{ fontSize: 11, color: "#c0392b", margin: "3px 0 0" }}>{errors.eventType}</p>}
+            <EventIdeasPanel eventType={form.eventType} />
           </div>
 
           <div>

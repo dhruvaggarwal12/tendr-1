@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { EventIdeasPanel } from "../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
@@ -599,6 +600,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     <option value="">Select event type</option>
                     {["Birthday", "1st Birthday", "Baby Shower", "Newborn Welcome", "Anniversary", "Housewarming", "Graduation", "Pre Wedding", "Get-together", "Office Party", "Festival", "Corporate Event", "Others"].map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
+                  <EventIdeasPanel eventType={savedMiniForm.eventType} />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: 11.5, fontWeight: 700, color: "#6B3A1F", marginBottom: 4 }}>City *</label>
