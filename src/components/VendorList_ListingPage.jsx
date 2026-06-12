@@ -68,9 +68,9 @@ const VendorList_ListingPage = ({
   const hasEventDetails = !!(formData.eventType && formData.guests && formData.date && formData.budget);
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
-  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "" });
+  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
-  const [localFormData, setLocalFormData] = useState({ eventType: "", guests: "", date: "", budget: "" });
+  const [localFormData, setLocalFormData] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
   const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
   const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
 
@@ -591,7 +591,7 @@ const VendorList_ListingPage = ({
                     setChatFormVendor(vendor);
                     setChatEventForm(
                       !requireFormBeforeChat
-                        ? { eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "" }
+                        ? { eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "", location: formData.location || "" }
                         : { ...localFormData }
                     );
                   }}
@@ -624,76 +624,64 @@ const VendorList_ListingPage = ({
               </div>
               <button onClick={() => setChatFormVendor(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 14px" }}>
               {/* Occasion */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>What's the occasion?</label>
-                <input type="text" placeholder="e.g. Birthday, Wedding, Anniversary..." value={chatEventForm.eventType}
-                  onChange={e => setChatEventForm(p => ({ ...p, eventType: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-                  {["Birthday", "1st Birthday", "Baby Shower", "Newborn Welcome", "Anniversary", "Housewarming", "Graduation", "Get-together", "Corporate Event", "Others"].map(s => (
-                    <button key={s} type="button"
-                      onClick={() => setChatEventForm(p => ({ ...p, eventType: s }))}
-                      style={{ padding: "4px 11px", borderRadius: 100, border: `1.5px solid ${chatEventForm.eventType === s ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: chatEventForm.eventType === s ? "rgba(196,122,46,0.1)" : "transparent", color: chatEventForm.eventType === s ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
+              <div style={{ gridColumn: "1 / -1" }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>What's the occasion? *</label>
+                <select value={chatEventForm.eventType} onChange={e => setChatEventForm(p => ({ ...p, eventType: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.eventType ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
+                  <option value="">Select event type</option>
+                  {["Birthday","1st Birthday","Baby Shower","Newborn Welcome","Get-together","Anniversary","Housewarming","Graduation","Office Party","Pre Wedding","Corporate Event","Festival","Others"].map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
-              <EventIdeasPanel eventType={chatEventForm.eventType} />
+              <EventIdeasPanel eventType={chatEventForm.eventType} style={{ gridColumn: "1 / -1" }} />
               {/* Date */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date</label>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date *</label>
                 <input type="date" value={chatEventForm.date} min={new Date().toISOString().split("T")[0]}
                   onChange={e => setChatEventForm(p => ({ ...p, date: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box", background: "#fff" }} />
               </div>
               {/* Guests */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Guest count</label>
-                <input type="number" placeholder="Approx. number of guests" value={chatEventForm.guests}
-                  onChange={e => setChatEventForm(p => ({ ...p, guests: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-                  {["50", "100", "150", "200", "300+"].map(s => (
-                    <button key={s} type="button"
-                      onClick={() => setChatEventForm(p => ({ ...p, guests: s.replace("+", "") }))}
-                      style={{ padding: "4px 11px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "transparent", color: "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Guest count *</label>
+                <select value={chatEventForm.guests} onChange={e => setChatEventForm(p => ({ ...p, guests: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.guests ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
+                  <option value="">Select guests</option>
+                  {["Under 25","25–50","50–100","100–150","150–200","200–300","300+"].map(g => <option key={g} value={g}>{g}</option>)}
+                </select>
               </div>
               {/* Budget */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Budget</label>
-                <input type="text" placeholder="e.g. ₹50,000 – ₹1,00,000" value={chatEventForm.budget}
-                  onChange={e => setChatEventForm(p => ({ ...p, budget: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-                  {["Under ₹10K", "₹10K–₹30K", "₹30K–₹50K", "₹50K–₹1L", "Over ₹1L"].map(s => (
-                    <button key={s} type="button"
-                      onClick={() => setChatEventForm(p => ({ ...p, budget: s }))}
-                      style={{ padding: "4px 11px", borderRadius: 100, border: `1.5px solid ${chatEventForm.budget === s ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: chatEventForm.budget === s ? "rgba(196,122,46,0.1)" : "transparent", color: chatEventForm.budget === s ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Budget *</label>
+                <select value={chatEventForm.budget} onChange={e => setChatEventForm(p => ({ ...p, budget: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.budget ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
+                  <option value="">Select budget</option>
+                  {["Under ₹10K","₹10K–₹30K","₹30K–₹50K","₹50K–₹1L","Over ₹1L"].map(b => <option key={b} value={b}>{b}</option>)}
+                </select>
+              </div>
+              {/* Location */}
+              <div>
+                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Location *</label>
+                <select value={chatEventForm.location} onChange={e => setChatEventForm(p => ({ ...p, location: e.target.value }))}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.location ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
+                  <option value="">Select city</option>
+                  {["Delhi","Noida","Greater Noida","Ghaziabad","Gurugram","Faridabad"].map(l => <option key={l} value={l}>{l}</option>)}
+                </select>
               </div>
             </div>
             <button
               onClick={() => {
-                const { eventType: et, guests: g, date: d, budget: b } = chatEventForm;
+                const { eventType: et, guests: g, date: d, budget: b, location: loc } = chatEventForm;
                 if (!requireFormBeforeChat) {
                   // Normal/planning flow — persist to Redux so planning state stays in sync
-                  dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, token }));
+                  dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, token }));
                   dispatch(setBookingType("you-do-it"));
                 } else {
                   // Search / top-rated — save locally for subsequent vendors; do NOT touch Redux
-                  setLocalFormData({ eventType: et, guests: g, date: d, budget: b });
+                  setLocalFormData({ eventType: et, guests: g, date: d, budget: b, location: loc });
                 }
-                setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b });
+                setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
                 openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
                 setChatFormVendor(null);
               }}
