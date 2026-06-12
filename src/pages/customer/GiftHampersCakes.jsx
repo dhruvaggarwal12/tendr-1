@@ -266,7 +266,9 @@ const GiftHampersCakes = () => {
   // Non-admin customers see Coming Soon
   if (!user?.isAdmin) {
     return (
-      <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "40px 24px", textAlign: "center" }}>
+      <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
+        <HamburgerNav title="Gift Hampers" />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "80vh", padding: "40px 24px", textAlign: "center" }}>
         <div style={{ fontSize: 64, marginBottom: 20 }}>🎁</div>
         <h1 style={{ fontSize: "clamp(1.6rem,3vw,2.4rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "-0.02em" }}>Gift Hampers & Cakes</h1>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "6px 18px", marginBottom: 20 }}>
@@ -281,6 +283,7 @@ const GiftHampersCakes = () => {
           Back to Home
         </button>
         <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+      </div>
       </div>
     );
   }
