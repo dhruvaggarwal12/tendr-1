@@ -233,8 +233,13 @@ const EventPlanning = () => {
       options: [
         "Get-together",
         "Birthday",
+        "1st Birthday",
+        "Baby Shower",
+        "Newborn Welcome",
         "Office Party",
         "Anniversary",
+        "Housewarming",
+        "Graduation",
         "Rituals",
         "Festival",
         "Others",

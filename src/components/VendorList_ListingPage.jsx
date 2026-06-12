@@ -631,7 +631,7 @@ const VendorList_ListingPage = ({
                   onChange={e => setChatEventForm(p => ({ ...p, eventType: e.target.value }))}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
                 <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-                  {["Birthday", "Anniversary", "Wedding", "Corporate", "Get-together", "Others"].map(s => (
+                  {["Birthday", "1st Birthday", "Baby Shower", "Newborn Welcome", "Anniversary", "Housewarming", "Graduation", "Wedding", "Get-together", "Others"].map(s => (
                     <button key={s} type="button"
                       onClick={() => setChatEventForm(p => ({ ...p, eventType: s }))}
                       style={{ padding: "4px 11px", borderRadius: 100, border: `1.5px solid ${chatEventForm.eventType === s ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: chatEventForm.eventType === s ? "rgba(196,122,46,0.1)" : "transparent", color: chatEventForm.eventType === s ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
