@@ -106,6 +106,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   const handleActiveChats = () => {
     setOpen(false);
+    fetchVendorChats();
     setShowActiveChats(true);
   };
 
@@ -166,15 +167,26 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
             {/* Chat list */}
             <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
-              {vendorChats.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "60px 20px" }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>No active chats</div>
-                  <div style={{ fontSize: 13, color: "#9B7450" }}>Start a chat from any vendor profile.</div>
-                </div>
-              ) : (
+              {(() => {
+                // Merge minimized chat into list if not yet returned by API
+                const minimizedVendorId = chatState?.vendor?._id;
+                const alreadyInList = minimizedVendorId && vendorChats.some(c => {
+                  const cvid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
+                  return String(cvid) === String(minimizedVendorId);
+                });
+                const displayChats = (!alreadyInList && chatState?.vendor && !chatState.isConcierge && chatState?.conversationId)
+                  ? [{ _id: chatState.conversationId, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: false, chatType: "VENDOR", _synthetic: true }, ...vendorChats]
+                  : vendorChats;
+                if (displayChats.length === 0) return (
+                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>No active chats</div>
+                    <div style={{ fontSize: 13, color: "#9B7450" }}>Start a chat from any vendor profile.</div>
+                  </div>
+                );
+                return (
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {vendorChats.map(convo => (
+                  {displayChats.map(convo => (
                     <div
                                       key={convo._id}
                       onClick={() => {
@@ -215,7 +227,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                     </div>
                   ))}
                 </div>
-              )}
+                );
+              })()}
             </div>
           </div>
         </>

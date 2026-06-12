@@ -14,6 +14,7 @@ import PrimaryFilters_ListingPage from "../../components/PrimaryFilters_ListingP
 import SecondaryFilters_ListingPage, { applySecondaryFilters } from "../../components/SecondaryFilters_ListingPage";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
 import React, { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { getVendors } from "../../apis/vendorApi";
 import CompareModal from "../../components/CompareModal";
 import Footer from "../../components/Footer.jsx";
@@ -507,33 +508,32 @@ const VendorList = () => {
                 </button>
 
                 {/* Filters — bottom sheet on mobile, dropdown on desktop */}
+                {/* Desktop dropdown (position: absolute, unaffected by backdrop-filter parent) */}
                 {filtersOpen && (
-                  <>
-                    {/* Backdrop — above bottom nav */}
-                    <div style={{ position: "fixed", inset: 0, zIndex: 99993 }} onClick={() => setFiltersOpen(false)} />
-
-                    {/* Desktop dropdown */}
-                    <div className="filters-desktop-panel" style={{
-                      position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 99994,
-                      width: 320, maxHeight: "70vh", overflowY: "auto",
-                      background: "#fff", borderRadius: 16,
-                      border: "1.5px solid rgba(196,122,46,0.2)",
-                      boxShadow: "0 8px 32px rgba(44,26,14,0.14)",
-                      padding: "18px 20px", fontFamily: "'Outfit', sans-serif",
-                    }}>
-                      <div style={{ marginBottom: 18 }}>
-                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>Service & Location</p>
-                        <PrimaryFilters_ListingPage onSearch={(params) => { handleSearch(params); setFiltersOpen(false); }} allowedServiceTypes={selectedCategories} />
-                      </div>
-                      {serviceType && (
-                        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
-                          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>{serviceType} Filters</p>
-                          <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setSecondaryFilters(f)} />
-                        </div>
-                      )}
+                  <div className="filters-desktop-panel" style={{
+                    position: "absolute", right: 0, top: "calc(100% + 8px)", zIndex: 99994,
+                    width: 320, maxHeight: "70vh", overflowY: "auto",
+                    background: "#fff", borderRadius: 16,
+                    border: "1.5px solid rgba(196,122,46,0.2)",
+                    boxShadow: "0 8px 32px rgba(44,26,14,0.14)",
+                    padding: "18px 20px", fontFamily: "'Outfit', sans-serif",
+                  }}>
+                    <div style={{ marginBottom: 18 }}>
+                      <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>Service & Location</p>
+                      <PrimaryFilters_ListingPage onSearch={(params) => { handleSearch(params); setFiltersOpen(false); }} allowedServiceTypes={selectedCategories} />
                     </div>
-
-                    {/* Mobile bottom sheet — above bottom nav (99990) */}
+                    {serviceType && (
+                      <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>{serviceType} Filters</p>
+                        <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setSecondaryFilters(f)} />
+                      </div>
+                    )}
+                  </div>
+                )}
+                {/* Mobile: portal backdrop + sheet to body to escape backdrop-filter containing block */}
+                {filtersOpen && createPortal(
+                  <>
+                    <div style={{ position: "fixed", inset: 0, zIndex: 99993 }} onClick={() => setFiltersOpen(false)} />
                     <div className="filters-mobile-sheet" style={{
                       position: "fixed", bottom: 60, left: 0, right: 0, zIndex: 99994,
                       background: "#FFFCF5", borderRadius: "20px 20px 0 0",
@@ -542,7 +542,6 @@ const VendorList = () => {
                       fontFamily: "'Outfit', sans-serif",
                       animation: "sheet-up 0.28s cubic-bezier(0.4,0,0.2,1)",
                     }}>
-                      {/* Handle */}
                       <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
                         <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
                       </div>
@@ -563,7 +562,8 @@ const VendorList = () => {
                         )}
                       </div>
                     </div>
-                  </>
+                  </>,
+                  document.body
                 )}
               </div>
             </div>
@@ -578,17 +578,20 @@ const VendorList = () => {
 
           {/* How to book strip — shown for all users */}
           {showHint && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", marginBottom: 16, fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
-              <span style={{ fontSize: 16, flexShrink: 0 }}>💡</span>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500, flexShrink: 0 }}>How to book:</span>
-              {[{ step: "1", label: "Quick View" }, { step: "→" }, { step: "2", label: "Request to Chat" }, { step: "→" }, { step: "3", label: "Finalise Vendor" }, { step: "→" }, { step: "4", label: "Review & Pay" }].map((item, i) =>
-                item.label ? (
-                  <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap" }}>{item.step}. {item.label}</span>
-                ) : (
-                  <span key={i} style={{ color: "rgba(204,171,74,0.4)", fontSize: 11, flexShrink: 0 }}>›</span>
-                )
-              )}
-              <button onClick={() => setShowHint(false)} style={{ marginLeft: "auto", background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 12, width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "10px 14px", marginBottom: 16, fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <span><span style={{ fontSize: 15, marginRight: 5 }}>💡</span><span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>How to book:</span></span>
+                <button onClick={() => setShowHint(false)} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 12, width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+              </div>
+              <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none" }}>
+                {[{ step: "1", label: "Quick View" }, { step: "→" }, { step: "2", label: "Request to Chat" }, { step: "→" }, { step: "3", label: "Finalise Vendor" }, { step: "→" }, { step: "4", label: "Review & Pay" }].map((item, i) =>
+                  item.label ? (
+                    <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0 }}>{item.step}. {item.label}</span>
+                  ) : (
+                    <span key={i} style={{ color: "rgba(204,171,74,0.4)", fontSize: 11, flexShrink: 0, alignSelf: "center" }}>›</span>
+                  )
+                )}
+              </div>
             </div>
           )}
 

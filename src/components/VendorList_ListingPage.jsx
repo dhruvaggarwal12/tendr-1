@@ -552,6 +552,7 @@ const VendorList_ListingPage = ({
                 <button
                   onClick={async () => {
                     if (!token) {
+                      sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
                       navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } });
                       return;
                     }

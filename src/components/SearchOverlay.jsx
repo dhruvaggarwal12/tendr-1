@@ -70,12 +70,29 @@ export default function SearchOverlay({ isOpen, onClose }) {
   const navigate = useNavigate();
   const [q, setQ] = useState("");
   const inputRef = useRef(null);
+  const [vpHeight, setVpHeight] = useState(() => window.visualViewport?.height ?? window.innerHeight);
+  const [vpTop, setVpTop] = useState(() => window.visualViewport?.offsetTop ?? 0);
 
   useEffect(() => {
     if (isOpen) {
       setQ("");
       setTimeout(() => inputRef.current?.focus(), 80);
     }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const update = () => {
+      setVpHeight(window.visualViewport?.height ?? window.innerHeight);
+      setVpTop(window.visualViewport?.offsetTop ?? 0);
+    };
+    update();
+    window.visualViewport?.addEventListener("resize", update);
+    window.visualViewport?.addEventListener("scroll", update);
+    return () => {
+      window.visualViewport?.removeEventListener("resize", update);
+      window.visualViewport?.removeEventListener("scroll", update);
+    };
   }, [isOpen]);
 
   if (!isOpen) return null;
@@ -107,7 +124,7 @@ export default function SearchOverlay({ isOpen, onClose }) {
 
   return (
     <div
-      style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", flexDirection: "column" }}
+      style={{ position: "fixed", top: vpTop, left: 0, right: 0, height: vpHeight, zIndex: 10000, background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)", display: "flex", flexDirection: "column" }}
       onClick={onClose}
     >
       {/* Search box */}

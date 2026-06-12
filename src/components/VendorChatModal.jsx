@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import router from "../router";
 import { io } from "socket.io-client";
-import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION, CHAT_PACKAGES } from "../utils/chatbot";
+import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION, CHAT_PACKAGES, buildSummaryMessage } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
 import { getVendorAvailability, holdVendorSlot } from "../apis/vendorApi";
 import { useChatOverlay } from "../context/ChatContext";
@@ -422,6 +422,7 @@ export default function VendorChatModal() {
   const [showPkgStep, setShowPkgStep] = useState(false);
   const [pkgExpanded, setPkgExpanded] = useState({});
   const [selectedPkg, setSelectedPkg] = useState(null);
+  const [confirmedPkg, setConfirmedPkg] = useState(null);
   const chatPackages = CHAT_PACKAGES[vendor?.serviceType] || [];
 
   // Photo reference step (Decorator only)
@@ -497,6 +498,7 @@ export default function VendorChatModal() {
     // Reset package step for every new vendor chat
     setShowPkgStep(false);
     setSelectedPkg(null);
+    setConfirmedPkg(null);
     setPkgExpanded({});
 
     // Auto-add to Compare Vendors whenever a real vendor chat opens
@@ -579,20 +581,7 @@ export default function VendorChatModal() {
 
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
         summarySentRef.current = true;
-        const flow = getBotFlow(vendor?.serviceType);
-        const qaLines = flow
-          .filter(s => botAnswersRef.current[s.key])
-          .map(s => `Q: ${s.question}\nA: ${botAnswersRef.current[s.key]}`);
-        const fd = reduxFormData;
-        const fullMsg = [
-          "📋 Chat Request Details", "──────────────────",
-          fd.eventType ? `Event: ${fd.eventType}` : null,
-          fd.date      ? `Date: ${fd.date}` : null,
-          fd.guests    ? `Guests: ${fd.guests}` : null,
-          fd.budget    ? `Budget: ${fd.budget}` : null,
-          fd.location  ? `City: ${fd.location}` : null,
-          qaLines.length ? `\nYour Answers:\n${qaLines.join("\n\n")}` : null,
-        ].filter(Boolean).join("\n");
+        const fullMsg = buildSummaryMessage(reduxFormData, botAnswersRef.current, vendor?.name, vendor?.serviceType);
         setTimeout(() => {
           socket.emit("send_message", { conversationId: _id, sender: "user", content: fullMsg });
         }, 400);
@@ -661,9 +650,8 @@ export default function VendorChatModal() {
     if (botStep + 1 < botFlow.length) {
       setBotStep(p => p + 1);
     } else if (shouldShowPkgStep) {
-      // Show package selection before opening chat
-      setBotAnswers(newAnswers);
-      botAnswersRef.current = newAnswers;
+      // Advance step so the last answer (address) renders as a completed QA bubble
+      setBotStep(p => p + 1);
       setShowPkgStep(true);
     } else {
       setBotDone(true);
@@ -673,10 +661,12 @@ export default function VendorChatModal() {
   };
 
   const handlePkgConfirm = (tier) => {
+    const pkgLabel = tier ? `${tier} Package` : null;
     const answersWithPkg = { ...botAnswersRef.current, selectedPackage: tier ? `${tier} Package — ${chatPackages.find(p => p.tier === tier)?.desc || ""}` : null };
     setBotAnswers(answersWithPkg);
     botAnswersRef.current = answersWithPkg;
     setSelectedPkg(tier);
+    setConfirmedPkg(pkgLabel);
     setShowPkgStep(false);
     if (vendor?.serviceType === 'Decorator') {
       setShowPhotoStep(true);
@@ -1094,6 +1084,14 @@ export default function VendorChatModal() {
                   Skip
                 </button>
               </div>
+            </div>
+          )}
+
+          {/* Package selection confirmed bubble */}
+          {confirmedPkg && !showPkgStep && !approved && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ alignSelf: "flex-start", maxWidth: "80%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "9px 13px", boxShadow: "0 1px 5px rgba(0,0,0,0.05)", fontSize: 13, color: "#1a1a1a" }}>📦 Which package suits your needs?</div>
+              <div style={{ alignSelf: "flex-end", maxWidth: "80%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: "16px 16px 4px 16px", padding: "9px 13px", fontSize: 13, color: "#fff", fontWeight: 600 }}>{confirmedPkg}</div>
             </div>
           )}
 
