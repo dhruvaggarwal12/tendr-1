@@ -46,13 +46,16 @@ const CAT_LABELS = {
   "my-story":   "My Event Story",
 };
 
-const LIKE_KEY  = "tendr_hub_liked";
-const POSTS_KEY = "tendr_hub_user_posts";
+const LIKE_KEY   = "tendr_hub_liked";
+const POSTS_KEY  = "tendr_hub_user_posts";
+const REACT_KEY  = "tendr_hub_reactions";
 
-function loadLiked()      { try { return new Set(JSON.parse(localStorage.getItem(LIKE_KEY)  || "[]")); } catch { return new Set(); } }
-function loadUserPosts()  { try { return JSON.parse(localStorage.getItem(POSTS_KEY) || "[]");           } catch { return []; } }
-function saveLiked(set)   { try { localStorage.setItem(LIKE_KEY,  JSON.stringify([...set])); } catch {} }
-function saveUserPosts(p) { try { localStorage.setItem(POSTS_KEY, JSON.stringify(p));        } catch {} }
+function loadLiked()        { try { return new Set(JSON.parse(localStorage.getItem(LIKE_KEY)   || "[]")); } catch { return new Set(); } }
+function loadUserPosts()    { try { return JSON.parse(localStorage.getItem(POSTS_KEY)  || "[]");           } catch { return []; } }
+function loadReactions()    { try { return JSON.parse(localStorage.getItem(REACT_KEY)  || "{}");           } catch { return {}; } }
+function saveLiked(set)     { try { localStorage.setItem(LIKE_KEY,   JSON.stringify([...set])); } catch {} }
+function saveUserPosts(p)   { try { localStorage.setItem(POSTS_KEY,  JSON.stringify(p));        } catch {} }
+function saveReactions(r)   { try { localStorage.setItem(REACT_KEY,  JSON.stringify(r));        } catch {} }
 
 // Merge static + user-created posts, deduplicate by id
 function buildAllPosts(userPosts) {
@@ -65,27 +68,34 @@ function buildAllPosts(userPosts) {
   });
 }
 
-// ── Reaction bar (read-only display) ───────────────────────────────────────
-function ReactionBar({ reactions }) {
-  const items = [
-    { label: "Agree",      count: reactions.agree,     emoji: "👍" },
-    { label: "Faced this", count: reactions.facedThis, emoji: "🙋" },
-    { label: "Great idea", count: reactions.greatIdea, emoji: "💡" },
-    { label: "Love this",  count: reactions.loveThis,  emoji: "❤️" },
-  ];
+// ── Reaction bar (interactive) ─────────────────────────────────────────────
+const REACTION_ITEMS = [
+  { key: "agree",     label: "Agree",      emoji: "👍" },
+  { key: "facedThis", label: "Faced this", emoji: "🙋" },
+  { key: "greatIdea", label: "Great idea", emoji: "💡" },
+  { key: "loveThis",  label: "Love this",  emoji: "❤️" },
+];
+
+function ReactionBar({ reactions, userReaction, onReact }) {
   return (
-    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
-      {items.filter(i => i.count).map(({ label, count, emoji }) => (
-        <span key={label} style={{ fontSize: 11, color: "#9B7450", background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.15)", borderRadius: 100, padding: "3px 10px", display: "flex", alignItems: "center", gap: 4 }}>
-          {emoji} {count.toLocaleString()} {label}
-        </span>
-      ))}
+    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
+      {REACTION_ITEMS.map(({ key, label, emoji }) => {
+        const base  = reactions?.[key] || 0;
+        const count = base + (userReaction === key ? 1 : 0);
+        const active = userReaction === key;
+        return (
+          <button key={key} onClick={() => onReact(key)}
+            style={{ fontSize: 11, color: active ? "#fff" : "#9B7450", background: active ? GOLD : "rgba(196,122,46,0.07)", border: `1px solid ${active ? GOLD : "rgba(196,122,46,0.15)"}`, borderRadius: 100, padding: "5px 10px", display: "flex", alignItems: "center", gap: 4, cursor: "pointer", fontFamily: font, touchAction: "manipulation", transition: "all 0.15s", fontWeight: active ? 700 : 500 }}>
+            {emoji} {count > 0 ? count.toLocaleString() : ""} {label}
+          </button>
+        );
+      })}
     </div>
   );
 }
 
 // ── Single post card ────────────────────────────────────────────────────────
-function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment }) {
+function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userReaction, onReact }) {
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
@@ -147,7 +157,13 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment }) {
         </div>
       </div>
 
-      {post.reactions && <ReactionBar reactions={post.reactions} />}
+      {post.reactions && (
+        <ReactionBar
+          reactions={post.reactions}
+          userReaction={userReaction}
+          onReact={(type) => onReact(post.id || post._id, type)}
+        />
+      )}
 
       {/* Comments section */}
       {showComments && (
@@ -302,11 +318,12 @@ export default function CelebrationHub() {
   const { user, token } = useSelector((s) => s.auth);
   const isAdmin = !!user?.isAdmin;
 
-  const [activeTab,   setActiveTab]   = useState("all");
-  const [likedIds,    setLikedIds]    = useState(loadLiked);
-  const [userPosts,   setUserPosts]   = useState(loadUserPosts);
-  const [removedIds,  setRemovedIds]  = useState(new Set());
-  const [showNewPost, setShowNewPost] = useState(false);
+  const [activeTab,     setActiveTab]     = useState("all");
+  const [likedIds,      setLikedIds]      = useState(loadLiked);
+  const [userPosts,     setUserPosts]     = useState(loadUserPosts);
+  const [userReactions, setUserReactions] = useState(loadReactions);
+  const [removedIds,    setRemovedIds]    = useState(new Set());
+  const [showNewPost,   setShowNewPost]   = useState(false);
 
   // Merge static + user posts, exclude removed
   const allPosts = buildAllPosts(userPosts).filter(p => !removedIds.has(String(p.id || p._id)));
@@ -343,6 +360,17 @@ export default function CelebrationHub() {
       })
       .catch(() => {});
   }, []);
+
+  // Handle reaction toggle (one reaction type per post; clicking same type removes it)
+  const handleReact = (postId, reactionType) => {
+    const id = String(postId);
+    setUserReactions(prev => {
+      const next = { ...prev };
+      next[id] = next[id] === reactionType ? null : reactionType;
+      saveReactions(next);
+      return next;
+    });
+  };
 
   // Handle like toggle
   const handleLike = (postId) => {
@@ -512,6 +540,8 @@ export default function CelebrationHub() {
                     onRemove={handleRemove}
                     isAdmin={isAdmin}
                     onAddComment={handleAddComment}
+                    userReaction={userReactions[String(post.id || post._id)] || null}
+                    onReact={handleReact}
                   />
                 ))
             }
@@ -532,6 +562,8 @@ export default function CelebrationHub() {
                     onRemove={handleRemove}
                     isAdmin={isAdmin}
                     onAddComment={handleAddComment}
+                    userReaction={userReactions[String(post.id || post._id)] || null}
+                    onReact={handleReact}
                   />
                 ))}
               </div>
@@ -556,6 +588,8 @@ export default function CelebrationHub() {
                     onRemove={handleRemove}
                     isAdmin={isAdmin}
                     onAddComment={handleAddComment}
+                    userReaction={userReactions[String(post.id || post._id)] || null}
+                    onReact={handleReact}
                   />
                 ))}
               </div>

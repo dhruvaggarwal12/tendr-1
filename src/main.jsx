@@ -4,6 +4,7 @@ import App from './App.jsx'
 import { Provider } from 'react-redux'
 import store from './store.js'
 import { setupGlobalErrorHandling } from './utils/errorHandler.js'
+import './utils/inactivityCleanup.js'  // must run before store.js so slices see cleared localStorage
 import './index.css'
 
 // Setup global error handling

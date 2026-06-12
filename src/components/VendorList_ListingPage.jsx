@@ -7,12 +7,27 @@ import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice
 import { EventIdeasPanel } from "../utils/eventIdeas";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
-const CHAT_TTL_MS = 24 * 60 * 60 * 1000;
 const chatSaveKey = (id) => `tendr:chat_req:${id}`;
 const getChatSave = (id) => {
   try {
     const s = JSON.parse(localStorage.getItem(chatSaveKey(id)) || "null");
-    return s && Date.now() - s.submittedAt < CHAT_TTL_MS ? s : null;
+    if (!s) return null;
+    if (s.date) {
+      // Keep until the day after the event date (gives the user the full event day)
+      const expiry = new Date(s.date);
+      expiry.setDate(expiry.getDate() + 1);
+      if (Date.now() > expiry.getTime()) {
+        localStorage.removeItem(chatSaveKey(id));
+        return null;
+      }
+    } else {
+      // No event date set — fallback: keep for 30 days
+      if (Date.now() - (s.submittedAt || 0) > 30 * 24 * 60 * 60 * 1000) {
+        localStorage.removeItem(chatSaveKey(id));
+        return null;
+      }
+    }
+    return s;
   } catch { return null; }
 };
 const setChatSave = (id, data) => {
