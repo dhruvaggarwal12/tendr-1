@@ -1160,6 +1160,77 @@ export default function VendorChatModal() {
                   ))}
                 </div>
               </div>
+              {/* Chat Request Details card */}
+              {(() => {
+                const hasNewData = Object.keys(botAnswers).length > 0;
+                const summaryMsg = !hasNewData
+                  ? messages.find(m => m.sender === "user" && m.text?.startsWith("📋"))
+                  : null;
+                if (!hasNewData && !summaryMsg) return null;
+
+                // Package details for new chats
+                const pkgTier = confirmedPkg?.replace(" Package", "");
+                const pkgData = pkgTier ? chatPackages.find(p => p.tier === pkgTier) : null;
+
+                return (
+                  <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 14, padding: "14px 16px", maxWidth: 320, textAlign: "left", width: "100%", boxShadow: "0 4px 16px rgba(44,26,14,0.3)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 8, display: "flex", alignItems: "center", gap: 6 }}>
+                      📋 Chat Request Details
+                    </div>
+                    <div style={{ height: 1, background: "rgba(255,255,255,0.12)", marginBottom: 10 }} />
+
+                    {hasNewData ? (
+                      <>
+                        {/* Form details */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 10 }}>
+                          {[
+                            fd.eventType && `Event: ${fd.eventType}`,
+                            fd.date      && `Date: ${fd.date}`,
+                            fd.guests    && `Guests: ${fd.guests}`,
+                            fd.budget    && `Budget: ${fd.budget}`,
+                            fd.location  && `City: ${fd.location}`,
+                          ].filter(Boolean).map((line, i) => (
+                            <div key={i} style={{ fontSize: 12, color: "rgba(255,255,255,0.82)" }}>{line}</div>
+                          ))}
+                        </div>
+
+                        {/* Wizard Q&A */}
+                        {botFlow.filter(s => botAnswers[s.key]).length > 0 && (
+                          <div style={{ marginBottom: 10 }}>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>Your Answers</div>
+                            {botFlow.filter(s => botAnswers[s.key]).map(s => (
+                              <div key={s.key} style={{ marginBottom: 7 }}>
+                                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.4 }}>Q: {s.question}</div>
+                                <div style={{ fontSize: 12, color: "#CCAB4A", fontWeight: 600, lineHeight: 1.4 }}>A: {botAnswers[s.key]}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Package with items */}
+                        {confirmedPkg && (
+                          <div style={{ background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 8, padding: "8px 10px" }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#CCAB4A", marginBottom: pkgData?.items?.length ? 6 : 0 }}>📦 {confirmedPkg}</div>
+                            {pkgData?.items?.length > 0 && (
+                              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                                {pkgData.items.map(item => (
+                                  <span key={item} style={{ fontSize: 10, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", borderRadius: 4, padding: "2px 7px" }}>• {item}</span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      // Existing chat: show parsed summary message (skip first 2 header lines)
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.82)", whiteSpace: "pre-wrap", lineHeight: 1.7 }}>
+                        {summaryMsg.text.split("\n").slice(2).join("\n").trim()}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {/* Install App highlight */}
               <a href="https://tendr-1.vercel.app" target="_blank" rel="noopener noreferrer"
                 onClick={e => { e.preventDefault(); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }}
@@ -1296,8 +1367,8 @@ export default function VendorChatModal() {
                   </div>
                 );
               })()}
-              {/* Action buttons row — hint on left, buttons on right */}
-              {(
+              {/* Action buttons row — only after chat is approved */}
+              {approved && (
                 <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                   {!chatCompleted ? (
                     <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600, borderLeft: "3px solid #C47A2E", paddingLeft: 8, lineHeight: 1.4 }}>
