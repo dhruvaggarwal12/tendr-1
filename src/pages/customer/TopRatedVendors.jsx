@@ -83,7 +83,7 @@ function QuickEventForm({ vendor, onClose, onSubmit }) {
             <label style={labelCls}>Event Type *</label>
             <select name="eventType" value={form.eventType} onChange={change} style={inputCls("eventType")}>
               <option value="">Select</option>
-              {["Get-together","Birthday","1st Birthday","Baby Shower","Newborn Welcome","Office Party","Concert","Anniversary","Housewarming","Graduation","Pre Wedding","Rituals","Festival","Others"].map(t => <option key={t}>{t}</option>)}
+              {["Get-together","Birthday","1st Birthday","Baby Shower","Newborn Welcome","Office Party","Anniversary","Housewarming","Graduation","Pre Wedding","Festival","Corporate Event","Others"].map(t => <option key={t}>{t}</option>)}
             </select>
             {errors.eventType && <p style={{ fontSize: 11, color: "#c0392b", margin: "3px 0 0" }}>{errors.eventType}</p>}
           </div>

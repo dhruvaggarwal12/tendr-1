@@ -597,7 +597,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   <select required value={savedMiniForm.eventType} onChange={e => setSavedMiniForm(p => ({ ...p, eventType: e.target.value }))}
                     style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", background: "#fff" }}>
                     <option value="">Select event type</option>
-                    {["Birthday", "1st Birthday", "Baby Shower", "Newborn Welcome", "Anniversary", "Housewarming", "Graduation", "Pre Wedding", "Get-together", "Office Party", "Festival", "Others"].map(t => <option key={t} value={t}>{t}</option>)}
+                    {["Birthday", "1st Birthday", "Baby Shower", "Newborn Welcome", "Anniversary", "Housewarming", "Graduation", "Pre Wedding", "Get-together", "Office Party", "Festival", "Corporate Event", "Others"].map(t => <option key={t} value={t}>{t}</option>)}
                   </select>
                 </div>
                 <div>
