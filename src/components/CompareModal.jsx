@@ -9,7 +9,11 @@ const CompareModal = ({ open, onClose, vendors = [] }) => {
   const [fullVendors, setFullVendors] = useState(vendors);
 
   useEffect(() => {
-    if (!open || vendors.length < 2) return;
+    if (!open || vendors.length < 2) {
+      setLoading(false);
+      if (vendors.length >= 1) setFullVendors(vendors);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     Promise.all(
