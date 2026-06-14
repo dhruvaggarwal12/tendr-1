@@ -90,9 +90,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     })
       .then((r) => r.ok ? r.json() : { conversations: [] })
       .then((data) => {
-        // Show all non-rejected chats regardless of approval state or chat type
+        // Show vendor + concierge chats only — exclude support (MiniChatWidget creates support conversations)
         const active = (data.conversations || []).filter(
-          (c) => !c.chatRejected && c.chatType !== undefined
+          (c) => !c.chatRejected && c.chatType !== undefined && c.chatType !== "support"
         );
         setVendorChats(active);
       })
