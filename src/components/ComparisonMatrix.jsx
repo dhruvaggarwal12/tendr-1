@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import router from "../router";
 import { useChatOverlay } from "../context/ChatContext";
 
@@ -105,9 +105,79 @@ function StatRow({ values, winIdx, icon }) {
   );
 }
 
+// ── Mobile card (used when n≥3 on narrow screens) ────────────────────────────
+function MobileVendorCard({ v, isBestPrice, isBestRating, openVendorChat }) {
+  const photo    = getPhoto(v);
+  const rating   = getRating(v);
+  const reviews  = getReviews(v);
+  const price    = getPrice(v);
+  const verified = getVerified(v);
+  const loc      = getLocation(v);
+  const exp      = getExp(v);
+  const events   = getEvents(v);
+  const team     = getTeam(v);
+  const spec     = getSpeciality(v);
+
+  return (
+    <div style={{ background: "#FFFCF7", borderRadius: 14, border: `1.5px solid ${isBestPrice || isBestRating ? "rgba(201,168,76,0.45)" : "rgba(201,168,76,0.18)"}`, overflow: "hidden", fontFamily: font, boxShadow: "0 2px 10px rgba(28,10,0,0.07)" }}>
+      {/* Photo */}
+      <div style={{ position: "relative", height: 110, overflow: "hidden" }}>
+        <img src={photo || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=80"} alt={getName(v)} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)" }} />
+        {verified && <span style={{ position: "absolute", top: 6, left: 6, fontSize: 9, fontWeight: 700, background: "rgba(21,128,61,0.92)", color: "#fff", padding: "2px 6px", borderRadius: 20 }}>✓ Verified</span>}
+        <div style={{ position: "absolute", bottom: 6, right: 6, display: "flex", flexDirection: "column", gap: 2, alignItems: "flex-end" }}>
+          {isBestRating && <span style={{ fontSize: 8, fontWeight: 700, background: "#C9A84C", color: "#fff", padding: "2px 6px", borderRadius: 20 }}>Top Rated</span>}
+          {isBestPrice  && <span style={{ fontSize: 8, fontWeight: 700, background: "#15803d", color: "#fff", padding: "2px 6px", borderRadius: 20 }}>Best Price</span>}
+        </div>
+      </div>
+
+      {/* Name + rating */}
+      <div style={{ padding: "8px 10px 6px" }}>
+        <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", marginBottom: 3, lineHeight: 1.3, wordBreak: "break-word" }}>{getName(v)}</div>
+        <Stars rating={rating} />
+        {reviews != null && <div style={{ fontSize: 9, color: "#9B7450", marginTop: 2 }}>{reviews} review{reviews !== 1 ? "s" : ""}</div>}
+      </div>
+
+      {/* Price */}
+      <div style={{ margin: "0 8px 8px", padding: "5px 8px", borderRadius: 7, textAlign: "center", background: isBestPrice ? "rgba(21,128,61,0.07)" : "rgba(201,168,76,0.06)", border: `1.5px solid ${isBestPrice ? "rgba(21,128,61,0.25)" : "rgba(201,168,76,0.2)"}` }}>
+        <div style={{ fontSize: 8, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 1 }}>Starting at</div>
+        <div style={{ fontSize: 13, fontWeight: 900, color: isBestPrice ? "#15803d" : "#C9A84C" }}>
+          {price != null ? fmtINR(price) : <span style={{ color: "#bbb", fontSize: 10 }}>Quote on chat</span>}
+        </div>
+      </div>
+
+      {/* Key stats */}
+      <div style={{ padding: "0 8px 8px", display: "flex", flexDirection: "column", gap: 4 }}>
+        {loc  && <div style={{ fontSize: 10, color: "#5A3A1A" }}>📍 {loc}</div>}
+        {spec && <div style={{ fontSize: 10, color: "#5A3A1A", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>🌟 {spec}</div>}
+        {exp  != null && <div style={{ fontSize: 10, color: "#5A3A1A" }}>⏱ {exp} yrs exp</div>}
+        {events != null && <div style={{ fontSize: 10, color: "#5A3A1A" }}>🎉 {events}+ events</div>}
+        {team != null && <div style={{ fontSize: 10, color: "#5A3A1A" }}>👥 Team of {team}</div>}
+      </div>
+
+      {/* CTAs */}
+      <div style={{ padding: "6px 8px 10px", display: "flex", flexDirection: "column", gap: 5 }}>
+        <button onClick={() => openVendorChat(v)} style={{ width: "100%", padding: "8px 4px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, fontFamily: font, cursor: "pointer", touchAction: "manipulation" }}>
+          Request Chat →
+        </button>
+        <button onClick={() => router.navigate(`/vendor/${v._id}`)} style={{ width: "100%", padding: "7px 4px", borderRadius: 8, border: "1.5px solid rgba(201,168,76,0.35)", background: "transparent", color: "#9B7450", fontSize: 11, fontWeight: 600, fontFamily: font, cursor: "pointer", touchAction: "manipulation" }}>
+          View Profile
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main ─────────────────────────────────────────────────────────────────────
 const ComparisonMatrix = ({ vendors = [] }) => {
   const { openVendorChat } = useChatOverlay();
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" ? window.innerWidth < 640 : false);
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
 
   if (!vendors.length) return null;
 
@@ -129,6 +199,25 @@ const ComparisonMatrix = ({ vendors = [] }) => {
   const bestExpIdx    = winnerIndex(exps,         "high");
   const bestEventsIdx = winnerIndex(events,       "high");
   const bestSlotsIdx  = winnerIndex(availability, "high");
+
+  // Mobile layout: stacked 2-column card grid — no horizontal scrolling
+  if (isMobile && n >= 3) {
+    return (
+      <div style={{ fontFamily: font, padding: "4px 2px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {vendors.map((v, i) => (
+            <MobileVendorCard
+              key={v?._id || i}
+              v={v}
+              isBestPrice={i === bestPriceIdx  && getPrice(v)   != null}
+              isBestRating={i === bestRatingIdx && getRating(v) != null}
+              openVendorChat={openVendorChat}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ fontFamily: font, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>

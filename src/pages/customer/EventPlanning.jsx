@@ -168,6 +168,11 @@ const EventPlanning = () => {
     return () => clearInterval(t);
   }, [planSubmitted, confirmedPlan?._id]);
 
+  // Scroll to top whenever the smart plan screen opens
+  useEffect(() => {
+    if (showVendorScreen && smartPlan) window.scrollTo({ top: 0, behavior: "instant" });
+  }, [showVendorScreen, !!smartPlan]);
+
   const dispatch = useDispatch();
   const {
     currentStep,
@@ -794,18 +799,11 @@ const EventPlanning = () => {
                 {formData?.date && <span>📅 {formData.date}</span>}
                 {formData?.guests && <span>👥 {formData.guests} guests</span>}
               </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-                {currentVendors.filter(cv => cv.vendor).map(cv => (
-                  <span key={cv.category} style={{ fontSize: 12, fontWeight: 700, padding: "3px 12px", borderRadius: 100, background: "rgba(204,171,74,0.15)", color: "#CCAB4A", border: "1px solid rgba(204,171,74,0.25)" }}>
-                    {CAT_EMOJI_MAP[cv.category] || "🏷"} {cv.vendor.name}
-                  </span>
-                ))}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", gap: 8, paddingBottom: 2, msOverflowStyle: "none", scrollbarWidth: "none" }}>
                 {currentVendors.map(({ category, estimatedCost }) => (
-                  <div key={category} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 10, padding: "7px 14px", border: "1px solid rgba(255,255,255,0.1)" }}>
-                    <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", fontWeight: 600, marginBottom: 2 }}>{CAT_EMOJI_MAP[category]} {category}</div>
-                    <div style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A" }}>{fmt(estimatedCost)}</div>
+                  <div key={category} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 10, padding: "6px 12px", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0, display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{CAT_EMOJI_MAP[category]} {category}</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A" }}>{fmt(estimatedCost)}</span>
                   </div>
                 ))}
               </div>
@@ -873,23 +871,28 @@ const EventPlanning = () => {
 
           {/* How to book strip — smart planning */}
           <div style={{ width: "100%", maxWidth: 1100, marginBottom: 14 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
-              <span style={{ fontSize: 16, flexShrink: 0 }}>💡</span>
-              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500, flexShrink: 0 }}>How this works:</span>
-              {[{ step: "1", label: "Quick View" }, { step: "→" }, { step: "2", label: "Confirm Package" }, { step: "→" }, { step: "3", label: "Team Coordinates" }, { step: "→" }, { step: "4", label: "Review & Pay" }].map((item, i) =>
-                item.label ? <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap" }}>{item.step}. {item.label}</span>
-                : <span key={i} style={{ color: "rgba(204,171,74,0.4)", fontSize: 11, flexShrink: 0 }}>›</span>
-              )}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{ fontSize: 15 }}>💡</span>
+                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>How it works:</span>
+              </div>
+              <div style={{ display: "flex", gap: 6, flexWrap: "nowrap", overflowX: "auto", paddingBottom: 2, msOverflowStyle: "none", scrollbarWidth: "none" }}>
+                {["Quick View", "Confirm Package", "Coordinate", "Review & Pay"].map((label, i) => (
+                  <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 11, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0 }}>
+                    {i + 1}. {label}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
           {/* Vendor cards — 4-column compact, normal flow style */}
-          <style>{`@media(max-width:900px){.smart-vendor-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:540px){.smart-vendor-grid{grid-template-columns:1fr!important}}`}</style>
-          <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 24 }} className="smart-vendor-grid">
+          <style>{`@media(max-width:900px){.smart-vendor-grid{grid-template-columns:repeat(2,1fr)!important}}@media(max-width:540px){.smart-vendor-grid{grid-template-columns:repeat(2,1fr)!important}}`}</style>
+          <div style={{ width: "100%", maxWidth: 1100, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 24 }} className="smart-vendor-grid">
             {currentVendors.map(({ category, estimatedCost, vendor, totalVendors }) => (
-              <div key={category} style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 2px 12px rgba(196,122,46,0.08)", display: "flex", flexDirection: "column" }}>
+              <div key={category} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 2px 10px rgba(196,122,46,0.07)", display: "flex", flexDirection: "column" }}>
                 {/* Photo */}
-                <div style={{ position: "relative", height: 140, background: "#f3ebe0", overflow: "hidden" }}>
+                <div style={{ position: "relative", height: 110, background: "#f3ebe0", overflow: "hidden" }}>
                   {vendor?.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor?.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</div>}
                   {/* Category + budget badges */}
                   <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 5 }}>
@@ -907,22 +910,22 @@ const EventPlanning = () => {
                   )}
                 </div>
                 {vendor ? (
-                  <div style={{ padding: "11px 13px 13px", flex: 1, display: "flex", flexDirection: "column" }}>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
-                      {vendor.avgReviewScore > 0 && <span style={{ fontSize: 10.5, color: "#CCAB4A", fontWeight: 700 }}>⭐ {vendor.avgReviewScore.toFixed(1)}</span>}
-                      {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 10.5, color: "#9B7450" }}>⏱ {vendor.yearsOfExperience}y</span>}
-                      {vendor.teamSize > 0 && <span style={{ fontSize: 10.5, color: "#9B7450" }}>👥 {vendor.teamSize}</span>}
-                      {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 10, background: "rgba(196,122,46,0.08)", color: "#7A4A1A", borderRadius: 100, padding: "1px 6px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+</span>}
+                  <div style={{ padding: "8px 10px 10px", flex: 1, display: "flex", flexDirection: "column" }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
+                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 5 }}>
+                      {vendor.avgReviewScore > 0 && <span style={{ fontSize: 10, color: "#CCAB4A", fontWeight: 700 }}>⭐ {vendor.avgReviewScore.toFixed(1)}</span>}
+                      {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 10, color: "#9B7450" }}>⏱ {vendor.yearsOfExperience}y</span>}
+                      {vendor.teamSize > 0 && <span style={{ fontSize: 10, color: "#9B7450" }}>👥 {vendor.teamSize}</span>}
+                      {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 9.5, background: "rgba(196,122,46,0.08)", color: "#7A4A1A", borderRadius: 100, padding: "1px 5px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+</span>}
                     </div>
-                    {vendor.locations?.length > 0 && <div style={{ fontSize: 10.5, color: "#9B7450", marginBottom: 8 }}>📍 {vendor.locations.slice(0, 2).join(", ")}</div>}
-                    <div style={{ marginTop: "auto", display: "flex", gap: 6 }}>
+                    {vendor.locations?.length > 0 && <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 7 }}>📍 {vendor.locations.slice(0, 2).join(", ")}</div>}
+                    <div style={{ marginTop: "auto", display: "flex", gap: 5 }}>
                       <button onClick={() => openQuickView(vendor)}
-                        style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", touchAction: "manipulation" }}>
                         Quick View
                       </button>
                       <button onClick={() => openProfile(vendor)}
-                        style={{ flex: 1, padding: "8px 0", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                        style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", touchAction: "manipulation" }}>
                         Profile
                       </button>
                     </div>
