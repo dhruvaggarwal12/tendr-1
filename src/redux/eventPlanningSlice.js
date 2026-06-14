@@ -68,13 +68,24 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { saveUserEventData, loadUserEventData } from "../apis/userApi";
 const LOGOUT_TYPE = 'auth/logout/fulfilled';
 
-/** Load saved event data from backend on login */
+const BACKEND_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/** Load saved event data from backend on login — respects 24h TTL */
 export const fetchEventData = createAsyncThunk(
   "eventPlanning/fetchEventData",
   async (token, { rejectWithValue }) => {
     try {
-      const formData = await loadUserEventData(token);
-      return formData;
+      const data = await loadUserEventData(token);
+      if (!data) return null;
+      // Check 24h TTL stamped at save time
+      if (data.__savedAt && Date.now() - data.__savedAt > BACKEND_TTL_MS) {
+        // Expired — clear from backend and don't restore
+        saveUserEventData(token, {});
+        return null;
+      }
+      // Strip the internal timestamp before merging into Redux state
+      const { __savedAt, ...formData } = data;
+      return Object.keys(formData).length ? formData : null;
     } catch (err) {
       return rejectWithValue(err?.message);
     }
@@ -85,7 +96,8 @@ let _saveTimer = null;
 const debouncedSaveToBackend = (formData, token) => {
   if (!token) return;
   clearTimeout(_saveTimer);
-  _saveTimer = setTimeout(() => saveUserEventData(token, formData), 1500);
+  // Include __savedAt so the TTL can be enforced when data is loaded on next login
+  _saveTimer = setTimeout(() => saveUserEventData(token, { ...formData, __savedAt: Date.now() }), 1500);
 };
 
 const loadFormData = () => {
