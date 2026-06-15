@@ -1318,72 +1318,84 @@ const Home = () => {
 
       {/* ── Wedding Stationeries Section ── */}
       {(() => {
-        const STAT_CATEGORIES = [
+        const STAT_CATS = [
           {
             icon: "📋",
             label: "Itineraries",
-            color: "#5C6BC0",
-            bg: "linear-gradient(135deg,#3949AB,#5C6BC0)",
-            items: ["A5 Leaf Itinerary", "Single Fold", "2-Fold with Key Holder", "3-Fold with Key Holder", "Newspaper Style (4 Pages)"],
+            sub: "5 styles available",
             from: "From ₹650",
+            bg: "linear-gradient(145deg,#1E2B6E 0%,#3949AB 50%,#5C6BC0 100%)",
+            accentLight: "rgba(92,107,192,0.15)",
+            desc: "A5 Leaf · Single Fold · 2-Fold · 3-Fold · Newspaper Style",
           },
           {
             icon: "💌",
-            label: "Invitations & Envelopes",
-            color: "#C47A2E",
-            bg: "linear-gradient(135deg,#7A4A1E,#C47A2E)",
-            items: ["Pull-Out Invitations", "Open Door Invitations", "Roll-Up Invitations", "Money Envelopes ₹750", "Gold Foiling Envelopes"],
+            label: "Invitations",
+            sub: "3 premium styles",
             from: "Price on request",
+            bg: "linear-gradient(145deg,#5C2500 0%,#9B4A1E 50%,#C47A2E 100%)",
+            accentLight: "rgba(196,122,46,0.15)",
+            desc: "Pull-Out · Open Door · Roll-Up — luxury personalised designs",
           },
           {
             icon: "🎀",
             label: "Guest Accessories",
-            color: "#C2607C",
-            bg: "linear-gradient(135deg,#9C3B55,#C2607C)",
-            items: ["Luggage Tags", "Door Danglers", "Rose Petal Cones", "Favour Tags"],
+            sub: "4 types",
             from: "From ₹650",
+            bg: "linear-gradient(145deg,#5C1A30 0%,#9C3B55 50%,#C2607C 100%)",
+            accentLight: "rgba(194,96,124,0.15)",
+            desc: "Luggage Tags · Door Danglers · Rose Petal Cones · Favour Tags",
           },
           {
-            icon: "📖",
-            label: "More Stationery",
-            color: "#5D4037",
-            bg: "linear-gradient(135deg,#3E2723,#6D4C41)",
-            items: ["Logo / Monogram ₹799+", "Welcome Board ₹999", "Hashtag Packages", "Coffee Table Booklets", "Thank You & Welcome Cards"],
+            icon: "✦",
+            label: "More",
+            sub: "Branding, hashtags & booklets",
             from: "From ₹500",
+            bg: "linear-gradient(145deg,#1C0E06 0%,#4A2810 50%,#8D6039 100%)",
+            accentLight: "rgba(141,96,57,0.15)",
+            desc: "Logo · Hashtag Packages · Coffee Table Booklets · Cards",
           },
         ];
         return (
-          <section style={{ background: "#FFFCF7", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
-            <div style={{ maxWidth: 1160, margin: "0 auto" }}>
+          <section style={{ background: "linear-gradient(180deg,#1A0E06 0%,#221408 60%,#1A0E06 100%)", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
+            {/* Background texture */}
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 15% 30%,rgba(204,171,74,0.06),transparent 45%), radial-gradient(circle at 85% 70%,rgba(196,122,46,0.05),transparent 45%), radial-gradient(circle at 50% 50%,rgba(255,255,255,0.01),transparent 60%)", pointerEvents: "none" }} />
 
+            <div style={{ maxWidth: 1160, margin: "0 auto", position: "relative" }}>
               {/* Header */}
               <motion.div
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55 }}
-                style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 48, flexWrap: "wrap", gap: 20 }}
+                style={{ textAlign: "center", marginBottom: 52 }}
               >
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 10px" }}>Crafted with Love</p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.2rem,4.5vw,3.4rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.02em", fontStyle: "italic" }}>
-                    Wedding Stationeries
-                  </h2>
-                  <p style={{ fontSize: 14, color: "#9B7450", margin: 0, maxWidth: 380 }}>
-                    Itineraries, invitations, hashtag packages and more — fully personalised for your wedding.
-                  </p>
+                {/* Ornament */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 18 }}>
+                  <div style={{ flex: 1, maxWidth: 80, height: 1, background: "linear-gradient(90deg,transparent,rgba(204,171,74,0.4))" }} />
+                  <span style={{ color: "#CCAB4A", fontSize: 11, letterSpacing: "0.15em" }}>✦ ✦ ✦</span>
+                  <div style={{ flex: 1, maxWidth: 80, height: 1, background: "linear-gradient(90deg,rgba(204,171,74,0.4),transparent)" }} />
                 </div>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#CCAB4A", margin: "0 0 14px" }}>Crafted with Love</p>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.4rem,5vw,3.8rem)", fontWeight: 300, color: "#FFF8EC", margin: "0 0 14px", letterSpacing: "0.04em", fontStyle: "italic", lineHeight: 1.08 }}>
+                  Wedding Stationeries
+                </h2>
+                <p style={{ fontSize: 14, color: "rgba(255,248,236,0.5)", margin: "0 auto 28px", maxWidth: 420, lineHeight: 1.65 }}>
+                  Fully personalised for your wedding. No templates, no shortcuts.
+                </p>
                 <button
                   onClick={() => navigate("/stationery")}
-                  style={{ padding: "11px 28px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.28)", letterSpacing: "0.02em", flexShrink: 0 }}
+                  style={{ display: "inline-block", padding: "12px 32px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.35)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.05em", transition: "all 0.22s" }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#CCAB4A)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.border = "1.5px solid transparent"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#CCAB4A"; e.currentTarget.style.border = "1.5px solid rgba(204,171,74,0.35)"; }}
                 >
                   View All Stationery →
                 </button>
               </motion.div>
 
               {/* Category cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 20 }} className="stat-home-grid">
-                {STAT_CATEGORIES.map((cat, i) => (
+              <div className="stat-home-grid2" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+                {STAT_CATS.map((cat, i) => (
                   <motion.div
                     key={cat.label}
                     initial={{ opacity: 0, y: 40 }}
@@ -1391,42 +1403,47 @@ const Home = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.09 }}
                     onClick={() => navigate("/stationery")}
-                    style={{ borderRadius: 18, overflow: "hidden", cursor: "pointer", border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 6px 24px rgba(139,69,19,0.1)", transition: "transform 0.25s, box-shadow 0.25s", background: "#FFFCF7", display: "flex", flexDirection: "column", minHeight: 300 }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(139,69,19,0.17)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(139,69,19,0.1)"; }}
+                    style={{ borderRadius: 20, overflow: "hidden", cursor: "pointer", background: cat.bg, position: "relative", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "flex-end", boxShadow: "0 8px 32px rgba(0,0,0,0.45)", transition: "transform 0.25s, box-shadow 0.25s", border: "1px solid rgba(255,255,255,0.06)" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-7px) scale(1.01)"; e.currentTarget.style.boxShadow = "0 20px 56px rgba(0,0,0,0.55)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.45)"; }}
                   >
-                    {/* Top accent */}
-                    <div style={{ background: cat.bg, padding: "22px 20px 18px", display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 24 }}>{cat.icon}</span>
-                      <div>
-                        <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>{cat.label}</div>
-                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 600, marginTop: 2 }}>{cat.from}</div>
-                      </div>
+                    {/* Gradient overlay bottom */}
+                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.05) 55%,transparent 100%)", zIndex: 1 }} />
+
+                    {/* Top accent circle */}
+                    <div style={{ position: "absolute", top: -30, right: -30, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.06)", zIndex: 0 }} />
+                    <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
+                      <span style={{ fontSize: 28, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>{cat.icon}</span>
                     </div>
-                    {/* Item list */}
-                    <div style={{ padding: "16px 18px 20px", flex: 1, display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                      <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: 7 }}>
-                        {cat.items.map((item, ii) => (
-                          <li key={ii} style={{ fontSize: 12, color: "#5a3a1a", display: "flex", alignItems: "flex-start", gap: 6, lineHeight: 1.35 }}>
-                            <span style={{ color: "#C9A84C", flexShrink: 0, marginTop: 1, fontSize: 8 }}>✦</span>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                      <div style={{ marginTop: 16, fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>View all →</div>
+
+                    {/* Content */}
+                    <div style={{ position: "relative", zIndex: 2, padding: "0 20px 22px" }}>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>
+                        {cat.sub}
+                      </div>
+                      <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: 8 }}>
+                        {cat.label}
+                      </div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.4, marginBottom: 12 }}>
+                        {cat.desc}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", letterSpacing: "-0.01em" }}>{cat.from}</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: "0.06em" }}>EXPLORE →</div>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
               </div>
 
-              <div style={{ textAlign: "center", marginTop: 18 }}>
-                <p style={{ fontSize: 12, color: "#9B7450", fontStyle: "italic" }}>All prices shown are design prices — printing &amp; delivery charged separately.</p>
+              <div style={{ textAlign: "center", marginTop: 24 }}>
+                <p style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", fontStyle: "italic" }}>Design prices shown. Printing &amp; delivery charged separately.</p>
               </div>
             </div>
             <style>{`
-              @media(max-width:900px){.stat-home-grid{grid-template-columns:repeat(2,1fr)!important;gap:14px!important;}}
+              @media(max-width:900px){.stat-home-grid2{grid-template-columns:repeat(2,1fr)!important;gap:14px!important;}}
               @media(max-width:560px){
-                .stat-home-grid{
+                .stat-home-grid2{
                   display:flex!important;
                   overflow-x:auto!important;
                   scroll-snap-type:x mandatory!important;
@@ -1436,8 +1453,8 @@ const Home = () => {
                   -webkit-overflow-scrolling:touch;
                   scrollbar-width:none;
                 }
-                .stat-home-grid::-webkit-scrollbar{display:none}
-                .stat-home-grid>div{flex:0 0 78%!important;scroll-snap-align:start!important;min-width:0!important;}
+                .stat-home-grid2::-webkit-scrollbar{display:none}
+                .stat-home-grid2>div{flex:0 0 80%!important;scroll-snap-align:start!important;min-width:0!important;}
               }
             `}</style>
           </section>

@@ -8,22 +8,22 @@ import BasicSpeedDial from "../../components/BasicSpeedDial";
 const font = "'Outfit', sans-serif";
 
 const CAT_META = {
-  "Branding & Identity": { icon: "✦", color: "#C47A2E", bg: "rgba(196,122,46,0.07)" },
-  "Event Signage":       { icon: "🪧", color: "#7A4A1E", bg: "rgba(122,74,30,0.07)" },
-  "Itinerary":           { icon: "📋", color: "#5C6BC0", bg: "rgba(92,107,192,0.07)" },
-  "Guest Accessories":   { icon: "🎀", color: "#D4829D", bg: "rgba(212,130,157,0.08)" },
-  "Hashtag Services":    { icon: "#", color: "#4A7C59", bg: "rgba(74,124,89,0.07)" },
-  "Invitations":         { icon: "💌", color: "#C47A2E", bg: "rgba(196,122,46,0.07)" },
-  "Envelopes":           { icon: "✉", color: "#8D6E63", bg: "rgba(141,110,99,0.07)" },
-  "Coffee Table Booklet":{ icon: "📖", color: "#5D4037", bg: "rgba(93,64,55,0.07)" },
-  "Cards":               { icon: "🃏", color: "#7A4A1E", bg: "rgba(122,74,30,0.07)" },
-  "Other":               { icon: "✨", color: "#9B7450", bg: "rgba(155,116,80,0.07)" },
+  "Branding & Identity": { icon: "✦",  grad: "linear-gradient(135deg,#D4A843,#C47A2E)", color: "#C47A2E", light: "rgba(196,122,46,0.08)" },
+  "Event Signage":       { icon: "🪧", grad: "linear-gradient(135deg,#8D6039,#B8792B)", color: "#8D6039", light: "rgba(141,96,57,0.08)" },
+  "Itinerary":           { icon: "📋", grad: "linear-gradient(135deg,#3949AB,#5C6BC0)", color: "#3949AB", light: "rgba(57,73,171,0.08)" },
+  "Guest Accessories":   { icon: "🎀", grad: "linear-gradient(135deg,#9C3B55,#C2607C)", color: "#9C3B55", light: "rgba(156,59,85,0.08)" },
+  "Hashtag Services":    { icon: "#",  grad: "linear-gradient(135deg,#2E7D55,#43A07A)", color: "#2E7D55", light: "rgba(46,125,85,0.08)" },
+  "Invitations":         { icon: "💌", grad: "linear-gradient(135deg,#7A3A1E,#C47A2E)", color: "#7A3A1E", light: "rgba(122,58,30,0.08)" },
+  "Envelopes":           { icon: "✉",  grad: "linear-gradient(135deg,#5D4037,#8D6E63)", color: "#5D4037", light: "rgba(93,64,55,0.08)" },
+  "Coffee Table Booklet":{ icon: "📖", grad: "linear-gradient(135deg,#3E2723,#6D4C41)", color: "#3E2723", light: "rgba(62,39,35,0.08)" },
+  "Cards":               { icon: "🃏", grad: "linear-gradient(135deg,#6A1B4D,#9C3B7A)", color: "#6A1B4D", light: "rgba(106,27,77,0.08)" },
+  "Other":               { icon: "✨", grad: "linear-gradient(135deg,#7A5535,#9B7450)", color: "#7A5535", light: "rgba(122,85,53,0.08)" },
 };
 
 function getPriceDisplay(item) {
   if (item.priceOnRequest) return { main: "Price on request", note: null };
-  if (item.priceRange) return { main: item.priceRange, note: "+ printing & delivery charges" };
-  if (item.startingPrice) return { main: `₹${Number(item.startingPrice).toLocaleString("en-IN")}`, note: "+ printing & delivery charges" };
+  if (item.priceRange)     return { main: item.priceRange,   note: "+ printing & delivery" };
+  if (item.startingPrice)  return { main: `₹${Number(item.startingPrice).toLocaleString("en-IN")}`, note: "+ printing & delivery" };
   return { main: "—", note: null };
 }
 
@@ -31,80 +31,89 @@ export default function WeddingStationery() {
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [activeCategory, setActiveCategory] = useState("All");
-  const [hovered, setHovered] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [hoveredId, setHoveredId] = useState(null);
   const sectionRefs = useRef({});
 
   useEffect(() => {
     setItems(getStationeryProducts().filter((p) => p.available));
   }, []);
 
+  // Trap scroll when panel open
+  useEffect(() => {
+    if (selectedItem) document.body.style.overflow = "hidden";
+    else              document.body.style.overflow = "";
+    return () => { document.body.style.overflow = ""; };
+  }, [selectedItem]);
+
   const categories = ["All", ...STATIONERY_CATEGORIES.filter((c) =>
-    items.some((item) => item.category === c)
+    items.some((i) => i.category === c)
   )];
 
   const scrollToCategory = (cat) => {
     setActiveCategory(cat);
     if (cat === "All") { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
     const el = sectionRefs.current[cat];
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (el) { const y = el.getBoundingClientRect().top + window.scrollY - 60; window.scrollTo({ top: y, behavior: "smooth" }); }
   };
 
   const groupedItems = STATIONERY_CATEGORIES.reduce((acc, cat) => {
     const catItems = items.filter((i) => i.category === cat);
-    if (catItems.length > 0) acc[cat] = catItems;
+    if (catItems.length) acc[cat] = catItems;
     return acc;
   }, {});
 
+  const priceDetail = selectedItem ? getPriceDisplay(selectedItem) : null;
+
   return (
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
-      <SEO
-        title="Wedding Stationeries — Tendr"
-        description="Custom wedding stationeries — itineraries, invitations, envelopes, hashtag packages, coffee table booklets and more."
-        path="/stationery"
-      />
+    <div style={{ minHeight: "100vh", background: "#FAF5EE", fontFamily: font }}>
+      <SEO title="Wedding Stationeries — Tendr" description="Custom wedding stationeries — itineraries, invitations, envelopes, hashtag packages, coffee table booklets and more." path="/stationery" />
       <BasicSpeedDial />
       <HamburgerNav title="Wedding Stationeries" />
 
-      {/* Hero */}
-      <div style={{ background: "linear-gradient(135deg, #2C1A0E 0%, #4A2810 60%, #6B3A1F 100%)", padding: "52px 24px 48px", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 20% 50%, rgba(204,171,74,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(196,122,46,0.1) 0%, transparent 40%)", pointerEvents: "none" }} />
-        <div style={{ position: "relative", maxWidth: 600, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 12 }}>Crafted with love</p>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 400, color: "#fff", margin: "0 0 14px", letterSpacing: "0.03em", fontStyle: "italic" }}>
-            Wedding Stationeries
-          </h1>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", maxWidth: 480, margin: "0 auto 8px", lineHeight: 1.65 }}>
-            Beautifully designed, fully personalised. Every piece crafted exclusively for your wedding.
-          </p>
-          <p style={{ fontSize: 12, color: "rgba(204,171,74,0.75)", margin: 0, fontStyle: "italic" }}>
-            All prices shown are design prices — printing &amp; delivery charged separately.
-          </p>
+      {/* ── HERO — bright, ornamental ── */}
+      <div style={{ background: "linear-gradient(150deg,#FFFAF3 0%,#FFF6E8 40%,#FDF0D8 100%)", padding: "56px 24px 48px", textAlign: "center", position: "relative", overflow: "hidden", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+        {/* Decorative blobs */}
+        <div style={{ position: "absolute", top: -60, left: -60, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.14),transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -80, right: -80, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.11),transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: "30%", right: "10%", width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle,rgba(212,168,67,0.1),transparent 65%)", pointerEvents: "none" }} />
+
+        {/* Ornamental ring */}
+        <div style={{ position: "relative", display: "inline-block", marginBottom: 14 }}>
+          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={{ opacity: 0.55 }}>
+            <circle cx="30" cy="30" r="28" stroke="#C9A84C" strokeWidth="0.8" />
+            <circle cx="30" cy="30" r="20" stroke="#C9A84C" strokeWidth="0.5" strokeDasharray="2 4" />
+            <text x="30" y="35" textAnchor="middle" fill="#C9A84C" fontSize="18" fontFamily="serif">✦</text>
+          </svg>
         </div>
+
+        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 14 }}>Crafted with love</p>
+
+        <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(3rem,8vw,5.5rem)", fontWeight: 300, color: "#1C1208", margin: "0 0 18px", letterSpacing: "0.04em", fontStyle: "italic", lineHeight: 1.08 }}>
+          Wedding<br />Stationeries
+        </h1>
+
+        {/* Ornamental divider */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, margin: "0 auto 18px", maxWidth: 300 }}>
+          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,transparent,#C9A84C)" }} />
+          <span style={{ color: "#C9A84C", fontSize: 12, letterSpacing: "0.15em" }}>✦ ✦ ✦</span>
+          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,#C9A84C,transparent)" }} />
+        </div>
+
+        <p style={{ fontSize: 15, color: "#7A5535", maxWidth: 480, margin: "0 auto 10px", lineHeight: 1.7 }}>
+          Beautifully designed, fully personalised. Every piece crafted exclusively for your wedding — no templates, no shortcuts.
+        </p>
+        <p style={{ fontSize: 12, color: "#B89060", margin: 0, fontStyle: "italic" }}>
+          Design prices shown. Printing &amp; delivery charged separately.
+        </p>
       </div>
 
-      {/* Category pills */}
+      {/* ── Category pills — sticky ── */}
       {categories.length > 2 && (
-        <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.1)", position: "sticky", top: 0, zIndex: 20, overflowX: "auto" }}>
-          <div style={{ display: "flex", gap: 0, padding: "0 20px", maxWidth: 1100, margin: "0 auto", overflowX: "auto" }} className="cat-pill-row">
+        <div style={{ background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.1)", position: "sticky", top: 0, zIndex: 20 }}>
+          <div className="cat-pill-row" style={{ display: "flex", padding: "0 16px", maxWidth: 1100, margin: "0 auto", overflowX: "auto" }}>
             {categories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => scrollToCategory(cat)}
-                style={{
-                  padding: "14px 18px",
-                  background: "none",
-                  border: "none",
-                  borderBottom: activeCategory === cat ? "2.5px solid #C47A2E" : "2.5px solid transparent",
-                  color: activeCategory === cat ? "#C47A2E" : "#9B7450",
-                  fontSize: 12,
-                  fontWeight: activeCategory === cat ? 800 : 600,
-                  cursor: "pointer",
-                  fontFamily: font,
-                  whiteSpace: "nowrap",
-                  transition: "color 0.15s",
-                  flexShrink: 0,
-                }}
-              >
+              <button key={cat} onClick={() => scrollToCategory(cat)} style={{ padding: "14px 16px", background: "none", border: "none", borderBottom: activeCategory === cat ? "2.5px solid #C47A2E" : "2.5px solid transparent", color: activeCategory === cat ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: activeCategory === cat ? 800 : 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "color 0.15s", flexShrink: 0 }}>
                 {cat}
               </button>
             ))}
@@ -112,99 +121,104 @@ export default function WeddingStationery() {
         </div>
       )}
 
-      {/* Content */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 24px 80px" }}>
-
+      {/* ── Items ── */}
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 20px 80px" }}>
         {items.length === 0 && (
-          <div style={{ textAlign: "center", padding: "80px 24px", color: "#9B7450" }}>
-            <div style={{ fontSize: 40, marginBottom: 16 }}>💍</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: "#2C1A0E", marginBottom: 8 }}>Catalogue coming soon</div>
-            <div style={{ fontSize: 14 }}>Our stationery collection will be available here shortly.</div>
+          <div style={{ textAlign: "center", padding: "80px 24px" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>💍</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>Catalogue coming soon</div>
+            <div style={{ fontSize: 14, color: "#9B7450" }}>Our stationery collection will be available here shortly.</div>
           </div>
         )}
 
         {Object.entries(groupedItems).map(([cat, catItems]) => {
           const meta = CAT_META[cat] || CAT_META["Other"];
           return (
-            <section
-              key={cat}
-              ref={(el) => { sectionRefs.current[cat] = el; }}
-              style={{ marginBottom: 56 }}
-            >
+            <section key={cat} ref={(el) => { sectionRefs.current[cat] = el; }} style={{ marginBottom: 60 }}>
               {/* Category header */}
               <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-                <div style={{ width: 38, height: 38, borderRadius: 10, background: meta.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: meta.color, flexShrink: 0, border: `1.5px solid ${meta.color}22` }}>
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: meta.grad, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#fff", flexShrink: 0 }}>
                   {meta.icon}
                 </div>
-                <div>
-                  <h2 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: 0, letterSpacing: "-0.01em" }}>{cat}</h2>
-                </div>
-                <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.12)", marginLeft: 8 }} />
+                <h2 style={{ fontSize: 21, fontWeight: 900, color: "#1C1208", margin: 0, letterSpacing: "-0.01em", fontFamily: font }}>
+                  {cat}
+                </h2>
+                <div style={{ flex: 1, height: 1, background: "rgba(196,122,46,0.15)" }} />
               </div>
 
-              {/* Items grid */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 20 }} className="stat-grid">
-                {catItems.map((item, idx) => {
+              <div className="stat-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 20 }}>
+                {catItems.map((item) => {
                   const price = getPriceDisplay(item);
-                  const isHov = hovered === `${cat}-${idx}`;
+                  const isHov = hoveredId === item.id;
                   return (
                     <div
                       key={item.id}
-                      onMouseEnter={() => setHovered(`${cat}-${idx}`)}
-                      onMouseLeave={() => setHovered(null)}
+                      onClick={() => setSelectedItem(item)}
+                      onMouseEnter={() => setHoveredId(item.id)}
+                      onMouseLeave={() => setHoveredId(null)}
                       style={{
-                        background: "#FFFCF7",
-                        borderRadius: 16,
+                        background: "#fff",
+                        borderRadius: 20,
                         overflow: "hidden",
-                        border: isHov ? `1.5px solid #C9A84C` : "1.5px solid rgba(201,168,76,0.15)",
-                        boxShadow: isHov ? "0 10px 32px rgba(139,90,20,0.14)" : "0 3px 12px rgba(139,90,20,0.07)",
-                        transition: "all 0.22s ease",
-                        transform: isHov ? "translateY(-3px)" : "none",
+                        border: isHov ? `1.5px solid ${meta.color}55` : "1.5px solid rgba(201,168,76,0.13)",
+                        boxShadow: isHov ? `0 16px 48px rgba(44,26,14,0.14), 0 0 0 3px ${meta.color}10` : "0 3px 16px rgba(139,90,20,0.07)",
+                        cursor: "pointer",
+                        transition: "all 0.24s cubic-bezier(0.4,0,0.2,1)",
+                        transform: isHov ? "translateY(-5px)" : "none",
                         display: "flex",
                         flexDirection: "column",
                       }}
                     >
-                      {/* Image */}
+                      {/* Image / decorative area */}
                       {item.images?.[0] ? (
-                        <div style={{ height: 160, overflow: "hidden", background: "#f0e8dc" }}>
-                          <img
-                            src={item.images[0]}
-                            alt={item.name}
-                            style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s", transform: isHov ? "scale(1.04)" : "scale(1)" }}
-                          />
+                        <div style={{ height: 180, overflow: "hidden", flexShrink: 0 }}>
+                          <img src={item.images[0]} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.32s", transform: isHov ? "scale(1.05)" : "scale(1)" }} />
                         </div>
                       ) : (
-                        <div style={{ height: 90, background: meta.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, color: meta.color, opacity: 0.5 }}>
-                          {meta.icon}
+                        <div style={{ height: 110, background: meta.light, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", flexShrink: 0 }}>
+                          <div style={{ position: "absolute", width: 130, height: 130, borderRadius: "50%", border: `1px solid ${meta.color}25`, top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+                          <div style={{ position: "absolute", width: 90, height: 90, borderRadius: "50%", border: `1px solid ${meta.color}35`, top: "50%", left: "50%", transform: "translate(-50%,-50%)" }} />
+                          <span style={{ fontSize: 30, position: "relative", zIndex: 1 }}>{meta.icon}</span>
                         </div>
                       )}
 
-                      {/* Content */}
-                      <div style={{ padding: "16px 18px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
-                        <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 17, fontWeight: 700, color: "#1C1208", margin: "0 0 5px", lineHeight: 1.3 }}>
+                      {/* Body */}
+                      <div style={{ padding: "16px 18px 20px", flex: 1, display: "flex", flexDirection: "column" }}>
+                        {/* Category pill */}
+                        <div style={{ display: "inline-flex", alignItems: "center", marginBottom: 10, alignSelf: "flex-start" }}>
+                          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: meta.color, background: meta.light, borderRadius: 100, padding: "3px 9px", border: `1px solid ${meta.color}22` }}>
+                            {cat}
+                          </span>
+                        </div>
+
+                        <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 19, fontWeight: 700, color: "#1C1208", margin: "0 0 6px", lineHeight: 1.25 }}>
                           {item.name}
                         </h3>
-                        {item.tagline && (
-                          <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 10px", lineHeight: 1.45 }}>{item.tagline}</p>
-                        )}
+                        {item.tagline && <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.45, flex: 0 }}>{item.tagline}</p>}
 
+                        {/* Features preview */}
                         {item.features?.length > 0 && (
-                          <ul style={{ margin: "0 0 12px", padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 3 }}>
-                            {item.features.slice(0, 3).map((f, fi) => (
-                              <li key={fi} style={{ fontSize: 11, color: "#7A5535", display: "flex", alignItems: "flex-start", gap: 5 }}>
-                                <span style={{ color: "#C9A84C", flexShrink: 0, marginTop: 1 }}>✦</span> {f}
-                              </li>
+                          <div style={{ marginBottom: 14 }}>
+                            {item.features.slice(0, 2).map((f, fi) => (
+                              <div key={fi} style={{ fontSize: 11, color: "#6B4226", display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4 }}>
+                                <span style={{ color: meta.color, flexShrink: 0, fontSize: 8, marginTop: 3 }}>✦</span> {f}
+                              </div>
                             ))}
-                          </ul>
+                            {item.features.length > 2 && (
+                              <div style={{ fontSize: 10, color: meta.color, fontWeight: 700, marginTop: 2 }}>+{item.features.length - 2} more</div>
+                            )}
+                          </div>
                         )}
 
-                        <div style={{ marginTop: "auto" }}>
-                          <div style={{ fontSize: 18, fontWeight: 800, color: "#C9A84C", marginBottom: price.note ? 2 : 0 }}>
-                            {price.main}
+                        {/* Price + CTA row */}
+                        <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                          <div>
+                            <div style={{ fontSize: 17, fontWeight: 900, color: "#C9A84C", letterSpacing: "-0.01em" }}>{price.main}</div>
+                            {price.note && <div style={{ fontSize: 9, color: "#9B7450", fontStyle: "italic", marginTop: 1 }}>{price.note}</div>}
                           </div>
-                          {price.note && (
-                            <div style={{ fontSize: 10, color: "#9B7450", fontStyle: "italic" }}>{price.note}</div>
-                          )}
+                          <div style={{ background: isHov ? meta.grad : "transparent", color: isHov ? "#fff" : meta.color, border: `1.5px solid ${meta.color}50`, borderRadius: 100, padding: "6px 14px", fontSize: 11, fontWeight: 700, transition: "all 0.22s", whiteSpace: "nowrap" }}>
+                            View →
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -217,20 +231,17 @@ export default function WeddingStationery() {
 
         {/* Enquire CTA */}
         {items.length > 0 && (
-          <div style={{ textAlign: "center", marginTop: 16, padding: "40px 24px", background: "linear-gradient(135deg, #2C1A0E, #4A2810)", borderRadius: 20, position: "relative", overflow: "hidden" }}>
-            <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 70% 30%, rgba(204,171,74,0.08) 0%, transparent 50%)", pointerEvents: "none" }} />
+          <div style={{ textAlign: "center", padding: "48px 24px", background: "linear-gradient(135deg,#1C1208,#3D2410)", borderRadius: 24, position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 20% 50%,rgba(204,171,74,0.1),transparent 50%), radial-gradient(circle at 80% 30%,rgba(196,122,46,0.08),transparent 45%)", pointerEvents: "none" }} />
             <div style={{ position: "relative" }}>
-              <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 10 }}>Ready to order?</p>
-              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem, 3vw, 2.2rem)", fontWeight: 400, color: "#fff", margin: "0 0 10px", fontStyle: "italic" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 10 }}>Ready to order?</p>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.4rem)", fontWeight: 300, color: "#fff", margin: "0 0 10px", fontStyle: "italic" }}>
                 Let's design your perfect stationery
               </h3>
-              <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", maxWidth: 400, margin: "0 auto 20px" }}>
-                All prices shown are design prices only. Printing and delivery charges are additional.
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", maxWidth: 380, margin: "0 auto 22px" }}>
+                Click any item to view details. Printing and delivery charges are additional.
               </p>
-              <button
-                onClick={() => navigate("/dashboard")}
-                style={{ padding: "13px 32px", borderRadius: 100, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.03em" }}
-              >
+              <button onClick={() => navigate("/dashboard")} style={{ padding: "13px 34px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 20px rgba(196,122,46,0.4)", letterSpacing: "0.03em" }}>
                 Enquire via Chat →
               </button>
             </div>
@@ -238,12 +249,131 @@ export default function WeddingStationery() {
         )}
       </div>
 
+      {/* ── Detail Panel (slide-in) ── */}
+      {selectedItem && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: font }}>
+          {/* Backdrop */}
+          <div onClick={() => setSelectedItem(null)} style={{ position: "absolute", inset: 0, background: "rgba(28,10,0,0.55)", backdropFilter: "blur(3px)", animation: "ws-fadeIn 0.25s ease" }} />
+
+          {/* Panel */}
+          <div className="ws-panel" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "min(52vw,540px)", background: "#FFFCF7", overflowY: "auto", boxShadow: "-20px 0 80px rgba(44,26,14,0.28)", animation: "ws-slideRight 0.35s cubic-bezier(0.4,0,0.2,1)" }}>
+
+            {/* Close */}
+            <button onClick={() => setSelectedItem(null)} style={{ position: "absolute", top: 16, right: 16, width: 36, height: 36, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", cursor: "pointer", fontSize: 18, color: "#5a3a1a", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2, fontFamily: font }}>×</button>
+
+            {/* Image */}
+            {selectedItem.images?.[0] ? (
+              <div style={{ height: 260, overflow: "hidden", flexShrink: 0 }}>
+                <img src={selectedItem.images[0]} alt={selectedItem.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+            ) : (
+              (() => {
+                const m = CAT_META[selectedItem.category] || CAT_META["Other"];
+                return (
+                  <div style={{ height: 180, background: m.light, display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                    <div style={{ position: "absolute", width: 200, height: 200, borderRadius: "50%", border: `1px solid ${m.color}20` }} />
+                    <div style={{ position: "absolute", width: 140, height: 140, borderRadius: "50%", border: `1px solid ${m.color}30` }} />
+                    <span style={{ fontSize: 48, position: "relative", zIndex: 1 }}>
+                      {(CAT_META[selectedItem.category] || CAT_META["Other"]).icon}
+                    </span>
+                  </div>
+                );
+              })()
+            )}
+
+            {/* Content */}
+            <div style={{ padding: "28px 32px 48px" }}>
+              {(() => {
+                const m  = CAT_META[selectedItem.category] || CAT_META["Other"];
+                const pr = getPriceDisplay(selectedItem);
+                return (
+                  <>
+                    {/* Category */}
+                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: m.color, background: m.light, borderRadius: 100, padding: "4px 12px", border: `1px solid ${m.color}22` }}>
+                      {selectedItem.category}
+                    </span>
+
+                    {/* Name */}
+                    <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,4vw,2rem)", fontWeight: 700, color: "#1C1208", margin: "14px 0 8px", lineHeight: 1.2 }}>
+                      {selectedItem.name}
+                    </h2>
+
+                    {selectedItem.tagline && (
+                      <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px", lineHeight: 1.5, fontStyle: "italic" }}>{selectedItem.tagline}</p>
+                    )}
+
+                    {/* Price */}
+                    <div style={{ background: "linear-gradient(135deg,#FFF8EC,#FFF3DC)", borderRadius: 14, padding: "16px 20px", marginBottom: 24, border: "1px solid rgba(204,171,74,0.2)" }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Price</div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: "#C9A84C", letterSpacing: "-0.02em" }}>{pr.main}</div>
+                      {pr.note && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 4, fontStyle: "italic" }}>{pr.note}</div>}
+                    </div>
+
+                    {/* Description */}
+                    {selectedItem.description && (
+                      <div style={{ marginBottom: 24 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>About</div>
+                        <p style={{ fontSize: 14, color: "#6B4226", lineHeight: 1.65, margin: 0 }}>{selectedItem.description}</p>
+                      </div>
+                    )}
+
+                    {/* Features */}
+                    {selectedItem.features?.length > 0 && (
+                      <div style={{ marginBottom: 28 }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>What's included</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                          {selectedItem.features.map((f, i) => (
+                            <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "9px 0", borderBottom: i < selectedItem.features.length - 1 ? "1px solid rgba(196,122,46,0.08)" : "none" }}>
+                              <div style={{ width: 18, height: 18, borderRadius: "50%", background: m.light, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                                <span style={{ fontSize: 7, color: m.color }}>✦</span>
+                              </div>
+                              <span style={{ fontSize: 13, color: "#4A2810", lineHeight: 1.4 }}>{f}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* CTA */}
+                    <button
+                      onClick={() => { setSelectedItem(null); navigate("/dashboard"); }}
+                      style={{ width: "100%", padding: "15px", borderRadius: 14, border: "none", background: `${m.grad}`, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: `0 6px 24px ${m.color}40`, letterSpacing: "0.02em" }}
+                    >
+                      Enquire via Chat →
+                    </button>
+                    <p style={{ textAlign: "center", fontSize: 11, color: "#9B7450", margin: "10px 0 0", fontStyle: "italic" }}>
+                      Chat with our team to place your order
+                    </p>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
+      )}
+
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@400;600;700;800;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600&family=Outfit:wght@400;600;700;800;900&display=swap');
         .cat-pill-row { scrollbar-width: none; }
         .cat-pill-row::-webkit-scrollbar { display: none; }
-        @media(max-width:640px) { .stat-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; } }
-        @media(max-width:360px) { .stat-grid { grid-template-columns: 1fr !important; } }
+        @keyframes ws-fadeIn { from { opacity: 0 } to { opacity: 1 } }
+        @keyframes ws-slideRight { from { transform: translateX(100%) } to { transform: translateX(0) } }
+        @keyframes ws-slideUp { from { transform: translateY(100%) } to { transform: translateY(0) } }
+        @media(max-width:640px){
+          .stat-grid { grid-template-columns: repeat(2,1fr) !important; gap: 12px !important; }
+          .ws-panel {
+            top: auto !important;
+            left: 0 !important;
+            right: 0 !important;
+            width: 100% !important;
+            height: 82vh !important;
+            border-radius: 22px 22px 0 0 !important;
+            animation: ws-slideUp 0.35s cubic-bezier(0.4,0,0.2,1) !important;
+          }
+        }
+        @media(max-width:360px){
+          .stat-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   );
