@@ -662,52 +662,71 @@ const VendorList_ListingPage = ({
               </div>
               <button onClick={() => setChatFormVendor(null)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 14px" }}>
-              {/* Occasion */}
-              <div style={{ gridColumn: "1 / -1" }}>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>What's the occasion? *</label>
-                <select value={chatEventForm.eventType} onChange={e => setChatEventForm(p => ({ ...p, eventType: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.eventType ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
-                  <option value="">Select event type</option>
-                  {["Birthday","1st Birthday","Baby Shower","Newborn Welcome","Get-together","Anniversary","Housewarming","Graduation","Office Party","Pre Wedding","Corporate Event","Festival","Others"].map(t => <option key={t} value={t}>{t}</option>)}
-                </select>
-              </div>
-              <EventIdeasPanel eventType={chatEventForm.eventType} style={{ gridColumn: "1 / -1" }} />
-              {/* Date */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date *</label>
-                <input type="date" value={chatEventForm.date} min={(() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })()}
-                  onChange={e => { const d = new Date(); const t = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; if (e.target.value && e.target.value < t) return; setChatEventForm(p => ({ ...p, date: e.target.value })); }}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box", background: "#fff" }} />
-              </div>
-              {/* Guests */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Guest count *</label>
-                <select value={chatEventForm.guests} onChange={e => setChatEventForm(p => ({ ...p, guests: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.guests ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
-                  <option value="">Select guests</option>
-                  {["Under 25","25–50","50–100","100–150","150–200","200–300","300+"].map(g => <option key={g} value={g}>{g}</option>)}
-                </select>
-              </div>
-              {/* Budget */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Budget *</label>
-                <select value={chatEventForm.budget} onChange={e => setChatEventForm(p => ({ ...p, budget: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.budget ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
-                  <option value="">Select budget</option>
-                  {["Under ₹10K","₹10K–₹30K","₹30K–₹50K","₹50K–₹1L","Over ₹1L"].map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-              {/* Location */}
-              <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Location *</label>
-                <select value={chatEventForm.location} onChange={e => setChatEventForm(p => ({ ...p, location: e.target.value }))}
-                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, color: chatEventForm.location ? "#2C1A0E" : "#9B7450", outline: "none", background: "#fff", boxSizing: "border-box" }}>
-                  <option value="">Select city</option>
-                  {["Delhi","Noida","Greater Noida","Ghaziabad","Gurugram","Faridabad"].map(l => <option key={l} value={l}>{l}</option>)}
-                </select>
-              </div>
-            </div>
+            {(() => {
+              const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
+              const fieldStyle = { width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, outline: "none", boxSizing: "border-box", background: "#fff" };
+              return (
+                <div className="ep-chat-form-fields" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {/* Occasion — full width */}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>What's the occasion? *</label>
+                    <select value={chatEventForm.eventType} onChange={e => setChatEventForm(p => ({ ...p, eventType: e.target.value }))}
+                      style={{ ...fieldStyle, color: chatEventForm.eventType ? "#2C1A0E" : "#9B7450" }}>
+                      <option value="">Select event type</option>
+                      {["Birthday","1st Birthday","Baby Shower","Newborn Welcome","Get-together","Anniversary","Housewarming","Graduation","Office Party","Pre Wedding","Corporate Event","Festival","Others"].map(t => <option key={t} value={t}>{t}</option>)}
+                    </select>
+                  </div>
+                  <EventIdeasPanel eventType={chatEventForm.eventType} />
+                  {/* Date — full width on its own row so native calendar has no overlap */}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date *</label>
+                    <input
+                      type="date"
+                      value={chatEventForm.date}
+                      min={today}
+                      onChange={e => {
+                        if (e.target.value && e.target.value < today) return;
+                        setChatEventForm(p => ({ ...p, date: e.target.value }));
+                      }}
+                      style={{ ...fieldStyle, color: "#2C1A0E" }}
+                    />
+                  </div>
+                  {/* Guest count — full width below date so it never overlaps the calendar */}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Guest count *</label>
+                    <select value={chatEventForm.guests} onChange={e => setChatEventForm(p => ({ ...p, guests: e.target.value }))}
+                      style={{ ...fieldStyle, color: chatEventForm.guests ? "#2C1A0E" : "#9B7450" }}>
+                      <option value="">Select guests</option>
+                      {["Under 25","25–50","50–100","100–150","150–200","200–300","300+"].map(g => <option key={g} value={g}>{g}</option>)}
+                    </select>
+                  </div>
+                  {/* Budget + Location side by side on desktop, stacked on mobile */}
+                  <div className="ep-chat-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 14px" }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Budget *</label>
+                      <select value={chatEventForm.budget} onChange={e => setChatEventForm(p => ({ ...p, budget: e.target.value }))}
+                        style={{ ...fieldStyle, color: chatEventForm.budget ? "#2C1A0E" : "#9B7450" }}>
+                        <option value="">Select budget</option>
+                        {["Under ₹10K","₹10K–₹30K","₹30K–₹50K","₹50K–₹1L","Over ₹1L"].map(b => <option key={b} value={b}>{b}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Location *</label>
+                      <select value={chatEventForm.location} onChange={e => setChatEventForm(p => ({ ...p, location: e.target.value }))}
+                        style={{ ...fieldStyle, color: chatEventForm.location ? "#2C1A0E" : "#9B7450" }}>
+                        <option value="">Select city</option>
+                        {["Delhi","Noida","Greater Noida","Ghaziabad","Gurugram","Faridabad"].map(l => <option key={l} value={l}>{l}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+            <style>{`
+              @media (max-width: 480px) {
+                .ep-chat-form-row { grid-template-columns: 1fr !important; }
+              }
+            `}</style>
             <button
               onClick={() => {
                 const { eventType: et, guests: g, date: d, budget: b, location: loc } = chatEventForm;
