@@ -168,11 +168,6 @@ const EventPlanning = () => {
     return () => clearInterval(t);
   }, [planSubmitted, confirmedPlan?._id]);
 
-  // Scroll to top whenever the smart plan screen opens
-  useEffect(() => {
-    if (showVendorScreen && smartPlan) window.scrollTo({ top: 0, behavior: "instant" });
-  }, [showVendorScreen, !!smartPlan]);
-
   const dispatch = useDispatch();
   const {
     currentStep,
@@ -183,6 +178,11 @@ const EventPlanning = () => {
     categoryBudgets: savedCategoryBudgets,
   } = useSelector((state) => state.eventPlanning);
   const { token, user: authUser } = useSelector((state) => state.auth);
+
+  // Scroll to top whenever the smart plan screen opens (must be after showVendorScreen is declared)
+  useEffect(() => {
+    if (showVendorScreen && smartPlan) window.scrollTo({ top: 0, behavior: "instant" });
+  }, [showVendorScreen, smartPlan]);
 
   // Per-category budget modal state
   const [showBudgetModal, setShowBudgetModal] = useState(false);
