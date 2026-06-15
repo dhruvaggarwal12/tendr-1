@@ -306,13 +306,6 @@ const router = createBrowserRouter([
       errorElement: <ErrorPage />,
     },
 
-  // Single form route (reads ?bookingType=you-do-it|let-us-do-it)
-  { 
-    path: "/plan-event/form", 
-    element: <EventPlanningForm />, 
-    errorElement: <ErrorPage /> 
-  },
-
   // Info pages
   {
     path: "/contact-us",

@@ -51,6 +51,7 @@ const VendorList = () => {
   } = useSelector((state) => state.eventPlanning.formData);
   const bookingType = useSelector((s) => s.eventPlanning.bookingType || "");
   const isNormalFlow = bookingType === "you-do-it";
+  const isFromPlanFlow = new URLSearchParams(location.search).get("fromPlan") === "1";
   const categoryBudgets = useSelector((s) => s.eventPlanning.categoryBudgets || {});
 
   // Categories from event planning flow — persists in Redux
@@ -642,8 +643,9 @@ const VendorList = () => {
               setSortOrder={setSortOrder}
               compareSelected={compareSelected}
               onToggleCompare={toggleCompare}
-              compareInProfile={true}
-              saveToCompare={true}
+              compareInProfile={isFromPlanFlow}
+              saveToCompare={isFromPlanFlow}
+              requireFormBeforeChat={!isFromPlanFlow}
               isLoggedIn={!!token}
             />
 

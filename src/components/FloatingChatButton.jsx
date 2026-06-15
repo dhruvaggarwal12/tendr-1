@@ -284,11 +284,16 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             <div className="mobile-saved-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 901, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "10px", minWidth: 240, maxWidth: 300, fontFamily: font, animation: "chatPop 0.18s ease" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "2px 8px 8px" }}>💛 Saved Vendors</div>
               {savedVendors.map(v => (
-                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 8px", borderRadius: 10 }}>
+                <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 8px", borderRadius: 10 }}>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{v.name || "Vendor"}</div>
                     <div style={{ fontSize: 11, color: "#9B7450" }}>{v.serviceType || ""}{v.city ? ` · ${v.city}` : ""}</div>
                   </div>
+                  <button
+                    onClick={() => { setSavedOpen(false); router.navigate(`/vendor/${v._id}`); }}
+                    style={{ flexShrink: 0, padding: "4px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                    View Profile
+                  </button>
                   <button onClick={() => removeSaved(v._id)} style={{ flexShrink: 0, width: 24, height: 24, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                 </div>
               ))}

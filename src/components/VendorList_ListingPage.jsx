@@ -7,6 +7,26 @@ import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice
 import { EventIdeasPanel } from "../utils/eventIdeas";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// Discovery listing session — isolated from planning-flow Redux data, 24h TTL
+const DISCOVERY_KEY = 'tendr:session:discovery';
+const DISCOVERY_TTL = 24 * 60 * 60 * 1000;
+const getDiscoverySession = () => {
+  try {
+    const s = JSON.parse(localStorage.getItem(DISCOVERY_KEY) || 'null');
+    if (!s) return null;
+    if (s.__savedAt && Date.now() - s.__savedAt > DISCOVERY_TTL) {
+      localStorage.removeItem(DISCOVERY_KEY);
+      return null;
+    }
+    const { __savedAt, ...data } = s;
+    return data;
+  } catch { return null; }
+};
+const saveDiscoverySession = (data) => {
+  try { localStorage.setItem(DISCOVERY_KEY, JSON.stringify({ ...data, __savedAt: Date.now() })); } catch {}
+};
+
 const chatSaveKey = (id) => `tendr:chat_req:${id}`;
 const getChatSave = (id) => {
   try {
@@ -571,7 +591,14 @@ const VendorList_ListingPage = ({
                     }
                     const vendor = quickViewVendor;
                     closePanel();
-                    // Check 24h save for this vendor
+                    // Discovery listings (top-rated/browse/search): ALWAYS show form pre-filled from discovery session
+                    if (requireFormBeforeChat) {
+                      const discoveryData = getDiscoverySession();
+                      setChatFormVendor(vendor);
+                      setChatEventForm(discoveryData || { eventType: "", guests: "", date: "", budget: "", location: "" });
+                      return;
+                    }
+                    // Planning flow: check 24h save for this vendor
                     const saved = getChatSave(vendor._id);
                     if (saved) {
                       // Already submitted within 24h — open existing conversation
@@ -596,19 +623,15 @@ const VendorList_ListingPage = ({
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                       return;
                     }
-                    // Normal/smart planning flow with all 4 fields filled → skip form, use Redux data directly
-                    if (!requireFormBeforeChat && hasEventDetails) {
+                    // Planning flow with all fields filled → skip form, use Redux data directly
+                    if (hasEventDetails) {
                       setChatSave(vendor._id, { eventType: formData.eventType, date: formData.date, guests: String(formData.guests), budget: formData.budget });
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                       return;
                     }
-                    // Show form — pre-fill from Redux in normal flow (incomplete details), or from local page state for search/top-rated
+                    // Planning flow without full details → show form pre-filled from Redux
                     setChatFormVendor(vendor);
-                    setChatEventForm(
-                      !requireFormBeforeChat
-                        ? { eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "", location: formData.location || "" }
-                        : { ...localFormData }
-                    );
+                    setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "", location: formData.location || "" });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
@@ -693,7 +716,8 @@ const VendorList_ListingPage = ({
                   dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, token }));
                   dispatch(setBookingType("you-do-it"));
                 } else {
-                  // Search / top-rated — save locally for subsequent vendors; do NOT touch Redux
+                  // Discovery flow — persist to localStorage (24h TTL) for pre-fill on next vendor; do NOT touch Redux
+                  saveDiscoverySession({ eventType: et, guests: g, date: d, budget: b, location: loc });
                   setLocalFormData({ eventType: et, guests: g, date: d, budget: b, location: loc });
                 }
                 setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });

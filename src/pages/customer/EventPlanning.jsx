@@ -345,6 +345,13 @@ const EventPlanning = () => {
     fetchCounts();
   }, [showVendorScreen]);
 
+  // Safety: reset step if out-of-range (e.g. admin question removed between sessions)
+  useEffect(() => {
+    if (!showVendorScreen && questions.length > 0 && currentStep >= questions.length) {
+      dispatch(setCurrentStep(0));
+    }
+  }, [currentStep, showVendorScreen, questions.length, dispatch]);
+
   const handleInputChange = (field, value) => {
     dispatch(setFormData({ field, value, token }));
   };
@@ -1124,9 +1131,10 @@ const EventPlanning = () => {
                 </button>
                 <button
                   onClick={() => {
+                    const v = spQuickView;
                     setSpQuickView(null);
                     dispatch(setBookingType("let-us-do-it"));
-                    openVendorChat({ _id: spQuickView._id, name: spQuickView.name, serviceType: spQuickView.serviceType });
+                    openVendorChat({ _id: v._id, name: v.name, serviceType: v.serviceType });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer" }}>
                   💬 Request to Chat
@@ -1608,6 +1616,9 @@ const EventPlanning = () => {
   }
 
 
+
+  // Guard: if step is out of range, render nothing until useEffect resets it
+  if (!currentQuestion) return null;
 
   /** =======================
    *  QUESTION-BY-QUESTION FORM
