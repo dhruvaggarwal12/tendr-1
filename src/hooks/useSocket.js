@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { io } from "socket.io-client";
 
-export default function useSocket({ userId, role, chatType = 'SUPPORT', enabled = true } = {}){
+export default function useSocket({ userId, token, chatType = 'SUPPORT', enabled = true } = {}){
 
     const socketRef = useRef(null);
     const [connected, setConnected] = useState(false);
@@ -16,7 +16,8 @@ export default function useSocket({ userId, role, chatType = 'SUPPORT', enabled 
             const BASE_URL = import.meta.env.VITE_BASE_URL;
 
             socketRef.current = io(BASE_URL,{
-                query: {userId, role, chatType},
+                auth: { token },
+                query: { userId, chatType },
                 transports: ['websocket'],
                 withCredentials: true,
             });
@@ -41,7 +42,7 @@ export default function useSocket({ userId, role, chatType = 'SUPPORT', enabled 
             console.error("Socket init failed:", error);
             setError(error.message || "Failed to initialize socket");
         }      
-    }, [userId, role, chatType, enabled]);
+    }, [userId, token, chatType, enabled]);
 
     const disconnect = useCallback(() =>{
         if(socketRef.current){

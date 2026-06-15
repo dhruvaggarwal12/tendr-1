@@ -88,7 +88,7 @@ function getFAQAnswer(text) {
 // no props (default) → support chat mode
 export default function MiniChatWidget({ onClose, conversationId: existingConvoId, vendorName }) {
   const isVendorChat = !!existingConvoId;
-  const { user } = useSelector((s) => s.auth);
+  const { user, token: authToken } = useSelector((s) => s.auth);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState(existingConvoId || null);
@@ -106,7 +106,7 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
     }
 
     const socket = io(BASE_URL, {
-      query: { userId: user._id, role: "user" },
+      auth: { token: authToken },
       transports: ["websocket", "polling"],
       withCredentials: true,
     });

@@ -534,7 +534,7 @@ export default function VendorChatModal() {
     if (!chatState || !currentUser?._id) return;
 
     const socket = io(BASE_URL, {
-      query: { userId: currentUser._id, role: "user" },
+      auth: { token: authToken },
       transports: ["websocket"],
       withCredentials: true,
     });

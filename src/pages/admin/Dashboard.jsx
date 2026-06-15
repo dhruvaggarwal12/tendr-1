@@ -706,7 +706,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (!token || !isAdminToken) return;
     const socket = io(BASE_URL, {
-      query: { userId: user?._id || 'admin', role: 'admin' },
+      auth: { token },
       transports: ['websocket', 'polling'],
       withCredentials: true,
     });
