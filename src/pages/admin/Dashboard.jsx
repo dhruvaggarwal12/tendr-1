@@ -269,8 +269,8 @@ const sidebar_arr = [
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
   { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
-  { label: "Memories",        icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Memories" },
-  { label: "Stationery",      icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
+  { label: "Memories",           icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Memories" },
+  { label: "Wedding Stationery", icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images

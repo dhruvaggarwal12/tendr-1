@@ -121,8 +121,8 @@ export default function MemoriesTab() {
     <div style={{ padding: "28px 24px", fontFamily: font }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 24, flexWrap: "wrap", gap: 10 }}>
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px" }}>🎁 Memories</h2>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Add and manage Tendr memory products. Customers can browse and book from the Memories page.</p>
+          <h2 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px" }}>💍 Wedding Stationeries</h2>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Add and manage wedding stationery products. Customers can browse and enquire from the Stationery page.</p>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <button onClick={handleReset} style={{ padding: "8px 16px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Reset to defaults</button>
