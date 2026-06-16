@@ -15,6 +15,7 @@ function saveCart(cart) {
 
 export function StationeryCartProvider({ children }) {
   const [cart, setCart] = useState(loadCart);
+  const [isCartOpen, setIsCartOpen] = useState(false);
 
   // Keep localStorage in sync
   useEffect(() => { saveCart(cart); }, [cart]);
@@ -50,13 +51,16 @@ export function StationeryCartProvider({ children }) {
 
   const clearCart = useCallback(() => setCart([]), []);
 
+  const openCart  = useCallback(() => setIsCartOpen(true), []);
+  const closeCart = useCallback(() => setIsCartOpen(false), []);
+
   const itemInCart = useCallback((item) => {
     const id = item._id || item.id;
     return cart.find(c => (c.item._id || c.item.id) === id);
   }, [cart]);
 
   return (
-    <StationeryCartContext.Provider value={{ cart, cartCount, addToCart, removeFromCart, updateQty, clearCart, itemInCart }}>
+    <StationeryCartContext.Provider value={{ cart, cartCount, addToCart, removeFromCart, updateQty, clearCart, itemInCart, isCartOpen, openCart, closeCart }}>
       {children}
     </StationeryCartContext.Provider>
   );

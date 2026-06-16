@@ -6,6 +6,7 @@ import MiniChatWidget from "./MiniChatWidget";
 import CompareModal from "./CompareModal";
 import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
+import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -20,7 +21,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
   const dispatch = useDispatch();
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
-  const { cart: stCart, cartCount: stCartCount, clearCart: clearStCart } = useStationeryCart();
+  const { cartCount: stCartCount, openCart: openStCart } = useStationeryCart();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
@@ -147,6 +148,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
 
   return (
     <>
+      <GlobalStationeryCartDrawer />
       {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
 
       {isCompareModalOpen && (
@@ -390,10 +392,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
       {stCartCount > 0 && (
         <button
           className="stat-cart-fab"
-          onClick={() => path === "/stationery"
-            ? document.dispatchEvent(new CustomEvent("tendr:open-stationery-cart"))
-            : router.navigate("/stationery")
-          }
+          onClick={openStCart}
           aria-label="Stationery Cart"
           title={`${stCartCount} stationery item${stCartCount > 1 ? "s" : ""} in cart`}
           style={{
