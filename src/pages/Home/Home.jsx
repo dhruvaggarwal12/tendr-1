@@ -598,26 +598,26 @@ const Home = () => {
 
             {/* Mobile only: 4 main category chips */}
             <div className="hero-mobile-cats" style={{ display: "none", marginBottom: 10 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+              <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
                 {[
-                  { emoji: "🏪", label: "Vendors",             path: null,                   bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)", isVendors: true },
-                  { emoji: "🎁", label: "Gift Hampers",         path: "/gift-hampers-cakes",  bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
-                  { emoji: "🎭", label: "Fun Activities",       path: "/fun-activities",       bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
-                  { emoji: "💒", label: "Stationeries",         path: "/stationery",           bg: "linear-gradient(135deg,#FDF0D8,#FBE0C0)" },
+                  { emoji: "🏪", label: "Vendors",       path: null,                  bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)", isVendors: true },
+                  { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes", bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
+                  { emoji: "🎭", label: "Fun Activities", path: "/fun-activities",      bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
+                  { emoji: "💒", label: "Stationeries",   path: "/stationery",          bg: "linear-gradient(135deg,#FDF0D8,#FBE0C0)" },
                 ].map(({ emoji, label, path, bg, isVendors }) => (
                   <button key={label}
                     onClick={() => isVendors ? setVendorStripOpen(o => !o) : navigate(path)}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
-                    <div style={{ width: 44, height: 44, borderRadius: 13, background: isVendors && vendorStripOpen ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : bg, border: `1.5px solid ${isVendors && vendorStripOpen ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 2px 6px rgba(196,122,46,0.1)", transition: "background 0.2s" }}>
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "4px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", width: 70 }}>
+                    <div style={{ width: 58, height: 58, borderRadius: 16, background: isVendors && vendorStripOpen ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : bg, border: `1.5px solid ${isVendors && vendorStripOpen ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 8px rgba(196,122,46,0.12)", transition: "background 0.2s" }}>
                       {isVendors && vendorStripOpen ? "✕" : emoji}
                     </div>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: isVendors && vendorStripOpen ? "#C47A2E" : "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: isVendors && vendorStripOpen ? "#C47A2E" : "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
                   </button>
                 ))}
               </div>
-              {/* Vendor sub-strip — slides open when Vendors tapped */}
+              {/* Vendor sub-strip — appears below the main row when Vendors tapped */}
               {vendorStripOpen && (
-                <div style={{ marginTop: 8, display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
+                <div style={{ marginTop: 10, display: "flex", justifyContent: "center", gap: 12 }}>
                   {[
                     { emoji: "🎀", label: "Decorator",    path: "/search?categories=Decorator" },
                     { emoji: "🍽", label: "Caterer",       path: "/search?categories=Caterer" },
@@ -625,9 +625,11 @@ const Home = () => {
                     { emoji: "🎵", label: "DJ",            path: "/search?categories=DJ" },
                   ].map(({ emoji, label, path }) => (
                     <button key={label} onClick={() => { setVendorStripOpen(false); navigate(path); }}
-                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 30, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 2px 6px rgba(196,122,46,0.08)" }}>
-                      <span style={{ fontSize: 15 }}>{emoji}</span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E" }}>{label}</span>
+                      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "4px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", width: 56 }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 11, background: "linear-gradient(135deg,#FFF0E0,#FFE4C4)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: "0 2px 5px rgba(196,122,46,0.1)" }}>
+                        {emoji}
+                      </div>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
                     </button>
                   ))}
                 </div>
