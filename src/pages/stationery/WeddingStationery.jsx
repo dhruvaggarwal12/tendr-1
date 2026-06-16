@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { getStationeryProducts, STATIONERY_CATEGORIES } from "./stationeryProducts";
+import { getStationeryProducts, STATIONERY_CATEGORIES, DEFAULT_STATIONERY } from "./stationeryProducts";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
@@ -57,7 +57,8 @@ function buildWhatsAppMessage(cart, form) {
 
 export default function WeddingStationery() {
   const navigate = useNavigate();
-  const [items, setItems]               = useState([]);
+  // Pre-fill with defaults so mobile always sees content immediately while API loads
+  const [items, setItems]               = useState(DEFAULT_STATIONERY.filter(p => p.available));
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedItem, setSelectedItem] = useState(null);
   const [hoveredId, setHoveredId]       = useState(null);

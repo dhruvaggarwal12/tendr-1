@@ -1324,42 +1324,49 @@ const Home = () => {
             label: "Itineraries",
             sub: "5 styles available",
             from: "From ₹650",
-            bg: "linear-gradient(145deg,#1E2B6E 0%,#3949AB 50%,#5C6BC0 100%)",
-            accentLight: "rgba(92,107,192,0.15)",
+            overlay: "linear-gradient(0deg,rgba(14,22,80,0.88) 0%,rgba(30,43,110,0.5) 50%,rgba(40,55,140,0.18) 100%)",
             desc: "A5 Leaf · Single Fold · 2-Fold · 3-Fold · Newspaper Style",
+            img: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&auto=format&q=75",
           },
           {
             icon: "💌",
             label: "Invitations",
             sub: "3 premium styles",
             from: "Price on request",
-            bg: "linear-gradient(145deg,#5C2500 0%,#9B4A1E 50%,#C47A2E 100%)",
-            accentLight: "rgba(196,122,46,0.15)",
+            overlay: "linear-gradient(0deg,rgba(80,25,5,0.9) 0%,rgba(130,55,15,0.55) 50%,rgba(160,80,20,0.2) 100%)",
             desc: "Pull-Out · Open Door · Roll-Up — luxury personalised designs",
+            img: "https://images.unsplash.com/photo-1465495976277-4387d4b0b4c6?w=600&auto=format&q=75",
           },
           {
             icon: "🎀",
             label: "Guest Accessories",
             sub: "4 types",
             from: "From ₹650",
-            bg: "linear-gradient(145deg,#5C1A30 0%,#9C3B55 50%,#C2607C 100%)",
-            accentLight: "rgba(194,96,124,0.15)",
+            overlay: "linear-gradient(0deg,rgba(70,10,35,0.9) 0%,rgba(120,40,70,0.55) 50%,rgba(160,60,90,0.2) 100%)",
             desc: "Luggage Tags · Door Danglers · Rose Petal Cones · Favour Tags",
+            img: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600&auto=format&q=75",
           },
           {
             icon: "✦",
             label: "More",
             sub: "Branding, hashtags & booklets",
             from: "From ₹500",
-            bg: "linear-gradient(145deg,#1C0E06 0%,#4A2810 50%,#8D6039 100%)",
-            accentLight: "rgba(141,96,57,0.15)",
+            overlay: "linear-gradient(0deg,rgba(20,10,3,0.92) 0%,rgba(55,30,8,0.6) 50%,rgba(100,60,20,0.22) 100%)",
             desc: "Logo · Hashtag Packages · Coffee Table Booklets · Cards",
+            img: "https://images.unsplash.com/photo-1497366216548-37526070297c?w=600&auto=format&q=75",
           },
         ];
+
+        const SECTION_BG = "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&auto=format&q=70";
+
         return (
-          <section style={{ background: "linear-gradient(180deg,#1A0E06 0%,#221408 60%,#1A0E06 100%)", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
-            {/* Background texture */}
-            <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 15% 30%,rgba(204,171,74,0.06),transparent 45%), radial-gradient(circle at 85% 70%,rgba(196,122,46,0.05),transparent 45%), radial-gradient(circle at 50% 50%,rgba(255,255,255,0.01),transparent 60%)", pointerEvents: "none" }} />
+          <section style={{ position: "relative", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+            {/* Background image */}
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${SECTION_BG}')`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }} />
+            {/* Dark overlay on top of bg image */}
+            <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(18,8,2,0.88) 0%,rgba(25,12,4,0.82) 60%,rgba(18,8,2,0.9) 100%)" }} />
+            {/* Gold shimmer blobs */}
+            <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 15% 30%,rgba(204,171,74,0.07),transparent 40%), radial-gradient(circle at 85% 70%,rgba(196,122,46,0.06),transparent 40%)", pointerEvents: "none" }} />
 
             <div style={{ maxWidth: 1160, margin: "0 auto", position: "relative" }}>
               {/* Header */}
@@ -1370,7 +1377,6 @@ const Home = () => {
                 transition={{ duration: 0.55 }}
                 style={{ textAlign: "center", marginBottom: 52 }}
               >
-                {/* Ornament */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 18 }}>
                   <div style={{ flex: 1, maxWidth: 80, height: 1, background: "linear-gradient(90deg,transparent,rgba(204,171,74,0.4))" }} />
                   <span style={{ color: "#CCAB4A", fontSize: 11, letterSpacing: "0.15em" }}>✦ ✦ ✦</span>
@@ -1403,33 +1409,34 @@ const Home = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.09 }}
                     onClick={() => navigate("/stationery")}
-                    style={{ borderRadius: 20, overflow: "hidden", cursor: "pointer", background: cat.bg, position: "relative", minHeight: 260, display: "flex", flexDirection: "column", justifyContent: "flex-end", boxShadow: "0 8px 32px rgba(0,0,0,0.45)", transition: "transform 0.25s, box-shadow 0.25s", border: "1px solid rgba(255,255,255,0.06)" }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-7px) scale(1.01)"; e.currentTarget.style.boxShadow = "0 20px 56px rgba(0,0,0,0.55)"; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.45)"; }}
+                    style={{ borderRadius: 20, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 280, display: "flex", flexDirection: "column", justifyContent: "flex-end", boxShadow: "0 8px 32px rgba(0,0,0,0.55)", transition: "transform 0.28s, box-shadow 0.28s", border: "1px solid rgba(255,255,255,0.08)" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-8px) scale(1.015)"; e.currentTarget.style.boxShadow = "0 24px 60px rgba(0,0,0,0.65)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.55)"; }}
                   >
-                    {/* Gradient overlay bottom */}
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(0deg,rgba(0,0,0,0.65) 0%,rgba(0,0,0,0.05) 55%,transparent 100%)", zIndex: 1 }} />
+                    {/* Photo background */}
+                    <img
+                      src={cat.img}
+                      alt={cat.label}
+                      loading="lazy"
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s" }}
+                      onError={e => { e.target.style.display = "none"; }}
+                    />
+                    {/* Colour-tinted gradient overlay */}
+                    <div style={{ position: "absolute", inset: 0, background: cat.overlay }} />
 
-                    {/* Top accent circle */}
-                    <div style={{ position: "absolute", top: -30, right: -30, width: 110, height: 110, borderRadius: "50%", background: "rgba(255,255,255,0.06)", zIndex: 0 }} />
+                    {/* Icon top-right */}
                     <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
-                      <span style={{ fontSize: 28, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.4))" }}>{cat.icon}</span>
+                      <span style={{ fontSize: 26, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}>{cat.icon}</span>
                     </div>
 
-                    {/* Content */}
+                    {/* Content bottom */}
                     <div style={{ position: "relative", zIndex: 2, padding: "0 20px 22px" }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.55)", marginBottom: 6 }}>
-                        {cat.sub}
-                      </div>
-                      <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 22, fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: 8 }}>
-                        {cat.label}
-                      </div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", lineHeight: 1.4, marginBottom: 12 }}>
-                        {cat.desc}
-                      </div>
+                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 5 }}>{cat.sub}</div>
+                      <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 23, fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: 7 }}>{cat.label}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: 12 }}>{cat.desc}</div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", letterSpacing: "-0.01em" }}>{cat.from}</div>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.6)", letterSpacing: "0.06em" }}>EXPLORE →</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A" }}>{cat.from}</div>
+                        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.06em" }}>EXPLORE →</div>
                       </div>
                     </div>
                   </motion.div>
