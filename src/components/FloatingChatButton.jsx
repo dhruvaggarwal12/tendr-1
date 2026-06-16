@@ -5,6 +5,7 @@ import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
 import CompareModal from "./CompareModal";
 import { useChatOverlay } from "../context/ChatContext";
+import { useStationeryCart } from "../context/StationeryCartContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -19,6 +20,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
   const dispatch = useDispatch();
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
+  const { cart: stCart, cartCount: stCartCount, clearCart: clearStCart } = useStationeryCart();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
@@ -384,6 +386,47 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         </>
       )}
 
+      {/* Stationery cart button — left of chat button, hidden on stationery page (has its own cart button) */}
+      {stCartCount > 0 && path !== "/stationery" && (
+        <button
+          className="stat-cart-fab"
+          onClick={() => router.navigate("/stationery")}
+          aria-label="Stationery Cart"
+          title={`${stCartCount} stationery item${stCartCount > 1 ? "s" : ""} in cart`}
+          style={{
+            position: "fixed",
+            bottom: 22,
+            zIndex: 900,
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            border: "none",
+            background: "linear-gradient(135deg,#7A3A1E,#C47A2E)",
+            color: "#fff",
+            fontFamily: font,
+            cursor: "pointer",
+            boxShadow: "0 6px 24px rgba(122,58,30,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 20,
+            transition: "transform 0.2s, box-shadow 0.2s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+        >
+          💒
+          <span style={{
+            position: "absolute", top: -4, right: -4,
+            minWidth: 18, height: 18, borderRadius: 9,
+            background: "#C47A2E", color: "#fff",
+            fontSize: 10, fontWeight: 900,
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: "0 4px", border: "2px solid #fff",
+          }}>{stCartCount}</span>
+        </button>
+      )}
+
       {/* Floating button */}
       <button
         onClick={handleOpen}
@@ -472,6 +515,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           bottom: 22px;
           right: 20px;
         }
+        /* Stationery cart FAB sits to the LEFT of the chat button */
+        .stat-cart-fab {
+          right: 168px; /* chat btn ~140px wide + 8px gap + 20px from edge */
+        }
         .chat-btn-text {
           font-size: 14px;
           font-weight: 700;
@@ -509,6 +556,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           }
           .mobile-action-stack { bottom: 138px !important; right: 14px !important; }
           .chat-btn-text { display: none; }
+          /* Stationery cart button: to the left of chat on mobile, above bottom nav */
+          .stat-cart-fab {
+            bottom: 80px !important;
+            right: 72px !important; /* 14 + 50 + 8 */
+          }
           .chat-popup {
             right: 12px !important;
             left: 12px !important;

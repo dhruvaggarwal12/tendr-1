@@ -12,7 +12,8 @@ const SEARCH_SUGGESTIONS = [
   { text: "Photographers in Delhi" },
   { text: "Caterers in Noida" },
   { text: "DJ in Gurgaon" },
-  { text: "Gift Hampers & Cakes",              type: "page", href: "/gift-hampers-cakes" },
+  { text: "Wedding Stationeries",               type: "page", href: "/stationery" },
+  { text: "Gift Hampers & Cakes",               type: "page", href: "/gift-hampers-cakes" },
   { text: "Budget Allocator",                   type: "page", href: "/budget-picker" },
   { text: "Decor Finder",                       type: "page", href: "/decor-finder" },
   { text: "Decorators under ₹30,000" },
@@ -273,19 +274,20 @@ const Navbar = ({
 
   const NAV_ITEMS = [
     {
-      label: "Vendors",
+      label: "Browse",
       megaMenu: true,
       items: [
-        { id: "Decorator",    emoji: "🎨", label: "Decorator",      href: "/search?categories=Decorator" },
-        { id: "Caterer",      emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
-        { id: "Photographer", emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
-        { id: "DJ",           emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-        { id: "gifts",        emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
-        { id: "activities",   emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
+        { id: "Decorator",    emoji: "🎨", label: "Decorator",              href: "/search?categories=Decorator" },
+        { id: "Caterer",      emoji: "🍽️", label: "Caterer",                href: "/search?categories=Caterer" },
+        { id: "Photographer", emoji: "📸", label: "Photographer",           href: "/search?categories=Photographer" },
+        { id: "DJ",           emoji: "🎵", label: "DJ",                     href: "/search?categories=DJ" },
+        { id: "activities",   emoji: "🎭", label: "Fun Activities",         href: "/fun-activities" },
+        { id: "stationery",   emoji: "💒", label: "Wedding Stationeries",   href: "/stationery" },
       ],
       sideItems: [
-        { label: "⭐ Top Rated Vendors",  href: "/top-rated/Photographer" },
-        { label: "🤝 Register as Vendor", href: "/vendor/register" },
+        { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+        { label: "⭐ Top Rated Vendors",    href: "/top-rated/Photographer" },
+        { label: "🤝 Register as Vendor",   href: "/vendor/register" },
       ],
     },
     {
@@ -597,12 +599,12 @@ const Navbar = ({
             ))}
           </div>
 
-          {/* Gift Hampers — after Booking, before Sign In */}
-          <a href="/gift-hampers-cakes"
-            style={{ color: "#C47A2E", fontSize: 13, fontWeight: 600, padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.28)", background: "rgba(196,122,46,0.06)", whiteSpace: "nowrap", textDecoration: "none", transition: "background 0.2s", flexShrink: 0 }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.13)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}>
-            🎁 Gift Hampers
+          {/* Wedding Stationeries — after Booking, before Sign In */}
+          <a href="/stationery"
+            style={{ color: "#7A3A1E", fontSize: 13, fontWeight: 600, padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(122,58,30,0.28)", background: "rgba(122,58,30,0.06)", whiteSpace: "nowrap", textDecoration: "none", transition: "background 0.2s", flexShrink: 0 }}
+            onMouseEnter={e => (e.currentTarget.style.background = "rgba(122,58,30,0.13)")}
+            onMouseLeave={e => (e.currentTarget.style.background = "rgba(122,58,30,0.06)")}>
+            💒 Stationeries
           </a>
 
           {/* Divider before auth */}
@@ -882,10 +884,10 @@ const Navbar = ({
                 Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : "🎁"}
               </a>
             )}
-            {/* Gift Hampers — mobile */}
-            <a href="/gift-hampers-cakes" onClick={() => setMenuOpen(false)}
-              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font }}>
-              🎁 Gift Hampers
+            {/* Wedding Stationeries — mobile */}
+            <a href="/stationery" onClick={() => setMenuOpen(false)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 14px", borderRadius: 8, border: "1.5px solid rgba(122,58,30,0.3)", background: "rgba(122,58,30,0.06)", color: "#7A3A1E", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font }}>
+              💒 Stationeries
             </a>
             <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
               style={{ background: "#25D366", color: "#fff", width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0, boxShadow: "0 2px 8px rgba(37,211,102,0.35)" }}>

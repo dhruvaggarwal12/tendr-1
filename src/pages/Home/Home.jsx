@@ -258,6 +258,7 @@ const Home = () => {
   const [slideVisible, setSlideVisible] = useState(true);
   const faCarouselRef = useRef(null);
   const [faModal, setFaModal] = useState(null);
+  const [vendorStripOpen, setVendorStripOpen] = useState(false);
   const scrollFaCarousel = (dir) => {
     const el = faCarouselRef.current;
     if (!el) return;
@@ -274,6 +275,7 @@ const Home = () => {
     { id: "budget",         tag: "Budget Allocator",      icon: "💰", iconBg: "linear-gradient(135deg,#7A4A1E,#CCAB4A)",  headline: "Know exactly what you can afford — before you start",     desc: "Set your budget per service. We filter and sort vendors so every option you see is within reach.", where: "Our Products → Budget Allocator", href: "/budget-picker",    accent: "#7A4A1E" },
     { id: "gift-hampers",   tag: "Gift Hampers & Cakes",  icon: "🎁", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)",  headline: "The perfect gift, delivered to the door",                 desc: "Curated hampers and custom cakes for birthdays, anniversaries and corporate celebrations.", where: "Gift & Hampers", href: "/gift-hampers-cakes",  accent: "#C47A2E" },
     { id: "fun-activities",  tag: "Fun Activities",        icon: "🎭", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Add magic, games & live entertainment to any event",     desc: "Magic shows, game coordinators, dhol players, live teddy, stone art and more — fixed prices, confirmed in 2 hours.", where: "Fun Activities", href: "/fun-activities", accent: "#C47A2E" },
+    { id: "stationery",      tag: "Wedding Stationeries",  icon: "💒", iconBg: "linear-gradient(135deg,#7A3A1E,#C47A2E)",  headline: "Your wedding, beautifully told — no templates, ever",    desc: "Itineraries, invitations, money envelopes, hashtag packages, coffee table booklets and more — each piece crafted exclusively for you.", where: "Wedding Stationeries", href: "/stationery", accent: "#7A3A1E" },
     { id: "celebration-kit",tag: "Tendr Celebration Kit", icon: "🎉", iconBg: "linear-gradient(135deg,#2C1A0E,#C47A2E)",  headline: "Everything for a home celebration — under ₹1,499",        desc: "Balloons, fairy lights, games, decor disposals and a letter from Tendr. Unbox and celebrate.", where: "Coming Soon", href: null, accent: "#2C1A0E", isKit: true },
   ];
 
@@ -594,26 +596,42 @@ const Home = () => {
           {/* ── Left: fixed hero headline + CTA ── */}
           <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
 
-            {/* Mobile only: 6 category icon chips in one row — no scroll */}
-            <div className="hero-mobile-cats" style={{ display: "none", marginBottom: 14 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(6, 1fr)", gap: 4 }}>
-              {[
-                { emoji: "🎀", label: "Decorator",     path: "/search?categories=Decorator",    bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)" },
-                { emoji: "🍽", label: "Caterer",        path: "/search?categories=Caterer",      bg: "linear-gradient(135deg,#FFF8E1,#FFF0C2)" },
-                { emoji: "📸", label: "Photographer",   path: "/search?categories=Photographer", bg: "linear-gradient(135deg,#F0F8FF,#E0F0FF)" },
-                { emoji: "🎵", label: "DJ",             path: "/search?categories=DJ",           bg: "linear-gradient(135deg,#F0F0FF,#E8E8FF)" },
-                { emoji: "🎁", label: "Gifts",          path: "/gift-hampers-cakes",             bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
-                { emoji: "🎭", label: "Activities",     path: "/fun-activities",                 bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
-              ].map(({ emoji, label, path, bg }) => (
-                <button key={label} onClick={() => navigate(path)}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
-                  <div style={{ width: 42, height: 42, borderRadius: 13, background: bg, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 2px 6px rgba(196,122,46,0.1)" }}>
-                    {emoji}
-                  </div>
-                  <span style={{ fontSize: 9, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
-                </button>
-              ))}
+            {/* Mobile only: 4 main category chips */}
+            <div className="hero-mobile-cats" style={{ display: "none", marginBottom: 10 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 6 }}>
+                {[
+                  { emoji: "🏪", label: "Vendors",             path: null,                   bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)", isVendors: true },
+                  { emoji: "🎁", label: "Gift Hampers",         path: "/gift-hampers-cakes",  bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
+                  { emoji: "🎭", label: "Fun Activities",       path: "/fun-activities",       bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
+                  { emoji: "💒", label: "Stationeries",         path: "/stationery",           bg: "linear-gradient(135deg,#FDF0D8,#FBE0C0)" },
+                ].map(({ emoji, label, path, bg, isVendors }) => (
+                  <button key={label}
+                    onClick={() => isVendors ? setVendorStripOpen(o => !o) : navigate(path)}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "6px 2px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 13, background: isVendors && vendorStripOpen ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : bg, border: `1.5px solid ${isVendors && vendorStripOpen ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, boxShadow: "0 2px 6px rgba(196,122,46,0.1)", transition: "background 0.2s" }}>
+                      {isVendors && vendorStripOpen ? "✕" : emoji}
+                    </div>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: isVendors && vendorStripOpen ? "#C47A2E" : "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+                  </button>
+                ))}
               </div>
+              {/* Vendor sub-strip — slides open when Vendors tapped */}
+              {vendorStripOpen && (
+                <div style={{ marginTop: 8, display: "flex", gap: 6, overflowX: "auto", paddingBottom: 2 }}>
+                  {[
+                    { emoji: "🎀", label: "Decorator",    path: "/search?categories=Decorator" },
+                    { emoji: "🍽", label: "Caterer",       path: "/search?categories=Caterer" },
+                    { emoji: "📸", label: "Photographer",  path: "/search?categories=Photographer" },
+                    { emoji: "🎵", label: "DJ",            path: "/search?categories=DJ" },
+                  ].map(({ emoji, label, path }) => (
+                    <button key={label} onClick={() => { setVendorStripOpen(false); navigate(path); }}
+                      style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 12px", borderRadius: 30, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 2px 6px rgba(196,122,46,0.08)" }}>
+                      <span style={{ fontSize: 15 }}>{emoji}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E" }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Fixed headline block */}

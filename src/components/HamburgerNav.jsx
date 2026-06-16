@@ -437,6 +437,24 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Nav sections */}
           <div style={{ padding: "8px 0" }}>
+            {/* Wedding Stationeries — above Gift Hampers */}
+            {(() => {
+              const isStatActive = location.pathname === "/stationery";
+              return (
+                <div style={{ marginBottom: 2 }}>
+                  <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px" }}>Stationeries</div>
+                  <button
+                    onClick={() => navigate("/stationery")}
+                    style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "9px 16px", border: "none", background: isStatActive ? "rgba(196,122,46,0.18)" : "transparent", fontSize: 13, fontWeight: isStatActive ? 700 : 500, color: isStatActive ? "#FFCC66" : "rgba(255,255,255,0.85)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderLeft: isStatActive ? "3px solid #C9A84C" : "3px solid transparent" }}
+                    onMouseEnter={e => { if (!isStatActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
+                    onMouseLeave={e => { if (!isStatActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
+                  >
+                    💒 Wedding Stationeries
+                  </button>
+                  <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "4px 18px" }} />
+                </div>
+              );
+            })()}
             {/* Gift Hampers — above Browse Vendors */}
             {(() => {
               const isGiftActive = location.pathname === "/gift-hampers-cakes";
@@ -804,8 +822,17 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               </div>
             )}
 
-            {/* Gift Hampers quick-link — drawer (mobile) only, above Browse Vendors */}
-            <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+            {/* Wedding Stationeries + Gift Hampers quick-links — drawer (mobile) only */}
+            <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "flex", flexDirection: "column", gap: 6 }}>
+              <button onClick={() => { close(); navigate("/stationery"); }}
+                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(122,58,30,0.22)", background: "rgba(122,58,30,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(122,58,30,0.14)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(122,58,30,0.07)"; }}
+              >
+                <span style={{ fontSize: 17 }}>💒</span>
+                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#C47A2E" }}>Wedding Stationeries</span>
+                <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(196,122,46,0.6)" }}>→</span>
+              </button>
               <button onClick={() => { close(); navigate("/gift-hampers-cakes"); }}
                 style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; }}

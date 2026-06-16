@@ -4,6 +4,7 @@ import { getStationeryProducts, STATIONERY_CATEGORIES, DEFAULT_STATIONERY } from
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import { useStationeryCart } from "../../context/StationeryCartContext";
 
 const font = "'Outfit', sans-serif";
 const WA_NUMBER = "919211668427";
@@ -64,8 +65,8 @@ export default function WeddingStationery() {
   const [hoveredId, setHoveredId]       = useState(null);
   const sectionRefs = useRef({});
 
-  // Cart
-  const [cart, setCart]                 = useState([]);
+  // Global cart from context (persists across pages)
+  const { cart, cartCount, addToCart, removeFromCart: removeFromCartCtx, clearCart, itemInCart } = useStationeryCart();
   const [showCart, setShowCart]         = useState(false);
 
   // Quantity picker modal
@@ -103,10 +104,6 @@ export default function WeddingStationery() {
     return acc;
   }, {});
 
-  // Cart helpers
-  const cartCount = cart.reduce((s, c) => s + Number(c.quantity), 0);
-  const itemInCart = (item) => cart.find((c) => (c.item._id || c.item.id) === (item._id || item.id));
-
   const openQtyPicker = (e, item) => {
     e.stopPropagation();
     setQty(itemInCart(item)?.quantity || 1);
@@ -115,19 +112,11 @@ export default function WeddingStationery() {
 
   const confirmAddToCart = () => {
     if (!qty || qty < 1) return;
-    setCart((prev) => {
-      const id = qtyPicker._id || qtyPicker.id;
-      const exists = prev.find((c) => (c.item._id || c.item.id) === id);
-      if (exists) return prev.map((c) => (c.item._id || c.item.id) === id ? { ...c, quantity: Number(qty) } : c);
-      return [...prev, { item: qtyPicker, quantity: Number(qty) }];
-    });
+    addToCart(qtyPicker, qty);
     setQtyPicker(null);
   };
 
-  const removeFromCart = (item) => {
-    const id = item._id || item.id;
-    setCart((prev) => prev.filter((c) => (c.item._id || c.item.id) !== id));
-  };
+  const removeFromCart = (item) => removeFromCartCtx(item);
 
   // WhatsApp send
   const handleWaSend = () => {
@@ -141,6 +130,7 @@ export default function WeddingStationery() {
     window.open(url, "_blank");
     setShowWaForm(false);
     setShowCart(false);
+    clearCart();
   };
 
   const pricedTotal = cart.reduce((sum, { item, quantity }) => {
@@ -307,14 +297,23 @@ export default function WeddingStationery() {
 
       {/* ── Floating Cart Button ── */}
       {cart.length > 0 && (
-        <button
-          onClick={() => setShowCart(true)}
-          style={{ position: "fixed", bottom: 24, right: 24, zIndex: 500, background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 100, padding: "14px 22px", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 8px 32px rgba(37,211,102,0.45)", display: "flex", alignItems: "center", gap: 10 }}
-        >
-          <span style={{ fontSize: 18 }}>🛒</span>
-          <span>Cart</span>
-          <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: 100, padding: "2px 9px", fontSize: 12, fontWeight: 900 }}>{cartCount}</span>
-        </button>
+        <>
+          <button
+            className="ws-cart-fab"
+            onClick={() => setShowCart(true)}
+            style={{ position: "fixed", bottom: 24, right: 24, zIndex: 500, background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 100, padding: "14px 22px", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 8px 32px rgba(37,211,102,0.45)", display: "flex", alignItems: "center", gap: 10 }}
+          >
+            <span style={{ fontSize: 18 }}>🛒</span>
+            <span className="ws-cart-label">Cart</span>
+            <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: 100, padding: "2px 9px", fontSize: 12, fontWeight: 900 }}>{cartCount}</span>
+          </button>
+          <style>{`
+            @media (max-width: 767px) {
+              .ws-cart-fab { bottom: 80px !important; right: 80px !important; padding: 12px 16px !important; }
+              .ws-cart-label { display: none; }
+            }
+          `}</style>
+        </>
       )}
 
       {/* ── Quantity Picker Modal ── */}

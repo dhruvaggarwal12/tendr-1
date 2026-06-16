@@ -6,12 +6,13 @@ const RECENT_KEY = "tendr_recent_searches";
 const MAX_RECENT = 5;
 
 const CATEGORIES = [
-  { label: "Photographers",  emoji: "📸", id: "Photographer" },
-  { label: "Catering",       emoji: "🍽",  id: "Caterer" },
-  { label: "DJs",            emoji: "🎵",  id: "DJ" },
-  { label: "Decoration",     emoji: "🎀",  id: "Decorator" },
-  { label: "Fun Activities", emoji: "🎭", id: null, href: "/fun-activities" },
-  { label: "All Vendors",    emoji: "🔍",  id: null },
+  { label: "Photographers",          emoji: "📸", id: "Photographer" },
+  { label: "Catering",               emoji: "🍽",  id: "Caterer" },
+  { label: "DJs",                    emoji: "🎵",  id: "DJ" },
+  { label: "Decoration",             emoji: "🎀",  id: "Decorator" },
+  { label: "Fun Activities",         emoji: "🎭", id: null, href: "/fun-activities" },
+  { label: "Wedding Stationeries",   emoji: "💒", id: null, href: "/stationery" },
+  { label: "All Vendors",            emoji: "🔍",  id: null },
 ];
 
 const POPULAR_LOCATIONS = ["Delhi", "Noida", "Ghaziabad", "Greater Noida"];
@@ -23,9 +24,10 @@ const POPULAR_SEARCHES = [
   { text: "Caterers in Noida" },
   { text: "Decorator in Noida" },
   { text: "DJ in Gurgaon" },
+  { text: "Wedding Stationeries",              type: "page", href: "/stationery" },
   { text: "Fun Activities for birthday party", type: "page", href: "/fun-activities" },
   { text: "Gift Hampers & Cakes",              type: "page", href: "/gift-hampers-cakes" },
-  { text: "Budget Allocator",                   type: "page", href: "/budget-picker" },
+  { text: "Budget Allocator",                  type: "page", href: "/budget-picker" },
   { text: "Decorators under ₹30,000" },
   { text: "Photographer and caterer in Noida" },
 ];

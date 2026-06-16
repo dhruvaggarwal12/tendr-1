@@ -13,11 +13,12 @@ const HIDE_PATHS = [
 ];
 
 const CATEGORIES = [
-  { emoji: "📸", label: "Photography", path: "/search?categories=Photographer" },
-  { emoji: "🍽", label: "Catering",    path: "/search?categories=Caterer" },
-  { emoji: "🎵", label: "DJ & Music",  path: "/search?categories=DJ" },
-  { emoji: "🎀", label: "Decoration",  path: "/search?categories=Decorator" },
-  { emoji: "🎁", label: "Gift Hampers",path: "/gift-hampers-cakes" },
+  { emoji: "📸", label: "Photography",         path: "/search?categories=Photographer" },
+  { emoji: "🍽", label: "Catering",            path: "/search?categories=Caterer" },
+  { emoji: "🎵", label: "DJ & Music",          path: "/search?categories=DJ" },
+  { emoji: "🎀", label: "Decoration",          path: "/search?categories=Decorator" },
+  { emoji: "🎁", label: "Gift Hampers",        path: "/gift-hampers-cakes" },
+  { emoji: "💒", label: "Wedding Stationeries",path: "/stationery" },
 ];
 
 const NAV_COLORS = {
@@ -160,7 +161,7 @@ function BottomNavInner() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 12 }}>
               {[
                 ...CATEGORIES,
-                { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
+                { emoji: "🎭", label: "Fun Activities",       path: "/fun-activities" },
                 ...(user?.isAdmin ? [
                   { emoji: "🎉", label: "Plan by Occasion", path: null, newTab: true },
                   { emoji: "🏡", label: "Party Places",     path: "/party-places" },

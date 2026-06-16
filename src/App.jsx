@@ -10,6 +10,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import FloatingChatButton from "./components/FloatingChatButton";
 import VendorChatModal from "./components/VendorChatModal";
 import { ChatProvider } from "./context/ChatContext";
+import { StationeryCartProvider } from "./context/StationeryCartContext";
 import ComingSoon from "./pages/ComingSoon";
 import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
 
@@ -72,6 +73,7 @@ function App() {
   return (
     <HelmetProvider>
       <ErrorBoundary>
+        <StationeryCartProvider>
         <ChatProvider>
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
           <Suspense fallback={
@@ -85,6 +87,7 @@ function App() {
           <FloatingChatButton />
           <VendorChatModal />
         </ChatProvider>
+        </StationeryCartProvider>
       </ErrorBoundary>
     </HelmetProvider>
   );
