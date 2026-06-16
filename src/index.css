@@ -266,7 +266,7 @@ button:active:not(:disabled) { transform: scale(0.97); }
   .vendor-sticky-cta {
     display: block !important;
     position: fixed !important;
-    bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
+    bottom: 80px !important;
     left: 16px !important;
     right: 76px !important;
     z-index: 8999 !important;
