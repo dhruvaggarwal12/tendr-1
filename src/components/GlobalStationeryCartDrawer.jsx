@@ -161,7 +161,7 @@ export default function GlobalStationeryCartDrawer() {
 
             {/* Footer */}
             {cart.length > 0 && (
-              <div style={{ padding: "16px 24px 24px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+              <div className="gsc-footer" style={{ padding: "16px 24px 24px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
                 <div style={{ marginBottom: 14 }}>
                   {pricedTotal > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#1C1208", marginBottom: 4 }}>
@@ -244,7 +244,10 @@ export default function GlobalStationeryCartDrawer() {
       <style>{`
         @keyframes gsc-fadeIn    { from { opacity: 0; } to { opacity: 1; } }
         @keyframes gsc-slideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        @media (max-width: 767px) { .gsc-panel { width: 100% !important; } }
+        @media (max-width: 767px) {
+          .gsc-panel { width: 100% !important; }
+          .gsc-footer { padding-bottom: 84px !important; }
+        }
       `}</style>
     </>
   );

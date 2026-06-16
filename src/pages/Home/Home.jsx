@@ -896,7 +896,7 @@ const Home = () => {
             display: none !important;
           }
           .hero-mobile-cats {
-            display: flex !important;
+            display: block !important;
           }
           .hero-mobile-cats::-webkit-scrollbar { display: none; }
         }
