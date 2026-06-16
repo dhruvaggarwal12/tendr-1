@@ -82,6 +82,13 @@ export default function WeddingStationery() {
     getStationeryProducts().then((data) => setItems(data.filter((p) => p.available)));
   }, []);
 
+  // Global 💒 FAB dispatches this event when already on /stationery
+  useEffect(() => {
+    const handler = () => setShowCart(true);
+    document.addEventListener("tendr:open-stationery-cart", handler);
+    return () => document.removeEventListener("tendr:open-stationery-cart", handler);
+  }, []);
+
   // Lock body scroll when any overlay is open
   useEffect(() => {
     const open = selectedItem || showCart || qtyPicker || showWaForm;
@@ -295,26 +302,7 @@ export default function WeddingStationery() {
         )}
       </div>
 
-      {/* ── Floating Cart Button ── */}
-      {cart.length > 0 && (
-        <>
-          <button
-            className="ws-cart-fab"
-            onClick={() => setShowCart(true)}
-            style={{ position: "fixed", bottom: 24, right: 24, zIndex: 500, background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", border: "none", borderRadius: 100, padding: "14px 22px", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 8px 32px rgba(37,211,102,0.45)", display: "flex", alignItems: "center", gap: 10 }}
-          >
-            <span style={{ fontSize: 18 }}>🛒</span>
-            <span className="ws-cart-label">Cart</span>
-            <span style={{ background: "rgba(255,255,255,0.25)", borderRadius: 100, padding: "2px 9px", fontSize: 12, fontWeight: 900 }}>{cartCount}</span>
-          </button>
-          <style>{`
-            @media (max-width: 767px) {
-              .ws-cart-fab { bottom: 80px !important; right: 80px !important; padding: 12px 16px !important; }
-              .ws-cart-label { display: none; }
-            }
-          `}</style>
-        </>
-      )}
+      {/* Global 💒 FAB (FloatingChatButton) handles the cart button on all pages including this one */}
 
       {/* ── Quantity Picker Modal ── */}
       {qtyPicker && (

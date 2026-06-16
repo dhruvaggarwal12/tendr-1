@@ -386,11 +386,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         </>
       )}
 
-      {/* Stationery cart button — left of chat button, hidden on stationery page (has its own cart button) */}
-      {stCartCount > 0 && path !== "/stationery" && (
+      {/* Stationery cart button — left of chat button, appears on all pages */}
+      {stCartCount > 0 && (
         <button
           className="stat-cart-fab"
-          onClick={() => router.navigate("/stationery")}
+          onClick={() => path === "/stationery"
+            ? document.dispatchEvent(new CustomEvent("tendr:open-stationery-cart"))
+            : router.navigate("/stationery")
+          }
           aria-label="Stationery Cart"
           title={`${stCartCount} stationery item${stCartCount > 1 ? "s" : ""} in cart`}
           style={{
