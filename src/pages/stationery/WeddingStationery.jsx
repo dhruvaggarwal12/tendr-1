@@ -150,7 +150,7 @@ export default function WeddingStationery() {
   const hasUnpriced = cart.some((c) => c.item.priceOnRequest);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF5EE", fontFamily: font }}>
+    <div style={{ minHeight: "100vh", fontFamily: font, backgroundImage: "linear-gradient(rgba(250,245,238,0.88),rgba(250,245,238,0.88)), url('https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&auto=format&q=65')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
       <SEO title="Wedding Stationeries — Tendr" description="Custom wedding stationeries — itineraries, invitations, envelopes, hashtag packages, coffee table booklets and more." path="/stationery" />
       <BasicSpeedDial />
       <HamburgerNav title="Wedding Stationeries" />
