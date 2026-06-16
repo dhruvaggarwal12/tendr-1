@@ -72,38 +72,25 @@ export default function WeddingStationery() {
       <HamburgerNav title="Wedding Stationeries" />
 
       {/* ── HERO — bright, ornamental ── */}
-      <div style={{ background: "linear-gradient(150deg,#FFFAF3 0%,#FFF6E8 40%,#FDF0D8 100%)", padding: "56px 24px 48px", textAlign: "center", position: "relative", overflow: "hidden", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+      <div style={{ background: "linear-gradient(150deg,#FFFAF3 0%,#FFF6E8 40%,#FDF0D8 100%)", padding: "28px 24px 24px", textAlign: "center", position: "relative", overflow: "hidden", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
         {/* Decorative blobs */}
-        <div style={{ position: "absolute", top: -60, left: -60, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.14),transparent 65%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -80, right: -80, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.11),transparent 65%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", top: "30%", right: "10%", width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle,rgba(212,168,67,0.1),transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: -50, left: -50, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.14),transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -60, right: -60, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.11),transparent 65%)", pointerEvents: "none" }} />
 
-        {/* Ornamental ring */}
-        <div style={{ position: "relative", display: "inline-block", marginBottom: 14 }}>
-          <svg width="60" height="60" viewBox="0 0 60 60" fill="none" style={{ opacity: 0.55 }}>
-            <circle cx="30" cy="30" r="28" stroke="#C9A84C" strokeWidth="0.8" />
-            <circle cx="30" cy="30" r="20" stroke="#C9A84C" strokeWidth="0.5" strokeDasharray="2 4" />
-            <text x="30" y="35" textAnchor="middle" fill="#C9A84C" fontSize="18" fontFamily="serif">✦</text>
-          </svg>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 10, marginBottom: 6 }}>
+          <span style={{ color: "#C9A84C", fontSize: 14 }}>✦</span>
+          <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C47A2E", margin: 0 }}>Crafted with love</p>
+          <span style={{ color: "#C9A84C", fontSize: 14 }}>✦</span>
         </div>
 
-        <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.22em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 14 }}>Crafted with love</p>
-
-        <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(3rem,8vw,5.5rem)", fontWeight: 300, color: "#1C1208", margin: "0 0 18px", letterSpacing: "0.04em", fontStyle: "italic", lineHeight: 1.08 }}>
-          Wedding<br />Stationeries
+        <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.1rem,5.5vw,3.2rem)", fontWeight: 300, color: "#1C1208", margin: "0 0 8px", letterSpacing: "0.02em", fontStyle: "italic", lineHeight: 1.1 }}>
+          Wedding Stationeries
         </h1>
 
-        {/* Ornamental divider */}
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, margin: "0 auto 18px", maxWidth: 300 }}>
-          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,transparent,#C9A84C)" }} />
-          <span style={{ color: "#C9A84C", fontSize: 12, letterSpacing: "0.15em" }}>✦ ✦ ✦</span>
-          <div style={{ flex: 1, height: 1, background: "linear-gradient(90deg,#C9A84C,transparent)" }} />
-        </div>
-
-        <p style={{ fontSize: 15, color: "#7A5535", maxWidth: 480, margin: "0 auto 10px", lineHeight: 1.7 }}>
-          Beautifully designed, fully personalised. Every piece crafted exclusively for your wedding — no templates, no shortcuts.
+        <p style={{ fontSize: 13, color: "#7A5535", maxWidth: 440, margin: "0 auto 6px", lineHeight: 1.5 }}>
+          Beautifully designed, fully personalised — no templates, no shortcuts.
         </p>
-        <p style={{ fontSize: 12, color: "#B89060", margin: 0, fontStyle: "italic" }}>
+        <p style={{ fontSize: 11, color: "#B89060", margin: 0, fontStyle: "italic" }}>
           Design prices shown. Printing &amp; delivery charged separately.
         </p>
       </div>
