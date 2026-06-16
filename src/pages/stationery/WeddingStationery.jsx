@@ -36,7 +36,7 @@ export default function WeddingStationery() {
   const sectionRefs = useRef({});
 
   useEffect(() => {
-    setItems(getStationeryProducts().filter((p) => p.available));
+    getStationeryProducts().then((data) => setItems(data.filter((p) => p.available)));
   }, []);
 
   // Trap scroll when panel open
@@ -157,9 +157,9 @@ export default function WeddingStationery() {
                       }}
                     >
                       {/* Image / decorative area */}
-                      {item.images?.[0] ? (
+                      {item.images?.[0]?.url ? (
                         <div style={{ height: 180, overflow: "hidden", flexShrink: 0 }}>
-                          <img src={item.images[0]} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.32s", transform: isHov ? "scale(1.05)" : "scale(1)" }} />
+                          <img src={item.images[0].url} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.32s", transform: isHov ? "scale(1.05)" : "scale(1)" }} />
                         </div>
                       ) : (
                         <div style={{ height: 110, background: meta.light, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", flexShrink: 0 }}>
@@ -249,9 +249,9 @@ export default function WeddingStationery() {
             <button onClick={() => setSelectedItem(null)} style={{ position: "absolute", top: 16, right: 16, width: 36, height: 36, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", cursor: "pointer", fontSize: 18, color: "#5a3a1a", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2, fontFamily: font }}>×</button>
 
             {/* Image */}
-            {selectedItem.images?.[0] ? (
+            {selectedItem.images?.[0]?.url ? (
               <div style={{ height: 260, overflow: "hidden", flexShrink: 0 }}>
-                <img src={selectedItem.images[0]} alt={selectedItem.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src={selectedItem.images[0].url} alt={selectedItem.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
             ) : (
               (() => {
