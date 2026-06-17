@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { getRecommendations, SERVICE_LABELS } from "../../utils/recommendationEngine";
 import { EventIdeasPanel } from "../../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -1317,7 +1318,7 @@ const EventPlanning = () => {
         <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-16 flex flex-col items-center">
 
           {/* Title */}
-          <div className="text-center mb-10">
+          <div className="text-center mb-6">
             <h2 style={{ fontSize: "clamp(1.6rem, 3vw, 2.4rem)", fontWeight: 800, color: "#2C1A0E", letterSpacing: "-0.02em", marginBottom: 10 }}>
               Select Services You Need
             </h2>
@@ -1328,59 +1329,162 @@ const EventPlanning = () => {
             </p>
           </div>
 
-          {/* Vendor category cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-5 w-full" style={{ maxWidth: 1100, marginBottom: 36 }}>
-            {vendors.map((vendor) => {
-              const isSelected = selectedVendors.includes(vendor.id);
-              const count = vendorCounts[vendor.id];
-              return (
-                <div
-                  key={vendor.id}
-                  onClick={() =>
-                    isSelected
-                      ? dispatch(removeSelectedVendor(vendor.id))
-                      : dispatch(addSelectedVendor(vendor.id))
-                  }
-                  style={{
-                    background: "#fff",
-                    border: isSelected ? "2.5px solid #C47A2E" : "2px solid rgba(0,0,0,0.06)",
-                    borderRadius: 20,
-                    overflow: "hidden",
-                    cursor: "pointer",
-                    boxShadow: isSelected ? "0 6px 24px rgba(196,122,46,0.22)" : "0 2px 12px rgba(0,0,0,0.07)",
-                    transition: "all 0.22s ease",
-                    position: "relative",
-                    transform: isSelected ? "translateY(-3px)" : "translateY(0)",
-                  }}
-                >
-                  <div className="event-cat-img" style={{ position: "relative", height: 160, overflow: "hidden" }}>
-                    <img
-                      src={vendor.photo}
-                      alt={vendor.title}
-                      style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: isSelected ? "brightness(1.05)" : "brightness(0.92)", transition: "filter 0.22s" }}
-                    />
-                    <div style={{ position: "absolute", inset: 0, background: isSelected ? "linear-gradient(to top, rgba(196,122,46,0.55) 0%, transparent 60%)" : "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", transition: "background 0.22s" }} />
-                    <div style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: "50%", background: isSelected ? "#C47A2E" : "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: isSelected ? "#fff" : "transparent", fontSize: 13, fontWeight: 800, border: isSelected ? "none" : "2px solid rgba(255,255,255,0.7)", transition: "all 0.2s", backdropFilter: "blur(4px)" }}>
-                      ✓
+          {/* ── Tendr Smart Suggestions strip ── */}
+          {(() => {
+            if (!formData.eventType) return null;
+            const recs = getRecommendations({
+              eventType: formData.eventType,
+              guests: formData.guests,
+              categoryBudgets: savedCategoryBudgets,
+            });
+            const guests = parseInt(formData.guests, 10);
+            const hasGuests = guests > 0;
+            const hasBudget = recs.totalBudget > 0;
+            const fmtBudgetShort = (n) => n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : `₹${Math.round(n / 1000)}k`;
+
+            return (
+              <div style={{ width: "100%", maxWidth: 1100, marginBottom: 28, borderRadius: 18, overflow: "hidden", background: "linear-gradient(135deg, #1a0f06 0%, #2C1A0E 55%, #3a1e0a 100%)", border: "1.5px solid rgba(204,171,74,0.2)", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
+
+                {/* Header row */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 0", flexWrap: "wrap", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 15 }}>✨</span>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.06em", textTransform: "uppercase" }}>Tendr Suggests</span>
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)", letterSpacing: "0.02em" }}>
+                    For your {formData.eventType}
+                    {hasGuests ? ` · ${guests} Guest${guests === 1 ? "" : "s"}` : ""}
+                    {hasBudget ? ` · ${fmtBudgetShort(recs.totalBudget)} Budget` : ""}
+                  </span>
+                </div>
+
+                <div style={{ padding: "12px 20px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+
+                  {/* Recommended services */}
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>
+                      Most customers planning similar events usually book
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                      {recs.services.map((svc) => (
+                        <span key={svc} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: "#fff", background: "rgba(204,171,74,0.14)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 13px" }}>
+                          <span style={{ color: "#CCAB4A", fontSize: 11, fontWeight: 900 }}>✓</span>
+                          {SERVICE_LABELS[svc] || svc}
+                        </span>
+                      ))}
                     </div>
                   </div>
 
-                  <div style={{ padding: "14px 16px 16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                      <span style={{ color: "#C47A2E" }}>{vendor.icon}</span>
-                      <h3 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{vendor.title}</h3>
+                  {/* Popular themes */}
+                  <div>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>
+                      Popular themes
+                    </p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                      {recs.themes.map((theme) => (
+                        <span key={theme} style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "4px 12px" }}>
+                          {theme}
+                        </span>
+                      ))}
                     </div>
-                    <p style={{ fontSize: 12.5, color: "#7A5535", fontWeight: 400, margin: "0 0 8px", lineHeight: 1.45 }}>{vendor.description}</p>
-                    {isYouDoIt && (
-                      <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100 }}>
-                        {count !== undefined ? `${count} vendors` : "Loading..."}
-                      </span>
-                    )}
                   </div>
+
+                  {/* Planning tip */}
+                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 10 }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>💡 </span>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.55 }}>{recs.tip}</span>
+                  </div>
+
                 </div>
-              );
-            })}
-          </div>
+              </div>
+            );
+          })()}
+
+          {/* Vendor category cards */}
+          {(() => {
+            const recs = formData.eventType
+              ? getRecommendations({ eventType: formData.eventType, guests: formData.guests, categoryBudgets: savedCategoryBudgets })
+              : { services: [] };
+
+            // Recommended cards first, then the rest
+            const sortedVendors = [
+              ...vendors.filter(v => recs.services.includes(v.id)),
+              ...vendors.filter(v => !recs.services.includes(v.id)),
+            ];
+
+            return (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-5 w-full" style={{ maxWidth: 1100, marginBottom: 36 }}>
+                {sortedVendors.map((vendor) => {
+                  const isSelected = selectedVendors.includes(vendor.id);
+                  const isRecommended = recs.services.includes(vendor.id);
+                  const count = vendorCounts[vendor.id];
+                  return (
+                    <div
+                      key={vendor.id}
+                      onClick={() =>
+                        isSelected
+                          ? dispatch(removeSelectedVendor(vendor.id))
+                          : dispatch(addSelectedVendor(vendor.id))
+                      }
+                      style={{
+                        background: "#fff",
+                        border: isSelected
+                          ? "2.5px solid #C47A2E"
+                          : isRecommended
+                          ? "2px solid rgba(196,122,46,0.35)"
+                          : "2px solid rgba(0,0,0,0.06)",
+                        borderRadius: 20,
+                        overflow: "hidden",
+                        cursor: "pointer",
+                        boxShadow: isSelected
+                          ? "0 6px 24px rgba(196,122,46,0.22)"
+                          : isRecommended
+                          ? "0 4px 18px rgba(196,122,46,0.14)"
+                          : "0 2px 12px rgba(0,0,0,0.07)",
+                        transition: "all 0.22s ease",
+                        position: "relative",
+                        transform: isSelected ? "translateY(-3px)" : "translateY(0)",
+                      }}
+                    >
+                      <div className="event-cat-img" style={{ position: "relative", height: 160, overflow: "hidden" }}>
+                        <img
+                          src={vendor.photo}
+                          alt={vendor.title}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center", filter: isSelected ? "brightness(1.05)" : "brightness(0.92)", transition: "filter 0.22s" }}
+                        />
+                        <div style={{ position: "absolute", inset: 0, background: isSelected ? "linear-gradient(to top, rgba(196,122,46,0.55) 0%, transparent 60%)" : "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", transition: "background 0.22s" }} />
+
+                        {/* Recommended badge — top left */}
+                        {isRecommended && !isSelected && (
+                          <div style={{ position: "absolute", top: 9, left: 9, background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 100, padding: "3px 9px", display: "flex", alignItems: "center", gap: 4 }}>
+                            <span style={{ fontSize: 9, color: "#fff", fontWeight: 800, letterSpacing: "0.05em", textTransform: "uppercase" }}>✨ Recommended</span>
+                          </div>
+                        )}
+
+                        {/* Selected checkmark — top right */}
+                        <div style={{ position: "absolute", top: 10, right: 10, width: 26, height: 26, borderRadius: "50%", background: isSelected ? "#C47A2E" : "rgba(255,255,255,0.6)", display: "flex", alignItems: "center", justifyContent: "center", color: isSelected ? "#fff" : "transparent", fontSize: 13, fontWeight: 800, border: isSelected ? "none" : "2px solid rgba(255,255,255,0.7)", transition: "all 0.2s", backdropFilter: "blur(4px)" }}>
+                          ✓
+                        </div>
+                      </div>
+
+                      <div style={{ padding: "14px 16px 16px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                          <span style={{ color: "#C47A2E" }}>{vendor.icon}</span>
+                          <h3 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{vendor.title}</h3>
+                        </div>
+                        <p style={{ fontSize: 12.5, color: "#7A5535", fontWeight: 400, margin: "0 0 8px", lineHeight: 1.45 }}>{vendor.description}</p>
+                        {isYouDoIt && (
+                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100 }}>
+                            {count !== undefined ? `${count} vendors` : "Loading..."}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           {/* Need anything else? — always visible, same for both flows */}
           <div className="w-full mt-2" style={{ maxWidth: 1100, marginBottom: 32 }}>
