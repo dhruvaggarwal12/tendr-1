@@ -1,5 +1,4 @@
-import React, { useState, useEffect, lazy, Suspense } from "react";
-const FunActivitiesSection = lazy(() => import("../../components/FunActivitiesSection"));
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, selectCartTotal, clearCart, removeFromCart } from "../../redux/giftHamperCartSlice";
@@ -72,7 +71,6 @@ const BookingReviewPage = () => {
   const ghTotal   = useSelector(selectCartTotal);
   const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
   const isGHMode  = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
-  const faBooking = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking") || "null"); } catch { return null; } })();
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
@@ -282,7 +280,6 @@ const BookingReviewPage = () => {
     return acc;
   }, {});
   const confirmedTotal = Object.values(prices).filter(p => p !== null).reduce((a, b) => a + b, 0);
-  const faTotal = faBooking?.totalPrice || 0;
   const allConfirmed = vendorEntries.every(([, v]) => isConfirmed(v));
   const anyPriceUnset = vendorEntries.some(([, v]) => getPrice(v) === null);
 
@@ -341,8 +338,7 @@ const BookingReviewPage = () => {
     }
   };
 
-  // Only block if BOTH no vendors AND no gift hamper items AND no fun activity
-  if (vendorEntries.length === 0 && ghItems.length === 0 && !faBooking) {
+  if (vendorEntries.length === 0 && ghItems.length === 0) {
     return (
       <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
@@ -391,53 +387,85 @@ const BookingReviewPage = () => {
 
         <div className="booking-review-grid booking-review-main" style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 24, alignItems: "start" }}>
 
-          {/* ── LEFT: Event details (sticky) ── */}
-          <div
-            className="booking-review-sidebar"
-            style={{
-              background: "#fff",
-              borderRadius: 18,
-              border: "1.5px solid rgba(139,69,19,0.1)",
-              boxShadow: "0 4px 18px rgba(139,69,19,0.07)",
-              padding: 24,
-              position: "sticky",
-              top: 80,
-            }}
-          >
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-              <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📝</span>
-              Event Details
-            </h2>
+          {/* ── LEFT: Sidebar (sticky wrapper) ── */}
+          <div className="booking-review-sidebar" style={{ position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {hasEventDetails ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-                {Object.entries(LABEL_MAP).map(([key, label]) => {
-                  const val = formData[key];
-                  if (!val && val !== 0) return null;
-                  return (
-                    <div key={key}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
-                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
-                    </div>
-                  );
-                })}
-                {Object.keys(categoryBudgets).length > 0 && (
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Budgets</div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                      {Object.entries(categoryBudgets).map(([cat, amt]) => (
-                        <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
-                          <span style={{ fontWeight: 500 }}>{cat}</span>
-                          <span style={{ fontWeight: 700, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
+            {/* Event Details card — only if vendors are finalised */}
+            {vendorEntries.length > 0 && (
+              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📝</span>
+                  Event Details
+                </h2>
+                {hasEventDetails ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+                    {Object.entries(LABEL_MAP).map(([key, label]) => {
+                      const val = formData[key];
+                      if (!val && val !== 0) return null;
+                      return (
+                        <div key={key}>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
+                          <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
                         </div>
-                      ))}
-                    </div>
+                      );
+                    })}
+                    {Object.keys(categoryBudgets).length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Budgets</div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          {Object.entries(categoryBudgets).map(([cat, amt]) => (
+                            <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
+                              <span style={{ fontWeight: 500 }}>{cat}</span>
+                              <span style={{ fontWeight: 700, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
+                ) : (
+                  <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>No event details found. Fill in the planning form first.</p>
                 )}
               </div>
-            ) : (
-              <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>No event details found. Fill in the planning form first.</p>
             )}
+
+            {/* Gift Hamper Details card — only if gift hampers are in cart with delivery info */}
+            {ghItems.length > 0 && ghDelivery && (
+              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎁</span>
+                  Gift Hamper Delivery
+                </h2>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {ghDelivery.name && (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Recipient</div>
+                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{ghDelivery.name}</div>
+                    </div>
+                  )}
+                  {ghDelivery.phone && (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Phone</div>
+                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{ghDelivery.phone}</div>
+                    </div>
+                  )}
+                  {ghDelivery.address && (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Address</div>
+                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{ghDelivery.address}{ghDelivery.city ? `, ${ghDelivery.city}` : ""}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Fallback if sidebar is completely empty */}
+            {vendorEntries.length === 0 && ghItems.length === 0 && (
+              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
+                <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>No order details yet.</p>
+              </div>
+            )}
+
           </div>
 
           {/* ── RIGHT: Vendor cards grouped by service category ── */}
@@ -738,8 +766,8 @@ const BookingReviewPage = () => {
                 ))}
 
                 {/* Referral discount line */}
-                {appliedCode && (confirmedTotal + ghTotal + faTotal) > 0 && (() => {
-                  const { discount } = applyDiscount(confirmedTotal + ghTotal + faTotal);
+                {appliedCode && (confirmedTotal + ghTotal) > 0 && (() => {
+                  const { discount } = applyDiscount(confirmedTotal + ghTotal);
                   return (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#15803d" }}>
                       <span style={{ fontWeight: 600 }}>🎁 Referral Discount ({DISCOUNT_PERCENT}%)</span>
@@ -768,8 +796,8 @@ const BookingReviewPage = () => {
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
                   <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
                   <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
-                    {(confirmedTotal + ghTotal + faTotal) > 0
-                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal + ghTotal + faTotal).finalTotal : (confirmedTotal + ghTotal + faTotal))
+                    {(confirmedTotal + ghTotal) > 0
+                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal))
                       : "—"}
                   </span>
                 </div>
@@ -782,10 +810,10 @@ const BookingReviewPage = () => {
                 </p>
 
                 {/* Corporate: cost per head + export button */}
-                {isCorporate && headcount > 0 && (confirmedTotal + ghTotal + faTotal) > 0 && (
+                {isCorporate && headcount > 0 && (confirmedTotal + ghTotal) > 0 && (
                   <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(124,58,237,0.06)", borderRadius: 10, border: "1px solid rgba(124,58,237,0.18)" }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
-                      💼 Cost per Employee: <span style={{ fontSize: 15, fontWeight: 900 }}>{formatINR(Math.round((confirmedTotal + ghTotal + faTotal) / headcount))}</span>
+                      💼 Cost per Employee: <span style={{ fontSize: 15, fontWeight: 900 }}>{formatINR(Math.round((confirmedTotal + ghTotal) / headcount))}</span>
                       <span style={{ fontSize: 11, fontWeight: 500, color: "#9B7450", marginLeft: 6 }}>({headcount} employees)</span>
                     </div>
                     {formData.companyName && <div style={{ fontSize: 11, color: "#7c3aed", marginTop: 2, opacity: 0.8 }}>🏢 {formData.companyName}</div>}
@@ -794,7 +822,7 @@ const BookingReviewPage = () => {
                 {isCorporate && (
                   <button
                     onClick={() => {
-                      const total = confirmedTotal + ghTotal + faTotal;
+                      const total = confirmedTotal + ghTotal;
                       const lines = [
                         "CORPORATE EVENT — APPROVAL SUMMARY",
                         "=".repeat(40),
@@ -827,19 +855,42 @@ const BookingReviewPage = () => {
                 )}
               </div>
 
-              {/* People Also Book — Celebration Kit upsell */}
-              <div style={{ margin: "14px 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.22)", background: "linear-gradient(135deg,#2C1A0E 0%,#3D2210 100%)", padding: "14px 16px", display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 11, background: "rgba(196,122,46,0.18)", border: "1.5px solid rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>🎁</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.13em", textTransform: "uppercase", color: "#CCAB4A" }}>People Also Book</span>
-                    <span style={{ fontSize: 9.5, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", color: "rgba(255,255,255,0.35)" }}>· Coming Soon</span>
+              {/* People Also Get — upsell block */}
+              <div style={{ margin: "14px 0 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>People also get</p>
+
+                {/* Gift Hampers row — only if not already in cart */}
+                {ghItems.length === 0 && (
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <span style={{ fontSize: 22 }}>🎁</span>
+                      <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Gift Hampers &amp; Cakes</div>
+                        <div style={{ fontSize: 11, color: "#9B7450" }}>Curated gifts delivered to your guests</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => navigate("/gift-hampers-cakes")}
+                      style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                      Browse →
+                    </button>
                   </div>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#fff", margin: "0 0 1px" }}>Tendr Celebration Kit</p>
-                  <p style={{ fontSize: 11.5, color: "rgba(255,255,255,0.5)", margin: 0 }}>Balloons, lights, décor &amp; more — under ₹2K, delivered.</p>
-                </div>
-                <div style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif" }}>
-                  Notify Me
+                )}
+
+                {/* Wedding Stationeries chip */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 22 }}>💌</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Wedding Stationeries</div>
+                      <div style={{ fontSize: 11, color: "#9B7450" }}>Invites, menus, cards &amp; more</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate("/stationery")}
+                    style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    Browse →
+                  </button>
                 </div>
               </div>
 
@@ -867,37 +918,6 @@ const BookingReviewPage = () => {
                       📦 Deliver to: {ghDelivery.address}, {ghDelivery.city}
                     </div>
                   )}
-                </div>
-              )}
-
-              {/* Fun Activity booking — shown when navigated from FunActivitiesSection */}
-              {faBooking && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 14px" }} />
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎭 Fun Activity</div>
-                  <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 12, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.14)", marginBottom: 8 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                      <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14 }}>
-                        {faBooking.activity.emoji} {faBooking.activity.name}
-                        {faBooking.activity.perUnit && faBooking.form.qty > 1 && (
-                          <span style={{ fontSize: 12, color: "#9B7450", fontWeight: 500, marginLeft: 6 }}>× {faBooking.form.qty}</span>
-                        )}
-                      </div>
-                      <span style={{ fontWeight: 800, color: "#2C1A0E", fontSize: 14 }}>₹{faBooking.totalPrice.toLocaleString("en-IN")}</span>
-                    </div>
-                    <div style={{ fontSize: 12, color: "#9B7450", display: "flex", flexDirection: "column", gap: 3 }}>
-                      {faBooking.form.eventType && <span>🎉 {faBooking.form.eventType}{faBooking.form.guests ? ` · ${faBooking.form.guests} guests` : ""}</span>}
-                      <span>📅 {faBooking.form.date} at {faBooking.form.time}</span>
-                      <span>📍 {faBooking.form.address}</span>
-                      <span>👤 {faBooking.form.name} · {faBooking.form.phone}</span>
-                      {faBooking.form.notes && <span>📝 {faBooking.form.notes}</span>}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => { try { sessionStorage.removeItem("fa_booking"); } catch {} navigate(-1); }}
-                    style={{ fontSize: 11, color: "#c0392b", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: "'Outfit',sans-serif" }}>
-                    ✕ Remove activity
-                  </button>
                 </div>
               )}
 
@@ -993,7 +1013,7 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
-                          const grandTotal = confirmedTotal + ghTotal + faTotal;
+                          const grandTotal = confirmedTotal + ghTotal;
                           const finalAmount = appliedCode ? applyDiscount(grandTotal).finalTotal : grandTotal;
                           // Only pass the selected vendor per category to payment, not the full array
                           const selectedVendorsForPayment = {};
@@ -1025,19 +1045,40 @@ const BookingReviewPage = () => {
         </div>
       </div>
 
-      {/* ── People Like This — fun activities suggestion (admin only) ── */}
-      {currentUser?.isAdmin && (
-        <div style={{ maxWidth:1200, margin:"0 auto", padding:"8px 24px 64px", fontFamily:"'Outfit',sans-serif" }}>
-          <div style={{ borderRadius:20, border:"1.5px solid rgba(124,58,237,0.15)", background:"rgba(124,58,237,0.03)", padding:"28px 24px" }}>
-            <div style={{ marginBottom:20 }}>
-              <p style={{ fontSize:11, fontWeight:800, color:"#7C3AED", textTransform:"uppercase", letterSpacing:"0.12em", margin:"0 0 6px" }}>🎭 People Also Love This</p>
-              <h3 style={{ fontSize:20, fontWeight:900, color:"#2C1A0E", margin:"0 0 5px" }}>Add a Fun Activity to Your Event</h3>
-              <p style={{ fontSize:13, color:"#9B7450", margin:0 }}>Fixed-price entertainment add-ons — no negotiations, confirmed within 2 hours.</p>
-            </div>
-            <Suspense fallback={<div style={{ height:200, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450" }}>Loading…</div>}>
-              <FunActivitiesSection />
-            </Suspense>
-          </div>
+      {/* Floating Proceed to Payment button — visible until payment is initiated */}
+      {!anyPriceUnset && !showConfirmPopup && (
+        <div style={{
+          position: "fixed",
+          bottom: 80,
+          left: 0,
+          right: 0,
+          zIndex: 200,
+          display: "flex",
+          justifyContent: "center",
+          padding: "0 16px",
+          pointerEvents: "none",
+        }}>
+          <button
+            disabled={saving}
+            onClick={() => setShowConfirmPopup(true)}
+            style={{
+              pointerEvents: "all",
+              padding: "14px 32px",
+              borderRadius: 14,
+              border: "none",
+              background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+              color: "#fff",
+              fontSize: 15,
+              fontWeight: 700,
+              fontFamily: "'Outfit', sans-serif",
+              cursor: saving ? "not-allowed" : "pointer",
+              boxShadow: "0 6px 20px rgba(196,122,46,0.45)",
+              maxWidth: 360,
+              width: "100%",
+              opacity: saving ? 0.7 : 1,
+            }}>
+            {saving ? "Processing…" : "Proceed to Payment →"}
+          </button>
         </div>
       )}
 
