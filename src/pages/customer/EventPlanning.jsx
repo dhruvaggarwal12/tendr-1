@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { getRecommendations, SERVICE_LABELS } from "../../utils/recommendationEngine";
+import { useRecommendationTracking } from "../../hooks/useRecommendationTracking";
 import { EventIdeasPanel } from "../../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
@@ -179,6 +180,7 @@ const EventPlanning = () => {
     categoryBudgets: savedCategoryBudgets,
   } = useSelector((state) => state.eventPlanning);
   const { token, user: authUser } = useSelector((state) => state.auth);
+  const { startSession, trackClick, trackSelect, trackDeselect, trackIgnored } = useRecommendationTracking();
 
   // Scroll to top whenever the smart plan screen opens (must be after showVendorScreen is declared)
   useEffect(() => {
@@ -969,7 +971,7 @@ const EventPlanning = () => {
                   <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Browse Yourself</div>
                   <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, marginBottom: 14, flex: 1 }}>Compare vendor profiles, chat directly, negotiate your own price.</div>
                   <button
-                    onClick={() => { dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType, locationType: formData?.location, date: formData?.date, guestCount: Number(formData?.guests) || 0 })); navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } }); }}
+                    onClick={() => { trackIgnored(selectedVendors); dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType, locationType: formData?.location, date: formData?.date, guestCount: Number(formData?.guests) || 0 })); navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } }); }}
                     style={{ width: "100%", padding: "11px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                     Browse Vendors →
                   </button>
@@ -980,7 +982,7 @@ const EventPlanning = () => {
                   <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>Build My Package <span style={{ fontSize: 10, fontWeight: 700, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "2px 7px", marginLeft: 4 }}>Recommended</span></div>
                   <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, marginBottom: 14, flex: 1 }}>Tell us your budget once. We'll build a complete vendor package and coordinate everything.</div>
                   <button
-                    onClick={() => { dispatch(setBookingType("let-us-do-it")); fetchSmartPlan(); }}
+                    onClick={() => { trackIgnored(selectedVendors); dispatch(setBookingType("let-us-do-it")); fetchSmartPlan(); }}
                     style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.3)" }}>
                     Get Corporate Package →
                   </button>
@@ -1004,6 +1006,7 @@ const EventPlanning = () => {
                   date: formData?.date || "",
                   guestCount: Number(formData?.guests) || 0,
                 }));
+                trackIgnored(selectedVendors);
                 navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } });
               }}
               style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}>
@@ -1342,6 +1345,16 @@ const EventPlanning = () => {
             const hasBudget = recs.totalBudget > 0;
             const fmtBudgetShort = (n) => n >= 100000 ? `₹${(n / 100000).toFixed(1)}L` : `₹${Math.round(n / 1000)}k`;
 
+            // Fire session tracking on first render of this strip
+            startSession({
+              eventType: formData.eventType,
+              guestCount: guests || 0,
+              budgetRange: hasBudget ? fmtBudgetShort(recs.totalBudget) : "",
+              city: formData.location || "",
+              userId: authUser?._id || null,
+              recommendedServices: recs.services,
+            });
+
             return (
               <div style={{ width: "100%", maxWidth: 1100, marginBottom: 28, borderRadius: 18, overflow: "hidden", background: "linear-gradient(135deg, #1a0f06 0%, #2C1A0E 55%, #3a1e0a 100%)", border: "1.5px solid rgba(204,171,74,0.2)", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
 
@@ -1421,11 +1434,15 @@ const EventPlanning = () => {
                   return (
                     <div
                       key={vendor.id}
-                      onClick={() =>
-                        isSelected
-                          ? dispatch(removeSelectedVendor(vendor.id))
-                          : dispatch(addSelectedVendor(vendor.id))
-                      }
+                      onClick={() => {
+                        if (isSelected) {
+                          dispatch(removeSelectedVendor(vendor.id));
+                          if (isRecommended) trackDeselect(vendor.id);
+                        } else {
+                          dispatch(addSelectedVendor(vendor.id));
+                          if (isRecommended) { trackClick(vendor.id); trackSelect(vendor.id); }
+                        }
+                      }}
                       style={{
                         background: "#fff",
                         border: isSelected

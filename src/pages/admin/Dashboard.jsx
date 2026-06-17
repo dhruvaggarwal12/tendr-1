@@ -5,6 +5,7 @@ import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF } fr
 import AddVendorModal from "./AddVendorModal";
 import MemoriesTab from "./MemoriesTab";
 import StationeryAdminTab from "./StationeryAdminTab";
+import RecommendationIntelligenceTab from "./RecommendationIntelligenceTab";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
 import { io } from "socket.io-client";
@@ -270,7 +271,8 @@ const sidebar_arr = [
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
   { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
   { label: "Memories",           icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Memories" },
-  { label: "Wedding Stationery", icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
+  { label: "Wedding Stationery",    icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
+  { label: "Rec. Intelligence",     icon: <span style={{ fontSize: 16 }}>📊</span>,  key: "Recommendations" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -4769,6 +4771,9 @@ const AdminDashboard = () => {
 
         {/* ── Stationery ── */}
         {activeDropdown === "stationery" && <StationeryAdminTab />}
+
+        {/* ── Recommendation Intelligence ── */}
+        {activeDropdown === "recommendations" && <RecommendationIntelligenceTab />}
 
 
     </>

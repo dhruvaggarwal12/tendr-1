@@ -12,6 +12,7 @@ import HamburgerNav from "../../components/HamburgerNav";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
 import { writeDayOfToStorage } from "../../utils/eventGenerators";
+import { loadRecSession, clearRecSession } from "../../hooks/useRecommendationTracking";
 
 const font = "'Outfit', sans-serif";
 
@@ -67,6 +68,20 @@ const PaymentSuccessPage = () => {
       return diff > 0 ? diff : null;
     } catch { return null; }
   })();
+  // Fire "booked" tracking for services that were recommended and got booked
+  useEffect(() => {
+    const session = loadRecSession();
+    if (!session?.sessionId || !session?.recommendedServices?.length) return;
+    const bookedServiceTypes = Object.keys(rawFinalised);
+    const bookedRecs = session.recommendedServices.filter(s => bookedServiceTypes.includes(s));
+    if (!bookedRecs.length) { clearRecSession(); return; }
+    fetch(`${import.meta.env.VITE_BASE_URL}/recommendations/session/${session.sessionId}/track`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tracks: bookedRecs.map(name => ({ name, events: ["booked"] })) }),
+    }).catch(() => {}).finally(() => clearRecSession());
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Fetch pinned messages + eventTiming from vendor conversations before they get cleared
   // Also writes pre-populated checklist + day-of schedule to localStorage
   useEffect(() => {
