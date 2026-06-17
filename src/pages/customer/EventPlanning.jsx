@@ -1006,7 +1006,6 @@ const EventPlanning = () => {
                   date: formData?.date || "",
                   guestCount: Number(formData?.guests) || 0,
                 }));
-                trackIgnored(selectedVendors);
                 navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } });
               }}
               style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}>
