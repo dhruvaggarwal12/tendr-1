@@ -277,39 +277,47 @@ const Navbar = ({
       label: "Browse",
       megaMenu: true,
       items: [
-        { id: "Decorator",    emoji: "🎨", label: "Decorator",              href: "/search?categories=Decorator" },
-        { id: "Caterer",      emoji: "🍽️", label: "Caterer",                href: "/search?categories=Caterer" },
-        { id: "Photographer", emoji: "📸", label: "Photographer",           href: "/search?categories=Photographer" },
-        { id: "DJ",           emoji: "🎵", label: "DJ",                     href: "/search?categories=DJ" },
-        { id: "activities",   emoji: "🎭", label: "Fun Activities",         href: "/fun-activities" },
-        { id: "stationery",   emoji: "💒", label: "Wedding Stationeries",   href: "/stationery" },
+        { id: "Decorator",    emoji: "🎨", label: "Decorator",    href: "/search?categories=Decorator" },
+        { id: "Caterer",      emoji: "🍽️", label: "Caterer",      href: "/search?categories=Caterer" },
+        { id: "Photographer", emoji: "📸", label: "Photographer", href: "/search?categories=Photographer" },
+        { id: "DJ",           emoji: "🎵", label: "DJ",           href: "/search?categories=DJ" },
       ],
       sideItems: [
-        { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
-        { label: "⭐ Top Rated Vendors",    href: "/top-rated/Photographer" },
-        { label: "🤝 Register as Vendor",   href: "/vendor/register" },
+        { label: "⭐ Top Rated Vendors",  href: "/top-rated/Photographer" },
+        { label: "🤝 Register as Vendor", href: "/vendor/register" },
       ],
     },
     {
       label: "Our Products",
       items: [
-        ...(user?.isAdmin ? [{ label: "🎉 Plan by Occasion", onClick: () => window.open("/occasions", "_blank") }] : []),
-        { label: "⏱️ Timeline",           href: "/timeline-picker" },
-        { label: "💰 Budget Allocator",   href: "/budget-picker" },
-        { label: "🎨 Decor Finder",       href: "/decor-finder" },
+        { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+        { label: "💒 Wedding Stationeries", href: "/stationery" },
+        { label: "🎭 Fun Activities",       href: "/fun-activities" },
       ],
     },
-    ...(user?.isAdmin ? [{
-      label: "Memories",
+    {
+      label: "Tools",
       items: [
-        { label: "💒 Wedding Stationery", href: "/stationery" },
+        { label: "⏱️ Timeline",         href: "/timeline-picker" },
+        { label: "💰 Budget Allocator", href: "/budget-picker" },
+        { label: "🎨 Decor Finder",     href: "/decor-finder" },
       ],
-    }] : []),
+    },
+    {
+      label: "Community",
+      items: [
+        { label: "🎉 Celebration Hub", href: "/celebration-hub" },
+        ...(user?.isAdmin ? [
+          { label: "🌟 Community Wall", href: "/community" },
+          { label: "📅 Plan by Occasion", onClick: () => window.open("/occasions", "_blank") },
+        ] : []),
+      ],
+    },
     {
       label: "Booking",
       items: [
-        ...(user?.isAdmin ? [{ label: "🏠 Home Wedding Planner", href: "/home-wedding-planner" }] : []),
         { label: "Plan Your Event", href: "/booking" },
+        ...(user?.isAdmin ? [{ label: "🏠 Home Wedding Planner", href: "/home-wedding-planner" }] : []),
       ],
     },
   ];
@@ -596,14 +604,6 @@ const Navbar = ({
               </div>
             ))}
           </div>
-
-          {/* Wedding Stationeries — after Booking, before Sign In */}
-          <a href="/stationery"
-            style={{ color: "#7A3A1E", fontSize: 13, fontWeight: 600, padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(122,58,30,0.28)", background: "rgba(122,58,30,0.06)", whiteSpace: "nowrap", textDecoration: "none", transition: "background 0.2s", flexShrink: 0 }}
-            onMouseEnter={e => (e.currentTarget.style.background = "rgba(122,58,30,0.13)")}
-            onMouseLeave={e => (e.currentTarget.style.background = "rgba(122,58,30,0.06)")}>
-            💒 Stationeries
-          </a>
 
           {/* Divider before auth */}
           <div style={{ width: 1, height: 20, background: "rgba(139,69,19,0.12)", margin: "0 4px", flexShrink: 0 }} />

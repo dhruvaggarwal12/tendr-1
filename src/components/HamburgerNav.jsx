@@ -222,32 +222,35 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   // Mobile drawer: Gift & Hampers shown as standalone button above these sections
   const NAV_SECTIONS = [
     { label: "Booking", items: [
-      { label: "Plan Your Event",      href: "/booking", activePaths: ["/booking", "/plan-event"] },
+      { label: "Plan Your Event", href: "/booking", activePaths: ["/booking", "/plan-event"] },
     ]},
     { label: "Vendors", items: [
-      { label: "Browse Vendors",       href: "/listings",   onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
-      { label: "Top Rated Vendors",    href: "/top-rated/Photographer", activePaths: ["/top-rated/"] },
-      { label: "Register as Vendor",   href: "/vendor/register" },
+      { label: "Browse Vendors",     href: "/listings", onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
+      { label: "Top Rated Vendors",  href: "/top-rated/Photographer", activePaths: ["/top-rated/"] },
+      { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
-      ...(user?.isAdmin ? [
-        { label: "🏡 Party Places",     href: "/party-places" },
-        { label: "🎭 Fun Activities",   href: "/fun-activities" },
-      ] : []),
-      { label: "Timeline",         href: "/timeline-picker",  activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
+      { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+      { label: "💒 Wedding Stationeries", href: "/stationery" },
+      { label: "🎭 Fun Activities",       href: "/fun-activities" },
+      ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
+    ]},
+    { label: "Tools", hideOnMobile: true, items: [
+      { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_timeline_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.phases?.length > 0 ? "/prebuilt-timeline" : "/timeline-picker"); } catch { navigate("/timeline-picker"); } } },
-      { label: "Budget Allocator", href: "/budget-picker",    activePaths: ["/budget-picker","/budget-allocator"] },
-      { label: "Decor Finder",       href: "/decor-finder" },
+      { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
+      { label: "Decor Finder",     href: "/decor-finder" },
+    ]},
+    { label: "Community", items: [
+      { label: "🎉 Celebration Hub", href: "/celebration-hub" },
+      ...(user?.isAdmin ? [{ label: "🌟 Community Wall", href: "/community" }] : []),
     ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
       { label: "Memories (Preview)", href: "/memories" },
-      { label: "Wedding Stationery", href: "/stationery" },
     ]}] : []),
     { label: "Company", items: [
-      { label: "About Us",             href: "/about-us" },
-      { label: "Contact Us",           href: "/contact-us" },
-      ...(user?.isAdmin ? [{ label: "🌟 Community Wall",    href: "/community" }] : []),
-      ...(user?.isAdmin ? [{ label: "🎉 Celebration Hub",  href: "/celebration-hub" }] : []),
+      { label: "About Us",   href: "/about-us" },
+      { label: "Contact Us", href: "/contact-us" },
     ]},
   ];
 

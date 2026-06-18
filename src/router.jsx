@@ -69,11 +69,6 @@ const Timeline            = lazy(() => import('./pages/timeline/Timeline'));
 const TimelinePicker      = lazy(() => import('./pages/timeline/TimelinePicker'));
 const BudgetPicker        = lazy(() => import('./pages/budget/BudgetPicker.jsx'));
 const BudgetAllocator     = lazy(() => import('./pages/budget/BudgetAllocator.jsx'));
-const AftermoviePicker    = lazy(() => import('./pages/aftermovie/AftermoviePicker.jsx'));
-const AftermovieCustomizer= lazy(() => import('./pages/aftermovie/AftermovieCustomizer.jsx'));
-const InvitationFlyerPicker=lazy(() => import('./pages/invitation/InvitationFlyerPicker.jsx'));
-const TemplateGallery     = lazy(() => import('./pages/invitation/TemplateGallery.jsx'));
-const InvitationCustomizer= lazy(() => import('./pages/invitation/InvitationCustomizer.jsx'));
 const WeddingStationery   = lazy(() => import('./pages/stationery/WeddingStationery.jsx'));
 const StationeryCustomizer= lazy(() => import('./pages/stationery/StationeryCustomizer.jsx'));
 const BookingReviewPage   = lazy(() => import('./pages/booking/BookingReviewPage'));
@@ -404,11 +399,6 @@ const router = createBrowserRouter([
   },
   { path: '/memories', element: <MemoriesPage />, errorElement: <ErrorPage /> },
   { path: '/memories/:id', element: <MemoryProfile />, errorElement: <ErrorPage /> },
-  { path: '/aftermovie', element: <AftermoviePicker />, errorElement: <ErrorPage /> },
-  { path: '/aftermovie/customize/:id', element: <AftermovieCustomizer />, errorElement: <ErrorPage /> },
-  { path: '/invitation', element: <InvitationFlyerPicker />, errorElement: <ErrorPage /> },
-  { path: '/invitation/templates/:id', element: <TemplateGallery />, errorElement: <ErrorPage /> },
-  { path: '/invitation/customize', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
   { path: '/stationery', element: <WeddingStationery />, errorElement: <ErrorPage /> },
   { path: '/stationery/:id', element: <StationeryCustomizer />, errorElement: <ErrorPage /> },
   { path: '/payment-tracker', element: <PaymentTracker />, errorElement: <ErrorPage /> },
