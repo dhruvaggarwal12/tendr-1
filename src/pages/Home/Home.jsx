@@ -192,6 +192,15 @@ function FaqSection() {
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+const GH_FALLBACKS = [
+  { _id: "f1", name: "Birthday Surprise Box", category: "Gift Box",    pricePerUnit: 1299, images: ["https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=400&q=75"] },
+  { _id: "f2", name: "Anniversary Hamper",    category: "Hamper",      pricePerUnit: 1899, images: ["https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&q=75"] },
+  { _id: "f3", name: "Wedding Sweet Box",     category: "Sweet Box",   pricePerUnit: 899,  images: ["https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&q=75"] },
+  { _id: "f4", name: "Celebration Cake",      category: "Cake",        pricePerUnit: 1499, images: ["https://images.unsplash.com/photo-1578985545062-69928b1d9587?w=400&q=75"] },
+  { _id: "f5", name: "Corporate Gift Set",    category: "Corporate",   pricePerUnit: 2499, images: ["https://images.unsplash.com/photo-1512909006721-3d6018887383?w=400&q=75"] },
+  { _id: "f6", name: "Premium Gift Hamper",   category: "Hamper",      pricePerUnit: 3499, images: ["https://images.unsplash.com/photo-1607082349566-187342175e2f?w=400&q=75"] },
+];
+
 const GALLERY_FALLBACKS = {
   "Decoration":        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=600&h=400&q=80",
   "Entertainment":     "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?auto=format&fit=crop&w=600&h=400&q=80",
@@ -259,6 +268,8 @@ const Home = () => {
   const faCarouselRef = useRef(null);
   const [faModal, setFaModal] = useState(null);
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
+  const [ghProducts, setGhProducts] = useState([]);
+  const ghCarouselRef = useRef(null);
   const scrollFaCarousel = (dir) => {
     const el = faCarouselRef.current;
     if (!el) return;
@@ -385,6 +396,13 @@ const Home = () => {
   useEffect(() => {
     const t = setInterval(() => setGlimpseCounter(c => c + 1), 2500);
     return () => clearInterval(t);
+  }, []);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/gift-hampers/products`)
+      .then(r => r.ok ? r.json() : { products: [] })
+      .then(d => { if (d.products?.length) setGhProducts(d.products); })
+      .catch(() => {});
   }, []);
 
 
@@ -1214,6 +1232,75 @@ const Home = () => {
               .fa-carousel-card > div:nth-child(3) { font-size: 12px !important; }
               .fa-carousel-card p { font-size: 10px !important; }
               .fa-carousel-card span { font-size: 10px !important; padding: 2px 8px !important; }
+            }
+          `}</style>
+        </div>
+      </section>
+
+      {/* ── Gift Hampers & Cakes ── */}
+      <section style={{ background: "#FFFDF7", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          {/* Header row */}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 7px" }}>🎁 Gift Hampers & Cakes</p>
+              <h2 style={{ fontSize: "clamp(1.5rem,3vw,2.1rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 7px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+                The Perfect Gift,<br /><span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
+              </h2>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: 0, maxWidth: 400, lineHeight: 1.65 }}>
+                Curated hampers, custom cakes and celebration kits for every occasion.
+              </p>
+            </div>
+            <button
+              onClick={() => navigate("/gift-hampers-cakes")}
+              style={{ padding: "11px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.28)", whiteSpace: "nowrap" }}>
+              Browse All →
+            </button>
+          </div>
+
+          {/* Cards — horizontal scroll on all widths, compact product tiles */}
+          <div
+            ref={ghCarouselRef}
+            className="gh-carousel-track"
+            style={{ display: "flex", gap: 14, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}
+          >
+            {(ghProducts.length > 0 ? ghProducts.slice(0, 10) : GH_FALLBACKS).map((p) => (
+              <div
+                key={p._id}
+                className="gh-card"
+                onClick={() => navigate("/gift-hampers-cakes")}
+                style={{ flexShrink: 0, width: 164, cursor: "pointer", background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.13)", boxShadow: "0 2px 10px rgba(196,122,46,0.07)", overflow: "hidden", transition: "transform 0.2s, box-shadow 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 22px rgba(196,122,46,0.17)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(196,122,46,0.07)"; }}
+              >
+                {/* Product image */}
+                <div style={{ width: "100%", height: 118, overflow: "hidden", background: "linear-gradient(135deg,#FFF4E8,#F5DFB5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {p.images?.[0]
+                    ? <img src={p.images[0]} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+                    : <span style={{ fontSize: 40 }}>🎁</span>
+                  }
+                </div>
+                {/* Info */}
+                <div style={{ padding: "9px 11px 12px" }}>
+                  {p.category && (
+                    <div style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 4 }}>{p.category}</div>
+                  )}
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.35, marginBottom: 7, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.name}</div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>
+                      {p.pricePerUnit ? `₹${p.pricePerUnit.toLocaleString("en-IN")}` : "View"}
+                    </span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.09)", borderRadius: 100, padding: "2px 8px" }}>View →</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <style>{`
+            .gh-carousel-track::-webkit-scrollbar { display: none; }
+            @media (max-width: 640px) {
+              .gh-card { width: 140px !important; }
+              .gh-card > div:first-child { height: 100px !important; }
             }
           `}</style>
         </div>
