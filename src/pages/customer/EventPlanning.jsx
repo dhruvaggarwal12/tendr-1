@@ -138,6 +138,34 @@ const EventPlanning = () => {
   const [smartPlanMode, setSmartPlanMode] = useState('perCategory'); // 'perCategory' | 'total'
   const [splitPct, setSplitPct] = useState({ Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 });
   const [totalPlanBudget, setTotalPlanBudget] = useState(50000);
+  const [selectedTier, setSelectedTier] = useState('balanced');
+
+  const TIER_SPLITS = {
+    essential: { Caterer: 45, Decorator: 20, Photographer: 20, DJ: 15 },
+    balanced:  { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 },
+    premium:   { Caterer: 35, Decorator: 30, Photographer: 25, DJ: 10 },
+  };
+  const TIER_META = {
+    essential: { label: "Essential",  desc: "Smart basics, great value",    color: "#6b7280" },
+    balanced:  { label: "Balanced",   desc: "Most popular split",           color: "#C47A2E", recommended: true },
+    premium:   { label: "Premium",    desc: "Elevated decoration & photos", color: "#7c3aed" },
+  };
+
+  const applyTier = (tier) => {
+    setSelectedTier(tier);
+    const splits = TIER_SPLITS[tier];
+    const cats = selectedVendors.filter(c => splits[c] !== undefined);
+    const total = cats.reduce((s, c) => s + splits[c], 0) || 1;
+    const adjusted = Object.fromEntries(cats.map(c => [c, Math.round(totalPlanBudget * splits[c] / total)]));
+    setSplitPct(splits);
+    dispatch(setCategoryBudgets(adjusted));
+    fetch(`${BASE_URL}/smart-plans/tier-choice`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tier, eventType: formData?.eventType, city: formData?.location, guests: formData?.guests }),
+    }).catch(() => {});
+    fetchSmartPlan();
+  };
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
   const [wizardAnswers, setWizardAnswers] = useState({});
@@ -325,6 +353,18 @@ const EventPlanning = () => {
     if (!showVendorScreen) return;
     const fetchCounts = async () => {
       try {
+        // If a date is selected, fetch per-date availability (2 slots per vendor per day)
+        if (formData?.date) {
+          const params = new URLSearchParams({ date: formData.date });
+          if (formData?.location) params.set('city', formData.location);
+          const res = await fetch(`${BASE_URL}/vendors/availability/by-date?${params}`);
+          if (res.ok) {
+            const data = await res.json();
+            setVendorCounts(data.available || {});
+            return;
+          }
+        }
+        // Fallback: total vendor count per category
         const results = await Promise.allSettled(
           vendors.map((v) =>
             getVendors({ serviceTypes: [v.id], limit: 1 })
@@ -346,7 +386,7 @@ const EventPlanning = () => {
       } catch (_) {}
     };
     fetchCounts();
-  }, [showVendorScreen]);
+  }, [showVendorScreen, formData?.date, formData?.location]);
 
   // Safety: reset step if out-of-range (e.g. admin question removed between sessions)
   useEffect(() => {
@@ -821,63 +861,59 @@ const EventPlanning = () => {
 
           </div>
 
-          {/* Right-flow: total budget + split % adjuster */}
-          {smartPlanMode === 'total' && (() => {
-            const tw = selectedVendors.reduce((s, c) => s + (splitPct[c] || 25), 0) || 1;
-            const splitTotal = selectedVendors.reduce((s, c) => s + (splitPct[c] || 0), 0);
-            return (
-              <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", padding: "18px 22px", boxShadow: "0 2px 12px rgba(196,122,46,0.07)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, flexWrap: "wrap", gap: 10 }}>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>💰 Total Budget</div>
-                    <div style={{ fontSize: 11, color: "#9B7450" }}>Adjust total or change the split % per service</div>
-                  </div>
-                  <span style={{ fontSize: 22, fontWeight: 900, color: "#C47A2E" }}>{fmt(totalPlanBudget)}</span>
-                </div>
-                <input type="range" min={5000} max={1000000} step={5000} value={totalPlanBudget}
-                  onChange={e => {
-                    const t = Number(e.target.value);
-                    setTotalPlanBudget(t);
-                    const tw2 = selectedVendors.reduce((s, c) => s + (splitPct[c] || 25), 0) || 1;
-                    const sa = Object.fromEntries(selectedVendors.map(c => [c, Math.round(t * (splitPct[c] || 25) / tw2)]));
-                    dispatch(setCategoryBudgets(sa));
-                  }}
-                  style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", marginBottom: 14 }} />
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
-                  {selectedVendors.map(cat => {
-                    const amt = Math.round(totalPlanBudget * (splitPct[cat] || 25) / tw);
-                    return (
-                      <div key={cat} style={{ flex: 1, minWidth: 120, background: "#FFFCF5", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(196,122,46,0.15)" }}>
-                        <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 4 }}>{CAT_EMOJI_MAP[cat]} {cat}</div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <button onClick={() => setSplitPct(p => ({ ...p, [cat]: Math.max(5, (p[cat] || 25) - 5) }))}
-                            style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 800, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
-                          <span style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", flex: 1, textAlign: "center" }}>{splitPct[cat] || 25}%</span>
-                          <button onClick={() => setSplitPct(p => ({ ...p, [cat]: Math.min(70, (p[cat] || 25) + 5) }))}
-                            style={{ width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 800, cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
-                        </div>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textAlign: "center", marginTop: 4 }}>{fmt(amt)}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 11, color: splitTotal === 100 ? "#16a34a" : "#dc2626", fontWeight: 700 }}>Split total: {splitTotal}% {splitTotal === 100 ? "✓" : `(needs ${100 - splitTotal > 0 ? "+" : ""}${100 - splitTotal}%)`}</span>
-                  <button
-                    disabled={splitTotal !== 100}
-                    onClick={() => {
-                      const tw3 = selectedVendors.reduce((s, c) => s + (splitPct[c] || 25), 0) || 1;
-                      const sa = Object.fromEntries(selectedVendors.map(c => [c, Math.round(totalPlanBudget * (splitPct[c] || 25) / tw3)]));
-                      dispatch(setCategoryBudgets(sa));
-                      fetchSmartPlan();
-                    }}
-                    style={{ padding: "8px 20px", borderRadius: 10, border: "none", background: splitTotal === 100 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: splitTotal === 100 ? "#fff" : "#9ca3af", fontSize: 13, fontWeight: 700, cursor: splitTotal === 100 ? "pointer" : "not-allowed", fontFamily: "'Outfit', sans-serif" }}>
-                    Update Plan →
-                  </button>
+          {/* Budget split tier selector */}
+          {smartPlanMode === 'total' && (
+            <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16 }}>
+              {/* Header */}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>💰 How would you like to split your {fmt(totalPlanBudget)} budget?</div>
+                  <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>Based on past choices of customers with similar events</div>
                 </div>
               </div>
-            );
-          })()}
+              {/* 3 Tier Cards */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+                {['essential','balanced','premium'].map(tier => {
+                  const meta = TIER_META[tier];
+                  const splits = TIER_SPLITS[tier];
+                  const isActive = selectedTier === tier;
+                  const cats = selectedVendors.filter(c => splits[c] !== undefined);
+                  const totalPct = cats.reduce((s, c) => s + splits[c], 0) || 1;
+                  return (
+                    <div key={tier} onClick={() => applyTier(tier)}
+                      style={{ background: isActive ? (tier === 'balanced' ? "linear-gradient(145deg,#FFFCF0,#FFF4E0)" : tier === 'premium' ? "linear-gradient(145deg,#F5F0FF,#EDE8FF)" : "#F9F9F9") : "#fff", borderRadius: 16, border: isActive ? `2.5px solid ${meta.color}` : "2px solid rgba(0,0,0,0.06)", padding: "16px 14px 14px", cursor: "pointer", position: "relative", boxShadow: isActive ? `0 4px 20px ${meta.color}28` : "0 2px 8px rgba(0,0,0,0.05)", transition: "all 0.2s" }}>
+                      {/* Recommended badge */}
+                      {meta.recommended && (
+                        <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 100, padding: "2px 12px", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.04em" }}>★ RECOMMENDED</span>
+                        </div>
+                      )}
+                      {/* Tier label */}
+                      <div style={{ marginTop: meta.recommended ? 4 : 0, marginBottom: 4 }}>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: meta.color }}>{meta.label}</span>
+                        {isActive && <span style={{ marginLeft: 6, fontSize: 11, color: meta.color }}>✓</span>}
+                      </div>
+                      <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 12 }}>{meta.desc}</div>
+                      {/* Per-category split rows */}
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        {cats.map(cat => {
+                          const pct = splits[cat];
+                          const amt = Math.round(totalPlanBudget * pct / totalPct);
+                          return (
+                            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <span style={{ fontSize: 11, color: "#5A3E2B", flex: 1, fontWeight: 600 }}>{CAT_EMOJI_MAP[cat]} {cat}</span>
+                              <span style={{ fontSize: 11, color: "#9B7450" }}>{pct}%</span>
+                              <span style={{ fontSize: 12, fontWeight: 800, color: meta.color, minWidth: 56, textAlign: "right" }}>{fmt(amt)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* How to book strip — smart planning */}
           <div style={{ width: "100%", maxWidth: 1100, marginBottom: 14 }}>
@@ -1490,8 +1526,12 @@ const EventPlanning = () => {
                         </div>
                         <p style={{ fontSize: 12.5, color: "#7A5535", fontWeight: 400, margin: "0 0 8px", lineHeight: 1.45 }}>{vendor.description}</p>
                         {isYouDoIt && (
-                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100 }}>
-                            {count !== undefined ? `${count} vendors` : "Loading..."}
+                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count > 0 ? "#16a34a" : "#C47A2E", background: count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100 }}>
+                            {count !== undefined
+                              ? formData?.date
+                                ? `✓ ${count} available ${new Date(formData.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+                                : `${count} vendors`
+                              : "Checking..."}
                           </span>
                         )}
                       </div>
