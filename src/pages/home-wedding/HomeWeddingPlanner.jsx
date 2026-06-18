@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 
@@ -70,6 +71,7 @@ const labelSm = { fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform
 
 export default function HomeWeddingPlanner() {
   const navigate = useNavigate();
+  const user = useSelector((s) => s.auth.user);
 
   const [step,      setStep]     = useState(0);
   const [numDays,   setNumDays]  = useState(3);
@@ -122,6 +124,17 @@ export default function HomeWeddingPlanner() {
   }).filter(Boolean);
 
   // ── Step 0 ─────────────────────────────────────────────────────────────────
+  if (!user?.isAdmin) {
+    return (
+      <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font, flexDirection: "column", gap: 16, background: "#F8F4EF" }}>
+        <div style={{ fontSize: 40 }}>🔒</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#2C1A0E" }}>Admin Preview Only</div>
+        <div style={{ fontSize: 13, color: "#9B7450" }}>This feature is not yet available to customers.</div>
+        <button onClick={() => navigate("/")} style={{ marginTop: 8, padding: "10px 24px", borderRadius: 10, border: "none", background: "#C47A2E", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Go Home</button>
+      </div>
+    );
+  }
+
   if (step === 0) {
     const ready = !!startDate;
     return (

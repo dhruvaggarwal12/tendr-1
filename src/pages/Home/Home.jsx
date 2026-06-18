@@ -63,12 +63,12 @@ const HERO_FEATURES = [
     emoji: "💌",
   },
   {
-    tag: "Invitation Flyers",
-    headline: "Share stunning digital invite flyers instantly",
-    desc: "Pick a template, personalise the details and send your event invite via WhatsApp or Instagram in seconds.",
-    where: "Memories → Invitation Flyers",
-    href: "/invitation",
-    emoji: "📩",
+    tag: "Wedding Stationery",
+    headline: "Beautiful stationery for every celebration",
+    desc: "From invitations to menus and table cards — order premium printed stationery delivered to your door.",
+    where: "Wedding Stationery",
+    href: "/stationery",
+    emoji: "💍",
   },
   {
     tag: "Decor Finder",
@@ -437,7 +437,7 @@ const Home = () => {
     } else if (selectedValue === "Budget Allocator") {
       navigate("/budget-allocator");
     } else if (selectedValue === "invitation") {
-      navigate("/invitation");
+      navigate("/stationery");
     } else if (selectedValue === "our-products") {
       // Gift Hampers disabled
     }

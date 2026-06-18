@@ -82,7 +82,7 @@ export default function Footer() {
             { label: "Decoration", href: "/listings" },
             { label: "DJ & Entertainment", href: "/listings" },
             { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
-            { label: "Invitation Flyers", href: "/invitation" },
+            { label: "Wedding Stationery", href: "/stationery" },
           ]} />
 
           {/* Company */}

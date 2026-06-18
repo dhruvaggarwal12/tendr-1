@@ -6,6 +6,7 @@ import AddVendorModal from "./AddVendorModal";
 import MemoriesTab from "./MemoriesTab";
 import StationeryAdminTab from "./StationeryAdminTab";
 import RecommendationIntelligenceTab from "./RecommendationIntelligenceTab";
+import CommunityModerationTab from "./CommunityModerationTab";
 import EditVendorModal from "./EditVendorModal";
 import CatererMenuEditor from "./CatererMenuEditor";
 import { io } from "socket.io-client";
@@ -273,6 +274,7 @@ const sidebar_arr = [
   { label: "Memories",           icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Memories" },
   { label: "Wedding Stationery",    icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
   { label: "Rec. Intelligence",     icon: <span style={{ fontSize: 16 }}>📊</span>,  key: "Recommendations" },
+  { label: "Community",             icon: <span style={{ fontSize: 16 }}>🌟</span>,  key: "Community" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -4774,6 +4776,9 @@ const AdminDashboard = () => {
 
         {/* ── Recommendation Intelligence ── */}
         {activeDropdown === "recommendations" && <RecommendationIntelligenceTab />}
+
+        {/* ── Community Moderation ── */}
+        {activeDropdown === "community" && <CommunityModerationTab />}
 
 
     </>

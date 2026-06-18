@@ -22,7 +22,7 @@ const SEARCH_SUGGESTIONS = [
 // ── Smart search parser ───────────────────────────────────────────────────────
 const SVC_KW = { caterer: "Caterer", catering: "Caterer", food: "Caterer", cook: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", photo: "Photographer", dj: "DJ", music: "DJ", entertainment: "DJ", disc: "DJ" };
 const LOC_KW = { delhi: "Delhi", "new delhi": "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
-const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", timeline: "/timeline-picker", invitation: "/invitation", flyer: "/invitation", invite: "/invitation", stationery: "/stationery", "wedding card": "/stationery", aftermovie: "/aftermovie" };
+const PAGE_KW = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", invite: "/stationery", stationery: "/stationery", "wedding card": "/stationery", aftermovie: "/stationery" };
 const BUDGET_PATTERNS = [
   // "under/below 1 lakh", "1.5 lakh"
   /(?:under|below|within|upto|up to|less than|around|approx\.?|~)?\s*₹?\s*(\d+(?:\.\d+)?)\s*lakh/i,
@@ -302,15 +302,13 @@ const Navbar = ({
     ...(user?.isAdmin ? [{
       label: "Memories",
       items: [
-        { label: "✉️ Invitation Flyers",  href: "/invitation" },
         { label: "💒 Wedding Stationery", href: "/stationery" },
-        { label: "🎬 Aftermovie",         href: "/aftermovie" },
       ],
     }] : []),
     {
       label: "Booking",
       items: [
-        { label: "🏠 Home Wedding Planner", href: "/home-wedding-planner" },
+        ...(user?.isAdmin ? [{ label: "🏠 Home Wedding Planner", href: "/home-wedding-planner" }] : []),
         { label: "Plan Your Event", href: "/booking" },
       ],
     },

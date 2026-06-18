@@ -46,27 +46,15 @@ const CAT_LABELS = {
   "my-story":   "My Event Story",
 };
 
-const LIKE_KEY   = "tendr_hub_liked";
-const POSTS_KEY  = "tendr_hub_user_posts";
-const REACT_KEY  = "tendr_hub_reactions";
+const LIKE_KEY  = "tendr_hub_liked";
+const REACT_KEY = "tendr_hub_reactions";
 
-function loadLiked()        { try { return new Set(JSON.parse(localStorage.getItem(LIKE_KEY)   || "[]")); } catch { return new Set(); } }
-function loadUserPosts()    { try { return JSON.parse(localStorage.getItem(POSTS_KEY)  || "[]");           } catch { return []; } }
-function loadReactions()    { try { return JSON.parse(localStorage.getItem(REACT_KEY)  || "{}");           } catch { return {}; } }
-function saveLiked(set)     { try { localStorage.setItem(LIKE_KEY,   JSON.stringify([...set])); } catch {} }
-function saveUserPosts(p)   { try { localStorage.setItem(POSTS_KEY,  JSON.stringify(p));        } catch {} }
-function saveReactions(r)   { try { localStorage.setItem(REACT_KEY,  JSON.stringify(r));        } catch {} }
+function loadLiked()     { try { return new Set(JSON.parse(localStorage.getItem(LIKE_KEY)  || "[]")); } catch { return new Set(); } }
+function loadReactions() { try { return JSON.parse(localStorage.getItem(REACT_KEY) || "{}");           } catch { return {}; } }
+function saveLiked(set)  { try { localStorage.setItem(LIKE_KEY,  JSON.stringify([...set])); } catch {} }
+function saveReactions(r){ try { localStorage.setItem(REACT_KEY, JSON.stringify(r));        } catch {} }
 
-// Merge static + user-created posts, deduplicate by id
-function buildAllPosts(userPosts) {
-  const seen = new Set();
-  return [...userPosts, ...POSTS].filter(p => {
-    const k = String(p.id || p._id);
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-}
+function postId(p) { return String(p._id || p.id); }
 
 // ── Reaction bar (interactive) ─────────────────────────────────────────────
 const REACTION_ITEMS = [
@@ -95,16 +83,31 @@ function ReactionBar({ reactions, userReaction, onReact }) {
 }
 
 // ── Single post card ────────────────────────────────────────────────────────
-function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userReaction, onReact }) {
+function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userReaction, onReact, token }) {
   const [expanded, setExpanded] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState(post.comments || []);
+  const [commentsLoading, setCommentsLoading] = useState(false);
   const catColor = CATEGORY_COLORS[post.category] || GOLD;
+  const bodyText = post.description || post.body || "";
 
-  const handleComment = () => {
+  const toggleComments = () => {
+    if (!showComments && post._id && !post.comments?.length && BASE_URL) {
+      setCommentsLoading(true);
+      fetch(`${BASE_URL}/community/posts/${post._id}/comments`)
+        .then(r => r.json()).then(data => { if (Array.isArray(data)) setComments(data); })
+        .catch(() => {}).finally(() => setCommentsLoading(false));
+    }
+    setShowComments(v => !v);
+  };
+
+  const handleComment = async () => {
     if (!commentText.trim()) return;
-    onAddComment(post.id || post._id, commentText.trim());
+    const text = commentText.trim();
     setCommentText("");
+    const newComment = await onAddComment(post._id || post.id, text);
+    if (newComment) setComments(prev => [newComment, ...prev]);
   };
 
   return (
@@ -126,8 +129,8 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
 
       {/* Body */}
       {expanded
-        ? <p style={{ fontSize: 13, color: "#5A3E2B", lineHeight: 1.6, margin: "0 0 10px" }}>{post.description}</p>
-        : <p style={{ fontSize: 13, color: "#7A5535", lineHeight: 1.5, margin: "0 0 10px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{post.description}</p>
+        ? <p style={{ fontSize: 13, color: "#5A3E2B", lineHeight: 1.6, margin: "0 0 10px" }}>{bodyText}</p>
+        : <p style={{ fontSize: 13, color: "#7A5535", lineHeight: 1.5, margin: "0 0 10px", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>{bodyText}</p>
       }
       <button onClick={() => setExpanded(v => !v)} style={{ fontSize: 12, color: GOLD, fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, marginBottom: 10 }}>
         {expanded ? "Show less ↑" : "Read more ↓"}
@@ -143,9 +146,9 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
             {liked ? "❤️" : "🤍"} {(post.likes || 0) + (liked ? 1 : 0)}
           </button>
           {/* Comments toggle */}
-          <button onClick={() => setShowComments(v => !v)}
+          <button onClick={toggleComments}
             style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: "6px 8px", touchAction: "manipulation" }}>
-            💬 {(post.comments?.length || 0) + (post.answers || 0)} replies
+            💬 {post.commentsCount ?? comments.length ?? post.answers ?? 0} replies
           </button>
           {/* Admin remove */}
           {isAdmin && (
@@ -168,9 +171,10 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
       {/* Comments section */}
       {showComments && (
         <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 12 }}>
-          {(post.comments || []).map((c, i) => (
-            <div key={i} style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "8px 12px", marginBottom: 8, borderLeft: `3px solid ${GOLD}` }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, marginBottom: 3 }}>{c.author || "Community Member"}</div>
+          {commentsLoading && <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 8 }}>Loading comments…</div>}
+          {comments.map((c, i) => (
+            <div key={c._id || i} style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "8px 12px", marginBottom: 8, borderLeft: `3px solid ${GOLD}` }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, marginBottom: 3 }}>{c.authorName || c.author || "Community Member"}</div>
               <div style={{ fontSize: 13, color: "#3B2F2F", lineHeight: 1.5 }}>{c.text}</div>
             </div>
           ))}
@@ -319,144 +323,113 @@ export default function CelebrationHub() {
   const isAdmin = !!user?.isAdmin;
 
   const [activeTab,     setActiveTab]     = useState("all");
+  const [posts,         setPosts]         = useState([]);
+  const [loading,       setLoading]       = useState(true);
   const [likedIds,      setLikedIds]      = useState(loadLiked);
-  const [userPosts,     setUserPosts]     = useState(loadUserPosts);
   const [userReactions, setUserReactions] = useState(loadReactions);
-  const [removedIds,    setRemovedIds]    = useState(new Set());
   const [showNewPost,   setShowNewPost]   = useState(false);
+  const [toast,         setToast]         = useState(null);
 
-  // Merge static + user posts, exclude removed
-  const allPosts = buildAllPosts(userPosts).filter(p => !removedIds.has(String(p.id || p._id)));
+  const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(null), 3500); };
 
-  // Sort: when we have enough posts show most liked; otherwise newest first
-  const LIKE_THRESHOLD = 20;
-  const sortedPosts = allPosts.length >= LIKE_THRESHOLD
-    ? [...allPosts].sort((a, b) => ((b.likes || 0) + (b.reactions?.loveThis || 0)) - ((a.likes || 0) + (a.reactions?.loveThis || 0)))
-    : allPosts;
-
-  // Per-tab filtered lists — handles both new category IDs and legacy static-post IDs
-  const postsForTab = (tab) => {
-    if (tab === "all")     return sortedPosts;
-    if (tab === "stories") return sortedPosts.filter(p => p.category === "stories" || p.category === "my-story");
-    if (tab === "ask")     return sortedPosts.filter(p => p.category === "ask"     || p.category === "real-talk");
-    if (tab === "polls")   return sortedPosts.filter(p => p.category === "polls");
-    if (tab === "ideas")   return sortedPosts.filter(p => p.category === "ideas");
-    return sortedPosts;
-  };
-
-  // Fetch live posts from backend (optional — fails gracefully)
+  // Fetch approved posts from backend; fall back to static POSTS if empty/failed
   useEffect(() => {
-    if (!BASE_URL) return;
-    fetch(`${BASE_URL}/community/posts`)
+    if (!BASE_URL) { setPosts(POSTS); setLoading(false); return; }
+    fetch(`${BASE_URL}/community/posts?limit=50`)
       .then(r => r.ok ? r.json() : null)
-      .then(data => {
-        if (data?.posts?.length) {
-          setUserPosts(prev => {
-            const merged = [...data.posts, ...prev];
-            const seen = new Set();
-            return merged.filter(p => { const k = String(p.id || p._id); return seen.has(k) ? false : (seen.add(k), true); });
-          });
-        }
-      })
-      .catch(() => {});
+      .then(data => { setPosts(data?.posts?.length ? data.posts : POSTS); })
+      .catch(() => setPosts(POSTS))
+      .finally(() => setLoading(false));
   }, []);
 
-  // Handle reaction toggle (one reaction type per post; clicking same type removes it)
-  const handleReact = (postId, reactionType) => {
-    const id = String(postId);
-    setUserReactions(prev => {
-      const next = { ...prev };
-      next[id] = next[id] === reactionType ? null : reactionType;
-      saveReactions(next);
-      return next;
-    });
+  // Per-tab filtered lists
+  const postsForTab = (tab) => {
+    if (tab === "all")     return posts;
+    if (tab === "stories") return posts.filter(p => p.category === "stories" || p.category === "my-story" || p.category === "story");
+    if (tab === "ask")     return posts.filter(p => p.category === "ask"     || p.category === "real-talk");
+    if (tab === "polls")   return posts.filter(p => p.category === "polls");
+    if (tab === "ideas")   return posts.filter(p => p.category === "ideas");
+    return posts;
   };
 
-  // Handle like toggle
-  const handleLike = (postId) => {
-    const id = String(postId);
-    setLikedIds(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      saveLiked(next);
-      return next;
-    });
+  // Like toggle — requires auth; calls API, updates local state from response
+  const handleLike = async (pid) => {
+    const id = String(pid);
+    if (!token) { showToast("Log in to like posts"); return; }
+    try {
+      const r = await fetch(`${BASE_URL}/community/posts/${id}/like`, {
+        method: "PATCH", headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await r.json();
+      setPosts(prev => prev.map(p => postId(p) === id ? { ...p, likes: data.likes } : p));
+      setLikedIds(prev => {
+        const next = new Set(prev);
+        data.liked ? next.add(id) : next.delete(id);
+        saveLiked(next);
+        return next;
+      });
+    } catch {}
   };
 
-  // Handle admin remove
-  const handleRemove = (postId) => {
-    const id = String(postId);
-    setRemovedIds(prev => new Set([...prev, id]));
-    // Optimistic: also remove from userPosts if it was user-created
-    setUserPosts(prev => {
-      const updated = prev.filter(p => String(p.id || p._id) !== id);
-      saveUserPosts(updated);
-      return updated;
-    });
+  // Reaction toggle — requires auth; calls API, updates local state from response
+  const handleReact = async (pid, reactionType) => {
+    const id = String(pid);
+    if (!token) { showToast("Log in to react to posts"); return; }
+    try {
+      const r = await fetch(`${BASE_URL}/community/posts/${id}/react`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reaction: reactionType }),
+      });
+      const data = await r.json();
+      setPosts(prev => prev.map(p => postId(p) === id ? { ...p, reactions: data.reactions } : p));
+      setUserReactions(prev => {
+        const next = { ...prev, [id]: data.userReaction || null };
+        saveReactions(next);
+        return next;
+      });
+    } catch {}
+  };
+
+  // Admin remove — calls admin DELETE endpoint
+  const handleRemove = (pid) => {
+    const id = String(pid);
+    setPosts(prev => prev.filter(p => postId(p) !== id));
     if (BASE_URL && token) {
-      fetch(`${BASE_URL}/community/posts/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } }).catch(() => {});
+      fetch(`${BASE_URL}/community/admin/posts/${id}`, {
+        method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+      }).catch(() => {});
     }
   };
 
-  // Handle add comment
-  const handleAddComment = (postId, text) => {
-    const id = String(postId);
-    const comment = { author: user?.name || "Community Member", text, date: "Just now" };
-    setUserPosts(prev => {
-      const updated = prev.map(p => {
-        if (String(p.id || p._id) === id) return { ...p, comments: [...(p.comments || []), comment] };
-        return p;
+  // Add comment — requires auth; calls API and returns new comment object for PostCard
+  const handleAddComment = async (pid, text) => {
+    const id = String(pid);
+    if (!token) { showToast("Log in to comment"); return null; }
+    try {
+      const r = await fetch(`${BASE_URL}/community/posts/${id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ text }),
       });
-      // Also patch static posts by cloning them into userPosts if not already there
-      const alreadyInUser = prev.some(p => String(p.id || p._id) === id);
-      if (!alreadyInUser) {
-        const staticP = POSTS.find(p => String(p.id) === id);
-        if (staticP) {
-          const patched = { ...staticP, comments: [...(staticP.comments || []), comment] };
-          const result = [patched, ...updated];
-          saveUserPosts(result);
-          return result;
-        }
-      }
-      saveUserPosts(updated);
-      return updated;
-    });
+      const comment = await r.json();
+      setPosts(prev => prev.map(p => postId(p) === id ? { ...p, commentsCount: (p.commentsCount || 0) + 1 } : p));
+      return comment;
+    } catch { return null; }
   };
 
-  // Handle new post submit
+  // New post — requires auth; submitted post goes to pending (admin must approve)
   const handleNewPost = async (form) => {
-    const newPost = {
-      id: `user-${Date.now()}`,
-      _id: `user-${Date.now()}`,
-      title: form.title,
-      description: form.description,
-      category: form.category,
-      author: form.isAnonymous ? "Anonymous" : (user?.name || "Community Member"),
-      isAnonymous: form.isAnonymous,
-      date: "Just now",
-      reactions: { agree: 0, facedThis: 0, greatIdea: 0, loveThis: 0 },
-      likes: 0,
-      comments: [],
-      answers: 0,
-      isPinned: false,
-      isFeatured: false,
-      isApproved: true,
-      _isUserCreated: true,
-    };
-    setUserPosts(prev => {
-      const updated = [newPost, ...prev];
-      saveUserPosts(updated);
-      return updated;
-    });
-    // Try to save to backend
-    if (BASE_URL && token) {
-      try {
-        await fetch(`${BASE_URL}/community/posts`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ title: form.title, description: form.description, category: form.category, isAnonymous: form.isAnonymous }),
-        });
-      } catch {}
+    if (!token) { showToast("Log in to create a post"); return; }
+    try {
+      await fetch(`${BASE_URL}/community/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title: form.title, body: form.description, category: form.category, isAnonymous: form.isAnonymous }),
+      });
+      showToast("Post submitted! It'll appear once approved by our team ✨");
+    } catch {
+      showToast("Couldn't post right now — please try again.");
     }
   };
 
@@ -469,6 +442,13 @@ export default function CelebrationHub() {
   return (
     <div style={{ minHeight: "100vh", background: CREAM, fontFamily: font }}>
       <HamburgerNav active="Home" />
+
+      {/* Toast */}
+      {toast && (
+        <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", zIndex: 9999, background: "#2C1A0E", color: "#fff", fontSize: 13, fontWeight: 600, borderRadius: 12, padding: "12px 22px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)", fontFamily: font, whiteSpace: "nowrap", maxWidth: "90vw", textAlign: "center" }}>
+          {toast}
+        </div>
+      )}
 
       {showNewPost && (
         <NewPostModal
@@ -529,19 +509,22 @@ export default function CelebrationHub() {
         {/* ── Tab content ── */}
         {(activeTab === "all" || activeTab === "stories" || activeTab === "ask") && (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {postsForTab(activeTab).length === 0
+            {loading
+              ? <div style={{ textAlign: "center", padding: "48px 24px", color: "#9B7450", fontSize: 14 }}>Loading community posts…</div>
+              : postsForTab(activeTab).length === 0
               ? <div style={{ textAlign: "center", padding: "48px 24px", color: "#9B7450", fontSize: 14 }}>No posts yet — be the first to share! ✨</div>
               : postsForTab(activeTab).map(post => (
                   <PostCard
-                    key={post.id || post._id}
+                    key={postId(post)}
                     post={post}
-                    liked={likedIds.has(String(post.id || post._id))}
+                    liked={likedIds.has(postId(post))}
                     onLike={handleLike}
                     onRemove={handleRemove}
                     isAdmin={isAdmin}
                     onAddComment={handleAddComment}
-                    userReaction={userReactions[String(post.id || post._id)] || null}
+                    userReaction={userReactions[postId(post)] || null}
                     onReact={handleReact}
+                    token={token}
                   />
                 ))
             }
@@ -555,15 +538,16 @@ export default function CelebrationHub() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
                 {postsForTab("polls").map(post => (
                   <PostCard
-                    key={post.id || post._id}
+                    key={postId(post)}
                     post={post}
-                    liked={likedIds.has(String(post.id || post._id))}
+                    liked={likedIds.has(postId(post))}
                     onLike={handleLike}
                     onRemove={handleRemove}
                     isAdmin={isAdmin}
                     onAddComment={handleAddComment}
-                    userReaction={userReactions[String(post.id || post._id)] || null}
+                    userReaction={userReactions[postId(post)] || null}
                     onReact={handleReact}
+                    token={token}
                   />
                 ))}
               </div>
@@ -581,15 +565,16 @@ export default function CelebrationHub() {
               <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
                 {postsForTab("ideas").map(post => (
                   <PostCard
-                    key={post.id || post._id}
+                    key={postId(post)}
                     post={post}
-                    liked={likedIds.has(String(post.id || post._id))}
+                    liked={likedIds.has(postId(post))}
                     onLike={handleLike}
                     onRemove={handleRemove}
                     isAdmin={isAdmin}
                     onAddComment={handleAddComment}
-                    userReaction={userReactions[String(post.id || post._id)] || null}
+                    userReaction={userReactions[postId(post)] || null}
                     onReact={handleReact}
+                    token={token}
                   />
                 ))}
               </div>
