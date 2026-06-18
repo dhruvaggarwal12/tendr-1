@@ -92,9 +92,6 @@ const EventPlanning = () => {
   const { openConciergeChat, openVendorChat } = useChatOverlay();
   const TRANSITION_MS = 350;
   const [activeModal, setActiveModal] = useState(null);
-  const [extraRequirements, setExtraRequirements] = useState(false);
-  const [showExtraReq, setShowExtraReq] = useState();
-  const [extraRequirementsText, setExtraRequirementsText] = useState("");
   const [animating, setAnimating] = useState(false);
   const [smartPlan, setSmartPlan] = useState(null);
   const [planLoading, setPlanLoading] = useState(false);
@@ -208,7 +205,7 @@ const EventPlanning = () => {
     selectedVendors,
     categoryBudgets: savedCategoryBudgets,
   } = useSelector((state) => state.eventPlanning);
-  const extraRequirements = useSelector((s) => s.eventPlanning.formData.extraRequirements || []);
+  const extraRequirements = formData?.extraRequirements || [];
   const { token, user: authUser } = useSelector((state) => state.auth);
   const { startSession, trackClick, trackSelect, trackDeselect, trackIgnored } = useRecommendationTracking();
 
