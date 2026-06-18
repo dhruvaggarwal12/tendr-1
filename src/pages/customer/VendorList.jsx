@@ -48,6 +48,7 @@ const VendorList = () => {
     eventType: formEventType,
     additionalInfo,
     budget: formBudget,
+    extraRequirements,
   } = useSelector((state) => state.eventPlanning.formData);
   const bookingType = useSelector((s) => s.eventPlanning.bookingType || "");
   const isNormalFlow = bookingType === "you-do-it";
@@ -447,9 +448,10 @@ const VendorList = () => {
                 guestCount ? { label: "Guests", value: guestCount, showLabel: false } : null,
                 currentCatBudget ? { label: "Budget", value: (() => { const mins = {Caterer:5000,Decorator:3000,Photographer:3000,DJ:2000}; return `${fmtBudget(mins[serviceType]||0)} – ${fmtBudget(currentCatBudget)}`; })(), showLabel: false } : null,
                 additionalInfo ? { label: "Note", value: additionalInfo, showLabel: false } : null,
+                ...(extraRequirements?.length ? extraRequirements.map(r => ({ label: r, value: r, showLabel: false, isExtra: true })) : []),
               ]
                 .filter(Boolean)
-                .map(({ label, value, showLabel }) => (
+                .map(({ label, value, showLabel, isExtra }) => (
                   <span
                     key={label}
                     style={{
@@ -458,9 +460,9 @@ const VendorList = () => {
                       fontWeight: 500,
                       padding: "3px 10px",
                       borderRadius: 100,
-                      background: "#f5f0e8",
-                      color: "#4a2c0e",
-                      border: "1px solid rgba(139,69,19,0.18)",
+                      background: isExtra ? "rgba(196,122,46,0.08)" : "#f5f0e8",
+                      color: isExtra ? "#7A3A0E" : "#4a2c0e",
+                      border: isExtra ? "1px solid rgba(196,122,46,0.28)" : "1px solid rgba(139,69,19,0.18)",
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,

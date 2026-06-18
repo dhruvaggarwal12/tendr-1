@@ -35,6 +35,7 @@ import {
   removeSelectedVendor,
   setBookingType,
   setCategoryBudgets,
+  toggleExtraRequirement,
 } from "../../redux/eventPlanningSlice.js";
 
 import { setFilters } from "../../redux/listingFiltersSlice";
@@ -207,6 +208,7 @@ const EventPlanning = () => {
     selectedVendors,
     categoryBudgets: savedCategoryBudgets,
   } = useSelector((state) => state.eventPlanning);
+  const extraRequirements = useSelector((s) => s.eventPlanning.formData.extraRequirements || []);
   const { token, user: authUser } = useSelector((state) => state.auth);
   const { startSession, trackClick, trackSelect, trackDeselect, trackIgnored } = useRecommendationTracking();
 
@@ -1542,21 +1544,78 @@ const EventPlanning = () => {
             );
           })()}
 
-          {/* Need anything else? — always visible, same for both flows */}
-          <div className="w-full mt-2" style={{ maxWidth: 1100, marginBottom: 32 }}>
-            <p style={{ fontSize: 14, color: "#9B7450", fontWeight: 600, marginBottom: 10, letterSpacing: "0.01em" }}>
-              Need anything else?
-            </p>
-            <textarea
-              value={extraRequirementsText}
-              onChange={(e) => setExtraRequirementsText(e.target.value)}
-              rows={3}
-              placeholder="Tell us about any other requirements (e.g., table tent, mats, bartender, cooler, mic stand, chairs, projector...)"
-              style={{ width: "100%", padding: "14px 16px", fontSize: 14, fontFamily: "'Outfit', sans-serif", background: "#fff", border: "2px solid rgba(196,122,46,0.2)", borderRadius: 16, color: "#2C1A0E", outline: "none", resize: "vertical", boxSizing: "border-box", transition: "border-color 0.18s" }}
-              onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(196,122,46,0.55)")}
-              onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)")}
-            />
-          </div>
+          {/* Extra requirements chips — always visible, same for both flows */}
+          {(() => {
+            const EXTRA_GROUPS = [
+              {
+                label: "Infrastructure",
+                items: [
+                  { id: "Tables", emoji: "🪑" },
+                  { id: "Mats / Carpets", emoji: "🏮" },
+                  { id: "Generator", emoji: "🔌" },
+                  { id: "Air Cooler", emoji: "❄️" },
+                  { id: "Heater", emoji: "🔥" },
+                  { id: "Fan Arrangement", emoji: "🌀" },
+                  { id: "Washroom Setup", emoji: "🚻" },
+                ],
+              },
+              {
+                label: "Staff",
+                items: [
+                  { id: "Security Staff", emoji: "💂" },
+                  { id: "Valet Parking", emoji: "🚗" },
+                ],
+              },
+              {
+                label: "Display",
+                items: [
+                  { id: "LED Screen", emoji: "📺" },
+                  { id: "Standees", emoji: "🖼️" },
+                  { id: "Welcome Board", emoji: "🪧" },
+                ],
+              },
+            ];
+            return (
+              <div className="w-full mt-2" style={{ maxWidth: 1100, marginBottom: 32, padding: "18px 20px", background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 8px rgba(196,122,46,0.05)" }}>
+                <p style={{ fontSize: 13, color: "#2C1A0E", fontWeight: 700, marginBottom: 14, letterSpacing: "0.01em" }}>
+                  Anything else needed at the venue?
+                  {extraRequirements.length > 0 && (
+                    <span style={{ marginLeft: 8, fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "2px 9px" }}>
+                      {extraRequirements.length} selected
+                    </span>
+                  )}
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                  {EXTRA_GROUPS.map(group => (
+                    <div key={group.label}>
+                      <div style={{ fontSize: 10, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{group.label}</div>
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                        {group.items.map(({ id, emoji }) => {
+                          const on = extraRequirements.includes(id);
+                          return (
+                            <button
+                              key={id}
+                              onClick={() => dispatch(toggleExtraRequirement(id))}
+                              style={{
+                                padding: "6px 13px", borderRadius: 100, fontSize: 12, fontWeight: 600,
+                                fontFamily: "'Outfit', sans-serif", cursor: "pointer", transition: "all 0.15s",
+                                border: on ? "1.5px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.22)",
+                                background: on ? "linear-gradient(135deg,rgba(196,122,46,0.14),rgba(204,171,74,0.12))" : "#FAFAF8",
+                                color: on ? "#7A3A0E" : "#6B5540",
+                                boxShadow: on ? "0 2px 8px rgba(196,122,46,0.15)" : "none",
+                              }}
+                            >
+                              {emoji} {id}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
 
           {/* Event form summary */}
           <div className="w-full mb-8" style={{ maxWidth: 1100 }}>

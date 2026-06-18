@@ -186,6 +186,7 @@ export function buildSummaryMessage(formAnswers, botAnswers, vendorName, service
     formAnswers.guests            ? `  👥 Guests: ${formAnswers.guests}` : null,
     formAnswers.budget            ? `  💰 Budget: ${formAnswers.budget}` : null,
     formAnswers.location          ? `  📍 City: ${formAnswers.location}` : null,
+    formAnswers.extraRequirements?.length ? `  🔧 Extra needs: ${formAnswers.extraRequirements.join(", ")}` : null,
     ``,
     `Additional details:`,
     botAnswers.decorationType     ? `  🎀 Decoration: ${botAnswers.decorationType}` : null,
