@@ -38,6 +38,8 @@ import {
 } from "../../redux/eventPlanningSlice.js";
 
 import { setFilters } from "../../redux/listingFiltersSlice";
+import { addToCart, selectCartItems } from "../../redux/giftHamperCartSlice";
+import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 
 import MakeAGroup_Nav from "../../components/MakeAGroup_Nav.jsx";
 import EventFormSummary from "../../components/EventFormSummary.jsx";
@@ -99,6 +101,10 @@ const EventPlanning = () => {
   const [planLoading, setPlanLoading] = useState(false);
   const [planError, setPlanError] = useState(false);
   const [planErrorMsg, setPlanErrorMsg] = useState("");
+  const [ghProducts, setGhProducts] = useState([]);
+  const [ghLoading, setGhLoading] = useState(false);
+  const [mobileBrowseOpen, setMobileBrowseOpen] = useState(null); // 'GiftHampers' | 'FunActivities' | null
+  const cartItems = useSelector(selectCartItems);
   const [vendorOffset, setVendorOffset] = useState({});
   const [expandedCat, setExpandedCat] = useState(null);
   const [spQuickView, setSpQuickView] = useState(null); // vendor shown in smart plan QuickView panel
@@ -141,9 +147,9 @@ const EventPlanning = () => {
   const [selectedTier, setSelectedTier] = useState('balanced');
 
   const TIER_SPLITS = {
-    essential: { Caterer: 45, Decorator: 20, Photographer: 20, DJ: 15 },
-    balanced:  { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 },
-    premium:   { Caterer: 35, Decorator: 30, Photographer: 25, DJ: 10 },
+    essential: { Caterer: 40, Decorator: 18, Photographer: 17, DJ: 12, GiftHampers: 8,  FunActivities: 5 },
+    balanced:  { Caterer: 35, Decorator: 22, Photographer: 18, DJ: 12, GiftHampers: 9,  FunActivities: 4 },
+    premium:   { Caterer: 30, Decorator: 25, Photographer: 20, DJ: 8,  GiftHampers: 12, FunActivities: 5 },
   };
   const TIER_META = {
     essential: { label: "Essential",  desc: "Smart basics, great value",    color: "#6b7280" },
@@ -223,10 +229,12 @@ const EventPlanning = () => {
   const SPLIT_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 };
 
   const CAT_BUDGET_RANGES = {
-    Caterer:      { min: 5000,  max: 500000, step: 5000,  default: 25000,  emoji: "🍽️" },
-    Decorator:    { min: 3000,  max: 300000, step: 3000,  default: 15000,  emoji: "🎨" },
-    Photographer: { min: 3000,  max: 200000, step: 3000,  default: 15000,  emoji: "📸" },
-    DJ:           { min: 2000,  max: 100000, step: 2000,  default: 10000,  emoji: "🎵" },
+    Caterer:       { min: 5000,  max: 500000, step: 5000,  default: 25000,  emoji: "🍽️" },
+    Decorator:     { min: 3000,  max: 300000, step: 3000,  default: 15000,  emoji: "🎨" },
+    Photographer:  { min: 3000,  max: 200000, step: 3000,  default: 15000,  emoji: "📸" },
+    DJ:            { min: 2000,  max: 100000, step: 2000,  default: 10000,  emoji: "🎵" },
+    GiftHampers:   { min: 500,   max: 50000,  step: 500,   default: 5000,   emoji: "🎁" },
+    FunActivities: { min: 2000,  max: 30000,  step: 1000,  default: 5000,   emoji: "🎭" },
   };
 
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -345,6 +353,22 @@ const EventPlanning = () => {
       description: "Stunning balloon setups, floral themes and more",
       photo: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?auto=format&fit=crop&w=600&h=340&q=80",
     },
+    {
+      id: "GiftHampers",
+      title: "Gift Hampers & Cakes",
+      icon: <span style={{ fontSize: 22 }}>🎁</span>,
+      description: "Curated hampers, custom cakes and sweet boxes",
+      photo: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?auto=format&fit=crop&w=600&h=340&q=80",
+      type: "addon",
+    },
+    {
+      id: "FunActivities",
+      title: "Fun Activities",
+      icon: <span style={{ fontSize: 22 }}>🎭</span>,
+      description: "Magic shows, live bands, photo booths & more",
+      photo: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=600&h=340&q=80",
+      type: "addon",
+    },
   ];
 
   const [vendorCounts, setVendorCounts] = useState({});
@@ -387,6 +411,16 @@ const EventPlanning = () => {
     };
     fetchCounts();
   }, [showVendorScreen, formData?.date, formData?.location]);
+
+  useEffect(() => {
+    if (!showVendorScreen || !selectedVendors.includes('GiftHampers')) return;
+    setGhLoading(true);
+    fetch(`${BASE_URL}/gift-hampers/products`)
+      .then(r => r.ok ? r.json() : { products: [] })
+      .then(d => setGhProducts(d.products || []))
+      .catch(() => setGhProducts([]))
+      .finally(() => setGhLoading(false));
+  }, [showVendorScreen, selectedVendors.includes('GiftHampers')]);
 
   // Safety: reset step if out-of-range (e.g. admin question removed between sessions)
   useEffect(() => {
@@ -475,7 +509,7 @@ const EventPlanning = () => {
       const r = Math.round(n * 2) / 2;
       return "★".repeat(Math.floor(r)) + (r % 1 ? "½" : "") + "☆".repeat(5 - Math.ceil(r));
     };
-    const CAT_EMOJI_MAP = { Caterer: "🍽", Decorator: "🎀", Photographer: "📸", DJ: "🎵" };
+    const CAT_EMOJI_MAP = { Caterer: "🍽", Decorator: "🎀", Photographer: "📸", DJ: "🎵", GiftHampers: "🎁", FunActivities: "🎭" };
 
     const currentVendors = smartPlan.lineup.map(({ category, vendors: vs, estimatedCost: lineupCost }) => {
       const pool = vs.slice(0, 3); // max 3 suggestions per category
@@ -485,12 +519,13 @@ const EventPlanning = () => {
       return { category, estimatedCost, vendor, totalVendors: pool.length };
     });
 
-    const wizardCatOrder = ['Caterer', 'Decorator', 'Photographer', 'DJ'];
+    const wizardCatOrder = ['Caterer', 'Decorator', 'Photographer', 'DJ', 'GiftHampers'];
+    const wizardCatLabel = { Caterer: 'Food & Catering', Decorator: 'Decoration', Photographer: 'Photography', DJ: 'DJ & Music', GiftHampers: '🎁 Gift Hampers' };
     const wizardSteps = [
       { id: 'confirm', label: 'Confirm Details' },
       ...wizardCatOrder.filter(c => selectedVendors.includes(c)).map(c => ({
         id: c.toLowerCase(),
-        label: c === 'Caterer' ? 'Food & Catering' : c === 'Decorator' ? 'Decoration' : c === 'Photographer' ? 'Photography' : 'DJ & Music',
+        label: wizardCatLabel[c] || c,
       })),
     ];
     const isLastStep = wizardStep === wizardSteps.length - 1;
@@ -724,13 +759,47 @@ const EventPlanning = () => {
           </div>
         </div>
       );
+      if (id === 'gifthampers') {
+        const ghBudget = savedCategoryBudgets['GiftHampers'] || 5000;
+        const affordable = ghProducts.filter(p => !p.price || p.price <= ghBudget);
+        const display = affordable.length > 0 ? affordable : ghProducts.slice(0, 6);
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 2 }}>Showing products within your ₹{ghBudget.toLocaleString('en-IN')} gift hampers budget. Select items to add to your package.</div>
+            {ghLoading ? (
+              <div style={{ textAlign: "center", padding: "28px 0", color: "#9B7450", fontSize: 13 }}>Loading products…</div>
+            ) : display.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "24px 0" }}>
+                <p style={{ fontSize: 13, color: "#9B7450", marginBottom: 12 }}>No products loaded yet.</p>
+                <a href="/gift-hampers-cakes" target="_blank" rel="noopener noreferrer" style={{ padding: "9px 20px", borderRadius: 10, background: "#C47A2E", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none" }}>Browse Gift Hampers →</a>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {display.map(p => {
+                  const inCart = cartItems.some(i => i.productId === p._id);
+                  return (
+                    <div key={p._id} onClick={() => { if (!inCart) dispatch(addToCart({ product: p, quantity: 1 })); }}
+                      style={{ borderRadius: 14, border: `2px solid ${inCart ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: inCart ? "rgba(196,122,46,0.06)" : "#FFFCF5", padding: "10px 11px", cursor: inCart ? "default" : "pointer", transition: "all 0.15s" }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", marginBottom: 3, lineHeight: 1.3 }}>{p.name}</div>
+                      {p.price && <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E" }}>₹{p.price.toLocaleString('en-IN')}</div>}
+                      {p.category && <div style={{ fontSize: 10, color: "#9B7450", marginTop: 2 }}>{p.category}</div>}
+                      {inCart && <div style={{ fontSize: 10, color: "#16a34a", fontWeight: 700, marginTop: 4 }}>✓ Added to cart</div>}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            <a href="/gift-hampers-cakes" target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", fontSize: 12, color: "#C47A2E", fontWeight: 700, textDecoration: "underline", marginTop: 4 }}>See all gift hampers →</a>
+          </div>
+        );
+      }
       return null;
     };
 
     // ── Waiting for approval (post-submit) ─────────────────────────────────
     if (planSubmitted) {
       const slots = confirmedPlan?.vendorSlots || currentVendors.map(cv => ({ category: cv.category, vendorName: cv.vendor?.name || cv.category, estimatedCost: cv.estimatedCost }));
-      const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵' };
+      const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵', GiftHampers: '🎁', FunActivities: '🎭' };
 
       return (
         <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
@@ -1027,26 +1096,91 @@ const EventPlanning = () => {
             </div>
           )}
 
-          {/* Browse All Vendors — smart planning exit to normal flow */}
-          <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16, padding: "14px 20px", background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap", boxShadow: "0 2px 8px rgba(196,122,46,0.06)" }}>
-            <div style={{ flex: 1, minWidth: 200 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>Didn't find the perfect vendor?</div>
-              <div style={{ fontSize: 11.5, color: "#9B7450" }}>Browse all vendors with your budget and preferences already applied.</div>
+          {/* Add-ons section — Gift Hampers + Fun Activities */}
+          <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>✦ Add to Your Package</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+
+              {/* Gift Hampers card */}
+              {(() => {
+                const ghBudget = savedCategoryBudgets['GiftHampers'];
+                const ghSelected = selectedVendors.includes('GiftHampers');
+                const previewProducts = ghProducts.slice(0, 3);
+                return (
+                  <div style={{ background: "#fff", borderRadius: 20, border: `2px solid ${ghSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, padding: "16px", boxShadow: "0 2px 12px rgba(196,122,46,0.07)", display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 22 }}>🎁</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>Gift Hampers & Cakes</div>
+                        {ghBudget && <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>Budget: ₹{ghBudget.toLocaleString('en-IN')}</div>}
+                      </div>
+                      {ghSelected && <span style={{ fontSize: 10, fontWeight: 800, color: "#16a34a", background: "rgba(22,163,74,0.1)", padding: "2px 8px", borderRadius: 100 }}>✓ Added</span>}
+                    </div>
+                    {/* Compact product previews */}
+                    {ghLoading ? (
+                      <div style={{ fontSize: 11, color: "#9B7450" }}>Loading products…</div>
+                    ) : previewProducts.length > 0 ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        {previewProducts.map(p => {
+                          const inCart = cartItems.some(i => i.productId === p._id);
+                          return (
+                            <div key={p._id} onClick={() => { if (!inCart) dispatch(addToCart({ product: p, quantity: 1 })); }}
+                              style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", borderRadius: 10, border: `1.5px solid ${inCart ? "#C47A2E" : "rgba(196,122,46,0.12)"}`, background: inCart ? "rgba(196,122,46,0.05)" : "#FFFCF5", cursor: inCart ? "default" : "pointer" }}>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: "#2C1A0E", flex: 1 }}>{p.name}</span>
+                              <span style={{ fontSize: 11, fontWeight: 800, color: inCart ? "#16a34a" : "#C47A2E", marginLeft: 6, flexShrink: 0 }}>{inCart ? "✓" : p.price ? `₹${p.price.toLocaleString('en-IN')}` : "View"}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                    <a href="/gift-hampers-cakes" target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textDecoration: "none", display: "flex", alignItems: "center", gap: 4 }}>
+                      Browse all hampers →
+                    </a>
+                  </div>
+                );
+              })()}
+
+              {/* Fun Activities card */}
+              {(() => {
+                const faSelected = selectedVendors.includes('FunActivities');
+                const [selectedActivities, setSelectedActivities] = React.useState(wizardAnswers?.funActivities?.selected || []);
+                const preview = FUN_ACTIVITIES.slice(0, 3);
+                return (
+                  <div style={{ background: "#fff", borderRadius: 20, border: `2px solid ${faSelected ? "#7c3aed" : "rgba(124,58,237,0.15)"}`, padding: "16px", boxShadow: "0 2px 12px rgba(124,58,237,0.07)", display: "flex", flexDirection: "column", gap: 10 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 22 }}>🎭</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>Fun Activities</div>
+                        <div style={{ fontSize: 11, color: "#7c3aed" }}>Fixed price · Confirmed in 2 hrs</div>
+                      </div>
+                      {faSelected && <span style={{ fontSize: 10, fontWeight: 800, color: "#7c3aed", background: "rgba(124,58,237,0.1)", padding: "2px 8px", borderRadius: 100 }}>✓ Added</span>}
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                      {preview.map(a => {
+                        const sel = selectedActivities.includes(a.id);
+                        return (
+                          <div key={a.id} onClick={() => {
+                            const next = sel ? selectedActivities.filter(x => x !== a.id) : [...selectedActivities, a.id];
+                            setSelectedActivities(next);
+                            setWizardAnswers(p => ({ ...p, funActivities: { ...(p.funActivities || {}), selected: next } }));
+                          }}
+                            style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 10px", borderRadius: 10, border: `1.5px solid ${sel ? "#7c3aed" : "rgba(124,58,237,0.12)"}`, background: sel ? "rgba(124,58,237,0.05)" : "#FFFCF5", cursor: "pointer" }}>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: "#2C1A0E", flex: 1 }}>{a.emoji} {a.name}</span>
+                            <span style={{ fontSize: 11, fontWeight: 800, color: sel ? "#7c3aed" : "#9B7450", flexShrink: 0 }}>{sel ? "✓" : `₹${a.price.toLocaleString('en-IN')}`}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <a href="/fun-activities" target="_blank" rel="noopener noreferrer"
+                      style={{ fontSize: 12, fontWeight: 700, color: "#7c3aed", textDecoration: "none" }}>
+                      See all activities →
+                    </a>
+                  </div>
+                );
+              })()}
+
             </div>
-            <button
-              onClick={() => {
-                dispatch(setFilters({
-                  serviceType: selectedVendors[0],
-                  eventType: formData?.eventType || "",
-                  locationType: formData?.location || "",
-                  date: formData?.date || "",
-                  guestCount: Number(formData?.guests) || 0,
-                }));
-                navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } });
-              }}
-              style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", flexShrink: 0 }}>
-              Browse All Vendors →
-            </button>
           </div>
 
           {/* Decor Finder nudge */}
@@ -1304,11 +1438,14 @@ const EventPlanning = () => {
             Matching top vendors to your budget &amp; event preferences
           </p>
           <div style={{ display: "flex", gap: 8, marginTop: 28, flexWrap: "wrap", justifyContent: "center" }}>
-            {selectedVendors.map(cat => (
-              <span key={cat} style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 700, border: "1.5px solid rgba(196,122,46,0.2)" }}>
-                {cat === "Caterer" ? "🍽" : cat === "Decorator" ? "🎀" : cat === "Photographer" ? "📸" : "🎵"} {cat}
-              </span>
-            ))}
+            {selectedVendors.map(cat => {
+              const emo = { Caterer:"🍽", Decorator:"🎀", Photographer:"📸", DJ:"🎵", GiftHampers:"🎁", FunActivities:"🎭" };
+              return (
+                <span key={cat} style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 700, border: "1.5px solid rgba(196,122,46,0.2)" }}>
+                  {emo[cat] || "🏷"} {cat === "GiftHampers" ? "Gift Hampers" : cat === "FunActivities" ? "Fun Activities" : cat}
+                </span>
+              );
+            })}
           </div>
         </div>
         <style>{`@keyframes tendr-spin { to { transform: rotate(360deg); } }`}</style>
@@ -1525,7 +1662,11 @@ const EventPlanning = () => {
                           <h3 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{vendor.title}</h3>
                         </div>
                         <p style={{ fontSize: 12.5, color: "#7A5535", fontWeight: 400, margin: "0 0 8px", lineHeight: 1.45 }}>{vendor.description}</p>
-                        {isYouDoIt && (
+                        {vendor.type === "addon" ? (
+                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: "#7c3aed", background: "rgba(124,58,237,0.08)", padding: "3px 9px", borderRadius: 100 }}>
+                            ✦ Add-on · Fixed price
+                          </span>
+                        ) : isYouDoIt && (
                           <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count > 0 ? "#16a34a" : "#C47A2E", background: count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100 }}>
                             {count !== undefined
                               ? formData?.date
@@ -1701,9 +1842,37 @@ const EventPlanning = () => {
                     </div>
                     <button onClick={() => setShowYouDoItBudget(false)} style={{ width: 26, height: 26, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
-                  {/* Per-category sliders */}
+                  {/* Per-category sliders + addon Browse buttons */}
                   <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 14, maxHeight: "60vh", overflowY: "auto" }}>
                     {selectedVendors.map(cat => {
+                      // Addon categories get Browse buttons instead of sliders
+                      if (cat === 'GiftHampers' || cat === 'FunActivities') {
+                        const href = cat === 'GiftHampers' ? '/gift-hampers-cakes' : '/fun-activities';
+                        const label = cat === 'GiftHampers' ? '🎁 Gift Hampers & Cakes' : '🎭 Fun Activities';
+                        const ghCats = cat === 'GiftHampers' ? ['Hampers', 'Cakes', 'Sweet Boxes', 'Combo Packs'] : ['Magic Show', 'Game Coordinator', 'Live Band', 'Photo Booth'];
+                        return (
+                          <div key={cat} style={{ border: "1.5px solid rgba(124,58,237,0.2)", borderRadius: 12, padding: "12px 14px", background: "rgba(124,58,237,0.03)" }}>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: "#7c3aed", marginBottom: 8 }}>{label}</div>
+                            {/* Desktop — direct link; Mobile — dropdown then navigate */}
+                            <a href={href} target="_blank" rel="noopener noreferrer"
+                              style={{ display: "none" }} className="ep-addon-desktop-link">Browse →</a>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                              {ghCats.map(c => (
+                                <button key={c} onClick={() => { window.innerWidth >= 768 ? window.open(href, '_blank') : window.location.assign(href); }}
+                                  style={{ padding: "5px 12px", borderRadius: 100, border: "1.5px solid rgba(124,58,237,0.25)", background: "#fff", color: "#7c3aed", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                                  {c}
+                                </button>
+                              ))}
+                            </div>
+                            <div style={{ marginTop: 8 }}>
+                              <button onClick={() => window.innerWidth >= 768 ? window.open(href, '_blank') : window.location.assign(href)}
+                                style={{ padding: "7px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#7c3aed,#9d5cf5)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                                Browse All →
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      }
                       const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 15000 };
                       const val = savedCategoryBudgets[cat] || range.default;
                       return (
