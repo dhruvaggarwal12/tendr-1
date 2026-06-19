@@ -62,6 +62,7 @@ const Auth = () => {
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
+  const [slowMsg, setSlowMsg] = useState(false);
 
   useEffect(() => {
     setIsSignup(location.pathname === "/signup");
@@ -109,7 +110,11 @@ const Auth = () => {
       });
       const data = await res.json();
       if (!res.ok) {
-        setLocalError(data.message || "Signup failed. Please try again.");
+        if (res.status === 409) {
+          setLocalError("An account already exists with this phone number.");
+        } else {
+          setLocalError(data.message || "Signup failed. Please try again.");
+        }
         return;
       }
       // Store token + user in Redux (same as login)
@@ -166,6 +171,13 @@ const Auth = () => {
 
   const isBusy = loading || localLoading;
   const bgPhoto = isSignup ? signupbackground : loginbackground;
+
+  // Show "server is waking up" message if request takes > 6 seconds
+  useEffect(() => {
+    if (!isBusy) { setSlowMsg(false); return; }
+    const t = setTimeout(() => setSlowMsg(true), 6000);
+    return () => clearTimeout(t);
+  }, [isBusy]);
 
 
   return (
@@ -292,12 +304,38 @@ const Auth = () => {
             </p>
           </div>
 
-          {/* Error */}
-          {(error || localError) && (
-            <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "10px 14px", marginBottom: 18, fontSize: 13.5, color: "#C0392B", textAlign: "center" }}>
-              {localError || error}
+          {/* Slow server notice */}
+          {isBusy && slowMsg && (
+            <div style={{ background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "10px 14px", marginBottom: 18, fontSize: 13, color: "#92400e", textAlign: "center", fontFamily: font }}>
+              ⏳ Our server is starting up — this usually takes under 30 seconds. Please wait…
             </div>
           )}
+
+          {/* Error */}
+          {(error || localError) && (() => {
+            const msg = localError || error || "";
+            const isExists = msg.toLowerCase().includes("already exists");
+            const isNotFound = msg.toLowerCase().includes("do not have an account") || msg.toLowerCase().includes("no account");
+            return (
+              <div style={{ background: "rgba(192,57,43,0.08)", border: "1px solid rgba(192,57,43,0.2)", borderRadius: 10, padding: "12px 14px", marginBottom: 18, fontSize: 13.5, color: "#C0392B", textAlign: "center", fontFamily: font }}>
+                {msg}
+                {isExists && (
+                  <div style={{ marginTop: 8 }}>
+                    <button onClick={toggleAuthMode} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>
+                      Log in instead →
+                    </button>
+                  </div>
+                )}
+                {isNotFound && (
+                  <div style={{ marginTop: 8 }}>
+                    <button onClick={toggleAuthMode} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: font, textDecoration: "underline" }}>
+                      Sign up instead →
+                    </button>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {isSignup ? (
             <form onSubmit={handleSignupSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
