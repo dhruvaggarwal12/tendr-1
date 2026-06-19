@@ -158,7 +158,7 @@ export default function WeddingStationery() {
                     >
                       {/* Image */}
                       {item.images?.[0]?.url ? (
-                        <div style={{ position: "relative", background: meta.light, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 150, maxHeight: 200, overflow: "hidden" }}>
+                        <div className="ws-card-img" style={{ position: "relative", background: meta.light, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 150, maxHeight: 200, overflow: "hidden" }}>
                           <img
                             src={item.images[0].url}
                             alt={item.name}
@@ -310,7 +310,7 @@ export default function WeddingStationery() {
             {selectedItem.images?.length > 0 ? (
               <div>
                 {/* Main image */}
-                <div style={{ background: (CAT_META[selectedItem.category] || CAT_META["Other"]).light, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 200, maxHeight: 300, overflow: "hidden" }}>
+                <div className="ws-detail-img" style={{ background: (CAT_META[selectedItem.category] || CAT_META["Other"]).light, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 200, maxHeight: 300, overflow: "hidden" }}>
                   <img
                     src={selectedItem.images[selectedImgIdx]?.url || selectedItem.images[0].url}
                     alt={selectedItem.name}
@@ -343,7 +343,7 @@ export default function WeddingStationery() {
               );
             })()}
 
-            <div style={{ padding: "28px 32px 48px" }}>
+            <div className="ws-panel-body" style={{ padding: "28px 32px 48px" }}>
               {(() => {
                 const m  = CAT_META[selectedItem.category] || CAT_META["Other"];
                 const pr = getPriceDisplay(selectedItem);
@@ -418,8 +418,20 @@ export default function WeddingStationery() {
             border-radius: 22px 22px 0 0 !important;
             animation: ws-slideUp 0.35s cubic-bezier(0.4,0,0.2,1) !important;
           }
+          /* Card image: smaller cap on 2-col mobile so card body has room */
+          .ws-card-img { min-height: 110px !important; max-height: 140px !important; }
+          .ws-card-img img { max-height: 140px !important; }
+          /* Detail panel image: smaller on bottom sheet so content isn't pushed off */
+          .ws-detail-img { min-height: 150px !important; max-height: 200px !important; }
+          .ws-detail-img img { max-height: 200px !important; }
+          /* Detail panel body: tighter horizontal padding */
+          .ws-panel-body { padding: 20px 18px 80px !important; }
         }
-        @media(max-width:360px){ .stat-grid { grid-template-columns: 1fr !important; } }
+        @media(max-width:360px){
+          .stat-grid { grid-template-columns: 1fr !important; }
+          .ws-card-img { min-height: 130px !important; max-height: 180px !important; }
+          .ws-card-img img { max-height: 180px !important; }
+        }
         input[type=number]::-webkit-inner-spin-button,
         input[type=number]::-webkit-outer-spin-button { opacity: 1; }
       `}</style>
