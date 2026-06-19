@@ -31,7 +31,7 @@ export default function StationeryPicker() {
   );
 
   return (
-    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#FAF7F2", fontFamily: "'Lato', sans-serif", overflow: "hidden" }}>
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", background: "#FAF7F2", fontFamily: "'Lato', sans-serif", overflow: "hidden" }}>
       {/* Header — fixed */}
       <header style={{ background: "#fff", borderBottom: "1px solid #E8E0D0", padding: "20px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
         <div>

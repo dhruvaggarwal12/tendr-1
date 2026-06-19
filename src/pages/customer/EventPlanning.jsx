@@ -1063,7 +1063,7 @@ const EventPlanning = () => {
       {spQuickView && (
         <>
           <div onClick={() => setSpQuickView(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1100 }} />
-          <div style={{ position: "fixed", right: 0, top: 0, height: "100vh", width: 420, maxWidth: "92vw", background: "#FFFCF5", zIndex: 1101, overflowY: "auto", boxShadow: "-8px 0 48px rgba(139,69,19,0.18)", animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)", fontFamily: "'Outfit',sans-serif" }}>
+          <div style={{ position: "fixed", right: 0, top: 0, height: "100dvh", width: 420, maxWidth: "92vw", background: "#FFFCF5", zIndex: 1101, overflowY: "auto", boxShadow: "-8px 0 48px rgba(139,69,19,0.18)", animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)", fontFamily: "'Outfit',sans-serif" }}>
             {/* Cover */}
             <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
               <img src={spQuickView.portfolioPhotos?.[0] || spQuickView.image || "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80"} alt={spQuickView.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />

@@ -479,7 +479,8 @@ const Chat = () => {
   return (
     <div
       style={{
-        minHeight: "100vh",
+        height: "100dvh",
+        overflow: "hidden",
         display: "flex",
         flexDirection: "column",
         background: "#f8f4ef",
@@ -579,9 +580,10 @@ const Chat = () => {
       <div
         style={{
           flex: 1,
+          minHeight: 0,
           overflowY: "auto",
           padding: "20px 16px",
-          paddingBottom: pendingAttachments.length > 0 ? 200 : 90,
+          paddingBottom: pendingAttachments.length > 0 ? 160 : 16,
         }}
       >
         <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 10 }}>
@@ -943,12 +945,12 @@ const Chat = () => {
 
       <div
         style={{
-          position: "sticky",
-          bottom: 0,
+          flexShrink: 0,
           background: "#fff",
           borderTop: "1px solid rgba(139,69,19,0.1)",
           boxShadow: "0 -2px 12px rgba(0,0,0,0.06)",
           padding: "10px 16px",
+          paddingBottom: "calc(10px + env(safe-area-inset-bottom, 0px))",
           zIndex: 50,
         }}
       >

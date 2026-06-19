@@ -429,7 +429,7 @@ const VendorList_ListingPage = ({
               animation: "qv-up 0.32s cubic-bezier(0.4,0,0.2,1)",
               paddingBottom: "env(safe-area-inset-bottom, 16px)",
             } : {
-              position: "fixed", right: 0, top: 0, height: "100vh",
+              position: "fixed", right: 0, top: 0, height: "100dvh",
               width: 420, maxWidth: "92vw",
               background: "#FFFCF5", zIndex: 99995,
               boxShadow: "-8px 0 48px rgba(139,69,19,0.18)",
@@ -739,7 +739,7 @@ const VendorList_ListingPage = ({
                       <select value={entryGateForm.location} onChange={e => setEntryGateForm(p => ({ ...p, location: e.target.value }))}
                         style={{ ...fieldStyle, color: entryGateForm.location ? "#2C1A0E" : "#9B7450" }}>
                         <option value="">Select city</option>
-                        {["Delhi","Noida","Greater Noida","Ghaziabad","Gurugram","Faridabad"].map(l => <option key={l} value={l}>{l}</option>)}
+                        {["Delhi","Noida","Greater Noida","Ghaziabad"].map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
                     </div>
                   </div>
@@ -831,7 +831,7 @@ const VendorList_ListingPage = ({
                       <select value={chatEventForm.location} onChange={e => setChatEventForm(p => ({ ...p, location: e.target.value }))}
                         style={{ ...fieldStyle, color: chatEventForm.location ? "#2C1A0E" : "#9B7450" }}>
                         <option value="">Select city</option>
-                        {["Delhi","Noida","Greater Noida","Ghaziabad","Gurugram","Faridabad"].map(l => <option key={l} value={l}>{l}</option>)}
+                        {["Delhi","Noida","Greater Noida","Ghaziabad"].map(l => <option key={l} value={l}>{l}</option>)}
                       </select>
                     </div>
                   </div>

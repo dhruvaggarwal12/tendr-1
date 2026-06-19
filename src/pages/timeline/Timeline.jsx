@@ -616,7 +616,7 @@ export default function Timeline() {
   const plan = PLANS[planKey];
 
   return (
-    <div style={{ height: "100vh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#F8F4EF", fontFamily: font }}>
+    <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#F8F4EF", fontFamily: font }}>
       <SEO title="Event Timeline — Tendr" description="Step-by-step countdown plan for your event." path="/prebuilt-timeline" />
       <BasicSpeedDial />
       <div style={{ flexShrink: 0 }}><HamburgerNav active="Browse" /></div>

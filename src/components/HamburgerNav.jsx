@@ -218,12 +218,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   };
 
 
-  // Desktop sidebar: Vendors first (original order)
-  // Mobile drawer: Gift & Hampers shown as standalone button above these sections
   const NAV_SECTIONS = [
-    { label: "Booking", items: [
-      { label: "Plan Your Event", href: "/booking", activePaths: ["/booking", "/plan-event"] },
-    ]},
     { label: "Vendors", items: [
       { label: "Browse Vendors",     href: "/listings", onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
       { label: "Top Rated Vendors",  href: "/top-rated/Photographer", activePaths: ["/top-rated/"] },
@@ -234,6 +229,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "💒 Wedding Stationeries", href: "/stationery" },
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
+    ]},
+    { label: "Booking", items: [
+      { label: "Plan Your Event", href: "/booking", activePaths: ["/booking", "/plan-event"] },
     ]},
     { label: "Tools", hideOnMobile: true, items: [
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
@@ -438,42 +436,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Nav sections */}
           <div style={{ padding: "8px 0" }}>
-            {/* Wedding Stationeries — above Gift Hampers */}
-            {(() => {
-              const isStatActive = location.pathname === "/stationery";
-              return (
-                <div style={{ marginBottom: 2 }}>
-                  <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px" }}>Stationeries</div>
-                  <button
-                    onClick={() => navigate("/stationery")}
-                    style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "9px 16px", border: "none", background: isStatActive ? "rgba(196,122,46,0.18)" : "transparent", fontSize: 13, fontWeight: isStatActive ? 700 : 500, color: isStatActive ? "#FFCC66" : "rgba(255,255,255,0.85)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderLeft: isStatActive ? "3px solid #C9A84C" : "3px solid transparent" }}
-                    onMouseEnter={e => { if (!isStatActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
-                    onMouseLeave={e => { if (!isStatActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
-                  >
-                    💒 Wedding Stationeries
-                  </button>
-                  <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "4px 18px" }} />
-                </div>
-              );
-            })()}
-            {/* Gift Hampers — above Browse Vendors */}
-            {(() => {
-              const isGiftActive = location.pathname === "/gift-hampers-cakes";
-              return (
-                <div style={{ marginBottom: 2 }}>
-                  <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px" }}>Gift &amp; Hampers</div>
-                  <button
-                    onClick={() => navigate("/gift-hampers-cakes")}
-                    style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "9px 16px", border: "none", background: isGiftActive ? "rgba(196,122,46,0.18)" : "transparent", fontSize: 13, fontWeight: isGiftActive ? 700 : 500, color: isGiftActive ? "#FFCC66" : "rgba(255,255,255,0.85)", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderLeft: isGiftActive ? "3px solid #C9A84C" : "3px solid transparent" }}
-                    onMouseEnter={e => { if (!isGiftActive) { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.color = "#fff"; } }}
-                    onMouseLeave={e => { if (!isGiftActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
-                  >
-                    🎁 Gift Hampers &amp; Cakes
-                  </button>
-                  <div style={{ height: 1, background: "rgba(196,122,46,0.08)", margin: "4px 18px" }} />
-                </div>
-              );
-            })()}
             {NAV_SECTIONS.map((sec, si) => (
               <div key={sec.label} style={{ marginBottom: 2 }}>
                 <div style={{ fontSize: 9, fontWeight: 800, color: "rgba(204,171,74,0.95)", textTransform: "uppercase", letterSpacing: "0.14em", padding: "8px 16px 4px", textAlign: "left" }}>{sec.label}</div>
@@ -754,7 +716,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         <>
           <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, backdropFilter: "blur(2px)" }} />
           <div style={{
-            position: "fixed", left: 0, top: 0, height: "100vh", width: 310,
+            position: "fixed", left: 0, top: 0, height: "100dvh", width: 310,
             background: "#FFFCF5", zIndex: 201,
             display: "flex", flexDirection: "column",
             animation: "drawerSlideIn 0.24s cubic-bezier(0.4,0,0.2,1)",

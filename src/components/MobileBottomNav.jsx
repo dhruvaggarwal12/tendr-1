@@ -10,6 +10,7 @@ const HIDE_PATHS = [
   "/booking/payment-success", "/booking/payment-failed",
   "/booking/confirmation", "/booking/review",
   "/login", "/signup", "/otp", "/vendor/register",
+  "/chat",
 ];
 
 const CATEGORIES = [
