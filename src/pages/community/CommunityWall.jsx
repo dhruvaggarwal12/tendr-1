@@ -149,7 +149,8 @@ export default function CommunityWall() {
   const { user } = useSelector(s => s.auth);
   const isAdmin = user?.isAdmin === true;
   const isLoggedIn = !!localStorage.getItem("tendr_token");
-  const standalone = new URLSearchParams(window.location.search).get("standalone") === "1";
+  const standalone = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname)
+    || new URLSearchParams(window.location.search).get("standalone") === "1";
 
   const [posts, setPosts]               = useState(SEED_POSTS);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -229,9 +230,8 @@ export default function CommunityWall() {
 
     setPollSubmitting(prev => ({ ...prev, [postId]: true }));
     const post = posts.find(p => (p._id || p.id) === postId);
-    const token = localStorage.getItem("tendr_token");
 
-    if (post?.isFromApi && post?._id && token) {
+    if (post?.isFromApi && post?._id) {
       try {
         const res = await authFetch(`/community/posts/${post._id}/poll-vote`, {
           method: "POST",
@@ -268,6 +268,7 @@ export default function CommunityWall() {
           body: form.body || (form.category === "polls" ? "Vote below" : ""),
           tags: [],
           isAnonymous: false,
+          authorName: !isLoggedIn ? (form.authorName.trim() || undefined) : undefined,
           pollOptions: form.category === "polls" ? pollOptionTexts : undefined,
         }),
       });
@@ -352,18 +353,15 @@ export default function CommunityWall() {
           </p>
           <button
             onClick={() => {
-              if (isLoggedIn) { setFormOpen(v => !v); return; }
-              if (standalone) { window.open("https://tendr-1.vercel.app/login", "_blank"); }
-              else { navigate("/login"); }
+              if (standalone || isLoggedIn) { setFormOpen(v => !v); return; }
+              navigate("/login");
             }}
             style={{ padding: "13px 32px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.4)" }}>
             {formOpen ? "Close Form" : "+ Share Your Story"}
           </button>
-          {!isLoggedIn && (
+          {!isLoggedIn && !standalone && (
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "10px 0 0", fontStyle: "italic" }}>
-              {standalone
-                ? <>Join at <a href="https://tendr-1.vercel.app/login" target="_blank" rel="noopener noreferrer" style={{ color: "#CCAB4A", textDecoration: "underline" }}>tendr-1.vercel.app</a> to post</>
-                : "Log in to share your story or create a poll"}
+              Log in to share your story or create a poll
             </p>
           )}
         </div>
@@ -381,6 +379,13 @@ export default function CommunityWall() {
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 20px 0" }}>
           <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.2)", padding: "28px", boxShadow: "0 6px 30px rgba(196,122,46,0.08)" }}>
             <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 20px" }}>Share Your Experience</h3>
+
+            {(!isLoggedIn) && (
+              <div style={{ marginBottom: 14 }}>
+                <label style={labelSt}>Your Name (optional)</label>
+                <input type="text" placeholder="e.g. Priya" value={form.authorName} onChange={e => setForm(p => ({ ...p, authorName: e.target.value }))} style={inputSt} />
+              </div>
+            )}
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
               <div>

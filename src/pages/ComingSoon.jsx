@@ -216,9 +216,7 @@ export default function ComingSoon() {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {/* Tendr Community */}
             <motion.a
-              href="https://tendr-1.vercel.app/community?standalone=1"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/community"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
               style={{ flex: 1, minWidth: "min(220px, 100%)", display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 14, background: "linear-gradient(135deg,rgba(196,122,46,0.18),rgba(204,171,74,0.1))", border: "1px solid rgba(196,122,46,0.35)", textDecoration: "none", cursor: "pointer" }}

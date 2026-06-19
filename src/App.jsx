@@ -1,5 +1,5 @@
 // src/App.jsx
-import { RouterProvider } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider } from "react-helmet-async";
 import { useState, useEffect, Suspense } from "react";
@@ -12,7 +12,14 @@ import VendorChatModal from "./components/VendorChatModal";
 import { ChatProvider } from "./context/ChatContext";
 import { StationeryCartProvider } from "./context/StationeryCartContext";
 import ComingSoon from "./pages/ComingSoon";
+import CommunityWall from "./pages/community/CommunityWall";
 import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
+
+// Minimal router for tendr.co.in: coming soon at / and community at /community
+const liveSiteRouter = createBrowserRouter([
+  { path: "/community", element: <CommunityWall /> },
+  { path: "*",          element: <ComingSoon /> },
+]);
 
 const LIVE_DOMAINS = ["tendr.co.in", "www.tendr.co.in"];
 const isLiveDomain = LIVE_DOMAINS.includes(window.location.hostname);
@@ -61,11 +68,11 @@ function App() {
     setSplashDone(true);
   };
 
-  // On tendr.co.in — lock entire app to Coming Soon, no routing possible
+  // On tendr.co.in — coming soon at / and community wall at /community
   if (isLiveDomain) {
     return (
       <HelmetProvider>
-        <ComingSoon />
+        <RouterProvider router={liveSiteRouter} />
       </HelmetProvider>
     );
   }
