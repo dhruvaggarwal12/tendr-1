@@ -88,6 +88,7 @@ const VendorList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [secondaryFilters, setSecondaryFilters] = useState({});
+  const [pendingSecondaryFilters, setPendingSecondaryFilters] = useState({});
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortBy, setSortBy] = useState("rankingScore");
   const [sortOrder, setSortOrder] = useState("desc");
@@ -505,9 +506,6 @@ const VendorList = () => {
                   style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 16px", borderRadius: 100, border: `1.5px solid ${filtersOpen ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: filtersOpen ? "rgba(196,122,46,0.07)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
                 >
                   <span>⚙ Filters</span>
-                  {(secondaryFilters && Object.values(secondaryFilters).some(v => v !== undefined && (!Array.isArray(v) || v.length > 0))) && (
-                    <span style={{ fontSize: 10, fontWeight: 700, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>Active</span>
-                  )}
                   <span style={{ display: "inline-block", transform: filtersOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", fontSize: 11 }}>⌄</span>
                 </button>
 
@@ -529,9 +527,15 @@ const VendorList = () => {
                     {serviceType && (
                       <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
                         <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>{serviceType} Filters</p>
-                        <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setSecondaryFilters(f)} />
+                        <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setPendingSecondaryFilters(f)} />
                       </div>
                     )}
+                    <button
+                      onClick={() => { setSecondaryFilters(pendingSecondaryFilters); setFiltersOpen(false); }}
+                      style={{ marginTop: 16, width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      Apply
+                    </button>
                   </div>
                 )}
                 {/* Mobile: portal backdrop + sheet to body to escape backdrop-filter containing block */}
@@ -561,9 +565,15 @@ const VendorList = () => {
                         {serviceType && (
                           <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
                             <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>{serviceType} Filters</p>
-                            <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setSecondaryFilters(f)} />
+                            <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setPendingSecondaryFilters(f)} />
                           </div>
                         )}
+                        <button
+                          onClick={() => { setSecondaryFilters(pendingSecondaryFilters); setFiltersOpen(false); }}
+                          style={{ marginTop: 8, width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                        >
+                          Apply
+                        </button>
                       </div>
                     </div>
                   </>,

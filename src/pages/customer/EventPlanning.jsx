@@ -1923,7 +1923,6 @@ const EventPlanning = () => {
                   {/* Invisible native input — captures tap and opens OS date picker */}
                   <input
                     type="date"
-                    value={displayVal}
                     min={todayStr}
                     onChange={(e) => {
                       if (!e.target.value || e.target.value < todayStr) return;

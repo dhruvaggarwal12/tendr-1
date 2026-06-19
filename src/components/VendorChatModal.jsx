@@ -511,7 +511,7 @@ export default function VendorChatModal() {
   // ── Auto-scroll ──────────────────────────────────────────────────────────────
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, botStep]);
+  }, [messages, botStep, botDone, confirmedPkg]);
 
   // ── Escape key ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1094,8 +1094,8 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Package selection confirmed bubble */}
-          {confirmedPkg && !showPkgStep && !approved && (
+          {/* Package selection confirmed bubble — only shown during active bot flow */}
+          {confirmedPkg && !showPkgStep && !approved && !botDone && (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <div style={{ alignSelf: "flex-start", maxWidth: "80%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "9px 13px", boxShadow: "0 1px 5px rgba(0,0,0,0.05)", fontSize: 13, color: "#1a1a1a" }}>📦 Which package suits your needs?</div>
               <div style={{ alignSelf: "flex-end", maxWidth: "80%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: "16px 16px 4px 16px", padding: "9px 13px", fontSize: 13, color: "#fff", fontWeight: 600 }}>{confirmedPkg}</div>
@@ -1145,40 +1145,8 @@ export default function VendorChatModal() {
 
           {/* Waiting state */}
           {botDone && !approved && (
-            <div style={{ textAlign: "center", padding: "40px 24px", display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-              <div style={{ width: 56, height: 56, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E22,#CCAB4A22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26 }}>⏳</div>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>Request Sent!</div>
-              <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, maxWidth: 300 }}>
-                Your request to chat with <strong>{vendor?.name}</strong> has been submitted.
-              </div>
-              {/* Expectation + next steps */}
-              <div style={{ background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 14, padding: "14px 18px", maxWidth: 320, textAlign: "left" }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>📲 What happens next</div>
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {[
-                    { icon: "⏱️", text: "You'll hear back within 2 hours" },
-                    { icon: "💬", text: "We'll notify you on WhatsApp when your chat is approved" },
-                    { icon: "✅", text: "Once approved, open it from Active Chats at the bottom right" },
-                  ].map(({ icon, text }) => (
-                    <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                      <span style={{ flexShrink: 0 }}>{icon}</span>
-                      <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Install App highlight */}
-              <a href="https://tendr-1.vercel.app" target="_blank" rel="noopener noreferrer"
-                onClick={e => { e.preventDefault(); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }}
-                style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 10, padding: "10px 16px", maxWidth: 320, textDecoration: "none", cursor: "pointer" }}>
-                <span style={{ fontSize: 18, flexShrink: 0 }}>📲</span>
-                <span style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700, lineHeight: 1.4 }}>Install the Tendr App for instant notifications when your chat is approved</span>
-              </a>
-              <button onClick={handleMinimize}
-                style={{ marginTop: 4, padding: "9px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                Minimise & wait
-              </button>
+            <div style={{ textAlign: "center", padding: "24px 24px 8px", color: "#9B7450", fontSize: 13, lineHeight: 1.7 }}>
+              Checking on vendor availability once again, thank you for your patience.
             </div>
           )}
 
@@ -1206,20 +1174,37 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Install App banner — shown once when chat first gets approved */}
+          {/* What Happens Next + Install App — shown once when chat first gets approved, below the chat */}
           {justApproved && (
-            <div style={{ alignSelf: "stretch", margin: "8px 4px", background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Your chat is now live!</div>
-                <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Install the app to never miss a message from {vendor?.name}.</div>
+            <div style={{ alignSelf: "stretch", margin: "8px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 14, padding: "14px 18px", textAlign: "left" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>📲 What happens next</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    { icon: "⏱️", text: "You'll hear back within 2 hours" },
+                    { icon: "💬", text: "We'll notify you on WhatsApp when your chat is approved" },
+                    { icon: "✅", text: "Once approved, open it from Active Chats at the bottom right" },
+                  ].map(({ icon, text }) => (
+                    <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                      <span style={{ flexShrink: 0 }}>{icon}</span>
+                      <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <a href="/install"
-                style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
-                Install →
-              </a>
-              <button onClick={() => setJustApproved(false)}
-                style={{ flexShrink: 0, background: "none", border: "none", color: "#9B7450", fontSize: 14, cursor: "pointer", padding: 0, lineHeight: 1 }}>✕</button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
+                <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Your chat is now live!</div>
+                  <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Install the app to never miss a message from {vendor?.name}.</div>
+                </div>
+                <a href="/install"
+                  style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  Install →
+                </a>
+                <button onClick={() => setJustApproved(false)}
+                  style={{ flexShrink: 0, background: "none", border: "none", color: "#9B7450", fontSize: 14, cursor: "pointer", padding: 0, lineHeight: 1 }}>✕</button>
+              </div>
             </div>
           )}
 

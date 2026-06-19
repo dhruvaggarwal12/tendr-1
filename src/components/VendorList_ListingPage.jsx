@@ -115,6 +115,17 @@ const VendorList_ListingPage = ({
     window.dispatchEvent(new CustomEvent("tendr:saved-updated"));
   }, []);
 
+  // Restore quick view after login redirect
+  useEffect(() => {
+    const pendingId = sessionStorage.getItem("tendr_pending_quickview");
+    if (!pendingId || !vendors?.length) return;
+    const vendor = vendors.find(v => v._id === pendingId);
+    if (vendor) {
+      sessionStorage.removeItem("tendr_pending_quickview");
+      setQuickViewVendor(vendor);
+    }
+  }, [vendors]);
+
   // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
   useEffect(() => {
     const onKey = (e) => {
@@ -585,6 +596,7 @@ const VendorList_ListingPage = ({
                   onClick={async () => {
                     if (!token) {
                       sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
+                      sessionStorage.setItem("tendr_pending_quickview", quickViewVendor._id);
                       navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } });
                       return;
                     }
