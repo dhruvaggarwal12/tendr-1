@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
-import { FaInstagram, FaFacebookF, FaLinkedinIn } from "react-icons/fa";
+import { FaInstagram, FaFacebookF, FaLinkedinIn, FaRedditAlien } from "react-icons/fa";
 import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
 
 const LAUNCH_DATE = new Date("2026-07-01T00:00:00");
@@ -199,6 +199,59 @@ export default function ComingSoon() {
               </motion.form>
             )}
           </AnimatePresence>
+        </motion.div>
+
+        {/* Community section */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1.0 }}
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "32px 28px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", marginBottom: 40 }}
+        >
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14 }}>
+            ✨ Community
+          </div>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>Be Part of the Conversation</h2>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", margin: "0 0 24px", lineHeight: 1.6 }}>
+            Share stories, vote on polls, and connect with fellow celebrators — even before we launch.
+          </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+            {/* Tendr Community */}
+            <motion.a
+              href="https://tendr-1.vercel.app/community"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              style={{ flex: 1, minWidth: 180, display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 14, background: "linear-gradient(135deg,rgba(196,122,46,0.18),rgba(204,171,74,0.1))", border: "1px solid rgba(196,122,46,0.35)", textDecoration: "none", cursor: "pointer" }}
+            >
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, flexShrink: 0 }}>
+                💬
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 2 }}>Tendr Community</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Posts · Polls · Stories</div>
+              </div>
+              <span style={{ marginLeft: "auto", fontSize: 15, color: "rgba(196,122,46,0.7)" }}>→</span>
+            </motion.a>
+
+            {/* Reddit */}
+            <motion.a
+              href="https://reddit.com/r/tendr"
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              style={{ flex: 1, minWidth: 180, display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 14, background: "rgba(255,69,0,0.08)", border: "1px solid rgba(255,69,0,0.22)", textDecoration: "none", cursor: "pointer" }}
+            >
+              <div style={{ width: 40, height: 40, borderRadius: 11, background: "#FF4500", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <FaRedditAlien style={{ color: "#fff", fontSize: 20 }} />
+              </div>
+              <div style={{ textAlign: "left" }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", marginBottom: 2 }}>Reddit</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>r/tendr</div>
+              </div>
+              <span style={{ marginLeft: "auto", fontSize: 15, color: "rgba(255,69,0,0.6)" }}>→</span>
+            </motion.a>
+          </div>
         </motion.div>
 
         {/* Social links */}
