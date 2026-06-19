@@ -348,43 +348,41 @@ const EventPlanning = () => {
 
   const [vendorCounts, setVendorCounts] = useState({});
 
+  // On mount: immediately fetch total vendor counts so cards never show "Checking..."
   useEffect(() => {
-    if (!formData?.date) return;
-    const fetchCounts = async () => {
+    const fetchTotals = async () => {
       try {
-        // If a date is selected, fetch per-date availability (2 slots per vendor per day)
-        if (formData?.date) {
-          const params = new URLSearchParams({ date: formData.date });
-          if (formData?.location) params.set('city', formData.location);
-          const res = await fetch(`${BASE_URL}/vendors/availability/by-date?${params}`);
-          if (res.ok) {
-            const data = await res.json();
-            setVendorCounts(data.available || {});
-            return;
-          }
-        }
-        // Fallback: total vendor count per category
         const results = await Promise.allSettled(
-          vendors.map((v) =>
-            getVendors({ serviceTypes: [v.id], limit: 1 })
-          )
+          vendors.map((v) => getVendors({ serviceTypes: [v.id], limit: 1 }))
         );
         const counts = {};
-        results.forEach((res, i) => {
+        results.forEach((r, i) => {
           const key = vendors[i].id;
-          if (res.status === "fulfilled") {
-            counts[key] =
-              res.value?.pagination?.total ??
-              res.value?.vendors?.length ??
-              0;
-          } else {
-            counts[key] = 0;
-          }
+          counts[key] = r.status === "fulfilled"
+            ? (r.value?.pagination?.total ?? r.value?.vendors?.length ?? 0)
+            : 0;
         });
-        setVendorCounts(counts);
+        setVendorCounts(prev => ({ ...counts, ...prev }));
       } catch (_) {}
     };
-    fetchCounts();
+    fetchTotals();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // When date is set: fetch date-specific availability and override counts
+  useEffect(() => {
+    if (!formData?.date) return;
+    const fetchAvailability = async () => {
+      try {
+        const params = new URLSearchParams({ date: formData.date });
+        if (formData?.location) params.set('city', formData.location);
+        const res = await fetch(`${BASE_URL}/vendors/availability/by-date?${params}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.available) setVendorCounts(prev => ({ ...prev, ...data.available }));
+        }
+      } catch (_) {}
+    };
+    fetchAvailability();
   }, [formData?.date, formData?.location]);
 
   // Safety: reset step if out-of-range (e.g. admin question removed between sessions)
@@ -1927,8 +1925,16 @@ const EventPlanning = () => {
               const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}-${String(todayLocal.getDate()).padStart(2, "0")}`;
               const currentVal = formData[currentQuestion.id] || "";
               const displayVal = currentVal >= todayStr ? currentVal : "";
+              const displayText = displayVal
+                ? new Date(displayVal + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
+                : "Tap to select a date";
               return (
-                <div style={{ overflow: "hidden", width: "100%" }}>
+                <div style={{ position: "relative", width: "100%" }}>
+                  {/* Styled display — fully controlled, no iOS overflow */}
+                  <div style={{ width: "100%", padding: "14px 18px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 18, fontFamily: "'Outfit', sans-serif", color: displayVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", textAlign: "center", pointerEvents: "none", userSelect: "none" }}>
+                    {displayText}
+                  </div>
+                  {/* Invisible native input — captures tap and opens OS date picker */}
                   <input
                     type="date"
                     value={displayVal}
@@ -1937,8 +1943,7 @@ const EventPlanning = () => {
                       if (!e.target.value || e.target.value < todayStr) return;
                       selectAndAdvance(currentQuestion.id, e.target.value);
                     }}
-                    style={{ width: "100%", boxSizing: "border-box", display: "block", maxWidth: "100%", minWidth: 0 }}
-                    className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 1 }}
                   />
                 </div>
               );
