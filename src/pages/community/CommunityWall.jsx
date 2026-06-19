@@ -32,93 +32,6 @@ const ADMIN_TAGS = [
   { key: "controversial", label: "Controversial", emoji: "⚡" },
 ];
 
-// Demo content — shown when no backend posts exist yet
-const SEED_POSTS = [
-  {
-    id: "seed-poll-1", category: "polls",
-    author: "Tendr", avatar: "T", avatarColor: "#C47A2E",
-    event: "", city: "Delhi NCR", date: "3 days ago",
-    title: "What stresses you most while planning a wedding?",
-    body: "",
-    pollOptions: [
-      { text: "Finding the right venue", votes: 42 },
-      { text: "Managing the guest list",  votes: 35 },
-      { text: "Coordinating all vendors", votes: 28 },
-      { text: "Staying within budget",    votes: 51 },
-    ],
-    reactions: { agree: 0, facedThis: 0, greatIdea: 0, loveThis: 0 },
-    adminTags: [], comments: 0, bookmarks: 0,
-  },
-  {
-    id: "seed-poll-2", category: "polls",
-    author: "Tendr", avatar: "T", avatarColor: "#C47A2E",
-    event: "", city: "Delhi NCR", date: "1 week ago",
-    title: "Which food style do guests enjoy most at weddings?",
-    body: "",
-    pollOptions: [
-      { text: "Live food stations",        votes: 87 },
-      { text: "Traditional buffet",        votes: 54 },
-      { text: "Plated sit-down dinner",    votes: 23 },
-      { text: "Street food stalls",        votes: 62 },
-    ],
-    reactions: { agree: 0, facedThis: 0, greatIdea: 0, loveThis: 0 },
-    adminTags: [], comments: 0, bookmarks: 0,
-  },
-  {
-    id: "seed-1", category: "story",
-    author: "Priya S.", avatar: "P", avatarColor: "#C47A2E",
-    event: "Anniversary Dinner", city: "Delhi", date: "2 days ago",
-    title: "The decorator literally transformed our terrace",
-    body: "We had a rooftop anniversary dinner for 30 people. The decorator added fairy lights, flower arches, and a photo wall — everything was beyond what we imagined. Guests couldn't stop complimenting. Highly recommend investing in a good decorator!",
-    reactions: { agree: 15, facedThis: 3, greatIdea: 8, loveThis: 16 },
-    adminTags: [], comments: 8, bookmarks: 12,
-  },
-  {
-    id: "seed-2", category: "story",
-    author: "Rahul M.", avatar: "R", avatarColor: "#6B3A1F",
-    event: "Birthday Party", city: "Noida", date: "5 days ago",
-    title: "The DJ played our inside-joke songs without us asking",
-    body: "We had given a playlist but the DJ noticed we had some niche 90s songs and actually researched more similar tracks on his own. The surprise throwback set had everyone on the dance floor for 40 straight minutes. Best birthday ever.",
-    reactions: { agree: 25, facedThis: 12, greatIdea: 9, loveThis: 21 },
-    adminTags: [], comments: 14, bookmarks: 23,
-  },
-  {
-    id: "seed-3", category: "ideas",
-    author: "Neha K.", avatar: "N", avatarColor: "#C47A2E",
-    event: "Get-together", city: "Gurgaon", date: "1 week ago",
-    title: "Live food stations are SO much better than buffets",
-    body: "We did live pasta and chaat stations instead of a regular buffet — it became an activity itself! People loved watching food being made fresh. It kept the energy high and reduced waste too. Every party should do this.",
-    reactions: { agree: 22, facedThis: 5, greatIdea: 38, loveThis: 24 },
-    adminTags: [], comments: 21, bookmarks: 45,
-  },
-  {
-    id: "seed-4", category: "story",
-    author: "Arjun T.", avatar: "A", avatarColor: "#9B7450",
-    event: "Corporate Event", city: "Delhi", date: "1 week ago",
-    title: "Photographer didn't deliver photos for 3 weeks",
-    body: "The event went fine but the photographer kept pushing delivery. Finally got photos after following up 8 times over 3 weeks. Lesson: always put delivery timelines in writing before the event, with a penalty clause.",
-    reactions: { agree: 8, facedThis: 18, greatIdea: 3, loveThis: 5 },
-    adminTags: [], comments: 29, bookmarks: 18,
-  },
-  {
-    id: "seed-5", category: "ideas",
-    author: "Sneha R.", avatar: "S", avatarColor: "#C47A2E",
-    event: "Pre-wedding", city: "Greater Noida", date: "2 weeks ago",
-    title: "Garden maze concept for pre-wedding photoshoot",
-    body: "Saw this at a wedding expo — the couple had a garden maze with flowers and lanterns, and the photoshoot happened as they 'found' each other. The photos were incredible and each frame told a story.",
-    reactions: { agree: 35, facedThis: 8, greatIdea: 42, loveThis: 27 },
-    adminTags: [], comments: 33, bookmarks: 67,
-  },
-  {
-    id: "seed-6", category: "ideas",
-    author: "Vikram D.", avatar: "V", avatarColor: "#6B3A1F",
-    event: "Office Party", city: "Noida", date: "2 weeks ago",
-    title: "Silent disco for 150 people — no complaints from neighbors",
-    body: "We were worried about noise for our rooftop office party in an apartment complex. A silent disco setup (wireless headphones, 2 channels) solved everything. People were dancing while others ate quietly.",
-    reactions: { agree: 30, facedThis: 15, greatIdea: 18, loveThis: 15 },
-    adminTags: [], comments: 17, bookmarks: 34,
-  },
-];
 
 const catColor = {
   polls: { bg: "rgba(59,130,246,0.1)",  border: "rgba(59,130,246,0.25)",  text: "#1d4ed8" },
@@ -152,30 +65,37 @@ export default function CommunityWall() {
   const standalone = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname)
     || new URLSearchParams(window.location.search).get("standalone") === "1";
 
-  const [posts, setPosts]               = useState(SEED_POSTS);
+  const [posts, setPosts]               = useState([]);
+  const [postsLoading, setPostsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
   const [myReactions, setMyReactions]   = useState({});
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
   const [adminTagOpen, setAdminTagOpen] = useState({});
   const [formOpen, setFormOpen]         = useState(false);
   const [form, setForm]                 = useState(BLANK_FORM);
-  const [formSubmitted, setFormSubmitted] = useState(false); // false | "pending" | "local"
+  const [formSubmitted, setFormSubmitted] = useState(false);
 
   // Poll state
-  const [pollSelected, setPollSelected]     = useState({}); // { [postId]: optionIndex } — pending selection
-  const [pollResults, setPollResults]       = useState({}); // { [postId]: { pollOptions, userVote } } — after submitting
+  const [pollSelected, setPollSelected]     = useState({});
+  const [pollResults, setPollResults]       = useState({});
   const [pollSubmitting, setPollSubmitting] = useState({});
 
-  // Load approved posts from backend — prepend in front of seed posts
+  // Comment state
+  const [openComments, setOpenComments]   = useState({});
+  const [commentData, setCommentData]     = useState({});  // { postId: { comments: [], loading: bool } }
+  const [commentTexts, setCommentTexts]   = useState({});  // { postId: { name: "", text: "" } }
+  const [commentPosting, setCommentPosting] = useState({});
+
   useEffect(() => {
+    setPostsLoading(true);
     authFetch("/community/posts?limit=50")
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (!data?.posts?.length) return;
-        const normalized = data.posts.map(p => ({
+        const normalized = (data?.posts || []).map(p => ({
           ...p,
           id: p._id,
-          avatar: (p.authorName || "?")[0].toUpperCase(),
+          author: p.authorName || "Community Member",
+          avatar: (p.authorName || "C")[0].toUpperCase(),
           avatarColor: "#C47A2E",
           date: new Date(p.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" }),
           reactions: {
@@ -188,9 +108,10 @@ export default function CommunityWall() {
           bookmarks: 0,
           isFromApi: true,
         }));
-        setPosts([...normalized, ...SEED_POSTS]);
+        setPosts(normalized);
       })
-      .catch(() => {}); // silently fall back to seed posts
+      .catch(() => {})
+      .finally(() => setPostsLoading(false));
   }, []);
 
   const filtered = activeCategory === "all"
@@ -321,6 +242,46 @@ export default function CommunityWall() {
         });
       } catch {}
     }
+  };
+
+  // ── Comments ───────────────────────────────────────────────────────────────
+  const toggleComments = async (postId, isApiPost) => {
+    const isOpen = openComments[postId];
+    setOpenComments(prev => ({ ...prev, [postId]: !isOpen }));
+    if (!isOpen && isApiPost && !commentData[postId]) {
+      setCommentData(prev => ({ ...prev, [postId]: { comments: [], loading: true } }));
+      try {
+        const res = await authFetch(`/community/posts/${postId}/comments`);
+        const data = await res.json();
+        setCommentData(prev => ({ ...prev, [postId]: { comments: data.comments || [], loading: false } }));
+      } catch {
+        setCommentData(prev => ({ ...prev, [postId]: { comments: [], loading: false } }));
+      }
+    }
+  };
+
+  const handleComment = async (postId, isApiPost) => {
+    const text = commentTexts[postId]?.text?.trim();
+    if (!text || commentPosting[postId]) return;
+    setCommentPosting(prev => ({ ...prev, [postId]: true }));
+    const guestName = !isLoggedIn ? (commentTexts[postId]?.name?.trim() || undefined) : undefined;
+    try {
+      const res = await authFetch(`/community/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text, authorName: guestName }),
+      });
+      if (res.ok) {
+        const newComment = await res.json();
+        setCommentData(prev => ({
+          ...prev,
+          [postId]: { loading: false, comments: [newComment, ...(prev[postId]?.comments || [])] },
+        }));
+        setCommentTexts(prev => ({ ...prev, [postId]: { ...prev[postId], text: "" } }));
+        setPosts(prev => prev.map(p => (p._id || p.id) === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
+      }
+    } catch {}
+    setCommentPosting(prev => ({ ...prev, [postId]: false }));
   };
 
   const catInfo = (key) => CATEGORIES.find(c => c.key === key) || CATEGORIES[0];
@@ -478,7 +439,14 @@ export default function CommunityWall() {
 
       {/* Feed */}
       <div style={{ maxWidth: 900, margin: "24px auto 80px", padding: "0 20px" }}>
-        {filtered.length === 0 && (
+        {postsLoading && (
+          <div style={{ textAlign: "center", padding: "60px 24px", color: "#9B7450" }}>
+            <div style={{ width: 32, height: 32, border: "3px solid rgba(196,122,46,0.2)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "cw-spin 0.65s linear infinite", margin: "0 auto 14px" }} />
+            <style>{`@keyframes cw-spin { to { transform: rotate(360deg); } }`}</style>
+            <p style={{ fontSize: 14, fontWeight: 600 }}>Loading community posts…</p>
+          </div>
+        )}
+        {!postsLoading && filtered.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 24px", color: "#9B7450" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🌟</div>
             <p style={{ fontSize: 15, fontWeight: 600 }}>No posts here yet. Be the first to share!</p>
@@ -625,7 +593,8 @@ export default function CommunityWall() {
                     );
                   })}
                   <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
-                    <button style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.15)", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                    <button onClick={() => toggleComments(postId, post.isFromApi)}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${openComments[postId] ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: openComments[postId] ? "rgba(196,122,46,0.08)" : "transparent", color: openComments[postId] ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
                       💬 {post.comments}
                     </button>
                     <button onClick={() => toggleBookmark(postId)}
@@ -634,6 +603,56 @@ export default function CommunityWall() {
                     </button>
                   </div>
                 </div>
+
+                {/* Comments panel */}
+                {openComments[postId] && (
+                  <div style={{ marginTop: 16, paddingTop: 16, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                    {/* Existing comments */}
+                    {commentData[postId]?.loading ? (
+                      <div style={{ textAlign: "center", padding: "10px 0", color: "#9B7450", fontSize: 13 }}>Loading…</div>
+                    ) : (commentData[postId]?.comments || []).length === 0 ? (
+                      <p style={{ fontSize: 13, color: "#9B7450", fontStyle: "italic", margin: "0 0 14px" }}>No comments yet — be the first!</p>
+                    ) : (
+                      <div style={{ marginBottom: 16 }}>
+                        {(commentData[postId]?.comments || []).map((c, idx) => (
+                          <div key={c._id || idx} style={{ display: "flex", gap: 10, marginBottom: 12 }}>
+                            <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 800, flexShrink: 0 }}>
+                              {(c.authorName || "C")[0].toUpperCase()}
+                            </div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 2 }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{c.authorName || "Community Member"}</span>
+                                <span style={{ fontSize: 11, color: "#9B7450" }}>{new Date(c.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+                              </div>
+                              <p style={{ fontSize: 13, color: "#4A2810", lineHeight: 1.55, margin: 0 }}>{c.text}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Comment input */}
+                    {!isLoggedIn && (
+                      <input type="text" placeholder="Your name (optional)" value={commentTexts[postId]?.name || ""} onChange={e => setCommentTexts(prev => ({ ...prev, [postId]: { ...prev[postId], name: e.target.value } }))} style={{ ...inputSt, marginBottom: 8, fontSize: 12 }} />
+                    )}
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <input
+                        type="text"
+                        placeholder="Add a comment…"
+                        value={commentTexts[postId]?.text || ""}
+                        onChange={e => setCommentTexts(prev => ({ ...prev, [postId]: { ...prev[postId], text: e.target.value } }))}
+                        onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleComment(postId, post.isFromApi); } }}
+                        style={{ ...inputSt, flex: 1, fontSize: 13 }}
+                      />
+                      <button
+                        onClick={() => handleComment(postId, post.isFromApi)}
+                        disabled={commentPosting[postId] || !commentTexts[postId]?.text?.trim()}
+                        style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, opacity: (!commentTexts[postId]?.text?.trim() || commentPosting[postId]) ? 0.5 : 1, transition: "opacity 0.15s" }}>
+                        {commentPosting[postId] ? "…" : "Post"}
+                      </button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Admin: tag management */}
                 {isAdmin && (
