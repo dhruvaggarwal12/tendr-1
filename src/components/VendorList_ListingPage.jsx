@@ -41,8 +41,8 @@ const getChatSave = (id) => {
         return null;
       }
     } else {
-      // No event date set — fallback: keep for 30 days
-      if (Date.now() - (s.submittedAt || 0) > 30 * 24 * 60 * 60 * 1000) {
+      // No event date set — fallback: keep for 24h
+      if (Date.now() - (s.submittedAt || 0) > 24 * 60 * 60 * 1000) {
         localStorage.removeItem(chatSaveKey(id));
         return null;
       }
