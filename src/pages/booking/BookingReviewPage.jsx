@@ -4,6 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, selectCartTotal, clearCart, removeFromCart } from "../../redux/giftHamperCartSlice";
 import SEO from "../../components/SEO";
 import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
+import { generateEventDetailsPDF } from "../../utils/pdfGenerator";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import { clearFinalisedVendor } from "../../redux/listingFiltersSlice";
@@ -155,6 +156,36 @@ const BookingReviewPage = () => {
   });
 
   const [showContinuePopup, setShowContinuePopup] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+
+  const handleDownloadPlan = async () => {
+    setPdfLoading(true);
+    try {
+      const confirmedVendors = vendorEntries.map(([cat, v]) => ({
+        _id: v?._id,
+        name: v?.name || cat,
+        serviceType: cat,
+      }));
+      const vendorPricing = Object.fromEntries(
+        Object.values(priceMap)
+          .filter(p => p.amount && p.vendorName)
+          .map(p => [p.vendorName, p.amount])
+      );
+      await generateEventDetailsPDF({
+        eventSummary: {
+          ...formData,
+          categoryBudgets,
+          bookingType,
+        },
+        confirmedVendors,
+        pinnedMessages: pinnedMap,
+        vendorPricing,
+        userName: currentUser?.name || currentUser?.fullName || currentUser?.phone || "",
+      });
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   // Fetch real prices, booking summary and pinned messages from vendor conversations
   const [priceMap, setPriceMap] = useState({});
@@ -369,9 +400,34 @@ const BookingReviewPage = () => {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,32px) clamp(14px,3vw,24px) 80px", width: "100%", boxSizing: "border-box" }}>
 
         {/* Page title */}
-        <div style={{ marginBottom: 20 }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Review & Book</h1>
-          <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Review your event details and finalised vendors before confirming.</p>
+        <div style={{ marginBottom: 20, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Review & Book</h1>
+            <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Review your event details and finalised vendors before confirming.</p>
+          </div>
+          {vendorEntries.length > 0 && (
+            <button
+              onClick={handleDownloadPlan}
+              disabled={pdfLoading}
+              style={{
+                display: "flex", alignItems: "center", gap: 7,
+                padding: "9px 18px", borderRadius: 12,
+                border: "1.5px solid rgba(196,122,46,0.35)",
+                background: "#fff", color: "#C47A2E",
+                fontSize: 13, fontWeight: 700, cursor: pdfLoading ? "wait" : "pointer",
+                fontFamily: "'Outfit', sans-serif",
+                boxShadow: "0 2px 8px rgba(196,122,46,0.1)",
+                transition: "all 0.18s", flexShrink: 0, opacity: pdfLoading ? 0.7 : 1,
+              }}
+              onMouseEnter={e => { if (!pdfLoading) { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#CCAB4A)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.border = "1.5px solid transparent"; }}}
+              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; e.currentTarget.style.border = "1.5px solid rgba(196,122,46,0.35)"; }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              {pdfLoading ? "Generating…" : "Download Plan"}
+            </button>
+          )}
         </div>
 
         {/* Price pending banner */}
