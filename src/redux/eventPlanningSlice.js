@@ -187,7 +187,8 @@ const initialState = {
   currentStep: savedSession?.currentStep || 0,
   showVendorScreen: savedSession?.showVendorScreen || false,
   selectedVendors: savedSession?.selectedVendors || [],
-  bookingType: savedSession?.bookingType || "", // 'you-do-it' | 'let-us-do-it'
+  bookingType: savedSession?.bookingType || "",
+  vendorTimings: savedSession?.vendorTimings || {}, // { [serviceType]: { eventTiming, djHours, coverage } }
   submitting: false,
   submitError: null,
   lastSubmission: null, // { bookingId, bookingType }
@@ -257,6 +258,17 @@ const eventPlanningSlice = createSlice({
       state.categoryBudgets = action.payload || {};
       saveSession(state);
     },
+    saveVendorTiming: (state, action) => {
+      const { serviceType, eventTiming, djHours, coverage } = action.payload;
+      if (!serviceType) return;
+      if (!state.vendorTimings) state.vendorTimings = {};
+      state.vendorTimings[serviceType] = {
+        eventTiming: eventTiming || "",
+        djHours:     djHours     || "",
+        coverage:    coverage    || "",
+      };
+      saveSession(state);
+    },
     toggleExtraRequirement: (state, action) => {
       const item = action.payload;
       const extras = state.formData.extraRequirements || [];
@@ -279,6 +291,7 @@ const eventPlanningSlice = createSlice({
         showVendorScreen: false,
         selectedVendors: [],
         bookingType: "",
+        vendorTimings: {},
         submitting: false,
         submitError: null,
         lastSubmission: null,
@@ -332,6 +345,7 @@ export const {
   setCategoryBudgets,
   resetEventPlanning,
   toggleExtraRequirement,
+  saveVendorTiming,
 } = eventPlanningSlice.actions;
 
 const eventPlanningReducer = eventPlanningSlice.reducer;
@@ -345,6 +359,7 @@ const eventPlanningWithLogout = (state, action) => {
     return {
       formData: { eventType: "", guests: "", budget: "", location: "", date: "", companyName: "", extraRequirements: [] },
       categoryBudgets: {},
+      vendorTimings: {},
       currentStep: 0,
       showVendorScreen: false,
       selectedVendors: [],

@@ -420,12 +420,13 @@ export async function generateEventDetailsPDF({ eventSummary, confirmedVendors =
 }
 
 // ── Timeline Slip (compact 100mm-wide receipt style) ──────────────────────────
-export async function generateTimelinePDF({ slots = [], eventSummary = {}, userName = "" }) {
+export async function generateTimelinePDF({ slots = [], eventSummary = {}, userName = "", preEventNotes = [] }) {
   await _assetsReady;
-  const slotH   = 11;
-  const headerH = 42;
-  const footerH = 30;
-  const H = Math.max(170, headerH + slots.length * slotH + footerH);
+  const slotH        = 11;
+  const headerH      = 42;
+  const footerH      = 30;
+  const preEventH    = preEventNotes.length > 0 ? 14 + preEventNotes.length * 11 : 0;
+  const H = Math.max(170, headerH + slots.length * slotH + preEventH + footerH);
   const W = 100;
   const doc = new jsPDF({ unit: "mm", format: [W, H] });
   const CX = W / 2;
@@ -509,6 +510,34 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
         doc.text(slot.who, 30, y + 5.5);
       }
       y += slotH;
+    });
+  }
+
+  // Pre-event notes (gift hampers, stationeries)
+  if (preEventNotes.length > 0) {
+    y += 4;
+    doc.setDrawColor(196, 122, 46);
+    doc.setLineWidth(0.3);
+    doc.line(8, y, W - 8, y);
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.5);
+    doc.setTextColor(196, 122, 46);
+    doc.text("PRE-EVENT", CX, y, { align: "center", charSpace: 0.8 });
+    y += 6;
+    preEventNotes.forEach(note => {
+      doc.setFillColor(255, 249, 240);
+      doc.roundedRect(6, y - 3.5, W - 12, 9, 1.5, 1.5, "F");
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.setTextColor(44, 26, 14);
+      const titleLines = doc.splitTextToSize(note.title, W - 22);
+      doc.text(titleLines[0], 10, y + 0.5);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6);
+      doc.setTextColor(155, 116, 80);
+      doc.text(note.subtitle || "", 10, y + 5);
+      y += 11;
     });
   }
 

@@ -125,7 +125,7 @@ function addMins({ h, min }, totalAddMins) {
 }
 
 /** Generate day-of schedule slots from confirmed vendors + optional event timing string */
-export function generateDayOfSchedule(confirmedVendors = [], eventTiming = "") {
+export function generateDayOfSchedule(confirmedVendors = [], eventTiming = "", extraDayOfSlots = []) {
   const parsed = parseTiming(eventTiming);
   const startTime = parsed?.start ?? { h: 18, min: 0 };
   const endTime   = parsed?.end   ?? { h: 23, min: 0 };
@@ -167,12 +167,12 @@ export function generateDayOfSchedule(confirmedVendors = [], eventTiming = "") {
   slots.push({ id: String(id++), time: toStr(lastCall.h, lastCall.min),        title: "Last call for food & music",         who: "", done: false });
   slots.push({ id: String(id++), time: toStr(wrapsUp.h, wrapsUp.min),          title: "Event wraps up — vendors pack down", who: "", done: false });
 
-  return slots.sort((a, b) => a.time.localeCompare(b.time));
+  return [...slots, ...extraDayOfSlots].sort((a, b) => a.time.localeCompare(b.time));
 }
 
 /** Write day-of schedule to localStorage, including the event date for auto-tick */
-export function writeDayOfToStorage(confirmedVendors = [], eventTiming = "", eventDate = "") {
-  const slots = generateDayOfSchedule(confirmedVendors, eventTiming);
+export function writeDayOfToStorage(confirmedVendors = [], eventTiming = "", eventDate = "", extraDayOfSlots = []) {
+  const slots = generateDayOfSchedule(confirmedVendors, eventTiming, extraDayOfSlots);
   const data = { slots, eventDate, __expiresAt: Date.now() + TTL_7D };
   try { localStorage.setItem("tendr_dayof", JSON.stringify(data)); } catch {}
   return slots;

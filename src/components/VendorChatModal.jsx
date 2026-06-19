@@ -4,6 +4,7 @@ import router from "../router";
 import { io } from "socket.io-client";
 import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION, CHAT_PACKAGES, buildSummaryMessage } from "../utils/chatbot";
 import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
+import { saveVendorTiming } from "../redux/eventPlanningSlice";
 import { getVendorAvailability, holdVendorSlot } from "../apis/vendorApi";
 import { useChatOverlay } from "../context/ChatContext";
 
@@ -582,6 +583,12 @@ export default function VendorChatModal() {
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
         summarySentRef.current = true;
         const fullMsg = buildSummaryMessage(reduxFormData, botAnswersRef.current, vendor?.name, vendor?.serviceType);
+        dispatch(saveVendorTiming({
+          serviceType:  vendor?.serviceType,
+          eventTiming:  botAnswersRef.current.eventTiming || "",
+          djHours:      botAnswersRef.current.djHours     || "",
+          coverage:     botAnswersRef.current.coverage    || "",
+        }));
         setTimeout(() => {
           socket.emit("send_message", { conversationId: _id, sender: "user", content: fullMsg });
         }, 400);

@@ -28,11 +28,13 @@ const PaymentSuccessPage = () => {
   const [pinnedMessages, setPinnedMessages] = useState({}); // { vendorId: [msg, ...] }
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [dayofSlots, setDayofSlots] = useState([]);
+  const [pdfPreEventNotes, setPdfPreEventNotes] = useState([]);
 
   // Snapshot event + vendor + cart data BEFORE it gets cleared in useEffect
-  const rawFinalised   = useSelector((s) => s.listingFilters.finalisedVendors || {});
-  const rawFormData    = useSelector((s) => s.eventPlanning.formData || {});
-  const rawGhItems     = useSelector(selectCartItems);
+  const rawFinalised    = useSelector((s) => s.listingFilters.finalisedVendors || {});
+  const rawFormData     = useSelector((s) => s.eventPlanning.formData || {});
+  const rawGhItems      = useSelector(selectCartItems);
+  const vendorTimings   = useSelector((s) => s.eventPlanning.vendorTimings || {});
   const [confirmedVendors] = useState(() => {
     const vendors = [];
     Object.entries(rawFinalised).forEach(([serviceType, vendorOrArr]) => {
@@ -87,11 +89,56 @@ const PaymentSuccessPage = () => {
   useEffect(() => {
     const token = localStorage.getItem("tendr_token");
 
+    // Best eventTiming: Redux (set during chat) → fallback to API fetch
+    const reduxEventTiming = Object.values(vendorTimings).find(v => v.eventTiming)?.eventTiming || "";
+
+    // Fun activity day-of slot
+    const faBooking = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking") || "null"); } catch { return null; } })();
+    const funActivitySlots = [];
+    if (faBooking?.form?.time && faBooking?.activity?.name) {
+      funActivitySlots.push({
+        id: "fa_slot",
+        time: faBooking.form.time, // HH:MM from <input type="time">
+        title: `${faBooking.activity.emoji || ""} ${faBooking.activity.name}`.trim(),
+        who: "Fun Activity",
+        done: false,
+      });
+    }
+
+    // Pre-event notes for GH + stationeries
+    const preEventNotes = [];
+    if (rawGhItems.length > 0) {
+      const orderDate  = new Date();
+      const deliveryDate = new Date(orderDate);
+      deliveryDate.setDate(deliveryDate.getDate() + 5);
+      const fmt = d => d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      preEventNotes.push({
+        title:    "Gift Hampers & Cakes",
+        subtitle: `Ordered: ${fmt(orderDate)}  ·  Expected delivery by ${fmt(deliveryDate)}`,
+      });
+    }
+    const wsOrders = (() => { try { return JSON.parse(localStorage.getItem("ws_orders") || "[]"); } catch { return []; } })();
+    if (wsOrders.length > 0) {
+      const last = wsOrders[0];
+      const placedAt  = last?.placedAt ? new Date(last.placedAt) : new Date();
+      const deliveryDate = new Date(placedAt);
+      deliveryDate.setDate(deliveryDate.getDate() + 10);
+      const fmt = d => d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+      preEventNotes.push({
+        title:    "Wedding Stationeries",
+        subtitle: `Ordered: ${fmt(placedAt)}  ·  Expected delivery by ${fmt(deliveryDate)}`,
+      });
+    }
+
+    // Store pre-event notes in state so the PDF button can access them
+    setPdfPreEventNotes(preEventNotes);
+
+    const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
+      Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
+    );
+
     if (!token) {
-      const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
-        Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
-      );
-      const slots = writeDayOfToStorage(vendors, "", eventSummary.date);
+      const slots = writeDayOfToStorage(vendors, reduxEventTiming, eventSummary.date, funActivitySlots);
       setDayofSlots(slots);
       return;
     }
@@ -104,7 +151,7 @@ const PaymentSuccessPage = () => {
       .then(async data => {
         const convList = (data.conversations || []).filter(c => c.chatType === "vendor");
         const pinned = {};
-        let eventTiming = "";
+        let apiEventTiming = "";
 
         await Promise.allSettled(convList.map(async c => {
           const vid = (c.vendorId?._id || c.vendorId)?.toString();
@@ -117,23 +164,19 @@ const PaymentSuccessPage = () => {
             const full = await r2.json();
             const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || c.pinnedMessages || [];
             pinned[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
-            // Grab eventTiming from botAnswers / eventDetails if available
             const timing = full.botAnswers?.eventTiming || full.eventDetails?.eventTiming || full.conversation?.botAnswers?.eventTiming || "";
-            if (timing && !eventTiming) eventTiming = timing;
+            if (timing && !apiEventTiming) apiEventTiming = timing;
           } catch {}
         }));
 
         setPinnedMessages(pinned);
 
-        // Build vendor list for timeline
-        const vendors = Object.entries(rawFinalised).flatMap(([svc, v]) =>
-          Array.isArray(v) ? v.map(x => ({ name: x?.name || "", serviceType: svc })) : (v?.name ? [{ name: v.name, serviceType: svc }] : [])
-        );
-        const slots = writeDayOfToStorage(vendors, eventTiming, eventSummary.date);
+        const finalTiming = reduxEventTiming || apiEventTiming;
+        const slots = writeDayOfToStorage(vendors, finalTiming, eventSummary.date, funActivitySlots);
         setDayofSlots(slots);
       })
       .catch(() => {
-        const slots = writeDayOfToStorage([], "", eventSummary.date);
+        const slots = writeDayOfToStorage(vendors, reduxEventTiming, eventSummary.date, funActivitySlots);
         setDayofSlots(slots);
       });
   }, []);
@@ -355,7 +398,7 @@ const PaymentSuccessPage = () => {
                 setPdfGenerating(true);
                 try {
                   const slots = dayofSlots.length > 0 ? dayofSlots : JSON.parse(localStorage.getItem("tendr_dayof") || '{}').slots || [];
-                  await generateTimelinePDF({ slots, eventSummary, userName: user?.name });
+                  await generateTimelinePDF({ slots, eventSummary, userName: user?.name, preEventNotes: pdfPreEventNotes });
                 } finally { setPdfGenerating(false); }
               }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s", minHeight: 80 }}
