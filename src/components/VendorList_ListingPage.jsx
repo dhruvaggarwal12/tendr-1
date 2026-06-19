@@ -104,7 +104,7 @@ const VendorList_ListingPage = ({
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
-  const [localFormData, setLocalFormData] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
+  const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "" });
   const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
   const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
 
