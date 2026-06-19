@@ -444,7 +444,7 @@ const VendorList = () => {
                 eventName ? { label: "Event", value: eventName, showLabel: false } : null,
                 (formEventType || eventType) ? { label: "Type", value: formEventType || eventType, showLabel: false } : null,
                 locationType ? { label: "Location", value: locationType, showLabel: false } : null,
-                date ? { label: "Date", value: date, showLabel: false } : null,
+                date ? { label: "Date", value: (() => { try { const d = new Date(date + "T00:00:00"); return `${d.getDate()} ${d.toLocaleString("en-IN", { month: "short" })}`; } catch { return date; } })(), showLabel: false } : null,
                 guestCount ? { label: "Guests", value: guestCount, showLabel: false } : null,
                 currentCatBudget ? { label: "Budget", value: (() => { const mins = {Caterer:5000,Decorator:3000,Photographer:3000,DJ:2000}; return `${fmtBudget(mins[serviceType]||0)} – ${fmtBudget(currentCatBudget)}`; })(), showLabel: false } : null,
                 additionalInfo ? { label: "Note", value: additionalInfo, showLabel: false } : null,
@@ -466,6 +466,7 @@ const VendorList = () => {
                       display: "inline-flex",
                       alignItems: "center",
                       gap: 4,
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {showLabel && (

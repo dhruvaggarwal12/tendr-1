@@ -168,6 +168,11 @@ export const setupGlobalErrorHandling = () => {
       event.preventDefault();
       return;
     }
+    // Suppress React internal proxy revocation errors (HMR / concurrent mode artefact)
+    if (msg.includes("proxy") && msg.includes("revoked")) {
+      event.preventDefault();
+      return;
+    }
 
     console.error('Unhandled promise rejection:', reason);
     const errorInfo = handleApiError(reason, 'Global');
@@ -186,6 +191,9 @@ export const setupGlobalErrorHandling = () => {
     // Suppress router context errors (same as above)
     const msg = (event.error?.message || "").toLowerCase();
     if (msg.includes("usenavigate") || msg.includes("uselocation") || msg.includes("context of a router")) {
+      return;
+    }
+    if (msg.includes("proxy") && msg.includes("revoked")) {
       return;
     }
     console.error('Global error:', event.error);

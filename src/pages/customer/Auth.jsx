@@ -121,10 +121,11 @@ const Auth = () => {
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
       const returnTo = location.state?.returnTo;
-      if (returnTo) { navigate(returnTo); return; }
+      if (returnTo) { navigate(returnTo); setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0); return; }
       // After signup: trigger global PWA prompt overlay, then navigate home
       window.dispatchEvent(new CustomEvent("tendr:show-pwa-prompt", { detail: { source: "signup" } }));
       navigate(location.state?.returnTo || "/");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
 
       // OTP FLOW (kept for when you re-enable):
       // const result = await dispatch(signup({ phoneNumber, name, email, password }));
@@ -152,6 +153,7 @@ const Auth = () => {
         if (token) dispatch(fetchEventData(token));
         const returnTo = location.state?.returnTo;
         navigate(loggedUser?.isAdmin ? "/AdminDashboard" : (returnTo || "/"));
+        setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
       } else {
         const msg = result.payload || "";
         if (msg.toLowerCase().includes("not found") || msg.includes("404")) {

@@ -349,7 +349,7 @@ const EventPlanning = () => {
   const [vendorCounts, setVendorCounts] = useState({});
 
   useEffect(() => {
-    if (!showVendorScreen) return;
+    if (!formData?.date) return;
     const fetchCounts = async () => {
       try {
         // If a date is selected, fetch per-date availability (2 slots per vendor per day)
@@ -385,7 +385,7 @@ const EventPlanning = () => {
       } catch (_) {}
     };
     fetchCounts();
-  }, [showVendorScreen, formData?.date, formData?.location]);
+  }, [formData?.date, formData?.location]);
 
   // Safety: reset step if out-of-range (e.g. admin question removed between sessions)
   useEffect(() => {
@@ -1925,18 +1925,22 @@ const EventPlanning = () => {
               const todayLocal = new Date();
               todayLocal.setHours(0, 0, 0, 0);
               const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}-${String(todayLocal.getDate()).padStart(2, "0")}`;
+              const currentVal = formData[currentQuestion.id] || "";
+              const displayVal = currentVal >= todayStr ? currentVal : "";
               return (
-                <input
-                  type="date"
-                  value={formData[currentQuestion.id] || ""}
-                  min={todayStr}
-                  onChange={(e) => {
-                    if (e.target.value && e.target.value < todayStr) return;
-                    handleInputChange(currentQuestion.id, e.target.value);
-                  }}
-                  style={{ width: "100%", boxSizing: "border-box", display: "block", maxWidth: "100%", minWidth: 0 }}
-                  className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
-                />
+                <div style={{ overflow: "hidden", width: "100%" }}>
+                  <input
+                    type="date"
+                    value={displayVal}
+                    min={todayStr}
+                    onChange={(e) => {
+                      if (!e.target.value || e.target.value < todayStr) return;
+                      selectAndAdvance(currentQuestion.id, e.target.value);
+                    }}
+                    style={{ width: "100%", boxSizing: "border-box", display: "block", maxWidth: "100%", minWidth: 0 }}
+                    className="p-3 sm:p-4 text-base sm:text-lg bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                  />
+                </div>
               );
             })()}
 
@@ -1966,22 +1970,9 @@ const EventPlanning = () => {
                       type="button"
                       key={index}
                       tabIndex={0}
-                      onClick={() => {
-                        if (currentQuestion.id === "eventType") {
-                          dispatch(setFormData({ field: "eventType", value: option, token }));
-                        } else {
-                          selectAndAdvance(currentQuestion.id, option);
-                        }
-                      }}
+                      onClick={() => selectAndAdvance(currentQuestion.id, option)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          if (currentQuestion.id === "eventType") {
-                            dispatch(setFormData({ field: "eventType", value: option, token }));
-                          } else {
-                            selectAndAdvance(currentQuestion.id, option);
-                          }
-                        }
+                        if (e.key === 'Enter') { e.preventDefault(); selectAndAdvance(currentQuestion.id, option); }
                       }}
                       className={`w-full text-left rounded-2xl transition-all duration-200
                       border-2 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:ring-offset-2
