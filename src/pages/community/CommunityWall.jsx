@@ -271,10 +271,24 @@ export default function CommunityWall() {
         }),
       });
       if (res.ok) {
-        setFormSubmitted("pending");
+        const created = await res.json();
+        // Add to top of feed immediately
+        const newPost = {
+          ...created,
+          id: created._id,
+          avatar: (created.authorName || user?.name || "?")[0].toUpperCase(),
+          avatarColor: "#C47A2E",
+          date: "just now",
+          reactions: { agree: 0, facedThis: 0, greatIdea: 0, loveThis: 0 },
+          comments: 0,
+          bookmarks: 0,
+          isFromApi: true,
+        };
+        setPosts(prev => [newPost, ...prev]);
+        setFormSubmitted("posted");
         setFormOpen(false);
         setForm(BLANK_FORM);
-        setTimeout(() => setFormSubmitted(false), 5000);
+        setTimeout(() => setFormSubmitted(false), 3000);
       } else {
         setFormSubmitted("error");
         setTimeout(() => setFormSubmitted(false), 3000);
@@ -349,8 +363,8 @@ export default function CommunityWall() {
 
       {/* Toast */}
       {formSubmitted && (
-        <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 999, background: formSubmitted === "error" ? "#c0392b" : "#1d4ed8", color: "#fff", padding: "12px 24px", borderRadius: 100, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.2)", fontFamily: font, whiteSpace: "nowrap" }}>
-          {formSubmitted === "error" ? "✗ Something went wrong — try again." : "✓ Submitted! Visible after admin review."}
+        <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 999, background: formSubmitted === "error" ? "#c0392b" : "#15803d", color: "#fff", padding: "12px 24px", borderRadius: 100, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.2)", fontFamily: font, whiteSpace: "nowrap" }}>
+          {formSubmitted === "error" ? "✗ Something went wrong — try again." : "✓ Posted to the community wall!"}
         </div>
       )}
 
