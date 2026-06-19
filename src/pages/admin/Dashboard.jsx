@@ -4673,6 +4673,19 @@ const AdminDashboard = () => {
           );
         })()}
 
+        {/* ── Stationery ── */}
+        {activeDropdown === "stationery" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] overflow-y-auto">
+            <StationeryAdminTab />
+          </div>
+        )}
+
+        {/* ── Recommendation Intelligence ── */}
+        {activeDropdown === "recommendations" && <RecommendationIntelligenceTab />}
+
+        {/* ── Community Moderation ── */}
+        {activeDropdown === "community" && <CommunityModerationTab />}
+
       </div>
     </div>
     {/* ── Photo viewer modal ── */}
@@ -4765,19 +4778,6 @@ const AdminDashboard = () => {
         </div>
       </>
     )}
-
-{/* ── Stationery ── */}
-        {activeDropdown === "stationery" && (
-          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] overflow-y-auto">
-            <StationeryAdminTab />
-          </div>
-        )}
-
-        {/* ── Recommendation Intelligence ── */}
-        {activeDropdown === "recommendations" && <RecommendationIntelligenceTab />}
-
-        {/* ── Community Moderation ── */}
-        {activeDropdown === "community" && <CommunityModerationTab />}
 
 
     </>
