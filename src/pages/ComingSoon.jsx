@@ -216,7 +216,7 @@ export default function ComingSoon() {
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
             {/* Tendr Community */}
             <motion.a
-              href="https://tendr-1.vercel.app/community"
+              href="https://tendr-1.vercel.app/community?standalone=1"
               target="_blank"
               rel="noopener noreferrer"
               whileHover={{ scale: 1.03, y: -2 }}

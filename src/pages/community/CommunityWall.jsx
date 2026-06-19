@@ -149,6 +149,7 @@ export default function CommunityWall() {
   const { user } = useSelector(s => s.auth);
   const isAdmin = user?.isAdmin === true;
   const isLoggedIn = !!localStorage.getItem("tendr_token");
+  const standalone = new URLSearchParams(window.location.search).get("standalone") === "1";
 
   const [posts, setPosts]               = useState(SEED_POSTS);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -326,7 +327,7 @@ export default function CommunityWall() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font }}>
-      <HamburgerNav />
+      {!standalone && <HamburgerNav />}
 
       {isAdmin && (
         <div style={{ background: "linear-gradient(90deg,#92400e,#C47A2E)", padding: "10px 24px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
