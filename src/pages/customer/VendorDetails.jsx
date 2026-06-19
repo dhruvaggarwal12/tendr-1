@@ -24,6 +24,21 @@ import { useChatOverlay } from "../../context/ChatContext";
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
 
+const chatSaveKey = (id) => `tendr:chat_req:${id}`;
+const getVendorChatSave = (id) => {
+  try {
+    const s = JSON.parse(localStorage.getItem(chatSaveKey(id)) || "null");
+    if (!s) return null;
+    if (s.date) {
+      const exp = new Date(s.date + "T00:00:00"); exp.setDate(exp.getDate() + 1);
+      if (Date.now() > exp.getTime()) { localStorage.removeItem(chatSaveKey(id)); return null; }
+    } else if (Date.now() - (s.submittedAt || 0) > 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(chatSaveKey(id)); return null;
+    }
+    return s;
+  } catch { return null; }
+};
+
 const VendorDetailsPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [vendor, setVendor] = useState(null);
@@ -31,6 +46,7 @@ const VendorDetailsPage = () => {
   const [error, setError] = useState(null);
   const [chatFormOpen, setChatFormOpen] = useState(false);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
+  const [hasActiveChatSave, setHasActiveChatSave] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
 
   const handleShare = async () => {
@@ -118,6 +134,7 @@ const VendorDetailsPage = () => {
         }
 
         setVendor(vendorData);
+        setHasActiveChatSave(!!getVendorChatSave(vendorData._id));
       } catch (err) {
         console.error("Error fetching vendor data:", err);
         setError(err.message || "Failed to load vendor details");
@@ -367,6 +384,7 @@ const VendorDetailsPage = () => {
             <button
               onClick={() => {
                 if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
                 if (hasEventContext) {
                   dispatch(setBookingType("you-do-it"));
                   openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
@@ -377,7 +395,7 @@ const VendorDetailsPage = () => {
               }}
               style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 14px rgba(196,122,46,0.4)" }}
             >
-              💬 Chat & Finalise
+              💬 {hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
             </button>
           </div>
         </div>
@@ -703,6 +721,7 @@ const VendorDetailsPage = () => {
                 <button
                   onClick={() => {
                     if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                    if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
                     if (hasEventContext) {
                       dispatch(setBookingType("you-do-it"));
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
@@ -713,7 +732,7 @@ const VendorDetailsPage = () => {
                   }}
                   style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", marginBottom: 6 }}
                 >
-                  💬 {token ? "Chat & Finalise" : "Sign In to Chat"}
+                  💬 {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
                 </button>
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 14px", lineHeight: 1.5 }}>
                   Our team reviews and connects you within a few hours

@@ -120,6 +120,14 @@ const Auth = () => {
       // Store token + user in Redux (same as login)
       dispatch({ type: "auth/login/fulfilled", payload: data });
       if (data.consumer?.isAdmin) { navigate("/AdminDashboard"); return; }
+      // Extend discovery session TTL to event date on signup
+      try {
+        const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
+        if (raw?.date) {
+          const exp = new Date(raw.date + "T00:00:00"); exp.setDate(exp.getDate() + 1);
+          localStorage.setItem("tendr:session:discovery", JSON.stringify({ ...raw, __expiresAt: exp.getTime() }));
+        }
+      } catch {}
       const returnTo = location.state?.returnTo;
       if (returnTo) { navigate(returnTo); setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0); return; }
       // After signup: trigger global PWA prompt overlay, then navigate home
@@ -151,6 +159,14 @@ const Auth = () => {
         const loggedUser = result.payload?.consumer;
         const token = result.payload?.token;
         if (token) dispatch(fetchEventData(token));
+        // Extend discovery session TTL to event date on login
+        try {
+          const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
+          if (raw?.date) {
+            const exp = new Date(raw.date + "T00:00:00"); exp.setDate(exp.getDate() + 1);
+            localStorage.setItem("tendr:session:discovery", JSON.stringify({ ...raw, __expiresAt: exp.getTime() }));
+          }
+        } catch {}
         const returnTo = location.state?.returnTo;
         navigate(loggedUser?.isAdmin ? "/AdminDashboard" : (returnTo || "/"));
         setTimeout(() => window.scrollTo({ top: 0, behavior: "instant" }), 0);
