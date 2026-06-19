@@ -1515,7 +1515,6 @@ const EventPlanning = () => {
                               ? `✓ ${count} available on ${new Date(formData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
                               : "Fetching availability…"}
                           </span>
-                          <style>{`@keyframes tendr-pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }`}</style>
                         )}
                       </div>
                     </div>
