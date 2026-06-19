@@ -348,27 +348,14 @@ const EventPlanning = () => {
 
   const [vendorCounts, setVendorCounts] = useState({});
 
-  // On mount: immediately fetch total vendor counts so cards never show "Checking..."
+  // On mount: ping the server immediately so it warms up during the planning steps.
+  // By the time the user answers 4-5 questions (~30-60s), Render is awake and the
+  // date-specific availability fetch below returns in under 1 second.
   useEffect(() => {
-    const fetchTotals = async () => {
-      try {
-        const results = await Promise.allSettled(
-          vendors.map((v) => getVendors({ serviceTypes: [v.id], limit: 1 }))
-        );
-        const counts = {};
-        results.forEach((r, i) => {
-          const key = vendors[i].id;
-          counts[key] = r.status === "fulfilled"
-            ? (r.value?.pagination?.total ?? r.value?.vendors?.length ?? 0)
-            : 0;
-        });
-        setVendorCounts(prev => ({ ...counts, ...prev }));
-      } catch (_) {}
-    };
-    fetchTotals();
+    fetch(`${BASE_URL}/vendors/availability/by-date?date=warmup`, { method: "HEAD" }).catch(() => {});
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When date is set: fetch date-specific availability and override counts
+  // When date is set: fetch date-specific availability counts
   useEffect(() => {
     if (!formData?.date) return;
     const fetchAvailability = async () => {
@@ -378,7 +365,7 @@ const EventPlanning = () => {
         const res = await fetch(`${BASE_URL}/vendors/availability/by-date?${params}`);
         if (res.ok) {
           const data = await res.json();
-          if (data.available) setVendorCounts(prev => ({ ...prev, ...data.available }));
+          if (data.available) setVendorCounts(data.available);
         }
       } catch (_) {}
     };
@@ -1523,13 +1510,12 @@ const EventPlanning = () => {
                         </div>
                         <p style={{ fontSize: 12.5, color: "#7A5535", fontWeight: 400, margin: "0 0 8px", lineHeight: 1.45 }}>{vendor.description}</p>
                         {isYouDoIt && (
-                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count > 0 ? "#16a34a" : "#C47A2E", background: count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100 }}>
+                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count !== undefined && count > 0 ? "#16a34a" : "#C47A2E", background: count !== undefined && count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100, animation: count === undefined ? "tendr-pulse 1.2s ease-in-out infinite" : "none" }}>
                             {count !== undefined
-                              ? formData?.date
-                                ? `✓ ${count} available ${new Date(formData.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
-                                : `${count} vendors`
-                              : "Checking..."}
+                              ? `✓ ${count} available on ${new Date(formData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
+                              : "Fetching availability…"}
                           </span>
+                          <style>{`@keyframes tendr-pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }`}</style>
                         )}
                       </div>
                     </div>
