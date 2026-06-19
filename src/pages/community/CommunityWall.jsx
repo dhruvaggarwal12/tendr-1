@@ -326,7 +326,8 @@ export default function CommunityWall() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font }}>
+    <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font, paddingTop: standalone ? "env(safe-area-inset-top, 0px)" : 0 }}>
+      {standalone && <style>{`body { padding-top: env(safe-area-inset-top, 0px); }`}</style>}
       {!standalone && <HamburgerNav />}
 
       {isAdmin && (

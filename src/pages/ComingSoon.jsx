@@ -221,7 +221,7 @@ export default function ComingSoon() {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
-              style={{ flex: 1, minWidth: 180, display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 14, background: "linear-gradient(135deg,rgba(196,122,46,0.18),rgba(204,171,74,0.1))", border: "1px solid rgba(196,122,46,0.35)", textDecoration: "none", cursor: "pointer" }}
+              style={{ flex: 1, minWidth: "min(220px, 100%)", display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 14, background: "linear-gradient(135deg,rgba(196,122,46,0.18),rgba(204,171,74,0.1))", border: "1px solid rgba(196,122,46,0.35)", textDecoration: "none", cursor: "pointer" }}
             >
               <div style={{ width: 40, height: 40, borderRadius: 11, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 19, flexShrink: 0 }}>
                 💬
@@ -240,7 +240,7 @@ export default function ComingSoon() {
               rel="noopener noreferrer"
               whileHover={{ scale: 1.03, y: -2 }}
               whileTap={{ scale: 0.97 }}
-              style={{ flex: 1, minWidth: 180, display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 14, background: "rgba(255,69,0,0.08)", border: "1px solid rgba(255,69,0,0.22)", textDecoration: "none", cursor: "pointer" }}
+              style={{ flex: 1, minWidth: "min(220px, 100%)", display: "flex", alignItems: "center", gap: 12, padding: "16px 18px", borderRadius: 14, background: "rgba(255,69,0,0.08)", border: "1px solid rgba(255,69,0,0.22)", textDecoration: "none", cursor: "pointer" }}
             >
               <div style={{ width: 40, height: 40, borderRadius: 11, background: "#FF4500", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <FaRedditAlien style={{ color: "#fff", fontSize: 20 }} />
