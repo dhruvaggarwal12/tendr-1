@@ -4772,7 +4772,11 @@ const AdminDashboard = () => {
         {activeDropdown === "memories" && <MemoriesTab />}
 
         {/* ── Stationery ── */}
-        {activeDropdown === "stationery" && <StationeryAdminTab />}
+        {activeDropdown === "stationery" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] overflow-y-auto">
+            <StationeryAdminTab />
+          </div>
+        )}
 
         {/* ── Recommendation Intelligence ── */}
         {activeDropdown === "recommendations" && <RecommendationIntelligenceTab />}
