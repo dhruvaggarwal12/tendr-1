@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
 import AddVendorModal from "./AddVendorModal";
-import MemoriesTab from "./MemoriesTab";
 import StationeryAdminTab from "./StationeryAdminTab";
 import RecommendationIntelligenceTab from "./RecommendationIntelligenceTab";
 import CommunityModerationTab from "./CommunityModerationTab";
@@ -271,7 +270,6 @@ const sidebar_arr = [
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
   { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
-  { label: "Memories",           icon: <span style={{ fontSize: 16 }}>🎁</span>,  key: "Memories" },
   { label: "Wedding Stationery",    icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
   { label: "Rec. Intelligence",     icon: <span style={{ fontSize: 16 }}>📊</span>,  key: "Recommendations" },
   { label: "Community",             icon: <span style={{ fontSize: 16 }}>🌟</span>,  key: "Community" },
@@ -4768,10 +4766,7 @@ const AdminDashboard = () => {
       </>
     )}
 
-        {/* ── Memories ── */}
-        {activeDropdown === "memories" && <MemoriesTab />}
-
-        {/* ── Stationery ── */}
+{/* ── Stationery ── */}
         {activeDropdown === "stationery" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] overflow-y-auto">
             <StationeryAdminTab />
