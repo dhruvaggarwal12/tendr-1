@@ -100,7 +100,6 @@ const VendorList_ListingPage = ({
   const { openVendorChat, openExistingChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
   const formData = useSelector(s => s.eventPlanning?.formData || {});
-  const hasEventDetails = !!(formData.eventType && formData.guests && formData.date && formData.budget);
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
@@ -623,15 +622,9 @@ const VendorList_ListingPage = ({
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                       return;
                     }
-                    // Planning flow with all fields filled → skip form, use Redux data directly
-                    if (hasEventDetails) {
-                      setChatSave(vendor._id, { eventType: formData.eventType, date: formData.date, guests: String(formData.guests), budget: formData.budget });
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                      return;
-                    }
-                    // Planning flow without full details → show form pre-filled from Redux
-                    setChatFormVendor(vendor);
-                    setChatEventForm({ eventType: formData.eventType || "", guests: String(formData.guests || ""), date: formData.date || "", budget: formData.budget || "", location: formData.location || "" });
+                    // Planning flow → always skip form, use Redux data directly
+                    setChatSave(vendor._id, { eventType: formData.eventType || "", date: formData.date || "", guests: String(formData.guests || ""), budget: formData.budget || "" });
+                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
