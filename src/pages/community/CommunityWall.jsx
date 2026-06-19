@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 
@@ -144,8 +145,10 @@ function authFetch(path, opts = {}) {
 const BLANK_FORM = { title: "", body: "", category: "story", event: "", city: "", authorName: "", pollOptionTexts: ["", ""] };
 
 export default function CommunityWall() {
+  const navigate = useNavigate();
   const { user } = useSelector(s => s.auth);
   const isAdmin = user?.isAdmin === true;
+  const isLoggedIn = !!localStorage.getItem("tendr_token");
 
   const [posts, setPosts]               = useState(SEED_POSTS);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -253,57 +256,33 @@ export default function CommunityWall() {
   // ── Form submit ────────────────────────────────────────────────────────────
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const token = localStorage.getItem("tendr_token");
     const pollOptionTexts = form.pollOptionTexts.filter(t => t.trim());
-
-    if (token) {
-      try {
-        const res = await authFetch("/community/posts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            category: form.category,
-            title: form.title,
-            body: form.body || (form.category === "polls" ? "Vote below" : ""),
-            tags: [],
-            isAnonymous: false,
-            pollOptions: form.category === "polls" ? pollOptionTexts : undefined,
-          }),
-        });
-        if (res.ok) {
-          setFormSubmitted("pending");
-          setFormOpen(false);
-          setForm(BLANK_FORM);
-          setTimeout(() => setFormSubmitted(false), 5000);
-          return;
-        }
-      } catch {}
+    try {
+      const res = await authFetch("/community/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: form.category,
+          title: form.title,
+          body: form.body || (form.category === "polls" ? "Vote below" : ""),
+          tags: [],
+          isAnonymous: false,
+          pollOptions: form.category === "polls" ? pollOptionTexts : undefined,
+        }),
+      });
+      if (res.ok) {
+        setFormSubmitted("pending");
+        setFormOpen(false);
+        setForm(BLANK_FORM);
+        setTimeout(() => setFormSubmitted(false), 5000);
+      } else {
+        setFormSubmitted("error");
+        setTimeout(() => setFormSubmitted(false), 3000);
+      }
+    } catch {
+      setFormSubmitted("error");
+      setTimeout(() => setFormSubmitted(false), 3000);
     }
-
-    // Guest / offline fallback — local only
-    const authorName = form.authorName?.trim() || user?.name || "Community Member";
-    const newPost = {
-      id: Date.now(),
-      category: form.category,
-      title: form.title,
-      body: form.body,
-      event: form.event,
-      city: form.city,
-      author: authorName,
-      avatar: authorName[0].toUpperCase(),
-      avatarColor: "#C47A2E",
-      date: "just now",
-      reactions: { agree: 0, facedThis: 0, greatIdea: 0, loveThis: 0 },
-      adminTags: [], comments: 0, bookmarks: 0,
-      pollOptions: form.category === "polls"
-        ? pollOptionTexts.map(t => ({ text: t, votes: 0 }))
-        : undefined,
-    };
-    setPosts(prev => [newPost, ...prev]);
-    setFormSubmitted("local");
-    setFormOpen(false);
-    setForm(BLANK_FORM);
-    setTimeout(() => setFormSubmitted(false), 3000);
   };
 
   // ── Bookmarks ──────────────────────────────────────────────────────────────
@@ -355,17 +334,23 @@ export default function CommunityWall() {
           <p style={{ fontSize: "clamp(13px,2vw,16px)", color: "rgba(255,255,255,0.65)", maxWidth: 540, margin: "0 auto 28px", lineHeight: 1.65 }}>
             Real experiences, polls, creative ideas, and honest lessons — shared by people who celebrate with Tendr.
           </p>
-          <button onClick={() => setFormOpen(v => !v)}
+          <button
+            onClick={() => isLoggedIn ? setFormOpen(v => !v) : navigate("/login")}
             style={{ padding: "13px 32px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.4)" }}>
             {formOpen ? "Close Form" : "+ Share Your Story"}
           </button>
+          {!isLoggedIn && (
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "10px 0 0", fontStyle: "italic" }}>
+              Log in to share your story or create a poll
+            </p>
+          )}
         </div>
       </div>
 
       {/* Toast */}
       {formSubmitted && (
-        <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 999, background: formSubmitted === "pending" ? "#1d4ed8" : "#15803d", color: "#fff", padding: "12px 24px", borderRadius: 100, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.2)", fontFamily: font, whiteSpace: "nowrap" }}>
-          {formSubmitted === "pending" ? "✓ Submitted! Visible after admin review." : "✓ Story added to the wall!"}
+        <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 999, background: formSubmitted === "error" ? "#c0392b" : "#1d4ed8", color: "#fff", padding: "12px 24px", borderRadius: 100, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.2)", fontFamily: font, whiteSpace: "nowrap" }}>
+          {formSubmitted === "error" ? "✗ Something went wrong — try again." : "✓ Submitted! Visible after admin review."}
         </div>
       )}
 
@@ -433,19 +418,6 @@ export default function CommunityWall() {
                   </button>
                 )}
               </div>
-            )}
-
-            {!user && (
-              <div style={{ marginBottom: 14 }}>
-                <label style={labelSt}>Your Name (optional)</label>
-                <input type="text" placeholder="Leave blank to post anonymously" value={form.authorName} onChange={e => setForm(p => ({ ...p, authorName: e.target.value }))} style={inputSt} />
-              </div>
-            )}
-
-            {!localStorage.getItem("tendr_token") && (
-              <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 14px", fontStyle: "italic" }}>
-                💡 Log in to have your post reviewed and published on the community wall.
-              </p>
             )}
 
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
