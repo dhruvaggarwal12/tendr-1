@@ -31,9 +31,9 @@ export default function StationeryPicker() {
   );
 
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: "'Lato', sans-serif" }}>
-      {/* Header */}
-      <header style={{ background: "#fff", borderBottom: "1px solid #E8E0D0", padding: "24px 48px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column", background: "#FAF7F2", fontFamily: "'Lato', sans-serif", overflow: "hidden" }}>
+      {/* Header — fixed */}
+      <header style={{ background: "#fff", borderBottom: "1px solid #E8E0D0", padding: "20px 48px", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
         <div>
           <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 28, fontWeight: 400, color: "#1C1C1C", margin: 0, letterSpacing: "0.05em" }}>
             Wedding Stationery
@@ -50,8 +50,26 @@ export default function StationeryPicker() {
         </button>
       </header>
 
+      {/* Category strip — fixed below header, always visible */}
+      <div style={{ background: "#fff", borderBottom: "1px solid #E8E0D0", padding: "14px 24px", display: "flex", justifyContent: "center", gap: 8, flexWrap: "wrap", flexShrink: 0, boxShadow: "0 2px 10px rgba(28,28,28,0.05)", zIndex: 10 }}>
+        {CATEGORIES.map(cat => (
+          <button key={cat} onClick={() => setActiveCategory(cat)}
+            style={{
+              padding: "8px 22px", borderRadius: 100, fontSize: 13, letterSpacing: "0.06em",
+              cursor: "pointer", transition: "all 0.2s", fontFamily: "'Lato', sans-serif",
+              background: activeCategory === cat ? "#1C1C1C" : "transparent",
+              color: activeCategory === cat ? "#fff" : "#6B5E52",
+              border: activeCategory === cat ? "1px solid #1C1C1C" : "1px solid #D4C8B8",
+            }}
+          >{cat}</button>
+        ))}
+      </div>
+
+      {/* Scrollable area: hero + grid */}
+      <div style={{ flex: 1, overflowY: "auto" }}>
+
       {/* Hero */}
-      <div style={{ textAlign: "center", padding: "64px 24px 48px", maxWidth: 640, margin: "0 auto" }}>
+      <div style={{ textAlign: "center", padding: "52px 24px 36px", maxWidth: 640, margin: "0 auto" }}>
         <p style={{ fontSize: 13, fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C9A84C", marginBottom: 16 }}>
           Handcrafted with love
         </p>
@@ -61,21 +79,6 @@ export default function StationeryPicker() {
         <p style={{ fontSize: 16, color: "#6B5E52", lineHeight: 1.75, margin: 0 }}>
           Choose from 15 beautifully designed stationery pieces. Customise every detail to match your vision.
         </p>
-      </div>
-
-      {/* Category Filter */}
-      <div style={{ display: "flex", justifyContent: "center", gap: 8, marginBottom: 40, flexWrap: "wrap", padding: "0 24px" }}>
-        {CATEGORIES.map(cat => (
-          <button key={cat} onClick={() => setActiveCategory(cat)}
-            style={{
-              padding: "9px 22px", borderRadius: 100, fontSize: 13, letterSpacing: "0.06em",
-              cursor: "pointer", transition: "all 0.2s", fontFamily: "'Lato', sans-serif",
-              background: activeCategory === cat ? "#1C1C1C" : "transparent",
-              color: activeCategory === cat ? "#fff" : "#6B5E52",
-              border: activeCategory === cat ? "1px solid #1C1C1C" : "1px solid #D4C8B8",
-            }}
-          >{cat}</button>
-        ))}
       </div>
 
       {/* Grid */}
@@ -152,6 +155,8 @@ export default function StationeryPicker() {
           </div>
         ))}
       </div>
+
+      </div>{/* end scrollable */}
     </div>
   );
 }
