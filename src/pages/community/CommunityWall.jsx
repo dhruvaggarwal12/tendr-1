@@ -351,13 +351,19 @@ export default function CommunityWall() {
             Real experiences, polls, creative ideas, and honest lessons — shared by people who celebrate with Tendr.
           </p>
           <button
-            onClick={() => isLoggedIn ? setFormOpen(v => !v) : navigate("/login")}
+            onClick={() => {
+              if (isLoggedIn) { setFormOpen(v => !v); return; }
+              if (standalone) { window.open("https://tendr-1.vercel.app/login", "_blank"); }
+              else { navigate("/login"); }
+            }}
             style={{ padding: "13px 32px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.4)" }}>
             {formOpen ? "Close Form" : "+ Share Your Story"}
           </button>
           {!isLoggedIn && (
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "10px 0 0", fontStyle: "italic" }}>
-              Log in to share your story or create a poll
+              {standalone
+                ? <>Join at <a href="https://tendr-1.vercel.app/login" target="_blank" rel="noopener noreferrer" style={{ color: "#CCAB4A", textDecoration: "underline" }}>tendr-1.vercel.app</a> to post</>
+                : "Log in to share your story or create a poll"}
             </p>
           )}
         </div>
