@@ -273,11 +273,24 @@ export default function StationeryAdminTab() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 14 }}>
               {catItems.map((item) => (
                 <div key={item._id || item.id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", boxShadow: "0 2px 10px rgba(44,26,14,0.05)" }}>
-                  <div style={{ height: 100, overflow: "hidden", position: "relative", background: "#f0e8dc" }}>
-                    {item.images?.[0]?.url
-                      ? <img src={item.images[0].url} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      : <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", opacity: 0.4, fontSize: 28 }}>💍</div>
-                    }
+                  <div style={{ position: "relative", background: "#f0e8dc", minHeight: 80 }}>
+                    {item.images?.length > 0 ? (
+                      item.images.length === 1 ? (
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f0e8dc", minHeight: 90, maxHeight: 120, overflow: "hidden" }}>
+                          <img src={item.images[0].url} alt={item.name} style={{ maxWidth: "100%", maxHeight: 120, width: "auto", height: "auto", objectFit: "contain", display: "block" }} />
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 4, padding: "6px", background: "#f0e8dc", overflowX: "auto" }}>
+                          {item.images.map((img, idx) => (
+                            <div key={idx} style={{ flexShrink: 0, width: 72, height: 72, borderRadius: 6, overflow: "hidden", background: "#e8ddd4", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <img src={img.url} alt="" style={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain", display: "block" }} />
+                            </div>
+                          ))}
+                        </div>
+                      )
+                    ) : (
+                      <div style={{ height: 90, display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", opacity: 0.4, fontSize: 28 }}>💍</div>
+                    )}
                     <div style={{ position: "absolute", top: 7, right: 7 }}>
                       <span style={{ background: item.available ? "#15803d" : "#9ca3af", color: "#fff", borderRadius: 100, fontSize: 9, fontWeight: 700, padding: "2px 8px" }}>
                         {item.available ? "Live" : "Hidden"}
@@ -396,7 +409,7 @@ export default function StationeryAdminTab() {
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {formImages.map((img, i) => (
                   <div key={i} style={{ position: "relative" }}>
-                    <img src={img.url} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)" }} />
+                    <img src={img.url} alt="" style={{ width: 72, height: 72, objectFit: "contain", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", background: "#f0e8dc" }} />
                     <button
                       onClick={() => handleRemoveImage(i)}
                       style={{ position: "absolute", top: -6, right: -6, width: 18, height: 18, borderRadius: "50%", background: "#c0392b", border: "none", color: "#fff", fontSize: 10, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}

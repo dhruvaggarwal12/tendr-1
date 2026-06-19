@@ -34,6 +34,7 @@ export default function WeddingStationery() {
   const [items, setItems]               = useState(DEFAULT_STATIONERY.filter(p => p.available));
   const [activeCategory, setActiveCategory] = useState("All");
   const [selectedItem, setSelectedItem] = useState(null);
+  const [selectedImgIdx, setSelectedImgIdx] = useState(0);
   const [hoveredId, setHoveredId]       = useState(null);
   const sectionRefs = useRef({});
 
@@ -150,15 +151,24 @@ export default function WeddingStationery() {
                   return (
                     <div
                       key={itemId}
-                      onClick={() => setSelectedItem(item)}
+                      onClick={() => { setSelectedItem(item); setSelectedImgIdx(0); }}
                       onMouseEnter={() => setHoveredId(itemId)}
                       onMouseLeave={() => setHoveredId(null)}
                       style={{ background: "#fff", borderRadius: 20, overflow: "hidden", border: isHov ? `1.5px solid ${meta.color}55` : "1.5px solid rgba(201,168,76,0.13)", boxShadow: isHov ? `0 16px 48px rgba(44,26,14,0.14),0 0 0 3px ${meta.color}10` : "0 3px 16px rgba(139,90,20,0.07)", cursor: "pointer", transition: "all 0.24s cubic-bezier(0.4,0,0.2,1)", transform: isHov ? "translateY(-5px)" : "none", display: "flex", flexDirection: "column" }}
                     >
                       {/* Image */}
                       {item.images?.[0]?.url ? (
-                        <div style={{ height: 180, overflow: "hidden", flexShrink: 0 }}>
-                          <img src={item.images[0].url} alt={item.name} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.32s", transform: isHov ? "scale(1.05)" : "scale(1)" }} />
+                        <div style={{ position: "relative", background: meta.light, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 150, maxHeight: 200, overflow: "hidden" }}>
+                          <img
+                            src={item.images[0].url}
+                            alt={item.name}
+                            style={{ maxWidth: "100%", maxHeight: 200, width: "auto", height: "auto", objectFit: "contain", display: "block", transition: "transform 0.32s", transform: isHov ? "scale(1.03)" : "scale(1)" }}
+                          />
+                          {item.images.length > 1 && (
+                            <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(28,10,0,0.55)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, backdropFilter: "blur(4px)" }}>
+                              📷 {item.images.length}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div style={{ height: 110, background: meta.light, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", flexShrink: 0 }}>
@@ -297,9 +307,30 @@ export default function WeddingStationery() {
           <div className="ws-panel" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "min(52vw,540px)", background: "#FFFCF7", overflowY: "auto", boxShadow: "-20px 0 80px rgba(44,26,14,0.28)", animation: "ws-slideRight 0.35s cubic-bezier(0.4,0,0.2,1)" }}>
             <button onClick={() => setSelectedItem(null)} style={{ position: "absolute", top: 16, right: 16, width: 36, height: 36, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", cursor: "pointer", fontSize: 18, color: "#5a3a1a", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>×</button>
 
-            {selectedItem.images?.[0]?.url ? (
-              <div style={{ height: 260, overflow: "hidden" }}>
-                <img src={selectedItem.images[0].url} alt={selectedItem.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            {selectedItem.images?.length > 0 ? (
+              <div>
+                {/* Main image */}
+                <div style={{ background: (CAT_META[selectedItem.category] || CAT_META["Other"]).light, display: "flex", alignItems: "center", justifyContent: "center", minHeight: 200, maxHeight: 300, overflow: "hidden" }}>
+                  <img
+                    src={selectedItem.images[selectedImgIdx]?.url || selectedItem.images[0].url}
+                    alt={selectedItem.name}
+                    style={{ maxWidth: "100%", maxHeight: 300, width: "auto", height: "auto", objectFit: "contain", display: "block" }}
+                  />
+                </div>
+                {/* Thumbnail strip — only shown when more than 1 image */}
+                {selectedItem.images.length > 1 && (
+                  <div style={{ display: "flex", gap: 6, padding: "8px 12px", background: "#f8f4ee", overflowX: "auto" }}>
+                    {selectedItem.images.map((img, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => setSelectedImgIdx(idx)}
+                        style={{ flexShrink: 0, width: 56, height: 56, borderRadius: 8, overflow: "hidden", border: idx === selectedImgIdx ? "2px solid #C47A2E" : "2px solid transparent", cursor: "pointer", background: "#ede8e0", display: "flex", alignItems: "center", justifyContent: "center" }}
+                      >
+                        <img src={img.url} alt="" style={{ maxWidth: "100%", maxHeight: "100%", width: "auto", height: "auto", objectFit: "contain", display: "block" }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (() => {
               const m = CAT_META[selectedItem.category] || CAT_META["Other"];
