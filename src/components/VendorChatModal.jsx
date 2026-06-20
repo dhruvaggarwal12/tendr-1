@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useInstallPrompt } from "../hooks/useInstallPrompt";
 import { useSelector, useDispatch } from "react-redux";
 import router from "../router";
 import { io } from "socket.io-client";
@@ -385,6 +386,7 @@ export default function VendorChatModal() {
   const dispatch = useDispatch();
   const currentUser = useSelector(s => s.auth.user);
   const authToken = useSelector(s => s.auth.token);
+  const { canInstall, triggerInstall } = useInstallPrompt();
   const reduxFormData = useSelector(s => s.eventPlanning.formData || {});
 
   const vendor = chatState?.vendor;
@@ -1192,16 +1194,18 @@ export default function VendorChatModal() {
                   ))}
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Install the Tendr App</div>
-                  <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Get notified the moment {vendor?.name} responds.</div>
+              {canInstall && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Install the Tendr App</div>
+                    <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Get notified the moment {vendor?.name} responds.</div>
+                  </div>
+                  <button onClick={triggerInstall} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                    Install →
+                  </button>
                 </div>
-                <a href="/install" style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
-                  Install →
-                </a>
-              </div>
+              )}
             </div>
           )}
 
@@ -1241,16 +1245,18 @@ export default function VendorChatModal() {
                 </button>
               </div>
               {/* Install Tendr */}
-              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
-                <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Never miss a reply</div>
-                  <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Install Tendr to get instant notifications from {vendor?.name}.</div>
+              {canInstall && (
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Never miss a reply</div>
+                    <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Install Tendr to get instant notifications from {vendor?.name}.</div>
+                  </div>
+                  <button onClick={triggerInstall} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                    Install →
+                  </button>
                 </div>
-                <a href="/install" style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
-                  Install →
-                </a>
-              </div>
+              )}
             </div>
           )}
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
+import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -73,6 +74,7 @@ export default function CommunityWall() {
   const standalone = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname)
     || new URLSearchParams(window.location.search).get("standalone") === "1";
 
+  const { canInstall, triggerInstall } = useInstallPrompt();
   const [posts, setPosts]               = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -335,6 +337,23 @@ export default function CommunityWall() {
           )}
         </div>
       </div>
+
+      {/* Install banner — only on tendr.co.in when PWA install is available */}
+      {canInstall && (
+        <div style={{ maxWidth: 680, margin: "0 auto", padding: "16px 20px 0" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 14, padding: "12px 16px" }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Add Tendr to your home screen</div>
+              <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>Get the full community experience as an app — no app store needed.</div>
+            </div>
+            <button onClick={triggerInstall}
+              style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
+              Install →
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Toast */}
       {formSubmitted && (
