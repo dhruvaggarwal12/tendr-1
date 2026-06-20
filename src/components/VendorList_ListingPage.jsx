@@ -120,8 +120,6 @@ const VendorList_ListingPage = ({
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
   const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "" });
-  const [showEntryGate, setShowEntryGate] = useState(false);
-  const [entryGateForm, setEntryGateForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
   const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
   const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
 
@@ -132,14 +130,6 @@ const VendorList_ListingPage = ({
     window.dispatchEvent(new CustomEvent("tendr:saved-updated"));
   }, []);
 
-  // Entry gate: show event form once on first visit to discovery listing if no session saved
-  useEffect(() => {
-    if (!requireFormBeforeChat) return;
-    if (getDiscoverySession()) return;
-    if (sessionStorage.getItem("tendr_gate_shown")) return;
-    setShowEntryGate(true);
-    sessionStorage.setItem("tendr_gate_shown", "1");
-  }, [requireFormBeforeChat]);
 
   // Restore quick view after login redirect
   useEffect(() => {
@@ -638,7 +628,8 @@ const VendorList_ListingPage = ({
                     if (requireFormBeforeChat) {
                       const discoveryData = getDiscoverySession();
                       setChatFormVendor(vendor);
-                      setChatEventForm(discoveryData || { eventType: "", guests: "", date: "", budget: "", location: "" });
+                      // Pre-fill event details from session but always clear budget (it's per-vendor)
+                      setChatEventForm({ eventType: "", guests: "", date: "", location: "", ...(discoveryData || {}), budget: "" });
                       return;
                     }
                     // Planning flow: check 24h save for this vendor
@@ -686,84 +677,6 @@ const VendorList_ListingPage = ({
         </>
       )}
 
-      {/* Entry gate — shown once on first visit to discovery listing */}
-      {showEntryGate && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 99997, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}>
-          <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px", maxWidth: 480, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}
-            onClick={e => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-              <div>
-                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Tell us about your event</h2>
-                <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>So we can show you the best vendors for your needs</p>
-              </div>
-              <button onClick={() => setShowEntryGate(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9B7450", padding: 0 }}>✕</button>
-            </div>
-            {(() => {
-              const today = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; })();
-              const fieldStyle = { width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 13, outline: "none", boxSizing: "border-box", background: "#fff" };
-              return (
-                <div className="ep-chat-form-fields" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  <div>
-                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>What's the occasion? *</label>
-                    <select value={entryGateForm.eventType} onChange={e => setEntryGateForm(p => ({ ...p, eventType: e.target.value }))}
-                      style={{ ...fieldStyle, color: entryGateForm.eventType ? "#2C1A0E" : "#9B7450" }}>
-                      <option value="">Select event type</option>
-                      {["Birthday","1st Birthday","Baby Shower","Newborn Welcome","Get-together","Anniversary","Housewarming","Graduation","Office Party","Pre Wedding","Corporate Event","Festival","Others"].map(t => <option key={t} value={t}>{t}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date</label>
-                    <input type="date" value={entryGateForm.date} min={today}
-                      onChange={e => { if (e.target.value && e.target.value < today) return; setEntryGateForm(p => ({ ...p, date: e.target.value })); }}
-                      style={{ ...fieldStyle, color: "#2C1A0E" }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Guest count *</label>
-                    <select value={entryGateForm.guests} onChange={e => setEntryGateForm(p => ({ ...p, guests: e.target.value }))}
-                      style={{ ...fieldStyle, color: entryGateForm.guests ? "#2C1A0E" : "#9B7450" }}>
-                      <option value="">Select guests</option>
-                      {["Under 25","25–50","50–100","100–150","150–200","200–300","300+"].map(g => <option key={g} value={g}>{g}</option>)}
-                    </select>
-                  </div>
-                  <div className="ep-chat-form-row" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 14px" }}>
-                    <div>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Budget</label>
-                      <select value={entryGateForm.budget} onChange={e => setEntryGateForm(p => ({ ...p, budget: e.target.value }))}
-                        style={{ ...fieldStyle, color: entryGateForm.budget ? "#2C1A0E" : "#9B7450" }}>
-                        <option value="">Select budget</option>
-                        {["Under ₹10K","₹10K–₹30K","₹30K–₹50K","₹50K–₹1L","Over ₹1L"].map(b => <option key={b} value={b}>{b}</option>)}
-                      </select>
-                    </div>
-                    <div>
-                      <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Location</label>
-                      <select value={entryGateForm.location} onChange={e => setEntryGateForm(p => ({ ...p, location: e.target.value }))}
-                        style={{ ...fieldStyle, color: entryGateForm.location ? "#2C1A0E" : "#9B7450" }}>
-                        <option value="">Select city</option>
-                        {["Delhi","Noida","Greater Noida","Ghaziabad"].map(l => <option key={l} value={l}>{l}</option>)}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-            <button
-              onClick={() => {
-                const { eventType: et, guests: g, date: d, budget: b, location: loc } = entryGateForm;
-                if (!et || !g) return; // occasion and guests are required
-                saveDiscoverySession({ eventType: et, guests: g, date: d, budget: b, location: loc });
-                setLocalFormData({ eventType: et, guests: g, date: d, budget: b, location: loc });
-                setShowEntryGate(false);
-              }}
-              style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-              Save & Continue →
-            </button>
-            <button onClick={() => setShowEntryGate(false)}
-              style={{ width: "100%", marginTop: 10, padding: "10px", borderRadius: 12, border: "none", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: font }}>
-              Skip for now
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Pre-chat event form — shown when "Request to Chat" is clicked without event details */}
       {chatFormVendor && (
@@ -851,9 +764,9 @@ const VendorList_ListingPage = ({
                   dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, token }));
                   dispatch(setBookingType("you-do-it"));
                 } else {
-                  // Discovery flow — persist to localStorage (24h TTL) for pre-fill on next vendor; do NOT touch Redux
-                  saveDiscoverySession({ eventType: et, guests: g, date: d, budget: b, location: loc });
-                  setLocalFormData({ eventType: et, guests: g, date: d, budget: b, location: loc });
+                  // Discovery flow — persist to localStorage (24h TTL) for pre-fill on next vendor; budget is per-vendor so not saved
+                  saveDiscoverySession({ eventType: et, guests: g, date: d, location: loc });
+                  setLocalFormData({ eventType: et, guests: g, date: d, location: loc });
                 }
                 setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
                 openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
