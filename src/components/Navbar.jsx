@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaSearch } from "react-icons/fa";
+import { FaBars, FaTimes, FaChevronDown, FaWhatsapp, FaSearch, FaInstagram, FaFacebookF } from "react-icons/fa";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
@@ -318,6 +318,13 @@ const Navbar = ({
       items: [
         { label: "Plan Your Event", href: "/booking" },
         ...(user?.isAdmin ? [{ label: "🏠 Home Wedding Planner", href: "/home-wedding-planner" }] : []),
+      ],
+    },
+    {
+      label: "Company",
+      items: [
+        { label: "About Us",   href: "/about" },
+        { label: "Contact Us", href: "/contact" },
       ],
     },
   ];
@@ -873,59 +880,57 @@ const Navbar = ({
             </div>
           ))}
 
-          {/* Mobile action row */}
-          <div style={{ display: "flex", gap: 10, marginTop: 20, alignItems: "center", flexWrap: "wrap" }}>
-            {/* Review & Pay — mobile */}
-            {(finalisedCount > 0 || ghCartCount > 0) && (
+          {/* Review & Pay — mobile only, shown when vendors finalised */}
+          {(finalisedCount > 0 || ghCartCount > 0) && (
+            <div style={{ marginTop: 16 }}>
               <a href="/booking/review" onClick={() => setMenuOpen(false)}
                 style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "9px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font }}>
                 Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : "🎁"}
               </a>
-            )}
-            {/* Wedding Stationeries — mobile */}
-            <a href="/stationery" onClick={() => setMenuOpen(false)}
-              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "9px 14px", borderRadius: 8, border: "1.5px solid rgba(122,58,30,0.3)", background: "rgba(122,58,30,0.06)", color: "#7A3A1E", fontSize: 13, fontWeight: 600, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font }}>
-              💒 Stationeries
-            </a>
-            <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
-              style={{ background: "#25D366", color: "#fff", width: 42, height: 42, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", flexShrink: 0, boxShadow: "0 2px 8px rgba(37,211,102,0.35)" }}>
-              <FaWhatsapp size={19} />
-            </a>
+            </div>
+          )}
 
-            {/* Auth section — mobile */}
+          {/* Dark footer — user info + social icons + logout — matches HamburgerNav drawer */}
+          <div style={{ marginTop: 20, borderRadius: 14, background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", padding: "16px 16px 14px" }}>
             {token && user ? (
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", background: "rgba(196,122,46,0.07)", borderRadius: 10 }}>
-                  <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 13, flexShrink: 0 }}>
-                    {user.name?.[0]?.toUpperCase() || "U"}
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", fontFamily: font }}>{user.name}</div>
-                    {user.email && <div style={{ fontSize: 11, color: "#9B7450" }}>{user.email}</div>}
-                  </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12, padding: "10px 12px", background: "rgba(255,255,255,0.07)", borderRadius: 10, border: "1px solid rgba(196,122,46,0.25)" }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14, flexShrink: 0 }}>
+                  {user.name?.[0]?.toUpperCase() || "U"}
                 </div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}
-                    style={{ flex: 1, padding: "9px 14px", borderRadius: 8, border: "1.5px solid rgba(139,69,19,0.2)", background: "#fff", color: "#6B3A1F", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
-                    My Dashboard
-                  </button>
-                  {user.isAdmin && (
-                    <button onClick={() => { navigate("/AdminDashboard"); setMenuOpen(false); }}
-                      style={{ flex: 1, padding: "9px 14px", borderRadius: 8, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
-                      Admin
-                    </button>
-                  )}
-                  <button onClick={() => { handleLogout(); setMenuOpen(false); }}
-                    style={{ flex: 1, padding: "9px 14px", borderRadius: 8, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer" }}>
-                    Logout
-                  </button>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{user.name}</div>
+                  {user.email && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.email}</div>}
                 </div>
+                <button onClick={() => { navigate("/dashboard"); setMenuOpen(false); }}
+                  style={{ flexShrink: 0, padding: "6px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.12)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  Dashboard
+                </button>
               </div>
             ) : (
-              <a href="/login" style={{ flex: 1, padding: "11px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
+              <a href="/login" onClick={() => setMenuOpen(false)} style={{ display: "block", padding: "10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", textAlign: "center", fontFamily: font, marginBottom: 12 }}>
                 Sign In
               </a>
             )}
+            {/* Social icons */}
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 12 }}>
+              {[
+                { Icon: FaInstagram, href: "https://www.instagram.com/justtendrit?igsh=ZzlxcDhqOXo0dzVu&utm_source=qr", bg: null },
+                { Icon: FaFacebookF, href: "https://www.facebook.com/share/1RENaQTgyj/?mibextid=wwXIfr", bg: null },
+                { Icon: FaWhatsapp, href: "https://wa.me/919211668427", bg: "#25d366", color: "#fff" },
+              ].map(({ Icon, href, bg, color }, i) => (
+                <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+                  style={{ width: 36, height: 36, borderRadius: "50%", background: bg || "rgba(196,122,46,0.15)", border: bg ? "none" : "1px solid rgba(196,122,46,0.3)", display: "flex", alignItems: "center", justifyContent: "center", color: color || "#C47A2E", fontSize: 15, textDecoration: "none" }}>
+                  <Icon />
+                </a>
+              ))}
+            </div>
+            {token && (
+              <button onClick={() => { handleLogout(); setMenuOpen(false); }}
+                style={{ width: "100%", padding: "9px", borderRadius: 10, border: "1.5px solid rgba(252,165,165,0.4)", background: "rgba(192,57,43,0.15)", color: "#fca5a5", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                Logout
+              </button>
+            )}
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", textAlign: "center", margin: "10px 0 0" }}>tendr.co.in · Delhi NCR</p>
           </div>
         </div>
       </div>

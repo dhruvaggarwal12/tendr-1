@@ -6,7 +6,7 @@ import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor, setFilters } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
-import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF } from "react-icons/fa";
+import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
 import CompareModal from "./CompareModal";
@@ -785,27 +785,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               </div>
             )}
 
-            {/* Wedding Stationeries + Gift Hampers quick-links — drawer (mobile) only */}
-            <div style={{ padding: "8px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "flex", flexDirection: "column", gap: 6 }}>
-              <button onClick={() => { close(); navigate("/stationery"); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(122,58,30,0.22)", background: "rgba(122,58,30,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(122,58,30,0.14)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(122,58,30,0.07)"; }}
-              >
-                <span style={{ fontSize: 17 }}>💒</span>
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#C47A2E" }}>Wedding Stationeries</span>
-                <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(196,122,46,0.6)" }}>→</span>
-              </button>
-              <button onClick={() => { close(); navigate("/gift-hampers-cakes"); }}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.07)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.14)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; }}
-              >
-                <span style={{ fontSize: 17 }}>🎁</span>
-                <span style={{ fontSize: 12.5, fontWeight: 700, color: "#CCAB4A" }}>Gift Hampers &amp; Cakes</span>
-                <span style={{ marginLeft: "auto", fontSize: 11, color: "rgba(204,171,74,0.6)" }}>→</span>
-              </button>
-            </div>
 
             {/* Nav sections */}
             <div style={{ padding: "12px 0", flex: 1 }}>
@@ -849,22 +828,18 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               {/* Social row */}
               <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 14 }}>
                 {[
-                  { Icon: FaInstagram, href: "https://www.instagram.com/justtendrit?igsh=ZzlxcDhqOXo0dzVu&utm_source=qr" },
-                  { Icon: FaFacebookF, href: "https://www.facebook.com/share/1RENaQTgyj/?mibextid=wwXIfr" },
-                  { Icon: FaChevronDown, href: "https://wa.me/919211668427", isWA: true },
-                ].map(({ Icon, href, isWA }, i) => (
+                  { Icon: FaInstagram, href: "https://www.instagram.com/justtendrit?igsh=ZzlxcDhqOXo0dzVu&utm_source=qr", bg: null },
+                  { Icon: FaFacebookF, href: "https://www.facebook.com/share/1RENaQTgyj/?mibextid=wwXIfr", bg: null },
+                  { Icon: FaWhatsapp, href: "https://wa.me/919211668427", bg: "#25d366", color: "#fff" },
+                ].map(({ Icon, href, bg, color }, i) => (
                   <a key={i} href={href} target="_blank" rel="noopener noreferrer"
-                    style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontSize: 14, textDecoration: "none", transition: "all 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#CCAB4A)"; e.currentTarget.style.color = "#fff"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.color = "#C47A2E"; }}
+                    style={{ width: 36, height: 36, borderRadius: "50%", background: bg || "rgba(196,122,46,0.08)", border: bg ? "none" : "1px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: color || "#C47A2E", fontSize: 14, textDecoration: "none", transition: "all 0.2s" }}
+                    onMouseEnter={e => { if (!bg) { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#CCAB4A)"; e.currentTarget.style.color = "#fff"; } }}
+                    onMouseLeave={e => { if (!bg) { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.color = "#C47A2E"; } }}
                   >
                     <Icon />
                   </a>
                 ))}
-                <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
-                  style={{ width: 36, height: 36, borderRadius: "50%", background: "#25d366", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 16, textDecoration: "none" }}>
-                  💬
-                </a>
               </div>
 
               {/* Logout if logged in */}
