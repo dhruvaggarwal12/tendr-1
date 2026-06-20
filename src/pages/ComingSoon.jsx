@@ -60,8 +60,9 @@ export default function ComingSoon() {
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
   const [showInstallGuide, setShowInstallGuide] = useState(false);
   const canvasRef = useRef(null);
-  const { canInstall, triggerInstall } = useInstallPrompt();
+  const { canInstall, triggerInstall, installed } = useInstallPrompt();
   const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || !!window.navigator.standalone;
 
   const handleInstall = async () => {
     if (canInstall) {
@@ -215,8 +216,8 @@ export default function ComingSoon() {
           </AnimatePresence>
         </motion.div>
 
-        {/* Install App section — only on tendr.co.in */}
-        {IS_PROD && (
+        {/* Install App section — only on tendr.co.in and not already installed */}
+        {IS_PROD && !isStandalone && !installed && (
           <motion.div
             initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }}
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "32px 28px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", marginBottom: 40 }}

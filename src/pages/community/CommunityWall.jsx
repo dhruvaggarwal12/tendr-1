@@ -12,7 +12,6 @@ const CATEGORIES = [
   { key: "polls", label: "Polls & Votes",    emoji: "📊" },
   { key: "ideas", label: "Ideas & Inspo",    emoji: "💡" },
   { key: "ask",   label: "Ask the Community",emoji: "🙋" },
-  { key: "story", label: "Share Your Story", emoji: "🎉" },
 ];
 
 const REACTIONS = [
@@ -120,7 +119,7 @@ export default function CommunityWall() {
           bookmarks: 0,
           isFromApi: true,
         }));
-        setPosts([...normalized, ...SEED_POSTS]);
+        setPosts([...normalized.filter(p => p.category !== "story"), ...SEED_POSTS]);
       })
       .catch(() => { setPosts(SEED_POSTS); })
       .finally(() => setPostsLoading(false));
