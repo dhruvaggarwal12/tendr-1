@@ -58,12 +58,14 @@ function authFetch(path, opts = {}) {
 
 const BLANK_FORM = { title: "", body: "", category: "story", event: "", city: "", authorName: "", pollOptionTexts: ["", ""] };
 
+const IS_PROD = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname);
+
 const SEED_POSTS = [
-  { id: "seed-ask-1", author: "Priya M.", avatar: "P", avatarColor: "#C47A2E", date: "18 Jun", category: "ask", title: "How far in advance should I book a decorator for a birthday party?", body: "", reactions: { agree: 3, facedThis: 5, greatIdea: 0, loveThis: 1 }, comments: 0, bookmarks: 0, isFromApi: false },
-  { id: "seed-ask-2", author: "Rahul S.", avatar: "R", avatarColor: "#7C3AED", date: "15 Jun", category: "ask", title: "What's a realistic budget for a 100-person get-together in Delhi NCR?", body: "", reactions: { agree: 7, facedThis: 4, greatIdea: 2, loveThis: 0 }, comments: 0, bookmarks: 0, isFromApi: false },
-  { id: "seed-ask-3", author: "Ananya K.", avatar: "A", avatarColor: "#059669", date: "12 Jun", category: "ask", title: "Is it worth hiring a professional photographer for a baby shower?", body: "", reactions: { agree: 2, facedThis: 1, greatIdea: 0, loveThis: 6 }, comments: 0, bookmarks: 0, isFromApi: false },
-  { id: "seed-ask-4", author: "Deepak V.", avatar: "D", avatarColor: "#DC2626", date: "9 Jun", category: "ask", title: "How do I handle last-minute vendor cancellations right before my event?", body: "", reactions: { agree: 11, facedThis: 9, greatIdea: 1, loveThis: 0 }, comments: 0, bookmarks: 0, isFromApi: false },
-  { id: "seed-ask-5", author: "Meera T.", avatar: "M", avatarColor: "#D97706", date: "5 Jun", category: "ask", title: "Any tips for managing seating arrangements for a large family gathering?", body: "", reactions: { agree: 4, facedThis: 6, greatIdea: 3, loveThis: 2 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-1", author: "Tendr Team", avatar: "T", avatarColor: "#C47A2E", date: "18 Jun", category: "ask", title: "How far in advance should I book a decorator for a birthday party?", body: "", reactions: { agree: 3, facedThis: 5, greatIdea: 0, loveThis: 1 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-2", author: "Tendr Team", avatar: "T", avatarColor: "#C47A2E", date: "15 Jun", category: "ask", title: "What's a realistic budget for a 100-person get-together in Delhi NCR?", body: "", reactions: { agree: 7, facedThis: 4, greatIdea: 2, loveThis: 0 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-3", author: "Tendr Team", avatar: "T", avatarColor: "#C47A2E", date: "12 Jun", category: "ask", title: "Is it worth hiring a professional photographer for a baby shower?", body: "", reactions: { agree: 2, facedThis: 1, greatIdea: 0, loveThis: 6 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-4", author: "Tendr Team", avatar: "T", avatarColor: "#C47A2E", date: "9 Jun", category: "ask", title: "How do I handle last-minute vendor cancellations right before my event?", body: "", reactions: { agree: 11, facedThis: 9, greatIdea: 1, loveThis: 0 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-5", author: "Tendr Team", avatar: "T", avatarColor: "#C47A2E", date: "5 Jun", category: "ask", title: "Any tips for managing seating arrangements for a large family gathering?", body: "", reactions: { agree: 4, facedThis: 6, greatIdea: 3, loveThis: 2 }, comments: 0, bookmarks: 0, isFromApi: false },
 ];
 
 export default function CommunityWall() {
@@ -338,8 +340,8 @@ export default function CommunityWall() {
         </div>
       </div>
 
-      {/* Install banner — only on tendr.co.in when PWA install is available */}
-      {canInstall && (
+      {/* Install banner — only on tendr.co.in */}
+      {IS_PROD && (
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "16px 20px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 14, padding: "12px 16px" }}>
             <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
@@ -347,7 +349,8 @@ export default function CommunityWall() {
               <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Add Tendr to your home screen</div>
               <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>Get the full community experience as an app — no app store needed.</div>
             </div>
-            <button onClick={triggerInstall}
+            <button
+              onClick={() => canInstall ? triggerInstall() : null}
               style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap" }}>
               Install →
             </button>
