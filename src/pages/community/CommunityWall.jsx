@@ -588,7 +588,7 @@ export default function CommunityWall() {
 
                 {/* Reactions */}
                 <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", borderTop: "1px solid rgba(196,122,46,0.08)", paddingTop: 14 }}>
-                  {REACTIONS.map(r => {
+                  {!hasPoll && REACTIONS.map(r => {
                     const isActive = myReaction === r.key;
                     const count = post.reactions[r.key] || 0;
                     return (
