@@ -57,6 +57,14 @@ function authFetch(path, opts = {}) {
 
 const BLANK_FORM = { title: "", body: "", category: "story", event: "", city: "", authorName: "", pollOptionTexts: ["", ""] };
 
+const SEED_POSTS = [
+  { id: "seed-ask-1", author: "Priya M.", avatar: "P", avatarColor: "#C47A2E", date: "18 Jun", category: "ask", title: "How far in advance should I book a decorator for a birthday party?", body: "", reactions: { agree: 3, facedThis: 5, greatIdea: 0, loveThis: 1 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-2", author: "Rahul S.", avatar: "R", avatarColor: "#7C3AED", date: "15 Jun", category: "ask", title: "What's a realistic budget for a 100-person get-together in Delhi NCR?", body: "", reactions: { agree: 7, facedThis: 4, greatIdea: 2, loveThis: 0 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-3", author: "Ananya K.", avatar: "A", avatarColor: "#059669", date: "12 Jun", category: "ask", title: "Is it worth hiring a professional photographer for a baby shower?", body: "", reactions: { agree: 2, facedThis: 1, greatIdea: 0, loveThis: 6 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-4", author: "Deepak V.", avatar: "D", avatarColor: "#DC2626", date: "9 Jun", category: "ask", title: "How do I handle last-minute vendor cancellations right before my event?", body: "", reactions: { agree: 11, facedThis: 9, greatIdea: 1, loveThis: 0 }, comments: 0, bookmarks: 0, isFromApi: false },
+  { id: "seed-ask-5", author: "Meera T.", avatar: "M", avatarColor: "#D97706", date: "5 Jun", category: "ask", title: "Any tips for managing seating arrangements for a large family gathering?", body: "", reactions: { agree: 4, facedThis: 6, greatIdea: 3, loveThis: 2 }, comments: 0, bookmarks: 0, isFromApi: false },
+];
+
 export default function CommunityWall() {
   const navigate = useNavigate();
   const { user } = useSelector(s => s.auth);
@@ -108,9 +116,9 @@ export default function CommunityWall() {
           bookmarks: 0,
           isFromApi: true,
         }));
-        setPosts(normalized);
+        setPosts([...normalized, ...SEED_POSTS]);
       })
-      .catch(() => {})
+      .catch(() => { setPosts(SEED_POSTS); })
       .finally(() => setPostsLoading(false));
   }, []);
 
