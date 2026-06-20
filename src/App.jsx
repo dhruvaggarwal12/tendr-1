@@ -68,10 +68,11 @@ function App() {
     setSplashDone(true);
   };
 
-  // On tendr.co.in — coming soon at / and community wall at /community
+  // On tendr.co.in — show splash then coming soon / community
   if (isLiveDomain) {
     return (
       <HelmetProvider>
+        {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <RouterProvider router={liveSiteRouter} />
       </HelmetProvider>
     );
