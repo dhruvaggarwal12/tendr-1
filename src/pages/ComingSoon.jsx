@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from "framer-motion";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaInstagram, FaFacebookF, FaLinkedinIn, FaRedditAlien } from "react-icons/fa";
 import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
+import { useInstallPrompt } from "../hooks/useInstallPrompt";
+
+const IS_PROD = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname);
 
 const LAUNCH_DATE = new Date("2026-07-01T00:00:00");
 
@@ -55,7 +58,18 @@ export default function ComingSoon() {
   const { days, hours, minutes, seconds } = useCountdown();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("idle"); // idle | sending | done | error
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
   const canvasRef = useRef(null);
+  const { canInstall, triggerInstall } = useInstallPrompt();
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+
+  const handleInstall = async () => {
+    if (canInstall) {
+      await triggerInstall();
+    } else {
+      setShowInstallGuide(true);
+    }
+  };
 
   // Particle canvas
   useEffect(() => {
@@ -200,6 +214,59 @@ export default function ComingSoon() {
             )}
           </AnimatePresence>
         </motion.div>
+
+        {/* Install App section — only on tendr.co.in */}
+        {IS_PROD && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.9 }}
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: "32px 28px", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", marginBottom: 40 }}
+          >
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "4px 14px", fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14 }}>
+              📲 Get the App
+            </div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: "#fff", margin: "0 0 8px" }}>Install Tendr on Your Phone</h2>
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", margin: "0 0 24px", lineHeight: 1.6 }}>
+              Add Tendr to your home screen for quick access — no app store needed.
+            </p>
+
+            <button
+              onClick={handleInstall}
+              style={{ width: "100%", padding: "14px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 20px rgba(196,122,46,0.4)", marginBottom: 12 }}
+            >
+              Add to Home Screen
+            </button>
+
+            <AnimatePresence>
+              {showInstallGuide && (
+                <motion.div
+                  key="guide"
+                  initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
+                  style={{ overflow: "hidden" }}
+                >
+                  <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 18, marginTop: 6, display: "flex", flexDirection: "column", gap: 12, textAlign: "left" }}>
+                    {(isIOS ? [
+                      "Tap the Share button at the bottom of Safari",
+                      "Scroll down and tap \"Add to Home Screen\"",
+                      "Tap \"Add\" — done!",
+                    ] : [
+                      "Tap the ⋮ menu in Chrome (top right)",
+                      "Tap \"Add to Home screen\"",
+                      "Tap \"Add\" — done!",
+                    ]).map((text, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                        <span style={{ width: 22, height: 22, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</span>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", lineHeight: 1.55, paddingTop: 2 }}>{text}</span>
+                      </div>
+                    ))}
+                    <button onClick={() => setShowInstallGuide(false)} style={{ marginTop: 4, alignSelf: "flex-start", padding: "6px 16px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.3)", background: "transparent", color: "rgba(255,255,255,0.4)", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                      Got it
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        )}
 
         {/* Community section */}
         <motion.div
