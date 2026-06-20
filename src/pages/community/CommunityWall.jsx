@@ -76,7 +76,8 @@ export default function CommunityWall() {
   const standalone = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname)
     || new URLSearchParams(window.location.search).get("standalone") === "1";
 
-  const { canInstall, triggerInstall } = useInstallPrompt();
+  const { canInstall, triggerInstall, installed } = useInstallPrompt();
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || !!window.navigator.standalone;
   const [posts, setPosts]               = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -340,8 +341,8 @@ export default function CommunityWall() {
         </div>
       </div>
 
-      {/* Install banner — only on tendr.co.in */}
-      {IS_PROD && (
+      {/* Install banner — only on tendr.co.in and not already installed */}
+      {IS_PROD && !isStandalone && !installed && (
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "16px 20px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 14, padding: "12px 16px" }}>
             <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
