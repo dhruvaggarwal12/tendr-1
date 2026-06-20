@@ -463,6 +463,11 @@ export default function VendorChatModal() {
   // ── Minimise animation state ─────────────────────────────────────────────────
   const [minimizing, setMinimizing] = useState(false);
 
+  // ── Rejection alternatives quick-view ────────────────────────────────────────
+  const [rejQvVendor, setRejQvVendor] = useState(null);
+  const [rejEventDetails, setRejEventDetails] = useState({});
+  const [rejChatLoading, setRejChatLoading] = useState(false);
+
   // ── Mobile detection ─────────────────────────────────────────────────────────
   const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth <= 640);
   useEffect(() => {
@@ -872,6 +877,48 @@ export default function VendorChatModal() {
           />
         );
       } catch { /* fall through */ }
+    }
+    // Rejection alternatives card
+    if (text.startsWith('[REJECTION_ALTERNATIVES:')) {
+      try {
+        const json = text.slice('[REJECTION_ALTERNATIVES:'.length, -1);
+        const payload = JSON.parse(json);
+        return (
+          <div style={{ fontFamily: font }}>
+            <div style={{ background: 'rgba(251,191,36,0.08)', border: '1.5px solid rgba(196,122,46,0.35)', borderRadius: 12, padding: '12px 14px', marginBottom: 10 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#92400e' }}>
+                This vendor is occupied on your date. Here are other {payload.serviceType} vendors that match your event:
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+              {payload.vendors.map((v) => {
+                const photo = (v.portfolioPhotos && v.portfolioPhotos[0]) || v.image || null;
+                const location = (v.locations && v.locations[0]) || v.city || '';
+                return (
+                  <div
+                    key={v._id}
+                    onClick={() => { setRejEventDetails(payload.eventDetails); setRejQvVendor(v); }}
+                    style={{ maxWidth: 280, minWidth: 220, borderRadius: 14, border: '1.5px solid rgba(196,122,46,0.2)', background: '#fff', cursor: 'pointer', padding: '0 0 12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}
+                  >
+                    {photo ? (
+                      <img src={photo} alt={v.name} style={{ width: '100%', height: 110, objectFit: 'cover', display: 'block', borderRadius: '10px 10px 0 0' }} />
+                    ) : (
+                      <div style={{ width: '100%', height: 110, background: 'rgba(196,122,46,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32, borderRadius: '10px 10px 0 0' }}>🎪</div>
+                    )}
+                    <div style={{ padding: '10px 12px 0' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#2C1A0E', marginBottom: 2 }}>{v.name}</div>
+                      <div style={{ fontSize: 11, color: '#C47A2E', fontWeight: 600, marginBottom: 2 }}>{v.serviceType}</div>
+                      {location && <div style={{ fontSize: 11, color: '#9B7450', marginBottom: 2 }}>📍 {location}</div>}
+                      {v.startingPrice > 0 && <div style={{ fontSize: 11, color: '#5a3a1a', marginBottom: 2 }}>From ₹{v.startingPrice.toLocaleString('en-IN')}</div>}
+                      <div style={{ fontSize: 11, color: '#15803d', fontWeight: 600 }}>⚡ Responds in 3 hrs</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      } catch { /* fall through to plain text */ }
     }
     return <span style={{ whiteSpace: "pre-wrap" }}>{text}</span>;
   };
@@ -1439,6 +1486,117 @@ export default function VendorChatModal() {
           </div>
         )}
       </div>
+
+      {/* ── Rejection Alternatives Quick-View Panel ── */}
+      {rejQvVendor && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setRejQvVendor(null)}
+            style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'rgba(0,0,0,0.45)' }}
+          />
+          {/* Panel */}
+          <div style={isMobile ? {
+            position: 'fixed', inset: 0, zIndex: 1401,
+            background: '#FFFCF5', display: 'flex', flexDirection: 'column',
+            fontFamily: font,
+          } : {
+            position: 'fixed', top: 0, right: 0, zIndex: 1401,
+            width: 400, height: '100dvh',
+            background: '#FFFCF5', display: 'flex', flexDirection: 'column',
+            boxShadow: '-8px 0 40px rgba(44,26,14,0.18)',
+            fontFamily: font,
+          }}>
+            {/* Close */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '14px 16px 0', flexShrink: 0 }}>
+              <button
+                onClick={() => setRejQvVendor(null)}
+                style={{ background: 'none', border: 'none', fontSize: 20, color: '#9B7450', cursor: 'pointer', padding: '4px 8px' }}
+              >✕</button>
+            </div>
+            {/* Cover photo */}
+            {(() => {
+              const coverPhoto = (rejQvVendor.portfolioPhotos && rejQvVendor.portfolioPhotos[0]) || rejQvVendor.image || null;
+              return coverPhoto ? (
+                <img src={coverPhoto} alt={rejQvVendor.name} style={{ width: '100%', height: 220, objectFit: 'cover', flexShrink: 0, display: 'block' }} />
+              ) : (
+                <div style={{ width: '100%', height: 220, background: 'rgba(196,122,46,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 52, flexShrink: 0 }}>🎪</div>
+              );
+            })()}
+            {/* Scrollable content */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: '18px 20px' }}>
+              <div style={{ fontSize: 20, fontWeight: 900, color: '#2C1A0E', marginBottom: 4 }}>{rejQvVendor.name}</div>
+              <div style={{ fontSize: 13, color: '#C47A2E', fontWeight: 700, marginBottom: 8 }}>{rejQvVendor.serviceType}</div>
+              {((rejQvVendor.locations && rejQvVendor.locations[0]) || rejQvVendor.city) && (
+                <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 6 }}>📍 {(rejQvVendor.locations && rejQvVendor.locations[0]) || rejQvVendor.city}</div>
+              )}
+              {rejQvVendor.yearsOfExperience > 0 && (
+                <div style={{ fontSize: 13, color: '#5a3a1a', marginBottom: 6 }}>🏆 {rejQvVendor.yearsOfExperience} yrs experience</div>
+              )}
+              {rejQvVendor.teamSize > 0 && (
+                <div style={{ fontSize: 13, color: '#5a3a1a', marginBottom: 6 }}>👥 Team of {rejQvVendor.teamSize}</div>
+              )}
+              {rejQvVendor.startingPrice > 0 && (
+                <div style={{ fontSize: 13, color: '#5a3a1a', fontWeight: 700, marginBottom: 6 }}>From ₹{rejQvVendor.startingPrice.toLocaleString('en-IN')}</div>
+              )}
+              {/* Portfolio thumbnails */}
+              {rejQvVendor.portfolioPhotos && rejQvVendor.portfolioPhotos.length > 1 && (
+                <div style={{ marginTop: 14 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: '#C47A2E', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Portfolio</div>
+                  <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, scrollbarWidth: 'none' }}>
+                    {rejQvVendor.portfolioPhotos.slice(1).map((url, i) => (
+                      <img key={i} src={url} alt="" style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, flexShrink: 0 }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            {/* Sticky action buttons */}
+            <div style={{ padding: '14px 20px', borderTop: '1px solid rgba(196,122,46,0.12)', display: 'flex', flexDirection: 'column', gap: 10, flexShrink: 0, background: '#FFFCF5' }}>
+              <button
+                onClick={() => window.open('/vendor/' + rejQvVendor._id, '_blank')}
+                style={{ padding: '12px', borderRadius: 12, border: '1.5px solid rgba(196,122,46,0.3)', background: '#fff', color: '#C47A2E', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}
+              >
+                View Full Profile →
+              </button>
+              <button
+                disabled={rejChatLoading}
+                onClick={async () => {
+                  const token = localStorage.getItem('tendr_token');
+                  if (!token) { setRejQvVendor(null); return; }
+                  setRejChatLoading(true);
+                  try {
+                    const res = await fetch(`${BASE_URL}/requests`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                      credentials: 'include',
+                      body: JSON.stringify({
+                        vendorId: rejQvVendor._id,
+                        serviceType: rejQvVendor.serviceType,
+                        eventDetails: rejEventDetails,
+                      }),
+                    });
+                    if (!res.ok) throw new Error('Request failed');
+                    const data = await res.json();
+                    const newConvoId = data.conversationId;
+                    setRejQvVendor(null);
+                    if (newConvoId && socketRef.current) {
+                      socketRef.current.emit('join_conversation', { conversationId: newConvoId });
+                      setConversationId(newConvoId);
+                    }
+                  } catch (err) {
+                    console.error('[rejChat] error:', err);
+                    setRejChatLoading(false);
+                  }
+                }}
+                style={{ padding: '12px', borderRadius: 12, border: 'none', background: rejChatLoading ? '#e5e7eb' : 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: rejChatLoading ? '#9ca3af' : '#fff', fontSize: 14, fontWeight: 700, cursor: rejChatLoading ? 'not-allowed' : 'pointer', fontFamily: font, boxShadow: rejChatLoading ? 'none' : '0 3px 12px rgba(196,122,46,0.3)' }}
+              >
+                {rejChatLoading ? 'Sending…' : '💬 Chat & Finalise'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Gallery Picker Modal */}
       {galleryOpen && (

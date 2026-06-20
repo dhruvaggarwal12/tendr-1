@@ -273,6 +273,7 @@ const sidebar_arr = [
   { label: "Wedding Stationery",    icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
   { label: "Rec. Intelligence",     icon: <span style={{ fontSize: 16 }}>📊</span>,  key: "Recommendations" },
   { label: "Community",             icon: <span style={{ fontSize: 16 }}>🌟</span>,  key: "Community" },
+  { label: "Event Day",             icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "EventDay" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -325,6 +326,99 @@ function RenderMessage({ text }) {
           </span>
         );
       })}
+    </div>
+  );
+}
+
+function EventDayTab({ token, BASE_URL }) {
+  const font = "'Outfit', sans-serif";
+  const [plans, setPlans]     = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [date, setDate]       = useState(new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(`${BASE_URL}/admin/event-day-messages?date=${date}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: 'include',
+    })
+      .then(r => r.json())
+      .then(d => setPlans(d.plans || []))
+      .catch(() => setPlans([]))
+      .finally(() => setLoading(false));
+  }, [date]);
+
+  const buildWAMessage = (plan) => {
+    const name = plan.customerName || 'there';
+    const event = plan.eventType || 'event';
+    return encodeURIComponent(
+      `Greetings of the day! 🎉\n\n` +
+      `The Tendr Team wishes you and your loved ones a wonderful ${event}! 🎊✨\n\n` +
+      `Today is the day — we hope everything comes together beautifully. Your vendors are ready, and we're rooting for you every step of the way! 🙌\n\n` +
+      `📸 Don't forget to capture some beautiful moments! Upload your favourite photos to Instagram and tag us — @justtendrit — we'd love to celebrate your ${event} with you.\n\n` +
+      `💛 Wishing you a joyful, stress-free celebration!\n\n` +
+      `— Team Tendr\n` +
+      `tendr.co.in`
+    );
+  };
+
+  return (
+    <div style={{ fontFamily: font }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
+        <div>
+          <h2 style={{ fontSize: 28, fontWeight: 900, color: '#2C1A0E', margin: 0 }}>🎉 Event Day Messages</h2>
+          <p style={{ fontSize: 13, color: '#9B7450', margin: '4px 0 0' }}>Send WhatsApp wishes to customers whose event is today.</p>
+        </div>
+        <input
+          type="date"
+          value={date}
+          onChange={e => setDate(e.target.value)}
+          style={{ marginLeft: 'auto', padding: '8px 14px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.3)', fontFamily: font, fontSize: 13, color: '#2C1A0E', background: '#fff', cursor: 'pointer' }}
+        />
+      </div>
+
+      {loading && <div style={{ textAlign: 'center', padding: '48px 0', color: '#9B7450' }}>Loading…</div>}
+
+      {!loading && plans.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '60px 0' }}>
+          <div style={{ fontSize: 40, marginBottom: 12 }}>🗓</div>
+          <p style={{ fontSize: 15, color: '#9B7450', fontWeight: 600 }}>No events scheduled for {date}.</p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {plans.map(plan => (
+          <div key={plan._id} style={{ background: '#fff', borderRadius: 16, border: '1.5px solid rgba(196,122,46,0.18)', padding: '20px 24px', boxShadow: '0 2px 10px rgba(0,0,0,0.04)', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: '#2C1A0E', marginBottom: 4 }}>{plan.customerName}</div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ fontSize: 12, background: 'rgba(196,122,46,0.1)', border: '1px solid rgba(196,122,46,0.25)', borderRadius: 100, padding: '2px 10px', color: '#6B3A1F', fontWeight: 700 }}>
+                  🎊 {plan.eventType}
+                </span>
+                {plan.eventName && (
+                  <span style={{ fontSize: 12, color: '#9B7450' }}>"{plan.eventName}"</span>
+                )}
+                <span style={{ fontSize: 12, color: '#9B7450' }}>📅 {plan.date}</span>
+                {plan.phone && (
+                  <span style={{ fontSize: 12, color: '#9B7450' }}>📞 {plan.phone}</span>
+                )}
+              </div>
+            </div>
+            {plan.phone ? (
+              <a
+                href={`https://wa.me/91${plan.phone.replace(/\D/g, '').slice(-10)}?text=${buildWAMessage(plan)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ flexShrink: 0, padding: '10px 22px', borderRadius: 12, border: 'none', background: '#25D366', color: '#fff', fontWeight: 700, fontSize: 14, fontFamily: font, textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: 8, boxShadow: '0 3px 12px rgba(37,211,102,0.3)', whiteSpace: 'nowrap' }}
+              >
+                <span style={{ fontSize: 18 }}>💬</span> Send WhatsApp
+              </a>
+            ) : (
+              <span style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>No phone on record</span>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -4685,6 +4779,13 @@ const AdminDashboard = () => {
 
         {/* ── Community Moderation ── */}
         {activeDropdown === "community" && <CommunityModerationTab />}
+
+        {/* ── Event Day Messages ── */}
+        {activeDropdown === "eventday" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+            <EventDayTab token={token} BASE_URL={BASE_URL} />
+          </div>
+        )}
 
       </div>
     </div>
