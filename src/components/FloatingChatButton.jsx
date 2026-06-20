@@ -362,7 +362,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               )}
             </div>
           )}
-          {/* Button stack — column-reverse so Saved is visual-bottom (closest to chat) */}
+          {/* Button stack — column, bottom-anchored: Review&Pay closest to chat FAB, Saved on top */}
           <div className="mobile-action-stack">
             {savedVendors.length > 0 && (
               <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
@@ -544,7 +544,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         }
         .vendor-cluster-desktop { display: none !important; }
         /* Action stack — above chat FAB on both desktop and mobile */
-        .mobile-action-stack { display: flex; position: fixed; bottom: 82px; right: 20px; z-index: 900; flex-direction: column-reverse; gap: 8px; align-items: flex-end; }
+        .mobile-action-stack { display: flex; position: fixed; bottom: 82px; right: 20px; z-index: 900; flex-direction: column; gap: 8px; align-items: flex-end; }
         .mobile-action-btn { display: flex !important; }
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }
