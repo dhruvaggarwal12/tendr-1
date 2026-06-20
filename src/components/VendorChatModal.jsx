@@ -1143,14 +1143,7 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Waiting state */}
-          {botDone && !approved && (
-            <div style={{ textAlign: "center", padding: "24px 24px 8px", color: "#9B7450", fontSize: 13, lineHeight: 1.7 }}>
-              Checking on vendor availability once again, thank you for your patience.
-            </div>
-          )}
-
-          {/* Q&A recap as chat bubbles — new chats only, shown below waiting state */}
+          {/* Q&A recap as chat bubbles — new chats only, shown below bot flow */}
           {botDone && !approved && !isExistingChat && botFlow.filter(s => botAnswers[s.key]).length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               {botFlow.filter(s => botAnswers[s.key]).map((step, i) => (
@@ -1171,6 +1164,42 @@ export default function VendorChatModal() {
                   </div>
                 );
               })()}
+            </div>
+          )}
+
+          {/* Waiting state — shown after recap, before approval */}
+          {botDone && !approved && (
+            <div style={{ alignSelf: "stretch", margin: "12px 4px 4px", display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ textAlign: "center", padding: "20px 16px 8px" }}>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.4, marginBottom: 6 }}>
+                  Checking on vendor availability once again,<br />thank you for your patience.
+                </div>
+              </div>
+              <div style={{ background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 14, padding: "14px 18px", textAlign: "left" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>📲 What happens next</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    { icon: "⏱️", text: "You'll hear back within 2 hours" },
+                    { icon: "💬", text: "We'll notify you on WhatsApp once vendor confirms" },
+                    { icon: "✅", text: "Once approved, open it from Active Chats at the bottom right" },
+                  ].map(({ icon, text }) => (
+                    <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                      <span style={{ flexShrink: 0 }}>{icon}</span>
+                      <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
+                <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Install the Tendr App</div>
+                  <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Get notified the moment {vendor?.name} responds.</div>
+                </div>
+                <a href="/install" style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap" }}>
+                  Install →
+                </a>
+              </div>
             </div>
           )}
 
