@@ -346,6 +346,8 @@ const VendorList_ListingPage = ({
                           {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
                           {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
                         </div>
+                        {/* Response time */}
+                        <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>⚡ Typically responds in 3 hrs</div>
                       </div>
 
                       {/* Action buttons — always visible on both mobile and desktop */}
