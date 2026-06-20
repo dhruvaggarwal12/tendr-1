@@ -219,7 +219,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
 
   const NAV_SECTIONS = [
-    { label: "Vendors", items: [
+    { label: "Vendors", hideOnMobile: true, items: [
       { label: "Browse Vendors",     href: "/listings", onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
       { label: "Top Rated Vendors",  href: "/top-rated/Photographer", activePaths: ["/top-rated/"] },
       { label: "Register as Vendor", href: "/vendor/register" },
@@ -230,7 +230,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
     ]},
-    { label: "Booking", items: [
+    { label: "Booking", hideOnMobile: true, items: [
       { label: "Plan Your Event", href: "/booking", activePaths: ["/booking", "/plan-event"] },
     ]},
     { label: "Tools", hideOnMobile: true, items: [

@@ -792,7 +792,7 @@ const Navbar = ({
         }}
       >
         <div style={{ padding: "8px 24px 24px" }}>
-          {NAV_ITEMS.map((group) => (
+          {NAV_ITEMS.filter(g => g.label === "Community" || g.label === "Company").map((group) => (
             <div key={group.label} style={{ marginBottom: 2 }}>
               <button
                 onClick={() =>
