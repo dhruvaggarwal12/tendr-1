@@ -336,10 +336,13 @@ const PaymentSuccessPage = () => {
           </div>
         </div>
 
-        {/* ── Referral code ── */}
+        {/* ── Referral code — unlocked after first paid booking ── */}
         {referralCode && (
           <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "18px 22px", marginBottom: 20 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>🎁 Your Referral Code</p>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>🎁 Your Referral Code</p>
+              <span style={{ fontSize: 10, fontWeight: 700, background: "#15803d", color: "#fff", borderRadius: 100, padding: "2px 8px", letterSpacing: "0.05em" }}>NOW ACTIVE</span>
+            </div>
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 6 }}>
               <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", letterSpacing: "0.1em", fontFamily: "'Courier New', monospace" }}>{referralCode}</span>
               <button onClick={() => { navigator.clipboard.writeText(referralCode); setReferralCopied(true); setTimeout(() => setReferralCopied(false), 2000); }}
@@ -348,7 +351,7 @@ const PaymentSuccessPage = () => {
               </button>
             </div>
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: 0, lineHeight: 1.55 }}>
-              Friends get {DISCOUNT_PERCENT}% off their first booking when they use your code.
+              Your code just unlocked — share it and friends get {DISCOUNT_PERCENT}% off their first booking.
             </p>
           </div>
         )}

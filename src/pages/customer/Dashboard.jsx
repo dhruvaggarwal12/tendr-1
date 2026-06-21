@@ -423,8 +423,8 @@ export default function CustomerDashboard() {
           </div>{/* end right column */}
         </div>
 
-        {/* Referral Card */}
-        {user?._id && (() => {
+        {/* Referral Card — only shown after user completes their first paid booking */}
+        {user?._id && plans.some(p => p.paymentStatus === 'paid') && (() => {
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
           const [copied, setCopied] = useState(false);
