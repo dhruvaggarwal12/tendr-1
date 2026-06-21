@@ -56,7 +56,7 @@ function authFetch(path, opts = {}) {
   });
 }
 
-const BLANK_FORM = { title: "", body: "", category: "story", event: "", city: "", authorName: "", pollOptionTexts: ["", ""] };
+const BLANK_FORM = { title: "", body: "", category: "story", event: "", city: "", authorName: "", pollOptionTexts: ["", ""], images: [] };
 
 const IS_PROD = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname);
 
@@ -81,12 +81,16 @@ export default function CommunityWall() {
   const [posts, setPosts]               = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
+  const [sortBy, setSortBy]             = useState("latest");
   const [myReactions, setMyReactions]   = useState(() => { try { return JSON.parse(localStorage.getItem("cw_my_reactions") || "{}"); } catch { return {}; } });
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
   const [adminTagOpen, setAdminTagOpen] = useState({});
   const [formOpen, setFormOpen]         = useState(false);
   const [form, setForm]                 = useState(BLANK_FORM);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const [shareCopied, setShareCopied]   = useState({});
+  const [highlightPost] = useState(() => new URLSearchParams(window.location.search).get("post"));
 
   // Poll state
   const [pollSelected, setPollSelected]     = useState({});
@@ -100,8 +104,14 @@ export default function CommunityWall() {
   const [commentPosting, setCommentPosting] = useState({});
 
   useEffect(() => {
+    if (!highlightPost || postsLoading) return;
+    const el = document.getElementById(`post-${highlightPost}`);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [highlightPost, postsLoading]);
+
+  useEffect(() => {
     setPostsLoading(true);
-    authFetch("/community/posts?limit=50")
+    authFetch("/community/posts?limit=100")
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         const normalized = (data?.posts || []).map(p => ({
@@ -127,9 +137,22 @@ export default function CommunityWall() {
       .finally(() => setPostsLoading(false));
   }, []);
 
-  const filtered = activeCategory === "all"
-    ? posts
-    : posts.filter(p => p.category === activeCategory);
+  const filtered = activeCategory === "all" ? posts : posts.filter(p => p.category === activeCategory);
+
+  const sorted = (() => {
+    const pinned = filtered.filter(p => p.isPinned);
+    const rest   = [...filtered.filter(p => !p.isPinned)];
+    if (sortBy === "top") {
+      rest.sort((a, b) => {
+        const aR = Object.values(a.reactions || {}).reduce((s, v) => s + (v || 0), 0);
+        const bR = Object.values(b.reactions || {}).reduce((s, v) => s + (v || 0), 0);
+        return bR - aR;
+      });
+    } else if (sortBy === "comments") {
+      rest.sort((a, b) => (b.comments || 0) - (a.comments || 0));
+    }
+    return [...pinned, ...rest];
+  })();
 
   // ── Reactions ──────────────────────────────────────────────────────────────
   const handleReaction = async (postId, reactionKey) => {
@@ -217,6 +240,7 @@ export default function CommunityWall() {
           category: form.category,
           title: form.title,
           body: form.body || (form.category === "polls" ? "Vote below" : ""),
+          images: form.images?.length ? form.images : undefined,
           tags: [],
           isAnonymous: false,
           authorName: !isLoggedIn ? (form.authorName.trim() || undefined) : undefined,
@@ -272,6 +296,54 @@ export default function CommunityWall() {
         });
       } catch {}
     }
+  };
+
+  // ── Image upload ───────────────────────────────────────────────────────────
+  const handleImageUpload = async (files) => {
+    if (!files?.length) return;
+    setUploadingImages(true);
+    const urls = [];
+    for (const file of Array.from(files).slice(0, 3 - (form.images?.length || 0))) {
+      const fd = new FormData();
+      fd.append("image", file);
+      try {
+        const res = await authFetch("/community/upload-image", { method: "POST", body: fd });
+        if (res.ok) { const { url } = await res.json(); urls.push(url); }
+      } catch {}
+    }
+    setForm(prev => ({ ...prev, images: [...(prev.images || []), ...urls] }));
+    setUploadingImages(false);
+  };
+
+  // ── Pin toggle ─────────────────────────────────────────────────────────────
+  const handleTogglePin = async (postId, post) => {
+    const newPinned = !post.isPinned;
+    setPosts(prev => prev.map(p => (p._id || p.id) === postId ? { ...p, isPinned: newPinned } : p));
+    if (post.isFromApi && post._id) {
+      try {
+        await authFetch(`/community/admin/posts/${post._id}/moderate`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isPinned: newPinned }),
+        });
+      } catch {}
+    }
+  };
+
+  // ── Share ──────────────────────────────────────────────────────────────────
+  const handleShare = async (post) => {
+    const postId = post._id || post.id;
+    const url = post.isFromApi
+      ? `${window.location.origin}/community?post=${postId}`
+      : `${window.location.origin}/community`;
+    const text = `"${post.title}" — Check this out on Tendr Community`;
+    if (navigator.share) {
+      try { await navigator.share({ title: "Tendr Community", text, url }); return; } catch {}
+    }
+    const waUrl = `https://wa.me/?text=${encodeURIComponent(text + " " + url)}`;
+    window.open(waUrl, "_blank", "noopener");
+    setShareCopied(prev => ({ ...prev, [postId]: true }));
+    setTimeout(() => setShareCopied(prev => ({ ...prev, [postId]: false })), 2000);
   };
 
   // ── Comments ───────────────────────────────────────────────────────────────
@@ -498,8 +570,34 @@ export default function CommunityWall() {
               </div>
             )}
 
+            {/* Image upload — story & ideas only */}
+            {(form.category === "story" || form.category === "ideas") && (
+              <div style={{ marginBottom: 18 }}>
+                <label style={labelSt}>Photos (optional · up to 3)</label>
+                {form.images?.length > 0 && (
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 8 }}>
+                    {form.images.map((url, i) => (
+                      <div key={i} style={{ position: "relative" }}>
+                        <img src={url} alt="" style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", display: "block" }} />
+                        <button type="button" onClick={() => setForm(p => ({ ...p, images: p.images.filter((_, idx) => idx !== i) }))}
+                          style={{ position: "absolute", top: -5, right: -5, width: 18, height: 18, borderRadius: "50%", background: "#9B7450", color: "#fff", border: "none", cursor: "pointer", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}>
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {(form.images?.length || 0) < 3 && (
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, border: "1.5px dashed rgba(196,122,46,0.35)", color: uploadingImages ? "#9B7450" : "#C47A2E", fontSize: 12, fontWeight: 600, cursor: uploadingImages ? "wait" : "pointer", fontFamily: font }}>
+                    <input type="file" accept="image/*" multiple onChange={e => handleImageUpload(e.target.files)} style={{ display: "none" }} disabled={uploadingImages} />
+                    {uploadingImages ? "Uploading…" : "📷 Add Photos"}
+                  </label>
+                )}
+              </div>
+            )}
+
             <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-              <button type="submit" style={{ padding: "11px 28px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+              <button type="submit" disabled={uploadingImages} style={{ padding: "11px 28px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: uploadingImages ? "wait" : "pointer", fontFamily: font, opacity: uploadingImages ? 0.7 : 1 }}>
                 Post to Wall
               </button>
               <button type="button" onClick={() => setFormOpen(false)} style={{ padding: "11px 20px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
@@ -527,6 +625,21 @@ export default function CommunityWall() {
         </div>
       </div>
 
+      {/* Sort bar */}
+      <div style={{ maxWidth: 900, margin: "16px auto 0", padding: "0 20px", display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 12, color: "#9B7450", fontWeight: 600, marginRight: 4 }}>Sort:</span>
+        {[
+          { key: "latest",   label: "Latest"       },
+          { key: "top",      label: "Most Reacted" },
+          { key: "comments", label: "Most Discussed"},
+        ].map(s => (
+          <button key={s.key} onClick={() => setSortBy(s.key)}
+            style={{ padding: "6px 14px", borderRadius: 100, border: sortBy === s.key ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.2)", background: sortBy === s.key ? "rgba(196,122,46,0.1)" : "#fff", color: sortBy === s.key ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: sortBy === s.key ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+            {s.label}
+          </button>
+        ))}
+      </div>
+
       {/* Feed */}
       <div style={{ maxWidth: 900, margin: "24px auto 80px", padding: "0 20px" }}>
         {postsLoading && (
@@ -536,7 +649,7 @@ export default function CommunityWall() {
             <p style={{ fontSize: 14, fontWeight: 600 }}>Loading community posts…</p>
           </div>
         )}
-        {!postsLoading && filtered.length === 0 && (
+        {!postsLoading && sorted.length === 0 && (
           <div style={{ textAlign: "center", padding: "60px 24px", color: "#9B7450" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🌟</div>
             <p style={{ fontSize: 15, fontWeight: 600 }}>No posts here yet. Be the first to share!</p>
@@ -544,7 +657,7 @@ export default function CommunityWall() {
         )}
 
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          {filtered.map(post => {
+          {sorted.map(post => {
             const postId = post._id || post.id;
             const cc = catColor[post.category] || catColor.story;
             const ci = catInfo(post.category);
@@ -553,12 +666,20 @@ export default function CommunityWall() {
             const hasPoll = post.pollOptions?.length > 0;
             const pollResult = pollResults[postId];
             const pollSel = pollSelected[postId];
+            const isHighlighted = highlightPost === postId;
 
             return (
-              <div key={postId}
-                style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", padding: "24px 28px", boxShadow: "0 2px 16px rgba(196,122,46,0.05)", transition: "box-shadow 0.2s" }}
+              <div key={postId} id={`post-${postId}`}
+                style={{ background: "#fff", borderRadius: 20, border: isHighlighted ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.12)", padding: "24px 28px", boxShadow: isHighlighted ? "0 0 0 4px rgba(196,122,46,0.15)" : "0 2px 16px rgba(196,122,46,0.05)", transition: "box-shadow 0.2s" }}
                 onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 28px rgba(196,122,46,0.12)"}
-                onMouseLeave={e => e.currentTarget.style.boxShadow = "0 2px 16px rgba(196,122,46,0.05)"}>
+                onMouseLeave={e => e.currentTarget.style.boxShadow = isHighlighted ? "0 0 0 4px rgba(196,122,46,0.15)" : "0 2px 16px rgba(196,122,46,0.05)"}>
+
+                {/* Pinned indicator */}
+                {post.isPinned && (
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#C47A2E", marginBottom: 12 }}>
+                    📌 Pinned
+                  </div>
+                )}
 
                 {/* Header */}
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
@@ -587,6 +708,15 @@ export default function CommunityWall() {
                 {/* Body — not shown for polls */}
                 {post.body && !hasPoll && (
                   <p style={{ fontSize: 14, color: "#4A2810", lineHeight: 1.7, margin: "0 0 14px" }}>{post.body}</p>
+                )}
+
+                {/* Post images */}
+                {post.images?.length > 0 && (
+                  <div style={{ display: "grid", gridTemplateColumns: `repeat(${Math.min(post.images.length, 3)}, 1fr)`, gap: 8, marginBottom: 14 }}>
+                    {post.images.slice(0, 3).map((url, i) => (
+                      <img key={i} src={url} alt="" loading="lazy" style={{ width: "100%", borderRadius: 10, objectFit: "cover", aspectRatio: "4/3", cursor: "pointer" }} onClick={() => window.open(url, "_blank", "noopener")} />
+                    ))}
+                  </div>
                 )}
 
                 {/* ── Poll UI ── */}
@@ -691,6 +821,10 @@ export default function CommunityWall() {
                       style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${isBookmarked ? "#CCAB4A" : "rgba(196,122,46,0.15)"}`, background: isBookmarked ? "rgba(204,171,74,0.12)" : "transparent", color: isBookmarked ? "#CCAB4A" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
                       {isBookmarked ? "🔖" : "🏷️"} {post.bookmarks}
                     </button>
+                    <button onClick={() => handleShare(post)}
+                      style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${shareCopied[postId] ? "#15803d" : "rgba(196,122,46,0.15)"}`, background: shareCopied[postId] ? "rgba(21,128,61,0.08)" : "transparent", color: shareCopied[postId] ? "#15803d" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+                      {shareCopied[postId] ? "✓ Shared" : "↗ Share"}
+                    </button>
                   </div>
                 </div>
 
@@ -744,13 +878,19 @@ export default function CommunityWall() {
                   </div>
                 )}
 
-                {/* Admin: tag management */}
+                {/* Admin: tag management + pin */}
                 {isAdmin && (
                   <div style={{ marginTop: 12, paddingTop: 10, borderTop: "1px dashed rgba(196,122,46,0.15)" }}>
+                    <div style={{ display: "flex", gap: 6, marginBottom: adminTagOpen[postId] ? 8 : 0, flexWrap: "wrap" }}>
                     <button onClick={() => setAdminTagOpen(prev => ({ ...prev, [postId]: !prev[postId] }))}
                       style={{ fontSize: 11, color: "#9B7450", background: "none", border: "1px dashed rgba(196,122,46,0.3)", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>
                       🏷️ {adminTagOpen[postId] ? "Close" : (post.adminTags?.length > 0 ? `Edit Tags (${post.adminTags.length})` : "Add Tag")}
                     </button>
+                    <button onClick={() => handleTogglePin(postId, post)}
+                      style={{ fontSize: 11, color: post.isPinned ? "#C47A2E" : "#9B7450", background: post.isPinned ? "rgba(196,122,46,0.08)" : "none", border: `1px dashed ${post.isPinned ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontFamily: font, fontWeight: post.isPinned ? 700 : 600 }}>
+                      📌 {post.isPinned ? "Unpin" : "Pin to top"}
+                    </button>
+                    </div>
                     {adminTagOpen[postId] && (
                       <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
                         {ADMIN_TAGS.map(tag => {
