@@ -323,6 +323,8 @@ const BookingReviewPage = () => {
     : normalCount === 1 ? 100   // only 1 normal vendor
     : 200;                      // 2+ normals, no top-rated = ₹200
   const platformFee   = vendorEntries.length > 0 ? topRatedFee + normalFee : 0;
+  // Any referral code (customer or vendor) waives the platform fee entirely
+  const effectivePlatformFee = appliedCode ? 0 : platformFee;
 
   // Accordion: first vendor open by default
   const [openKeys, setOpenKeys] = useState(() =>
@@ -868,7 +870,10 @@ const BookingReviewPage = () => {
                         {topRatedCount > 0 ? "⭐ Top Rated" : "Standard"}
                       </span>
                     </span>
-                    <span style={{ fontWeight: 700, color: "#2C1A0E" }}>{formatINR(platformFee)}</span>
+                    {appliedCode
+                      ? <span style={{ fontWeight: 700, color: "#15803d", display: "flex", alignItems: "center", gap: 4 }}><s style={{ color: "#9B7450", fontWeight: 400 }}>{formatINR(platformFee)}</s> FREE</span>
+                      : <span style={{ fontWeight: 700, color: "#2C1A0E" }}>{formatINR(platformFee)}</span>
+                    }
                   </div>
                 )}
 
@@ -877,7 +882,7 @@ const BookingReviewPage = () => {
                   <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
                   <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
                     {(confirmedTotal + ghTotal) > 0
-                      ? formatINR((appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal)) + platformFee)
+                      ? formatINR((appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal)) + effectivePlatformFee)
                       : "—"}
                   </span>
                 </div>
@@ -1110,11 +1115,11 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
                           const vendorGhTotal = confirmedTotal + ghTotal;
-                          const finalAmount = (appliedCode ? applyDiscount(vendorGhTotal).finalTotal : vendorGhTotal) + platformFee;
+                          const finalAmount = (appliedCode ? applyDiscount(vendorGhTotal).finalTotal : vendorGhTotal) + effectivePlatformFee;
                           // Only pass the selected vendor per category to payment, not the full array
                           const selectedVendorsForPayment = {};
                           vendorEntries.forEach(([cat, v]) => { if (v) selectedVendorsForPayment[cat] = v; });
-                          navigate("/booking/payment", { state: { finalisedVendors: selectedVendorsForPayment, formData, totalAmount: finalAmount, platformFee, referralCode: appliedCode || null, eventPlanId } });
+                          navigate("/booking/payment", { state: { finalisedVendors: selectedVendorsForPayment, formData, totalAmount: finalAmount, platformFee: effectivePlatformFee, referralCode: appliedCode || null, eventPlanId } });
                         }}
                         style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
                       >

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
+import { generateVendorReferralCode, formatCode } from "../../utils/referral";
 import AddVendorModal from "./AddVendorModal";
 import StationeryAdminTab from "./StationeryAdminTab";
 import RecommendationIntelligenceTab from "./RecommendationIntelligenceTab";
@@ -2292,6 +2293,28 @@ const AdminDashboard = () => {
                           <span style={{ fontSize: 11, color: "#9B7450" }}>Team: {v.teamSize}</span>
                         </div>
                       </div>
+
+                      {/* Vendor Referral Code */}
+                      {(() => {
+                        const vCode = formatCode(generateVendorReferralCode(v._id));
+                        const [copied, setCopied] = useState(false);
+                        return (
+                          <div onClick={e => e.stopPropagation()} style={{ marginTop: 12, borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                            <div>
+                              <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginBottom: 2 }}>
+                                REFERRAL CODE · <span style={{ color: "#C47A2E" }}>{v.vendorReferralCount || 0} uses</span>
+                              </div>
+                              <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", fontFamily: "'Courier New', monospace", letterSpacing: "0.05em" }}>{vCode}</div>
+                            </div>
+                            <button
+                              onClick={() => { navigator.clipboard.writeText(vCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
+                              style={{ padding: "5px 12px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: copied ? "rgba(196,122,46,0.12)" : "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0 }}
+                            >
+                              {copied ? "✓ Copied" : "Copy"}
+                            </button>
+                          </div>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>
