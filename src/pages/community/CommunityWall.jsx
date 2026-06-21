@@ -60,6 +60,17 @@ const BLANK_FORM = { title: "", body: "", category: "story", event: "", city: ""
 
 const IS_PROD = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname);
 
+// Persistent guest ID — one per browser, survives page reloads
+function getGuestId() {
+  let id = localStorage.getItem("cw_guest_id");
+  if (!id) {
+    id = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    try { localStorage.setItem("cw_guest_id", id); } catch {}
+  }
+  return id;
+}
+const GUEST_ID = getGuestId();
+
 const SEED_POSTS = [
   { id: "seed-ask-1", author: "Tendr Team", avatar: "T", avatarColor: "#C47A2E", date: "18 Jun", category: "ask", title: "How far in advance should I book a decorator for a birthday party?", body: "", reactions: { agree: 3, facedThis: 5, greatIdea: 0, loveThis: 1 }, comments: 0, bookmarks: 0, isFromApi: false },
   { id: "seed-ask-2", author: "Tendr Team", avatar: "T", avatarColor: "#C47A2E", date: "15 Jun", category: "ask", title: "What's a realistic budget for a 100-person get-together in Delhi NCR?", body: "", reactions: { agree: 7, facedThis: 4, greatIdea: 2, loveThis: 0 }, comments: 0, bookmarks: 0, isFromApi: false },
@@ -197,7 +208,7 @@ export default function CommunityWall() {
         await authFetch(`/community/posts/${post._id}/react`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reaction: next || reactionKey }),
+          body: JSON.stringify({ reaction: next || reactionKey, guestId: !isLoggedIn ? GUEST_ID : undefined }),
         });
       } catch {}
     }
@@ -227,7 +238,7 @@ export default function CommunityWall() {
         const res = await authFetch(`/community/posts/${post._id}/poll-vote`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ optionIndex: idx }),
+          body: JSON.stringify({ optionIndex: idx, guestId: !isLoggedIn ? GUEST_ID : undefined }),
         });
         if (res.ok) {
           const data = await res.json();
