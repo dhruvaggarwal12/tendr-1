@@ -132,6 +132,25 @@ export default function CommunityWall() {
           isFromApi: true,
         }));
         setPosts([...normalized, ...SEED_POSTS]);
+
+        // For logged-in users, seed reaction/vote state from server (authoritative)
+        if (isLoggedIn) {
+          const serverReactions = {};
+          const serverVotes = {};
+          for (const p of (data?.posts || [])) {
+            if (p.userReaction) serverReactions[p._id] = p.userReaction;
+            if (p.userPollVote != null) {
+              serverVotes[p._id] = {
+                userVote: p.userPollVote,
+                pollOptions: p.pollOptions || [],
+              };
+            }
+          }
+          setMyReactions(serverReactions);
+          if (Object.keys(serverVotes).length > 0) {
+            setPollResults(prev => ({ ...prev, ...serverVotes }));
+          }
+        }
       })
       .catch(() => { setPosts(SEED_POSTS); })
       .finally(() => setPostsLoading(false));
@@ -725,10 +744,11 @@ export default function CommunityWall() {
                     {pollResult ? (
                       /* Results after voting */
                       (() => {
-                        const total = pollResult.pollOptions.reduce((s, o) => s + (o.votes || 0), 0);
+                        const resultOpts = pollResult.pollOptions?.length ? pollResult.pollOptions : (post.pollOptions || []);
+                        const total = resultOpts.reduce((s, o) => s + (o.votes || 0), 0);
                         return (
                           <>
-                            {pollResult.pollOptions.map((opt, idx) => {
+                            {resultOpts.map((opt, idx) => {
                               const pct = total > 0 ? Math.round((opt.votes / total) * 100) : 0;
                               const isChosen = pollResult.userVote === idx;
                               return (
