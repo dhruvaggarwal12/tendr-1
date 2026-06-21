@@ -81,7 +81,7 @@ export default function CommunityWall() {
   const [posts, setPosts]               = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
-  const [myReactions, setMyReactions]   = useState({});
+  const [myReactions, setMyReactions]   = useState(() => { try { return JSON.parse(localStorage.getItem("cw_my_reactions") || "{}"); } catch { return {}; } });
   const [bookmarkedIds, setBookmarkedIds] = useState(new Set());
   const [adminTagOpen, setAdminTagOpen] = useState({});
   const [formOpen, setFormOpen]         = useState(false);
@@ -90,7 +90,7 @@ export default function CommunityWall() {
 
   // Poll state
   const [pollSelected, setPollSelected]     = useState({});
-  const [pollResults, setPollResults]       = useState({});
+  const [pollResults, setPollResults]       = useState(() => { try { const v = JSON.parse(localStorage.getItem("cw_poll_votes") || "{}"); return Object.fromEntries(Object.entries(v).map(([id, idx]) => [id, { userVote: idx }])); } catch { return {}; } });
   const [pollSubmitting, setPollSubmitting] = useState({});
 
   // Comment state
@@ -136,7 +136,11 @@ export default function CommunityWall() {
     const current = myReactions[postId] || null;
     const next = current === reactionKey ? null : reactionKey;
 
-    setMyReactions(prev => ({ ...prev, [postId]: next }));
+    const updated = { ...myReactions, [postId]: next };
+    if (next === null) delete updated[postId];
+    setMyReactions(updated);
+    try { localStorage.setItem("cw_my_reactions", JSON.stringify(updated)); } catch {}
+
     setPosts(prev => prev.map(p => {
       if ((p._id || p.id) !== postId) return p;
       const r = { ...p.reactions };
@@ -162,8 +166,19 @@ export default function CommunityWall() {
     const idx = pollSelected[postId];
     if (idx == null) return;
 
+    // Block duplicate vote for guests (localStorage check)
+    if (!isLoggedIn && pollResults[postId]?.userVote != null) return;
+
     setPollSubmitting(prev => ({ ...prev, [postId]: true }));
     const post = posts.find(p => (p._id || p.id) === postId);
+
+    const persistPollVote = (id, optionIdx) => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("cw_poll_votes") || "{}");
+        stored[id] = optionIdx;
+        localStorage.setItem("cw_poll_votes", JSON.stringify(stored));
+      } catch {}
+    };
 
     if (post?.isFromApi && post?._id) {
       try {
@@ -175,6 +190,7 @@ export default function CommunityWall() {
         if (res.ok) {
           const data = await res.json();
           setPollResults(prev => ({ ...prev, [postId]: { pollOptions: data.pollOptions, userVote: data.userVote } }));
+          persistPollVote(postId, idx);
           setPollSubmitting(prev => ({ ...prev, [postId]: false }));
           return;
         }
@@ -185,6 +201,7 @@ export default function CommunityWall() {
     const opts = post?.pollOptions || [];
     const updated = opts.map((o, i) => ({ ...o, votes: i === idx ? (o.votes || 0) + 1 : (o.votes || 0) }));
     setPollResults(prev => ({ ...prev, [postId]: { pollOptions: updated, userVote: idx } }));
+    persistPollVote(postId, idx);
     setPollSubmitting(prev => ({ ...prev, [postId]: false }));
   };
 
@@ -389,7 +406,9 @@ export default function CommunityWall() {
       {formOpen && (
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "28px 20px 0" }}>
           <form onSubmit={handleSubmit} style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.2)", padding: "28px", boxShadow: "0 6px 30px rgba(196,122,46,0.08)" }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 20px" }}>Share Your Experience</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 20px" }}>
+              {{ ask: "Ask the Community", polls: "Create a Poll", ideas: "Share an Idea", story: "Share Your Story" }[form.category] || "Share Your Experience"}
+            </h3>
 
             {(!isLoggedIn) && (
               <div style={{ marginBottom: 14 }}>
@@ -398,31 +417,52 @@ export default function CommunityWall() {
               </div>
             )}
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 14 }}>
-              <div>
-                <label style={labelSt}>Category *</label>
-                <select required value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))} style={inputSt}>
-                  {CATEGORIES.filter(c => c.key !== "all").map(c => (
-                    <option key={c.key} value={c.key}>{c.emoji} {c.label}</option>
-                  ))}
-                </select>
-              </div>
-              <div>
+            {/* Category selector — always shown */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={labelSt}>Category *</label>
+              <select required value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value, title: "", body: "", event: "" }))} style={inputSt}>
+                {CATEGORIES.filter(c => c.key !== "all").map(c => (
+                  <option key={c.key} value={c.key}>{c.emoji} {c.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Event Type — only for story and ideas */}
+            {(form.category === "story" || form.category === "ideas") && (
+              <div style={{ marginBottom: 14 }}>
                 <label style={labelSt}>Event Type</label>
                 <input type="text" placeholder="e.g. Birthday Party" value={form.event} onChange={e => setForm(p => ({ ...p, event: e.target.value }))} style={inputSt} />
               </div>
-            </div>
+            )}
 
-            <div style={{ marginBottom: 14 }}>
-              <label style={labelSt}>{form.category === "polls" ? "Poll Question *" : "Title *"}</label>
-              <input required type="text" placeholder={form.category === "polls" ? "e.g. Which venue style do you prefer?" : "Give your story a headline..."} value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} style={inputSt} />
-            </div>
-
-            {form.category !== "polls" && (
+            {/* Ask: single question textarea */}
+            {form.category === "ask" && (
               <div style={{ marginBottom: 14 }}>
-                <label style={labelSt}>Your Story *</label>
-                <textarea required rows={4} placeholder="Tell us what happened, what surprised you, or what you'd suggest..." value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} style={{ ...inputSt, resize: "vertical", lineHeight: 1.6 }} />
+                <label style={labelSt}>Your Question *</label>
+                <textarea required rows={3} placeholder="e.g. How far in advance should I book a decorator for a birthday?" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} style={{ ...inputSt, resize: "vertical", lineHeight: 1.6 }} />
               </div>
+            )}
+
+            {/* Poll: question title */}
+            {form.category === "polls" && (
+              <div style={{ marginBottom: 14 }}>
+                <label style={labelSt}>Poll Question *</label>
+                <input required type="text" placeholder="e.g. Which venue style do you prefer?" value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} style={inputSt} />
+              </div>
+            )}
+
+            {/* Ideas & Story: title + body */}
+            {(form.category === "ideas" || form.category === "story") && (
+              <>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelSt}>Title *</label>
+                  <input required type="text" placeholder="Give your post a headline..." value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))} style={inputSt} />
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <label style={labelSt}>{form.category === "story" ? "Your Story *" : "Your Idea *"}</label>
+                  <textarea required rows={4} placeholder={form.category === "story" ? "Tell us what happened, what surprised you, or what you'd suggest..." : "Share your idea or tip with the community..."} value={form.body} onChange={e => setForm(p => ({ ...p, body: e.target.value }))} style={{ ...inputSt, resize: "vertical", lineHeight: 1.6 }} />
+                </div>
+              </>
             )}
 
             {/* Poll options editor */}
