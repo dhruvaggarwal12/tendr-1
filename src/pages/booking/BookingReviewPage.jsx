@@ -314,6 +314,16 @@ const BookingReviewPage = () => {
   const allConfirmed = vendorEntries.every(([, v]) => isConfirmed(v));
   const anyPriceUnset = vendorEntries.some(([, v]) => getPrice(v) === null);
 
+  // Platform fee: ₹250 per top-rated tier + ₹100 per normal tier (capped)
+  const topRatedCount = vendorEntries.filter(([, v]) => v?.isTopRated).length;
+  const normalCount   = vendorEntries.filter(([, v]) => !v?.isTopRated).length;
+  const topRatedFee   = topRatedCount > 0 ? 250 : 0;
+  const normalFee     = normalCount === 0 ? 0
+    : topRatedCount > 0 ? 100   // any normals alongside top-rated = flat ₹100
+    : normalCount === 1 ? 100   // only 1 normal vendor
+    : 200;                      // 2+ normals, no top-rated = ₹200
+  const platformFee   = vendorEntries.length > 0 ? topRatedFee + normalFee : 0;
+
   // Accordion: first vendor open by default
   const [openKeys, setOpenKeys] = useState(() =>
     vendorEntries.length > 0 ? { [vendorEntries[0][0]]: true } : {}
@@ -360,6 +370,7 @@ const BookingReviewPage = () => {
           additionalInfo: formData.additionalInfo || "",
           selectedServices: selectedVendors,
           finalisedVendors: finalisedVendorIds,
+          platformFee,
         }),
       });
       const data = await res.json();
@@ -848,12 +859,25 @@ const BookingReviewPage = () => {
                   </div>
                 )}
 
+                {/* Platform Fee */}
+                {platformFee > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a" }}>
+                    <span style={{ display: "flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
+                      Platform Fee
+                      <span style={{ fontSize: 10, background: topRatedCount > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.12)", color: topRatedCount > 0 ? "#fff" : "#6B3A1F", borderRadius: 100, padding: "1px 7px", fontWeight: 700, letterSpacing: "0.04em" }}>
+                        {topRatedCount > 0 ? "⭐ Top Rated" : "Standard"}
+                      </span>
+                    </span>
+                    <span style={{ fontWeight: 700, color: "#2C1A0E" }}>{formatINR(platformFee)}</span>
+                  </div>
+                )}
+
                 {/* Grand Total */}
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
                   <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
                   <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
                     {(confirmedTotal + ghTotal) > 0
-                      ? formatINR(appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal))
+                      ? formatINR((appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal)) + platformFee)
                       : "—"}
                   </span>
                 </div>
@@ -1085,12 +1109,12 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
-                          const grandTotal = confirmedTotal + ghTotal;
-                          const finalAmount = appliedCode ? applyDiscount(grandTotal).finalTotal : grandTotal;
+                          const vendorGhTotal = confirmedTotal + ghTotal;
+                          const finalAmount = (appliedCode ? applyDiscount(vendorGhTotal).finalTotal : vendorGhTotal) + platformFee;
                           // Only pass the selected vendor per category to payment, not the full array
                           const selectedVendorsForPayment = {};
                           vendorEntries.forEach(([cat, v]) => { if (v) selectedVendorsForPayment[cat] = v; });
-                          navigate("/booking/payment", { state: { finalisedVendors: selectedVendorsForPayment, formData, totalAmount: finalAmount, referralCode: appliedCode || null, eventPlanId } });
+                          navigate("/booking/payment", { state: { finalisedVendors: selectedVendorsForPayment, formData, totalAmount: finalAmount, platformFee, referralCode: appliedCode || null, eventPlanId } });
                         }}
                         style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
                       >

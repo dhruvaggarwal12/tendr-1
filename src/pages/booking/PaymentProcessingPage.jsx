@@ -11,7 +11,7 @@ const font = "'Outfit', sans-serif";
 const PaymentProcessingPage = () => {
   const { state }  = useLocation();
   const navigate   = useNavigate();
-  const { orderId, amount, eventPlanId, formData, paymentMethod } = state || {};
+  const { orderId, amount, eventPlanId, formData, paymentMethod, platformFee } = state || {};
   const [status, setStatus] = useState("loading"); // loading | opening | notlive | success | failed
   const token = localStorage.getItem("tendr_token");
   const isTestMode = import.meta.env.VITE_RAZORPAY_KEY_ID?.startsWith("rzp_test_");
@@ -61,6 +61,7 @@ const PaymentProcessingPage = () => {
               razorpaySignature: response.razorpay_signature,
               eventPlanId,
               amount,
+              platformFee: platformFee || 0,
             }),
           });
           const data = await res.json();
