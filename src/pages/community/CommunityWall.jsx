@@ -278,6 +278,25 @@ export default function CommunityWall() {
     if (!text || commentPosting[postId]) return;
     setCommentPosting(prev => ({ ...prev, [postId]: true }));
     const guestName = !isLoggedIn ? (commentTexts[postId]?.name?.trim() || undefined) : undefined;
+
+    // Seed posts have no real DB id — add comment locally without API call
+    if (!isApiPost) {
+      const localComment = {
+        _id: `local-${Date.now()}`,
+        authorName: guestName || "You",
+        text,
+        createdAt: new Date().toISOString(),
+      };
+      setCommentData(prev => ({
+        ...prev,
+        [postId]: { loading: false, comments: [localComment, ...(prev[postId]?.comments || [])] },
+      }));
+      setCommentTexts(prev => ({ ...prev, [postId]: { ...prev[postId], text: "" } }));
+      setPosts(prev => prev.map(p => (p._id || p.id) === postId ? { ...p, comments: (p.comments || 0) + 1 } : p));
+      setCommentPosting(prev => ({ ...prev, [postId]: false }));
+      return;
+    }
+
     try {
       const res = await authFetch(`/community/posts/${postId}/comments`, {
         method: "POST",
