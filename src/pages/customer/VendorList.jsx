@@ -228,6 +228,7 @@ const VendorList = () => {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
       ...(currentCatBudget && { maxPrice: currentCatBudget }),
+      ...(date && { date }),
       ...((corporateOnly || formEventType === "Corporate Event") && { hasCorporateExperience: true }),
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
@@ -244,6 +245,7 @@ const VendorList = () => {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
       ...(currentCatBudget && { maxPrice: currentCatBudget }),
+      ...(date && { date }),
       ...((corporateOnly || formEventType === "Corporate Event") && { hasCorporateExperience: true }),
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
@@ -260,6 +262,7 @@ const VendorList = () => {
       ...(locationType && { location: locationType }),
       ...(serviceType && { serviceTypes: [serviceType] }),
       ...(currentCatBudget && { maxPrice: currentCatBudget }),
+      ...(date && { date }),
       sortBy,
       sortOrder,
       page: pageNum,
@@ -289,6 +292,7 @@ const VendorList = () => {
     const payload = {
       location: locationType,
       serviceTypes: [serviceType],
+      ...(date && { date }),
       sortBy,
       sortOrder,
       page: 1,
