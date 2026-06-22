@@ -6,7 +6,7 @@ import ListingsNav from "../../components/ListingsNav";
 import CompareModal from "../../components/CompareModal";
 import HamburgerNav from "../../components/HamburgerNav";
 
-import { Star, Hourglass, CheckCircle2, MapPin, Users } from "lucide-react";
+import { Star, CheckCircle2, MapPin, Users } from "lucide-react";
 
 import main1 from "../../assets/vendor-details/main-1.avif";
 import main2 from "../../assets/vendor-details/main-2.avif";
@@ -14,7 +14,7 @@ import main3 from "../../assets/vendor-details/main-3.avif";
 import main4 from "../../assets/vendor-details/main-4.avif";
 import main5 from "../../assets/vendor-details/main-5.avif";
 
-import { getVendorById } from "../../apis/vendorApi";
+import { getVendorById, getVendors } from "../../apis/vendorApi";
 import VendorAvailabilityCalendar from "../../components/VendorAvailabilityCalendar";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import { useSelector, useDispatch } from "react-redux";
@@ -48,6 +48,7 @@ const VendorDetailsPage = () => {
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
   const [hasActiveChatSave, setHasActiveChatSave] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
+  const [similarVendors, setSimilarVendors] = useState([]);
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -146,6 +147,16 @@ const VendorDetailsPage = () => {
     fetchVendorData();
   }, [id, vendorFromState]);
 
+  useEffect(() => {
+    if (!vendor?.serviceType || !vendor?._id) return;
+    getVendors({ serviceTypes: [vendor.serviceType], limit: 5 })
+      .then(data => {
+        const others = (data?.vendors || []).filter(v => v._id !== vendor._id).slice(0, 4);
+        setSimilarVendors(others);
+      })
+      .catch(() => {});
+  }, [vendor?.serviceType, vendor?._id]);
+
 
   // ===== Helpers =====
   const rating = useMemo(() => {
@@ -160,14 +171,14 @@ const VendorDetailsPage = () => {
     ));
   }, [rating]);
 
-  const coverImages = useMemo(() => {
-    const apiPhotos = (vendor?.portfolioPhotos || []).filter(Boolean);
-    const first = apiPhotos[0] || main1;
-    const smalls = apiPhotos.slice(1, 5);
-    while (smalls.length < 4) {
-      smalls.push([main2, main3, main4, main5][smalls.length]);
-    }
-    return { first, smalls };
+  const galleryItems = useMemo(() => {
+    const photos = (vendor?.portfolioPhotos || []).filter(Boolean);
+    const videos = (vendor?.portfolioVideos || []).filter(Boolean);
+    const photoItems = photos.length
+      ? photos.map(url => ({ type: 'image', url }))
+      : [main1, main2, main3, main4, main5].map(url => ({ type: 'image', url }));
+    const videoItems = videos.map(url => ({ type: 'video', url }));
+    return [...photoItems, ...videoItems];
   }, [vendor]);
 
   const galleryRef = useRef(null);
@@ -460,17 +471,30 @@ const VendorDetailsPage = () => {
             }}
           >
             <style>{`#vendor-gallery::-webkit-scrollbar { display: none; }`}</style>
-            {[coverImages.first, ...coverImages.smalls].map((img, idx) => (
+            {galleryItems.map((item, idx) => (
               <div
                 key={idx}
-                style={{ flex: "0 0 auto", width: "calc(55% - 4px)", minWidth: 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start" }}
+                style={{ flex: "0 0 auto", width: "calc(55% - 4px)", minWidth: 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start", position: "relative" }}
               >
-                <img
-                  src={img}
-                  alt={`${vendor.name} photo ${idx + 1}`}
-                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                  onLoad={() => setIsLoaded(true)}
-                />
+                {item.type === 'video' ? (
+                  <>
+                    <video
+                      src={item.url}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                      controls
+                      preload="metadata"
+                      playsInline
+                    />
+                    <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>VIDEO</div>
+                  </>
+                ) : (
+                  <img
+                    src={item.url}
+                    alt={`${vendor.name} photo ${idx + 1}`}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    onLoad={() => setIsLoaded(true)}
+                  />
+                )}
               </div>
             ))}
           </div>
@@ -519,9 +543,6 @@ const VendorDetailsPage = () => {
                   <Users size={12} /> Handles up to {maxConcurrentEvents} events at once
                 </span>
               )}
-              <span style={{ fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 100, background: "#f0f9ff", color: "#0369a1", border: "1px solid #bae6fd", display: "flex", alignItems: "center", gap: 5 }}>
-                <Hourglass size={12} /> Responds within 1 hour
-              </span>
               {vendor?.rankingScore > 0 && (
                 <span style={{ fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 100, background: "#f5f3ff", color: "#7c3aed", border: "1px solid #ddd6fe", display: "flex", alignItems: "center", gap: 5 }}>
                   📊 Score: {vendor.rankingScore}/100
@@ -613,19 +634,6 @@ const VendorDetailsPage = () => {
                 ))}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                {[
-                  { label: "Years Active", value: yearsOfExperience ? yearsOfExperience + " years" : "—", icon: "📅" },
-                  { label: "Based In",     value: [primaryCity, stateName].filter(Boolean).join(", ") || "—", icon: "📍" },
-                  { label: "Team Size",    value: teamSize ? teamSize + " members" : "—", icon: "👥" },
-                  { label: "Events Done",  value: totalEventsCompleted ? totalEventsCompleted + "+" : "—", icon: "🎉" },
-                ].map(({ label, value, icon }) => (
-                  <div key={label} style={{ background: "#FFFCF5", borderRadius: 12, padding: "14px 16px", border: "1.5px solid rgba(196,122,46,0.12)" }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 4 }}>{icon} {label}</div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{value}</div>
-                  </div>
-                ))}
-              </div>
             </div>
 
             {/* ── Service Areas + Map ── */}
@@ -648,6 +656,16 @@ const VendorDetailsPage = () => {
                 </div>
               </>
             )}
+            {/* ── Availability Calendar ── */}
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 24 }} />
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px", fontFamily: font }}>📅 Availability</h2>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px" }}>
+                2 slots per day — Morning (10AM–2PM) and Evening (4PM–9PM)
+              </p>
+              <VendorAvailabilityCalendar vendorId={vendor._id} isVendorView={false} token={token} />
+            </div>
+
             {/* ── Questions to Ask This Vendor ── */}
             {(() => {
               const QA = {
@@ -743,9 +761,9 @@ const VendorDetailsPage = () => {
                 <div style={{ marginTop: 18, paddingTop: 16, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                   {[
                     isPhoneVerified && { icon: "✅", text: "Phone number verified" },
-                    { icon: "⚡", text: "Responds within 1 hour" },
                     totalEventsCompleted > 0 && { icon: "🎉", text: `${totalEventsCompleted} events completed` },
                     maxConcurrentEvents && { icon: "📅", text: `Takes up to ${maxConcurrentEvents} events at once` },
+                    vendor?.createdAt && { icon: "🗓️", text: `On Tendr since ${new Date(vendor.createdAt).getFullYear()}` },
                   ].filter(Boolean).map((fact, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 12, color: "#7A5535", padding: "4px 0" }}>
                       <span>{fact.icon}</span> {fact.text}
@@ -758,20 +776,6 @@ const VendorDetailsPage = () => {
         </div>
       </div>
 
-      {/* ── Availability Calendar ── */}
-      {vendor && (
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 20px 40px" }}>
-          <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.18)", padding: "24px 28px" }}>
-            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", fontFamily: "'Outfit', sans-serif" }}>
-              📅 Availability
-            </h2>
-            <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 20px", fontFamily: "'Outfit', sans-serif" }}>
-              2 slots per day — Morning (10AM–2PM) and Evening (4PM–9PM)
-            </p>
-            <VendorAvailabilityCalendar vendorId={vendor._id} isVendorView={false} token={token} />
-          </div>
-        </div>
-      )}
 
       {/* Selected Vendors Modal (same as VendorList) */}
       <CompareModal
@@ -955,6 +959,51 @@ const VendorDetailsPage = () => {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Similar Vendors ── */}
+      {similarVendors.length > 0 && (
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 48px", fontFamily: font }}>
+          <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginBottom: 28 }} />
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 18px" }}>
+            Other {serviceType}s You Might Like
+          </h2>
+          <div style={{ display: "flex", gap: 16, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none" }}>
+            {similarVendors.map(sv => {
+              const svRating = Number(sv.avgReviewScore);
+              return (
+                <a
+                  key={sv._id}
+                  href={`/vendor/${sv._id}`}
+                  style={{ flex: "0 0 220px", textDecoration: "none", borderRadius: 16, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.14)", background: "#FFFCF5", boxShadow: "0 2px 12px rgba(0,0,0,0.05)", transition: "transform 0.2s, box-shadow 0.2s" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(139,69,19,0.12)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)"; }}
+                >
+                  <div style={{ height: 140, overflow: "hidden", position: "relative" }}>
+                    <img
+                      src={sv.portfolioPhotos?.[0] || sv.image || main1}
+                      alt={sv.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
+                    {sv.isTopRated && (
+                      <div style={{ position: "absolute", top: 8, left: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "2px 8px", fontSize: 9.5, fontWeight: 800 }}>⭐ Top Rated</div>
+                    )}
+                  </div>
+                  <div style={{ padding: "12px 14px" }}>
+                    <div style={{ fontSize: 13.5, fontWeight: 800, color: "#2C1A0E", marginBottom: 3, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{sv.name}</div>
+                    <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 5 }}>
+                      📍 {sv.address?.city || sv.locations?.[0] || ""}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      {svRating > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E" }}>★ {svRating.toFixed(1)}</span>}
+                      {sv.price && <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>₹{Number(sv.price).toLocaleString("en-IN")}</span>}
+                    </div>
+                  </div>
+                </a>
+              );
+            })}
           </div>
         </div>
       )}

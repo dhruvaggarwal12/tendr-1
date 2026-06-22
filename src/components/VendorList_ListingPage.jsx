@@ -120,8 +120,10 @@ const VendorList_ListingPage = ({
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
   const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "" });
-  const [savedTick, setSavedTick] = useState(0); // re-render trigger after save toggle
-  const [shareCopiedId, setShareCopiedId] = useState(null); // tracks which vendor URL was copied
+  const [savedTick, setSavedTick] = useState(0);
+  const [shareCopiedId, setShareCopiedId] = useState(null);
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+  const [qvAvailability, setQvAvailability] = useState(null); // null=unknown, true=available, false=unavailable
 
   const handleToggleSave = useCallback((vendor) => {
     toggleSaved(vendor);
@@ -141,6 +143,22 @@ const VendorList_ListingPage = ({
       setQuickViewVendor(vendor);
     }
   }, [vendors]);
+
+  // Reset photo index and fetch availability when quick view opens
+  useEffect(() => {
+    setActivePhotoIdx(0);
+    if (!quickViewVendor || !date || !requireFormBeforeChat) { setQvAvailability(null); return; }
+    const month = date.slice(0, 7);
+    fetch(`${BASE_URL}/vendors/${quickViewVendor._id}/availability?month=${month}`)
+      .then(r => r.ok ? r.json() : { availability: {} })
+      .then(data => {
+        const avail = data?.availability || {};
+        const day = avail[date];
+        if (!day) { setQvAvailability(true); return; }
+        setQvAvailability(day.slot1 === 'available' || day.slot2 === 'available');
+      })
+      .catch(() => setQvAvailability(null));
+  }, [quickViewVendor?._id, date, requireFormBeforeChat]);
 
   // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
   useEffect(() => {
@@ -346,8 +364,6 @@ const VendorList_ListingPage = ({
                           {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
                           {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
                         </div>
-                        {/* Response time */}
-                        <div style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>⚡ Typically responds in 3 hrs</div>
                       </div>
 
                       {/* Action buttons — always visible on both mobile and desktop */}
@@ -430,23 +446,56 @@ const VendorList_ListingPage = ({
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
-            {/* Cover image */}
-            <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
-              <img
-                src={quickViewVendor.portfolioPhotos?.[0] || quickViewVendor.image || FALLBACK_IMG}
-                alt={quickViewVendor.name}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-              <button
-                onClick={closePanel}
-                style={{ position: "absolute", top: 12, right: 12, width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >✕</button>
-              {(quickViewVendor.avgReviewScore ?? quickViewVendor.rating) != null && (
-                <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>
-                  ⭐ {Number(quickViewVendor.avgReviewScore ?? quickViewVendor.rating).toFixed(1)}
+            {/* Cover image with browsing arrows */}
+            {(() => {
+              const photos = (quickViewVendor.portfolioPhotos || []).filter(Boolean);
+              const imgSrc = photos.length
+                ? photos[activePhotoIdx] || photos[0]
+                : (quickViewVendor.image || FALLBACK_IMG);
+              const total = photos.length || 1;
+              const qvRating = quickViewVendor.avgReviewScore ?? quickViewVendor.rating;
+              return (
+                <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
+                  <img src={imgSrc} alt={quickViewVendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  {/* Close + nav hint */}
+                  <div style={{ position: "absolute", top: 12, right: 12, display: "flex", alignItems: "center", gap: 6 }}>
+                    {vendors.length > 1 && (
+                      <div style={{ background: "rgba(0,0,0,0.5)", color: "rgba(255,255,255,0.75)", borderRadius: 20, padding: "3px 9px", fontSize: 10, fontWeight: 600, letterSpacing: "0.04em" }}>← → vendors</div>
+                    )}
+                    <button onClick={closePanel}
+                      style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                  </div>
+                  {/* Rating badge */}
+                  {qvRating != null && (
+                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>
+                      ⭐ {Number(qvRating).toFixed(1)}
+                    </div>
+                  )}
+                  {/* Photo prev/next arrows */}
+                  {total > 1 && (
+                    <>
+                      <button onClick={() => setActivePhotoIdx(i => (i - 1 + total) % total)}
+                        style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
+                      <button onClick={() => setActivePhotoIdx(i => (i + 1) % total)}
+                        style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", width: 30, height: 30, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
+                      {/* Dot indicators */}
+                      <div style={{ position: "absolute", bottom: 8, left: 0, right: 0, display: "flex", justifyContent: "center", gap: 4 }}>
+                        {photos.slice(0, 6).map((_, i) => (
+                          <div key={i} onClick={() => setActivePhotoIdx(i)}
+                            style={{ width: i === activePhotoIdx ? 14 : 5, height: 5, borderRadius: 100, background: i === activePhotoIdx ? "#fff" : "rgba(255,255,255,0.5)", cursor: "pointer", transition: "all 0.2s" }} />
+                        ))}
+                      </div>
+                    </>
+                  )}
+                  {/* Availability badge — only for discovery flow with a date */}
+                  {date && requireFormBeforeChat && qvAvailability !== null && (
+                    <div style={{ position: "absolute", bottom: total > 1 ? 24 : 8, left: 12, background: qvAvailability ? "rgba(21,128,61,0.9)" : "rgba(185,28,28,0.9)", color: "#fff", borderRadius: 100, padding: "4px 11px", fontSize: 11, fontWeight: 700, backdropFilter: "blur(4px)" }}>
+                      {qvAvailability ? "✓ Available on your date" : "⚠ No slots on your date"}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              );
+            })()}
 
             {/* Content */}
             <div style={{ padding: "22px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
@@ -460,6 +509,13 @@ const VendorList_ListingPage = ({
                 </span>
               </div>
 
+              {/* Starting price */}
+              {(quickViewVendor.price || quickViewVendor.startingPrice) && (
+                <div style={{ display: "inline-flex", alignItems: "baseline", gap: 4, marginBottom: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 10, padding: "8px 16px" }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting from</span>
+                  <span style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>₹{Number(quickViewVendor.price || quickViewVendor.startingPrice).toLocaleString("en-IN")}</span>
+                </div>
+              )}
               {/* Stats pills */}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
                 {[
