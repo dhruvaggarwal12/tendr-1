@@ -305,13 +305,8 @@ const Navbar = ({
     },
     {
       label: "Community",
-      items: [
-        { label: "🎉 Celebration Hub", href: "/celebration-hub" },
-        ...(user?.isAdmin ? [
-          { label: "🌟 Community Wall", href: "/community" },
-          { label: "📅 Plan by Occasion", onClick: () => window.open("/occasions", "_blank") },
-        ] : []),
-      ],
+      directLink: true,
+      href: "/community",
     },
     {
       label: "Booking",
@@ -401,6 +396,7 @@ const Navbar = ({
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
+          gap: 32,
           transition: "height 0.3s ease",
         }}
       >
@@ -477,6 +473,33 @@ const Navbar = ({
           {/* Primary nav links */}
           <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
             {NAV_ITEMS.map((group) => (
+              group.directLink ? (
+                <div key={group.label} style={{ position: "relative" }}>
+                  <a
+                    href={group.href}
+                    style={{
+                      background: "transparent",
+                      color: "#3B2F2F",
+                      fontSize: 15,
+                      fontWeight: 600,
+                      letterSpacing: "0.02em",
+                      padding: "8px 15px",
+                      borderRadius: 8,
+                      display: "flex",
+                      alignItems: "center",
+                      textDecoration: "none",
+                      transition: "all 0.2s",
+                      fontFamily: font,
+                      whiteSpace: "nowrap",
+                      lineHeight: 1,
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(139,69,19,0.07)"; e.currentTarget.style.color = "#8B4513"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#3B2F2F"; }}
+                  >
+                    {group.label}
+                  </a>
+                </div>
+              ) : (
               <div
                 key={group.label}
                 style={{ position: "relative" }}
@@ -609,6 +632,7 @@ const Navbar = ({
                   )}
                 </div>
               </div>
+              )
             ))}
           </div>
 
@@ -793,6 +817,27 @@ const Navbar = ({
       >
         <div style={{ padding: "8px 24px 24px" }}>
           {NAV_ITEMS.filter(g => g.label === "Community" || g.label === "Company").map((group) => (
+            group.directLink ? (
+              <div key={group.label} style={{ marginBottom: 2 }}>
+                <a
+                  href={group.href}
+                  onClick={() => setMenuOpen(false)}
+                  style={{
+                    display: "block",
+                    padding: "14px 2px",
+                    color: "#3B2F2F",
+                    fontSize: 16,
+                    fontWeight: 600,
+                    letterSpacing: "0.02em",
+                    fontFamily: font,
+                    textDecoration: "none",
+                    borderBottom: "1px solid rgba(139,69,19,0.07)",
+                  }}
+                >
+                  {group.label}
+                </a>
+              </div>
+            ) : (
             <div key={group.label} style={{ marginBottom: 2 }}>
               <button
                 onClick={() =>
@@ -878,6 +923,7 @@ const Navbar = ({
                 )}
               </div>
             </div>
+            )
           ))}
 
           {/* Review & Pay — mobile only, shown when vendors finalised */}
