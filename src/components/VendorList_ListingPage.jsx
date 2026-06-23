@@ -44,6 +44,7 @@ export const extendDiscoverySessionTTL = () => {
 
 const chatSaveKey = (id) => `tendr:chat_req:${id}`;
 const getChatSave = (id) => {
+  if (!id) return null;
   try {
     const s = JSON.parse(localStorage.getItem(chatSaveKey(id)) || "null");
     if (!s) return null;
@@ -66,6 +67,7 @@ const getChatSave = (id) => {
   } catch { return null; }
 };
 const setChatSave = (id, data) => {
+  if (!id) return;
   try { localStorage.setItem(chatSaveKey(id), JSON.stringify({ ...data, submittedAt: Date.now() })); } catch {}
 };
 
@@ -706,18 +708,18 @@ const VendorList_ListingPage = ({
                             return String(cvid) === String(vendor._id);
                           });
                           if (convo) {
-                            openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved });
+                            openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: saveToCompare });
                             return;
                           }
                         }
                       } catch {}
                       // Fallback if conversation not found yet
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: saveToCompare });
                       return;
                     }
                     // Planning flow → always skip form, use Redux data directly
                     setChatSave(vendor._id, { eventType: formData.eventType || "", date: formData.date || "", guests: String(formData.guests || ""), budget: formData.budget || "" });
-                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: saveToCompare });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
@@ -827,7 +829,7 @@ const VendorList_ListingPage = ({
                   setLocalFormData({ eventType: et, guests: g, date: d, location: loc });
                 }
                 setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
-                openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType });
+                openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
                 setChatFormVendor(null);
               }}
               style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>

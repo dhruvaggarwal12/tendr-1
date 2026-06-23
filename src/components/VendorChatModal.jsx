@@ -509,8 +509,8 @@ export default function VendorChatModal() {
     setConfirmedPkg(null);
     setPkgExpanded({});
 
-    // Auto-add to Compare Vendors whenever a real vendor chat opens
-    if (chatState?.vendor?._id && chatState.vendor._id !== "concierge" && !chatState.isConcierge) {
+    // Auto-add to Compare Vendors in planning flow only (not browse/search/top-rated)
+    if (chatState?.vendor?._id && chatState.vendor._id !== "concierge" && !chatState.isConcierge && chatState.vendor.addToCompare !== false) {
       dispatch(addVendorToCompare(chatState.vendor));
     }
   }, [chatState?.vendor?._id, chatState?.isExisting]);
@@ -585,7 +585,7 @@ export default function VendorChatModal() {
       setConversationId(_id);
       setCtxConvoId(_id);
       if (isApproved) setApproved(true);
-      dispatch(addVendorToCompare(vendor));
+      if (vendor?.addToCompare !== false) dispatch(addVendorToCompare(vendor));
 
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
         summarySentRef.current = true;
@@ -801,7 +801,7 @@ export default function VendorChatModal() {
     if (!text) return null;
     if (text.startsWith("[img:")) {
       const src = text.replace("[img:", "").replace(/\]$/, "");
-      return <img src={src} alt="sent" style={{ maxWidth: "100%", maxHeight: 240, borderRadius: 8, display: "block", objectFit: "contain" }} />;
+      return <img src={src} alt="sent" onLoad={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })} style={{ maxWidth: "100%", maxHeight: 240, borderRadius: 8, display: "block", objectFit: "contain" }} />;
     }
     if (text.startsWith("[FINALISED]")) {
       return <span style={{ color: "#15803d", fontWeight: 600 }}>{text.replace("[FINALISED] ", "")}</span>;
@@ -1033,12 +1033,6 @@ export default function VendorChatModal() {
                 </span>
               ))}
             </div>
-          </div>
-        )}
-        {formLines.length === 0 && (
-          <div style={{ background: "rgba(196,122,46,0.04)", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "8px 18px", flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12, color: "#9B7450" }}>ℹ️ No event details yet —</span>
-            <a href="/booking" style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700, textDecoration: "none" }} onClick={closeChat}>fill the event form first →</a>
           </div>
         )}
 
@@ -1308,7 +1302,7 @@ export default function VendorChatModal() {
           )}
 
           {/* Chat messages */}
-          {(approved || isExistingChat) && messages.map((msg, i) => (
+          {messages.length > 0 && messages.map((msg, i) => (
             <div key={i} style={{ alignSelf: msg.sender === "user" ? "flex-end" : msg.sender === "system" ? "center" : "flex-start", maxWidth: "80%" }}>
               {msg.sender === "system" ? (
                 <div style={{ fontSize: 12, color: "#9B7450", textAlign: "center", padding: "2px 8px" }}>{renderMsg(msg.text)}</div>
