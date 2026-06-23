@@ -65,7 +65,7 @@ const VendorDetailsPage = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { openVendorChat } = useChatOverlay();
+  const { openVendorChat, chatState } = useChatOverlay();
   const { id } = useParams();
   const location = useLocation();
 
@@ -381,8 +381,8 @@ const VendorDetailsPage = () => {
       <BasicSpeedDial />
       <HamburgerNav active="Browse" />
 
-      {/* Sticky bottom CTA — mobile only */}
-      {vendor && (
+      {/* Sticky bottom CTA — mobile only, hidden while chat modal is open */}
+      {vendor && !chatState?.vendor && (
         <div className="vendor-sticky-cta" style={{ display: "none" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             {/* Icon-only: Share */}

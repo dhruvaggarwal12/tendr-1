@@ -179,6 +179,8 @@ const EventPlanning = () => {
   const [showYouDoItBudget, setShowYouDoItBudget] = useState(false);
   const [menuLoading, setMenuLoading] = useState(false);
   const [liveSlots, setLiveSlots] = useState(null);
+  const [invitePersonName, setInvitePersonName] = useState(() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } });
+  const [inviteVenueAddress, setInviteVenueAddress] = useState(() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } });
 
   // Poll live plan status every 30s when waiting for approval
   useEffect(() => {
@@ -1986,51 +1988,104 @@ const EventPlanning = () => {
               />
             )}
 
-            {currentQuestion.type === "select" && (
-              <>
-                <div
-                  className={currentQuestion.id !== "eventType" ? "space-y-3" : ""}
-                  style={currentQuestion.id === "eventType" ? { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } : undefined}
-                >
-                  {currentQuestion.options.map((option, index) => (
-                    <button
-                      type="button"
-                      key={index}
-                      tabIndex={0}
-                      onClick={() => selectAndAdvance(currentQuestion.id, option)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') { e.preventDefault(); selectAndAdvance(currentQuestion.id, option); }
-                      }}
-                      className={`w-full text-left rounded-2xl transition-all duration-200
-                      border-2 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:ring-offset-2
-                      ${currentQuestion.id === "eventType" ? "text-base p-3" : "text-lg sm:text-xl p-4"}
-                      ${
-                        formData[currentQuestion.id] === option
-                          ? "border-[#C47A2E] text-gray-800 shadow-md"
-                          : "bg-white border-[#e5d4b3] text-gray-700 hover:border-[#CCAB4A]"
-                      }`}
-                      style={formData[currentQuestion.id] === option ? {background:"rgba(196,122,46,0.1)"} : {}}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-                {currentQuestion.id === "eventType" && formData.eventType && (
-                  <EventIdeasPanel eventType={formData.eventType} style={{ marginTop: 16 }} />
-                )}
-                {currentQuestion.id === "eventType" && (
-                  <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: 12, background: "rgba(196,122,46,0.05)", border: "1.5px dashed rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                    <div>
-                      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>🏠 Planning a home wedding or multi-day rituals?</div>
-                      <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3 }}>Haldi · Mehendi · Wedding — plan all days together</div>
-                    </div>
-                    <button onClick={() => navigate("/home-wedding-planner")} style={{ padding: "8px 16px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, border: "none", fontFamily: "'Outfit',sans-serif", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
-                      Plan Now →
-                    </button>
+            {currentQuestion.type === "select" && (() => {
+              const INVITE_NAME_TYPES = ["Birthday","1st Birthday","Anniversary","Baby Shower","Newborn Welcome","Graduation"];
+              const NAME_LABELS = { "Birthday":"Whose birthday is it?","1st Birthday":"Whose birthday is it?","Anniversary":"Whose anniversary?","Baby Shower":"Baby's name (if decided)","Newborn Welcome":"Baby's name","Graduation":"Who's graduating?" };
+              const NAME_PLACEHOLDERS = { "Birthday":"e.g., Aarav's","1st Birthday":"e.g., little Riya's","Anniversary":"e.g., Priya & Rahul","Baby Shower":"e.g., Arjun","Newborn Welcome":"e.g., Aanya","Graduation":"e.g., Ananya" };
+              const needsNameInput = currentQuestion.id === "eventType" && INVITE_NAME_TYPES.includes(formData.eventType);
+              const handleOptionClick = (option) => {
+                const isNameType = INVITE_NAME_TYPES.includes(option);
+                if (currentQuestion.id === "eventType" && isNameType) {
+                  // Save only — don't advance; show name input below
+                  dispatch(setFormData({ field: "eventType", value: option, token }));
+                } else if (currentQuestion.id === "location") {
+                  // Save only — don't advance; show address input below
+                  dispatch(setFormData({ field: "location", value: option, token }));
+                } else {
+                  selectAndAdvance(currentQuestion.id, option);
+                }
+              };
+              return (
+                <>
+                  <div
+                    className={currentQuestion.id !== "eventType" ? "space-y-3" : ""}
+                    style={currentQuestion.id === "eventType" ? { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } : undefined}
+                  >
+                    {currentQuestion.options.map((option, index) => (
+                      <button
+                        type="button"
+                        key={index}
+                        tabIndex={0}
+                        onClick={() => handleOptionClick(option)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOptionClick(option); } }}
+                        className={`w-full text-left rounded-2xl transition-all duration-200
+                        border-2 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:ring-offset-2
+                        ${currentQuestion.id === "eventType" ? "text-base p-3" : "text-lg sm:text-xl p-4"}
+                        ${
+                          formData[currentQuestion.id] === option
+                            ? "border-[#C47A2E] text-gray-800 shadow-md"
+                            : "bg-white border-[#e5d4b3] text-gray-700 hover:border-[#CCAB4A]"
+                        }`}
+                        style={formData[currentQuestion.id] === option ? {background:"rgba(196,122,46,0.1)"} : {}}
+                      >
+                        {option}
+                      </button>
+                    ))}
                   </div>
-                )}
-              </>
-            )}
+
+                  {/* Invite-only: person name — for Birthday, Anniversary, Baby Shower, Graduation */}
+                  {needsNameInput && (
+                    <div style={{ marginTop: 14 }}>
+                      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                        {NAME_LABELS[formData.eventType]}
+                        <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#9B7450" }}> — for invitation flyer</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={invitePersonName}
+                        onChange={(e) => { setInvitePersonName(e.target.value); try { localStorage.setItem('tendr_person_name', e.target.value); } catch {} }}
+                        placeholder={NAME_PLACEHOLDERS[formData.eventType] || "Optional"}
+                        className="w-full p-3 bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                        style={{ fontSize: 15 }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Invite-only: venue address — appears after city is selected */}
+                  {currentQuestion.id === "location" && formData.location && (
+                    <div style={{ marginTop: 14 }}>
+                      <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>
+                        Venue name & address
+                        <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#9B7450" }}> — for invitation flyer</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={inviteVenueAddress}
+                        onChange={(e) => { setInviteVenueAddress(e.target.value); try { localStorage.setItem('tendr_venue_address', e.target.value); } catch {} }}
+                        placeholder="e.g., The Grand Pavilion, Sector 45"
+                        className="w-full p-3 bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                        style={{ fontSize: 15 }}
+                      />
+                    </div>
+                  )}
+
+                  {currentQuestion.id === "eventType" && formData.eventType && (
+                    <EventIdeasPanel eventType={formData.eventType} style={{ marginTop: 16 }} />
+                  )}
+                  {currentQuestion.id === "eventType" && (
+                    <div style={{ marginTop: 16, padding: "12px 16px", borderRadius: 12, background: "rgba(196,122,46,0.05)", border: "1.5px dashed rgba(196,122,46,0.35)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                      <div>
+                        <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E" }}>🏠 Planning a home wedding or multi-day rituals?</div>
+                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3 }}>Haldi · Mehendi · Wedding — plan all days together</div>
+                      </div>
+                      <button onClick={() => navigate("/home-wedding-planner")} style={{ padding: "8px 16px", borderRadius: 9, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, border: "none", fontFamily: "'Outfit',sans-serif", fontSize: 13, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
+                        Plan Now →
+                      </button>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
 

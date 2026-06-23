@@ -248,8 +248,8 @@ const ComparisonMatrix = ({ vendors = [] }) => {
                 <th key={v?._id || i} style={{ padding: 0, borderBottom: "2px solid rgba(201,168,76,0.15)", verticalAlign: "top" }}>
                   <div style={{ background: "#FFFCF7" }}>
 
-                    {/* Photo */}
-                    <div style={{ height: 140, position: "relative", overflow: "hidden" }}>
+                    {/* Photo — hidden on mobile via CSS */}
+                    <div className="cm-vendor-photo" style={{ height: 140, position: "relative", overflow: "hidden" }}>
                       <img
                         src={photo || FALLBACK}
                         alt={getName(v)}
@@ -326,6 +326,7 @@ const ComparisonMatrix = ({ vendors = [] }) => {
           </tr>
         </tbody>
       </table>
+    <style>{`@media (max-width: 767px) { .cm-vendor-photo { display: none !important; } }`}</style>
     </div>
   );
 };

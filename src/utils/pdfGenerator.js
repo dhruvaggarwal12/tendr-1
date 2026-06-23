@@ -574,7 +574,7 @@ function fmt12h(val) {
   return `${hr % 12 || 12}:${m} ${hr >= 12 ? "PM" : "AM"}`;
 }
 
-export async function generateInvitationPDF({ eventSummary = {}, confirmedVendors = [], userName = "", eventTime = "" }) {
+export async function generateInvitationPDF({ eventSummary = {}, confirmedVendors = [], userName = "", eventTime = "", personName = "", venueAddress = "" }) {
   await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = 210, H = 297, CX = W / 2;
@@ -642,7 +642,11 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(44, 26, 14);
-  const eventLineWrapped = doc.splitTextToSize(`YOU ARE INVITED TO THE ${eventTypeUpper}`, W - 56);
+  const resolvedPersonName = personName || eventSummary.personName || "";
+  const eventLine = resolvedPersonName
+    ? `YOU ARE INVITED TO ${sanitize(resolvedPersonName).toUpperCase()}'S ${eventTypeUpper}`
+    : `YOU ARE INVITED TO THE ${eventTypeUpper}`;
+  const eventLineWrapped = doc.splitTextToSize(eventLine, W - 56);
   doc.text(eventLineWrapped, CX, y, { align: "center", charSpace: 0.3 });
   y += eventLineWrapped.length * 6.5 + 4;
 
@@ -662,10 +666,11 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
 
   // Date / Venue / RSVP rows
   const resolvedTime = eventTime || eventSummary.eventTime || "";
+  const resolvedVenue = venueAddress || eventSummary.venueAddress || eventSummary.location || "";
   const infoRows = [
-    eventSummary.date     && { label: "DATE",  val: eventSummary.date },
-    eventSummary.location && { label: "VENUE", val: eventSummary.location },
-    resolvedTime          && { label: "TIME",  val: fmt12h(resolvedTime) },
+    eventSummary.date && { label: "DATE",  val: eventSummary.date },
+    resolvedVenue     && { label: "VENUE", val: resolvedVenue },
+    resolvedTime      && { label: "TIME",  val: fmt12h(resolvedTime) },
     { label: "RSVP", val: "contacttendr@gmail.com  ·  +91 9211668427" },
   ].filter(Boolean);
 

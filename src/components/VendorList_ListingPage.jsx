@@ -120,6 +120,8 @@ const VendorList_ListingPage = ({
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
+  const [invitePersonName, setInvitePersonName] = useState(() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } });
+  const [inviteVenueAddress, setInviteVenueAddress] = useState(() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
   const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
   const [savedTick, setSavedTick] = useState(0);
@@ -750,6 +752,22 @@ const VendorList_ListingPage = ({
                     </select>
                   </div>
                   <EventIdeasPanel eventType={chatEventForm.eventType} />
+                  {/* Invite-only: person name — Birthday, Anniversary, Baby Shower, Graduation */}
+                  {["Birthday","1st Birthday","Anniversary","Baby Shower","Newborn Welcome","Graduation"].includes(chatEventForm.eventType) && (
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>
+                        {{"Birthday":"Whose birthday is it?","1st Birthday":"Whose birthday is it?","Anniversary":"Whose anniversary?","Baby Shower":"Baby's name (if decided)","Newborn Welcome":"Baby's name","Graduation":"Who's graduating?"}[chatEventForm.eventType]}
+                        <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#9B7450" }}> — for invitation flyer</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={invitePersonName}
+                        onChange={e => { setInvitePersonName(e.target.value); try { localStorage.setItem('tendr_person_name', e.target.value); } catch {} }}
+                        placeholder={{"Birthday":"e.g., Aarav's","1st Birthday":"e.g., little Riya's","Anniversary":"e.g., Priya & Rahul","Baby Shower":"e.g., Arjun","Newborn Welcome":"e.g., Aanya","Graduation":"e.g., Ananya"}[chatEventForm.eventType] || "Optional"}
+                        style={{ ...fieldStyle, color: "#2C1A0E" }}
+                      />
+                    </div>
+                  )}
                   {/* Date — full width on its own row so native calendar has no overlap */}
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date *</label>
@@ -804,6 +822,22 @@ const VendorList_ListingPage = ({
                       </select>
                     </div>
                   </div>
+                  {/* Invite-only: venue address — shown after city is selected */}
+                  {chatEventForm.location && (
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>
+                        Venue name & address
+                        <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#9B7450" }}> — for invitation flyer</span>
+                      </label>
+                      <input
+                        type="text"
+                        value={inviteVenueAddress}
+                        onChange={e => { setInviteVenueAddress(e.target.value); try { localStorage.setItem('tendr_venue_address', e.target.value); } catch {} }}
+                        placeholder="e.g., The Grand Pavilion, Sector 45"
+                        style={{ ...fieldStyle, color: "#2C1A0E" }}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })()}

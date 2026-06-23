@@ -1210,8 +1210,8 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Waiting state — shown after recap, before approval */}
-          {botDone && !approved && (
+          {/* Waiting state — only shown when there are no messages yet; hides once messages arrive or chat is approved */}
+          {botDone && !approved && messages.length === 0 && (
             <div style={{ alignSelf: "stretch", margin: "12px 4px 4px", display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ textAlign: "center", padding: "20px 16px 8px" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>✦ In Progress</div>
