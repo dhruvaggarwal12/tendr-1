@@ -567,7 +567,14 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
 }
 
 // ── Invitation Template PDF ──────────────────────────────────────────────────
-export async function generateInvitationPDF({ eventSummary = {}, confirmedVendors = [], userName = "" }) {
+function fmt12h(val) {
+  if (!val) return "";
+  const [h, m] = val.split(":");
+  const hr = parseInt(h, 10);
+  return `${hr % 12 || 12}:${m} ${hr >= 12 ? "PM" : "AM"}`;
+}
+
+export async function generateInvitationPDF({ eventSummary = {}, confirmedVendors = [], userName = "", eventTime = "" }) {
   await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = 210, H = 297, CX = W / 2;
@@ -654,9 +661,11 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
   y += 12;
 
   // Date / Venue / RSVP rows
+  const resolvedTime = eventTime || eventSummary.eventTime || "";
   const infoRows = [
     eventSummary.date     && { label: "DATE",  val: eventSummary.date },
     eventSummary.location && { label: "VENUE", val: eventSummary.location },
+    resolvedTime          && { label: "TIME",  val: fmt12h(resolvedTime) },
     { label: "RSVP", val: "contacttendr@gmail.com  ·  +91 9211668427" },
   ].filter(Boolean);
 

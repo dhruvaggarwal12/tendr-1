@@ -13,6 +13,7 @@ import {
   IndianRupee,
   MapPin,
   Calendar,
+  Clock,
   Music,
   Camera,
   Utensils,
@@ -312,6 +313,14 @@ const EventPlanning = () => {
       subtitle: "Select your preferred date",
       type: "date",
       icon: <Calendar className="w-8 h-8" />,
+    },
+    {
+      id: "eventTime",
+      title: "What time does your event start?",
+      subtitle: "Used on your invitation flyer — you can skip this",
+      type: "time",
+      optional: true,
+      icon: <Clock className="w-8 h-8" />,
     },
   ];
 
@@ -1933,6 +1942,35 @@ const EventPlanning = () => {
               );
             })()}
 
+            {currentQuestion.type === "time" && (() => {
+              const val = formData.eventTime || "";
+              const displayText = val ? (() => {
+                const [h, m] = val.split(":");
+                const hr = parseInt(h, 10);
+                return `${hr % 12 || 12}:${m} ${hr >= 12 ? "PM" : "AM"}`;
+              })() : "Tap to select a time";
+              return (
+                <div>
+                  <div style={{ position: "relative", width: "100%" }}>
+                    <div style={{ width: "100%", padding: "14px 18px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 18, fontFamily: "'Outfit', sans-serif", color: val ? "#1f2937" : "#9ca3af", boxSizing: "border-box", textAlign: "center", pointerEvents: "none", userSelect: "none" }}>
+                      {displayText}
+                    </div>
+                    <input
+                      type="time"
+                      onChange={(e) => { if (e.target.value) selectAndAdvance(currentQuestion.id, e.target.value); }}
+                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 1 }}
+                    />
+                  </div>
+                  <p style={{ textAlign: "center", marginTop: 14, fontSize: 13, color: "#9B7450" }}>
+                    Don't know yet?{" "}
+                    <button onClick={() => advance()} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, cursor: "pointer", padding: 0, fontSize: 13, fontFamily: "'Outfit', sans-serif" }}>
+                      Skip this step →
+                    </button>
+                  </p>
+                </div>
+              );
+            })()}
+
             {currentQuestion.type === "textarea" && (
               <textarea
                 value={formData[currentQuestion.id] || ""}
@@ -2023,14 +2061,14 @@ const EventPlanning = () => {
           {/* NEXT */}
           <button
             onClick={nextStep}
-            disabled={!formData[currentQuestion.id] || animating}
+            disabled={(!formData[currentQuestion.id] && !currentQuestion.optional) || animating}
             style={{
-              ...(formData[currentQuestion.id] && !animating ? { background: "linear-gradient(135deg,#C47A2E,#CCAB4A)" } : {}),
+              ...((formData[currentQuestion.id] || currentQuestion.optional) && !animating ? { background: "linear-gradient(135deg,#C47A2E,#CCAB4A)" } : {}),
               flexShrink: 0, maxWidth: "calc(100% - 90px)"
             }}
             className={`flex items-center justify-center text-sm sm:text-base px-5 sm:px-8 py-3 rounded-2xl transition-all duration-300
             ${
-              formData[currentQuestion.id] && !animating
+              (formData[currentQuestion.id] || currentQuestion.optional) && !animating
                 ? "text-white shadow-lg"
                 : "bg-gray-200 text-gray-400 cursor-not-allowed"
             }`}

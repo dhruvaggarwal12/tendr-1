@@ -180,6 +180,7 @@ const initialState = {
     budget: "",
     location: "",
     date: "",
+    eventTime: "",
     companyName: "",
     extraRequirements: [],
   },
@@ -285,7 +286,7 @@ const eventPlanningSlice = createSlice({
         sessionStorage.removeItem("tendr_session");
       } catch {}
       return {
-        formData: { eventType: "", guests: "", budget: "", location: "", date: "", companyName: "", extraRequirements: [] },
+        formData: { eventType: "", guests: "", budget: "", location: "", date: "", eventTime: "", companyName: "", extraRequirements: [] },
         categoryBudgets: {},
         currentStep: 0,
         showVendorScreen: false,
@@ -357,7 +358,7 @@ const eventPlanningWithLogout = (state, action) => {
       sessionStorage.removeItem("tendr_session");
     } catch {}
     return {
-      formData: { eventType: "", guests: "", budget: "", location: "", date: "", companyName: "", extraRequirements: [] },
+      formData: { eventType: "", guests: "", budget: "", location: "", date: "", eventTime: "", companyName: "", extraRequirements: [] },
       categoryBudgets: {},
       vendorTimings: {},
       currentStep: 0,

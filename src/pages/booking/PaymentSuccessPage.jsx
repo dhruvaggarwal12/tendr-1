@@ -48,6 +48,7 @@ const PaymentSuccessPage = () => {
     date:      rawFormData.date      || bookingDetails?.schedule?.date || "",
     location:  rawFormData.location  || "",
     guests:    rawFormData.guests    || "",
+    eventTime: rawFormData.eventTime || (() => { try { return localStorage.getItem('tendr_event_time') || ""; } catch { return ""; } })(),
   }));
 
   // Days until event from today
@@ -419,6 +420,7 @@ const PaymentSuccessPage = () => {
                     eventSummary,
                     confirmedVendors,
                     userName: user?.name,
+                    eventTime: eventSummary.eventTime,
                     giftHamperUrl: `${window.location.origin}/gift-hampers-cakes`,
                   });
                 } finally { setPdfGenerating(false); }

@@ -119,9 +119,9 @@ const VendorList_ListingPage = ({
   const formData = useSelector(s => s.eventPlanning?.formData || {});
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
-  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "" });
+  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
-  const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "" });
+  const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
   const [savedTick, setSavedTick] = useState(0);
   const [shareCopiedId, setShareCopiedId] = useState(null);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
@@ -673,7 +673,7 @@ const VendorList_ListingPage = ({
                       const discoveryData = getDiscoverySession();
                       setChatFormVendor(vendor);
                       // Pre-fill event details from session but always clear budget (it's per-vendor)
-                      setChatEventForm({ eventType: "", guests: "", date: "", location: "", ...(discoveryData || {}), budget: "" });
+                      setChatEventForm({ eventType: "", guests: "", date: "", location: "", eventTime: "", ...(discoveryData || {}), budget: "" });
                       return;
                     }
                     // Planning flow: check 24h save for this vendor
@@ -764,6 +764,18 @@ const VendorList_ListingPage = ({
                       style={{ ...fieldStyle, color: "#2C1A0E" }}
                     />
                   </div>
+                  {/* Event time — optional, only used for invitation flyer */}
+                  <div>
+                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>
+                      Event start time <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#C47A2E" }}>(for invitation flyer)</span>
+                    </label>
+                    <input
+                      type="time"
+                      value={chatEventForm.eventTime}
+                      onChange={e => setChatEventForm(p => ({ ...p, eventTime: e.target.value }))}
+                      style={{ ...fieldStyle, color: chatEventForm.eventTime ? "#2C1A0E" : "#9B7450" }}
+                    />
+                  </div>
                   {/* Guest count — full width below date so it never overlaps the calendar */}
                   <div>
                     <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Guest count *</label>
@@ -803,10 +815,10 @@ const VendorList_ListingPage = ({
             <button
               disabled={checkingAvail}
               onClick={async () => {
-                const { eventType: et, guests: g, date: d, budget: b, location: loc } = chatEventForm;
+                const { eventType: et, guests: g, date: d, budget: b, location: loc, eventTime: et2 } = chatEventForm;
                 if (!requireFormBeforeChat) {
                   // Planning flow — no availability check needed
-                  dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, token }));
+                  dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, eventTime: et2, token }));
                   dispatch(setBookingType("you-do-it"));
                   setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
                   openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
@@ -815,7 +827,8 @@ const VendorList_ListingPage = ({
                 }
                 // Discovery flow — save session, then check availability before opening chat
                 saveDiscoverySession({ eventType: et, guests: g, date: d, location: loc });
-                setLocalFormData({ eventType: et, guests: g, date: d, location: loc });
+                setLocalFormData({ eventType: et, guests: g, date: d, location: loc, eventTime: et2 });
+                if (et2) { try { localStorage.setItem('tendr_event_time', et2); } catch {} }
                 if (d) {
                   setCheckingAvail(true);
                   try {
