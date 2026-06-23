@@ -125,7 +125,8 @@ const VendorList_ListingPage = ({
   const [savedTick, setSavedTick] = useState(0);
   const [shareCopiedId, setShareCopiedId] = useState(null);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
-  const [qvAvailability, setQvAvailability] = useState(null); // null=unknown, true=available, false=unavailable
+  const [unavailModal, setUnavailModal] = useState(null); // null or { vendor, date, alternatives[] }
+  const [checkingAvail, setCheckingAvail] = useState(false);
 
   const handleToggleSave = useCallback((vendor) => {
     toggleSaved(vendor);
@@ -146,21 +147,10 @@ const VendorList_ListingPage = ({
     }
   }, [vendors]);
 
-  // Reset photo index and fetch availability when quick view opens
+  // Reset photo index when quick view opens
   useEffect(() => {
     setActivePhotoIdx(0);
-    if (!quickViewVendor || !date || !requireFormBeforeChat) { setQvAvailability(null); return; }
-    const month = date.slice(0, 7);
-    fetch(`${BASE_URL}/vendors/${quickViewVendor._id}/availability?month=${month}`)
-      .then(r => r.ok ? r.json() : { availability: {} })
-      .then(data => {
-        const avail = data?.availability || {};
-        const day = avail[date];
-        if (!day) { setQvAvailability(true); return; }
-        setQvAvailability(day.slot1 === 'available' || day.slot2 === 'available');
-      })
-      .catch(() => setQvAvailability(null));
-  }, [quickViewVendor?._id, date, requireFormBeforeChat]);
+  }, [quickViewVendor?._id]);
 
   // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
   useEffect(() => {
@@ -489,12 +479,6 @@ const VendorList_ListingPage = ({
                       </div>
                     </>
                   )}
-                  {/* Availability badge — only for discovery flow with a date */}
-                  {date && requireFormBeforeChat && qvAvailability !== null && (
-                    <div style={{ position: "absolute", bottom: total > 1 ? 24 : 8, left: 12, background: qvAvailability ? "rgba(21,128,61,0.9)" : "rgba(185,28,28,0.9)", color: "#fff", borderRadius: 100, padding: "4px 11px", fontSize: 11, fontWeight: 700, backdropFilter: "blur(4px)" }}>
-                      {qvAvailability ? "✓ Available on your date" : "⚠ No slots on your date"}
-                    </div>
-                  )}
                 </div>
               );
             })()}
@@ -817,23 +801,125 @@ const VendorList_ListingPage = ({
               }
             `}</style>
             <button
-              onClick={() => {
+              disabled={checkingAvail}
+              onClick={async () => {
                 const { eventType: et, guests: g, date: d, budget: b, location: loc } = chatEventForm;
                 if (!requireFormBeforeChat) {
-                  // Normal/planning flow — persist to Redux so planning state stays in sync
+                  // Planning flow — no availability check needed
                   dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, token }));
                   dispatch(setBookingType("you-do-it"));
-                } else {
-                  // Discovery flow — persist to localStorage (24h TTL) for pre-fill on next vendor; budget is per-vendor so not saved
-                  saveDiscoverySession({ eventType: et, guests: g, date: d, location: loc });
-                  setLocalFormData({ eventType: et, guests: g, date: d, location: loc });
+                  setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
+                  openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
+                  setChatFormVendor(null);
+                  return;
+                }
+                // Discovery flow — save session, then check availability before opening chat
+                saveDiscoverySession({ eventType: et, guests: g, date: d, location: loc });
+                setLocalFormData({ eventType: et, guests: g, date: d, location: loc });
+                if (d) {
+                  setCheckingAvail(true);
+                  try {
+                    const month = d.slice(0, 7);
+                    const res = await fetch(`${BASE_URL}/vendors/${chatFormVendor._id}/availability?month=${month}`);
+                    const data = res.ok ? await res.json() : { availability: {} };
+                    const day = (data?.availability || {})[d];
+                    const hasSlot = !day || day.slot1 === 'available' || day.slot2 === 'available';
+                    if (!hasSlot) {
+                      const params = new URLSearchParams({ serviceTypes: chatFormVendor.serviceType, date: d, limit: '6' });
+                      if (loc) params.set('location', loc);
+                      const altRes = await fetch(`${BASE_URL}/vendors?${params}`);
+                      const altData = altRes.ok ? await altRes.json() : { vendors: [] };
+                      const alternatives = (altData?.vendors || []).filter(v => v._id !== chatFormVendor._id).slice(0, 5);
+                      const bookedVendor = chatFormVendor;
+                      setChatFormVendor(null);
+                      setCheckingAvail(false);
+                      setUnavailModal({ vendor: bookedVendor, date: d, alternatives });
+                      return;
+                    }
+                  } catch { /* on error fall through and open chat */ }
+                  setCheckingAvail(false);
                 }
                 setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
                 openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
                 setChatFormVendor(null);
               }}
-              style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-              Chat & Finalise with {chatFormVendor.name} →
+              style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: checkingAvail ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: checkingAvail ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 800, cursor: checkingAvail ? "not-allowed" : "pointer", fontFamily: font, boxShadow: checkingAvail ? "none" : "0 4px 14px rgba(196,122,46,0.3)" }}>
+              {checkingAvail ? "Checking availability…" : `Chat & Finalise with ${chatFormVendor.name} →`}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Vendor Unavailable Modal ── */}
+      {unavailModal && (
+        <div
+          onClick={() => setUnavailModal(null)}
+          style={{ position: "fixed", inset: 0, zIndex: 99997, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", fontFamily: font }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", maxWidth: 520, width: "100%", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(44,26,14,0.25)" }}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+              <div>
+                <div style={{ fontSize: 30, marginBottom: 8 }}>😔</div>
+                <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 6px" }}>
+                  {unavailModal.vendor.name} is fully booked
+                </h2>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: 0, lineHeight: 1.5 }}>
+                  No slots available on{" "}
+                  {new Date(unavailModal.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
+                </p>
+              </div>
+              <button onClick={() => setUnavailModal(null)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#9B7450", padding: "0 0 0 14px", flexShrink: 0 }}>✕</button>
+            </div>
+
+            {/* Alternative vendors */}
+            {unavailModal.alternatives.length > 0 ? (
+              <>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
+                  Available {unavailModal.vendor.serviceType}s on your date
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {unavailModal.alternatives.map(v => {
+                    const photo = v.portfolioPhotos?.[0] || v.image || FALLBACK_IMG;
+                    const rating = v.avgReviewScore ?? v.rating;
+                    return (
+                      <div
+                        key={v._id}
+                        onClick={() => { setQuickViewVendor(v); setUnavailModal(null); }}
+                        style={{ display: "flex", gap: 14, alignItems: "center", padding: "12px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer" }}
+                        onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; e.currentTarget.style.background = "rgba(196,122,46,0.03)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"; e.currentTarget.style.background = "#fff"; }}
+                      >
+                        <img src={photo} alt={v.name} style={{ width: 68, height: 68, objectFit: "cover", borderRadius: 10, flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>{v.name}</div>
+                          <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700, marginBottom: 5 }}>{v.serviceType}</div>
+                          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                            {(v.city || v.locations?.[0]) && <span style={{ fontSize: 11, color: "#9B7450" }}>📍 {v.city || v.locations?.[0]}</span>}
+                            {rating > 0 && <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
+                            {(v.price || v.startingPrice) > 0 && <span style={{ fontSize: 11, color: "#5a3a1a", fontWeight: 600 }}>From ₹{Number(v.price || v.startingPrice).toLocaleString("en-IN")}</span>}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 13, color: "#C47A2E", fontWeight: 700, flexShrink: 0 }}>View →</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div style={{ textAlign: "center", padding: "16px 0", color: "#9B7450", fontSize: 13, lineHeight: 1.6 }}>
+                No other {unavailModal.vendor.serviceType}s available on this date in your area.<br />Try a different date.
+              </div>
+            )}
+
+            <button
+              onClick={() => setUnavailModal(null)}
+              style={{ width: "100%", marginTop: 20, padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+            >
+              Try a different date
             </button>
           </div>
         </div>
