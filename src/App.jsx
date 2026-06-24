@@ -11,6 +11,8 @@ import FloatingChatButton from "./components/FloatingChatButton";
 import VendorChatModal from "./components/VendorChatModal";
 import { ChatProvider } from "./context/ChatContext";
 import { StationeryCartProvider } from "./context/StationeryCartContext";
+import { TourProvider } from "./context/TourContext";
+import SiteTour from "./components/SiteTour";
 import ComingSoon from "./pages/ComingSoon";
 import CommunityWall from "./pages/community/CommunityWall";
 import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
@@ -82,7 +84,9 @@ function App() {
     <HelmetProvider>
       <ErrorBoundary>
         <StationeryCartProvider>
+        <TourProvider>
         <ChatProvider>
+          <SiteTour />
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
           <Suspense fallback={
             <div style={{ minHeight: "100vh", background: "#FFFCF5", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -95,6 +99,7 @@ function App() {
           <FloatingChatButton />
           <VendorChatModal />
         </ChatProvider>
+        </TourProvider>
         </StationeryCartProvider>
       </ErrorBoundary>
     </HelmetProvider>

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
+import { useTour } from "../context/TourContext";
 import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
 
@@ -79,6 +80,7 @@ function SavedVendorsInline({ asStrip = false }) {
   const dispatch        = useDispatch();
   const navigate        = useNavigate();
   const { openVendorChat } = useChatOverlay();
+  const { startTour } = useTour();
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
   const [open, setOpen] = React.useState(false);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
@@ -426,7 +428,7 @@ const Navbar = ({
           style={{ display: "flex", alignItems: "center", gap: 6 }}
         >
           {/* Search bar */}
-          <div ref={searchRef} style={{ position: "relative", width: 220, flexShrink: 0 }}>
+          <div ref={searchRef} data-tour="search-bar" style={{ position: "relative", width: 220, flexShrink: 0 }}>
             <div style={{
               display: "flex", alignItems: "center", gap: 7,
               padding: "7px 13px", borderRadius: 100,
@@ -502,6 +504,7 @@ const Navbar = ({
               ) : (
               <div
                 key={group.label}
+                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}
@@ -661,6 +664,7 @@ const Navbar = ({
               <div ref={profileMenuRef} style={{ position: "relative" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "stretch" }}>
                 <button
+                  data-tour="profile-btn"
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
                   style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: compareSelected.length > 0 && !user?.isAdmin ? "100px 100px 0 0" : 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.12)")}
@@ -707,6 +711,15 @@ const Navbar = ({
                             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.07)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >Admin Dashboard</button>
+
+                          <button
+                            onClick={() => { setShowProfileMenu(false); startTour(); }}
+                            style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#C47A2E", cursor: "pointer", fontFamily: font }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                          >
+                            <span>🗺️</span> Take the tour
+                          </button>
 
                           {/* Per-category counts */}
                           <div style={{ padding: "2px 8px 6px" }}>
