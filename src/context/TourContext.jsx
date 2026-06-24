@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useCallback } from "react";
 
-const TourContext = createContext(null);
+const TourContext = createContext({ tourActive: false, startTour: () => {}, endTour: () => {} });
 
 export function TourProvider({ children }) {
   const [tourActive, setTourActive] = useState(false);
