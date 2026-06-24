@@ -89,6 +89,8 @@ const VendorDetailsPage = () => {
 
   // Must come after formEventType declaration to avoid TDZ ReferenceError
   const hasEventContext = !!(location.state?.compareInProfile && formEventType);
+  // Browse/search/top-rated flow — do NOT carry planning form data here
+  const isFromListingFlow = location.state?.from === "listing";
 
   // Selected Vendors modal state
   const [isSelectedModalOpen, setIsSelectedModalOpen] = useState(false);
@@ -215,8 +217,8 @@ const VendorDetailsPage = () => {
   const maxConcurrentEvents = vendor?.maxConcurrentEvents ?? vendor?.concurrentEvents ?? null;
   const isPhoneVerified = !!vendor?.phoneVerified;
 
-  // Build info box lines — only show fields that have values
-  const infoLines = [
+  // Build info box lines — only from planning flow, never from browse/search/top-rated
+  const infoLines = isFromListingFlow ? [] : [
     formEventName && ("Event: " + formEventName),
     formEventType && ("Type: " + formEventType),
     formLocation && ("Location: " + formLocation),
@@ -400,7 +402,7 @@ const VendorDetailsPage = () => {
                   dispatch(setBookingType("you-do-it"));
                   openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                 } else {
-                  setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
+                  setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
                   setChatFormOpen(true);
                 }
               }}
@@ -744,7 +746,7 @@ const VendorDetailsPage = () => {
                       dispatch(setBookingType("you-do-it"));
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                     } else {
-                      setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
+                      setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
                       setChatFormOpen(true);
                     }
                   }}
