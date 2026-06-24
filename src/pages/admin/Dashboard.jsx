@@ -513,6 +513,11 @@ const AdminDashboard = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
   const [reviewSubTab, setReviewSubTab] = useState("reviews"); // "reviews" | "upcoming"
+  // Admin gallery for photo sharing
+  const [adminGalleryOpen, setAdminGalleryOpen] = useState(false);
+  const [adminGalleryPhotos, setAdminGalleryPhotos] = useState([]);
+  const [adminGalleryLoading, setAdminGalleryLoading] = useState(false);
+  const [adminGallerySelected, setAdminGallerySelected] = useState([]);
   // Gallery / Photos
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoaded, setGalleryLoaded] = useState(false);
@@ -3404,6 +3409,44 @@ const AdminDashboard = () => {
                         </div>
                       );
                     })()}
+
+                    {/* Share Photos */}
+                    <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Share Photos</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                        <label style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
+                          📷 From Device
+                          <input type="file" multiple accept="image/*" style={{ display: "none" }} onChange={e => {
+                            const files = Array.from(e.target.files || []);
+                            files.forEach(file => {
+                              const reader = new FileReader();
+                              reader.onload = ev => {
+                                if (!selectedChat?._id || !adminSocketRef.current) return;
+                                const content = `[img:${ev.target.result}]`;
+                                const m = { conversationId: selectedChat._id, sender: 'customer-care', content };
+                                adminSocketRef.current.emit('send_message', m);
+                                setCurrentConversation(prev => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
+                              };
+                              reader.readAsDataURL(file);
+                            });
+                            e.target.value = '';
+                          }} />
+                        </label>
+                        <button onClick={() => {
+                          setAdminGalleryOpen(true);
+                          if (!adminGalleryPhotos.length) {
+                            setAdminGalleryLoading(true);
+                            fetch(`${BASE_URL}/gallery`)
+                              .then(r => r.json())
+                              .then(data => { setAdminGalleryPhotos((data.grouped?.["Decoration"] || []).filter(p => p.imageUrl)); setAdminGalleryLoading(false); })
+                              .catch(() => setAdminGalleryLoading(false));
+                          }
+                        }}
+                          style={{ display: "block", width: "100%", padding: "9px 10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
+                          🖼️ From Gallery
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Summary sidebar panel — always visible when a chat is selected */}
@@ -4985,6 +5028,71 @@ const AdminDashboard = () => {
     )}
 
 
+
+
+    {/* Admin gallery modal — for Share Photos feature */}
+    {adminGalleryOpen && (
+      <div style={{ position: "fixed", inset: 0, zIndex: 2100, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+        onClick={() => { setAdminGalleryOpen(false); setAdminGallerySelected([]); }}>
+        <div style={{ background: "#FFFCF5", borderRadius: 20, width: "min(94vw, 600px)", maxHeight: "80vh", display: "flex", flexDirection: "column", boxShadow: "0 32px 80px rgba(44,26,14,0.22)", fontFamily: "'Outfit', sans-serif" }}
+          onClick={e => e.stopPropagation()}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Decoration Gallery</div>
+              <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>Tap to select{adminGallerySelected.length > 0 ? ` · ${adminGallerySelected.length} selected` : ""}</div>
+            </div>
+            <button onClick={() => { setAdminGalleryOpen(false); setAdminGallerySelected([]); }}
+              style={{ background: "none", border: "none", fontSize: 20, color: "#9B7450", cursor: "pointer", padding: "4px 8px" }}>✕</button>
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: 16 }}>
+            {adminGalleryLoading ? (
+              <div style={{ textAlign: "center", padding: 48, color: "#9B7450" }}>Loading…</div>
+            ) : adminGalleryPhotos.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 48, color: "#9B7450" }}>No photos available</div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 8 }}>
+                {adminGalleryPhotos.map(p => {
+                  const sel = adminGallerySelected.includes(p.imageUrl);
+                  return (
+                    <div key={p.imageUrl} onClick={() => setAdminGallerySelected(prev => sel ? prev.filter(u => u !== p.imageUrl) : [...prev, p.imageUrl])}
+                      style={{ position: "relative", aspectRatio: "1 / 1", borderRadius: 10, overflow: "hidden", cursor: "pointer", border: `2.5px solid ${sel ? "#C47A2E" : "transparent"}` }}>
+                      <img src={p.imageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      {sel && (
+                        <div style={{ position: "absolute", inset: 0, background: "rgba(196,122,46,0.28)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 15, fontWeight: 900 }}>✓</div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0, display: "flex", gap: 8 }}>
+            {adminGallerySelected.length > 0 && (
+              <button onClick={() => {
+                if (!selectedChat?._id || !adminSocketRef.current) return;
+                adminGallerySelected.forEach(url => {
+                  const content = `[img:${url}]`;
+                  const m = { conversationId: selectedChat._id, sender: 'customer-care', content };
+                  adminSocketRef.current.emit('send_message', m);
+                  setCurrentConversation(prev => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
+                });
+                setAdminGalleryOpen(false);
+                setAdminGallerySelected([]);
+              }}
+                style={{ flex: 2, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer" }}>
+                Send {adminGallerySelected.length} photo{adminGallerySelected.length !== 1 ? "s" : ""} →
+              </button>
+            )}
+            <button onClick={() => { setAdminGalleryOpen(false); setAdminGallerySelected([]); }}
+              style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </>
   );
 };

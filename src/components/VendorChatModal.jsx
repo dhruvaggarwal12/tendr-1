@@ -435,6 +435,8 @@ export default function VendorChatModal() {
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [gallerySelected, setGallerySelected] = useState([]);
+  const [galleryMode, setGalleryMode] = useState("wizard"); // "wizard" | "livechat"
+  const [showRefPhotoBar, setShowRefPhotoBar] = useState(false);
   const refPhotosRef = useRef([]);
 
   // ── Chat state ───────────────────────────────────────────────────────────────
@@ -797,6 +799,26 @@ export default function VendorChatModal() {
     e.target.value = "";
   };
 
+  const sendImagesLive = (srcs) => {
+    if (!conversationId || !approved) return;
+    srcs.forEach(src => {
+      const content = `[img:${src}]`;
+      setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
+      socketRef.current?.emit("send_message", { conversationId, sender: "user", content });
+    });
+  };
+
+  const handleLiveChatPhotoUpload = (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (ev) => sendImagesLive([ev.target.result]);
+      reader.readAsDataURL(file);
+    });
+    e.target.value = "";
+  };
+
   const renderMsg = (text) => {
     if (!text) return null;
     if (text.startsWith("[img:")) {
@@ -1156,7 +1178,7 @@ export default function VendorChatModal() {
                   📷 Upload
                   <input type="file" multiple accept="image/*" style={{ display: "none" }} onChange={handlePhotoUpload} />
                 </label>
-                <button onClick={openGallery}
+                <button onClick={() => { setGalleryMode("wizard"); openGallery(); }}
                   style={{ flex: 2, padding: "10px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   🖼️ Choose from Gallery
                 </button>
@@ -1325,6 +1347,29 @@ export default function VendorChatModal() {
 
         {/* ── Input + action bar ── */}
         <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", paddingBottom: isMobile ? "calc(10px + env(safe-area-inset-bottom, 0px))" : "10px", flexShrink: 0, background: "#fff", position: "relative" }}>
+          {/* Reference photos — Decorator live chat only */}
+          {(approved || isExistingChat) && vendor?.serviceType === "Decorator" && !messagesLoading && (
+            <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", background: "#FDFCF8" }}>
+              <button onClick={() => setShowRefPhotoBar(p => !p)}
+                style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "5px 12px", background: "none", border: "none", cursor: "pointer", fontFamily: font }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.08em", textTransform: "uppercase" }}>Share Photos</span>
+                <span style={{ fontSize: 12, color: "#C47A2E", transition: "transform 0.2s", display: "inline-block", transform: showRefPhotoBar ? "rotate(180deg)" : "rotate(0deg)" }}>▾</span>
+              </button>
+              {showRefPhotoBar && (
+                <div style={{ padding: "4px 12px 10px", display: "flex", gap: 8 }}>
+                  <label style={{ flex: 1, padding: "8px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center", gap: 4 }}>
+                    📷 Device
+                    <input type="file" multiple accept="image/*" style={{ display: "none" }} onChange={handleLiveChatPhotoUpload} />
+                  </label>
+                  <button onClick={() => { setGalleryMode("livechat"); openGallery(); }}
+                    style={{ flex: 2, padding: "8px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    🖼️ From Gallery
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Suggested questions — hidden by default, toggled by arrow */}
           {(approved || isExistingChat) && !messagesLoading && (() => {
             const QA = {
@@ -1653,9 +1698,18 @@ export default function VendorChatModal() {
             {/* Footer */}
             <div style={{ padding: "14px 16px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0, display: "flex", gap: 8 }}>
               {gallerySelected.length > 0 && (
-                <button onClick={() => { setSelectedRefPhotos(gallerySelected.map(url => ({ src: url }))); setGalleryOpen(false); }}
+                <button onClick={() => {
+                  if (galleryMode === "livechat") {
+                    sendImagesLive(gallerySelected);
+                    setGalleryOpen(false);
+                    setGallerySelected([]);
+                  } else {
+                    setSelectedRefPhotos(gallerySelected.map(url => ({ src: url })));
+                    setGalleryOpen(false);
+                  }
+                }}
                   style={{ flex: 2, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  Add {gallerySelected.length} photo{gallerySelected.length !== 1 ? "s" : ""} →
+                  {galleryMode === "livechat" ? "Send" : "Add"} {gallerySelected.length} photo{gallerySelected.length !== 1 ? "s" : ""} →
                 </button>
               )}
               <button onClick={() => setGalleryOpen(false)}
