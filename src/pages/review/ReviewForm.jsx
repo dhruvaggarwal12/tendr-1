@@ -52,6 +52,11 @@ export default function ReviewForm() {
   const [error, setError]               = useState("");
   const fileRef = useRef();
 
+  // Upcoming events (optional lead section)
+  const [upcomingEventType, setUpcomingEventType] = useState("");
+  const [upcomingDate, setUpcomingDate]           = useState("");
+  const [upcomingWhatsApp, setUpcomingWhatsApp]   = useState("");
+
   // Fetch plan data from planId
   React.useEffect(() => {
     if (!planId) { setPlanLoading(false); return; }
@@ -99,6 +104,11 @@ export default function ReviewForm() {
       fd.append("reviewText", reviewText.trim());
       fd.append("vendorRatings", JSON.stringify(vendorRatings));
       photos.forEach(p => fd.append("photos", p.file));
+      if (upcomingEventType || upcomingDate || upcomingWhatsApp) {
+        fd.append("upcomingEventType", upcomingEventType);
+        fd.append("upcomingDate", upcomingDate);
+        fd.append("upcomingWhatsApp", upcomingWhatsApp);
+      }
 
       const res = await fetch(`${BASE_URL}/reviews`, {
         method: "POST",
@@ -255,6 +265,29 @@ export default function ReviewForm() {
               </button>
             </>
           )}
+        </div>
+
+        {/* Upcoming events — optional lead capture */}
+        <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.04))", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: "20px 22px", marginBottom: 24 }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 4 }}>
+            🎉 Planning Another Event?
+          </div>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px", lineHeight: 1.6 }}>
+            Tell us a little about your next event — we'll reach out and make sure you get the best vendors for it!
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {[
+              { label: "Occasion", placeholder: "Birthday, Anniversary, Baby Shower…", value: upcomingEventType, set: setUpcomingEventType, type: "text" },
+              { label: "Approximate date or month", placeholder: "August 2026, next Diwali…", value: upcomingDate, set: setUpcomingDate, type: "text" },
+              { label: "Your WhatsApp number", placeholder: "+91 98765 43210", value: upcomingWhatsApp, set: setUpcomingWhatsApp, type: "tel" },
+            ].map(({ label, placeholder, value, set, type }) => (
+              <div key={label}>
+                <label style={{ display: "block", fontSize: 11.5, fontWeight: 600, color: "#6B3A1F", marginBottom: 4 }}>{label}</label>
+                <input type={type} placeholder={placeholder} value={value} onChange={e => set(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", fontSize: 13, fontFamily: font, color: "#2C1A0E", background: "#FDFCF8", outline: "none", boxSizing: "border-box" }} />
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Error */}

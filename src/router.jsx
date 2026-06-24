@@ -78,6 +78,7 @@ const PaymentSuccessPage  = lazy(() => import('./pages/booking/PaymentSuccessPag
 const PaymentFailedPage   = lazy(() => import('./pages/booking/PaymentFailedPage'));
 const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation'));
 const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
+const FeedbackForm        = lazy(() => import('./pages/review/FeedbackForm'));
 const RefundPolicy        = lazy(() => import("./pages/info/RefundPolicy"));
 const CancellationPolicy  = lazy(() => import("./pages/info/CancellationPolicy"));
 const ContactUs           = lazy(() => import("./pages/info/ContactUs.jsx"));
@@ -298,6 +299,11 @@ const router = createBrowserRouter([
     {
       path: "/review",
       element: <ReviewForm />,
+      errorElement: <ErrorPage />,
+    },
+    {
+      path: "/feedback",
+      element: <FeedbackForm />,
       errorElement: <ErrorPage />,
     },
 

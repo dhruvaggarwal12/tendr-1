@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
+import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF, generateTimelinePDF } from "../../utils/pdfGenerator";
 import { generateVendorReferralCode, formatCode } from "../../utils/referral";
 import AddVendorModal from "./AddVendorModal";
 import StationeryAdminTab from "./StationeryAdminTab";
@@ -512,6 +512,7 @@ const AdminDashboard = () => {
   // Reviews
   const [reviews, setReviews] = useState([]);
   const [reviewsLoaded, setReviewsLoaded] = useState(false);
+  const [reviewSubTab, setReviewSubTab] = useState("reviews"); // "reviews" | "upcoming"
   // Gallery / Photos
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoaded, setGalleryLoaded] = useState(false);
@@ -1533,7 +1534,7 @@ const AdminDashboard = () => {
                       <tr style={{ background: "#fffaf0", borderBottom: "1.5px solid #CCAB4A" }}>
                         {[
                           "Customer", "Event", "Type", "Date", "Guests", "Budget", "Services", "Booking Type",
-                          ...(bookingTab === "Cancelled" ? ["Reason"] : ["Actions"]),
+                          ...(bookingTab === "Cancelled" ? ["Reason", "Actions"] : ["Actions"]),
                         ].map((h) => (
                           <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 12, fontWeight: 700, color: "#7A5535", whiteSpace: "nowrap" }}>{h}</th>
                         ))}
@@ -1563,9 +1564,26 @@ const AdminDashboard = () => {
                               </span>
                             </td>
                             {bookingTab === "Cancelled" ? (
-                              <td style={{ padding: "10px 14px", fontSize: 12, color: "#c0392b", fontStyle: "italic", maxWidth: 200 }}>
-                                {plan.cancelledReason || "—"}
-                              </td>
+                              <>
+                                <td style={{ padding: "10px 14px", fontSize: 12, color: "#c0392b", fontStyle: "italic", maxWidth: 200 }}>
+                                  {plan.cancelledReason || "—"}
+                                </td>
+                                <td style={{ padding: "10px 14px" }}>
+                                  {(() => {
+                                    const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
+                                    if (!phone) return <span style={{ color: "#9B7450", fontSize: 12 }}>No phone</span>;
+                                    const cName = plan.customerId?.name || "there";
+                                    const feedbackUrl = `${window.location.origin}/feedback?planId=${plan._id}`;
+                                    const msg = `Hi ${cName}! 👋\n\nWe noticed your booking on Tendr wasn't completed. We'd love to know what happened so we can do better!\n\nIt takes under 2 minutes:\n\n${feedbackUrl}\n\n— Team Tendr 💛`;
+                                    return (
+                                      <a href={`https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`} target="_blank" rel="noopener noreferrer"
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
+                                        💬 Send Feedback Link
+                                      </a>
+                                    );
+                                  })()}
+                                </td>
+                              </>
                             ) : (
                             <td style={{ padding: "10px 14px" }}>
                               <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
@@ -1618,9 +1636,20 @@ const AdminDashboard = () => {
                                           {isOverdue ? `⚠️ Sent ${fmtNotifiedAge(sentTs)} — not opened?` : `✓ Sent ${fmtNotifiedAge(sentTs)}`}
                                         </span>
                                       )}
-                                      <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name }); } finally { setPdfGenerating(false); } }}
-                                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                        🧾 Invoice
+                                      <button disabled={pdfGenerating} onClick={async () => {
+                                        setPdfGenerating(true);
+                                        try {
+                                          generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name });
+                                          await new Promise(r => setTimeout(r, 400));
+                                          generateInvitationPDF({ eventSummary, confirmedVendors, userName: plan.customerId?.name });
+                                          await new Promise(r => setTimeout(r, 400));
+                                          await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: [], userName: plan.customerId?.name, orderId: plan.orderId });
+                                          await new Promise(r => setTimeout(r, 400));
+                                          await generateTimelinePDF({ slots: [], eventSummary, userName: plan.customerId?.name });
+                                        } finally { setPdfGenerating(false); }
+                                      }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", opacity: pdfGenerating ? 0.6 : 1 }}>
+                                        📦 {pdfGenerating ? "Generating…" : "Documents"}
                                       </button>
                                     </div>
                                   );
@@ -4567,8 +4596,60 @@ const AdminDashboard = () => {
                 ⭐ Customer Reviews
               </div>
 
+              {/* Sub-tabs */}
+              <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>
+                {[["reviews", "⭐ Reviews"], ["upcoming", "🎉 Upcoming Leads"]].map(([tab, label]) => {
+                  const count = tab === "upcoming" ? reviews.filter(r => r.upcomingEventType || r.upcomingWhatsApp).length : reviews.length;
+                  return (
+                    <button key={tab} onClick={() => setReviewSubTab(tab)}
+                      style={{ padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
+                        borderColor: reviewSubTab === tab ? "#C47A2E" : "rgba(139,69,19,0.2)",
+                        background: reviewSubTab === tab ? "#C47A2E" : "#fff",
+                        color: reviewSubTab === tab ? "#fff" : "#6B3A1F",
+                      }}>
+                      {label} <span style={{ marginLeft: 5, fontSize: 11, fontWeight: 700, background: reviewSubTab === tab ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)", color: reviewSubTab === tab ? "#fff" : "#C47A2E", borderRadius: 100, padding: "1px 7px" }}>{count}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               {!reviewsLoaded ? (
                 <div style={{ textAlign: "center", padding: "60px 24px", color: "#9B7450" }}>Loading reviews…</div>
+              ) : reviewSubTab === "upcoming" ? (
+                (() => {
+                  const leads = reviews.filter(r => r.upcomingEventType || r.upcomingWhatsApp);
+                  if (!leads.length) return (
+                    <div style={{ textAlign: "center", padding: "60px 24px", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>
+                      <div style={{ fontSize: 40, marginBottom: 12 }}>🎉</div>
+                      <p style={{ color: "#9B7450", fontSize: 16 }}>No upcoming event leads yet. They'll appear here when customers mention their next event in the review form.</p>
+                    </div>
+                  );
+                  return (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                      {leads.map(r => (
+                        <div key={r._id} style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: "18px 22px", display: "flex", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
+                          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 15, fontWeight: 800, flexShrink: 0 }}>
+                            {(r.customerName || "?")[0].toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 160 }}>
+                            <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{r.customerName || "Anonymous"}</div>
+                            <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 8 }}>Reviewed {r.eventType || "an event"} • {r.createdAt ? new Date(r.createdAt).toLocaleDateString("en-IN") : ""}</div>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                              {r.upcomingEventType && <span style={{ fontSize: 12, padding: "3px 10px", borderRadius: 100, background: "rgba(196,122,46,0.08)", color: "#7A5535", border: "1px solid rgba(196,122,46,0.18)", fontWeight: 600 }}>🎊 {r.upcomingEventType}</span>}
+                              {r.upcomingDate && <span style={{ fontSize: 12, padding: "3px 10px", borderRadius: 100, background: "rgba(196,122,46,0.08)", color: "#7A5535", border: "1px solid rgba(196,122,46,0.18)", fontWeight: 600 }}>📅 {r.upcomingDate}</span>}
+                              {r.upcomingWhatsApp && (
+                                <a href={`https://wa.me/${r.upcomingWhatsApp.replace(/[^0-9]/g, "")}`} target="_blank" rel="noopener noreferrer"
+                                  style={{ fontSize: 12, padding: "3px 10px", borderRadius: 100, background: "#dcfce7", color: "#15803d", border: "1px solid #bbf7d0", fontWeight: 600, textDecoration: "none" }}>
+                                  📱 {r.upcomingWhatsApp}
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()
               ) : reviews.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px 24px", background: "#fff", borderRadius: 16, border: "2px solid #CCAB4A" }}>
                   <div style={{ fontSize: 40, marginBottom: 12 }}>🌟</div>

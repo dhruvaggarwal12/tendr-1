@@ -24,6 +24,7 @@ import { useChatOverlay } from "../../context/ChatContext";
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 const chatSaveKey = (id) => `tendr:chat_req:${id}`;
 const getVendorChatSave = (id) => {
   try {
@@ -49,6 +50,8 @@ const VendorDetailsPage = () => {
   const [hasActiveChatSave, setHasActiveChatSave] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [similarVendors, setSimilarVendors] = useState([]);
+  const [checkingAvail, setCheckingAvail] = useState(false);
+  const [unavailModal, setUnavailModal] = useState(null); // { date, alternatives[] }
 
   const handleShare = async () => {
     const url = window.location.href;
@@ -1041,20 +1044,96 @@ const VendorDetailsPage = () => {
               ))}
             </div>
             <button
-              onClick={() => {
-                dispatch(setMultipleFormData({
-                  eventType: chatEventForm.eventType,
-                  guests: chatEventForm.guests,
-                  date: chatEventForm.date,
-                  location: chatEventForm.location,
-                  token,
-                }));
-                dispatch(setBookingType("you-do-it"));
-                setChatFormOpen(false);
-                openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+              disabled={checkingAvail}
+              onClick={async () => {
+                if (isFromListingFlow) {
+                  if (!chatEventForm.date) {
+                    setChatFormOpen(false);
+                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    return;
+                  }
+                  setCheckingAvail(true);
+                  try {
+                    const month = chatEventForm.date.substring(0, 7);
+                    const res = await fetch(`${BASE_URL}/vendors/${vendor._id}/availability?month=${month}`, { credentials: "include" });
+                    const data = res.ok ? await res.json() : {};
+                    const day = (data?.availability || {})[chatEventForm.date];
+                    const hasSlot = !day || day.slot1 === "available" || day.slot2 === "available";
+                    if (hasSlot) {
+                      setChatFormOpen(false);
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    } else {
+                      const altRes = await fetch(`${BASE_URL}/vendors?serviceTypes=${vendor.serviceType}&location=${encodeURIComponent(chatEventForm.location || "")}&limit=6`, { credentials: "include" });
+                      const altData = altRes.ok ? await altRes.json() : { vendors: [] };
+                      const alternatives = (altData.vendors || []).filter(v => v._id !== vendor._id);
+                      setChatFormOpen(false);
+                      setUnavailModal({ date: chatEventForm.date, alternatives });
+                    }
+                  } catch {
+                    setChatFormOpen(false);
+                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                  } finally {
+                    setCheckingAvail(false);
+                  }
+                } else {
+                  dispatch(setMultipleFormData({
+                    eventType: chatEventForm.eventType,
+                    guests: chatEventForm.guests,
+                    date: chatEventForm.date,
+                    location: chatEventForm.location,
+                    token,
+                  }));
+                  dispatch(setBookingType("you-do-it"));
+                  setChatFormOpen(false);
+                  openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                }
               }}
-              style={{ width: "100%", marginTop: 18, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-              Request to Chat with {vendor.name} →
+              style={{ width: "100%", marginTop: 18, padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: checkingAvail ? "wait" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)", opacity: checkingAvail ? 0.7 : 1 }}>
+              {checkingAvail ? "Checking availability…" : `Request to Chat with ${vendor.name} →`}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Unavailability modal — vendor not available on selected date */}
+      {unavailModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 1300, background: "rgba(0,0,0,0.6)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: "'Outfit', sans-serif" }}
+          onClick={() => setUnavailModal(null)}>
+          <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", maxWidth: 460, width: "100%", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.25)" }}
+            onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: 28, marginBottom: 10, textAlign: "center" }}>😔</div>
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", textAlign: "center", margin: "0 0 8px" }}>
+              {vendor?.name} is unavailable
+            </h2>
+            <p style={{ fontSize: 13, color: "#9B7450", textAlign: "center", margin: "0 0 20px", lineHeight: 1.6 }}>
+              This vendor is booked on <strong>{unavailModal.date}</strong>. Here are vendors available on that date:
+            </p>
+            {unavailModal.alternatives.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                {unavailModal.alternatives.slice(0, 5).map(alt => (
+                  <div key={alt._id} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer" }}
+                    onClick={() => { setUnavailModal(null); navigate(`/vendor/${alt._id}`, { state: { from: "listing" } }); }}>
+                    {alt.photos?.[0] ? (
+                      <img src={alt.photos[0]} alt={alt.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+                    ) : (
+                      <div style={{ width: 44, height: 44, borderRadius: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 18, flexShrink: 0 }}>
+                        {(alt.name || "V")[0]}
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 13.5, fontWeight: 700, color: "#2C1A0E", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{alt.name}</div>
+                      <div style={{ fontSize: 12, color: "#9B7450" }}>{alt.location || alt.city || ""}</div>
+                    </div>
+                    <div style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700, flexShrink: 0 }}>View →</div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p style={{ textAlign: "center", color: "#9B7450", fontSize: 13 }}>No alternatives found for this date. Try a different date.</p>
+            )}
+            <button onClick={() => setUnavailModal(null)}
+              style={{ width: "100%", marginTop: 18, padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+              Close
             </button>
           </div>
         </div>
