@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { selectCartItems, selectCartTotal, clearCart, removeFromCart } from "../../redux/giftHamperCartSlice";
+import { selectFunCartItems, selectFunCartTotal, clearFunCart } from "../../redux/funActivitiesCartSlice";
 import SEO from "../../components/SEO";
 import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
 import { generateEventDetailsPDF } from "../../utils/pdfGenerator";
@@ -68,11 +69,12 @@ const BookingReviewPage = () => {
   const location  = useLocation();
   const dispatch  = useDispatch();
   const token     = useSelector((s) => s.auth.token);
-  const ghItems   = useSelector(selectCartItems);
-  const ghTotal   = useSelector(selectCartTotal);
+  const ghItems    = useSelector(selectCartItems);
+  const ghTotal    = useSelector(selectCartTotal);
+  const faItems    = useSelector(selectFunCartItems);
+  const faTotal    = useSelector(selectFunCartTotal);
   const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
-  const faBooking  = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking") || "null"); } catch { return null; } })();
-  const isGHMode  = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
+  const isGHMode   = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
@@ -382,7 +384,7 @@ const BookingReviewPage = () => {
     }
   };
 
-  if (vendorEntries.length === 0 && ghItems.length === 0) {
+  if (vendorEntries.length === 0 && ghItems.length === 0 && faItems.length === 0) {
     return (
       <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
@@ -390,7 +392,7 @@ const BookingReviewPage = () => {
         <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 16, color: "#9B7450" }}>
           <div style={{ fontSize: 48 }}>📋</div>
           <h2 style={{ fontSize: 22, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>Nothing to review yet</h2>
-          <p style={{ fontSize: 15, margin: 0 }}>Finalise a vendor or add gift hampers to your cart.</p>
+          <p style={{ fontSize: 15, margin: 0 }}>Finalise a vendor, add gift hampers or fun activities to your cart.</p>
           <button
             onClick={() => navigate(-1)}
             style={{ marginTop: 8, padding: "10px 28px", borderRadius: 10, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
@@ -561,7 +563,7 @@ const BookingReviewPage = () => {
             )}
 
             {/* Fallback if sidebar is completely empty */}
-            {vendorEntries.length === 0 && ghItems.length === 0 && (
+            {vendorEntries.length === 0 && ghItems.length === 0 && faItems.length === 0 && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
                 <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>No order details yet.</p>
               </div>
@@ -867,8 +869,8 @@ const BookingReviewPage = () => {
                 ))}
 
                 {/* Referral discount line */}
-                {appliedCode && (confirmedTotal + ghTotal) > 0 && (() => {
-                  const { discount } = applyDiscount(confirmedTotal + ghTotal);
+                {appliedCode && (confirmedTotal + ghTotal + faTotal) > 0 && (() => {
+                  const { discount } = applyDiscount(confirmedTotal + ghTotal + faTotal);
                   return (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#15803d" }}>
                       <span style={{ fontWeight: 600 }}>🎁 Referral Discount ({DISCOUNT_PERCENT}%)</span>
@@ -878,10 +880,18 @@ const BookingReviewPage = () => {
                 })()}
 
                 {/* Vendor subtotal */}
-                {confirmedTotal > 0 && ghTotal > 0 && (
+                {confirmedTotal > 0 && (ghTotal > 0 || faTotal > 0) && (
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535", marginBottom: 4 }}>
                     <span>Vendors subtotal</span>
                     <span style={{ fontWeight: 600 }}>{formatINR(confirmedTotal)}</span>
+                  </div>
+                )}
+
+                {/* Fun Activities subtotal */}
+                {faTotal > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535", marginBottom: 4 }}>
+                    <span>Fun Activities subtotal</span>
+                    <span style={{ fontWeight: 600 }}>₹{faTotal.toLocaleString("en-IN")}</span>
                   </div>
                 )}
 
@@ -913,8 +923,8 @@ const BookingReviewPage = () => {
                 <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
                   <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
                   <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
-                    {(confirmedTotal + ghTotal) > 0
-                      ? formatINR((appliedCode ? applyDiscount(confirmedTotal + ghTotal).finalTotal : (confirmedTotal + ghTotal)) + effectivePlatformFee)
+                    {(confirmedTotal + ghTotal + faTotal) > 0
+                      ? formatINR((appliedCode ? applyDiscount(confirmedTotal + ghTotal + faTotal).finalTotal : (confirmedTotal + ghTotal + faTotal)) + effectivePlatformFee)
                       : "—"}
                   </span>
                 </div>
@@ -1026,6 +1036,39 @@ const BookingReviewPage = () => {
                   </button>
                 </div>
               </div>
+
+              {/* Fun Activities section */}
+              {faItems.length > 0 && (
+                <div style={{ marginBottom: 16 }}>
+                  <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 14px" }} />
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎭 Fun Activities</div>
+                  {faItems.map(item => (
+                    <div key={item.id} style={{ marginBottom: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: 13, color: "#5a3a1a" }}>
+                        <span style={{ fontWeight: 600 }}>{item.emoji} {item.name}</span>
+                        <span style={{ fontWeight: 700, color: "#2C1A0E" }}>
+                          {item.totalPrice ? `₹${Number(item.totalPrice).toLocaleString("en-IN")}` : "TBC"}
+                        </span>
+                      </div>
+                      {item.form && (
+                        <div style={{ fontSize: 11, color: "#9B7450", marginTop: 4, lineHeight: 1.6 }}>
+                          📅 {item.form.date} · ⏰ {item.form.time} · 👥 {item.form.guests} guests
+                          <br />📍 {item.form.address}
+                        </div>
+                      )}
+                      {!item.form && (
+                        <div style={{ fontSize: 11, color: "#c0392b", marginTop: 2 }}>⚠ Event details not filled — go back to add details</div>
+                      )}
+                    </div>
+                  ))}
+                  {faTotal > 0 && (
+                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#7c3aed", borderTop: "1px solid rgba(124,58,237,0.15)", paddingTop: 8, marginTop: 6 }}>
+                      <span>Fun Activities Total</span>
+                      <span>₹{faTotal.toLocaleString("en-IN")}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Gift Hampers section — shown when cart has items */}
               {ghItems.length > 0 && (
@@ -1141,8 +1184,8 @@ const BookingReviewPage = () => {
                             }).catch(() => {});
                           }
                           // Build WhatsApp summary message
-                          const vendorGhTotal = confirmedTotal + ghTotal;
-                          const finalAmount = (appliedCode ? applyDiscount(vendorGhTotal).finalTotal : vendorGhTotal) + effectivePlatformFee;
+                          const vendorGhFaTotal = confirmedTotal + ghTotal + faTotal;
+                          const finalAmount = (appliedCode ? applyDiscount(vendorGhFaTotal).finalTotal : vendorGhFaTotal) + effectivePlatformFee;
                           const ghItemLines = ghItems.map(item => `   - ${item.name} × ${item.quantity} — Rs.${item.subtotal.toLocaleString("en-IN")}`);
                           const lines = [
                             `📋 *New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
@@ -1151,32 +1194,35 @@ const BookingReviewPage = () => {
                             formData.date     ? `📅 *Date:* ${formData.date}` : null,
                             formData.location ? `📍 *Location:* ${formData.location}` : null,
                             formData.guests   ? `👥 *Guests:* ${formData.guests}` : null,
-                            "",
-                            "*Finalised Vendors:*",
-                            ...vendorEntries.map(([cat, v]) =>
-                              `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
-                            ),
+                            ...(vendorEntries.length > 0 ? [
+                              "",
+                              "*Finalised Vendors:*",
+                              ...vendorEntries.map(([cat, v]) =>
+                                `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
+                              ),
+                            ] : []),
+                            ...(faItems.length > 0 ? [
+                              "",
+                              "*🎭 Fun Activities:*",
+                              ...faItems.filter(i => i.form).map(i => [
+                                `• ${i.emoji} ${i.name} — Rs.${Number(i.totalPrice || 0).toLocaleString("en-IN")}`,
+                                `   📅 ${i.form.date} · ⏰ ${i.form.time}`,
+                                `   📍 ${i.form.address}`,
+                                `   👥 ${i.form.guests} guests · ${i.form.eventType}`,
+                                i.form.name ? `   Contact: ${i.form.name} · ${i.form.phone}` : null,
+                                i.form.notes ? `   Notes: ${i.form.notes}` : null,
+                              ].filter(Boolean).join("\n")),
+                            ] : []),
                             ...(ghItems.length > 0 ? [
-                              `• 🎁 Gift Hampers — Rs.${ghTotal.toLocaleString("en-IN")}`,
+                              "",
+                              "*🎁 Gift Hampers:*",
+                              `• Total — Rs.${ghTotal.toLocaleString("en-IN")}`,
                               ...ghItemLines,
                               ghDelivery?.name        ? `   📦 Recipient: ${ghDelivery.name}` : null,
                               ghDelivery?.phone       ? `   📱 Phone: ${ghDelivery.phone}` : null,
                               ghDelivery?.deliveryDate ? `   🗓 Delivery Date: ${ghDelivery.deliveryDate}` : null,
                               ghDelivery?.address     ? `   📍 Address: ${ghDelivery.address}${ghDelivery.city ? `, ${ghDelivery.city}` : ""}${ghDelivery.pincode ? ` — ${ghDelivery.pincode}` : ""}` : null,
                               ghDelivery?.instructions ? `   📝 Instructions: ${ghDelivery.instructions}` : null,
-                            ].filter(Boolean) : []),
-                            ...(faBooking ? [
-                              "",
-                              "*🎭 Fun Activity Details:*",
-                              faBooking.activity?.name   ? `   Activity: ${faBooking.activity.emoji || ""} ${faBooking.activity.name}`.trim() : null,
-                              faBooking.form?.eventType  ? `   Event Type: ${faBooking.form.eventType}` : null,
-                              faBooking.form?.date       ? `   Date: ${faBooking.form.date}` : null,
-                              faBooking.form?.time       ? `   Time: ${faBooking.form.time}` : null,
-                              faBooking.form?.address    ? `   Venue: ${faBooking.form.address}` : null,
-                              faBooking.form?.guests     ? `   Guests: ${faBooking.form.guests}` : null,
-                              faBooking.form?.name       ? `   Contact: ${faBooking.form.name} · ${faBooking.form.phone}` : null,
-                              faBooking.form?.notes      ? `   Notes: ${faBooking.form.notes}` : null,
-                              faBooking.totalPrice       ? `   Price: Rs.${Number(faBooking.totalPrice).toLocaleString("en-IN")}` : null,
                             ].filter(Boolean) : []),
                             "",
                             effectivePlatformFee > 0 ? `🔧 *Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
@@ -1197,6 +1243,7 @@ const BookingReviewPage = () => {
                           dispatch(clearFinalisedVendor());
                           dispatch(resetEventPlanning());
                           dispatch(clearCart());
+                          dispatch(clearFunCart());
 
                           setSaving(false);
                           setShowConfirmPopup(false);

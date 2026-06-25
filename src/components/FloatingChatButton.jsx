@@ -1,12 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { removeVendorFromCompare } from "../redux/listingFiltersSlice";
+import { selectFunCartCount } from "../redux/funActivitiesCartSlice";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
 import CompareModal from "./CompareModal";
+import { FunCartDrawer } from "./FunActivitiesSection";
 import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
+import { selectCartCount as selectGhCartCount } from "../redux/giftHamperCartSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -20,6 +23,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
   const compareSelected      = useSelector((s) => s.listingFilters.compareSelected || []);
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
+  const funCartCount         = useSelector(selectFunCartCount);
+  const ghCartCount          = useSelector(selectGhCartCount);
+  const [funCartOpen, setFunCartOpen] = useState(false);
   const dispatch = useDispatch();
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const { cartCount: stCartCount, openCart: openStCart } = useStationeryCart();
@@ -150,6 +156,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   return (
     <>
       <GlobalStationeryCartDrawer />
+      {funCartOpen && <FunCartDrawer onClose={() => setFunCartOpen(false)} />}
       {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
 
       {isCompareModalOpen && (
@@ -362,7 +369,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               )}
             </div>
           )}
-          {/* Button stack — column, bottom-anchored: Review&Pay closest to chat FAB, Saved on top */}
+          {/* Button stack — dynamic, bottom-anchored, stacks upward as icons appear */}
           <div className="mobile-action-stack">
             {savedVendors.length > 0 && (
               <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
@@ -378,11 +385,22 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                 <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
               </button>
             )}
-            {Object.keys(finalisedVendors).length > 0 && (
+            {funCartCount > 0 && (
+              <button className="mobile-action-btn" onClick={() => setFunCartOpen(true)}
+                title="Fun Activities Cart"
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(124,58,237,0.4)", flexShrink: 0 }}>
+                🎭
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
+              </button>
+            )}
+            {(path !== "/booking/review") && (funCartCount > 0 || ghCartCount > 0 || Object.keys(finalisedVendors).length > 0) && (
               <button className="mobile-action-btn" onClick={() => router.navigate("/booking/review")}
+                title="Review & Pay"
                 style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0 }}>
                 ✅
-                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{Object.keys(finalisedVendors).length}</span>
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>
+                  {Object.keys(finalisedVendors).length + (funCartCount > 0 ? 1 : 0) + (ghCartCount > 0 ? 1 : 0)}
+                </span>
               </button>
             )}
           </div>

@@ -1,14 +1,17 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
 import { FUN_ACTIVITIES } from "../data/funActivitiesData";
+import { addActivity, removeActivity, saveActivityForm, selectFunCartItems } from "../redux/funActivitiesCartSlice";
 
 const F     = "'Outfit', sans-serif";
 const GOLD  = "#C47A2E";
 const BROWN = "#2C1A0E";
 
 // ── Booking Details Panel ─────────────────────────────────────────────────────
-function BookingPanel({ activity, onClose }) {
+function BookingPanel({ activity, onClose, onReviewPay }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const today = new Date().toISOString().split("T")[0];
   const [done, setDone] = useState(false);
   const [form, setForm] = useState({
@@ -22,18 +25,12 @@ function BookingPanel({ activity, onClose }) {
 
   const handleReviewPay = () => {
     if (!valid) return;
-    try {
-      sessionStorage.setItem("fa_booking", JSON.stringify({
-        activity: {
-          id: activity.id, name: activity.name, emoji: activity.emoji,
-          price: activity.price, perUnit: activity.perUnit || false, unitLabel: activity.unitLabel || "",
-        },
-        form: { ...form },
-        totalPrice,
-      }));
-    } catch {}
+    dispatch(saveActivityForm({ id: activity.id, form: { ...form }, totalPrice }));
     setDone(true);
-    setTimeout(() => navigate("/booking/review"), 1600);
+    setTimeout(() => {
+      if (onReviewPay) onReviewPay();
+      else navigate("/booking/review");
+    }, 1200);
   };
 
   const inp = (label, key, ph, type = "text", req = true, extra = {}) => (
@@ -168,7 +165,7 @@ function BookingPanel({ activity, onClose }) {
 }
 
 // ── Quick View Modal (center screen) ─────────────────────────────────────────
-function ActivityModal({ activity, onClose, onBook }) {
+function ActivityModal({ activity, onClose, onBook, onAddToCart }) {
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
@@ -229,11 +226,17 @@ function ActivityModal({ activity, onClose, onBook }) {
             ))}
           </div>
 
-          {/* Book Now CTA */}
-          <button onClick={() => { onClose(); onBook(activity); }}
-            style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
-            Book Now — ₹{activity.price.toLocaleString("en-IN")}{activity.perUnit ? ` ${activity.unitLabel}` : ""} →
-          </button>
+          {/* CTAs */}
+          <div style={{ display: "flex", gap: 10, flexDirection: "column" }}>
+            <button onClick={() => { onAddToCart(activity); onClose(); }}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+              🛒 Add to Cart
+            </button>
+            <button onClick={() => { onClose(); onBook(activity); }}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: GOLD, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+              Book Now →
+            </button>
+          </div>
           <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "8px 0 0", fontFamily: F }}>
             Fixed price · Confirmed within 2 hrs · WhatsApp updates
           </p>
@@ -244,7 +247,7 @@ function ActivityModal({ activity, onClose, onBook }) {
 }
 
 // ── Single Card ───────────────────────────────────────────────────────────────
-export function FunActivityCard({ activity, onQuickView, onBook }) {
+export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) {
   return (
     <div onClick={() => onQuickView(activity)}
       style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(44,26,14,0.07)", overflow: "hidden", boxShadow: "0 2px 12px rgba(44,26,14,0.06)", transition: "all 0.2s", display: "flex", flexDirection: "column", minWidth: 220, flex: "0 0 auto", cursor: "pointer" }}
@@ -273,21 +276,115 @@ export function FunActivityCard({ activity, onQuickView, onBook }) {
           <span style={{ fontSize: 10, color: "#9B7450", background: "#F9F5F0", padding: "3px 8px", borderRadius: 100, fontFamily: F }}>👥 {activity.guests}</span>
         </div>
 
-        <button
-          onClick={e => { e.stopPropagation(); onQuickView(activity); }}
-          style={{ width: "100%", padding: "9px 0", borderRadius: 10, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-          View Details & Price
-        </button>
+        <div style={{ display: "flex", gap: 6 }}>
+          <button
+            onClick={e => { e.stopPropagation(); onQuickView(activity); }}
+            style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+            View Details
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); onAddToCart(activity); }}
+            style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            title="Add to cart">
+            🛒
+          </button>
+        </div>
       </div>
     </div>
   );
 }
 
+// ── Fun Cart Drawer ───────────────────────────────────────────────────────────
+export function FunCartDrawer({ onClose }) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const cartItems = useSelector(selectFunCartItems);
+  const [bookingActivity, setBookingActivity] = useState(null);
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,400px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: F }}>
+        {/* Header */}
+        <div style={{ padding: "18px 20px 14px", borderBottom: "1.5px solid rgba(44,26,14,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 2px" }}>🎭 Fun Activities</p>
+            <h3 style={{ fontSize: 17, fontWeight: 900, color: BROWN, margin: 0 }}>Your Cart ({cartItems.length})</h3>
+          </div>
+          <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+        </div>
+
+        {/* Items */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+          {cartItems.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 0", color: "#9B7450" }}>
+              <div style={{ fontSize: 40, marginBottom: 10 }}>🎭</div>
+              <p style={{ fontSize: 14, margin: 0 }}>No activities added yet.</p>
+            </div>
+          ) : cartItems.map(item => (
+            <div key={item.id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                <div>
+                  <p style={{ fontSize: 15, fontWeight: 800, color: BROWN, margin: "0 0 3px" }}>{item.emoji} {item.name}</p>
+                  <p style={{ fontSize: 13, color: GOLD, fontWeight: 700, margin: 0 }}>
+                    ₹{item.price.toLocaleString("en-IN")}{item.perUnit ? ` ${item.unitLabel}` : ""}
+                  </p>
+                </div>
+                <button onClick={() => dispatch(removeActivity(item.id))}
+                  style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.2)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  ✕
+                </button>
+              </div>
+              {item.form ? (
+                <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.05)", borderRadius: 8, padding: "8px 10px", marginBottom: 8, lineHeight: 1.6 }}>
+                  <div>📅 {item.form.date} · ⏰ {item.form.time}</div>
+                  <div>📍 {item.form.address}</div>
+                  <div>👥 {item.form.guests} guests</div>
+                  {item.totalPrice > 0 && <div style={{ fontWeight: 700, color: GOLD, marginTop: 2 }}>₹{item.totalPrice.toLocaleString("en-IN")}</div>}
+                </div>
+              ) : (
+                <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 8px" }}>Event details not filled yet</p>
+              )}
+              <button onClick={() => setBookingActivity(item)}
+                style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: item.form ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: item.form ? GOLD : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+                {item.form ? "Edit Details & Book" : "Book Now →"}
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        {cartItems.some(i => i.form) && (
+          <div style={{ padding: "14px 20px", borderTop: "1.5px solid rgba(44,26,14,0.07)" }}>
+            <button onClick={() => { onClose(); navigate("/booking/review"); }}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
+              Review & Pay →
+            </button>
+          </div>
+        )}
+      </div>
+
+      {bookingActivity && (
+        <BookingPanel
+          activity={bookingActivity}
+          onClose={() => setBookingActivity(null)}
+          onReviewPay={() => { setBookingActivity(null); onClose(); navigate("/booking/review"); }}
+        />
+      )}
+    </>
+  );
+}
+
 // ── Main Section Component ────────────────────────────────────────────────────
 export default function FunActivitiesSection({ heading, subheading, activities = FUN_ACTIVITIES, grid = false }) {
+  const dispatch = useDispatch();
   const [quickView, setQuickView] = useState(null);
   const [booking,   setBooking]   = useState(null);
   const scrollRef = useRef(null);
+
+  const handleAddToCart = (activity) => {
+    dispatch(addActivity({ id: activity.id, name: activity.name, emoji: activity.emoji, price: activity.price, perUnit: activity.perUnit, unitLabel: activity.unitLabel }));
+  };
 
   const scroll = (dir) => {
     if (scrollRef.current) scrollRef.current.scrollBy({ left: dir * 260, behavior: "smooth" });
@@ -308,14 +405,14 @@ export default function FunActivitiesSection({ heading, subheading, activities =
         {grid ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(220px,1fr))", gap: 16 }}>
             {activities.map(a => (
-              <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} />
+              <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} onAddToCart={handleAddToCart} />
             ))}
           </div>
         ) : (
           <div style={{ position: "relative" }}>
             <div ref={scrollRef} style={{ display: "flex", gap: 14, overflowX: "auto", paddingBottom: 8, scrollbarWidth: "none", WebkitOverflowScrolling: "touch" }}>
               {activities.map(a => (
-                <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} />
+                <FunActivityCard key={a.id} activity={a} onQuickView={setQuickView} onBook={setBooking} onAddToCart={handleAddToCart} />
               ))}
             </div>
             {activities.length > 3 && (
@@ -332,8 +429,8 @@ export default function FunActivitiesSection({ heading, subheading, activities =
         )}
       </div>
 
-      {quickView && <ActivityModal activity={quickView} onClose={() => setQuickView(null)} onBook={a => { setQuickView(null); setBooking(a); }} />}
-      {booking   && <BookingPanel  activity={booking}   onClose={() => setBooking(null)} />}
+      {quickView && <ActivityModal activity={quickView} onClose={() => setQuickView(null)} onBook={a => { setQuickView(null); setBooking(a); }} onAddToCart={a => { handleAddToCart(a); setQuickView(null); }} />}
+      {booking   && <BookingPanel  activity={booking}   onClose={() => setBooking(null)} onReviewPay={() => { setBooking(null); }} />}
     </>
   );
 }
