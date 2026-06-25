@@ -80,7 +80,6 @@ function SavedVendorsInline({ asStrip = false }) {
   const dispatch        = useDispatch();
   const navigate        = useNavigate();
   const { openVendorChat } = useChatOverlay();
-  const { startTour } = useTour() || {};
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
   const [open, setOpen] = React.useState(false);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
@@ -150,6 +149,7 @@ const Navbar = ({
 }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const { startTour } = useTour() || {};
   const { user, token } = useSelector((state) => state.auth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
