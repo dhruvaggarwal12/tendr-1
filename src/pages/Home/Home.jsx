@@ -643,41 +643,57 @@ const Home = () => {
     },
   ];
 
-  const HOME_TOUR_STEPS = [
+  const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+
+  const HOME_TOUR_STEPS = isMobile ? [
     {
       target: "body",
       placement: "center",
-      disableBeacon: true,
       title: "Welcome to Tendr! 🎉",
-      content: "India's smartest event platform — find vendors, plan events, shop gifts and stationery, explore venues, and more. You'll see short tips like this as you explore each section.",
+      content: "Plan any event — find vendors, book services, shop gifts. Let's show you around.",
+    },
+    {
+      target: '[data-tour="mobile-bottom-nav"]',
+      placement: "top",
+      title: "Your Navigation",
+      content: "Browse vendors, plan events, access tools and your profile — all from the bar at the bottom.",
     },
     {
       target: '[data-tour="search-bar"]',
       placement: "bottom",
-      disableBeacon: true,
+      title: "Search Anything",
+      content: 'Try "decorator in Noida" or "caterer under ₹30K". Tendr finds the right vendors instantly.',
+    },
+  ] : [
+    {
+      target: "body",
+      placement: "center",
+      title: "Welcome to Tendr! 🎉",
+      content: "India's smartest event platform — find vendors, plan events, shop gifts and more. Here's a quick look around.",
+    },
+    {
+      target: '[data-tour="search-bar"]',
+      placement: "bottom",
       title: "Smart Search",
-      content: 'Type naturally — "decorator under ₹20K in Noida", "photographer for 150 guests in Delhi". It understands vendor types, budgets, and locations automatically.',
+      content: 'Type naturally — "decorator under ₹20K in Noida" or "photographer for 150 guests". It understands types, budgets and locations.',
     },
     {
       target: '[data-tour="nav-browse"]',
       placement: "bottom",
-      disableBeacon: true,
       title: "Browse Vendors",
-      content: "Browse Decorators, Caterers, Photographers, and DJs. Filter by location, budget, rating, and availability. Top Rated shows our highest-reviewed vendors.",
+      content: "Decorators, Caterers, Photographers, DJs and more. Filter by location, budget and rating.",
     },
     {
       target: '[data-tour="nav-booking"]',
       placement: "bottom",
-      disableBeacon: true,
       title: "Plan Your Event",
-      content: "Start here to plan your full event. Pick vendors yourself or let Tendr's Smart Plan choose the best combination within your total budget.",
+      content: "Pick vendors yourself or let Tendr's Smart Plan build the perfect lineup within your budget.",
     },
     {
       target: '[data-tour="nav-tools"]',
       placement: "bottom",
-      disableBeacon: true,
       title: "Tools & Extras",
-      content: "Budget Allocator, Decor Finder, Timeline Builder, Gift Hampers, Wedding Stationeries, Fun Activities, Party Places — all under Browse and Tools.",
+      content: "Budget Allocator, Timeline Builder, Gift Hampers, Stationeries and Fun Activities — all in one place.",
     },
   ];
 

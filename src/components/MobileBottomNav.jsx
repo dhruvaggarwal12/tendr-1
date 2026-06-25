@@ -375,6 +375,7 @@ function BottomNavInner() {
       {/* Bottom nav bar */}
       <nav
         className="mobile-bottom-nav"
+        data-tour="mobile-bottom-nav"
         style={{
           position: "fixed",
           bottom: 0, left: 0, right: 0,

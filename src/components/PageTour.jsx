@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { Joyride, STATUS } from "react-joyride";
+import { useState, useCallback, useEffect } from "react";
+import { Joyride, STATUS, ACTIONS } from "react-joyride";
 
 const TOUR_PREFIX = "tendr_tour_";
 
@@ -21,10 +21,10 @@ function TourTooltip({ index, step, backProps, closeProps, primaryProps, tooltip
       {...tooltipProps}
       style={{
         background: CREAM,
-        borderRadius: 18,
-        padding: "24px 26px 20px",
-        maxWidth: 380,
-        boxShadow: "0 20px 60px rgba(44,26,14,0.2), 0 0 0 2px rgba(196,122,46,0.18)",
+        borderRadius: 20,
+        padding: "28px 28px 22px",
+        maxWidth: 360,
+        boxShadow: "0 20px 60px rgba(44,26,14,0.22), 0 0 0 2px rgba(196,122,46,0.18)",
         fontFamily: font,
         position: "relative",
         overflow: "hidden",
@@ -32,27 +32,27 @@ function TourTooltip({ index, step, backProps, closeProps, primaryProps, tooltip
     >
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${GOLD}, #CCAB4A, ${GOLD})` }} />
 
-      <div style={{ fontSize: 10, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 9 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 10 }}>
         {index + 1} / {size}
       </div>
 
       {step.title && (
-        <div style={{ fontSize: 16, fontWeight: 800, color: DARK, marginBottom: 8, lineHeight: 1.3 }}>
+        <div style={{ fontSize: 19, fontWeight: 900, color: DARK, marginBottom: 10, lineHeight: 1.25 }}>
           {step.title}
         </div>
       )}
 
-      <div style={{ fontSize: 13.5, lineHeight: 1.7, color: "#5C3D1E" }}>
+      <div style={{ fontSize: 15, lineHeight: 1.65, color: "#5C3D1E" }}>
         {step.content}
       </div>
 
-      <div style={{ display: "flex", gap: 4, marginTop: 16, marginBottom: 12, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 5, marginTop: 18, marginBottom: 14 }}>
         {Array.from({ length: size }).map((_, i) => (
           <div
             key={i}
             style={{
-              width: i === index ? 16 : 5,
-              height: 5,
+              width: i === index ? 18 : 6,
+              height: 6,
               borderRadius: 100,
               background: i === index ? GOLD : "rgba(196,122,46,0.25)",
               transition: "all 0.25s",
@@ -64,22 +64,22 @@ function TourTooltip({ index, step, backProps, closeProps, primaryProps, tooltip
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <button
           {...closeProps}
-          style={{ background: "none", border: "none", fontSize: 12, color: MUTED, cursor: "pointer", padding: "3px 0", fontFamily: font, fontWeight: 600 }}
+          style={{ background: "none", border: "none", fontSize: 13, color: MUTED, cursor: "pointer", padding: "3px 0", fontFamily: font, fontWeight: 600 }}
         >
           Skip
         </button>
-        <div style={{ display: "flex", gap: 7 }}>
+        <div style={{ display: "flex", gap: 8 }}>
           {index > 0 && (
             <button
               {...backProps}
-              style={{ padding: "6px 14px", borderRadius: 9, border: `1.5px solid rgba(196,122,46,0.35)`, background: "transparent", fontSize: 12.5, fontWeight: 700, color: GOLD, cursor: "pointer", fontFamily: font }}
+              style={{ padding: "8px 16px", borderRadius: 10, border: `1.5px solid rgba(196,122,46,0.35)`, background: "transparent", fontSize: 13, fontWeight: 700, color: GOLD, cursor: "pointer", fontFamily: font }}
             >
               ← Back
             </button>
           )}
           <button
             {...primaryProps}
-            style={{ padding: "7px 18px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${GOLD}, #CCAB4A)`, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 12px rgba(196,122,46,0.35)" }}
+            style={{ padding: "8px 20px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${GOLD}, #CCAB4A)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 12px rgba(196,122,46,0.35)" }}
           >
             {index === size - 1 ? "Got it! ✓" : "Next →"}
           </button>
@@ -93,28 +93,48 @@ export default function PageTour({ pageKey, steps, condition = true }) {
   const storageKey = TOUR_PREFIX + pageKey;
   const [run, setRun] = useState(() => condition && !localStorage.getItem(storageKey));
 
+  // If condition changes to true after mount (e.g. data loads), re-check
+  useEffect(() => {
+    if (condition && !localStorage.getItem(storageKey)) {
+      setRun(true);
+    }
+  }, [condition, storageKey]);
+
+  const markDone = useCallback(() => {
+    localStorage.setItem(storageKey, "1");
+    setRun(false);
+  }, [storageKey]);
+
   const handleCallback = useCallback(
     (data) => {
-      if ([STATUS.FINISHED, STATUS.SKIPPED].includes(data.status)) {
-        localStorage.setItem(storageKey, "1");
-        setRun(false);
+      const { status, action } = data;
+      // Mark done on finish, skip, close (X button), or any overlay-close equivalent
+      if (
+        [STATUS.FINISHED, STATUS.SKIPPED].includes(status) ||
+        action === ACTIONS.CLOSE ||
+        action === ACTIONS.STOP
+      ) {
+        markDone();
       }
     },
-    [storageKey]
+    [markDone]
   );
 
   if (!run || !condition) return null;
 
+  // Auto-inject disableBeacon on every step so no black dot appears
+  const safeSteps = steps.map((s) => ({ ...s, disableBeacon: true }));
+
   return (
     <Joyride
-      steps={steps}
+      steps={safeSteps}
       run={run}
       callback={handleCallback}
       tooltipComponent={TourTooltip}
       continuous
       scrollToFirstStep
       showSkipButton
-      disableOverlayClose
+      disableOverlayClose={false}
       disableScrolling={false}
       styles={{
         options: {
