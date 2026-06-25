@@ -654,34 +654,46 @@ const Home = () => {
       content: "Plan any event — find vendors, book services, shop gifts. Here's a quick look at everything.",
     },
     {
-      target: '[data-tour="mob-nav-browse"]',
-      placement: "top",
-      title: "Browse Vendors",
-      content: "Tap Browse to explore Decorators, Caterers, Photographers, DJs and more — filter by budget, location and rating.",
+      target: '[data-tour="mob-search"]',
+      placement: "bottom",
+      title: "Search Vendors",
+      content: 'Tap here to search — try "decorator in Noida" or "caterer under ₹30K". Tendr finds the right match instantly.',
+    },
+    {
+      target: '[data-tour="mob-icon-row"]',
+      placement: "bottom",
+      title: "Quick Access",
+      content: "Jump straight to Vendors, Gift Hampers, Fun Activities or Wedding Stationeries from here.",
+    },
+    {
+      target: '[data-tour="mob-burger"]',
+      placement: "bottom",
+      title: "More Options",
+      content: "Tap the three lines to access Community, About Us and Contact — all in one menu.",
     },
     {
       target: '[data-tour="mob-nav-products"]',
       placement: "top",
       title: "Planning Tools",
-      content: "Budget Allocator, Timeline Builder, Decor Finder and more — everything you need to plan a perfect event.",
+      content: "Budget Allocator, Timeline Builder and Decor Finder — everything you need to plan the perfect event.",
     },
     {
       target: '[data-tour="mob-nav-plan"]',
       placement: "top",
       title: "Plan Your Event",
-      content: "Start here to plan your full event. Pick vendors yourself or let Tendr's Smart Plan build the best lineup within your budget.",
+      content: "Start here to plan your full event. Pick vendors yourself or let Smart Plan build the best lineup within your budget.",
     },
     {
       target: '[data-tour="mob-nav-tips"]',
       placement: "top",
       title: "Tips by Tendr",
-      content: "Free event planning guides — budgeting, decor, corporate events and more. Unlock any guide instantly with your WhatsApp number.",
+      content: "Free event planning guides on budgeting, decor, corporate events and more. Unlock any guide instantly with your WhatsApp number.",
     },
     isSignedIn ? {
       target: '[data-tour="mob-nav-profile"]',
       placement: "top",
       title: "Your Bookings",
-      content: "Tap Profile to open your dashboard. Once Tendr confirms your booking it shows up here under Upcoming — with all documents ready to download.",
+      content: "Tap Profile to open your dashboard. Once Tendr confirms your booking it shows up under Upcoming — with all documents ready to download.",
     } : {
       target: '[data-tour="mob-nav-profile"]',
       placement: "top",
@@ -706,6 +718,12 @@ const Home = () => {
       placement: "bottom",
       title: "Browse Vendors",
       content: "Decorators, Caterers, Photographers, DJs, Venues, Makeup and more. Filter by location, budget and rating. Top Rated shows our best-reviewed vendors.",
+    },
+    {
+      target: '[data-tour="nav-products"]',
+      placement: "bottom",
+      title: "Our Products",
+      content: "Gift Hampers & Cakes, Wedding Stationeries, and Fun Activities like magic shows, live bands and photo booths — all curated for your event.",
     },
     {
       target: '[data-tour="nav-booking"]',
@@ -796,7 +814,7 @@ const Home = () => {
           <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
 
             {/* Mobile only: 4 main category chips */}
-            <div className="hero-mobile-cats" style={{ display: "none", marginBottom: 10 }}>
+            <div className="hero-mobile-cats" data-tour="mob-icon-row" style={{ display: "none", marginBottom: 10 }}>
               <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
                 {[
                   { emoji: "🏪", label: "Vendors",       path: null,                  bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)", isVendors: true },

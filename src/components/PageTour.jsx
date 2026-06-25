@@ -108,11 +108,12 @@ export default function PageTour({ pageKey, steps, condition = true }) {
   const handleCallback = useCallback(
     (data) => {
       const { status, action } = data;
-      // Mark done on finish, skip, close (X button), or any overlay-close equivalent
+      // Mark done on any terminal state — including error (missing target) and close
       if (
-        [STATUS.FINISHED, STATUS.SKIPPED].includes(status) ||
+        [STATUS.FINISHED, STATUS.SKIPPED, STATUS.ERROR].includes(status) ||
         action === ACTIONS.CLOSE ||
-        action === ACTIONS.STOP
+        action === ACTIONS.STOP ||
+        action === ACTIONS.SKIP
       ) {
         markDone();
       }

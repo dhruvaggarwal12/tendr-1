@@ -506,7 +506,7 @@ const Navbar = ({
               ) : (
               <div
                 key={group.label}
-                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : group.label === "Tips by Tendr" ? "nav-tips" : group.label === "Community" ? "nav-community" : group.label === "Company" ? "nav-company" : undefined}
+                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Our Products" ? "nav-products" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : group.label === "Tips by Tendr" ? "nav-tips" : group.label === "Community" ? "nav-community" : group.label === "Company" ? "nav-company" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}
@@ -793,6 +793,7 @@ const Navbar = ({
         {/* Mobile search bar — taps open full-screen overlay */}
         <button
           className="mobile-search-bar"
+          data-tour="mob-search"
           onClick={() => setSearchOverlay(true)}
           style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer" }}
         >
@@ -803,6 +804,7 @@ const Navbar = ({
         {/* Burger (mobile) */}
         <button
           className="burger-btn-custom"
+          data-tour="mob-burger"
           onClick={() => setMenuOpen(!menuOpen)}
           style={{
             background: "none",
