@@ -80,7 +80,7 @@ function SavedVendorsInline({ asStrip = false }) {
   const dispatch        = useDispatch();
   const navigate        = useNavigate();
   const { openVendorChat } = useChatOverlay();
-  const { startTour } = useTour();
+  const { startTour } = useTour() || {};
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
   const [open, setOpen] = React.useState(false);
   const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=200&q=80";
@@ -713,7 +713,7 @@ const Navbar = ({
                           >Admin Dashboard</button>
 
                           <button
-                            onClick={() => { setShowProfileMenu(false); startTour(); }}
+                            onClick={() => { setShowProfileMenu(false); startTour?.(); }}
                             style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#C47A2E", cursor: "pointer", fontFamily: font }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
