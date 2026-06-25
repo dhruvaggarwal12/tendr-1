@@ -28,7 +28,7 @@ export default function GuidePreview() {
   }
 
   const { theme } = guide;
-  const isDark = theme.name === "dark-tech";
+  const isDark = false; // all themes are now light-toned
 
   const handleUnlock = (e) => {
     e.preventDefault();
@@ -46,7 +46,7 @@ export default function GuidePreview() {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: isDark ? "#070B14" : "#FAFAF8", fontFamily: font }}>
+    <div style={{ minHeight: "100vh", background: theme.bg, fontFamily: font }}>
       {/* Back bar */}
       <div style={{ padding: "12px 24px", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, display: "flex", alignItems: "center", gap: 12 }}>
         <button
@@ -117,9 +117,7 @@ export default function GuidePreview() {
           {/* Blur fade overlay */}
           <div style={{
             position: "absolute", bottom: 0, left: 0, right: 0, height: 80,
-            background: isDark
-              ? "linear-gradient(to bottom, transparent, #070B14)"
-              : "linear-gradient(to bottom, transparent, #FAFAF8)",
+            background: `linear-gradient(to bottom, transparent, ${theme.bg})`,
             pointerEvents: "none",
           }} />
         </div>
