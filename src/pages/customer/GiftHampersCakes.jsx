@@ -377,7 +377,7 @@ const GiftHampersCakes = () => {
               <img src={selectedProduct.images[0]} alt={selectedProduct.name} style={{ width: "100%", height: 220, objectFit: "cover", flexShrink: 0 }} />
             )}
             {/* Body */}
-            <div style={{ padding: "20px 22px 24px", overflowY: "auto", flex: 1 }}>
+            <div style={{ padding: "20px 22px calc(24px + env(safe-area-inset-bottom, 20px))", overflowY: "auto", flex: 1 }}>
               <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{selectedProduct.category}</div>
               <h3 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>{selectedProduct.name}</h3>
               <div style={{ fontSize: 22, fontWeight: 900, color: "#C47A2E", marginBottom: 12 }}>₹{selectedProduct.pricePerUnit?.toLocaleString("en-IN")}<span style={{ fontSize: 12, fontWeight: 500, color: "#9B7450" }}> / unit</span></div>

@@ -9,7 +9,7 @@ const GOLD  = "#C47A2E";
 const BROWN = "#2C1A0E";
 
 // ── Booking Details Panel ─────────────────────────────────────────────────────
-function BookingPanel({ activity, onClose, onReviewPay }) {
+function BookingPanel({ activity, onClose, onReviewPay, fromDrawer = false }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const today = new Date().toISOString().split("T")[0];
@@ -58,8 +58,8 @@ function BookingPanel({ activity, onClose, onReviewPay }) {
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <div style={{ textAlign: "center", padding: "0 24px" }}>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 6px", fontFamily: F }}>Booking Saved!</h3>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: 0, fontFamily: F }}>Taking you to Review & Pay…</p>
+          <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 6px", fontFamily: F }}>Details Saved!</h3>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: 0, fontFamily: F }}>{fromDrawer ? "Tap 'Confirm Booking' when ready." : "Taking you to Review & Pay…"}</p>
         </div>
         <style>{`@keyframes fa-pop{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}`}</style>
       </div>
@@ -171,7 +171,7 @@ function BookingPanel({ activity, onClose, onReviewPay }) {
 
           <button onClick={handleReviewPay} disabled={!valid}
             style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: valid ? "linear-gradient(135deg,#15803d,#22c55e)" : "#E5E7EB", color: valid ? "#fff" : "#9CA3AF", fontSize: 15, fontWeight: 800, cursor: valid ? "pointer" : "not-allowed", fontFamily: F, boxShadow: valid ? "0 4px 14px rgba(21,128,61,0.35)" : "none", transition: "all 0.15s" }}>
-            Review & Pay — ₹{totalPrice.toLocaleString("en-IN")} →
+            {fromDrawer ? `Save Details ✓ — ₹${totalPrice.toLocaleString("en-IN")}` : `Review & Pay — ₹${totalPrice.toLocaleString("en-IN")} →`}
           </button>
           <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "10px 0 0", fontFamily: F }}>
             Fixed price · No hidden charges · WhatsApp confirmation within 2 hrs
@@ -187,7 +187,7 @@ function ActivityModal({ activity, onClose, onAddToCart }) {
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
-      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,520px)", maxHeight: "90vh", overflowY: "auto", background: "#FFFCF5", borderRadius: 22, zIndex: 1101, fontFamily: F, boxShadow: "0 28px 70px rgba(0,0,0,0.22)" }}>
+      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,520px)", maxHeight: window.innerWidth < 768 ? "82vh" : "90vh", overflowY: "auto", background: "#FFFCF5", borderRadius: 22, zIndex: 1101, fontFamily: F, boxShadow: "0 28px 70px rgba(0,0,0,0.22)" }}>
 
         {/* Header */}
         <div style={{ background: `linear-gradient(135deg,${GOLD}20,${GOLD}08)`, padding: "32px 24px 20px", textAlign: "center", borderRadius: "22px 22px 0 0", position: "relative" }}>
@@ -205,7 +205,7 @@ function ActivityModal({ activity, onClose, onAddToCart }) {
           </div>
         </div>
 
-        <div style={{ padding: "20px 24px 24px" }}>
+        <div style={{ padding: "20px 24px calc(24px + env(safe-area-inset-bottom, 20px))" }}>
           {/* Info pills */}
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
             <span style={{ fontSize: 12, color: "#9B7450", background: "#F9F5F0", padding: "5px 12px", borderRadius: 100, fontFamily: F }}>⏱ {activity.duration}</span>
@@ -305,7 +305,6 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
 // ── Fun Cart Drawer ───────────────────────────────────────────────────────────
 export function FunCartDrawer({ onClose }) {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const cartItems = useSelector(selectFunCartItems);
   const [bookingActivity, setBookingActivity] = useState(null);
 
@@ -353,9 +352,9 @@ export function FunCartDrawer({ onClose }) {
               ) : (
                 <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 8px" }}>Event details not filled yet</p>
               )}
-              <button onClick={() => setBookingActivity(item)}
+              <button onClick={() => setBookingActivity(FUN_ACTIVITIES.find(a => a.id === item.id) || item)}
                 style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: item.form ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: item.form ? GOLD : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-                {item.form ? "Edit Details & Book" : "Book Now →"}
+                {item.form ? "Edit Details" : "Fill Event Details"}
               </button>
             </div>
           ))}
@@ -375,8 +374,9 @@ export function FunCartDrawer({ onClose }) {
       {bookingActivity && (
         <BookingPanel
           activity={bookingActivity}
+          fromDrawer={true}
           onClose={() => setBookingActivity(null)}
-          onReviewPay={() => { setBookingActivity(null); onClose(); navigate("/booking/review"); }}
+          onReviewPay={() => setBookingActivity(null)}
         />
       )}
     </>
