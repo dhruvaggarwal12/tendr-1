@@ -306,9 +306,11 @@ const Navbar = ({
       ],
     },
     {
-      label: "Community",
-      directLink: true,
-      href: "/community",
+      label: "Tips by Tendr",
+      items: [
+        { label: "💬 Community", href: "/community" },
+        ...(user?.isAdmin ? [{ label: "📚 Guide Store", href: "/guides" }] : []),
+      ],
     },
     {
       label: "Booking",

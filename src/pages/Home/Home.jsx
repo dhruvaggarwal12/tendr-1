@@ -1,6 +1,8 @@
 // src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate as useNav } from "react-router-dom";
 import PageTour from "../../components/PageTour";
+import { GUIDES } from "../guides/guideData";
 import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
@@ -108,6 +110,82 @@ const FAQS = [
   { q: "What happens if there is no activity on my chat for 24 hours?", a: "If neither you nor the vendor sends a message for 24 hours, the chat request and conversation are automatically removed from our system and your booking moves to Cancelled status. This keeps our platform clean and responsive. Simply start a new chat request if you would like to reconnect with the vendor." },
   { q: "How do I open a chat with a vendor I was already talking to?", a: "Go to your Dashboard → Chats tab to see all your active vendor conversations and open them directly. You can also click the 💛 Saved Vendors icon in the top-right corner and tap 'Chat' next to any saved vendor. Alternatively, visit the vendor's profile page and click 'Request to Chat' to start a new conversation." },
 ];
+
+function TipsByTendrSection() {
+  const navigate = useNav();
+  const font = "'Outfit', sans-serif";
+  const preview = GUIDES.slice(0, 3);
+  return (
+    <section style={{ background: "#070B14", padding: "72px 24px 80px", fontFamily: font, position: "relative", overflow: "hidden" }}>
+      {/* Subtle glow blobs */}
+      <div style={{ position: "absolute", top: -80, right: -80, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,142,247,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: -60, left: -60, width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+      <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
+        {/* Header */}
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
+          <div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(79,142,247,0.1)", border: "1px solid rgba(79,142,247,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.14em" }}>Admin Preview · Tips by Tendr</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.025em", lineHeight: 1.15, margin: "0 0 8px" }}>
+              Free Event Planning Guides
+            </h2>
+            <p style={{ fontSize: 15, color: "#7A8BA8", margin: 0, lineHeight: 1.6, maxWidth: 480 }}>
+              Practical guides for budgeting, decorating, and planning any event. Unlock with a WhatsApp number.
+            </p>
+          </div>
+          <button
+            onClick={() => navigate("/guides")}
+            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(79,142,247,0.3)", background: "transparent", color: "#4F8EF7", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            View All Guides →
+          </button>
+        </div>
+
+        {/* Guide cards */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
+          {preview.map((guide) => (
+            <div
+              key={guide.slug}
+              onClick={() => navigate(`/guides/${guide.slug}`)}
+              style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 18, padding: "24px 22px 20px", cursor: "pointer", transition: "transform 0.2s, border-color 0.2s", position: "relative", overflow: "hidden" }}
+              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = `${guide.theme.accent}40`; }}
+              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}
+            >
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: guide.theme.accent, opacity: 0.7 }} />
+              <div style={{ fontSize: 32, marginBottom: 12, lineHeight: 1 }}>{guide.coverEmoji}</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: guide.theme.accent, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{guide.tags[0]}</div>
+              <h3 style={{ fontSize: 16.5, fontWeight: 800, color: "#FFFFFF", margin: "0 0 6px", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{guide.title}</h3>
+              <p style={{ fontSize: 12.5, color: "#7A8BA8", margin: "0 0 16px", lineHeight: 1.6 }}>{guide.subtitle}</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 11.5, color: "#4A5E7A" }}>{guide.readTime} · {guide.pages}pp</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: guide.theme.accent }}>Free →</span>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Community row */}
+        <div
+          onClick={() => navigate("/community")}
+          style={{ marginTop: 20, padding: "18px 24px", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, transition: "border-color 0.2s" }}
+          onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"}
+          onMouseLeave={(e) => e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <span style={{ fontSize: 28 }}>💬</span>
+            <div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF" }}>Community Wall</div>
+              <div style={{ fontSize: 12.5, color: "#7A8BA8", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
+            </div>
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 600, color: "#C47A2E" }}>Explore →</span>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function FaqSection() {
   const [open, setOpen] = React.useState(null);
@@ -1788,6 +1866,9 @@ const Home = () => {
 
       {/* ── FAQ ── */}
       <FaqSection />
+
+      {/* ── Tips by Tendr — admin preview only ── */}
+      {user?.isAdmin && <TipsByTendrSection />}
 
       {/* Footer */}
       <Footer />

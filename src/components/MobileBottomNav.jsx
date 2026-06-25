@@ -28,6 +28,7 @@ const NAV_COLORS = {
   Products: { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Plan:     { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Profile:  { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
+  Tips:     { active: "#4F8EF7", bg: "rgba(79,142,247,0.12)", shadow: "rgba(79,142,247,0.4)" },
 };
 
 const NAV_ICONS = {
@@ -66,6 +67,12 @@ const NAV_ICONS = {
       <rect x="2" y="11" width="6" height="6" rx="1"/><rect x="9" y="11" width="6" height="6" rx="1"/><rect x="16" y="11" width="6" height="6" rx="1"/>
     </svg>
   ),
+  Tips: (on, color) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#BFA080"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a7 7 0 015.29 11.56l-.01.01A4.98 4.98 0 0015 17v1H9v-1a4.98 4.98 0 00-2.28-3.43A7 7 0 0112 2z"/>
+      <line x1="9" y1="21" x2="15" y2="21"/>
+    </svg>
+  ),
 };
 
 function BottomNavInner() {
@@ -79,6 +86,7 @@ function BottomNavInner() {
   const [browseOpen, setBrowseOpen] = useState(false);
   const [productsOpen, setProductsOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
+  const [tipsOpen, setTipsOpen] = useState(false);
   const scrollTimer = useRef(null);
 
   // Hide while scrolling, show when stopped
@@ -98,6 +106,7 @@ function BottomNavInner() {
     setBrowseOpen(false);
     setProductsOpen(false);
     setPlanOpen(false);
+    setTipsOpen(false);
   }, [location.pathname]);
 
   const shouldHide = HIDE_PATHS.some((p) => location.pathname.startsWith(p));
@@ -125,9 +134,10 @@ function BottomNavInner() {
 
   const items = [
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
-    ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setBrowseOpen(o => !o); } }] : []),
-    { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setProductsOpen(o => !o); } },
-    { label: "Plan",     paths: ["/booking","/plan-event","/occasions"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(o => !o); } },
+    ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
+    { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
+    { label: "Plan",     paths: ["/booking","/plan-event","/occasions"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
+    ...(user?.isAdmin ? [{ label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } }] : []),
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
 
@@ -283,6 +293,50 @@ function BottomNavInner() {
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* Tips by Tendr popup sheet — admin only */}
+      {tipsOpen && (
+        <>
+          <div onClick={() => setTipsOpen(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 99991 }} />
+          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, background: "#0F1629", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(0,0,0,0.5)", padding: "10px 20px 24px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)", borderTop: "1px solid rgba(79,142,247,0.2)" }}>
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+              <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(79,142,247,0.25)" }} />
+            </div>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 16px" }}>Tips by Tendr</p>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {/* Community */}
+              <button
+                onClick={() => { navigate("/community"); setTipsOpen(false); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.07)", background: "#0A0E1A", cursor: "pointer", fontFamily: font, textAlign: "left" }}
+                onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.06)"}
+                onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
+              >
+                <span style={{ fontSize: 28, lineHeight: 1 }}>💬</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Community Wall</div>
+                  <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>Real events shared by customers</div>
+                </div>
+              </button>
+
+              {/* Guide Store */}
+              <button
+                onClick={() => { navigate("/guides"); setTipsOpen(false); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(79,142,247,0.2)", background: "#0A0E1A", cursor: "pointer", fontFamily: font, textAlign: "left" }}
+                onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.08)"}
+                onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
+              >
+                <span style={{ fontSize: 28, lineHeight: 1 }}>📚</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Guide Store</div>
+                  <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>Free event planning guides — unlock with WhatsApp</div>
+                </div>
+              </button>
             </div>
           </div>
         </>
