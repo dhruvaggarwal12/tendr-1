@@ -309,7 +309,7 @@ const Navbar = ({
       label: "Tips by Tendr",
       items: [
         { label: "💬 Community", href: "/community" },
-        ...(user?.isAdmin ? [{ label: "📚 Guide Store", href: "/guides" }] : []),
+        { label: "📚 Guide Store", href: "/guides" },
       ],
     },
     {

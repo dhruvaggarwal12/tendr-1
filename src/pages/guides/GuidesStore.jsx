@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { GUIDES } from "./guideData";
 
@@ -18,38 +17,13 @@ const STORE = {
 };
 
 export default function GuidesStore() {
-  const { user, token } = useSelector((s) => s.auth);
   const navigate = useNavigate();
-
-  const isAdmin = user?.isAdmin === true || (() => {
-    try {
-      const payload = JSON.parse(atob(token?.split(".")[1] || ""));
-      return payload.isAdmin === true;
-    } catch { return false; }
-  })();
-
-  if (!isAdmin) {
-    return (
-      <div style={{ minHeight: "100vh", background: STORE.bg, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>
-        <div style={{ textAlign: "center", color: STORE.text }}>
-          <div style={{ fontSize: 40, marginBottom: 16 }}>🔒</div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: STORE.heading }}>Admin Preview Only</div>
-          <div style={{ fontSize: 14, color: STORE.muted, marginTop: 8 }}>This section is not yet public.</div>
-          <button onClick={() => navigate("/")} style={{ marginTop: 24, padding: "10px 24px", borderRadius: 10, border: "none", background: STORE.accent, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-            Back to Home
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div style={{ minHeight: "100vh", background: STORE.bg, fontFamily: font }}>
-      {/* Admin badge */}
+      {/* Back bar */}
       <div style={{ background: STORE.accentSoft, borderBottom: `1px solid ${STORE.border}`, padding: "8px 24px", display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: STORE.accent, textTransform: "uppercase", letterSpacing: "0.1em" }}>Admin Preview</span>
-        <span style={{ fontSize: 11, color: STORE.muted }}>— Guide store not yet visible to customers</span>
-        <button onClick={() => navigate(-1)} style={{ marginLeft: "auto", background: "none", border: `1px solid ${STORE.border}`, color: STORE.accent, fontSize: 12, fontWeight: 600, padding: "4px 14px", borderRadius: 6, cursor: "pointer", fontFamily: font }}>
+        <button onClick={() => navigate(-1)} style={{ background: "none", border: `1px solid ${STORE.border}`, color: STORE.accent, fontSize: 12, fontWeight: 600, padding: "4px 14px", borderRadius: 6, cursor: "pointer", fontFamily: font }}>
           ← Back
         </button>
       </div>

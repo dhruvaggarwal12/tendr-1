@@ -126,7 +126,7 @@ function TipsByTendrSection() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(79,142,247,0.1)", border: "1px solid rgba(79,142,247,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.14em" }}>Admin Preview · Tips by Tendr</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
             </div>
             <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.025em", lineHeight: 1.15, margin: "0 0 8px" }}>
               Free Event Planning Guides
@@ -1867,8 +1867,8 @@ const Home = () => {
       {/* ── FAQ ── */}
       <FaqSection />
 
-      {/* ── Tips by Tendr — admin preview only ── */}
-      {user?.isAdmin && <TipsByTendrSection />}
+      {/* ── Tips by Tendr ── */}
+      <TipsByTendrSection />
 
       {/* Footer */}
       <Footer />

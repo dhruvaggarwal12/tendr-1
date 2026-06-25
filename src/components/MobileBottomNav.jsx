@@ -137,7 +137,7 @@ function BottomNavInner() {
     ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
     { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan",     paths: ["/booking","/plan-event","/occasions"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
-    ...(user?.isAdmin ? [{ label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } }] : []),
+    { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
 
@@ -298,7 +298,7 @@ function BottomNavInner() {
         </>
       )}
 
-      {/* Tips by Tendr popup sheet — admin only */}
+      {/* Tips by Tendr popup sheet */}
       {tipsOpen && (
         <>
           <div onClick={() => setTipsOpen(false)}
