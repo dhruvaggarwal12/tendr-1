@@ -102,6 +102,13 @@ export default function PageTour({ pageKey, steps, condition = true }) {
     lsSet(storageKey, "1");
     _seen.add(storageKey);
     setRun(false);
+    // Remove any lingering Joyride beacon/floater elements
+    try {
+      setTimeout(() => {
+        document.querySelectorAll('[class*="joyride-beacon"]').forEach(el => el.remove());
+        document.querySelectorAll('[class*="__floater"]').forEach(el => el.remove());
+      }, 50);
+    } catch {}
   }, [storageKey]);
 
   const handleCallback = useCallback(
@@ -124,23 +131,26 @@ export default function PageTour({ pageKey, steps, condition = true }) {
   const safeSteps = steps.map((s) => ({ ...s, disableBeacon: true }));
 
   return (
-    <Joyride
-      steps={safeSteps}
-      run={run}
-      disableBeacon
-      callback={handleCallback}
-      tooltipComponent={TourTooltip}
-      continuous
-      scrollToFirstStep
-      showSkipButton
-      disableOverlayClose={false}
-      disableScrolling={false}
-      spotlightClicks={false}
-      styles={{
-        options: { zIndex: 10000, primaryColor: GOLD, arrowColor: CREAM },
-        overlay: { backgroundColor: "rgba(28,10,0,0.45)" },
-        spotlight: { borderRadius: 12 },
-      }}
-    />
+    <>
+      <style>{`.react-joyride__beacon { display: none !important; }`}</style>
+      <Joyride
+        steps={safeSteps}
+        run={run}
+        disableBeacon
+        callback={handleCallback}
+        tooltipComponent={TourTooltip}
+        continuous
+        scrollToFirstStep
+        showSkipButton
+        disableOverlayClose={false}
+        disableScrolling={false}
+        spotlightClicks={false}
+        styles={{
+          options: { zIndex: 10000, primaryColor: GOLD, arrowColor: CREAM },
+          overlay: { backgroundColor: "rgba(28,10,0,0.45)" },
+          spotlight: { borderRadius: 12 },
+        }}
+      />
+    </>
   );
 }

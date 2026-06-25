@@ -14,21 +14,9 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 // ── Product Card ─────────────────────────────────────────────────────────────
-function ProductCard({ product, onAdd }) {
+function ProductCard({ product, onViewDetails }) {
   const cartItems = useSelector(selectCartItems);
   const inCart    = cartItems.find(i => i.productId === product._id);
-  const [qty, setQty] = useState(product.minOrderQuantity || 1);
-  const dispatch = useDispatch();
-
-  const handleQtyChange = (delta) => {
-    const min = product.minOrderQuantity || 1;
-    setQty(prev => Math.max(prev + delta, min));
-  };
-
-  const handleAdd = () => {
-    dispatch(addToCart({ product, quantity: qty }));
-  };
-
   const price = product.pricePerUnit || 0;
 
   return (
@@ -76,33 +64,15 @@ function ProductCard({ product, onAdd }) {
 
         {/* Price */}
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E" }}>₹{Number(price * qty).toLocaleString("en-IN")}</span>
-          {qty > 1 && <span style={{ fontSize: 12, color: "#9B7450" }}>₹{price.toLocaleString("en-IN")} × {qty}</span>}
+          <span style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E" }}>₹{price.toLocaleString("en-IN")}</span>
+          <span style={{ fontSize: 12, color: "#9B7450" }}>/ unit</span>
         </div>
 
-        {/* Quantity selector */}
-        <div style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 4 }}>
-          <span style={{ fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Qty:</span>
-          <div style={{ display: "flex", alignItems: "center", gap: 0, border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 100, overflow: "hidden" }}>
-            <button onClick={() => handleQtyChange(-1)} style={{ width: 30, height: 30, border: "none", background: "#fff", color: "#C47A2E", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>−</button>
-            <span style={{ width: 32, textAlign: "center", fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{qty}</span>
-            <button onClick={() => handleQtyChange(1)} style={{ width: 30, height: 30, border: "none", background: "#fff", color: "#C47A2E", fontSize: 16, fontWeight: 700, cursor: "pointer" }}>+</button>
-          </div>
-        </div>
-
-        {/* Add to Cart */}
-        <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-          <button onClick={handleAdd}
-            style={{ flex: 1, padding: "8px 12px", borderRadius: 10, border: "none", background: inCart ? "rgba(34,197,94,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: inCart ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: inCart ? "none" : "0 2px 8px rgba(196,122,46,0.28)", whiteSpace: "nowrap" }}>
-            {inCart ? "✓ In Cart" : "Add to Cart"}
-          </button>
-          {inCart && (
-            <button onClick={() => dispatch(removeFromCart(product._id))}
-              style={{ padding: "8px 10px", borderRadius: 10, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-              ✕
-            </button>
-          )}
-        </div>
+        {/* View Details */}
+        <button onClick={() => onViewDetails(product)}
+          style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+          View Details
+        </button>
       </div>
     </div>
   );
@@ -279,12 +249,14 @@ const GiftHampersCakes = () => {
   const cartItems = useSelector(selectCartItems);
   const { token, user } = useSelector(s => s.auth);
 
-  const [products,      setProducts]      = useState([]);
-  const [loading,       setLoading]       = useState(true);
-  const [showCart,      setShowCart]      = useState(false);
-  const [showCheckout,  setShowCheckout]  = useState(false);
-  const [filter,        setFilter]        = useState("All");
-  const [orderSuccess,  setOrderSuccess]  = useState(false);
+  const [products,        setProducts]        = useState([]);
+  const [loading,         setLoading]         = useState(true);
+  const [showCart,        setShowCart]        = useState(false);
+  const [showCheckout,    setShowCheckout]    = useState(false);
+  const [filter,          setFilter]          = useState("All");
+  const [orderSuccess,    setOrderSuccess]    = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [modalQty,        setModalQty]        = useState(1);
 
   useEffect(() => {
     fetch(`${BASE_URL}/gift-hampers/products`)
@@ -337,7 +309,6 @@ const GiftHampersCakes = () => {
             fontFamily: "'Outfit',sans-serif", fontSize: 20,
             cursor: "pointer", boxShadow: "0 4px 18px rgba(21,128,61,0.45)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            position: "relative",
           }}
         >
           🎁
@@ -380,10 +351,63 @@ const GiftHampersCakes = () => {
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 20 }}>
-            {filtered.map(p => <ProductCard key={p._id} product={p} />)}
+            {filtered.map(p => (
+              <ProductCard
+                key={p._id}
+                product={p}
+                onViewDetails={(product) => {
+                  setSelectedProduct(product);
+                  setModalQty(Math.max(1, product.minOrderQuantity || 1));
+                }}
+              />
+            ))}
           </div>
         )}
       </div>
+
+      {/* Product detail modal */}
+      {selectedProduct && (
+        <>
+          <div onClick={() => setSelectedProduct(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(92vw,480px)", maxHeight: "85vh", background: "#FFFCF5", borderRadius: 20, zIndex: 1101, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: "'Outfit',sans-serif" }}>
+            {/* Close */}
+            <button onClick={() => setSelectedProduct(null)} style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.12)", color: "#fff", fontSize: 16, cursor: "pointer", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            {/* Image */}
+            {selectedProduct.images?.[0] && (
+              <img src={selectedProduct.images[0]} alt={selectedProduct.name} style={{ width: "100%", height: 220, objectFit: "cover", flexShrink: 0 }} />
+            )}
+            {/* Body */}
+            <div style={{ padding: "20px 22px 24px", overflowY: "auto", flex: 1 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{selectedProduct.category}</div>
+              <h3 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>{selectedProduct.name}</h3>
+              <div style={{ fontSize: 22, fontWeight: 900, color: "#C47A2E", marginBottom: 12 }}>₹{selectedProduct.pricePerUnit?.toLocaleString("en-IN")}<span style={{ fontSize: 12, fontWeight: 500, color: "#9B7450" }}> / unit</span></div>
+              {selectedProduct.description && (
+                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.6, marginBottom: 16 }}>{selectedProduct.description}</p>
+              )}
+              {selectedProduct.minOrderQuantity > 1 && (
+                <p style={{ fontSize: 12, color: "#9B7450", marginBottom: 16 }}>Minimum order: {selectedProduct.minOrderQuantity} units</p>
+              )}
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                <button onClick={() => setModalQty(q => Math.max(q - 1, selectedProduct.minOrderQuantity || 1))}
+                  style={{ width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", fontSize: 18, cursor: "pointer" }}>−</button>
+                <span style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", minWidth: 30, textAlign: "center" }}>{modalQty}</span>
+                <button onClick={() => setModalQty(q => q + 1)}
+                  style={{ width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", fontSize: 18, cursor: "pointer" }}>+</button>
+                <span style={{ fontSize: 14, color: "#9B7450", marginLeft: "auto" }}>= ₹{((selectedProduct.pricePerUnit || 0) * modalQty).toLocaleString("en-IN")}</span>
+              </div>
+              <button
+                onClick={() => {
+                  dispatch(addToCart({ product: selectedProduct, quantity: modalQty }));
+                  setSelectedProduct(null);
+                  setModalQty(1);
+                }}
+                style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+                🎁 Add to Cart
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Cart window */}
       {showCart && (

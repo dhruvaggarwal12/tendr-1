@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { FUN_ACTIVITIES } from "../data/funActivitiesData";
-import { addActivity, removeActivity, saveActivityForm, selectFunCartItems } from "../redux/funActivitiesCartSlice";
+import { addActivity, removeActivity, saveActivityForm, clearFunCart, setFunConfirmed, selectFunCartItems } from "../redux/funActivitiesCartSlice";
 
 const F     = "'Outfit', sans-serif";
 const GOLD  = "#C47A2E";
@@ -361,12 +361,12 @@ export function FunCartDrawer({ onClose }) {
           ))}
         </div>
 
-        {/* Footer */}
-        {cartItems.some(i => i.form) && (
+        {/* Footer — always shown when cart has items */}
+        {cartItems.length > 0 && (
           <div style={{ padding: "14px 20px", borderTop: "1.5px solid rgba(44,26,14,0.07)" }}>
-            <button onClick={() => { onClose(); navigate("/booking/review"); }}
-              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
-              Review & Pay →
+            <button onClick={() => { dispatch(setFunConfirmed(true)); onClose(); }}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)", letterSpacing: "0.01em" }}>
+              Confirm Booking ✓
             </button>
           </div>
         )}

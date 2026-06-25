@@ -29,6 +29,7 @@ function dismissedRecently() {
 export default function PWAInstallPrompt() {
   const [visible,         setVisible]         = useState(false);
   const [showIOSSteps,    setShowIOSSteps]     = useState(false);
+  const [showAndroidSteps, setShowAndroidSteps] = useState(false);
   const [deferredPrompt,  setDeferredPrompt]   = useState(null);
   const [installing,      setInstalling]       = useState(false);
   const [justInstalled,   setJustInstalled]    = useState(false);
@@ -86,14 +87,19 @@ export default function PWAInstallPrompt() {
     try { localStorage.setItem(KEY_DISMISSED, String(Date.now())); } catch {}
     setVisible(false);
     setShowIOSSteps(false);
+    setShowAndroidSteps(false);
   };
 
   const handleInstall = async () => {
     const prompt = deferredPrompt || window.__tendrPWAPrompt;
     if (isIOSDevice()) { setShowIOSSteps(true); return; }
     if (!prompt) {
-      // No prompt available — show iOS steps or a hint
-      setShowIOSSteps(true);
+      if (isIOSDevice()) {
+        setShowIOSSteps(true);
+      } else {
+        // Android or Desktop without native install prompt — show manual instructions
+        setShowAndroidSteps(true);
+      }
       return;
     }
     setInstalling(true);
@@ -164,7 +170,7 @@ export default function PWAInstallPrompt() {
         <div style={{ padding: source === "signup" ? "18px 22px 20px" : "12px 16px 14px" }}>
 
           {/* iOS Steps */}
-          {showIOSSteps || ios ? (
+          {(showIOSSteps || ios) ? (
             <div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 18 }}>
                 {[
@@ -179,6 +185,23 @@ export default function PWAInstallPrompt() {
                 ))}
               </div>
               <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 14px", background: "rgba(196,122,46,0.06)", padding: "8px 12px", borderRadius: 8 }}>⚠️ Must use Safari on iPhone — not Chrome.</p>
+              <button onClick={dismiss} style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Got it</button>
+            </div>
+          ) : showAndroidSteps ? (
+            <div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 18 }}>
+                {[
+                  { n: 1, icon: "⋮", text: 'Tap the menu icon (⋮) in Chrome\'s top-right corner' },
+                  { n: 2, icon: "📌", text: 'Tap "Add to Home Screen"' },
+                  { n: 3, icon: "✅", text: 'Tap "Add" — Tendr is on your home screen!' },
+                ].map(({ n, icon, text }) => (
+                  <div key={n} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n}</div>
+                    <div style={{ fontSize: 13, color: "#2C1A0E", lineHeight: 1.55, paddingTop: 4 }}>{icon} {text}</div>
+                  </div>
+                ))}
+              </div>
+              <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 14px", background: "rgba(196,122,46,0.06)", padding: "8px 12px", borderRadius: 8 }}>💡 Works best in Chrome on Android.</p>
               <button onClick={dismiss} style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Got it</button>
             </div>
           ) : (

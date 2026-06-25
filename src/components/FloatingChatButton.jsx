@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { removeVendorFromCompare } from "../redux/listingFiltersSlice";
-import { selectFunCartCount } from "../redux/funActivitiesCartSlice";
+import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
+import { selectFunCartCount, selectFunConfirmed, setFunConfirmed, clearFunCart } from "../redux/funActivitiesCartSlice";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
 import CompareModal from "./CompareModal";
 import { FunCartDrawer } from "./FunActivitiesSection";
+import { GiftCartDrawer } from "./GiftCartDrawer";
 import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
-import { selectCartCount as selectGhCartCount } from "../redux/giftHamperCartSlice";
+import { selectCartCount as selectGhCartCount, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart } from "../redux/giftHamperCartSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -25,7 +26,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
   const funCartCount         = useSelector(selectFunCartCount);
   const ghCartCount          = useSelector(selectGhCartCount);
+  const funConfirmed         = useSelector(selectFunConfirmed);
+  const ghConfirmed          = useSelector(selectGhConfirmed);
   const [funCartOpen, setFunCartOpen] = useState(false);
+  const [ghCartOpen, setGhCartOpen] = useState(false);
+  const [showPayPopup, setShowPayPopup] = useState(false);
   const dispatch = useDispatch();
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
   const { cartCount: stCartCount, openCart: openStCart } = useStationeryCart();
@@ -157,6 +162,27 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
     <>
       <GlobalStationeryCartDrawer />
       {funCartOpen && <FunCartDrawer onClose={() => setFunCartOpen(false)} />}
+      {ghCartOpen && <GiftCartDrawer onClose={() => setGhCartOpen(false)} />}
+      {showPayPopup && (
+        <>
+          <div onClick={() => setShowPayPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1300, backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,360px)", background: "#FFFCF5", borderRadius: 20, zIndex: 1301, padding: "28px 24px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: font, textAlign: "center" }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Ready to book?</h3>
+            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.5 }}>Head to Review & Pay to confirm your booking, or keep exploring.</p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <button onClick={() => { setShowPayPopup(false); router.navigate("/booking/review"); }}
+                style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
+                Continue to Booking →
+              </button>
+              <button onClick={() => setShowPayPopup(false)}
+                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+                Book Other Things
+              </button>
+            </div>
+          </div>
+        </>
+      )}
       {showMiniChat && <MiniChatWidget onClose={() => setShowMiniChat(false)} />}
 
       {isCompareModalOpen && (
@@ -286,7 +312,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
       )}
 
       {/* Mobile action stack — Saved / Compare / Fun Cart / Review & Pay — above chat button */}
-      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0 || funCartCount > 0 || ghCartCount > 0) && (
+      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0 || funCartCount > 0 || ghCartCount > 0 || funConfirmed || ghConfirmed) && (
         <>
           {(savedOpen || compareOpen) && (
             <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 897 }} />
@@ -372,45 +398,70 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           {/* Button stack — dynamic, bottom-anchored, stacks upward as icons appear */}
           <div className="mobile-action-stack">
             {savedVendors.length > 0 && (
-              <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
-                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#be185d,#ec4899)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(190,24,93,0.35)", flexShrink: 0 }}>
-                ♥
-                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#9d174d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{savedVendors.length}</span>
-              </button>
+              <div style={{ position: "relative" }}>
+                <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#be185d,#ec4899)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(190,24,93,0.35)", flexShrink: 0 }}>
+                  ♥
+                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#9d174d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{savedVendors.length}</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); const list = []; try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch {} setSavedVendors(list); window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed")); setSavedOpen(false); }}
+                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
+                  ✕
+                </button>
+              </div>
             )}
             {compareSelected.length > 0 && (
-              <button className="mobile-action-btn" onClick={() => { const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
-                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
-                ⚖
-                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
-              </button>
+              <div style={{ position: "relative" }}>
+                <button className="mobile-action-btn" onClick={() => { const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
+                  ⚖
+                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); dispatch(clearVendorCompare()); setCompareOpen(false); setCompareCategory(""); setActiveCompare([]); }}
+                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
+                  ✕
+                </button>
+              </div>
             )}
             {funCartCount > 0 && (
-              <button className="mobile-action-btn" onClick={() => setFunCartOpen(true)}
-                title="Fun Activities Cart"
-                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(124,58,237,0.4)", flexShrink: 0 }}>
-                🎭
-                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
-              </button>
+              <div style={{ position: "relative" }}>
+                <button className="mobile-action-btn" onClick={() => setFunCartOpen(true)}
+                  title="Fun Activities Cart"
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(124,58,237,0.4)", flexShrink: 0 }}>
+                  🎭
+                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); dispatch(clearFunCart()); dispatch(setFunConfirmed(false)); }}
+                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
+                  ✕
+                </button>
+              </div>
             )}
             {ghCartCount > 0 && (
-              <button
-                className="mobile-action-btn"
-                onClick={() => router.navigate("/gift-hampers-cakes")}
-                title="Gift Hampers Cart"
-                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(21,128,61,0.4)", flexShrink: 0 }}>
-                🎁
-                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#14532d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
-              </button>
+              <div style={{ position: "relative" }}>
+                <button
+                  className="mobile-action-btn"
+                  onClick={() => setGhCartOpen(true)}
+                  title="Gift Hampers Cart"
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(21,128,61,0.4)", flexShrink: 0 }}>
+                  🎁
+                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#14532d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); dispatch(clearGhCart()); dispatch(setGhConfirmed(false)); }}
+                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
+                  ✕
+                </button>
+              </div>
             )}
-            {(path !== "/booking/review") && (funCartCount > 0 || ghCartCount > 0 || Object.keys(finalisedVendors).length > 0) && (
-              <button className="mobile-action-btn" onClick={() => router.navigate("/booking/review")}
+            {(path !== "/booking/review") && (funConfirmed || ghConfirmed || Object.keys(finalisedVendors).length > 0) && (
+              <button className="mobile-action-btn" onClick={() => setShowPayPopup(true)}
                 title="Review & Pay"
-                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0 }}>
-                ✅
-                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>
-                  {Object.keys(finalisedVendors).length + (funCartCount > 0 ? 1 : 0) + (ghCartCount > 0 ? 1 : 0)}
-                </span>
+                style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0, fontFamily: font }}>
+                Pay
               </button>
             )}
           </div>
