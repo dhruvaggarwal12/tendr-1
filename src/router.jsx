@@ -79,6 +79,9 @@ const PaymentFailedPage   = lazy(() => import('./pages/booking/PaymentFailedPage
 const BookingConfirmation = lazy(() => import('./pages/booking/BookingConfirmation'));
 const ReviewForm          = lazy(() => import('./pages/review/ReviewForm'));
 const FeedbackForm        = lazy(() => import('./pages/review/FeedbackForm'));
+const GuidesStore         = lazy(() => import('./pages/guides/GuidesStore'));
+const GuidePreview        = lazy(() => import('./pages/guides/GuidePreview'));
+const GuideReader         = lazy(() => import('./pages/guides/GuideReader'));
 const RefundPolicy        = lazy(() => import("./pages/info/RefundPolicy"));
 const CancellationPolicy  = lazy(() => import("./pages/info/CancellationPolicy"));
 const ContactUs           = lazy(() => import("./pages/info/ContactUs.jsx"));
@@ -412,6 +415,9 @@ const router = createBrowserRouter([
   { path: '/decor-finder', element: <DecorFinder />, errorElement: <ErrorPage /> },
   { path: '/search', element: <SearchResults />, errorElement: <ErrorPage /> },
   { path: '/gallery/:category', element: <CategoryGallery />, errorElement: <ErrorPage /> },
+  { path: '/guides', element: <GuidesStore />, errorElement: <ErrorPage /> },
+  { path: '/guides/:slug', element: <GuidePreview />, errorElement: <ErrorPage /> },
+  { path: '/guides/:slug/read', element: <GuideReader />, errorElement: <ErrorPage /> },
 
   // ── Wedding Stationery Sub-App (/wedding/*) ──────────────────────────────
   // Remove this route to disable the sub-app completely
