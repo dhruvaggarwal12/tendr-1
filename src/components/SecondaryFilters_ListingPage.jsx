@@ -195,10 +195,10 @@ const SecondaryFilters_ListingPage = ({
         </button>
       )}
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
         {config.map(({ key, title, type, options }) => (
           <div key={key}>
-            <h4 style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px" }}>
+            <h4 style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>
               {title}
             </h4>
 

@@ -4,7 +4,7 @@ import { setFilters } from "../redux/listingFiltersSlice";
 
 const ALL_SERVICE_TYPES = ["Caterer", "Photographer", "DJ", "Decorator"];
 
-const PrimaryFilters_ListingPage = ({ onSearch = () => {}, allowedServiceTypes = [] }) => {
+const PrimaryFilters_ListingPage = ({ onSearch = () => {}, allowedServiceTypes = [], hideButton = false }) => {
   const dispatch = useDispatch();
   const filters = useSelector((state) => state.listingFilters);
 
@@ -68,12 +68,14 @@ const PrimaryFilters_ListingPage = ({ onSearch = () => {}, allowedServiceTypes =
         />
       </div>
 
-      <button
-        onClick={onSearch}
-        className="w-full bg-[#CCAB4A] text-white py-2 sm:py-3 px-4 rounded-lg font-semibold hover:bg-[#ab8f39] transition-colors duration-200 text-sm sm:text-base"
-      >
-        Search
-      </button>
+      {!hideButton && (
+        <button
+          onClick={onSearch}
+          className="w-full bg-[#CCAB4A] text-white py-2 sm:py-3 px-4 rounded-lg font-semibold hover:bg-[#ab8f39] transition-colors duration-200 text-sm sm:text-base"
+        >
+          Search
+        </button>
+      )}
     </div>
   );
 };

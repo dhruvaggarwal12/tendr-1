@@ -573,36 +573,44 @@ const VendorList = () => {
                   <>
                     <div style={{ position: "fixed", inset: 0, zIndex: 99993 }} onClick={() => setFiltersOpen(false)} />
                     <div className="filters-mobile-sheet" style={{
-                      position: "fixed", bottom: 60, left: 0, right: 0, zIndex: 99994,
+                      position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99994,
                       background: "#FFFCF5", borderRadius: "20px 20px 0 0",
                       boxShadow: "0 -8px 40px rgba(44,26,14,0.18)",
-                      maxHeight: "75vh", overflowY: "auto",
+                      maxHeight: "78vh",
+                      display: "flex", flexDirection: "column",
                       fontFamily: "'Outfit', sans-serif",
                       animation: "sheet-up 0.28s cubic-bezier(0.4,0,0.2,1)",
                     }}>
-                      <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 4px" }}>
-                        <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
+                      {/* Fixed header */}
+                      <div style={{ flexShrink: 0 }}>
+                        <div style={{ display: "flex", justifyContent: "center", padding: "10px 0 4px" }}>
+                          <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "6px 20px 10px" }}>
+                          <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Filters</span>
+                          <button onClick={() => setFiltersOpen(false)} style={{ background: "none", border: "none", fontSize: 20, color: "#9B7450", cursor: "pointer", padding: 0 }}>✕</button>
+                        </div>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 20px 12px" }}>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E" }}>Filters</span>
-                        <button onClick={() => setFiltersOpen(false)} style={{ background: "none", border: "none", fontSize: 20, color: "#9B7450", cursor: "pointer", padding: 0 }}>✕</button>
-                      </div>
-                      <div style={{ padding: "0 20px 40px", display: "flex", flexDirection: "column", gap: 20 }}>
+                      {/* Scrollable filter content */}
+                      <div style={{ flex: 1, overflowY: "auto", padding: "0 20px 8px", display: "flex", flexDirection: "column", gap: 14 }}>
                         <div>
-                          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 12px" }}>Service & Location</p>
-                          <PrimaryFilters_ListingPage onSearch={(params) => { handleSearch(params); setFiltersOpen(false); }} allowedServiceTypes={selectedCategories} />
+                          <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px" }}>Service & Location</p>
+                          <PrimaryFilters_ListingPage onSearch={handleSearch} allowedServiceTypes={selectedCategories} hideButton />
                         </div>
                         {serviceType && (
-                          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 16 }}>
-                            <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 14px" }}>{serviceType} Filters</p>
+                          <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 12 }}>
+                            <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.09em", margin: "0 0 10px" }}>{serviceType} Filters</p>
                             <SecondaryFilters_ListingPage serviceType={serviceType} onFiltersChange={(f) => setPendingSecondaryFilters(f)} />
                           </div>
                         )}
+                      </div>
+                      {/* Sticky Apply button — always visible */}
+                      <div style={{ flexShrink: 0, padding: "12px 20px 16px", borderTop: "1.5px solid rgba(196,122,46,0.1)" }}>
                         <button
-                          onClick={() => { setSecondaryFilters(pendingSecondaryFilters); setFiltersOpen(false); }}
-                          style={{ marginTop: 8, width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                          onClick={() => { handleSearch(); setSecondaryFilters(pendingSecondaryFilters); setFiltersOpen(false); }}
+                          style={{ width: "100%", padding: "13px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
                         >
-                          Apply
+                          Apply Filters
                         </button>
                       </div>
                     </div>
