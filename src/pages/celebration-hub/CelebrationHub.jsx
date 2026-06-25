@@ -8,7 +8,6 @@ const font = "'Outfit', sans-serif";
 const BROWN = "#2C1A0E";
 const GOLD  = "#C47A2E";
 const CREAM = "#FFF8EE";
-const REDDIT_URL = "https://www.reddit.com/r/tendrcommunity/s/4eThHd2V80";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // Tabs — no Trending; Discussions renamed to All Posts
@@ -433,11 +432,6 @@ export default function CelebrationHub() {
     }
   };
 
-  const RedditIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-      <path d="M16.67 10a1.46 1.46 0 00-2.47-1 7.12 7.12 0 00-3.85-1.23l.65-3.08 2.13.45a1 1 0 101.07-1 1 1 0 00-.96.68l-2.38-.5a.27.27 0 00-.32.2l-.73 3.44a7.14 7.14 0 00-3.89 1.23 1.46 1.46 0 10-1.61 2.39 2.87 2.87 0 000 .44c0 2.24 2.61 4.06 5.83 4.06s5.83-1.82 5.83-4.06a2.87 2.87 0 000-.44 1.46 1.46 0 00.61-1.58zM7.27 11a1 1 0 111 1 1 1 0 01-1-1zm5.58 2.65a3.56 3.56 0 01-2.85.57 3.56 3.56 0 01-2.85-.57.19.19 0 01.27-.27 3.2 3.2 0 002.58.43 3.2 3.2 0 002.58-.43.19.19 0 01.27.27zm-.14-1.65a1 1 0 111-1 1 1 0 01-1 1z"/>
-    </svg>
-  );
 
   return (
     <div style={{ minHeight: "100vh", background: CREAM, fontFamily: font }}>
@@ -483,10 +477,6 @@ export default function CelebrationHub() {
                 style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 22px", borderRadius: 12, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)", whiteSpace: "nowrap" }}>
                 ✍️ Create Post
               </button>
-              <a href={REDDIT_URL} target="_blank" rel="noopener noreferrer"
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 22px", borderRadius: 12, background: "#FF4500", color: "#fff", fontSize: 14, fontWeight: 800, textDecoration: "none", boxShadow: "0 4px 14px rgba(255,69,0,0.3)", whiteSpace: "nowrap", justifyContent: "center" }}>
-                <RedditIcon /> Join on Reddit
-              </a>
             </div>
           </div>
         </div>
