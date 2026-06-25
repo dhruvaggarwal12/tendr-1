@@ -109,10 +109,9 @@ const BookingReviewPage = () => {
   const headcount    = parseInt(formData.guests) || 0;
   const [gstReceived, setGstReceived] = useState({}); // { [serviceType]: bool }
 
-  // On mount: if already paid and no new vendors selected, redirect to dashboard
+  // Redirect to dashboard if booking already submitted or paid (no active vendors pending)
   useEffect(() => {
     if (!token) return;
-    // If the user has vendors actively selected, let them proceed — don't block a new booking
     const hasActiveVendors = Object.keys(finalisedVendors).length > 0;
     if (hasActiveVendors) return;
     fetch(`${BASE_URL}/event-plans`, {
@@ -123,8 +122,8 @@ const BookingReviewPage = () => {
       .then(data => {
         if (!data) return;
         const plans = data.plans || data.eventPlans || (Array.isArray(data) ? data : []);
-        const hasPaid = plans.some(p => ["in_progress", "completed"].includes(p.status));
-        if (hasPaid) {
+        const hasAnyBooking = plans.some(p => ["submitted", "draft", "in_progress", "completed"].includes(p.status));
+        if (hasAnyBooking) {
           navigate("/dashboard", { replace: true });
         }
       })
@@ -1108,22 +1107,49 @@ const BookingReviewPage = () => {
                               body: JSON.stringify({ code: appliedCode, orderId: eventPlanId }),
                             }).catch(() => {});
                           }
-                          setSaving(false);
-                          setShowConfirmPopup(false);
-                          // Clear persisted review progress on proceeding to payment
+                          // Build WhatsApp summary message
+                          const vendorGhTotal = confirmedTotal + ghTotal;
+                          const finalAmount = (appliedCode ? applyDiscount(vendorGhTotal).finalTotal : vendorGhTotal) + effectivePlatformFee;
+                          const lines = [
+                            `📋 *New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
+                            "",
+                            `🎉 *Event:* ${formData.eventType || "—"}`,
+                            formData.date    ? `📅 *Date:* ${formData.date}` : null,
+                            formData.location ? `📍 *Location:* ${formData.location}` : null,
+                            formData.guests  ? `👥 *Guests:* ${formData.guests}` : null,
+                            "",
+                            "*Finalised Vendors:*",
+                            ...vendorEntries.map(([cat, v]) =>
+                              `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
+                            ),
+                            ghItems.length > 0 ? `• Gift Hampers — Rs.${ghTotal.toLocaleString("en-IN")}` : null,
+                            "",
+                            effectivePlatformFee > 0 ? `🔧 *Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
+                            appliedCode ? `🎁 *Referral Code:* ${appliedCode}` : null,
+                            `💰 *Grand Total:* Rs.${Number(finalAmount).toLocaleString("en-IN")}`,
+                            "",
+                            currentUser?.name ? `👤 *Customer:* ${currentUser.name}` : null,
+                            currentUser?.phoneNumber || currentUser?.phone ? `📱 *Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,
+                            eventPlanId ? `🆔 *Plan ID:* ${eventPlanId}` : null,
+                          ].filter(Boolean).join("\n");
+
+                          // Clear state so review page redirects away
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
-                          const vendorGhTotal = confirmedTotal + ghTotal;
-                          const finalAmount = (appliedCode ? applyDiscount(vendorGhTotal).finalTotal : vendorGhTotal) + effectivePlatformFee;
-                          // Only pass the selected vendor per category to payment, not the full array
-                          const selectedVendorsForPayment = {};
-                          vendorEntries.forEach(([cat, v]) => { if (v) selectedVendorsForPayment[cat] = v; });
-                          navigate("/booking/payment", { state: { finalisedVendors: selectedVendorsForPayment, formData, totalAmount: finalAmount, platformFee: effectivePlatformFee, referralCode: appliedCode || null, eventPlanId } });
+                          dispatch(clearFinalisedVendor());
+                          dispatch(resetEventPlanning());
+                          dispatch(clearCart());
+
+                          setSaving(false);
+                          setShowConfirmPopup(false);
+
+                          window.open(`https://wa.me/919211668427?text=${encodeURIComponent(lines)}`, "_blank");
+                          navigate("/dashboard", { replace: true });
                         }}
                         style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
                       >
-                        {saving ? "Saving…" : "Continue to Payment →"}
+                        {saving ? "Saving…" : "Confirm & Send to Tendr →"}
                       </button>
                       <button
                         onClick={() => { setShowConfirmPopup(false); navigate("/listings"); }}
@@ -1178,7 +1204,7 @@ const BookingReviewPage = () => {
               width: "100%",
               opacity: saving ? 0.7 : 1,
             }}>
-            {saving ? "Processing…" : "Proceed to Payment →"}
+            {saving ? "Processing…" : "Confirm Booking →"}
           </button>
         </div>
       )}
