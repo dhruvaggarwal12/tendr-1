@@ -644,56 +644,103 @@ const Home = () => {
   ];
 
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
+  const isSignedIn = !!user;
 
   const HOME_TOUR_STEPS = isMobile ? [
     {
       target: "body",
       placement: "center",
       title: "Welcome to Tendr! 🎉",
-      content: "Plan any event — find vendors, book services, shop gifts. Let's show you around.",
+      content: "Plan any event — find vendors, book services, shop gifts. Here's a quick look at everything.",
     },
     {
-      target: '[data-tour="mobile-bottom-nav"]',
+      target: '[data-tour="mob-nav-browse"]',
       placement: "top",
-      title: "Your Navigation",
-      content: "Browse vendors, plan events, access tools and your profile — all from the bar at the bottom.",
+      title: "Browse Vendors",
+      content: "Tap Browse to explore Decorators, Caterers, Photographers, DJs and more — filter by budget, location and rating.",
     },
     {
-      target: '[data-tour="search-bar"]',
-      placement: "bottom",
-      title: "Search Anything",
-      content: 'Try "decorator in Noida" or "caterer under ₹30K". Tendr finds the right vendors instantly.',
+      target: '[data-tour="mob-nav-products"]',
+      placement: "top",
+      title: "Planning Tools",
+      content: "Budget Allocator, Timeline Builder, Decor Finder and more — everything you need to plan a perfect event.",
+    },
+    {
+      target: '[data-tour="mob-nav-plan"]',
+      placement: "top",
+      title: "Plan Your Event",
+      content: "Start here to plan your full event. Pick vendors yourself or let Tendr's Smart Plan build the best lineup within your budget.",
+    },
+    {
+      target: '[data-tour="mob-nav-tips"]',
+      placement: "top",
+      title: "Tips by Tendr",
+      content: "Free event planning guides — budgeting, decor, corporate events and more. Unlock any guide instantly with your WhatsApp number.",
+    },
+    isSignedIn ? {
+      target: '[data-tour="mob-nav-profile"]',
+      placement: "top",
+      title: "Your Bookings",
+      content: "Tap Profile to open your dashboard. Once Tendr confirms your booking it shows up here under Upcoming — with all documents ready to download.",
+    } : {
+      target: '[data-tour="mob-nav-profile"]',
+      placement: "top",
+      title: "Sign In to Book",
+      content: "Tap here to sign in. Once you book, your confirmed events and documents will be waiting for you in your dashboard.",
     },
   ] : [
     {
       target: "body",
       placement: "center",
       title: "Welcome to Tendr! 🎉",
-      content: "India's smartest event platform — find vendors, plan events, shop gifts and more. Here's a quick look around.",
+      content: "India's smartest event platform. Here's a quick look at everything you can do.",
     },
     {
       target: '[data-tour="search-bar"]',
       placement: "bottom",
       title: "Smart Search",
-      content: 'Type naturally — "decorator under ₹20K in Noida" or "photographer for 150 guests". It understands types, budgets and locations.',
+      content: 'Type naturally — "decorator under ₹20K in Noida" or "photographer for 200 guests". Tendr understands vendor types, budgets and cities.',
     },
     {
       target: '[data-tour="nav-browse"]',
       placement: "bottom",
       title: "Browse Vendors",
-      content: "Decorators, Caterers, Photographers, DJs and more. Filter by location, budget and rating.",
+      content: "Decorators, Caterers, Photographers, DJs, Venues, Makeup and more. Filter by location, budget and rating. Top Rated shows our best-reviewed vendors.",
     },
     {
       target: '[data-tour="nav-booking"]',
       placement: "bottom",
       title: "Plan Your Event",
-      content: "Pick vendors yourself or let Tendr's Smart Plan build the perfect lineup within your budget.",
+      content: "Start here to plan your full event. Pick vendors yourself or use Smart Plan — it builds the best lineup within your total budget automatically.",
     },
     {
       target: '[data-tour="nav-tools"]',
       placement: "bottom",
       title: "Tools & Extras",
-      content: "Budget Allocator, Timeline Builder, Gift Hampers, Stationeries and Fun Activities — all in one place.",
+      content: "Budget Allocator, Decor Finder, Timeline Builder, Gift Hampers, Wedding Stationeries, Fun Activities and Party Places — all in one place.",
+    },
+    {
+      target: '[data-tour="nav-tips"]',
+      placement: "bottom",
+      title: "Tips by Tendr",
+      content: "Free event planning guides on budgeting, decor, corporate events and more. Unlock any guide instantly with your WhatsApp number.",
+    },
+    {
+      target: '[data-tour="nav-company"]',
+      placement: "bottom",
+      title: "About & Contact",
+      content: "Learn about Tendr's story and reach us directly — we're always happy to help plan your event.",
+    },
+    isSignedIn ? {
+      target: '[data-tour="profile-btn"]',
+      placement: "bottom",
+      title: "Your Bookings",
+      content: "Click here to open your dashboard. Once Tendr confirms your booking it appears under Upcoming — with Invoice, Event Details, Timeline and Invitation all ready to download.",
+    } : {
+      target: '[data-tour="signin-btn"]',
+      placement: "bottom",
+      title: "Sign In to Book",
+      content: "Sign in to confirm bookings and access your dashboard — where your upcoming events, vendor details and downloadable documents will live.",
     },
   ];
 

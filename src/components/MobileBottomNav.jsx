@@ -410,6 +410,7 @@ function BottomNavInner() {
             <button
               key={label}
               onClick={onTap}
+              data-tour={`mob-nav-${label.toLowerCase()}`}
               style={{
                 flex: 1, display: "flex", flexDirection: "column",
                 alignItems: "center", justifyContent: "center",

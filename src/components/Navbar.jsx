@@ -506,7 +506,7 @@ const Navbar = ({
               ) : (
               <div
                 key={group.label}
-                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : undefined}
+                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : group.label === "Tips by Tendr" ? "nav-tips" : group.label === "Community" ? "nav-community" : group.label === "Company" ? "nav-company" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}
@@ -771,7 +771,7 @@ const Navbar = ({
                 )}
               </div>
             ) : (
-              <a href="/login" style={{ fontSize: 15, fontWeight: 700, color: "#fff", padding: "10px 22px", borderRadius: 9, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.35)", transition: "opacity 0.2s", whiteSpace: "nowrap" }}
+              <a href="/login" data-tour="signin-btn" style={{ fontSize: 15, fontWeight: 700, color: "#fff", padding: "10px 22px", borderRadius: 9, textDecoration: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", boxShadow: "0 3px 12px rgba(196,122,46,0.35)", transition: "opacity 0.2s", whiteSpace: "nowrap" }}
                 onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
               >Sign In</a>
