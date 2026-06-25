@@ -71,6 +71,7 @@ const BookingReviewPage = () => {
   const ghItems   = useSelector(selectCartItems);
   const ghTotal   = useSelector(selectCartTotal);
   const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
+  const faBooking  = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking") || "null"); } catch { return null; } })();
   const isGHMode  = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
@@ -497,7 +498,7 @@ const BookingReviewPage = () => {
               </div>
             )}
 
-            {/* Gift Hamper Details card — only if gift hampers are in cart with delivery info */}
+            {/* Gift Hamper Details card */}
             {ghItems.length > 0 && ghDelivery && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
@@ -505,24 +506,56 @@ const BookingReviewPage = () => {
                   Gift Hamper Delivery
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {ghDelivery.name && (
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Recipient</div>
-                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{ghDelivery.name}</div>
+                  {[
+                    { label: "Recipient",      val: ghDelivery.name },
+                    { label: "Phone",          val: ghDelivery.phone },
+                    { label: "Delivery Date",  val: ghDelivery.deliveryDate },
+                    { label: "Address",        val: ghDelivery.address ? `${ghDelivery.address}${ghDelivery.city ? `, ${ghDelivery.city}` : ""}${ghDelivery.pincode ? ` — ${ghDelivery.pincode}` : ""}` : null },
+                    { label: "Instructions",   val: ghDelivery.instructions },
+                  ].filter(r => r.val).map(({ label, val }) => (
+                    <div key={label}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
+                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
                     </div>
-                  )}
-                  {ghDelivery.phone && (
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Phone</div>
-                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{ghDelivery.phone}</div>
+                  ))}
+                  {/* Items list */}
+                  <div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Items</div>
+                    {ghItems.map(item => (
+                      <div key={item.productId} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E", marginBottom: 4 }}>
+                        <span>{item.name} × {item.quantity}</span>
+                        <span style={{ fontWeight: 600 }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Fun Activity Details card */}
+            {faBooking && (
+              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
+                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎭</span>
+                  Fun Activity Details
+                </h2>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {[
+                    { label: "Activity",    val: `${faBooking.activity?.emoji || ""} ${faBooking.activity?.name || ""}`.trim() },
+                    { label: "Event Type",  val: faBooking.form?.eventType },
+                    { label: "Date",        val: faBooking.form?.date },
+                    { label: "Start Time",  val: faBooking.form?.time },
+                    { label: "Address",     val: faBooking.form?.address },
+                    { label: "Guests",      val: faBooking.form?.guests },
+                    { label: "Contact",     val: faBooking.form?.name ? `${faBooking.form.name} · ${faBooking.form.phone}` : null },
+                    { label: "Notes",       val: faBooking.form?.notes },
+                    { label: "Total Price", val: faBooking.totalPrice ? `₹${Number(faBooking.totalPrice).toLocaleString("en-IN")}` : null },
+                  ].filter(r => r.val).map(({ label, val }) => (
+                    <div key={label}>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
+                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
                     </div>
-                  )}
-                  {ghDelivery.address && (
-                    <div>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>Address</div>
-                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{ghDelivery.address}{ghDelivery.city ? `, ${ghDelivery.city}` : ""}</div>
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
@@ -1110,19 +1143,41 @@ const BookingReviewPage = () => {
                           // Build WhatsApp summary message
                           const vendorGhTotal = confirmedTotal + ghTotal;
                           const finalAmount = (appliedCode ? applyDiscount(vendorGhTotal).finalTotal : vendorGhTotal) + effectivePlatformFee;
+                          const ghItemLines = ghItems.map(item => `   - ${item.name} × ${item.quantity} — Rs.${item.subtotal.toLocaleString("en-IN")}`);
                           const lines = [
                             `📋 *New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
                             "",
                             `🎉 *Event:* ${formData.eventType || "—"}`,
-                            formData.date    ? `📅 *Date:* ${formData.date}` : null,
+                            formData.date     ? `📅 *Date:* ${formData.date}` : null,
                             formData.location ? `📍 *Location:* ${formData.location}` : null,
-                            formData.guests  ? `👥 *Guests:* ${formData.guests}` : null,
+                            formData.guests   ? `👥 *Guests:* ${formData.guests}` : null,
                             "",
                             "*Finalised Vendors:*",
                             ...vendorEntries.map(([cat, v]) =>
                               `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
                             ),
-                            ghItems.length > 0 ? `• Gift Hampers — Rs.${ghTotal.toLocaleString("en-IN")}` : null,
+                            ...(ghItems.length > 0 ? [
+                              `• 🎁 Gift Hampers — Rs.${ghTotal.toLocaleString("en-IN")}`,
+                              ...ghItemLines,
+                              ghDelivery?.name        ? `   📦 Recipient: ${ghDelivery.name}` : null,
+                              ghDelivery?.phone       ? `   📱 Phone: ${ghDelivery.phone}` : null,
+                              ghDelivery?.deliveryDate ? `   🗓 Delivery Date: ${ghDelivery.deliveryDate}` : null,
+                              ghDelivery?.address     ? `   📍 Address: ${ghDelivery.address}${ghDelivery.city ? `, ${ghDelivery.city}` : ""}${ghDelivery.pincode ? ` — ${ghDelivery.pincode}` : ""}` : null,
+                              ghDelivery?.instructions ? `   📝 Instructions: ${ghDelivery.instructions}` : null,
+                            ].filter(Boolean) : []),
+                            ...(faBooking ? [
+                              "",
+                              "*🎭 Fun Activity Details:*",
+                              faBooking.activity?.name   ? `   Activity: ${faBooking.activity.emoji || ""} ${faBooking.activity.name}`.trim() : null,
+                              faBooking.form?.eventType  ? `   Event Type: ${faBooking.form.eventType}` : null,
+                              faBooking.form?.date       ? `   Date: ${faBooking.form.date}` : null,
+                              faBooking.form?.time       ? `   Time: ${faBooking.form.time}` : null,
+                              faBooking.form?.address    ? `   Venue: ${faBooking.form.address}` : null,
+                              faBooking.form?.guests     ? `   Guests: ${faBooking.form.guests}` : null,
+                              faBooking.form?.name       ? `   Contact: ${faBooking.form.name} · ${faBooking.form.phone}` : null,
+                              faBooking.form?.notes      ? `   Notes: ${faBooking.form.notes}` : null,
+                              faBooking.totalPrice       ? `   Price: Rs.${Number(faBooking.totalPrice).toLocaleString("en-IN")}` : null,
+                            ].filter(Boolean) : []),
                             "",
                             effectivePlatformFee > 0 ? `🔧 *Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
                             appliedCode ? `🎁 *Referral Code:* ${appliedCode}` : null,
@@ -1137,6 +1192,8 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
+                          sessionStorage.removeItem("gh_delivery");
+                          sessionStorage.removeItem("fa_booking");
                           dispatch(clearFinalisedVendor());
                           dispatch(resetEventPlanning());
                           dispatch(clearCart());

@@ -178,9 +178,11 @@ function CartWindow({ onClose, onCheckout }) {
 function CheckoutModal({ onClose, onPlaceOrder }) {
   const { user, token } = useSelector(s => s.auth);
   const navigate = useNavigate();
+  const today = new Date().toISOString().split("T")[0];
   const [form, setForm] = useState({
     name: user?.name || "",
     phone: user?.phoneNumber || "",
+    deliveryDate: "",
     address: "",
     city: "",
     pincode: "",
@@ -189,8 +191,8 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
   const [err, setErr] = useState("");
 
   const handleSubmit = () => {
-    if (!form.name || !form.phone || !form.address || !form.city) {
-      setErr("Please fill name, phone, address and city."); return;
+    if (!form.name || !form.phone || !form.address || !form.city || !form.deliveryDate) {
+      setErr("Please fill name, phone, delivery date, address and city."); return;
     }
     onPlaceOrder(form);
   };
@@ -222,11 +224,11 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
         </div>
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {[
-            { key: "name",    label: "Full Name",        placeholder: "Your name",              required: true },
-            { key: "phone",   label: "Phone Number",     placeholder: "10-digit number",        required: true },
-            { key: "address", label: "Delivery Address", placeholder: "House no, street, area", required: true },
-            { key: "city",    label: "City",             placeholder: "e.g. Delhi, Noida",      required: true },
-            { key: "pincode", label: "Pincode",          placeholder: "110001",                 required: false },
+            { key: "name",    label: "Recipient Name",   placeholder: "Who should we deliver to?", required: true },
+            { key: "phone",   label: "Phone Number",     placeholder: "10-digit number",           required: true },
+            { key: "address", label: "Delivery Address", placeholder: "House no, street, area",    required: true },
+            { key: "city",    label: "City",             placeholder: "e.g. Delhi, Noida",         required: true },
+            { key: "pincode", label: "Pincode",          placeholder: "110001",                    required: false },
           ].map(({ key, label, placeholder, required }) => (
             <Input
               key={key}
@@ -237,6 +239,20 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
               required={required}
             />
           ))}
+          <div>
+            <label style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", display: "block", marginBottom: 5, fontFamily: font }}>
+              Delivery Date <span style={{ color: "#DC2626" }}>*</span>
+            </label>
+            <input
+              type="date"
+              value={form.deliveryDate}
+              min={today}
+              onChange={e => setForm(p => ({ ...p, deliveryDate: e.target.value }))}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(44,26,14,0.12)", fontFamily: font, fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box", background: "#fff" }}
+              onFocus={e => (e.target.style.borderColor = "#C47A2E")}
+              onBlur={e => (e.target.style.borderColor = "rgba(44,26,14,0.12)")}
+            />
+          </div>
           <Input
             label="Special Instructions"
             value={form.instructions}
