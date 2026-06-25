@@ -504,7 +504,7 @@ const Navbar = ({
               ) : (
               <div
                 key={group.label}
-                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : undefined}
+                data-tour={group.label === "Browse" ? "nav-browse" : group.label === "Booking" ? "nav-booking" : group.label === "Tools" ? "nav-tools" : undefined}
                 style={{ position: "relative" }}
                 onMouseEnter={() => setActiveDropdown(group.label)}
                 onMouseLeave={() => setActiveDropdown(null)}

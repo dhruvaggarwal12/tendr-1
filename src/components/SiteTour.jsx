@@ -15,7 +15,7 @@ const STEPS = [
     disableBeacon: true,
     title: "Welcome to Tendr! 🎉",
     content:
-      "India's smartest event vendor platform. This quick tour covers everything — search, compare, chat, plan, and the documents you get after booking.",
+      "India's smartest event platform — find vendors, plan your event, shop for gifts and stationery, explore venues, and more. Let's take a quick tour of everything.",
   },
   {
     target: '[data-tour="search-bar"]',
@@ -23,7 +23,7 @@ const STEPS = [
     disableBeacon: true,
     title: "Smart Search",
     content:
-      "Type naturally — \"photographer under ₹20K in Noida\", \"decorator for 150 guests\". The search understands vendor types, budgets, and locations automatically and filters results for you.",
+      'Type naturally — "photographer under ₹20K in Noida", "decorator for 150 guests in Delhi". It understands vendor types, budgets, locations, and even navigates straight to tools like Budget Allocator or Gift Hampers.',
   },
   {
     target: '[data-tour="nav-browse"]',
@@ -31,7 +31,7 @@ const STEPS = [
     disableBeacon: true,
     title: "Browse & Top Rated",
     content:
-      "Browse vendors by category — Decorators, Caterers, Photographers, DJs. Filter by location, budget, guest count, ratings, and availability. Top Rated shows only our highest-reviewed vendors.",
+      "Browse Decorators, Caterers, Photographers, and DJs. Filter by location, budget, guest count, ratings, and availability. Top Rated shows only our highest-reviewed vendors across every category.",
   },
   {
     target: "body",
@@ -39,7 +39,7 @@ const STEPS = [
     disableBeacon: true,
     title: "Quick View & Compare",
     content:
-      "Click any vendor card to open Quick View — photos, packages, pricing, and reviews without leaving the page. Add up to 3 vendors to Compare to see them side-by-side across every attribute.",
+      "Click any vendor card to open Quick View — photos, packages, pricing, and reviews without leaving the page. Add up to 3 vendors to Compare and see them side-by-side across every attribute.",
   },
   {
     target: "body",
@@ -47,39 +47,103 @@ const STEPS = [
     disableBeacon: true,
     title: "Chat & Availability Check",
     content:
-      "Hit Chat on any vendor card to begin booking. Fill in your event details — we automatically check if the vendor is available on your date. If they're booked, we show you alternatives instantly.",
+      "Hit Chat on any vendor card and fill in your event details. Tendr automatically checks if the vendor is free on your date — if they're booked, we instantly surface alternatives so you're never stuck.",
   },
   {
     target: '[data-tour="nav-booking"]',
     placement: "bottom",
     disableBeacon: true,
-    title: "Planning Wizard",
+    title: "Plan Your Event",
     content:
-      "Plan your whole event in one flow — choose You Do It (you pick each vendor) or Smart Plan (we pick the best combination within your total budget across Decorator, Caterer, Photographer, and DJ).",
+      "Two planning modes: You Do It — you pick each vendor one by one. Smart Plan — our AI selects the best combination of Decorator, Caterer, Photographer, and DJ within your total budget automatically.",
+  },
+  {
+    target: '[data-tour="nav-tools"]',
+    placement: "bottom",
+    disableBeacon: true,
+    title: "Event Tools",
+    content:
+      "Budget Allocator splits your total budget across vendor categories. Decor Finder lets you explore decoration themes and styles. Timeline Builder creates a minute-by-minute day-of schedule. Guest List and Payment Tracker keep everything organised in one place.",
   },
   {
     target: "body",
     placement: "center",
     disableBeacon: true,
-    title: "Tools: Budget, Timeline & Decor",
+    title: "Gift Hampers & Cakes 🎁",
     content:
-      "The Tools menu has a Budget Allocator (split your budget across vendor categories), a Day-of Timeline builder, and a Decor Finder to explore decoration styles and themes.",
+      "Order personalised wedding gift hampers and custom celebration cakes directly through Tendr — perfect for guest favours, welcome kits, and corporate gifting.",
   },
   {
     target: "body",
     placement: "center",
     disableBeacon: true,
-    title: "After Booking — 4 Documents",
+    title: "Wedding Stationeries 💌",
     content:
-      "Once payment is confirmed, instantly download: Invoice, Event Details PDF, Day-of Timeline slip, and a personalised Invitation Flyer with your event type, date, venue, time, and guest's name.",
+      "Design custom invitation cards, event flyers, and after-movie graphics. Pick a template, personalise with your event details, and download or share instantly.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "Fun Activities 🎊",
+    content:
+      "Add entertainment to your event — photo booths, live caricature artists, magicians, dance floors, and more. Browse by activity type and book directly.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "Party Places 🏛️",
+    content:
+      "Discover venues — banquet halls, rooftop spaces, farmhouses, and more. View photos, capacity, and amenities, and reach out directly from the listing.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "Occasions & Ideas ✨",
+    content:
+      "Explore occasion-specific guides for birthdays, corporate events, weddings, anniversaries, and more. Each page has curated vendor suggestions, decor ideas, and typical budget ranges.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "Community Wall 📸",
+    content:
+      "See real events hosted through Tendr — customers share photos and setups. Get inspired, gauge the quality of vendor work, and see what's trending in your city.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "Memories 🎞️",
+    content:
+      "After your event, your photos and highlights are preserved in your Memories gallery on Tendr — a permanent keepsake of every event you've hosted.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "4 Documents After Booking 📄",
+    content:
+      "Once payment is confirmed, instantly download four personalised documents: Invoice, Event Details PDF, Day-of Timeline slip, and a custom Invitation Flyer — all branded with your event details.",
+  },
+  {
+    target: "body",
+    placement: "center",
+    disableBeacon: true,
+    title: "Reviews & Future Events ⭐",
+    content:
+      "After your event, leave a vendor review in seconds. We also ask about upcoming events — so your next booking starts with vendors who already know your preferences.",
   },
   {
     target: '[data-tour="profile-btn"]',
     placement: "bottom-end",
     disableBeacon: true,
-    title: "Active Chats & Profile",
+    title: "Your Dashboard 🏠",
     content:
-      "All vendor conversations, booking statuses, and pinned messages live here. The badge shows pending requests or admin actions. That's the full Tendr experience! 🎊",
+      "All your vendor conversations, booking statuses, event documents, and payment history live here. The badge shows any pending actions. That's the full Tendr experience — enjoy your event! 🎊",
   },
 ];
 
@@ -91,7 +155,7 @@ function TourTooltip({ continuous, index, step, backProps, closeProps, primaryPr
         background: CREAM,
         borderRadius: 18,
         padding: "26px 28px 22px",
-        maxWidth: 380,
+        maxWidth: 400,
         boxShadow: "0 20px 60px rgba(44,26,14,0.2), 0 0 0 2px rgba(196,122,46,0.18)",
         fontFamily: font,
         position: "relative",
@@ -116,13 +180,13 @@ function TourTooltip({ continuous, index, step, backProps, closeProps, primaryPr
       </div>
 
       {/* Progress dots */}
-      <div style={{ display: "flex", gap: 5, marginTop: 18, marginBottom: 14 }}>
+      <div style={{ display: "flex", gap: 4, marginTop: 18, marginBottom: 14, flexWrap: "wrap" }}>
         {Array.from({ length: size }).map((_, i) => (
           <div
             key={i}
             style={{
-              width: i === index ? 18 : 6,
-              height: 6,
+              width: i === index ? 18 : 5,
+              height: 5,
               borderRadius: 100,
               background: i === index ? GOLD : "rgba(196,122,46,0.25)",
               transition: "all 0.25s",
