@@ -401,8 +401,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               <div style={{ display: "flex", gap: 7 }}>
                 <button onClick={() => navigate("/dashboard")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
               </div>
-              {/* Review & Pay if vendors finalised or gift hampers in cart */}
-              {!isHomePage && (finalisedCount > 0 || ghCartCount > 0) && (
+              {/* Review & Pay if vendors finalised */}
+              {!isHomePage && finalisedCount > 0 && (
                 <button onClick={() => navigate("/booking/review")} style={{ width: "100%", marginTop: 7, padding: "7px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Review & Pay ({finalisedCount}) →
                 </button>
@@ -698,13 +698,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           >
             {[0,1,2].map(i => <div key={i} style={{ width: 13, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
           </button>
-          {/* Review & Pay button — shows when vendors finalised OR gift hampers in cart */}
-          {(finalisedCount > 0 || ghCartCount > 0) && (
+          {/* Review & Pay button — shows when vendors finalised */}
+          {finalisedCount > 0 && (
             <button
               onClick={() => setReviewPopup(true)}
               style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
             >
-              Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : ghCartCount > 0 ? "🎁" : ""}
+              Review & Pay ({finalisedCount})
             </button>
           )}
 

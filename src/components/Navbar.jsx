@@ -646,15 +646,6 @@ const Navbar = ({
 
           {/* Right cluster: conditional buttons + profile — always together */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-            {/* Review & Pay — visible when vendors finalised or gift hampers in cart */}
-            {(finalisedCount > 0 || ghCartCount > 0) && (
-              <a
-                href="/booking/review"
-                style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "6px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font, boxShadow: "0 3px 10px rgba(21,128,61,0.3)" }}
-              >
-                Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : "🎁"}
-              </a>
-            )}
 
             {/* Compare Vendors — visible when vendors are saved */}
             {compareSelected.length > 0 && (
@@ -943,15 +934,6 @@ const Navbar = ({
             )
           ))}
 
-          {/* Review & Pay — mobile only, shown when vendors finalised */}
-          {(finalisedCount > 0 || ghCartCount > 0) && (
-            <div style={{ marginTop: 16 }}>
-              <a href="/booking/review" onClick={() => setMenuOpen(false)}
-                style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "9px 14px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 13, fontWeight: 700, textDecoration: "none", whiteSpace: "nowrap", fontFamily: font }}>
-                Review & Pay {finalisedCount > 0 ? `(${finalisedCount})` : "🎁"}
-              </a>
-            </div>
-          )}
 
           {/* Dark footer — user info + social icons + logout — matches HamburgerNav drawer */}
           <div style={{ marginTop: 20, borderRadius: 14, background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", padding: "16px 16px 14px" }}>

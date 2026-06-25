@@ -275,6 +275,7 @@ const sidebar_arr = [
   { label: "Rec. Intelligence",     icon: <span style={{ fontSize: 16 }}>📊</span>,  key: "Recommendations" },
   { label: "Community",             icon: <span style={{ fontSize: 16 }}>🌟</span>,  key: "Community" },
   { label: "Event Day",             icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "EventDay" },
+  { label: "Ebooks",               icon: <span style={{ fontSize: 16 }}>📚</span>,  key: "Ebooks" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -420,6 +421,92 @@ function EventDayTab({ token, BASE_URL }) {
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function EbooksAdminTab() {
+  const [accesses, setAccesses] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const token = useSelector(s => s.auth?.token);
+
+  React.useEffect(() => {
+    fetch(`${BASE_URL}/admin/ebook-accesses`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(r => r.ok ? r.json() : { accesses: [] })
+      .then(d => setAccesses(d.accesses || []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, [token]);
+
+  const stats = React.useMemo(() => {
+    const total = accesses.length;
+    const previews = accesses.filter(a => a.action === 'preview').length;
+    const reads = accesses.filter(a => a.action === 'read').length;
+    const downloads = accesses.filter(a => a.action === 'download').length;
+    const phones = new Set(accesses.map(a => a.phone).filter(p => p && p !== 'unknown')).size;
+    return { total, previews, reads, downloads, phones };
+  }, [accesses]);
+
+  return (
+    <div style={{ fontFamily: "'Outfit', sans-serif", maxWidth: 900 }}>
+      <h2 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", marginBottom: 6 }}>📚 Ebooks Access Log</h2>
+      <p style={{ fontSize: 13, color: "#9B7450", marginBottom: 24 }}>Track who accessed guides, read them, or downloaded them.</p>
+
+      {/* Stats */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px,1fr))", gap: 12, marginBottom: 28 }}>
+        {[
+          { label: "Total Events", value: stats.total, icon: "📊" },
+          { label: "Unique Phones", value: stats.phones, icon: "📱" },
+          { label: "Previews", value: stats.previews, icon: "👁️" },
+          { label: "Reads", value: stats.reads, icon: "📖" },
+          { label: "Downloads", value: stats.downloads, icon: "⬇️" },
+        ].map(s => (
+          <div key={s.label} style={{ background: "#fff", borderRadius: 14, padding: "16px 18px", border: "1.5px solid rgba(196,122,46,0.18)", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
+            <div style={{ fontSize: 22 }}>{s.icon}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: "#2C1A0E", lineHeight: 1.1 }}>{s.value}</div>
+            <div style={{ fontSize: 11, color: "#9B7450", fontWeight: 700 }}>{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div style={{ textAlign: "center", padding: 40, color: "#9B7450" }}>Loading...</div>
+      ) : accesses.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 40, color: "#9B7450" }}>No ebook access events yet.</div>
+      ) : (
+        <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+            <thead>
+              <tr style={{ background: "rgba(196,122,46,0.06)", borderBottom: "1.5px solid rgba(196,122,46,0.12)" }}>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "#9B7450", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em" }}>Phone</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "#9B7450", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em" }}>Guide</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "#9B7450", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em" }}>Action</th>
+                <th style={{ padding: "12px 16px", textAlign: "left", fontWeight: 700, color: "#9B7450", fontSize: 11, textTransform: "uppercase", letterSpacing: "0.08em" }}>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...accesses].reverse().map((a, i) => (
+                <tr key={i} style={{ borderBottom: "1px solid rgba(196,122,46,0.08)" }}>
+                  <td style={{ padding: "11px 16px", fontWeight: 700, color: "#2C1A0E" }}>{a.phone || "—"}</td>
+                  <td style={{ padding: "11px 16px", color: "#5a3a1a" }}>{a.title || a.slug || "—"}</td>
+                  <td style={{ padding: "11px 16px" }}>
+                    <span style={{ padding: "3px 10px", borderRadius: 100, fontSize: 11, fontWeight: 700,
+                      background: a.action === 'download' ? "rgba(21,128,61,0.1)" : a.action === 'read' ? "rgba(196,122,46,0.1)" : "rgba(59,130,246,0.1)",
+                      color: a.action === 'download' ? "#15803d" : a.action === 'read' ? "#C47A2E" : "#3b82f6",
+                    }}>
+                      {a.action === 'download' ? "⬇️ Downloaded" : a.action === 'read' ? "📖 Read" : "👁️ Preview"}
+                    </span>
+                  </td>
+                  <td style={{ padding: "11px 16px", color: "#9B7450", fontSize: 12 }}>{a.createdAt ? new Date(a.createdAt).toLocaleString("en-IN") : "—"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -4931,6 +5018,13 @@ const AdminDashboard = () => {
         {activeDropdown === "eventday" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
             <EventDayTab token={token} BASE_URL={BASE_URL} />
+          </div>
+        )}
+
+        {/* ── Ebooks ── */}
+        {activeDropdown === "ebooks" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
+            <EbooksAdminTab />
           </div>
         )}
 

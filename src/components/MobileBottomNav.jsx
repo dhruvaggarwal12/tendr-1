@@ -80,7 +80,6 @@ function BottomNavInner() {
   const location = useLocation();
   const { token, user } = useSelector((s) => s.auth);
   const finalisedVendors = useSelector((s) => s.listingFilters?.finalisedVendors || {});
-  const ghCartCount = useSelector((s) => s.giftHamperCart?.items?.length || 0);
   const finalisedCount = Object.keys(finalisedVendors).length;
   const [visible, setVisible] = useState(true);
   const [browseOpen, setBrowseOpen] = useState(false);
@@ -340,36 +339,6 @@ function BottomNavInner() {
             </div>
           </div>
         </>
-      )}
-
-      {/* Floating Review & Pay bar — appears above nav when vendor finalised */}
-      {(finalisedCount > 0 || ghCartCount > 0) && (
-        <div style={{
-          position: "fixed",
-          bottom: "calc(60px + env(safe-area-inset-bottom, 0px))",
-          left: 0, right: 0,
-          zIndex: 89990,
-          background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-          padding: "10px 20px",
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          boxShadow: "0 -3px 16px rgba(196,122,46,0.4)",
-          transform: visible ? "translateY(0)" : "translateY(100%)",
-          transition: "transform 0.22s ease",
-          fontFamily: font,
-        }}>
-          <div style={{ color: "#fff" }}>
-            <div style={{ fontSize: 13, fontWeight: 800, lineHeight: 1.2 }}>
-              {finalisedCount > 0 ? `${finalisedCount} vendor${finalisedCount > 1 ? "s" : ""} confirmed` : "Gift hampers in cart 🎁"}
-            </div>
-            <div style={{ fontSize: 11, opacity: 0.8 }}>Tap to review & pay</div>
-          </div>
-          <button
-            onClick={() => navigate("/booking/review")}
-            style={{ background: "#fff", color: "#C47A2E", border: "none", borderRadius: 10, padding: "9px 18px", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
-          >
-            Review & Pay →
-          </button>
-        </div>
       )}
 
       {/* Bottom nav bar */}

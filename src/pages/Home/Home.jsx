@@ -1878,6 +1878,9 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ── Tips by Tendr ── */}
+      <TipsByTendrSection />
+
       {/* Become a Partner Section */}
       <section style={{ background: "#2C1A0E", padding: "96px 24px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }} className="partner-grid">
@@ -1942,9 +1945,6 @@ const Home = () => {
 
       {/* ── FAQ ── */}
       <FaqSection />
-
-      {/* ── Tips by Tendr ── */}
-      <TipsByTendrSection />
 
       {/* Footer */}
       <Footer />

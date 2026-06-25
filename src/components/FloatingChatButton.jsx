@@ -285,8 +285,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         </div>
       )}
 
-      {/* Mobile action stack — Saved / Compare / Review & Pay — above chat button */}
-      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0) && (
+      {/* Mobile action stack — Saved / Compare / Fun Cart / Review & Pay — above chat button */}
+      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0 || funCartCount > 0 || ghCartCount > 0) && (
         <>
           {(savedOpen || compareOpen) && (
             <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 897 }} />
@@ -393,6 +393,16 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                 <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
               </button>
             )}
+            {ghCartCount > 0 && (
+              <button
+                className="mobile-action-btn"
+                onClick={() => router.navigate("/gift-hampers-cakes")}
+                title="Gift Hampers Cart"
+                style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(21,128,61,0.4)", flexShrink: 0 }}>
+                🎁
+                <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#14532d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
+              </button>
+            )}
             {(path !== "/booking/review") && (funCartCount > 0 || ghCartCount > 0 || Object.keys(finalisedVendors).length > 0) && (
               <button className="mobile-action-btn" onClick={() => router.navigate("/booking/review")}
                 title="Review & Pay"
@@ -416,7 +426,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
           title={`${stCartCount} stationery item${stCartCount > 1 ? "s" : ""} in cart`}
           style={{
             position: "fixed",
-            bottom: 22,
+            bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
             zIndex: 900,
             width: 50,
             height: 50,
@@ -455,7 +465,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         className="floating-chat-btn"
         style={{
           position: "fixed",
-          bottom: 22,
+          bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
           right: 20,
           zIndex: 900,
           display: "flex",
@@ -533,12 +543,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
       <style>{`
         .floating-chat-btn {
           padding: 13px 22px;
-          bottom: 22px;
+          bottom: calc(22px + env(safe-area-inset-bottom, 0px));
           right: 20px;
         }
         /* Stationery cart FAB sits to the LEFT of the chat button */
         .stat-cart-fab {
           right: 168px; /* chat btn ~140px wide + 8px gap + 20px from edge */
+          bottom: calc(22px + env(safe-area-inset-bottom, 0px));
         }
         .chat-btn-text {
           font-size: 14px;
@@ -562,7 +573,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         }
         .vendor-cluster-desktop { display: none !important; }
         /* Action stack — above chat FAB on both desktop and mobile */
-        .mobile-action-stack { display: flex; position: fixed; bottom: 82px; right: 20px; z-index: 900; flex-direction: column; gap: 8px; align-items: flex-end; }
+        .mobile-action-stack { display: flex; position: fixed; bottom: calc(82px + env(safe-area-inset-bottom, 0px)); right: 20px; z-index: 900; flex-direction: column; gap: 8px; align-items: flex-end; }
         .mobile-action-btn { display: flex !important; }
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }

@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { GUIDES } from "./guideData";
 
 const font = "'Outfit', sans-serif";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function GuidePreview() {
   const { slug } = useParams();
@@ -41,6 +42,12 @@ export default function GuidePreview() {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
+      sessionStorage.setItem('ebook_access_phone', phone);
+      fetch(`${BASE_URL}/admin/ebook-access`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, slug, action: 'preview', title: guide?.title }),
+      }).catch(() => {});
       window.open(`/guides/${slug}/read`, "_blank");
     }, 600);
   };

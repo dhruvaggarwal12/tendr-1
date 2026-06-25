@@ -408,6 +408,20 @@ const BookingReviewPage = () => {
 
   return (
     <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .booking-review-grid {
+            grid-template-columns: 1fr !important;
+            gap: 0 !important;
+          }
+          .booking-review-sidebar {
+            order: -1;
+          }
+          .booking-review-main {
+            min-width: 0 !important;
+          }
+        }
+      `}</style>
       <SEO title="Review & Pay" description="Review your booking details and confirm payment on Tendr." path="/booking/review" noIndex={true} />
       <BasicSpeedDial />
       <HamburgerNav title="Review & Pay" active="Pay" />

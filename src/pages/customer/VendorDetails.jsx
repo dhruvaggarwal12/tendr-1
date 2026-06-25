@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
-import PageTour from "../../components/PageTour";
 import SEO, { vendorPageTitle, vendorPageDescription } from "../../components/SEO";
 
 import ListingsNav from "../../components/ListingsNav";
@@ -369,26 +368,14 @@ const VendorDetailsPage = () => {
     availableSizes: "📏", customFlavors: "🍰", pricesNegotiable: "💬",
   };
 
-  const VENDOR_DETAILS_TOUR_STEPS = [
-    {
-      target: "body",
-      placement: "center",
-      disableBeacon: true,
-      title: "Vendor Profile",
-      content: "Scroll through photos, past work, and service details to get a feel for this vendor. Reviews and ratings are shown below.",
-    },
-    {
-      target: '[data-tour="vendor-booking-card"]',
-      placement: "left",
-      disableBeacon: true,
-      title: "Pricing & Booking",
-      content: "See the starting price and available details here. Click Chat to begin — we'll ask for your event details and check their availability on your date automatically.",
-    },
-  ];
-
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
-      <PageTour pageKey="vendor-details" steps={VENDOR_DETAILS_TOUR_STEPS} />
+      <style>{`
+        @media (max-width: 768px) {
+          .vendor-mobile-booking-card { display: block !important; }
+          .vendor-booking-card { display: none !important; }
+        }
+      `}</style>
       <SEO
         title={vendorPageTitle(vendor)}
         description={vendorPageDescription(vendor)}
@@ -404,37 +391,6 @@ const VendorDetailsPage = () => {
       />
       <BasicSpeedDial />
       <HamburgerNav active="Browse" />
-
-      {/* Sticky bottom CTA — mobile only, hidden while chat modal is open */}
-      {vendor && !chatState?.vendor && (
-        <div className="vendor-sticky-cta" style={{ display: "none" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {/* Icon-only: Share */}
-            <button onClick={handleShare}
-              title={shareCopied ? "Copied!" : "Share"}
-              style={{ flexShrink: 0, width: 40, height: 40, borderRadius: 10, border: "1.5px solid rgba(0,0,0,0.1)", background: "#fff", color: shareCopied ? "#16a34a" : "#5a3a1a", fontSize: 17, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              {shareCopied ? "✓" : <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>}
-            </button>
-            {/* Primary CTA — fills remaining space */}
-            <button
-              onClick={() => {
-                if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
-                if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
-                if (hasEventContext) {
-                  dispatch(setBookingType("you-do-it"));
-                  openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                } else {
-                  setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
-                  setChatFormOpen(true);
-                }
-              }}
-              style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 3px 14px rgba(196,122,46,0.4)" }}
-            >
-              💬 {hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
-            </button>
-          </div>
-        </div>
-      )}
 
       <div className="page-container vendor-profile-content" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
 
@@ -534,6 +490,56 @@ const VendorDetailsPage = () => {
             {[0,1,2,3,4].map(i => (
               <div key={i} style={{ width: i === 0 ? 18 : 6, height: 5, borderRadius: 100, background: i === 0 ? "#C47A2E" : "rgba(196,122,46,0.2)" }} />
             ))}
+          </div>
+        </div>
+
+        {/* Mobile-only compact booking card — appears right after gallery */}
+        <div className="vendor-mobile-booking-card" style={{ display: "none", marginBottom: 24 }}>
+          <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.22)", boxShadow: "0 4px 20px rgba(139,69,19,0.1)", overflow: "hidden" }}>
+            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting Price</div>
+                <div style={{ fontSize: 22, fontWeight: 900, color: "#fff" }}>
+                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Custom Quote"}
+                </div>
+              </div>
+              {vendor?.totalEventsCompleted > 0 && (
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: 18, fontWeight: 900, color: "#CCAB4A" }}>{vendor.totalEventsCompleted}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)" }}>events done</div>
+                </div>
+              )}
+            </div>
+            <div style={{ padding: "14px 18px" }}>
+              <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+                <button onClick={handleShare} title={shareCopied ? "Copied!" : "Share"}
+                  style={{ flexShrink: 0, width: 42, height: 42, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: shareCopied ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  {shareCopied ? "✓" : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>}
+                </button>
+                <button
+                  onClick={() => {
+                    if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                    if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
+                    if (hasEventContext) {
+                      dispatch(setBookingType("you-do-it"));
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    } else {
+                      setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
+                      setChatFormOpen(true);
+                    }
+                  }}
+                  style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)" }}
+                >
+                  💬 {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                </button>
+              </div>
+              <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 16px" }}>
+                {totalEventsCompleted > 0 && <span style={{ fontSize: 11, color: "#7A5535" }}>🎉 {totalEventsCompleted} events completed</span>}
+                {maxConcurrentEvents && <span style={{ fontSize: 11, color: "#7A5535" }}>📅 Up to {maxConcurrentEvents} events at once</span>}
+                {vendor?.createdAt && <span style={{ fontSize: 11, color: "#7A5535" }}>🗓️ On Tendr since {new Date(vendor.createdAt).getFullYear()}</span>}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -739,43 +745,29 @@ const VendorDetailsPage = () => {
 
               <div style={{ padding: "20px 22px" }}>
 
-                {/* Event Details */}
-                <div style={{ marginBottom: 18 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Your Event Details</div>
-                  {infoLines.length > 0 ? (
-                    <div style={{ background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 12, padding: "12px 14px", display: "flex", flexDirection: "column", gap: 5 }}>
-                      {infoLines.map((line, i) => (
-                        <div key={i} style={{ fontSize: 13, color: "#5a3a1a", display: "flex", alignItems: "center", gap: 6 }}>
-                          <span style={{ color: "#C47A2E", fontWeight: 700, fontSize: 11 }}>•</span> {line}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div style={{ background: "rgba(196,122,46,0.04)", border: "1.5px dashed rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 14px", textAlign: "center" }}>
-                      <div style={{ fontSize: 20, marginBottom: 4 }}>📋</div>
-                      <div style={{ fontSize: 12, color: "#9B7450" }}>No event details yet</div>
-                      <a href="/booking" style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700, textDecoration: "none" }}>Fill the booking form →</a>
-                    </div>
-                  )}
-                </div>
-
                 {/* CTA */}
-                <button
-                  onClick={() => {
-                    if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
-                    if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
-                    if (hasEventContext) {
-                      dispatch(setBookingType("you-do-it"));
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
-                    } else {
-                      setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
-                      setChatFormOpen(true);
-                    }
-                  }}
-                  style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: font, cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", marginBottom: 6 }}
-                >
-                  💬 {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
-                </button>
+                <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
+                  <button onClick={handleShare} title={shareCopied ? "Copied!" : "Share"}
+                    style={{ flexShrink: 0, width: 44, height: 44, borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: shareCopied ? "rgba(196,122,46,0.08)" : "#fff", color: shareCopied ? "#15803d" : "#C47A2E", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {shareCopied ? "✓" : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>}
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                      if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
+                      if (hasEventContext) {
+                        dispatch(setBookingType("you-do-it"));
+                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      } else {
+                        setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
+                        setChatFormOpen(true);
+                      }
+                    }}
+                    style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em" }}
+                  >
+                    💬 {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                  </button>
+                </div>
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 14px", lineHeight: 1.5 }}>
                   Our team reviews and connects you within a few hours
                 </p>

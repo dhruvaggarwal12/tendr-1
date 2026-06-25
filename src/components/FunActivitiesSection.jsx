@@ -135,9 +135,27 @@ function BookingPanel({ activity, onClose, onReviewPay }) {
           {inp("Total Guests", "guests", "e.g. 50", "number")}
           {inp("Your Name", "name", "Full name")}
           {inp("WhatsApp Number", "phone", "10-digit number", "tel")}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <div>{inp("Event Date", "date", "", "date", true, { min: today })}</div>
-            <div>{inp("Start Time", "time", "", "time")}</div>
+          <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>
+                Date <span style={{ color: "#DC2626" }}>*</span>
+              </label>
+              <input type="date" value={form.date} onChange={e => set("date", e.target.value)}
+                required min={today}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: F, fontSize: 13, color: BROWN, outline: "none", boxSizing: "border-box", background: "#fff" }}
+                onFocus={e => (e.target.style.borderColor = GOLD)}
+                onBlur={e => (e.target.style.borderColor = "rgba(196,122,46,0.25)")} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>
+                Start Time <span style={{ color: "#DC2626" }}>*</span>
+              </label>
+              <input type="time" value={form.time} onChange={e => set("time", e.target.value)}
+                required
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: F, fontSize: 13, color: BROWN, outline: "none", boxSizing: "border-box", background: "#fff" }}
+                onFocus={e => (e.target.style.borderColor = GOLD)}
+                onBlur={e => (e.target.style.borderColor = "rgba(196,122,46,0.25)")} />
+            </div>
           </div>
           {inp("Venue / Address", "address", "Event venue or full address")}
           <div style={{ marginBottom: 24 }}>
@@ -165,7 +183,7 @@ function BookingPanel({ activity, onClose, onReviewPay }) {
 }
 
 // ── Quick View Modal (center screen) ─────────────────────────────────────────
-function ActivityModal({ activity, onClose, onBook, onAddToCart }) {
+function ActivityModal({ activity, onClose, onAddToCart }) {
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
@@ -230,11 +248,7 @@ function ActivityModal({ activity, onClose, onBook, onAddToCart }) {
           <div style={{ display: "flex", gap: 10, flexDirection: "column" }}>
             <button onClick={() => { onAddToCart(activity); onClose(); }}
               style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
-              🛒 Add to Cart
-            </button>
-            <button onClick={() => { onClose(); onBook(activity); }}
-              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: GOLD, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-              Book Now →
+              🛒 Save to Cart
             </button>
           </div>
           <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "8px 0 0", fontFamily: F }}>
@@ -281,12 +295,6 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
             onClick={e => { e.stopPropagation(); onQuickView(activity); }}
             style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
             View Details
-          </button>
-          <button
-            onClick={e => { e.stopPropagation(); onAddToCart(activity); }}
-            style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
-            title="Add to cart">
-            🛒
           </button>
         </div>
       </div>
@@ -429,7 +437,7 @@ export default function FunActivitiesSection({ heading, subheading, activities =
         )}
       </div>
 
-      {quickView && <ActivityModal activity={quickView} onClose={() => setQuickView(null)} onBook={a => { setQuickView(null); setBooking(a); }} onAddToCart={a => { handleAddToCart(a); setQuickView(null); }} />}
+      {quickView && <ActivityModal activity={quickView} onClose={() => setQuickView(null)} onAddToCart={a => { handleAddToCart(a); setQuickView(null); }} />}
       {booking   && <BookingPanel  activity={booking}   onClose={() => setBooking(null)} onReviewPay={() => { setBooking(null); }} />}
     </>
   );

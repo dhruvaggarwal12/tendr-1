@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { GUIDES } from "./guideData";
 
@@ -30,6 +31,16 @@ export default function GuideReader() {
     "terracotta":      TerracottaGuide,
   };
 
+  useEffect(() => {
+    const phone = sessionStorage.getItem('ebook_access_phone') || 'unknown';
+    const BASE_URL = import.meta.env.VITE_BASE_URL;
+    fetch(`${BASE_URL}/admin/ebook-access`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone, slug, action: 'read', title: guide?.title }),
+    }).catch(() => {});
+  }, [slug]);
+
   const Renderer = renderers[guide.theme.name] || AmberGoldGuide;
   return <Renderer guide={guide} />;
 }
@@ -46,7 +57,16 @@ function PrintButton({ theme }) {
       `}</style>
       <button
         className="no-print"
-        onClick={() => window.print()}
+        onClick={() => {
+          const phone = sessionStorage.getItem('ebook_access_phone') || 'unknown';
+          const BASE_URL = import.meta.env.VITE_BASE_URL;
+          fetch(`${BASE_URL}/admin/ebook-access`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone, slug: window.location.pathname.split('/')[2], action: 'download' }),
+          }).catch(() => {});
+          window.print();
+        }}
         style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, padding: "11px 20px", borderRadius: 12, border: "none", background: theme.accent, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily, boxShadow: `0 6px 20px ${theme.accentSoft.replace("0.08", "0.35")}`, display: "flex", alignItems: "center", gap: 7 }}
       >
         ⬇ Download PDF
