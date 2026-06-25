@@ -149,7 +149,7 @@ const Navbar = ({
 }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { startTour } = useTour() || {};
+  const { resetAllTours } = useTour() || {};
   const { user, token } = useSelector((state) => state.auth);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const profileMenuRef = useRef(null);
@@ -713,7 +713,7 @@ const Navbar = ({
                           >Admin Dashboard</button>
 
                           <button
-                            onClick={() => { setShowProfileMenu(false); startTour?.(); }}
+                            onClick={() => { setShowProfileMenu(false); resetAllTours?.(); navigate("/"); }}
                             style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "9px 14px", borderRadius: 8, border: "none", background: "transparent", fontSize: 14, fontWeight: 600, color: "#C47A2E", cursor: "pointer", fontFamily: font }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}

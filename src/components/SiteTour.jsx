@@ -235,7 +235,8 @@ export default function SiteTour() {
     [endTour]
   );
 
-  if (!tourActive) return null;
+  // Global one-shot tour replaced by per-page PageTour components
+  if (!tourActive || true) return null;
 
   return (
     <Joyride

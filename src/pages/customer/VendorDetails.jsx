@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import PageTour from "../../components/PageTour";
 import SEO, { vendorPageTitle, vendorPageDescription } from "../../components/SEO";
 
 import ListingsNav from "../../components/ListingsNav";
@@ -368,8 +369,26 @@ const VendorDetailsPage = () => {
     availableSizes: "📏", customFlavors: "🍰", pricesNegotiable: "💬",
   };
 
+  const VENDOR_DETAILS_TOUR_STEPS = [
+    {
+      target: "body",
+      placement: "center",
+      disableBeacon: true,
+      title: "Vendor Profile",
+      content: "Scroll through photos, past work, and service details to get a feel for this vendor. Reviews and ratings are shown below.",
+    },
+    {
+      target: '[data-tour="vendor-booking-card"]',
+      placement: "left",
+      disableBeacon: true,
+      title: "Pricing & Booking",
+      content: "See the starting price and available details here. Click Chat to begin — we'll ask for your event details and check their availability on your date automatically.",
+    },
+  ];
+
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <PageTour pageKey="vendor-details" steps={VENDOR_DETAILS_TOUR_STEPS} />
       <SEO
         title={vendorPageTitle(vendor)}
         description={vendorPageDescription(vendor)}
@@ -706,7 +725,7 @@ const VendorDetailsPage = () => {
           </div>
 
           {/* ════ RIGHT: Sticky Booking Card ════ */}
-          <div className="vendor-booking-card" style={{ flex: "0 0 340px", position: "sticky", top: 80 }}>
+          <div data-tour="vendor-booking-card" className="vendor-booking-card" style={{ flex: "0 0 340px", position: "sticky", top: 80 }}>
             <div style={{ background: "#FFFCF5", borderRadius: 24, border: "1.5px solid rgba(196,122,46,0.22)", boxShadow: "0 8px 40px rgba(139,69,19,0.1)", overflow: "hidden" }}>
 
               {/* Card header */}

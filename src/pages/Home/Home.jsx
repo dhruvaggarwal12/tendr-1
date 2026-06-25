@@ -1,5 +1,6 @@
 // src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
+import PageTour from "../../components/PageTour";
 import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
 import "./Home.css";
@@ -564,8 +565,47 @@ const Home = () => {
     },
   ];
 
+  const HOME_TOUR_STEPS = [
+    {
+      target: "body",
+      placement: "center",
+      disableBeacon: true,
+      title: "Welcome to Tendr! 🎉",
+      content: "India's smartest event platform — find vendors, plan events, shop gifts and stationery, explore venues, and more. You'll see short tips like this as you explore each section.",
+    },
+    {
+      target: '[data-tour="search-bar"]',
+      placement: "bottom",
+      disableBeacon: true,
+      title: "Smart Search",
+      content: 'Type naturally — "decorator under ₹20K in Noida", "photographer for 150 guests in Delhi". It understands vendor types, budgets, and locations automatically.',
+    },
+    {
+      target: '[data-tour="nav-browse"]',
+      placement: "bottom",
+      disableBeacon: true,
+      title: "Browse Vendors",
+      content: "Browse Decorators, Caterers, Photographers, and DJs. Filter by location, budget, rating, and availability. Top Rated shows our highest-reviewed vendors.",
+    },
+    {
+      target: '[data-tour="nav-booking"]',
+      placement: "bottom",
+      disableBeacon: true,
+      title: "Plan Your Event",
+      content: "Start here to plan your full event. Pick vendors yourself or let Tendr's Smart Plan choose the best combination within your total budget.",
+    },
+    {
+      target: '[data-tour="nav-tools"]',
+      placement: "bottom",
+      disableBeacon: true,
+      title: "Tools & Extras",
+      content: "Budget Allocator, Decor Finder, Timeline Builder, Gift Hampers, Wedding Stationeries, Fun Activities, Party Places — all under Browse and Tools.",
+    },
+  ];
+
   return (
     <div className="App">
+      <PageTour pageKey="home" steps={HOME_TOUR_STEPS} />
       <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Faridabad. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}
       <div

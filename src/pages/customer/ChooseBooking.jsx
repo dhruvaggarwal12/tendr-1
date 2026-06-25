@@ -1,4 +1,5 @@
 import React from "react";
+import PageTour from "../../components/PageTour";
 import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
@@ -61,8 +62,19 @@ export default function ChooseBooking() {
     navigate("/plan-event/form?bookingType=" + type);
   };
 
+  const CHOOSE_BOOKING_STEPS = [
+    {
+      target: "body",
+      placement: "center",
+      disableBeacon: true,
+      title: "How would you like to plan?",
+      content: "You Do It: you browse vendors yourself and chat with each one to finalise. Smart Plan: fill in your budget and guest count once — Tendr picks the best Decorator, Caterer, Photographer, and DJ combination for you.",
+    },
+  ];
+
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", fontFamily: font }}>
+      <PageTour pageKey="choose-booking" steps={CHOOSE_BOOKING_STEPS} />
       <SEO title="Plan an Event" description="Start planning your perfect event. Choose how you want to work — browse and book vendors yourself or let Tendr handle everything for you." path="/booking" />
       <HamburgerNav />
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: "48px 24px 80px" }}>
