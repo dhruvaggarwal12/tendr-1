@@ -1,12 +1,21 @@
-import { useState, useCallback, useEffect } from "react";
-import { Joyride, STATUS, ACTIONS } from "react-joyride";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { Joyride, STATUS, ACTIONS, EVENTS } from "react-joyride";
 
 const TOUR_PREFIX = "tendr_tour_";
 
+// Module-level session cache — survives re-renders and re-mounts within the same session
+const _seenThisSession = new Set();
+
+const lsGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+
 export const resetAllPageTours = () => {
-  Object.keys(localStorage)
-    .filter((k) => k.startsWith(TOUR_PREFIX))
-    .forEach((k) => localStorage.removeItem(k));
+  _seenThisSession.clear();
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.startsWith(TOUR_PREFIX))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {}
 };
 
 const GOLD = "#C47A2E";
@@ -91,43 +100,65 @@ function TourTooltip({ index, step, backProps, closeProps, primaryProps, tooltip
 
 export default function PageTour({ pageKey, steps, condition = true }) {
   const storageKey = TOUR_PREFIX + pageKey;
-  const [run, setRun] = useState(() => condition && !localStorage.getItem(storageKey));
+  const markedDone = useRef(false);
 
-  // If condition changes to true after mount (e.g. data loads), re-check
-  useEffect(() => {
-    if (condition && !localStorage.getItem(storageKey)) {
-      setRun(true);
-    }
-  }, [condition, storageKey]);
+  const isDone = () => markedDone.current || _seenThisSession.has(storageKey) || !!lsGet(storageKey);
 
+  const [run, setRun] = useState(() => condition && !isDone());
+
+  // Mark done immediately when tour starts so re-mounts never re-run it
   const markDone = useCallback(() => {
-    localStorage.setItem(storageKey, "1");
+    if (markedDone.current) return;
+    markedDone.current = true;
+    _seenThisSession.add(storageKey);
+    lsSet(storageKey, "1");
     setRun(false);
   }, [storageKey]);
 
+  // Start tour if condition becomes true after mount (and not already seen)
+  useEffect(() => {
+    if (condition && !isDone()) {
+      setRun(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [condition]);
+
   const handleCallback = useCallback(
     (data) => {
-      const { status, action } = data;
-      // Mark done on any terminal state — including error (missing target) and close
-      if (
-        [STATUS.FINISHED, STATUS.SKIPPED, STATUS.ERROR].includes(status) ||
+      const { status, action, type } = data;
+
+      // Save to localStorage the moment the tour actually starts showing
+      if (type === EVENTS.TOUR_START) {
+        lsSet(storageKey, "1");
+        _seenThisSession.add(storageKey);
+      }
+
+      // Stop on any terminal state or user dismissal
+      const isTerminal =
+        status === STATUS.FINISHED ||
+        status === STATUS.SKIPPED ||
+        status === STATUS.ERROR ||
+        type === EVENTS.TARGET_NOT_FOUND ||
         action === ACTIONS.CLOSE ||
         action === ACTIONS.STOP ||
-        action === ACTIONS.SKIP
-      ) {
+        action === ACTIONS.SKIP ||
+        action === ACTIONS.RESET;
+
+      if (isTerminal) {
         markDone();
       }
     },
-    [markDone]
+    [storageKey, markDone]
   );
 
   if (!run || !condition) return null;
 
-  // Auto-inject disableBeacon on every step so no black dot appears
+  // Inject disableBeacon on every step so no pulsing black dot ever appears
   const safeSteps = steps.map((s) => ({ ...s, disableBeacon: true }));
 
   return (
     <Joyride
+      key={storageKey}
       steps={safeSteps}
       run={run}
       callback={handleCallback}
@@ -137,6 +168,7 @@ export default function PageTour({ pageKey, steps, condition = true }) {
       showSkipButton
       disableOverlayClose={false}
       disableScrolling={false}
+      spotlightClicks={false}
       styles={{
         options: {
           zIndex: 10000,
