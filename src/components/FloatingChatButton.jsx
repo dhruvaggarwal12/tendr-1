@@ -629,19 +629,19 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }
         @media (max-width: 767px) {
-          /* Position above the 60px bottom nav bar */
+          /* Position above nav bar — nav is calc(60px + safe-area-inset-bottom) tall */
           .floating-chat-btn {
-            bottom: 80px !important;
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
             right: 14px !important;
             padding: 12px !important;
             width: 50px !important;
             height: 50px !important;
           }
-          .mobile-action-stack { bottom: 138px !important; right: 14px !important; }
+          .mobile-action-stack { bottom: calc(138px + env(safe-area-inset-bottom, 0px)) !important; right: 14px !important; }
           .chat-btn-text { display: none; }
           /* Stationery cart button: to the left of chat on mobile, above bottom nav */
           .stat-cart-fab {
-            bottom: 80px !important;
+            bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
             right: 72px !important; /* 14 + 50 + 8 */
           }
           .chat-popup {
@@ -649,9 +649,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             left: 12px !important;
             min-width: unset !important;
             max-width: unset !important;
-            bottom: 140px !important;
+            bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
           }
-          /* Shift Active Chats modal up so it clears the 60px bottom nav */
+          /* Shift Active Chats modal up so it clears the bottom nav */
           .active-chats-modal {
             top: calc(50% - 36px) !important;
             height: min(78vh, 640px) !important;

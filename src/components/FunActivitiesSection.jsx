@@ -184,74 +184,73 @@ function BookingPanel({ activity, onClose, onReviewPay, fromDrawer = false }) {
 
 // ── Quick View Modal (center screen) ─────────────────────────────────────────
 function ActivityModal({ activity, onClose, onAddToCart }) {
+  const isMob = window.innerWidth < 768;
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
-      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,520px)", maxHeight: window.innerWidth < 768 ? "82vh" : "90vh", overflowY: "auto", background: "#FFFCF5", borderRadius: 22, zIndex: 1101, fontFamily: F, boxShadow: "0 28px 70px rgba(0,0,0,0.22)" }}>
+      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,520px)", maxHeight: isMob ? "82vh" : "90vh", overflowY: "auto", background: "#FFFCF5", borderRadius: isMob ? 18 : 22, zIndex: 1101, fontFamily: F, boxShadow: "0 28px 70px rgba(0,0,0,0.22)" }}>
 
         {/* Header */}
-        <div style={{ background: `linear-gradient(135deg,${GOLD}20,${GOLD}08)`, padding: "32px 24px 20px", textAlign: "center", borderRadius: "22px 22px 0 0", position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
-          <div style={{ fontSize: 60, marginBottom: 12 }}>{activity.emoji}</div>
-          <h2 style={{ fontSize: 22, fontWeight: 900, color: BROWN, margin: "0 0 10px", fontFamily: F }}>{activity.name}</h2>
+        <div style={{ background: `linear-gradient(135deg,${GOLD}20,${GOLD}08)`, padding: isMob ? "20px 16px 14px" : "32px 24px 20px", textAlign: "center", borderRadius: isMob ? "18px 18px 0 0" : "22px 22px 0 0", position: "relative" }}>
+          <button onClick={onClose} style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+          <div style={{ fontSize: isMob ? 40 : 60, marginBottom: isMob ? 6 : 12 }}>{activity.emoji}</div>
+          <h2 style={{ fontSize: isMob ? 17 : 22, fontWeight: 900, color: BROWN, margin: `0 0 ${isMob ? 8 : 10}px`, fontFamily: F }}>{activity.name}</h2>
 
           {/* Pricing */}
-          <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 14, padding: "12px 28px" }}>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.65)", fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>{activity.price === 0 ? "FREE" : "FIXED PRICE"}</span>
-            <span style={{ fontSize: 28, fontWeight: 900, color: "#fff", fontFamily: F }}>
+          <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 12, padding: isMob ? "8px 20px" : "12px 28px" }}>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>{activity.price === 0 ? "FREE" : "FIXED PRICE"}</span>
+            <span style={{ fontSize: isMob ? 22 : 28, fontWeight: 900, color: "#fff", fontFamily: F }}>
               {activity.price === 0 ? "Free" : `₹${activity.price.toLocaleString("en-IN")}`}
-              {activity.price > 0 && activity.perUnit && <span style={{ fontSize: 14, fontWeight: 600 }}> {activity.unitLabel}</span>}
+              {activity.price > 0 && activity.perUnit && <span style={{ fontSize: isMob ? 11 : 14, fontWeight: 600 }}> {activity.unitLabel}</span>}
             </span>
           </div>
         </div>
 
-        <div style={{ padding: "20px 24px calc(24px + env(safe-area-inset-bottom, 20px))" }}>
+        <div style={{ padding: isMob ? "14px 16px calc(20px + env(safe-area-inset-bottom, 16px))" : "20px 24px calc(24px + env(safe-area-inset-bottom, 20px))" }}>
           {/* Info pills */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 14 }}>
-            <span style={{ fontSize: 12, color: "#9B7450", background: "#F9F5F0", padding: "5px 12px", borderRadius: 100, fontFamily: F }}>⏱ {activity.duration}</span>
-            <span style={{ fontSize: 12, color: "#9B7450", background: "#F9F5F0", padding: "5px 12px", borderRadius: 100, fontFamily: F }}>👥 {activity.guests}</span>
-            <span style={{ fontSize: 12, color: GOLD, background: `${GOLD}12`, padding: "5px 12px", borderRadius: 100, fontWeight: 700, fontFamily: F }}>🎭 Fun Activity</span>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: isMob ? 10 : 14 }}>
+            <span style={{ fontSize: isMob ? 11 : 12, color: "#9B7450", background: "#F9F5F0", padding: isMob ? "4px 10px" : "5px 12px", borderRadius: 100, fontFamily: F }}>⏱ {activity.duration}</span>
+            <span style={{ fontSize: isMob ? 11 : 12, color: "#9B7450", background: "#F9F5F0", padding: isMob ? "4px 10px" : "5px 12px", borderRadius: 100, fontFamily: F }}>👥 {activity.guests}</span>
+            <span style={{ fontSize: isMob ? 11 : 12, color: GOLD, background: `${GOLD}12`, padding: isMob ? "4px 10px" : "5px 12px", borderRadius: 100, fontWeight: 700, fontFamily: F }}>🎭 Fun Activity</span>
           </div>
 
           {/* Description */}
-          <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 16px", fontFamily: F }}>{activity.desc}</p>
+          <p style={{ fontSize: isMob ? 12 : 14, color: "#5a3a1a", lineHeight: 1.6, margin: `0 0 ${isMob ? 10 : 16}px`, fontFamily: F }}>{activity.desc}</p>
 
           {/* What's included */}
-          <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 14, padding: "14px 16px", marginBottom: 16, border: `1px solid ${GOLD}18` }}>
-            <p style={{ fontSize: 12, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 10px", fontFamily: F }}>What's Included</p>
+          <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 12, padding: isMob ? "10px 12px" : "14px 16px", marginBottom: isMob ? 10 : 16, border: `1px solid ${GOLD}18` }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: GOLD, textTransform: "uppercase", letterSpacing: "0.08em", margin: `0 0 ${isMob ? 7 : 10}px`, fontFamily: F }}>What's Included</p>
             {activity.includes.map((item, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 5 }}>
-                <span style={{ color: GOLD, fontSize: 12, marginTop: 2 }}>✓</span>
-                <span style={{ fontSize: 13, color: BROWN, fontFamily: F }}>{item}</span>
+              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 7, marginBottom: 4 }}>
+                <span style={{ color: GOLD, fontSize: 11, marginTop: 2 }}>✓</span>
+                <span style={{ fontSize: isMob ? 11 : 13, color: BROWN, fontFamily: F }}>{item}</span>
               </div>
             ))}
           </div>
 
           {/* Perfect for */}
-          <div style={{ marginBottom: 18 }}>
-            <p style={{ fontSize: 12, fontWeight: 800, color: BROWN, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px", fontFamily: F }}>Perfect For</p>
-            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          <div style={{ marginBottom: isMob ? 10 : 18 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: BROWN, textTransform: "uppercase", letterSpacing: "0.08em", margin: `0 0 ${isMob ? 6 : 8}px`, fontFamily: F }}>Perfect For</p>
+            <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
               {activity.perfectFor.map(p => (
-                <span key={p} style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.08)", padding: "5px 12px", borderRadius: 100, fontFamily: F }}>✨ {p}</span>
+                <span key={p} style={{ fontSize: isMob ? 11 : 12, color: "#7A5535", background: "rgba(196,122,46,0.08)", padding: isMob ? "4px 10px" : "5px 12px", borderRadius: 100, fontFamily: F }}>✨ {p}</span>
               ))}
             </div>
           </div>
 
           {/* Tags */}
-          <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 20 }}>
+          <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: isMob ? 14 : 20 }}>
             {activity.tags.map(t => (
-              <span key={t} style={{ fontSize: 11, color: GOLD, background: `${GOLD}12`, padding: "3px 9px", borderRadius: 100, fontWeight: 700, fontFamily: F }}>#{t}</span>
+              <span key={t} style={{ fontSize: 10, color: GOLD, background: `${GOLD}12`, padding: "2px 8px", borderRadius: 100, fontWeight: 700, fontFamily: F }}>#{t}</span>
             ))}
           </div>
 
           {/* CTAs */}
-          <div style={{ display: "flex", gap: 10, flexDirection: "column" }}>
-            <button onClick={() => { onAddToCart(activity); onClose(); }}
-              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
-              🛒 Save to Cart
-            </button>
-          </div>
-          <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "8px 0 0", fontFamily: F }}>
+          <button onClick={() => { onAddToCart(activity); onClose(); }}
+            style={{ width: "100%", padding: isMob ? "12px" : "13px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: isMob ? 14 : 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+            🛒 Save to Cart
+          </button>
+          <p style={{ fontSize: 10, color: "#9B7450", textAlign: "center", margin: "7px 0 0", fontFamily: F }}>
             Fixed price · Confirmed within 2 hrs · WhatsApp updates
           </p>
         </div>
@@ -262,41 +261,42 @@ function ActivityModal({ activity, onClose, onAddToCart }) {
 
 // ── Single Card ───────────────────────────────────────────────────────────────
 export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) {
+  const isMobile = window.innerWidth < 768;
   return (
     <div onClick={() => onQuickView(activity)}
-      style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(44,26,14,0.07)", overflow: "hidden", boxShadow: "0 2px 12px rgba(44,26,14,0.06)", transition: "all 0.2s", display: "flex", flexDirection: "column", minWidth: 220, flex: "0 0 auto", cursor: "pointer" }}
+      style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(44,26,14,0.07)", overflow: "hidden", boxShadow: "0 2px 12px rgba(44,26,14,0.06)", transition: "all 0.2s", display: "flex", flexDirection: "column", minWidth: isMobile ? 150 : 210, flex: "0 0 auto", cursor: "pointer" }}
       onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.16)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(44,26,14,0.06)"; e.currentTarget.style.transform = "translateY(0)"; }}>
 
       {/* Emoji header */}
-      <div style={{ background: `linear-gradient(135deg,${GOLD}18,${GOLD}08)`, padding: "24px 20px 14px", textAlign: "center", position: "relative" }}>
-        <div style={{ fontSize: 44, marginBottom: 8 }}>{activity.emoji}</div>
-        <div style={{ position: "absolute", top: 10, right: 10 }}>
-          <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 900, padding: "4px 12px", borderRadius: "100px 100px 100px 4px", fontFamily: F }}>
+      <div style={{ background: `linear-gradient(135deg,${GOLD}18,${GOLD}08)`, padding: isMobile ? "16px 12px 10px" : "22px 18px 12px", textAlign: "center", position: "relative" }}>
+        <div style={{ fontSize: isMobile ? 32 : 42, marginBottom: isMobile ? 4 : 8 }}>{activity.emoji}</div>
+        <div style={{ position: "absolute", top: 8, right: 8 }}>
+          <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: isMobile ? 10 : 12, fontWeight: 900, padding: isMobile ? "3px 8px" : "4px 10px", borderRadius: "100px 100px 100px 4px", fontFamily: F }}>
             ₹{activity.price.toLocaleString("en-IN")}
           </div>
-          <div style={{ fontSize: 9, color: GOLD, fontWeight: 800, letterSpacing: "0.1em", textAlign: "center", marginTop: 2, fontFamily: F }}>
+          <div style={{ fontSize: 8, color: GOLD, fontWeight: 800, letterSpacing: "0.1em", textAlign: "center", marginTop: 2, fontFamily: F }}>
             {activity.perUnit ? activity.unitLabel.toUpperCase() : "FIXED"}
           </div>
         </div>
       </div>
 
-      <div style={{ padding: "12px 16px 16px", flex: 1, display: "flex", flexDirection: "column" }}>
-        <h3 style={{ fontSize: 14, fontWeight: 800, color: BROWN, margin: "0 0 5px", fontFamily: F }}>{activity.name}</h3>
-        <p style={{ fontSize: 12, color: "#7A5535", lineHeight: 1.55, margin: "0 0 10px", flex: 1, fontFamily: F, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{activity.desc}</p>
+      <div style={{ padding: isMobile ? "8px 10px 10px" : "12px 14px 14px", flex: 1, display: "flex", flexDirection: "column" }}>
+        <h3 style={{ fontSize: isMobile ? 11 : 14, fontWeight: 800, color: BROWN, margin: `0 0 ${isMobile ? 3 : 5}px`, fontFamily: F }}>{activity.name}</h3>
+        {!isMobile && (
+          <p style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.5, margin: "0 0 8px", flex: 1, fontFamily: F, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{activity.desc}</p>
+        )}
 
-        <div style={{ display: "flex", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
-          <span style={{ fontSize: 10, color: "#9B7450", background: "#F9F5F0", padding: "3px 8px", borderRadius: 100, fontFamily: F }}>⏱ {activity.duration}</span>
-          <span style={{ fontSize: 10, color: "#9B7450", background: "#F9F5F0", padding: "3px 8px", borderRadius: 100, fontFamily: F }}>👥 {activity.guests}</span>
+        <div style={{ display: "flex", gap: 4, marginBottom: isMobile ? 6 : 8, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 9, color: "#9B7450", background: "#F9F5F0", padding: "2px 6px", borderRadius: 100, fontFamily: F }}>⏱ {activity.duration}</span>
+          <span style={{ fontSize: 9, color: "#9B7450", background: "#F9F5F0", padding: "2px 6px", borderRadius: 100, fontFamily: F }}>👥 {activity.guests}</span>
         </div>
 
-        <div style={{ display: "flex", gap: 6 }}>
-          <button
-            onClick={e => { e.stopPropagation(); onQuickView(activity); }}
-            style={{ flex: 1, padding: "9px 0", borderRadius: 10, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-            View Details
-          </button>
-        </div>
+        <button
+          onClick={e => { e.stopPropagation(); onQuickView(activity); }}
+          style={{ width: "100%", padding: isMobile ? "7px 0" : "9px 0", borderRadius: 9, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: isMobile ? 10 : 12, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+          View Details
+        </button>
       </div>
     </div>
   );

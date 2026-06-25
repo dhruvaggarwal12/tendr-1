@@ -18,24 +18,25 @@ function ProductCard({ product, onViewDetails }) {
   const cartItems = useSelector(selectCartItems);
   const inCart    = cartItems.find(i => i.productId === product._id);
   const price = product.pricePerUnit || 0;
+  const isMobile = window.innerWidth < 768;
 
   return (
-    <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 16px rgba(44,26,14,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", fontFamily: font, position: "relative" }}>
+    <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 16px rgba(44,26,14,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", fontFamily: font, position: "relative" }}>
       {/* Product number badge */}
       {product.productNumber && (
-        <div style={{ position: "absolute", top: 10, left: 10, background: "rgba(44,26,14,0.7)", color: "#fff", fontSize: 10, fontWeight: 700, borderRadius: 6, padding: "2px 7px", zIndex: 2, letterSpacing: "0.05em" }}>
+        <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(44,26,14,0.7)", color: "#fff", fontSize: 9, fontWeight: 700, borderRadius: 6, padding: "2px 6px", zIndex: 2, letterSpacing: "0.05em" }}>
           #{product.productNumber}
         </div>
       )}
       {/* Cart badge */}
       {inCart && (
-        <div style={{ position: "absolute", top: 10, right: 10, background: "#22c55e", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 100, padding: "2px 8px", zIndex: 2 }}>
+        <div style={{ position: "absolute", top: 8, right: 8, background: "#22c55e", color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 100, padding: "2px 6px", zIndex: 2 }}>
           In Cart ({inCart.quantity})
         </div>
       )}
 
       {/* Image */}
-      <div style={{ height: 200, overflow: "hidden", background: "#f5f0e8" }}>
+      <div style={{ height: isMobile ? 120 : 180, overflow: "hidden", background: "#f5f0e8" }}>
         <img
           src={product.images?.[0] || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&q=80"}
           alt={product.name}
@@ -43,34 +44,36 @@ function ProductCard({ product, onViewDetails }) {
         />
       </div>
 
-      <div style={{ padding: "14px 16px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+      <div style={{ padding: isMobile ? "10px 10px" : "14px 16px", display: "flex", flexDirection: "column", gap: isMobile ? 5 : 8, flex: 1 }}>
         {/* Category chip */}
-        <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "2px 9px", alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+        <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "2px 7px", alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: "0.06em" }}>
           {product.category}
         </span>
 
-        <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.3 }}>{product.name}</div>
+        <div style={{ fontSize: isMobile ? 12 : 15, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.3 }}>{product.name}</div>
 
-        <p style={{ fontSize: 12.5, color: "#7A5535", lineHeight: 1.55, margin: 0 }}>
-          {product.description.slice(0, 100)}{product.description.length > 100 ? "…" : ""}
-        </p>
+        {!isMobile && (
+          <p style={{ fontSize: 12, color: "#7A5535", lineHeight: 1.55, margin: 0 }}>
+            {product.description.slice(0, 80)}{product.description.length > 80 ? "…" : ""}
+          </p>
+        )}
 
         {/* Min order highlight */}
         {product.minOrderQuantity > 1 && (
-          <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 8, padding: "5px 10px", fontSize: 11, fontWeight: 700, color: "#b45309" }}>
-            Minimum order: {product.minOrderQuantity} piece{product.minOrderQuantity > 1 ? "s" : ""}
+          <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "3px 7px", fontSize: 10, fontWeight: 700, color: "#b45309" }}>
+            Min: {product.minOrderQuantity} pcs
           </div>
         )}
 
         {/* Price */}
-        <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-          <span style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E" }}>₹{price.toLocaleString("en-IN")}</span>
-          <span style={{ fontSize: 12, color: "#9B7450" }}>/ unit</span>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+          <span style={{ fontSize: isMobile ? 15 : 20, fontWeight: 900, color: "#2C1A0E" }}>₹{price.toLocaleString("en-IN")}</span>
+          <span style={{ fontSize: 10, color: "#9B7450" }}>/ unit</span>
         </div>
 
         {/* View Details */}
         <button onClick={() => onViewDetails(product)}
-          style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+          style={{ width: "100%", padding: isMobile ? "8px 10px" : "10px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: isMobile ? 11 : 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
           View Details
         </button>
       </div>
@@ -296,61 +299,36 @@ const GiftHampersCakes = () => {
         </div>
       </div>
 
-      {/* Floating cart button — sits just above View Chats */}
-      {cartCount > 0 && (
-        <button
-          onClick={() => setShowCart(true)}
-          title="Gift Hampers Cart"
-          style={{
-            position: "fixed", bottom: 88, right: 16, zIndex: 901,
-            background: "linear-gradient(135deg,#15803d,#22c55e)",
-            color: "#fff", border: "none", borderRadius: "50%",
-            width: 48, height: 48,
-            fontFamily: "'Outfit',sans-serif", fontSize: 20,
-            cursor: "pointer", boxShadow: "0 4px 18px rgba(21,128,61,0.45)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}
-        >
-          🎁
-          <span style={{
-            position: "absolute", top: -4, right: -4,
-            background: "#C47A2E", color: "#fff", borderRadius: "50%",
-            width: 18, height: 18, fontSize: 10, fontWeight: 800,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            border: "2px solid #fff",
-          }}>{cartCount}</span>
-        </button>
-      )}
-
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "28px 24px 80px" }}>
+      {/* Product grid — single-source 🎁 cart is in FloatingChatButton global stack */}
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 14px 80px" }}>
         {/* Category filters */}
         {categories.length > 1 && (
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 24 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
             {categories.map(cat => (
               <button key={cat} onClick={() => setFilter(cat)}
-                style={{ padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 700, border: `1.5px solid ${filter === cat ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: filter === cat ? "#C47A2E" : "#fff", color: filter === cat ? "#fff" : "#6B3A1F", cursor: "pointer", fontFamily: font }}>
+                style={{ padding: "6px 14px", borderRadius: 100, fontSize: 12, fontWeight: 700, border: `1.5px solid ${filter === cat ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: filter === cat ? "#C47A2E" : "#fff", color: filter === cat ? "#fff" : "#6B3A1F", cursor: "pointer", fontFamily: font }}>
                 {cat}
               </button>
             ))}
           </div>
         )}
 
-        {/* Products grid */}
+        {/* Products grid — 2 columns on mobile, auto on desktop */}
         {loading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 10 }}>
             {[0,1,2,3].map(i => (
-              <div key={i} style={{ height: 380, borderRadius: 18, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+              <div key={i} style={{ height: 260, borderRadius: 14, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
             ))}
             <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "80px 24px" }}>
-            <div style={{ fontSize: 48, marginBottom: 16 }}>🎁</div>
-            <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No products available yet</h3>
-            <p style={{ fontSize: 14, color: "#9B7450" }}>Check back soon — our vendors are adding products.</p>
+          <div style={{ textAlign: "center", padding: "60px 24px" }}>
+            <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No products available yet</h3>
+            <p style={{ fontSize: 13, color: "#9B7450" }}>Check back soon — our vendors are adding products.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: 20 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
             {filtered.map(p => (
               <ProductCard
                 key={p._id}
@@ -366,34 +344,36 @@ const GiftHampersCakes = () => {
       </div>
 
       {/* Product detail modal */}
-      {selectedProduct && (
+      {selectedProduct && (() => {
+        const isMob = window.innerWidth < 768;
+        return (
         <>
           <div onClick={() => setSelectedProduct(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(92vw,480px)", maxHeight: "85vh", background: "#FFFCF5", borderRadius: 20, zIndex: 1101, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: "'Outfit',sans-serif" }}>
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,480px)", maxHeight: isMob ? "80vh" : "85vh", background: "#FFFCF5", borderRadius: 18, zIndex: 1101, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: "'Outfit',sans-serif" }}>
             {/* Close */}
-            <button onClick={() => setSelectedProduct(null)} style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.12)", color: "#fff", fontSize: 16, cursor: "pointer", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            <button onClick={() => setSelectedProduct(null)} style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.18)", color: "#fff", fontSize: 15, cursor: "pointer", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
             {/* Image */}
             {selectedProduct.images?.[0] && (
-              <img src={selectedProduct.images[0]} alt={selectedProduct.name} style={{ width: "100%", height: 220, objectFit: "cover", flexShrink: 0 }} />
+              <img src={selectedProduct.images[0]} alt={selectedProduct.name} style={{ width: "100%", height: isMob ? 150 : 200, objectFit: "cover", flexShrink: 0 }} />
             )}
             {/* Body */}
-            <div style={{ padding: "20px 22px calc(24px + env(safe-area-inset-bottom, 20px))", overflowY: "auto", flex: 1 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>{selectedProduct.category}</div>
-              <h3 style={{ fontSize: 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>{selectedProduct.name}</h3>
-              <div style={{ fontSize: 22, fontWeight: 900, color: "#C47A2E", marginBottom: 12 }}>₹{selectedProduct.pricePerUnit?.toLocaleString("en-IN")}<span style={{ fontSize: 12, fontWeight: 500, color: "#9B7450" }}> / unit</span></div>
+            <div style={{ padding: isMob ? "14px 16px calc(16px + env(safe-area-inset-bottom, 16px))" : "20px 22px calc(24px + env(safe-area-inset-bottom, 20px))", overflowY: "auto", flex: 1 }}>
+              <div style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>{selectedProduct.category}</div>
+              <h3 style={{ fontSize: isMob ? 16 : 20, fontWeight: 900, color: "#2C1A0E", margin: "0 0 4px" }}>{selectedProduct.name}</h3>
+              <div style={{ fontSize: isMob ? 18 : 22, fontWeight: 900, color: "#C47A2E", marginBottom: 8 }}>₹{selectedProduct.pricePerUnit?.toLocaleString("en-IN")}<span style={{ fontSize: 11, fontWeight: 500, color: "#9B7450" }}> / unit</span></div>
               {selectedProduct.description && (
-                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.6, marginBottom: 16 }}>{selectedProduct.description}</p>
+                <p style={{ fontSize: isMob ? 12 : 14, color: "#5a3a1a", lineHeight: 1.55, marginBottom: 10 }}>{selectedProduct.description}</p>
               )}
               {selectedProduct.minOrderQuantity > 1 && (
-                <p style={{ fontSize: 12, color: "#9B7450", marginBottom: 16 }}>Minimum order: {selectedProduct.minOrderQuantity} units</p>
+                <p style={{ fontSize: 11, color: "#9B7450", marginBottom: 10 }}>Minimum order: {selectedProduct.minOrderQuantity} units</p>
               )}
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <button onClick={() => setModalQty(q => Math.max(q - 1, selectedProduct.minOrderQuantity || 1))}
-                  style={{ width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", fontSize: 18, cursor: "pointer" }}>−</button>
-                <span style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", minWidth: 30, textAlign: "center" }}>{modalQty}</span>
+                  style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", fontSize: 17, cursor: "pointer" }}>−</button>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", minWidth: 28, textAlign: "center" }}>{modalQty}</span>
                 <button onClick={() => setModalQty(q => q + 1)}
-                  style={{ width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", fontSize: 18, cursor: "pointer" }}>+</button>
-                <span style={{ fontSize: 14, color: "#9B7450", marginLeft: "auto" }}>= ₹{((selectedProduct.pricePerUnit || 0) * modalQty).toLocaleString("en-IN")}</span>
+                  style={{ width: 32, height: 32, borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", fontSize: 17, cursor: "pointer" }}>+</button>
+                <span style={{ fontSize: 13, color: "#9B7450", marginLeft: "auto" }}>= ₹{((selectedProduct.pricePerUnit || 0) * modalQty).toLocaleString("en-IN")}</span>
               </div>
               <button
                 onClick={() => {
@@ -401,13 +381,14 @@ const GiftHampersCakes = () => {
                   setSelectedProduct(null);
                   setModalQty(1);
                 }}
-                style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
+                style={{ width: "100%", padding: isMob ? "12px" : "14px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: isMob ? 14 : 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}>
                 🎁 Add to Cart
               </button>
             </div>
           </div>
         </>
-      )}
+        );
+      })()}
 
       {/* Cart window */}
       {showCart && (
