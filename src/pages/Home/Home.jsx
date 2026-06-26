@@ -1729,10 +1729,6 @@ const Home = () => {
                     {/* Colour-tinted gradient overlay */}
                     <div style={{ position: "absolute", inset: 0, background: cat.overlay }} />
 
-                    {/* Icon top-right */}
-                    <div style={{ position: "absolute", top: 16, right: 16, zIndex: 2 }}>
-                      <span style={{ fontSize: 26, filter: "drop-shadow(0 2px 8px rgba(0,0,0,0.5))" }}>{cat.icon}</span>
-                    </div>
 
                     {/* Content bottom */}
                     <div style={{ position: "relative", zIndex: 2, padding: "0 20px 22px" }}>

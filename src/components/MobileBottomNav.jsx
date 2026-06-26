@@ -86,17 +86,23 @@ function BottomNavInner() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
-  const scrollTimer = useRef(null);
+  const lastScrollY = useRef(0);
 
-  // Hide while scrolling, show when stopped
+  // Hide on significant downward scroll, show on any upward scroll
   useEffect(() => {
     const onScroll = () => {
-      setVisible(false);
-      clearTimeout(scrollTimer.current);
-      scrollTimer.current = setTimeout(() => setVisible(true), 350);
+      const y = window.scrollY;
+      const delta = y - lastScrollY.current;
+      if (delta > 60) {
+        setVisible(false);
+        lastScrollY.current = y;
+      } else if (delta < -10) {
+        setVisible(true);
+        lastScrollY.current = y;
+      }
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); clearTimeout(scrollTimer.current); };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // Close sheets + reset visible on route change
