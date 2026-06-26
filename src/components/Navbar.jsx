@@ -8,6 +8,7 @@ import { useChatOverlay } from "../context/ChatContext";
 import { useTour } from "../context/TourContext";
 import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
+import TendrLogo from "./TendrLogo";
 
 const SEARCH_SUGGESTIONS = [
   { text: "Photographers in Delhi" },
@@ -143,7 +144,6 @@ function SavedVendorsInline({ asStrip = false }) {
 
 const Navbar = ({
   handleLogoClick,
-  tendrLogo,
   handleGiftHampersClick,
   handleSignInClick,
 }) => {
@@ -410,17 +410,7 @@ const Navbar = ({
           onClick={handleLogoClick}
           style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none" }}
         >
-          <img
-            src={tendrLogo}
-            alt="Tendr"
-            className="navbar-logo-img"
-            style={{
-              height: scrolled ? 42 : 50,
-              width: "auto",
-              transition: "height 0.3s ease",
-              display: "block",
-            }}
-          />
+          <TendrLogo height={scrolled ? 42 : 50} />
         </a>
 
 

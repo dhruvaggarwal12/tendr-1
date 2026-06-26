@@ -199,7 +199,7 @@ function FaqSection() {
           <span style={{ display: "inline-block", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", padding: "5px 16px", borderRadius: 100, marginBottom: 16 }}>
             Got Questions?
           </span>
-          <h2 style={{ fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.15 }}>
+          <h2 style={{ fontSize: "clamp(1.8rem,3.5vw,2.6rem)", color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.15 }}>
             Frequently Asked Questions
           </h2>
           <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 460, margin: "0 auto" }}>
@@ -212,7 +212,7 @@ function FaqSection() {
           {FAQS.map(({ q, a }, i) => (
             <div key={i}
               style={{
-                background: "#fff",
+                background: "#FFFCF5",
                 borderRadius: 16,
                 border: `1.5px solid ${open === i ? "#C47A2E" : "rgba(196,122,46,0.14)"}`,
                 overflow: "hidden",
@@ -860,7 +860,7 @@ const Home = () => {
                 <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E" }}>Delhi NCR's Celebration Platform</span>
               </div>
 
-              <h1 style={{ fontSize: "clamp(2.2rem, 4vw, 3.4rem)", fontWeight: 900, lineHeight: 1.12, color: "#2C1A0E", marginBottom: 18, letterSpacing: "-0.02em", fontFamily: "'Outfit', sans-serif" }}>
+              <h1 style={{ fontSize: "clamp(2.2rem, 4vw, 3.4rem)", lineHeight: 1.12, color: "#2C1A0E", marginBottom: 18, letterSpacing: "-0.03em" }}>
                 Everything your event needs.<br />
                 <span style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                   One place.
@@ -1366,7 +1366,7 @@ const Home = () => {
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
             <div>
               <p style={{ fontSize:11, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 Live Entertainment Add-ons</p>
-              <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
+              <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
                 Add Some Magic<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
               </h2>
               <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
@@ -1443,7 +1443,7 @@ const Home = () => {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
             <div>
               <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 7px" }}>🎁 Gift Hampers & Cakes</p>
-              <h2 style={{ fontSize: "clamp(1.5rem,3vw,2.1rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 7px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+              <h2 style={{ fontSize: "clamp(1.5rem,3vw,2.1rem)", color: "#2C1A0E", margin: "0 0 7px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
                 The Perfect Gift,<br /><span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
               </h2>
               <p style={{ fontSize: 13, color: "#9B7450", margin: 0, maxWidth: 400, lineHeight: 1.65 }}>
@@ -1779,7 +1779,7 @@ const Home = () => {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Vendor Portfolio</p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>What Our Vendors Can Do</h2>
+            <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>What Our Vendors Can Do</h2>
             <p style={{ fontSize: 16, color: "#6B4226", maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>We're just getting started — but the vendors on Tendr aren't. These are real photos from their portfolios, showing exactly what they're capable of delivering for your event.</p>
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>

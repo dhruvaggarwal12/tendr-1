@@ -214,9 +214,11 @@ button:active:not(:disabled) { transform: scale(0.97); }
 /* ── Brand typography — DM Serif Display for page-level headings ── */
 h1 {
   font-family: 'DM Serif Display', Georgia, serif !important;
+  font-weight: 400 !important;
 }
 h2:not([data-ui-heading]) {
   font-family: 'DM Serif Display', Georgia, serif !important;
+  font-weight: 400 !important;
 }
 /* Keep Outfit for tight UI contexts (modals, drawers, cards) */
 .vcm-root h1, .vcm-root h2,
@@ -518,7 +520,9 @@ h2:not([data-ui-heading]) {
 
 /* Gold accent: keep ONLY on CTA buttons, active nav, star ratings */
 .vendor-card,
-.vendor-card-listing {
+.vendor-card-listing,
+.booking-vendor-card {
+  background-color: #FFFCF5 !important;
   border-color: rgba(196,122,46,0.1) !important;
   box-shadow: 0 2px 14px rgba(196,122,46,0.07), inset 0 1px 0 rgba(255,255,255,0.9) !important;
   transition: box-shadow 0.2s ease, transform 0.15s ease !important;
