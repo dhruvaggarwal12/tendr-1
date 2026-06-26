@@ -452,7 +452,7 @@ const Chat = () => {
     setMessages((prev) => [
       ...prev,
       {
-        text: `✅ ${vendor.name || "This vendor"} has been added to your booking. Tap "Review & Pay" in the top bar whenever you're ready to proceed.`,
+        text: `✅ ${vendor.name || "This vendor"} has been added to your booking. Tap the gold pay button at the bottom right whenever you're ready to confirm.`,
         sender: "system",
         ts: Date.now(),
       },

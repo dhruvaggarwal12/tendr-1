@@ -773,7 +773,7 @@ export default function VendorChatModal() {
       });
     }
     setMessages(prev => [...prev, {
-      text: `✅ ${vendor.name} added to your booking. Slot held for 2 hours. Tap "Review & Pay" when ready.`,
+      text: `✅ ${vendor.name} added to your booking. Slot held for 2 hours. Tap the gold pay button at the bottom right to confirm.`,
       sender: "system", ts: Date.now(),
     }]);
     setShowFinalisePopup(true);
@@ -1493,22 +1493,28 @@ export default function VendorChatModal() {
         {showFinalisePopup && (
           <div style={{ position: "absolute", inset: 0, zIndex: 22, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 20 }}>
             <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "85%", maxWidth: 340, boxShadow: "0 20px 60px rgba(44,26,14,0.25)", fontFamily: font, textAlign: "center" }}>
-              <div style={{ fontSize: 36, marginBottom: 10 }}>✅</div>
-              <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Vendor Finalised!</h3>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 6px", lineHeight: 1.6 }}>
+              {/* Success icon */}
+              <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 8px 24px rgba(196,122,46,0.35)" }}>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>Vendor Finalised!</h3>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>
                 {vendor?.name} has been added to your booking.
               </p>
-              <button
-                onClick={() => { setShowFinalisePopup(false); closeChat(); router.navigate("/booking/review"); }}
-                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, marginBottom: 8, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}
-              >
-                Review & Pay →
-              </button>
+              {/* Pay icon info box */}
+              <div style={{ background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, marginBottom: 16, textAlign: "left" }}>
+                <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                </div>
+                <p style={{ fontSize: 12, color: "#2C1A0E", margin: 0, lineHeight: 1.5 }}>
+                  Close this window and tap the <strong>gold pay button</strong> at the bottom right to confirm your booking.
+                </p>
+              </div>
               <button
                 onClick={() => setShowFinalisePopup(false)}
-                style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: font }}
+                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(44,26,14,0.15)", background: "#fff", color: "#2C1A0E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
               >
-                Stay in chat
+                Close
               </button>
             </div>
           </div>
