@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { GUIDES } from "./guideData";
+import HamburgerNav from "../../components/HamburgerNav";
 
 const font = "'Outfit', sans-serif";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -31,6 +32,10 @@ export default function GuidePreview() {
   const { theme } = guide;
   const isDark = false; // all themes are now light-toned
 
+  const isStandalone = () =>
+    window.matchMedia("(display-mode: standalone)").matches ||
+    window.navigator.standalone === true;
+
   const handleUnlock = (e) => {
     e.preventDefault();
     const cleaned = phone.replace(/\D/g, "");
@@ -48,23 +53,17 @@ export default function GuidePreview() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, slug, action: 'preview', title: guide?.title }),
       }).catch(() => {});
-      window.open(`/guides/${slug}/read`, "_blank");
+      if (isStandalone()) {
+        navigate(`/guides/${slug}/read`);
+      } else {
+        window.open(`/guides/${slug}/read`, "_blank");
+      }
     }, 600);
   };
 
   return (
     <div style={{ minHeight: "100vh", background: theme.bg, fontFamily: font }}>
-      {/* Back bar */}
-      <div style={{ padding: "12px 24px", borderBottom: `1px solid ${isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, display: "flex", alignItems: "center", gap: 12 }}>
-        <button
-          onClick={() => navigate("/guides")}
-          style={{ background: "none", border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600, color: theme.accent, fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}
-        >
-          ← All Guides
-        </button>
-        <span style={{ fontSize: 12, color: isDark ? "#4A5E7A" : "#9B9B9B" }}>/</span>
-        <span style={{ fontSize: 13, color: isDark ? "#7A8BA8" : "#666", fontWeight: 500 }}>{guide.title}</span>
-      </div>
+      <HamburgerNav title={guide.title} showBack />
 
       <div style={{ maxWidth: 760, margin: "0 auto", padding: "48px 24px 80px" }}>
 

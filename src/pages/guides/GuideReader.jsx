@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { GUIDES } from "./guideData";
+import HamburgerNav from "../../components/HamburgerNav";
 
 const font = "'Outfit', sans-serif";
 
@@ -42,7 +43,12 @@ export default function GuideReader() {
   }, [slug]);
 
   const Renderer = renderers[guide.theme.name] || AmberGoldGuide;
-  return <Renderer guide={guide} />;
+  return (
+    <>
+      <HamburgerNav title={guide.title} showBack />
+      <Renderer guide={guide} />
+    </>
+  );
 }
 
 /* ─── Print + Download button ─── */
@@ -54,9 +60,21 @@ function PrintButton({ theme }) {
           .no-print { display: none !important; }
           body { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: ${theme.bg} !important; }
         }
+        .guide-dl-btn {
+          position: fixed;
+          bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+          right: 24px;
+          z-index: 999;
+        }
+        @media (max-width: 767px) {
+          .guide-dl-btn {
+            bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+            right: 16px !important;
+          }
+        }
       `}</style>
       <button
-        className="no-print"
+        className="no-print guide-dl-btn"
         onClick={() => {
           const phone = sessionStorage.getItem('ebook_access_phone') || 'unknown';
           const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -67,7 +85,7 @@ function PrintButton({ theme }) {
           }).catch(() => {});
           window.print();
         }}
-        style={{ position: "fixed", bottom: 24, right: 24, zIndex: 999, padding: "11px 20px", borderRadius: 12, border: "none", background: theme.accent, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily, boxShadow: `0 6px 20px ${theme.accentSoft.replace("0.08", "0.35")}`, display: "flex", alignItems: "center", gap: 7 }}
+        style={{ padding: "11px 20px", borderRadius: 12, border: "none", background: theme.accent, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: `0 6px 20px ${theme.accentSoft.replace("0.08", "0.35")}`, display: "flex", alignItems: "center", gap: 7 }}
       >
         ⬇ Download PDF
       </button>
