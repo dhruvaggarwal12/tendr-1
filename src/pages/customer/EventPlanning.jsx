@@ -1460,7 +1460,7 @@ const EventPlanning = () => {
                 {sortedVendors.map((vendor) => {
                   const isSelected = selectedVendors.includes(vendor.id);
                   const isRecommended = recs.services.includes(vendor.id);
-                  const count = vendorCounts[vendor.id];
+                  const count = vendorCounts[vendor.id] ?? vendorCounts[vendor.id.toLowerCase()] ?? vendorCounts[Object.keys(vendorCounts).find(k => k.toLowerCase() === vendor.id.toLowerCase())];
                   return (
                     <div
                       key={vendor.id}

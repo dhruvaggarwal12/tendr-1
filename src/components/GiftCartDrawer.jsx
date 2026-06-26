@@ -59,10 +59,17 @@ export function GiftCartDrawer({ onClose }) {
         </div>
         <div>
           <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px" }}>Delivery Details Saved!</h3>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>Your hamper order is ready for payment.</p>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", lineHeight: 1.6 }}>Your hamper order is ready.</p>
+          <p style={{ fontSize: 13, color: BROWN, fontWeight: 700, margin: 0, lineHeight: 1.6 }}>Tap the pay icon at the bottom right to confirm your booking.</p>
         </div>
-        <button onClick={() => { onClose(); router.navigate("/booking/review"); }} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
-          Review & Pay →
+        <div style={{ width: "100%", background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+          </div>
+          <p style={{ fontSize: 12, color: "#7A5535", margin: 0, lineHeight: 1.5, textAlign: "left" }}>Close this window and tap the <strong>gold pay button</strong> at the bottom right of the screen.</p>
+        </div>
+        <button onClick={onClose} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "1.5px solid rgba(44,26,14,0.15)", background: "#fff", color: BROWN, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+          Close
         </button>
       </div>
     </>

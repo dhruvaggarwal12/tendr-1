@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import router from "../router";
 
 const font = "'Outfit', sans-serif";
 const KEY_DISMISSED = "tendr_pwa_dismissed_at";
@@ -90,28 +91,9 @@ export default function PWAInstallPrompt() {
     setShowAndroidSteps(false);
   };
 
-  const handleInstall = async () => {
-    const prompt = deferredPrompt || window.__tendrPWAPrompt;
-    if (isIOSDevice()) { setShowIOSSteps(true); return; }
-    if (!prompt) {
-      if (isIOSDevice()) {
-        setShowIOSSteps(true);
-      } else {
-        // Android or Desktop without native install prompt — show manual instructions
-        setShowAndroidSteps(true);
-      }
-      return;
-    }
-    setInstalling(true);
-    try {
-      await prompt.prompt();
-      const { outcome } = await prompt.userChoice;
-      if (outcome === "accepted") {
-        try { localStorage.setItem(KEY_INSTALLED, "true"); } catch {}
-        setVisible(false);
-      }
-    } catch {}
-    setInstalling(false);
+  const handleInstall = () => {
+    dismiss();
+    router.navigate("/install");
   };
 
   // ── "Installed!" toast ────────────────────────────────────────────────────
@@ -172,68 +154,25 @@ export default function PWAInstallPrompt() {
 
         {/* Body */}
         <div style={{ padding: source === "signup" ? "18px 22px 20px" : "12px 16px 14px" }}>
-
-          {/* iOS Steps */}
-          {(showIOSSteps || ios) ? (
-            <div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 18 }}>
-                {[
-                  { n: 1, icon: "⬆️", text: 'Tap the Share button at the bottom of Safari' },
-                  { n: 2, icon: "📌", text: 'Scroll down and tap "Add to Home Screen"' },
-                  { n: 3, icon: "✅", text: 'Tap "Add" — Tendr is on your home screen!' },
-                ].map(({ n, icon, text }) => (
-                  <div key={n} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n}</div>
-                    <div style={{ fontSize: 13, color: "#2C1A0E", lineHeight: 1.55, paddingTop: 4 }}>{icon} {text}</div>
-                  </div>
-                ))}
+          <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
+            {[
+              "Opens instantly from your home screen",
+              "Get notified for bookings & vendor replies",
+            ].map((text) => (
+              <div key={text} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#C47A2E", flexShrink: 0 }} />
+                <span style={{ fontSize: 12, color: "#4A2810", fontWeight: 500 }}>{text}</span>
               </div>
-              <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 14px", background: "rgba(196,122,46,0.06)", padding: "8px 12px", borderRadius: 8 }}>⚠️ Must use Safari on iPhone — not Chrome.</p>
-              <button onClick={dismiss} style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Got it</button>
-            </div>
-          ) : showAndroidSteps ? (
-            <div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 18 }}>
-                {[
-                  { n: 1, icon: "⋮", text: 'Tap the menu icon (⋮) in Chrome\'s top-right corner' },
-                  { n: 2, icon: "📌", text: 'Tap "Add to Home Screen"' },
-                  { n: 3, icon: "✅", text: 'Tap "Add" — Tendr is on your home screen!' },
-                ].map(({ n, icon, text }) => (
-                  <div key={n} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{n}</div>
-                    <div style={{ fontSize: 13, color: "#2C1A0E", lineHeight: 1.55, paddingTop: 4 }}>{icon} {text}</div>
-                  </div>
-                ))}
-              </div>
-              <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 14px", background: "rgba(196,122,46,0.06)", padding: "8px 12px", borderRadius: 8 }}>💡 Works best in Chrome on Android.</p>
-              <button onClick={dismiss} style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Got it</button>
-            </div>
-          ) : (
-            <div>
-              {/* Benefits */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 14 }}>
-                {[
-                  { icon: "⚡", text: "Opens instantly, no browser needed" },
-                  { icon: "🔔", text: "Notifications for bookings & chats" },
-                ].map(({ icon, text }) => (
-                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 14, flexShrink: 0 }}>{icon}</span>
-                    <span style={{ fontSize: 12, color: "#4A2810", fontWeight: 500 }}>{text}</span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Buttons */}
-              <button onClick={handleInstall} disabled={installing}
-                style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: installing ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: installing ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 800, cursor: installing ? "not-allowed" : "pointer", fontFamily: font, boxShadow: installing ? "none" : "0 4px 14px rgba(196,122,46,0.35)", marginBottom: 6 }}>
-                {installing ? "Installing…" : "📲 Install Tendr — Free"}
-              </button>
-              <button onClick={dismiss}
-                style={{ width: "100%", padding: "8px", borderRadius: 10, border: "none", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
-                Not now
-              </button>
-            </div>
-          )}
+            ))}
+          </div>
+          <button onClick={handleInstall}
+            style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)", marginBottom: 6 }}>
+            Install Tendr — Free
+          </button>
+          <button onClick={dismiss}
+            style={{ width: "100%", padding: "8px", borderRadius: 10, border: "none", background: "transparent", color: "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+            Not now
+          </button>
         </div>
       </div>
 

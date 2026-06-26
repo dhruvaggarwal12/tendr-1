@@ -17,7 +17,7 @@ const font = "'Outfit', sans-serif";
 const SAVED_KEY = "tendr_saved_vendors";
 const getSavedVendors = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
 
-export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] }) {
+export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", "/login", "/signup", "/otp"] }) {
   if (new URLSearchParams(window.location.search).get("standalone") === "1") return null;
   const { user, token }      = useSelector((s) => s.auth);
   const selectedCategories   = useSelector((s) => s.eventPlanning.selectedVendors || []);

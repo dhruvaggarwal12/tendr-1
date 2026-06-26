@@ -465,8 +465,8 @@ const BookingReviewPage = () => {
           <div style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 14, padding: "14px 20px", marginBottom: 24, display: "flex", gap: 12, alignItems: "flex-start" }}>
             <span style={{ fontSize: 20, flexShrink: 0 }}>⏳</span>
             <div>
-              <p style={{ fontSize: 14, fontWeight: 700, color: "#b45309", margin: "0 0 3px" }}>Pricing in progress — sit tight!</p>
-              <p style={{ fontSize: 13, color: "#92400e", margin: 0 }}>Our team is confirming prices with your vendors. You'll be notified once all quotes are ready. You can review vendor details in the meantime.</p>
+              <p style={{ fontSize: 14, fontWeight: 700, color: "#C47A2E", margin: "0 0 3px" }}>Pricing in progress — sit tight!</p>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Our team is confirming prices with your vendors. You'll be notified once all quotes are ready. You can review vendor details in the meantime.</p>
             </div>
           </div>
         )}
@@ -510,7 +510,7 @@ const BookingReviewPage = () => {
                     )}
                   </div>
                 ) : (
-                  <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>No event details found. Fill in the planning form first.</p>
+                  <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>No event details found. Fill in the planning form first.</p>
                 )}
               </div>
             )}
@@ -580,7 +580,7 @@ const BookingReviewPage = () => {
             {/* Fallback if sidebar is completely empty */}
             {vendorEntries.length === 0 && ghItems.length === 0 && faItems.length === 0 && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
-                <p style={{ fontSize: 13, color: "#bbb", margin: 0 }}>No order details yet.</p>
+                <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>No order details yet.</p>
               </div>
             )}
 
@@ -654,13 +654,13 @@ const BookingReviewPage = () => {
                                   {vPrice ? (
                                     <span style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>{formatINR(vPrice)}</span>
                                   ) : (
-                                    <span style={{ fontSize: 11, color: "#bbb" }}>Price pending</span>
+                                    <span style={{ fontSize: 11, color: "#9B7450" }}>Price pending</span>
                                   )}
                                 </div>
                                 {vPins.length > 0 && (
                                   <div style={{ marginTop: 4 }}>
                                     {vPins.slice(0, 2).map((p, pi) => (
-                                      <div key={pi} style={{ fontSize: 11, color: "#7A5535", display: "flex", gap: 4, lineHeight: 1.4 }}>
+                                      <div key={pi} style={{ fontSize: 11, color: "#9B7450", display: "flex", gap: 4, lineHeight: 1.4 }}>
                                         <span>📌</span><span>{p}</span>
                                       </div>
                                     ))}
@@ -704,7 +704,7 @@ const BookingReviewPage = () => {
                       />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a1a", marginBottom: 3 }}>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E", marginBottom: 3 }}>
                         {isLetUsDoIt ? "Tendr" : (vendor.name || vendor.businessName || "Vendor")}
                       </div>
                       <span style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>
@@ -720,7 +720,7 @@ const BookingReviewPage = () => {
                         </>
                       ) : (
                         <>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#b45309" }}>⏳ Awaiting Quote</div>
+                          <div style={{ fontSize: 11, fontWeight: 600, color: "#C47A2E" }}>⏳ Awaiting Quote</div>
                           <div style={{ fontSize: 13, fontWeight: 600, color: "#9B7450", fontStyle: "italic" }}>Yet to be updated</div>
                         </>
                       )}
@@ -896,7 +896,7 @@ const BookingReviewPage = () => {
 
                 {/* Vendor subtotal */}
                 {confirmedTotal > 0 && (ghTotal > 0 || faTotal > 0) && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535", marginBottom: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#9B7450", marginBottom: 4 }}>
                     <span>Vendors subtotal</span>
                     <span style={{ fontWeight: 600 }}>{formatINR(confirmedTotal)}</span>
                   </div>
@@ -904,7 +904,7 @@ const BookingReviewPage = () => {
 
                 {/* Fun Activities subtotal */}
                 {faTotal > 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535", marginBottom: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#9B7450", marginBottom: 4 }}>
                     <span>Fun Activities subtotal</span>
                     <span style={{ fontWeight: 600 }}>₹{faTotal.toLocaleString("en-IN")}</span>
                   </div>
@@ -912,7 +912,7 @@ const BookingReviewPage = () => {
 
                 {/* Gift hampers in grand total line */}
                 {ghTotal > 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#7A5535", marginBottom: 6 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#9B7450", marginBottom: 6 }}>
                     <span>Gift Hampers subtotal</span>
                     <span style={{ fontWeight: 600 }}>₹{ghTotal.toLocaleString("en-IN")}</span>
                   </div>
@@ -1153,7 +1153,7 @@ const BookingReviewPage = () => {
                   { icon: "🔄", text: "Easy Cancellation" },
                   { icon: "📞", text: "Support Available" },
                 ].map(({ icon, text }) => (
-                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.15)" }}>
+                  <div key={text} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: "#9B7450", background: "rgba(196,122,46,0.07)", borderRadius: 100, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.15)" }}>
                     <span style={{ fontSize: 13 }}>{icon}</span> {text}
                   </div>
                 ))}

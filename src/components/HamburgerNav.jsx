@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor, setFilters } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
-import TendrLogo from "./TendrLogo";
+import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
@@ -282,7 +282,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           <div style={{ padding: "20px 18px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
               <div onClick={() => navigate("/")} style={{ cursor: "pointer" }}>
-                <TendrLogo height={28} dark />
+                <img src={tendrLogo} alt="Tendr" style={{ height: 28, display: "block", filter: "brightness(1.1)" }} />
+                <p style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", margin: "5px 0 0", letterSpacing: "0.04em" }}>We Curate, You Celebrate</p>
               </div>
             </div>
             <button onClick={() => setSidebarOpen(false)}
@@ -646,19 +647,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         padding: "0 16px",
         fontFamily: font,
       }}>
-        {/* Left: Logo on home, back arrow on all other pages */}
-        {location.pathname === "/" ? (
-          <div onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
-              <TendrLogo height={18} />
-            </div>
-        ) : (
-          <button
-            onClick={() => navigate(-1)}
-            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 34, height: 34, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "rgba(196,122,46,0.05)", cursor: "pointer", flexShrink: 0, color: "#6B3A1F", fontSize: 18, fontWeight: 400 }}
-          >
-            ‹
-          </button>
-        )}
+        {/* Left: Logo */}
+        <div onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
+          <img src={tendrLogo} alt="Tendr" style={{ height: 22, display: "block", objectFit: "contain" }} />
+        </div>
 
         {/* Center: Search bar — tapping opens full-screen overlay */}
         <button
@@ -708,7 +700,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             <div style={{ padding: "20px 20px 16px", background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", position: "relative", flexShrink: 0 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
                 <div onClick={() => { navigate("/"); close(); }} style={{ cursor: "pointer" }}>
-                  <TendrLogo height={32} dark />
+                  <img src={tendrLogo} alt="Tendr" style={{ height: 32, display: "block", filter: "brightness(1.1)" }} />
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: "5px 0 0", letterSpacing: "0.03em" }}>We Curate, You Celebrate</p>
                 </div>
                 <button onClick={close} style={{ width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A" }}>
                   <FaTimes size={12} />

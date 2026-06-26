@@ -358,6 +358,7 @@ function BottomNavInner() {
           alignItems: "flex-start",
           transform: visible ? "translateY(0)" : "translateY(100%)",
           transition: "transform 0.22s ease",
+          pointerEvents: visible ? "auto" : "none",
           fontFamily: font,
           boxSizing: "border-box",
         }}
@@ -390,6 +391,7 @@ function BottomNavInner() {
                 WebkitTapHighlightColor: "transparent",
                 outline: "none", fontFamily: font,
                 transition: "background 0.18s",
+                touchAction: "manipulation",
               }}
             >
               {/* Active bar at top */}

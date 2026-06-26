@@ -85,8 +85,6 @@ function GuideCard({ guide, onOpen }) {
       {/* Topic-colored stripe */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: theme.accent }} />
 
-      <div style={{ fontSize: 34, marginBottom: 14, lineHeight: 1 }}>{guide.coverEmoji}</div>
-
       {/* Topic tag */}
       <div style={{ marginBottom: 12 }}>
         <span style={{ fontSize: 10, fontWeight: 700, color: theme.accent, background: `${theme.accent}18`, border: `1px solid ${theme.accent}30`, padding: "3px 10px", borderRadius: 100, textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -103,8 +101,8 @@ function GuideCard({ guide, onOpen }) {
 
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", gap: 12 }}>
-          <span style={{ fontSize: 11.5, color: "#6A5040" }}>📖 {guide.readTime}</span>
-          <span style={{ fontSize: 11.5, color: "#6A5040" }}>📄 {guide.pages}pp</span>
+          <span style={{ fontSize: 11.5, color: "#6A5040" }}>{guide.readTime}</span>
+          <span style={{ fontSize: 11.5, color: "#6A5040" }}>{guide.pages}pp</span>
         </div>
         <button style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: theme.accent, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
           Preview →
