@@ -1404,33 +1404,40 @@ const Home = () => {
                   flexShrink:0, width:200, background:"#fff",
                   borderRadius:18, border:"1.5px solid rgba(196,122,46,0.15)",
                   boxShadow:"0 4px 16px rgba(196,122,46,0.1)",
-                  padding:"22px 18px 18px",
-                  display:"flex", flexDirection:"column", alignItems:"center", gap:10,
+                  display:"flex", flexDirection:"column", alignItems:"stretch",
                   cursor:"pointer", transition:"transform 0.2s, box-shadow 0.2s",
                   fontFamily:"'Outfit',sans-serif",
+                  overflow:"hidden",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.2)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
               >
-                <div style={{ fontSize:44, lineHeight:1 }}>{act.emoji}</div>
-                <h4 style={{ fontSize:14, fontWeight:800, color:"#2C1A0E", margin:0, textAlign:"center", lineHeight:1.3 }}>{act.name}</h4>
-                <div style={{ fontSize:13, fontWeight:700, color:"#C47A2E" }}>
-                  ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:10, fontWeight:500, color:"#9B7450" }}> /{act.unitLabel}</span> : ""}
+                {/* Photo header */}
+                <div className="fa-card-img" style={{ position:"relative", height:130, flexShrink:0 }}>
+                  <img src={act.image} alt={act.name} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
+                  <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", pointerEvents:"none" }} />
+                  <div style={{ position:"absolute", top:8, right:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:10, fontWeight:900, padding:"3px 9px", borderRadius:"100px 100px 100px 4px", fontFamily:"'Outfit',sans-serif" }}>
+                    ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:8, fontWeight:500 }}> /{act.unitLabel}</span> : ""}
+                  </div>
                 </div>
-                <p style={{ fontSize:11, color:"#9B7450", margin:0, textAlign:"center", lineHeight:1.5, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden" }}>{act.desc}</p>
-                <span style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", marginTop:"auto" }}>View Details →</span>
+                {/* Text body */}
+                <div className="fa-card-body" style={{ padding:"12px 14px 14px", display:"flex", flexDirection:"column", gap:6, flex:1 }}>
+                  <h4 className="fa-card-name" style={{ fontSize:13, fontWeight:800, color:"#2C1A0E", margin:0, lineHeight:1.3 }}>{act.name}</h4>
+                  <p className="fa-card-desc" style={{ fontSize:11, color:"#9B7450", margin:0, lineHeight:1.5, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden", flex:1 }}>{act.desc}</p>
+                  <span className="fa-card-cta" style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", textAlign:"center" }}>View Details →</span>
+                </div>
               </div>
             ))}
           </div>
           <style>{`
             .fa-carousel-track::-webkit-scrollbar { display:none; }
             @media (max-width: 640px) {
-              .fa-carousel-card { width: 148px !important; padding: 14px 12px 12px !important; gap: 7px !important; }
-              .fa-carousel-card > div:first-child { font-size: 34px !important; }
-              .fa-carousel-card h4 { font-size: 12px !important; }
-              .fa-carousel-card > div:nth-child(3) { font-size: 12px !important; }
-              .fa-carousel-card p { font-size: 10px !important; }
-              .fa-carousel-card span { font-size: 10px !important; padding: 2px 8px !important; }
+              .fa-carousel-card { width: 148px !important; }
+              .fa-card-img { height: 108px !important; }
+              .fa-card-body { padding: 10px 12px 12px !important; gap: 5px !important; }
+              .fa-card-name { font-size: 12px !important; }
+              .fa-card-desc { font-size: 10px !important; }
+              .fa-card-cta { font-size: 10px !important; padding: 2px 8px !important; }
             }
           `}</style>
         </div>
