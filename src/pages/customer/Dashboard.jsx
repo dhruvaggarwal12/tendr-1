@@ -130,6 +130,7 @@ export default function CustomerDashboard() {
   const [cancelState, setCancelState] = useState({}); // { [planId]: { open, reason, submitting, done } }
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
+  const [referralCopied, setReferralCopied] = useState(false);
 
   const openChangeReq = (planId) =>
     setChangeReqState(prev => ({ ...prev, [planId]: { open: true, message: "", submitting: false, done: false } }));
@@ -340,8 +341,8 @@ export default function CustomerDashboard() {
   })();
 
   const visibleChats = conversations.filter(c => {
-    // Vendor chats: show for 24hrs from customer's last message
-    if (c.chatType === "vendor") return isWithin24Hrs(c);
+    // Vendor chats: always show if approved (vendor accepted); unapproved ones vanish after 24hrs
+    if (c.chatType === "vendor") return c.chatApproved ? true : isWithin24Hrs(c);
     // Smart Plan event chats: always show once approved (admin started the chat)
     if (c.chatType === "event" && c.chatApproved) return true;
     // Support/concierge: only approved + explicitly opened
@@ -427,24 +428,23 @@ export default function CustomerDashboard() {
         {user?._id && plans.some(p => p.paymentStatus === 'paid') && (() => {
           const code = generateReferralCode(user._id);
           const formatted = formatCode(code);
-          const [copied, setCopied] = useState(false);
           const handleCopy = () => {
             navigator.clipboard.writeText(formatted).then(() => {
-              setCopied(true);
-              setTimeout(() => setCopied(false), 2000);
+              setReferralCopied(true);
+              setTimeout(() => setReferralCopied(false), 2000);
             });
           };
           return (
             <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", borderRadius: 20, padding: "24px 28px", marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 20, flexWrap: "wrap", boxShadow: "0 6px 24px rgba(44,26,14,0.18)" }}>
-              <div style={{ display: "flex", align: "center", gap: 16 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
                 <div style={{ fontSize: 36, flexShrink: 0 }}>🎁</div>
                 <div>
                   <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 4px" }}>Your Referral Code</p>
                   <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
                     <span style={{ fontSize: 24, fontWeight: 900, color: "#fff", letterSpacing: "0.1em", fontFamily: "'Courier New', monospace" }}>{formatted}</span>
                     <button onClick={handleCopy}
-                      style={{ padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: copied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
-                      {copied ? "✓ Copied!" : "Copy"}
+                      style={{ padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: referralCopied ? "rgba(204,171,74,0.2)" : "transparent", color: "#CCAB4A", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>
+                      {referralCopied ? "✓ Copied!" : "Copy"}
                     </button>
                   </div>
                   <p style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", margin: "5px 0 0", lineHeight: 1.5 }}>
