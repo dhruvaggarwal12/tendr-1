@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useNavigationType } from "react-router-dom";
 import SEO from "../../components/SEO";
 import ToolNav from "../../components/ToolNav";
+import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 
 const font = "'Outfit', sans-serif";
 
@@ -153,7 +154,7 @@ export default function CheckboxPicker() {
   }
 
   // ── Steps 1–5 ─────────────────────────────────────────────────────────────
-  return (
+  const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO title="Event Checklist — Personalize Your Plan" description="Create a personalized event checklist based on your event type, date, and services." path="/checklist-picker" />
       <ToolNav title="Event Checklist" />
@@ -281,6 +282,24 @@ export default function CheckboxPicker() {
       </div>
       <style>{`@media(max-width:500px){.guest-grid{grid-template-columns:1fr !important;}}`}</style>
     </div>
+  );
+  return (
+    <ToolIntroWrapper
+      toolId="checklist-picker"
+      icon="✅"
+      title="Event Checklist"
+      tagline="Never miss a detail for your big day"
+      description="Personalise your checklist in 5 quick steps — we'll build a task list tailored to your event type, services, and timeline."
+      steps={[
+        { title: "Pick your event type", desc: "Birthday, wedding, get-together, and more." },
+        { title: "Set your event date", desc: "Tracks your countdown automatically." },
+        { title: "Choose a venue type", desc: "Tasks adjust based on your venue." },
+        { title: "Select your services", desc: "Only relevant tasks appear." },
+        { title: "Mark what's booked", desc: "Pre-check completed items." },
+      ]}
+    >
+      {content}
+    </ToolIntroWrapper>
   );
 }
 

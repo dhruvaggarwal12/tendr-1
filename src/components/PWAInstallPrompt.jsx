@@ -91,9 +91,20 @@ export default function PWAInstallPrompt() {
     setShowAndroidSteps(false);
   };
 
-  const handleInstall = () => {
-    dismiss();
-    router.navigate("/install");
+  const handleInstall = async () => {
+    if (deferredPrompt) {
+      try {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === "accepted") { setDeferredPrompt(null); }
+      } catch {}
+      dismiss();
+    } else if (isIOSDevice()) {
+      setShowIOSSteps(true);
+    } else {
+      dismiss();
+      router.navigate("/install");
+    }
   };
 
   // ── "Installed!" toast ────────────────────────────────────────────────────
@@ -116,22 +127,22 @@ export default function PWAInstallPrompt() {
     <>
       {/* Backdrop (for signup source, steps, or iOS) */}
       {(isLarge) && (
-        <div onClick={dismiss} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 9997, backdropFilter: "blur(3px)" }} />
+        <div onClick={dismiss} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100009, backdropFilter: "blur(3px)" }} />
       )}
 
       {/* Main popup */}
       <div style={{
         position: "fixed",
-        bottom: isLarge ? "50%" : 16,
+        bottom: isLarge ? "50%" : "calc(70px + env(safe-area-inset-bottom, 0px))",
         left: isLarge ? "50%" : "auto",
         right: isLarge ? "auto" : 12,
         transform: isLarge ? "translate(-50%, 50%)" : "none",
-        width: isLarge ? "min(93vw, 400px)" : "min(82vw, 300px)",
+        width: isLarge ? "min(88vw, 360px)" : "min(78vw, 280px)",
         background: "#FFFCF5",
         borderRadius: 18,
         boxShadow: "0 16px 48px rgba(28,10,0,0.2)",
         border: "1.5px solid rgba(196,122,46,0.18)",
-        zIndex: 9998,
+        zIndex: 100010,
         fontFamily: font,
         overflow: "auto",
         maxHeight: "85dvh",

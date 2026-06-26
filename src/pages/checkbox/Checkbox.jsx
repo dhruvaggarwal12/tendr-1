@@ -516,20 +516,20 @@ export default function CheckBox() {
         {personalized?.eventDate && (() => {
           const dl = Math.max(0, Math.ceil((new Date(personalized.eventDate) - new Date()) / 86400000));
           return (
-            <div style={{ background: dl <= 7 ? "linear-gradient(90deg,#c0392b,#e74c3c)" : dl <= 14 ? "linear-gradient(90deg,#b45309,#C47A2E)" : "linear-gradient(90deg,#2C1A0E,#4A2810)", padding: "10px 24px" }}>
-              <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 16 }}>{dl <= 7 ? "🚨" : dl <= 14 ? "⚡" : "📅"}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+            <div style={{ background: dl <= 7 ? "linear-gradient(90deg,#c0392b,#e74c3c)" : dl <= 14 ? "linear-gradient(90deg,#b45309,#C47A2E)" : "linear-gradient(90deg,#2C1A0E,#4A2810)", padding: "7px 16px" }}>
+              <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 13 }}>{dl <= 7 ? "🚨" : dl <= 14 ? "⚡" : "📅"}</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>
                     {dl === 0 ? "Today is your event! 🎉" : dl === 1 ? "1 day to go!" : `${dl} days to go`}
                   </span>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.65)" }}>
+                  <span style={{ fontSize: 11, color: "rgba(255,255,255,0.65)" }}>
                     {new Date(personalized.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </span>
                 </div>
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                   {(personalized.services || []).map(s => (
-                    <span key={s} style={{ padding: "3px 10px", borderRadius: 100, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{s}</span>
+                    <span key={s} style={{ padding: "2px 8px", borderRadius: 100, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{s}</span>
                   ))}
                 </div>
               </div>
@@ -538,58 +538,38 @@ export default function CheckBox() {
         })()}
 
         {/* Header */}
-        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "14px 24px" }}>
-          <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "10px 16px" }}>
+          <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={() => { localStorage.removeItem("tendr_checklist_v2"); localStorage.removeItem("tendr_checklist_form"); navigate("/checklist-picker"); }}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, backdropFilter: "blur(4px)" }}>
+              style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
               ← Redo
             </button>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              <div style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                 {customMode ? "Custom Checklist" : personalized ? "Personalized Checklist" : "Event Checklist"}
               </div>
-              <h1 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0, letterSpacing: "-0.01em" }}>
-                {customMode ? "✏️ Your Checklist" : personalized ? `✨ ${personalized.eventType ? (personalized.eventType.charAt(0).toUpperCase() + personalized.eventType.slice(1)) : "My"} Checklist` : `${tpl?.icon || ""} ${tpl?.label || ""}`}
+              <h1 style={{ fontSize: 15, fontWeight: 900, color: "#fff", margin: 0, letterSpacing: "-0.01em" }}>
+                {customMode ? "Your Checklist" : personalized ? `${personalized.eventType ? (personalized.eventType.charAt(0).toUpperCase() + personalized.eventType.slice(1)) : "My"} Checklist` : `${tpl?.label || ""}`}
               </h1>
             </div>
           </div>
         </div>
 
-        {/* Progress ring — fixed */}
-        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "14px 24px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
-          <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", gap: 20 }}>
-            {(() => {
-              const r = 30, circ = 2 * Math.PI * r;
-              const dash = (pct / 100) * circ;
-              const ringColor = pct === 100 ? "#22c55e" : pct >= 60 ? "#C47A2E" : "#CCAB4A";
-              return (
-                <div style={{ flexShrink: 0, position: "relative", width: 76, height: 76 }}>
-                  <svg width="76" height="76" viewBox="0 0 76 76">
-                    <circle cx="38" cy="38" r={r} fill="none" stroke="#f3e8d4" strokeWidth="6" />
-                    <circle cx="38" cy="38" r={r} fill="none" stroke={ringColor} strokeWidth="6"
-                      strokeDasharray={`${dash} ${circ}`} strokeLinecap="round"
-                      style={{ transformOrigin: "50% 50%", transform: "rotate(-90deg)", transition: "stroke-dasharray 0.5s ease" }} />
-                  </svg>
-                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                    <span style={{ fontSize: 15, fontWeight: 900, color: ringColor, lineHeight: 1 }}>{pct}%</span>
-                    {pct === 100 && <span style={{ fontSize: 12 }}>🎉</span>}
-                  </div>
-                </div>
-              );
-            })()}
+        {/* Progress row — compact */}
+        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "10px 16px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
+          <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>
-                {pct === 100 ? "All done — great work! 🎉" : "Overall Progress"}
+              <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>
+                {pct === 100 ? "All done — great work!" : "Overall Progress"}
+                <span style={{ fontWeight: 500, color: "#9B7450", marginLeft: 8, fontSize: 11 }}>{pct}% · {done}/{total} tasks</span>
               </div>
-              <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 6 }}>{done} of {total} tasks completed · {total - done} remaining</div>
               <div style={{ height: 5, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s" }} />
               </div>
             </div>
-            {/* Save button */}
             <button onClick={saveChecklist}
-              style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: checklistSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: checklistSaved ? "rgba(34,197,94,0.08)" : "#fff", color: checklistSaved ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-              {checklistSaved ? "✓ Saved" : "💾 Save"}
+              style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, border: checklistSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: checklistSaved ? "rgba(34,197,94,0.08)" : "#fff", color: checklistSaved ? "#15803d" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              {checklistSaved ? "✓ Saved" : "Save"}
             </button>
           </div>
         </div>

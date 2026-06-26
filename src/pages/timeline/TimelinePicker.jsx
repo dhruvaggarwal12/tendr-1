@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import SEO from "../../components/SEO";
 import ToolNav from "../../components/ToolNav";
+import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 
 const font = "'Outfit', sans-serif";
 
@@ -130,7 +131,7 @@ export default function TimelinePicker() {
     );
   }
 
-  return (
+  const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO title="Event Timeline — Personalized Planning Schedule" description="Get a personalized event timeline based on your event type, date, and services." path="/timeline-picker" />
       <ToolNav title="Event Timeline" />
@@ -168,20 +169,20 @@ export default function TimelinePicker() {
         {/* Step 2: Event Date */}
         {step === 2 && (
           <StepWrapper label="Step 2 of 4" title="When is your event?" sub="The event date determines your planning window and milestone schedule.">
-            <div style={{ maxWidth: 360, margin: "0 auto" }}>
+            <div style={{ maxWidth: 300, margin: "0 auto" }}>
               <input type="date" min={today} value={eventDate} onChange={e => setEventDate(e.target.value)}
-                style={{ width: "100%", padding: "16px 18px", borderRadius: 14, border: "2px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 16, color: "#2C1A0E", background: "#FFFCF5", outline: "none", boxSizing: "border-box" }} />
+                style={{ width: "100%", padding: "11px 14px", borderRadius: 12, border: "2px solid rgba(196,122,46,0.25)", fontFamily: font, fontSize: 15, color: "#2C1A0E", background: "#FFFCF5", outline: "none", boxSizing: "border-box", textAlign: "center" }} />
 
               {eventDate && daysLeft !== null && (
-                <div style={{ marginTop: 16, background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 14, padding: "16px 20px" }}>
+                <div style={{ marginTop: 12, background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 16px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <p style={{ margin: 0, fontSize: 22, fontWeight: 900, color: "#C47A2E" }}>{daysLeft} days</p>
-                      <p style={{ margin: "2px 0 0", fontSize: 12, color: "#9B7450" }}>until your event</p>
+                      <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#C47A2E" }}>{daysLeft} days</p>
+                      <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9B7450" }}>until your event</p>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{planLabel}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9B7450" }}>recommended for you</p>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>{planLabel}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: 10, color: "#9B7450" }}>recommended for you</p>
                     </div>
                   </div>
                 </div>
@@ -257,6 +258,23 @@ export default function TimelinePicker() {
         </div>
       </div>
     </div>
+  );
+  return (
+    <ToolIntroWrapper
+      toolId="timeline-picker"
+      icon="📅"
+      title="Event Timeline"
+      tagline="Your personalised countdown to event day"
+      description="Answer 4 quick questions and get a day-by-day action plan tailored to your event type, date, and services."
+      steps={[
+        { title: "Pick your event type", desc: "Birthday, wedding, corporate, and more." },
+        { title: "Set your event date", desc: "We calculate your planning window." },
+        { title: "Choose your services", desc: "Only relevant tasks will appear." },
+        { title: "Mark what's booked", desc: "Pre-check completed items." },
+      ]}
+    >
+      {content}
+    </ToolIntroWrapper>
   );
 }
 

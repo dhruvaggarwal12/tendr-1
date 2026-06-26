@@ -1017,7 +1017,7 @@ const EventPlanning = () => {
               <div key={category} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 2px 10px rgba(196,122,46,0.07)", display: "flex", flexDirection: "column" }}>
                 {/* Photo */}
                 <div style={{ position: "relative", height: 110, background: "#f3ebe0", overflow: "hidden" }}>
-                  {vendor?.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor?.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40 }}>{category === "Caterer" ? "🍽" : category === "Decorator" ? "🎀" : category === "Photographer" ? "📸" : "🎵"}</div>}
+                  {vendor?.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor?.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#f3e8d4,#eddcc4)", fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>{category}</div>}
                   {/* Category + budget badges */}
                   <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 5 }}>
                     <span style={{ fontSize: 10, fontWeight: 700, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{category}</span>
@@ -1037,12 +1037,12 @@ const EventPlanning = () => {
                   <div style={{ padding: "8px 10px 10px", flex: 1, display: "flex", flexDirection: "column" }}>
                     <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", marginBottom: 4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{vendor.name}</div>
                     <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 5 }}>
-                      {vendor.avgReviewScore > 0 && <span style={{ fontSize: 10, color: "#CCAB4A", fontWeight: 700 }}>⭐ {vendor.avgReviewScore.toFixed(1)}</span>}
-                      {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 10, color: "#9B7450" }}>⏱ {vendor.yearsOfExperience}y</span>}
-                      {vendor.teamSize > 0 && <span style={{ fontSize: 10, color: "#9B7450" }}>👥 {vendor.teamSize}</span>}
-                      {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 9.5, background: "rgba(196,122,46,0.08)", color: "#7A4A1A", borderRadius: 100, padding: "1px 5px", fontWeight: 700 }}>🎉 {vendor.totalEventsCompleted}+</span>}
+                      {vendor.avgReviewScore > 0 && <span style={{ fontSize: 10, color: "#CCAB4A", fontWeight: 700 }}>{vendor.avgReviewScore.toFixed(1)} ★</span>}
+                      {vendor.yearsOfExperience > 0 && <span style={{ fontSize: 10, color: "#9B7450" }}>{vendor.yearsOfExperience}y exp</span>}
+                      {vendor.teamSize > 0 && <span style={{ fontSize: 10, color: "#9B7450" }}>Team {vendor.teamSize}</span>}
+                      {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 9.5, background: "rgba(196,122,46,0.08)", color: "#7A4A1A", borderRadius: 100, padding: "1px 5px", fontWeight: 700 }}>{vendor.totalEventsCompleted}+ events</span>}
                     </div>
-                    {vendor.locations?.length > 0 && <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 7 }}>📍 {vendor.locations.slice(0, 2).join(", ")}</div>}
+                    {vendor.locations?.length > 0 && <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 7 }}>{vendor.locations.slice(0, 2).join(", ")}</div>}
                     <div style={{ marginTop: "auto", display: "flex", gap: 5 }}>
                       <button onClick={() => openQuickView(vendor)}
                         style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", touchAction: "manipulation" }}>
@@ -1431,6 +1431,16 @@ const EventPlanning = () => {
         <HamburgerNav active="Browse" noCompare showBack />
 
 
+        <style>{`
+          @media(max-width:600px){
+            .event-cat-img{height:90px!important}
+            .event-cat-body{padding:8px 10px 10px!important}
+            .event-cat-body h3{font-size:12px!important}
+            .event-cat-body p{font-size:11px!important}
+            .tendr-suggests-wrap{padding:10px 14px 12px!important}
+            .tendr-suggests-header{padding:10px 14px 0!important}
+          }
+        `}</style>
         <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-16 flex flex-col items-center">
 
           {/* Title */}
@@ -1472,7 +1482,7 @@ const EventPlanning = () => {
               <div style={{ width: "100%", maxWidth: 1100, marginBottom: 28, borderRadius: 18, overflow: "hidden", background: "linear-gradient(135deg, #1a0f06 0%, #2C1A0E 55%, #3a1e0a 100%)", border: "1.5px solid rgba(204,171,74,0.2)", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
 
                 {/* Header row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 0", flexWrap: "wrap", gap: 8 }}>
+                <div className="tendr-suggests-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 0", flexWrap: "wrap", gap: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <span style={{ fontSize: 15 }}>✨</span>
                     <span style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.06em", textTransform: "uppercase" }}>Tendr Suggests</span>
@@ -1484,7 +1494,7 @@ const EventPlanning = () => {
                   </span>
                 </div>
 
-                <div style={{ padding: "12px 20px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+                <div className="tendr-suggests-wrap" style={{ padding: "12px 20px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
 
                   {/* Recommended services */}
                   <div>
@@ -1576,7 +1586,7 @@ const EventPlanning = () => {
                         transform: isSelected ? "translateY(-3px)" : "translateY(0)",
                       }}
                     >
-                      <div className="event-cat-img" style={{ position: "relative", height: 160, overflow: "hidden" }}>
+                      <div className="event-cat-img" style={{ position: "relative", height: 130, overflow: "hidden" }}>
                         <img
                           src={vendor.photo}
                           alt={vendor.title}
@@ -1597,12 +1607,12 @@ const EventPlanning = () => {
                         </div>
                       </div>
 
-                      <div style={{ padding: "14px 16px 16px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                      <div className="event-cat-body" style={{ padding: "10px 12px 12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
                           <span style={{ color: "#C47A2E" }}>{vendor.icon}</span>
-                          <h3 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{vendor.title}</h3>
+                          <h3 style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", margin: 0 }}>{vendor.title}</h3>
                         </div>
-                        <p style={{ fontSize: 12.5, color: "#7A5535", fontWeight: 400, margin: "0 0 8px", lineHeight: 1.45 }}>{vendor.description}</p>
+                        <p style={{ fontSize: 12, color: "#7A5535", fontWeight: 400, margin: "0 0 6px", lineHeight: 1.45 }}>{vendor.description}</p>
                         {isYouDoIt && (
                           <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count !== undefined && count > 0 ? "#16a34a" : "#C47A2E", background: count !== undefined && count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100, animation: (count === undefined && formData.date) ? "tendr-pulse 1.2s ease-in-out infinite" : "none" }}>
                             {count !== undefined
@@ -1727,7 +1737,7 @@ const EventPlanning = () => {
               );
               return (
               <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, paddingLeft: window.innerWidth >= 1024 ? 240 : 20, fontFamily: "'Outfit', sans-serif" }}>
-                <div style={{ background: "#F8F4EF", borderRadius: 22, width: "100%", maxWidth: 860, boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden" }}>
+                <div style={{ background: "#F8F4EF", borderRadius: 22, width: "100%", maxWidth: 860, boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
 
                   {/* Header */}
                   <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -1741,6 +1751,7 @@ const EventPlanning = () => {
 
                   {/* Two columns — single column on mobile */}
                   <style>{`@media(max-width:640px){.budget-modal-cols{grid-template-columns:1fr!important}.budget-modal-left{border-right:none!important;border-bottom:1.5px solid rgba(196,122,46,0.15)!important}}`}</style>
+                  <div style={{ overflowY: "auto", flex: 1 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="budget-modal-cols">
 
                     {/* LEFT — per-category sliders */}
@@ -1817,6 +1828,7 @@ const EventPlanning = () => {
                   </div>
 
                   <style>{`@media(max-width:640px){.budget-modal-grid{grid-template-columns:1fr!important;}}`}</style>
+                </div>
                 </div>
               </div>
               );

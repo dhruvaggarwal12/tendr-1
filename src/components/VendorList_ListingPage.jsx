@@ -782,31 +782,32 @@ const VendorList_ListingPage = ({
                       />
                     </div>
                   )}
-                  {/* Date — full width on its own row so native calendar has no overlap */}
-                  <div>
-                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date *</label>
-                    <input
-                      type="date"
-                      value={chatEventForm.date}
-                      min={today}
-                      onChange={e => {
-                        if (e.target.value && e.target.value < today) return;
-                        setChatEventForm(p => ({ ...p, date: e.target.value }));
-                      }}
-                      style={{ ...fieldStyle, color: "#2C1A0E" }}
-                    />
-                  </div>
-                  {/* Event time — optional, only used for invitation flyer */}
-                  <div>
-                    <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>
-                      Event start time <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#C47A2E" }}>(for invitation flyer)</span>
-                    </label>
-                    <input
-                      type="time"
-                      value={chatEventForm.eventTime}
-                      onChange={e => setChatEventForm(p => ({ ...p, eventTime: e.target.value }))}
-                      style={{ ...fieldStyle, color: chatEventForm.eventTime ? "#2C1A0E" : "#9B7450" }}
-                    />
+                  {/* Date + Time — side by side on mobile */}
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 10px" }}>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>Event date *</label>
+                      <input
+                        type="date"
+                        value={chatEventForm.date}
+                        min={today}
+                        onChange={e => {
+                          if (e.target.value && e.target.value < today) return;
+                          setChatEventForm(p => ({ ...p, date: e.target.value }));
+                        }}
+                        style={{ ...fieldStyle, color: "#2C1A0E" }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", display: "block", marginBottom: 6 }}>
+                        Start time <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0, color: "#C47A2E", fontSize: 10 }}>(flyer)</span>
+                      </label>
+                      <input
+                        type="time"
+                        value={chatEventForm.eventTime}
+                        onChange={e => setChatEventForm(p => ({ ...p, eventTime: e.target.value }))}
+                        style={{ ...fieldStyle, color: chatEventForm.eventTime ? "#2C1A0E" : "#9B7450" }}
+                      />
+                    </div>
                   </div>
                   {/* Guest count — full width below date so it never overlaps the calendar */}
                   <div>

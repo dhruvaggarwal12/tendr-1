@@ -23,6 +23,18 @@ const TOOL_FEATURES = {
     { icon: "🎀", text: "Specific decoration elements suggested" },
     { icon: "📸", text: "Coverage priorities matched to your vision" },
   ],
+  "timeline-picker": [
+    { icon: "📅", text: "Day-by-day countdown to your event" },
+    { icon: "🎯", text: "Tailored plans for 7-day to 6-month events" },
+    { icon: "🔍", text: "Find vendors from any task directly" },
+    { icon: "💾", text: "Progress auto-saved locally" },
+  ],
+  "checklist-picker": [
+    { icon: "✅", text: "Personalised to your event type & services" },
+    { icon: "📋", text: "Tasks grouped by phase and priority" },
+    { icon: "🔔", text: "Countdown keeps you on track" },
+    { icon: "💾", text: "Save & resume anytime" },
+  ],
 };
 
 export default function ToolIntroWrapper({ toolId, icon, title, tagline, description, steps = [], children }) {

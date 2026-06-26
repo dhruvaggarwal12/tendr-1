@@ -1332,6 +1332,21 @@ export default function VendorChatModal() {
             </div>
           )}
 
+          {/* Finalised banner — shows when returning to an already-finalised chat */}
+          {isThisVendorFinalised && (
+            <div style={{ alignSelf: "stretch", background: "linear-gradient(135deg,rgba(21,128,61,0.1),rgba(34,197,94,0.07))", border: "1.5px solid rgba(21,128,61,0.25)", borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>✓</div>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>Vendor Finalised</div>
+                <div style={{ fontSize: 11, color: "#6B7450" }}>You've selected {vendor?.name} for your event.</div>
+              </div>
+              <button onClick={() => setShowReviewPopup(true)}
+                style={{ marginLeft: "auto", padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>
+                Review & Pay →
+              </button>
+            </div>
+          )}
+
           {/* Chat messages */}
           {messages.length > 0 && messages.map((msg, i) => (
             <div key={i} style={{ alignSelf: msg.sender === "user" ? "flex-end" : msg.sender === "system" ? "center" : "flex-start", maxWidth: "80%" }}>

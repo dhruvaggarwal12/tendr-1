@@ -496,11 +496,11 @@ const VendorDetailsPage = () => {
         {/* Mobile-only compact booking card — appears right after gallery */}
         <div className="vendor-mobile-booking-card" style={{ display: "none", marginBottom: 24 }}>
           <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.22)", boxShadow: "0 4px 20px rgba(139,69,19,0.1)", overflow: "hidden" }}>
-            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 18px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting Price</div>
-                <div style={{ fontSize: 22, fontWeight: 900, color: "#fff" }}>
-                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Custom Quote"}
+                <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting Price</div>
+                <div style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>
+                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Price on request"}
                 </div>
               </div>
               {vendor?.totalEventsCompleted > 0 && (
@@ -738,7 +738,7 @@ const VendorDetailsPage = () => {
               <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "20px 22px" }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Starting Price</div>
                 <div style={{ fontSize: 28, fontWeight: 900, color: "#fff" }}>
-                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Custom Quote"}
+                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Price on request"}
                 </div>
                 {!vendor.price && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>Shared after consultation with vendor</div>}
               </div>

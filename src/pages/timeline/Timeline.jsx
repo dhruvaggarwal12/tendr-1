@@ -628,25 +628,25 @@ export default function Timeline() {
           const dl = Math.max(0, Math.ceil((new Date(personalized.eventDate) - new Date()) / 86400000));
           const barW = Math.max(0, Math.min(100, dl > 90 ? 100 : Math.round((dl / 90) * 100)));
           return (
-            <div style={{ background: dl <= 7 ? "linear-gradient(90deg,#c0392b,#e74c3c)" : dl <= 14 ? "linear-gradient(90deg,#b45309,#C47A2E)" : "linear-gradient(90deg,#2C1A0E,#3D2210)", padding: "10px 24px" }}>
+            <div style={{ background: dl <= 7 ? "linear-gradient(90deg,#c0392b,#e74c3c)" : dl <= 14 ? "linear-gradient(90deg,#b45309,#C47A2E)" : "linear-gradient(90deg,#2C1A0E,#3D2210)", padding: "7px 16px" }}>
               <div style={{ maxWidth: 760, margin: "0 auto" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 6 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 15 }}>{dl <= 7 ? "🚨" : dl <= 14 ? "⚡" : "📅"}</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>
-                      {dl === 0 ? "Today is your event! 🎉" : `${dl} day${dl === 1 ? "" : "s"} to go`}
+                    <span style={{ fontSize: 13 }}>{dl <= 7 ? "🚨" : dl <= 14 ? "⚡" : "📅"}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>
+                      {dl === 0 ? "Today is your event!" : `${dl} day${dl === 1 ? "" : "s"} to go`}
                     </span>
                     <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>
                       {new Date(personalized.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                     </span>
                   </div>
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                     {(personalized.services || []).map(s => (
-                      <span key={s} style={{ padding: "3px 10px", borderRadius: 100, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{s}</span>
+                      <span key={s} style={{ padding: "2px 8px", borderRadius: 100, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{s}</span>
                     ))}
                   </div>
                 </div>
-                <div style={{ height: 3, background: "rgba(255,255,255,0.1)", borderRadius: 100, overflow: "hidden" }}>
+                <div style={{ height: 2, background: "rgba(255,255,255,0.1)", borderRadius: 100, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${barW}%`, background: "rgba(255,255,255,0.4)", borderRadius: 100 }} />
                 </div>
               </div>
@@ -655,46 +655,46 @@ export default function Timeline() {
         })()}
 
         {/* Header */}
-        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "14px 24px" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "10px 16px" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={() => { localStorage.removeItem("tendr_timeline_v2"); localStorage.removeItem("tendr_timeline_form"); navigate("/timeline-picker"); }}
-              style={{ padding: "6px 12px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+              style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
               ← Redo
             </button>
             <div>
-              <div style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
+              <div style={{ fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.1em" }}>
                 {personalized ? "Personalized Timeline" : "Event Timeline"}
               </div>
-              <h1 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: 0 }}>
-                {plan.icon} {plan.label} <span style={{ fontSize: 13, fontWeight: 500, opacity: 0.75 }}>— {plan.subtitle}</span>
+              <h1 style={{ fontSize: 15, fontWeight: 900, color: "#fff", margin: 0 }}>
+                {plan.label} <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.75 }}>— {plan.subtitle}</span>
               </h1>
             </div>
           </div>
         </div>
 
         {/* Progress — fixed */}
-        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "12px 24px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 16 }}>
+        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "10px 16px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
+          <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>
-                  {pct === 100 ? "All done — great work! 🎉" : "Overall Progress"}
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>
+                  {pct === 100 ? "All done — great work!" : "Overall Progress"}
                 </span>
-                <span style={{ fontSize: 16, fontWeight: 900, color: pct === 100 ? "#15803d" : "#C47A2E" }}>{pct}%</span>
+                <span style={{ fontSize: 14, fontWeight: 900, color: pct === 100 ? "#15803d" : "#C47A2E" }}>{pct}%</span>
               </div>
-              <div style={{ height: 7, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
+              <div style={{ height: 5, background: "#f3e8d4", borderRadius: 100, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${pct}%`, background: pct === 100 ? "linear-gradient(90deg,#15803d,#22c55e)" : "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, transition: "width 0.4s ease" }} />
               </div>
-              <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>{done} of {total} tasks done</div>
+              <div style={{ fontSize: 10, color: "#9B7450", marginTop: 2 }}>{done} of {total} tasks done</div>
             </div>
-            <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
+            <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
               <button onClick={saveTimeline}
-                style={{ padding: "8px 14px", borderRadius: 10, border: timelineSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: timelineSaved ? "rgba(34,197,94,0.08)" : "#fff", color: timelineSaved ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
-                {timelineSaved ? "✓ Saved" : "💾 Save"}
+                style={{ padding: "6px 10px", borderRadius: 8, border: timelineSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: timelineSaved ? "rgba(34,197,94,0.08)" : "#fff", color: timelineSaved ? "#15803d" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
+                {timelineSaved ? "✓ Saved" : "Save"}
               </button>
               <button onClick={() => setNotifyOpen(true)}
-                style={{ padding: "8px 14px", borderRadius: 10, border: notifyDone ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.35)", background: notifyDone ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", color: notifyDone ? "#15803d" : "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap" }}>
-                {notifyDone ? "🔔 Notified" : "🔔 Get Notified"}
+                style={{ padding: "6px 10px", borderRadius: 8, border: notifyDone ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.35)", background: notifyDone ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", color: notifyDone ? "#15803d" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap" }}>
+                {notifyDone ? "Notified" : "Get Notified"}
               </button>
             </div>
           </div>
