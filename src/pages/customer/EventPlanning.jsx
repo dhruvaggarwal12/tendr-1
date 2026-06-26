@@ -37,6 +37,7 @@ import {
   setBookingType,
   setCategoryBudgets,
   toggleExtraRequirement,
+  setCurrentStep,
 } from "../../redux/eventPlanningSlice.js";
 
 import { setFilters } from "../../redux/listingFiltersSlice";
@@ -167,13 +168,13 @@ const EventPlanning = () => {
   };
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
-  const [wizardAnswers, setWizardAnswers] = useState({});
+  const [wizardAnswers, setWizardAnswers] = useState(() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_answers") || "{}"); } catch { return {}; } });
   const [planSubmitted, setPlanSubmitted] = useState(() => !!localStorage.getItem("tendr_smart_plan"));
   const [confirmedPlan, setConfirmedPlan] = useState(() => {
     try { return JSON.parse(localStorage.getItem("tendr_smart_plan") || "null"); } catch { return null; }
   });
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [selectedPackages, setSelectedPackages] = useState({});
+  const [selectedPackages, setSelectedPackages] = useState(() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_packages") || "{}"); } catch { return {}; } });
   const [pkgExpanded, setPkgExpanded] = useState({}); // { "Caterer-Basic": true }
   const [catererMenu, setCatererMenu] = useState([]);
   const [showYouDoItBudget, setShowYouDoItBudget] = useState(false);
@@ -458,7 +459,9 @@ const EventPlanning = () => {
   const currentQuestion = questions[currentStep];
   const progress = ((currentStep + 1) / questions.length) * 100;
 
-
+  // Persist wizard state so closing and re-opening doesn't lose answers
+  useEffect(() => { try { sessionStorage.setItem("tendr_wiz_answers", JSON.stringify(wizardAnswers)); } catch {} }, [wizardAnswers]);
+  useEffect(() => { try { sessionStorage.setItem("tendr_wiz_packages", JSON.stringify(selectedPackages)); } catch {} }, [selectedPackages]);
 
   /** =======================
    *  SERVICE CATEGORY SCREEN (Both Flows — unified design)
@@ -722,71 +725,151 @@ const EventPlanning = () => {
       return null;
     };
 
-    // ── Waiting for approval (post-submit) ─────────────────────────────────
+    // ── Waiting for approval — chat-style Tendr Concierge screen ─────────────
     if (planSubmitted) {
       const slots = confirmedPlan?.vendorSlots || currentVendors.map(cv => ({ category: cv.category, vendorName: cv.vendor?.name || cv.category, estimatedCost: cv.estimatedCost }));
       const CAT_EMOJI = { Caterer: '🍽', Decorator: '🎀', Photographer: '📸', DJ: '🎵' };
+      const F = "'Outfit', sans-serif";
+      const GOLD = "#C47A2E";
+      const BROWN = "#2C1A0E";
+
+      // Build chat messages from wizard answers
+      const WIZARD_LABELS = {
+        catering: { foodPreference: 'Food Preference', mealType: 'Meal Type', cuisine: 'Cuisine', dietaryRestrictions: 'Dietary Notes' },
+        decoration: { venueType: 'Venue Type', theme: 'Theme', mustHave: 'Must-haves' },
+        photography: { coverage: 'Coverage', style: 'Style', duration: 'Duration', deliverables: 'Deliverables' },
+        dj: { genre: 'Music Genre', duration: 'Duration', mcNeeded: 'MC / Anchor' },
+      };
+      const wizChatBubbles = [];
+      Object.entries(wizardAnswers).forEach(([sec, answers]) => {
+        const labels = WIZARD_LABELS[sec] || {};
+        const lines = Object.entries(answers)
+          .filter(([, v]) => v && (Array.isArray(v) ? v.length > 0 : true))
+          .map(([k, v]) => `${labels[k] || k}: ${Array.isArray(v) ? v.join(', ') : v}`);
+        if (lines.length) wizChatBubbles.push({ section: sec, lines });
+      });
+      if (Object.keys(selectedPackages).length) {
+        wizChatBubbles.push({ section: 'packages', lines: Object.entries(selectedPackages).map(([cat, pkg]) => `${cat}: ${pkg} Package`) });
+      }
 
       return (
-        <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#f8f4ef", fontFamily: F }}>
           <BasicSpeedDial />
           <HamburgerNav active="Browse" noCompare />
-          <div style={{ maxWidth: 480, margin: "0 auto", padding: "56px 20px 80px", textAlign: "center" }}>
 
-            <div style={{ fontSize: 52, marginBottom: 16 }}>✅</div>
-            <h2 style={{ fontSize: "clamp(1.4rem,3vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em" }}>
-              Your package request is submitted!
-            </h2>
-            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.65, maxWidth: 360, marginLeft: "auto", marginRight: "auto" }}>
-              Our team is reviewing your package. We'll notify you on WhatsApp once it's ready.
-            </p>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 10, padding: "10px 18px", marginBottom: 16 }}>
-              <span style={{ fontSize: 15 }}>💬</span>
-              <span style={{ fontSize: 13, color: "#7A5535", fontWeight: 600 }}>
-                Once confirmed — check <strong>View Chats</strong> to find your chat with our team
-              </span>
-            </div>
-            {/* Install App highlight */}
-            <a href="#install-app" onClick={e => { e.preventDefault(); window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" }); }}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.1))", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 10, padding: "10px 18px", marginBottom: 28, textDecoration: "none", cursor: "pointer" }}>
-              <span style={{ fontSize: 18 }}>📲</span>
-              <span style={{ fontSize: 13, color: "#C47A2E", fontWeight: 700 }}>
-                Install the Tendr App — get instant updates on your phone
-              </span>
-              <span style={{ fontSize: 11, color: "#9B7450" }}>→</span>
-            </a>
-
-            {/* Package summary — clean, no status */}
-            <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", marginBottom: 24, textAlign: "left", boxShadow: "0 2px 12px rgba(196,122,46,0.07)" }}>
-              <div style={{ padding: "12px 18px", borderBottom: "1px solid rgba(196,122,46,0.08)", display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>Your Package</span>
-                <span style={{ fontSize: 11, background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 10px", borderRadius: 100, fontWeight: 700 }}>
-                  {confirmedPlan?.eventDetails?.eventType || formData?.eventType || "Event"}
-                </span>
+          {/* Chat header — Tendr Concierge style */}
+          <div style={{ background: "#fff", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
+            <div style={{ maxWidth: 860, margin: "0 auto", padding: "12px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>✨</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a1a" }}>Tendr Concierge</div>
+                <div style={{ fontSize: 12, color: "#22c55e", fontWeight: 600 }}>● Coordinating your vendors</div>
               </div>
-              <div style={{ padding: "10px 18px", display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {slots.map((slot, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px", borderRadius: 8, background: "rgba(196,122,46,0.05)", border: "1px solid rgba(196,122,46,0.12)" }}>
-                    <span style={{ fontSize: 15 }}>{CAT_EMOJI[slot.category] || "🏷"}</span>
-                    <div>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{slot.vendorName || slot.category}</div>
-                      <div style={{ fontSize: 10, color: "#9B7450" }}>₹{Number(slot.estimatedCost || 0).toLocaleString("en-IN")}</div>
+              <span style={{ fontSize: 11, fontWeight: 700, background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a", borderRadius: 100, padding: "3px 10px" }}>Pending review</span>
+            </div>
+          </div>
+
+          {/* Messages area */}
+          <div style={{ flex: 1, overflowY: "auto", padding: "20px 16px 32px" }}>
+            <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", gap: 12 }}>
+
+              {/* Event summary — Tendr greeting */}
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ maxWidth: "80%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a", lineHeight: 1.55 }}>
+                  👋 Thanks for choosing <strong>Let Us Do It</strong>! Here's a quick summary of your event:
+                </div>
+              </div>
+
+              {/* User's event details bubble */}
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <div style={{ maxWidth: "80%", background: "linear-gradient(135deg,#CCAB4A,#e8c96a)", color: "#fff", borderRadius: "18px 18px 4px 18px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 13, lineHeight: 1.6 }}>
+                  {[formData?.eventType && `🎉 ${formData.eventType}`, formData?.date && `📅 ${formData.date}`, formData?.location && `📍 ${formData.location}`, formData?.guests && `👥 ${formData.guests} guests`].filter(Boolean).join('\n')}
+                </div>
+              </div>
+
+              {/* Tendr: here's what you've picked */}
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ maxWidth: "80%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a", lineHeight: 1.55 }}>
+                  Your selected services and preferences:
+                </div>
+              </div>
+
+              {/* Wizard answers as user bubbles */}
+              {wizChatBubbles.map((item, idx) => {
+                const secLabel = item.section === 'packages' ? '📦 Packages' : item.section === 'catering' ? '🍽 Catering' : item.section === 'decoration' ? '🎀 Decoration' : item.section === 'photography' ? '📸 Photography' : item.section === 'dj' ? '🎵 DJ & Music' : item.section;
+                return (
+                  <div key={idx} style={{ display: "flex", justifyContent: "flex-end" }}>
+                    <div style={{ maxWidth: "80%", background: "linear-gradient(135deg,#CCAB4A,#e8c96a)", color: "#fff", borderRadius: "18px 18px 4px 18px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 13, lineHeight: 1.7 }}>
+                      <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5, opacity: 0.85 }}>{secLabel}</div>
+                      {item.lines.join('\n')}
                     </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                );
+              })}
 
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => navigate("/")}
-                style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                Back to Home
-              </button>
-              <button onClick={() => navigate("/dashboard")}
-                style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                My Dashboard →
-              </button>
+              {/* Vendor lineup */}
+              {slots.length > 0 && (
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <div style={{ maxWidth: "80%", background: "linear-gradient(135deg,#CCAB4A,#e8c96a)", color: "#fff", borderRadius: "18px 18px 4px 18px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 13, lineHeight: 1.7 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5, opacity: 0.85 }}>📋 Suggested Vendors</div>
+                    {slots.map((s, i) => `${CAT_EMOJI[s.category] || '🏷'} ${s.vendorName || s.category} — ₹${Number(s.estimatedCost || 0).toLocaleString('en-IN')}`).join('\n')}
+                  </div>
+                </div>
+              )}
+
+              {/* ── Tendr checking with vendors message ── */}
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ maxWidth: "85%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 14, color: "#1a1a1a", lineHeight: 1.6 }}>
+                  <div style={{ fontWeight: 700, color: BROWN, marginBottom: 8 }}>✅ We're on it! Checking with vendors now...</div>
+                  <div style={{ color: "#555", fontSize: 13, marginBottom: 10 }}>Our team will reach out to each vendor and confirm their availability for your date. You'll hear back on WhatsApp within a few hours.</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                    {['🔍 Checking vendor availability for your date', '💬 Coordinating pricing and preferences', '📩 We\'ll confirm on WhatsApp once all slots are locked'].map((step, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12.5, color: "#5a3a1a" }}>
+                        <span style={{ flexShrink: 0 }}>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Install app */}
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ maxWidth: "85%", background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: "18px 18px 18px 4px", padding: "14px 16px", fontSize: 13, color: BROWN, lineHeight: 1.55 }}>
+                  <div style={{ fontWeight: 700, marginBottom: 4 }}>📲 Get instant updates on your phone</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 10 }}>Install the Tendr app — we'll ping you the moment your vendors are confirmed.</div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <a href="https://play.google.com/store" target="_blank" rel="noreferrer" style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}>▶ Google Play</a>
+                    <a href="https://apps.apple.com" target="_blank" rel="noreferrer" style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}> App Store</a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Next steps */}
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ maxWidth: "85%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>What happens next</div>
+                  {[{ icon: '⏳', text: 'Wait for WhatsApp confirmation (usually 2–4 hrs)' }, { icon: '💬', text: 'Check View Chats in your dashboard to track status' }, { icon: '✅', text: 'Once confirmed, you can finalise and pay' }].map((s, i) => (
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: i < 2 ? 8 : 0 }}>
+                      <span style={{ fontSize: 16, flexShrink: 0 }}>{s.icon}</span>
+                      <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{s.text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
             </div>
+          </div>
+
+          {/* Bottom nav */}
+          <div style={{ padding: "12px 16px 20px", background: "#fff", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10 }}>
+            <button onClick={() => navigate("/")}
+              style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.25)`, background: "#fff", color: GOLD, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+              Back to Home
+            </button>
+            <button onClick={() => navigate("/dashboard")}
+              style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+              My Dashboard →
+            </button>
           </div>
         </div>
       );
@@ -1657,10 +1740,11 @@ const EventPlanning = () => {
                   </div>
 
                   {/* Two columns — single column on mobile */}
+                  <style>{`@media(max-width:640px){.budget-modal-cols{grid-template-columns:1fr!important}.budget-modal-left{border-right:none!important;border-bottom:1.5px solid rgba(196,122,46,0.15)!important}}`}</style>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="budget-modal-cols">
 
                     {/* LEFT — per-category sliders */}
-                    <div style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)" }}>
+                    <div className="budget-modal-left" style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)" }}>
                       <div style={{ marginBottom: 16 }}>
                         <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set budget per service</div>
                         <div style={{ fontSize: 12, color: "#9B7450" }}>Set an upper limit for each category</div>

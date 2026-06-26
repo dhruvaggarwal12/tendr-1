@@ -846,6 +846,40 @@ const Chat = () => {
             </div>
           )}
 
+          {/* ── Pending status panel — shown below messages for unapproved chats ── */}
+          {isExistingChat && !vendorApproved && messages.length > 0 && (
+            <div style={{ marginTop: 8, display: "flex", justifyContent: "flex-start" }}>
+              <div style={{ maxWidth: "85%", background: "#fff", borderRadius: "18px 18px 18px 4px", padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ fontWeight: 700, color: "#2C1A0E", fontSize: 14, marginBottom: 8 }}>
+                  ✅ We're checking with this vendor...
+                </div>
+                <div style={{ fontSize: 13, color: "#555", marginBottom: 12, lineHeight: 1.6 }}>
+                  Our team is reaching out to confirm their availability and pricing for your date. We'll update you on WhatsApp once it's confirmed.
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 14 }}>
+                  {["🔍 Checking availability for your event date", "💬 Coordinating with the vendor on pricing", "📩 WhatsApp confirmation coming soon"].map((s, i) => (
+                    <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a" }}>{s}</div>
+                  ))}
+                </div>
+                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>📲 Get updates instantly</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 8 }}>Install the Tendr app to get notified the moment your vendor is confirmed.</div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <a href="https://play.google.com/store" target="_blank" rel="noreferrer" style={{ padding: "6px 12px", borderRadius: 8, background: "#1a1a2e", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>▶ Google Play</a>
+                    <a href="https://apps.apple.com" target="_blank" rel="noreferrer" style={{ padding: "6px 12px", borderRadius: 8, background: "#1a1a2e", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none" }}> App Store</a>
+                  </div>
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>What happens next</div>
+                {[{ icon: "⏳", text: "WhatsApp confirmation usually within 2–4 hrs" }, { icon: "💬", text: "Once approved, you can message the vendor directly" }, { icon: "✅", text: "Finalise and pay after chatting" }].map((s, i) => (
+                  <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: i < 2 ? 6 : 0 }}>
+                    <span style={{ fontSize: 14, flexShrink: 0 }}>{s.icon}</span>
+                    <span style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.5 }}>{s.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div ref={messagesEndRef} />
         </div>
       </div>
