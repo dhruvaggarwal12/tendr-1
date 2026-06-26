@@ -1,8 +1,18 @@
+import gameCoordinatorImg from "../assets/fun-activities/game-coordinator.jpg";
+import magicShowImg      from "../assets/fun-activities/magic-show.jpg";
+import liveTeddyImg      from "../assets/fun-activities/live-teddy.jpg";
+import namePlateImg      from "../assets/fun-activities/name-plate-making.jpg";
+import stoneArtImg       from "../assets/fun-activities/stone-art.jpg";
+import dholImg           from "../assets/fun-activities/dhol-player.jpg";
+import bouncyCastleImg   from "../assets/fun-activities/bouncy-castle.jpg";
+import tattooArtistImg   from "../assets/fun-activities/tattoo-artist.jpg";
+
 export const FUN_ACTIVITIES = [
   {
     id: "game-coordinator",
     name: "Game Coordinator",
     emoji: "🎯",
+    image: gameCoordinatorImg,
     price: 2000,
     duration: "2–3 hrs",
     guests: "Up to 80",
@@ -15,6 +25,7 @@ export const FUN_ACTIVITIES = [
     id: "magic-show",
     name: "Magic Show",
     emoji: "🎩",
+    image: magicShowImg,
     price: 2500,
     duration: "45–60 min",
     guests: "Up to 100",
@@ -27,6 +38,7 @@ export const FUN_ACTIVITIES = [
     id: "live-teddy",
     name: "Live Teddy",
     emoji: "🧸",
+    image: liveTeddyImg,
     price: 2800,
     duration: "2–3 hrs",
     guests: "Up to 150",
@@ -39,6 +51,7 @@ export const FUN_ACTIVITIES = [
     id: "name-plate-making",
     name: "Name Plate Making",
     emoji: "🪧",
+    image: namePlateImg,
     price: 3000,
     duration: "3–4 hrs",
     guests: "Up to 60",
@@ -51,6 +64,7 @@ export const FUN_ACTIVITIES = [
     id: "stone-art",
     name: "Stone Art",
     emoji: "🪨",
+    image: stoneArtImg,
     price: 3500,
     duration: "3–4 hrs",
     guests: "Up to 50",
@@ -63,6 +77,7 @@ export const FUN_ACTIVITIES = [
     id: "dhol",
     name: "Dhol Player",
     emoji: "🥁",
+    image: dholImg,
     price: 1500,
     perUnit: true,
     unitLabel: "per dhol",
@@ -77,6 +92,7 @@ export const FUN_ACTIVITIES = [
     id: "bouncy-castle",
     name: "Bouncy Castle",
     emoji: "🏰",
+    image: bouncyCastleImg,
     price: 5500,
     duration: "Full event",
     guests: "Kids up to 50",
@@ -89,6 +105,7 @@ export const FUN_ACTIVITIES = [
     id: "tattoo-artist",
     name: "Tattoo Artist",
     emoji: "✍️",
+    image: tattooArtistImg,
     price: 2000,
     duration: "3–4 hrs",
     guests: "Up to 80",

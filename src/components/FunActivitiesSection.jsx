@@ -191,19 +191,21 @@ function ActivityModal({ activity, onClose, onAddToCart }) {
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", zIndex: 100000, backdropFilter: "blur(4px)" }} />
       <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,520px)", maxHeight: isMob ? "82vh" : "90vh", overflowY: "auto", background: "#FFFCF5", borderRadius: isMob ? 18 : 22, zIndex: 100001, fontFamily: F, boxShadow: "0 28px 70px rgba(0,0,0,0.22)" }}>
 
-        {/* Header */}
-        <div style={{ background: `linear-gradient(135deg,${GOLD}20,${GOLD}08)`, padding: isMob ? "20px 16px 14px" : "32px 24px 20px", textAlign: "center", borderRadius: isMob ? "18px 18px 0 0" : "22px 22px 0 0", position: "relative" }}>
-          <button onClick={onClose} style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
-          <div style={{ fontSize: isMob ? 40 : 60, marginBottom: isMob ? 6 : 12 }}>{activity.emoji}</div>
-          <h2 style={{ fontSize: isMob ? 17 : 22, fontWeight: 900, color: BROWN, margin: `0 0 ${isMob ? 8 : 10}px`, fontFamily: F }}>{activity.name}</h2>
-
-          {/* Pricing */}
-          <div style={{ display: "inline-flex", flexDirection: "column", alignItems: "center", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 12, padding: isMob ? "8px 20px" : "12px 28px" }}>
-            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.65)", fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>{activity.price === 0 ? "FREE" : "FIXED PRICE"}</span>
-            <span style={{ fontSize: isMob ? 22 : 28, fontWeight: 900, color: "#fff", fontFamily: F }}>
-              {activity.price === 0 ? "Free" : `₹${activity.price.toLocaleString("en-IN")}`}
-              {activity.price > 0 && activity.perUnit && <span style={{ fontSize: isMob ? 11 : 14, fontWeight: 600 }}> {activity.unitLabel}</span>}
-            </span>
+        {/* Hero image header */}
+        <div style={{ position: "relative", height: isMob ? 180 : 240, borderRadius: isMob ? "18px 18px 0 0" : "22px 22px 0 0", overflow: "hidden", flexShrink: 0 }}>
+          <img src={activity.image} alt={activity.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.15) 60%, transparent 100%)", pointerEvents: "none" }} />
+          <button onClick={onClose} style={{ position: "absolute", top: 10, right: 10, width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.45)", color: "#fff", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>×</button>
+          {/* Name + price overlay at bottom */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: isMob ? "12px 14px" : "16px 20px", display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 10 }}>
+            <h2 style={{ fontSize: isMob ? 18 : 22, fontWeight: 900, color: "#fff", margin: 0, fontFamily: F, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>{activity.name}</h2>
+            <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
+              <span style={{ fontSize: 9, color: "rgba(255,255,255,0.7)", fontWeight: 700, letterSpacing: "0.08em", fontFamily: F }}>{activity.price === 0 ? "FREE" : "FIXED PRICE"}</span>
+              <span style={{ fontSize: isMob ? 18 : 22, fontWeight: 900, color: "#CCAB4A", fontFamily: F, lineHeight: 1 }}>
+                {activity.price === 0 ? "Free" : `₹${activity.price.toLocaleString("en-IN")}`}
+                {activity.price > 0 && activity.perUnit && <span style={{ fontSize: isMob ? 10 : 12, fontWeight: 600, color: "rgba(255,255,255,0.75)" }}> {activity.unitLabel}</span>}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -269,9 +271,14 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
       onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.16)"; e.currentTarget.style.transform = "translateY(-3px)"; }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(44,26,14,0.06)"; e.currentTarget.style.transform = "translateY(0)"; }}>
 
-      {/* Emoji header */}
-      <div style={{ background: `linear-gradient(135deg,${GOLD}18,${GOLD}08)`, padding: isMobile ? "16px 12px 10px" : "22px 18px 12px", textAlign: "center", position: "relative" }}>
-        <div style={{ fontSize: isMobile ? 32 : 42, marginBottom: isMobile ? 4 : 8 }}>{activity.emoji}</div>
+      {/* Image header */}
+      <div style={{ position: "relative", height: isMobile ? 120 : 160, overflow: "hidden", flexShrink: 0 }}>
+        <img
+          src={activity.image}
+          alt={activity.name}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+        />
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", top: 8, right: 8 }}>
           <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: isMobile ? 10 : 12, fontWeight: 900, padding: isMobile ? "3px 8px" : "4px 10px", borderRadius: "100px 100px 100px 4px", fontFamily: F }}>
             ₹{activity.price.toLocaleString("en-IN")}
