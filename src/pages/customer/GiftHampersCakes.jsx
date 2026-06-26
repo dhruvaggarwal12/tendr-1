@@ -15,19 +15,21 @@ const font = "'Outfit', sans-serif";
 
 // ── Product Card ─────────────────────────────────────────────────────────────
 function ProductCard({ product, onViewDetails }) {
+  const dispatch  = useDispatch();
   const cartItems = useSelector(selectCartItems);
   const inCart    = cartItems.find(i => i.productId === product._id);
-  const price = product.pricePerUnit || 0;
-  const isMobile = window.innerWidth < 768;
+  const price     = product.pricePerUnit || 0;
+  const isMobile  = window.innerWidth < 768;
+  const minQty    = product.minOrderQuantity || 1;
+  const desc      = product.description || "";
+
+  const handleQuickAdd = (e) => {
+    e.stopPropagation();
+    dispatch(addToCart({ product, quantity: minQty }));
+  };
 
   return (
     <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 16px rgba(44,26,14,0.07)", overflow: "hidden", display: "flex", flexDirection: "column", fontFamily: font, position: "relative" }}>
-      {/* Product number badge */}
-      {product.productNumber && (
-        <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(44,26,14,0.7)", color: "#fff", fontSize: 9, fontWeight: 700, borderRadius: 6, padding: "2px 6px", zIndex: 2, letterSpacing: "0.05em" }}>
-          #{product.productNumber}
-        </div>
-      )}
       {/* Cart badge */}
       {inCart && (
         <div style={{ position: "absolute", top: 8, right: 8, background: "#22c55e", color: "#fff", fontSize: 9, fontWeight: 800, borderRadius: 100, padding: "2px 6px", zIndex: 2 }}>
@@ -52,16 +54,16 @@ function ProductCard({ product, onViewDetails }) {
 
         <div style={{ fontSize: isMobile ? 12 : 15, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.3 }}>{product.name}</div>
 
-        {!isMobile && (
-          <p style={{ fontSize: 12, color: "#7A5535", lineHeight: 1.55, margin: 0 }}>
-            {product.description.slice(0, 80)}{product.description.length > 80 ? "…" : ""}
+        {desc && (
+          <p style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.5, margin: 0 }}>
+            {desc.slice(0, isMobile ? 55 : 80)}{desc.length > (isMobile ? 55 : 80) ? "…" : ""}
           </p>
         )}
 
         {/* Min order highlight */}
-        {product.minOrderQuantity > 1 && (
+        {minQty > 1 && (
           <div style={{ background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "3px 7px", fontSize: 10, fontWeight: 700, color: "#b45309" }}>
-            Min: {product.minOrderQuantity} pcs
+            Min: {minQty} pcs
           </div>
         )}
 
@@ -71,11 +73,17 @@ function ProductCard({ product, onViewDetails }) {
           <span style={{ fontSize: 10, color: "#9B7450" }}>/ unit</span>
         </div>
 
-        {/* View Details */}
-        <button onClick={() => onViewDetails(product)}
-          style={{ width: "100%", padding: isMobile ? "8px 10px" : "10px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: isMobile ? 11 : 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-          View Details
-        </button>
+        {/* Buttons */}
+        <div style={{ display: "flex", gap: 7, marginTop: "auto" }}>
+          <button onClick={() => onViewDetails(product)}
+            style={{ flex: 1, padding: isMobile ? "8px 6px" : "10px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: isMobile ? 10 : 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            View Details
+          </button>
+          <button onClick={handleQuickAdd}
+            style={{ flex: 1, padding: isMobile ? "8px 6px" : "10px 10px", borderRadius: 9, border: "none", background: inCart ? "linear-gradient(135deg,#15803d,#22c55e)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: isMobile ? 10 : 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            {inCart ? "✓ Added" : `+ Cart`}
+          </button>
+        </div>
       </div>
     </div>
   );

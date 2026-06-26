@@ -323,7 +323,7 @@ const VendorList_ListingPage = ({
                             </>
                           )}
                           {rating > 0 && (
-                            <span style={{ marginLeft: "auto", fontSize: 12, color: "#FFCC55", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>
+                            <span style={{ marginLeft: "auto", fontSize: 11, color: "#FFCC55", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}{vendor.reviewCount > 0 ? ` (${vendor.reviewCount})` : ""}</span>
                           )}
                         </div>
                       </div>
@@ -352,11 +352,17 @@ const VendorList_ListingPage = ({
                             {vendor.locations?.length > 3 && ` +${vendor.locations.length - 3}`}
                           </div>
                         )}
-                        {/* Rating + Exp + Team */}
-                        <div style={{ display: "flex", gap: 10, fontSize: 11.5, color: "#9B7450", flexWrap: "wrap" }}>
-                          {rating > 0 && <span style={{ color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
-                          {vendor.yearsOfExperience > 0 && <span>⏱ {vendor.yearsOfExperience}y exp</span>}
-                          {vendor.teamSize > 0 && <span>👥 Team {vendor.teamSize}</span>}
+                        {/* Rating + review count */}
+                        <div style={{ display: "flex", gap: 10, fontSize: 11.5, color: "#9B7450", flexWrap: "wrap", alignItems: "center" }}>
+                          {rating > 0 && (
+                            <span style={{ color: "#C47A2E", fontWeight: 700 }}>
+                              ★ {Number(rating).toFixed(1)}
+                              {vendor.reviewCount > 0 && <span style={{ fontWeight: 500, color: "#9B7450" }}> · {vendor.reviewCount} review{vendor.reviewCount !== 1 ? "s" : ""}</span>}
+                            </span>
+                          )}
+                          {(vendor.price > 0 || vendor.startingPrice > 0) && (
+                            <span style={{ color: "#5a3a1a", fontWeight: 700 }}>From ₹{Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")}</span>
+                          )}
                         </div>
                       </div>
 

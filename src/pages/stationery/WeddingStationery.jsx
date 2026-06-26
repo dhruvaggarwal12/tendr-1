@@ -164,11 +164,6 @@ export default function WeddingStationery() {
                             alt={item.name}
                             style={{ maxWidth: "100%", maxHeight: 200, width: "auto", height: "auto", objectFit: "contain", display: "block", transition: "transform 0.32s", transform: isHov ? "scale(1.03)" : "scale(1)" }}
                           />
-                          {item.images.length > 1 && (
-                            <div style={{ position: "absolute", bottom: 8, right: 8, background: "rgba(28,10,0,0.55)", color: "#fff", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, backdropFilter: "blur(4px)" }}>
-                              📷 {item.images.length}
-                            </div>
-                          )}
                         </div>
                       ) : (
                         <div style={{ height: 110, background: meta.light, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", flexShrink: 0 }}>
@@ -180,29 +175,22 @@ export default function WeddingStationery() {
 
                       {/* Body */}
                       <div style={{ padding: "16px 18px 18px", flex: 1, display: "flex", flexDirection: "column" }}>
-                        <div style={{ display: "inline-flex", alignItems: "center", marginBottom: 10, alignSelf: "flex-start" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10, flexWrap: "wrap" }}>
                           <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.12em", textTransform: "uppercase", color: meta.color, background: meta.light, borderRadius: 100, padding: "3px 9px", border: `1px solid ${meta.color}22` }}>{cat}</span>
+                          {(item.description || "").toLowerCase().includes("custom") && (
+                            <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", color: "#5a3a1a", background: "rgba(44,26,14,0.06)", borderRadius: 100, padding: "3px 9px", border: "1px solid rgba(44,26,14,0.12)" }}>✏ Customisable</span>
+                          )}
                         </div>
                         <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 19, fontWeight: 700, color: "#1C1208", margin: "0 0 6px", lineHeight: 1.25 }}>{item.name}</h3>
                         {item.tagline && <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 12px", lineHeight: 1.45 }}>{item.tagline}</p>}
-
-                        {item.features?.length > 0 && (
-                          <div style={{ marginBottom: 12 }}>
-                            {item.features.slice(0, 2).map((f, fi) => (
-                              <div key={fi} style={{ fontSize: 11, color: "#6B4226", display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4 }}>
-                                <span style={{ color: meta.color, flexShrink: 0, fontSize: 8, marginTop: 3 }}>✦</span> {f}
-                              </div>
-                            ))}
-                            {item.features.length > 2 && <div style={{ fontSize: 10, color: meta.color, fontWeight: 700 }}>+{item.features.length - 2} more</div>}
-                          </div>
-                        )}
 
                         {/* Price row */}
                         <div style={{ marginTop: "auto", paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
                             <div>
                               <div style={{ fontSize: 17, fontWeight: 900, color: "#C9A84C", letterSpacing: "-0.01em" }}>{price.main}</div>
-                              {price.note && <div style={{ fontSize: 9, color: "#9B7450", fontStyle: "italic", marginTop: 1 }}>{price.note}</div>}
+                              {item.unit && <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginTop: 2 }}>per {item.unit}</div>}
+                              {price.note && !item.unit && <div style={{ fontSize: 9, color: "#9B7450", fontStyle: "italic", marginTop: 1 }}>{price.note}</div>}
                             </div>
                             <div style={{ background: isHov ? meta.grad : "transparent", color: isHov ? "#fff" : meta.color, border: `1.5px solid ${meta.color}50`, borderRadius: 100, padding: "5px 13px", fontSize: 11, fontWeight: 700, transition: "all 0.22s", whiteSpace: "nowrap" }}>
                               View →

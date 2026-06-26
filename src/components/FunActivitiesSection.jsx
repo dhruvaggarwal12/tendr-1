@@ -291,20 +291,27 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
 
       <div style={{ padding: isMobile ? "8px 10px 10px" : "12px 14px 14px", flex: 1, display: "flex", flexDirection: "column" }}>
         <h3 style={{ fontSize: isMobile ? 11 : 14, fontWeight: 800, color: BROWN, margin: `0 0 ${isMobile ? 3 : 5}px`, fontFamily: F }}>{activity.name}</h3>
-        {!isMobile && (
-          <p style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.5, margin: "0 0 8px", flex: 1, fontFamily: F, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{activity.desc}</p>
-        )}
 
-        <div style={{ display: "flex", gap: 4, marginBottom: isMobile ? 6 : 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 4, marginBottom: isMobile ? 5 : 7, flexWrap: "wrap" }}>
+          {activity.tags?.[0] && (
+            <span style={{ fontSize: 9, color: GOLD, background: "rgba(196,122,46,0.1)", padding: "2px 7px", borderRadius: 100, fontFamily: F, fontWeight: 700, textTransform: "capitalize" }}>{activity.tags[0]}</span>
+          )}
           <span style={{ fontSize: 9, color: "#9B7450", background: "#F9F5F0", padding: "2px 6px", borderRadius: 100, fontFamily: F }}>⏱ {activity.duration}</span>
           <span style={{ fontSize: 9, color: "#9B7450", background: "#F9F5F0", padding: "2px 6px", borderRadius: 100, fontFamily: F }}>👥 {activity.guests}</span>
         </div>
 
-        <button
-          onClick={e => { e.stopPropagation(); onQuickView(activity); }}
-          style={{ width: "100%", padding: isMobile ? "7px 0" : "9px 0", borderRadius: 9, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: isMobile ? 10 : 12, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-          View Details
-        </button>
+        <div style={{ display: "flex", gap: 6, marginTop: "auto" }}>
+          <button
+            onClick={e => { e.stopPropagation(); onQuickView(activity); }}
+            style={{ flex: 1, padding: isMobile ? "7px 0" : "9px 0", borderRadius: 9, border: `1.5px solid ${GOLD}40`, background: "#fff", color: GOLD, fontSize: isMobile ? 10 : 11, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+            View Details
+          </button>
+          <button
+            onClick={e => { e.stopPropagation(); onAddToCart(activity); }}
+            style={{ flex: 1, padding: isMobile ? "7px 0" : "9px 0", borderRadius: 9, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: isMobile ? 10 : 11, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
+            + Cart
+          </button>
+        </div>
       </div>
     </div>
   );
