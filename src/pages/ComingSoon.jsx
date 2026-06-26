@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion, AnimatePresence } from "framer-motion";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
@@ -210,7 +210,7 @@ export default function ComingSoon() {
                 >
                   {status === "sending" ? "Adding…" : "Notify Me 🚀"}
                 </button>
-                {status === "error" && <p style={{ width: "100%", fontSize: 12, color: "#f87171", margin: "4px 0 0" }}>Something went wrong — email us at contacttendr@gmail.com</p>}
+                {status === "error" && <p style={{ width: "100%", fontSize: 12, color: "#f87171", margin: "4px 0 0" }}>Something went wrong — email us at contact@tendr.co.in</p>}
               </motion.form>
             )}
           </AnimatePresence>
@@ -322,7 +322,7 @@ export default function ComingSoon() {
           ))}
         </motion.div>
 
-        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>© 2026 Tendr · contacttendr@gmail.com</p>
+        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>© 2026 Tendr · contact@tendr.co.in</p>
       </div>
     </div>
     </>

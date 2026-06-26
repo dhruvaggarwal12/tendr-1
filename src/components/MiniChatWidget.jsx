@@ -7,6 +7,7 @@ const font = "'Outfit', sans-serif";
 
 const QUICK_QUESTIONS = [
   "How do I book a vendor?",
+  "How can we proceed to booking?",
   "What areas do you serve?",
   "How does chat approval work?",
   "What is the refund policy?",
@@ -15,31 +16,39 @@ const QUICK_QUESTIONS = [
 
 const FAQ_KB = [
   {
-    keywords: ["book", "booking", "how to book", "vendor booking"],
-    answer: "To book a vendor, complete the event planning form, browse available vendors, and start a chat. Once you agree on the price in chat, our team confirms and you proceed to payment. 🎉",
+    keywords: ["proceed to booking", "proceed", "next step", "next steps", "how to proceed", "start booking", "begin booking", "get started", "what do i do next", "how to start"],
+    answer: "Here's how to proceed to booking on Tendr:\n\n1️⃣ Fill in your event details (type, date, guests, venue)\n2️⃣ Browse and shortlist vendors from the listings\n3️⃣ Start a chat with your chosen vendor\n4️⃣ Our team approves the chat within a few hours\n5️⃣ Discuss and agree on the final price in chat\n6️⃣ Tap the Pay button (bottom right) to confirm & pay\n\nNeed more help? Email us at contact@tendr.co.in 💛",
   },
   {
-    keywords: ["area", "serve", "city", "location", "where", "available"],
+    keywords: ["how do i book", "how to book", "book a vendor", "vendor booking", "book vendor"],
+    answer: "To book a vendor: fill the event planning form → browse vendors → request a chat → our team approves it → agree on price in chat → click Pay to confirm. The whole process usually takes a few hours! 🎉",
+  },
+  {
+    keywords: ["area", "serve", "city", "location", "where", "available", "delhi", "noida", "gurgaon"],
     answer: "Tendr currently operates in Delhi NCR (Delhi, Gurgaon, Noida, Faridabad, Ghaziabad). We're expanding to more cities soon — stay tuned! 📍",
   },
   {
-    keywords: ["chat approval", "approve", "approval", "request"],
-    answer: "After you request a chat with a vendor, our team reviews and approves it within a few hours. You'll get a notification when the chat is ready. ✅",
+    keywords: ["chat approval", "approve", "approval", "request", "chat request", "chat approved"],
+    answer: "After you request a chat with a vendor, our team reviews and approves it within a few hours. You'll get a WhatsApp notification when the chat is ready. ✅",
   },
   {
-    keywords: ["refund", "cancel", "cancellation", "money back"],
-    answer: "Cancellations made 7+ days before the event receive a full refund. Within 7 days, a 20% cancellation fee applies. Contact us at contacttendr@gmail.com for specific cases. 💸",
+    keywords: ["refund", "cancel", "cancellation", "money back", "refund policy"],
+    answer: "Cancellations made 7+ days before the event receive a full refund. Within 7 days, a 20% cancellation fee applies. Contact us at contact@tendr.co.in for specific cases. 💸",
   },
   {
-    keywords: ["payment", "pay", "price", "cost", "charge", "fee"],
-    answer: "Payment is made after all vendor prices are confirmed in chat by our team. We support UPI, cards, and net banking. The amount shown at checkout is the final amount. 💳",
+    keywords: ["i need help", "need help", "help with booking", "help with my booking", "help me"],
+    answer: "We're here to help! 🤝\n\n• For booking issues — email contact@tendr.co.in\n• WhatsApp/Call — +91 9211668427 (10 AM–7 PM)\n• Or describe your problem here and we'll get back to you shortly.",
+  },
+  {
+    keywords: ["payment", "pay", "price", "cost", "charge", "fee", "how much", "pay button"],
+    answer: "Payment is made after all vendor prices are confirmed in chat. We support UPI, cards, and net banking. The amount shown at checkout is always the final amount — no hidden charges. 💳",
   },
   {
     keywords: ["caterer", "food", "menu", "catering"],
     answer: "Our caterers offer customisable menus with North Indian, South Indian, Chinese, Punjabi, Italian, and more cuisines. Plate counts are set during booking. 🍽️",
   },
   {
-    keywords: ["decorator", "decor", "decoration", "theme"],
+    keywords: ["decorator", "decor", "decoration", "theme", "balloon", "floral"],
     answer: "Tendr decorators offer themed setups, balloon decor, floral arrangements, LED backdrops, and custom setups for all event types. 🎨",
   },
   {
@@ -63,8 +72,8 @@ const FAQ_KB = [
     answer: "Your event details PDF and timeline are available on your dashboard after payment. You can download them anytime from your upcoming events. 📄",
   },
   {
-    keywords: ["contact", "reach", "support", "help", "email", "phone", "number"],
-    answer: "Reach our support team at contacttendr@gmail.com or call/WhatsApp us at +91 9211668427. We're available 10 AM – 7 PM daily. 🤝",
+    keywords: ["contact", "reach", "support", "email", "phone", "number", "whatsapp"],
+    answer: "Reach our support team at contact@tendr.co.in or call/WhatsApp us at +91 9211668427. We're available 10 AM – 7 PM daily. 🤝",
   },
   {
     keywords: ["celebration kit", "kit", "decoration kit", "party kit"],

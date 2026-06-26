@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -96,7 +96,7 @@ export default function VendorRegistration() {
       }
       setSubmitted(true);
     } catch (err) {
-      setApiError("Network error. Please check your connection and try again. If the issue persists, contact contacttendr@gmail.com");
+      setApiError("Network error. Please check your connection and try again. If the issue persists, contact contact@tendr.co.in");
     } finally {
       setLoading(false);
     }

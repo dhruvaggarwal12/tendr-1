@@ -1,4 +1,4 @@
-import { jsPDF } from "jspdf";
+﻿import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import tendrLogoUrl   from "../assets/logos/tendr.png";
 import tendrLogoWhite from "../assets/logos/tendr-logo-secondary.png";
@@ -549,7 +549,7 @@ export async function generateTimelinePDF({ slots = [], eventSummary = {}, userN
   doc.setFont("helvetica", "normal");
   doc.setFontSize(6.5);
   doc.setTextColor(155, 116, 80);
-  doc.text("tendr.in  ·  contacttendr@gmail.com", CX, footerY + 5, { align: "center" });
+  doc.text("tendr.in  ·  contact@tendr.co.in", CX, footerY + 5, { align: "center" });
   doc.setFont("helvetica", "italic");
   doc.setFontSize(6);
   doc.setTextColor(196, 122, 46);
@@ -671,7 +671,7 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
     eventSummary.date && { label: "DATE",  val: eventSummary.date },
     resolvedVenue     && { label: "VENUE", val: resolvedVenue },
     resolvedTime      && { label: "TIME",  val: fmt12h(resolvedTime) },
-    { label: "RSVP", val: "contacttendr@gmail.com  ·  +91 9211668427" },
+    { label: "RSVP", val: "contact@tendr.co.in  ·  +91 9211668427" },
   ].filter(Boolean);
 
   const circleX = CX - 42;
@@ -751,7 +751,7 @@ export async function generateInvitationPDF({ eventSummary = {}, confirmedVendor
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(196, 122, 46);
-  doc.text("contacttendr@gmail.com  ·  +91 9211668427  ·  tendr.in", CX, H - 22 + 6.5, { align: "center" });
+  doc.text("contact@tendr.co.in  ·  +91 9211668427  ·  tendr.in", CX, H - 22 + 6.5, { align: "center" });
 
   doc.save("tendr-invitation.pdf");
 }

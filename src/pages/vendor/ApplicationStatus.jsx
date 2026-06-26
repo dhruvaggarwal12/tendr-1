@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+﻿import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -32,7 +32,7 @@ const STATUS_INFO = {
   rejected: {
     icon: "❌",
     title: "Application Not Approved",
-    message: "Unfortunately, we couldn't proceed with your application at this time. Contact us at contacttendr@gmail.com or +91-9211668427 for more information.",
+    message: "Unfortunately, we couldn't proceed with your application at this time. Contact us at contact@tendr.co.in or +91-9211668427 for more information.",
     color: "#c0392b", bg: "#fff5f5", border: "#fca5a5",
   },
 };

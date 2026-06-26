@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
@@ -61,7 +61,7 @@ export default function CancellationPolicy() {
         <div style={{ background: "linear-gradient(135deg, #FFF8F2, #F5E6CC)", borderRadius: 16, padding: "24px 24px", marginTop: 36, border: "1.5px solid rgba(196,122,46,0.2)" }}>
           <p style={{ fontSize: 15, color: "#5a3a1a", lineHeight: 1.7, margin: 0 }}>
             These measures ensure accountability and maintain high standards for both vendors and customers on the Tendr platform. For any disputes or queries, reach us at{" "}
-            <a href="mailto:contacttendr@gmail.com" style={{ color: "#C47A2E", fontWeight: 600, textDecoration: "none" }}>contacttendr@gmail.com</a>.
+            <a href="mailto:contact@tendr.co.in" style={{ color: "#C47A2E", fontWeight: 600, textDecoration: "none" }}>contact@tendr.co.in</a>.
           </p>
         </div>
       </div>

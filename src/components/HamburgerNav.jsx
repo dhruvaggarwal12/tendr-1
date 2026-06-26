@@ -327,29 +327,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             )}
           </div>
 
-          {/* Compare Vendors (below search) */}
-          {!isHomePage && compareSelected.length > 0 && (
-            <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
-              <button onClick={() => setCompareModalOpen(true)}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.1)", cursor: "pointer", fontFamily: font }}>
-                <span style={{ fontSize: 13 }}>🔀</span>
-                <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#C47A2E", textAlign: "left" }}>Compare Vendors</span>
-                <span style={{ fontSize: 11, fontWeight: 800, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{compareSelected.length}</span>
-              </button>
-            </div>
-          )}
-
-          {/* Saved Vendors (below compare, if any) */}
-          {!isHomePage && (() => { const sv = getSavedVendors(); return sv.length > 0 ? (
-            <div style={{ padding: "6px 14px", borderBottom: "1px solid rgba(196,122,46,0.08)", flexShrink: 0 }}>
-              <button onClick={() => setBookmarksOpen(true)}
-                style={{ width: "100%", display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", borderRadius: 8, border: "1px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.08)", cursor: "pointer", fontFamily: font }}>
-                <span style={{ fontSize: 13 }}>♥</span>
-                <span style={{ flex: 1, fontSize: 12, fontWeight: 700, color: "#CCAB4A", textAlign: "left" }}>Saved Vendors</span>
-                <span style={{ fontSize: 11, fontWeight: 800, background: "#C47A2E", color: "#fff", borderRadius: 100, padding: "1px 7px" }}>{sv.length}</span>
-              </button>
-            </div>
-          ) : null; })()}
 
           {/* Journey progress — shown when active prop is passed */}
           {active && (

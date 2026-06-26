@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
@@ -37,10 +37,10 @@ export default function ContactUs() {
       if (data.success) {
         setSent(true);
       } else {
-        setError("Something went wrong. Please email us directly at contacttendr@gmail.com");
+        setError("Something went wrong. Please email us directly at contact@tendr.co.in");
       }
     } catch {
-      setError("Network error. Please try again or email contacttendr@gmail.com");
+      setError("Network error. Please try again or email contact@tendr.co.in");
     } finally {
       setSending(false);
     }
@@ -81,7 +81,7 @@ export default function ContactUs() {
               {
                 "@type": "ContactPoint",
                 "contactType": "Customer Support",
-                "email": "contacttendr@gmail.com",
+                "email": "contact@tendr.co.in",
                 "telephone": "+919211668427",
                 "availableLanguage": ["English", "Hindi"],
                 "areaServed": "IN",
@@ -109,7 +109,7 @@ export default function ContactUs() {
           <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 28px", letterSpacing: "-0.01em" }}>Our Contact Details</h2>
 
           {[
-            { icon: "📧", label: "Email", value: "contacttendr@gmail.com", href: "mailto:contacttendr@gmail.com" },
+            { icon: "📧", label: "Email", value: "contact@tendr.co.in", href: "mailto:contact@tendr.co.in" },
             { icon: "📞", label: "Phone", value: "+91-9211668427", href: "tel:+919211668427" },
             { icon: "💬", label: "WhatsApp", value: "+91-9211668427", href: "https://wa.me/919211668427" },
             { icon: "📍", label: "Location", value: "Delhi NCR, India", href: null },

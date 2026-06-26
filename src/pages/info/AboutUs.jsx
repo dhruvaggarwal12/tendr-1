@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
@@ -160,7 +160,7 @@ export default function AboutUs() {
             "url": "https://tendr.co.in",
             "logo": { "@type": "ImageObject", "url": "https://tendr.co.in/tendr-icon.png" },
             "description": "Tendr is Delhi NCR's trusted platform for birthday decoration, balloon decoration, anniversary decoration, surprise setup, baby shower, house party planning, corporate events and more.",
-            "email": "contacttendr@gmail.com",
+            "email": "contact@tendr.co.in",
             "telephone": "+919211668427",
             "areaServed": ["Delhi", "Noida", "Gurugram", "Ghaziabad", "Faridabad", "Greater Noida"],
             "knowsAbout": ["Birthday Decoration", "Anniversary Decoration", "Balloon Decoration", "Corporate Event Planning", "Surprise Party Planning", "Baby Shower Decoration"],

@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import SEO from "../../components/SEO";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import { useNavigate } from "react-router-dom";
@@ -79,7 +79,7 @@ export default function RefundPolicy() {
           <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px" }}>Processing</h2>
           <p style={{ fontSize: 15, color: "#5a3a1a", lineHeight: 1.7, margin: 0 }}>
             All refunds are processed within <strong>5–7 business days</strong> and issued to the original payment method. Processing fees are non-refundable. For any queries, contact us at{" "}
-            <a href="mailto:contacttendr@gmail.com" style={{ color: "#C47A2E", fontWeight: 600, textDecoration: "none" }}>contacttendr@gmail.com</a>.
+            <a href="mailto:contact@tendr.co.in" style={{ color: "#C47A2E", fontWeight: 600, textDecoration: "none" }}>contact@tendr.co.in</a>.
           </p>
         </section>
       </div>

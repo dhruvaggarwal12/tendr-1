@@ -1,4 +1,4 @@
-import React from "react";
+﻿import React from "react";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter, FaWhatsapp } from "react-icons/fa6";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
@@ -29,7 +29,7 @@ export default function Footer() {
 
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 26 }}>
               {[
-                { label: "Email", value: "contacttendr@gmail.com", href: "mailto:contacttendr@gmail.com" },
+                { label: "Email", value: "contact@tendr.co.in", href: "mailto:contact@tendr.co.in" },
                 { label: "Phone", value: "+91-9211668427", href: "tel:+919211668427" },
                 { label: "Area", value: "Delhi NCR, India", href: null },
               ].map(({ label, value, href }) => (
