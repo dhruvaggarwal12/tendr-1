@@ -305,6 +305,7 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
 // ── Fun Cart Drawer ───────────────────────────────────────────────────────────
 export function FunCartDrawer({ onClose }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const cartItems = useSelector(selectFunCartItems);
   const today = new Date().toISOString().split("T")[0];
 
@@ -351,12 +352,9 @@ export function FunCartDrawer({ onClose }) {
         <div>
           <h3 data-ui-heading style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px", fontFamily: F }}>Booking Details Saved!</h3>
           <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>Your activities are ready for payment.</p>
-          <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "14px 16px", fontSize: 13, color: "#5a3a1a", lineHeight: 1.7, textAlign: "left" }}>
-            Please <strong>close this window</strong> and tap the <strong>Pay</strong> button at the bottom right to proceed with payment.
-          </div>
         </div>
-        <button onClick={onClose} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
-          Got it — Go to Pay →
+        <button onClick={() => { onClose(); navigate("/booking/review"); }} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
+          Review & Pay →
         </button>
       </div>
     </>

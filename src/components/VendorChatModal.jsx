@@ -1498,14 +1498,11 @@ export default function VendorChatModal() {
               <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 6px", lineHeight: 1.6 }}>
                 {vendor?.name} has been added to your booking.
               </p>
-              <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 16px", margin: "12px 0 20px", fontSize: 13, color: "#5a3a1a", lineHeight: 1.6 }}>
-                Please <strong>close this window</strong> and tap the <strong>Pay</strong> button at the bottom right to proceed with payment.
-              </div>
               <button
-                onClick={() => { setShowFinalisePopup(false); handleMinimize(); }}
+                onClick={() => { setShowFinalisePopup(false); closeChat(); router.navigate("/booking/review"); }}
                 style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, marginBottom: 8, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}
               >
-                Got it — Go to Pay →
+                Review & Pay →
               </button>
               <button
                 onClick={() => setShowFinalisePopup(false)}

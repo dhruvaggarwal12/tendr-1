@@ -112,11 +112,11 @@ const BookingReviewPage = () => {
   const headcount    = parseInt(formData.guests) || 0;
   const [gstReceived, setGstReceived] = useState({}); // { [serviceType]: bool }
 
-  // Redirect to dashboard if booking already submitted or paid (no active vendors pending)
+  // Redirect to dashboard if booking already submitted or paid (no active items pending)
   useEffect(() => {
     if (!token) return;
     const hasActiveVendors = Object.keys(finalisedVendors).length > 0;
-    if (hasActiveVendors) return;
+    if (hasActiveVendors || ghItems.length > 0 || faItems.length > 0) return;
     fetch(`${BASE_URL}/event-plans`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
