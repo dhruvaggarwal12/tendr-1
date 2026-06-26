@@ -86,23 +86,17 @@ function BottomNavInner() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
-  const lastScrollY = useRef(0);
+  const scrollTimer = useRef(null);
 
-  // Hide on significant downward scroll, show on any upward scroll
+  // Hide while scrolling, show 400ms after scroll stops
   useEffect(() => {
     const onScroll = () => {
-      const y = window.scrollY;
-      const delta = y - lastScrollY.current;
-      if (delta > 60) {
-        setVisible(false);
-        lastScrollY.current = y;
-      } else if (delta < -10) {
-        setVisible(true);
-        lastScrollY.current = y;
-      }
+      setVisible(false);
+      clearTimeout(scrollTimer.current);
+      scrollTimer.current = setTimeout(() => setVisible(true), 400);
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => { window.removeEventListener("scroll", onScroll); clearTimeout(scrollTimer.current); };
   }, []);
 
   // Close sheets + reset visible on route change
@@ -154,12 +148,12 @@ function BottomNavInner() {
           {/* Backdrop */}
           <div
             onClick={() => setBrowseOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991 }}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }}
           />
           {/* Sheet — sits just above the nav bar */}
           <div style={{
             position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0,
-            zIndex: 99992,
+            zIndex: 99992, pointerEvents: "auto",
             background: "#FFFCF5",
             borderRadius: "20px 20px 0 0",
             boxShadow: "0 -6px 32px rgba(139,69,19,0.18)",
@@ -225,8 +219,8 @@ function BottomNavInner() {
       {planOpen && (
         <>
           <div onClick={() => setPlanOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991 }} />
-          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
+          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
@@ -275,8 +269,8 @@ function BottomNavInner() {
       {productsOpen && (
         <>
           <div onClick={() => setProductsOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991 }} />
-          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", zIndex: 99991, pointerEvents: "auto" }} />
+          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#FFFCF5", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(139,69,19,0.18)", padding: "10px 20px 20px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
@@ -307,8 +301,8 @@ function BottomNavInner() {
       {tipsOpen && (
         <>
           <div onClick={() => setTipsOpen(false)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 99991 }} />
-          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, background: "#0F1629", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(0,0,0,0.5)", padding: "10px 20px 24px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)", borderTop: "1px solid rgba(79,142,247,0.2)" }}>
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 99991, pointerEvents: "auto" }} />
+          <div style={{ position: "fixed", bottom: "calc(60px + env(safe-area-inset-bottom, 0px))", left: 0, right: 0, zIndex: 99992, pointerEvents: "auto", background: "#0F1629", borderRadius: "20px 20px 0 0", boxShadow: "0 -6px 32px rgba(0,0,0,0.5)", padding: "10px 20px 24px", fontFamily: font, animation: "sheet-up 0.24s cubic-bezier(0.4,0,0.2,1)", borderTop: "1px solid rgba(79,142,247,0.2)" }}>
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(79,142,247,0.25)" }} />
             </div>
@@ -357,7 +351,9 @@ function BottomNavInner() {
           zIndex: 99990,
           height: "calc(60px + env(safe-area-inset-bottom, 0px))",
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
-          background: "linear-gradient(180deg, #FFF8EF 0%, #FFF3E4 100%)",
+          background: "rgba(255,252,245,0.96)",
+          backdropFilter: "blur(16px)",
+          WebkitBackdropFilter: "blur(16px)",
           borderTop: "1.5px solid rgba(196,122,46,0.28)",
           boxShadow: "0 -4px 24px rgba(139,69,19,0.16)",
           display: "flex",

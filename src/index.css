@@ -623,7 +623,6 @@ button.btn-text {
 /* 1. Body — warm layered gradient background */
 body {
   background: linear-gradient(155deg, #FAF5EE 0%, #FDF8F1 40%, #F6EEE0 100%) !important;
-  background-attachment: fixed !important;
 }
 
 /* 2. bg-white panels — inner top highlight gives glass feel */
@@ -652,13 +651,9 @@ body {
               0 1px 0 rgba(196,122,46,0.1) !important;
 }
 
-/* 6. Bottom nav — glass panel */
+/* 6. Bottom nav root — NO backdrop-filter here (it breaks position:fixed on children) */
 .mobile-bottom-nav-root {
-  background: rgba(255,252,245,0.94) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  backdrop-filter: blur(16px) !important;
-  border-top: 1px solid rgba(196,122,46,0.13) !important;
-  box-shadow: 0 -4px 24px rgba(196,122,46,0.07) !important;
+  pointer-events: none;
 }
 
 /* 7. Page-level section cards (Tailwind rounded-3xl / rounded-2xl on bg-white) */
