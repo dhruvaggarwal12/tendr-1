@@ -11,23 +11,35 @@ export default function FunActivitiesPage() {
 
       {/* Hero */}
       <style>{`
-        @media(max-width:640px){.fun-hero{padding:24px 18px 20px!important}.fun-hero h1{font-size:1.6rem!important}.fun-hero p.sub{font-size:14px!important;margin-bottom:16px!important}}
-        @media(max-width:480px){.fun-hero{padding:18px 16px 14px!important}.fun-hero h1{font-size:1.35rem!important}}
+        @media(max-width:640px){.fun-hero{padding:24px 18px 22px!important}.fun-hero h1{font-size:1.6rem!important}.fun-hero p.sub{font-size:14px!important;margin-bottom:14px!important}.fun-emoji-row span{font-size:22px!important}}
+        @media(max-width:480px){.fun-hero{padding:18px 16px 18px!important}.fun-hero h1{font-size:1.35rem!important}.fun-emoji-row{gap:8px!important}}
       `}</style>
-      <div className="fun-hero" style={{ background:"linear-gradient(135deg,#3D1F08 0%,#7A3A10 60%,#C47A2E 100%)", padding:"40px 24px 32px", textAlign:"center", position:"relative", overflow:"hidden" }}>
+      <div className="fun-hero" style={{ background:"linear-gradient(135deg,#FFFDF5 0%,#FFF8E8 100%)", padding:"40px 24px 32px", textAlign:"center", position:"relative", overflow:"hidden", borderBottom:"2px solid rgba(196,122,46,0.1)" }}>
+        {/* Ghost decorations */}
+        <div style={{ position:"absolute", top:-10, left:"4%", fontSize:90, opacity:0.05, transform:"rotate(-15deg)", userSelect:"none", pointerEvents:"none" }}>🎭</div>
+        <div style={{ position:"absolute", top:10, right:"6%", fontSize:70, opacity:0.06, transform:"rotate(10deg)", userSelect:"none", pointerEvents:"none" }}>🎯</div>
+        <div style={{ position:"absolute", bottom:-8, left:"18%", fontSize:60, opacity:0.05, transform:"rotate(-8deg)", userSelect:"none", pointerEvents:"none" }}>🎩</div>
+
         <div style={{ position:"relative", maxWidth:580, margin:"0 auto" }}>
-          <p style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px", fontFamily:F }}>
+          {/* Emoji showcase */}
+          <div className="fun-emoji-row" style={{ display:"flex", gap:12, justifyContent:"center", marginBottom:20, flexWrap:"wrap" }}>
+            {["🎯","🎩","🧸","🥁","🪨","✍️","🏰","🪧"].map(e => (
+              <span key={e} style={{ fontSize:"clamp(22px,4vw,32px)", filter:"drop-shadow(0 2px 6px rgba(196,122,46,0.2))", lineHeight:1 }}>{e}</span>
+            ))}
+          </div>
+
+          <p style={{ fontSize:10, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px", fontFamily:F }}>
             Add Magic to Any Event
           </p>
-          <h1 style={{ fontSize:"clamp(1.6rem,4vw,2.4rem)", fontWeight:900, color:"#fff", margin:"0 0 10px", letterSpacing:"-0.02em", lineHeight:1.15, fontFamily:F }}>
+          <h1 style={{ fontSize:"clamp(1.6rem,4vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 10px", letterSpacing:"-0.02em", lineHeight:1.15, fontFamily:F }}>
             Fun Activities
           </h1>
-          <p className="sub" style={{ fontSize:15, color:"rgba(255,255,255,0.7)", margin:"0 0 20px", lineHeight:1.55, fontFamily:F }}>
+          <p className="sub" style={{ fontSize:15, color:"#7A5535", margin:"0 0 20px", lineHeight:1.55, fontFamily:F }}>
             Fixed-price entertainment add-ons for your event. Confirmed within 2 hours.
           </p>
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
             {["Fixed pricing", "Confirmed in 2 hrs", "All NCR locations"].map(pt => (
-              <span key={pt} style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.85)", background:"rgba(255,255,255,0.12)", padding:"5px 12px", borderRadius:100, fontFamily:F }}>✓ {pt}</span>
+              <span key={pt} style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.18)", padding:"5px 12px", borderRadius:100, fontFamily:F }}>✓ {pt}</span>
             ))}
           </div>
         </div>
