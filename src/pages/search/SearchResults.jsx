@@ -6,6 +6,9 @@ import HamburgerNav from "../../components/HamburgerNav";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
 import FunActivitiesSection from "../../components/FunActivitiesSection";
+import AuthModal from "../../components/AuthModal";
+import TalkToTendrStrip from "../../components/TalkToTendrStrip";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -20,6 +23,16 @@ export default function SearchResults() {
   const dispatch       = useDispatch();
 
   const { user } = useSelector(s => s.auth);
+  const { token } = useSelector(s => s.auth);
+  const { openTendrTeamChat } = useChatOverlay();
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [pendingTendrChat, setPendingTendrChat] = useState(false);
+
+  const handleTalkToTendr = () => {
+    if (!token) { setPendingTendrChat(true); setAuthModalOpen(true); return; }
+    openTendrTeamChat();
+  };
+
   const formData  = useSelector(s => s.eventPlanning?.formData || {});
   const rawCats    = (searchParams.get("categories") || "").split(",").filter(Boolean);
   const rawLocs    = (searchParams.get("locations")  || "").split(",").filter(Boolean);
@@ -345,18 +358,21 @@ export default function SearchResults() {
         ) : (
           /* Vendor results */
           !loading && vendors.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "60px 24px" }}>
-              <div style={{ fontSize: 40, marginBottom: 14 }}>🔍</div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No vendors found</h3>
-              <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px" }}>
-                {rawBudget ? "Try increasing your budget or removing the budget filter." : "Try a different location or category."}
-              </p>
-              {rawBudget && (
-                <button onClick={() => navigate(`/search?categories=${rawCats.join(",")}&locations=${rawLocs.join(",")}&q=${encodeURIComponent(rawQuery)}`)}
-                  style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                  Search without budget filter →
-                </button>
-              )}
+            <div style={{ padding: "60px 24px 24px" }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: 40, marginBottom: 14 }}>🔍</div>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No vendors found</h3>
+                <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px" }}>
+                  {rawBudget ? "Try increasing your budget or removing the budget filter." : "Try a different location or category."}
+                </p>
+                {rawBudget && (
+                  <button onClick={() => navigate(`/search?categories=${rawCats.join(",")}&locations=${rawLocs.join(",")}&q=${encodeURIComponent(rawQuery)}`)}
+                    style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    Search without budget filter →
+                  </button>
+                )}
+              </div>
+              <TalkToTendrStrip onTalk={handleTalkToTendr} serviceType={activeCat} />
             </div>
           ) : (
             <VendorList_ListingPage
@@ -386,6 +402,15 @@ export default function SearchResults() {
           .search-filter-budget-wrapper { min-width: 0 !important; }
         }
       `}</style>
+
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => { setAuthModalOpen(false); setPendingTendrChat(false); }}
+        onSuccess={() => {
+          setAuthModalOpen(false);
+          if (pendingTendrChat) { setPendingTendrChat(false); openTendrTeamChat(); }
+        }}
+      />
 
       {/* Gallery modal */}
       {galleryOpen && (

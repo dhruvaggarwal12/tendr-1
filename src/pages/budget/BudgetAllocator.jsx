@@ -6,6 +6,8 @@ import { setCategoryBudgets } from "../../redux/eventPlanningSlice";
 import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
+import AuthModal from "../../components/AuthModal";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -152,6 +154,14 @@ export default function BudgetAllocator() {
   const finalisedVendors  = useSelector(s => s.listingFilters?.finalisedVendors || {});
   const planFormData      = useSelector(s => s.eventPlanning?.formData || {});
   const { user }          = useSelector(s => s.auth);
+  const { token }         = useSelector(s => s.auth);
+  const { openTendrTeamChat } = useChatOverlay();
+  const [tendrAuthOpen, setTendrAuthOpen]   = useState(false);
+  const [pendingTendrChat, setPendingTendrChat] = useState(false);
+  const handleTalkToTendr = () => {
+    if (!token) { setPendingTendrChat(true); setTendrAuthOpen(true); return; }
+    openTendrTeamChat();
+  };
   const isCorporate       = planFormData.eventType === "Corporate Event" && user?.isAdmin;
   const headcount         = parseInt(planFormData.guests) || 0;
 
@@ -658,9 +668,10 @@ export default function BudgetAllocator() {
               style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
               Browse All {vendorPanel.serviceType}s within {formatINR(vendorPanel.budget)} →
             </button>
-            <p style={{ textAlign: "center", fontSize: 11, color: "#9B7450", margin: "6px 0 0" }}>
-              Add your event details and we'll show the best matches
-            </p>
+            <button onClick={handleTalkToTendr}
+              style={{ width: "100%", marginTop: 8, padding: "9px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#7A3A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              💬 Can't find the right one? Talk to Tendr Team
+            </button>
           </div>
         </div>
         <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
@@ -722,6 +733,14 @@ export default function BudgetAllocator() {
         </div>
       </>
     )}
+    <AuthModal
+      open={tendrAuthOpen}
+      onClose={() => { setTendrAuthOpen(false); setPendingTendrChat(false); }}
+      onSuccess={() => {
+        setTendrAuthOpen(false);
+        if (pendingTendrChat) { setPendingTendrChat(false); openTendrTeamChat(); }
+      }}
+    />
     </>
   );
 }

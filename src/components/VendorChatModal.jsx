@@ -97,6 +97,17 @@ const PACKAGE_LIMITS = {
 
 const COURSE_ICONS = { Starters: "🥗", Mains: "🍛", Breads: "🫓", Rice: "🍚", Desserts: "🍮", Beverages: "🥤" };
 
+const TENDR_TEAM_QA = [
+  { q: "Can you help me find a vendor within my budget?", a: "Of course! 🎯 Share your budget and what service you need (caterer, decorator, DJ, photographer) and we'll shortlist the best options within 2 hours. We also have vetted vendors not publicly listed who may be a great fit." },
+  { q: "How quickly can a vendor be confirmed?", a: "Most vendors confirm within 2–4 hours of your enquiry. For urgent bookings (event within 3 days), just mention it and we'll fast-track it for you. ⚡" },
+  { q: "Is the vendor available on my date?", a: "Share your event date and location — we'll check availability across our full network and suggest the best options right away, including alternatives if your preferred vendor is booked." },
+  { q: "I didn't like any listed vendors — what now?", a: "No problem! We have an extended network of vetted vendors beyond what's publicly listed. Tell us exactly what you're looking for — style, budget, location — and we'll personally source the right match. 🤝" },
+  { q: "Can vendors travel outside Delhi NCR?", a: "Some do! Photographers and DJs often travel pan-India (travel charges apply). Caterers and decorators are usually NCR-based. Tell us your exact location and we'll confirm availability." },
+  { q: "Can I get a bundled quote for multiple vendors?", a: "Absolutely! Booking multiple vendors through Tendr often gets you a combined discount. Let us know which categories you need and we'll put together a bundled package quote. 💰" },
+  { q: "What's the cancellation policy?", a: "Policies vary by vendor — we'll always share the exact terms before you pay. Generally: >7 days notice = full or partial refund. We'll be transparent upfront so there are no surprises. 🔒" },
+  { q: "How does payment work?", a: "You only pay after chatting with the vendor, reviewing the full price breakdown, and confirming everything. We never charge before you're satisfied with the quote. Your payment is fully secure. ✅" },
+];
+
 // ── Customer interactive menu card ────────────────────────────────────────────
 function MenuSelectCard({ payload, onSend }) {
   const { vendorName, pkg, dishes } = payload;
@@ -393,13 +404,14 @@ export default function VendorChatModal() {
   const isExistingChat = !!chatState?.isExisting;
   const fromActiveChats = !!chatState?.vendor?.fromActiveChats;
   const isConcierge = !!chatState?.isConcierge;
+  const isSkipBot = !!chatState?.skipBotFlow;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
   const selectedVendorTypes = useSelector(s => s.eventPlanning.selectedVendors || []);
 
   // Concierge bot: combine questions from all selected service categories
   const conciergeFlow = React.useMemo(() => {
-    if (!isConcierge || isExistingChat) return [];
+    if (!isConcierge || isExistingChat || isSkipBot) return [];
     const combined = selectedVendorTypes.flatMap(type => {
       const flow = BOT_FLOWS[type] || [];
       // Skip timeline if date already filled, skip address (add one at end)
@@ -407,9 +419,9 @@ export default function VendorChatModal() {
     });
     // Add single address step at the end if not already there
     return combined.length > 0 ? [...combined, ADDRESS_STEP] : [ADDRESS_STEP];
-  }, [selectedVendorTypes, isConcierge, isExistingChat, reduxFormData.date]);
+  }, [selectedVendorTypes, isConcierge, isExistingChat, isSkipBot, reduxFormData.date]);
 
-  const botFlow = isExistingChat ? []
+  const botFlow = (isExistingChat || isSkipBot) ? []
     : isConcierge ? conciergeFlow
     : vendor ? getBotFlow(vendor.serviceType, undefined, reduxFormData)
     : [];
@@ -438,6 +450,7 @@ export default function VendorChatModal() {
   const [galleryMode, setGalleryMode] = useState("wizard"); // "wizard" | "livechat"
   const [showRefPhotoBar, setShowRefPhotoBar] = useState(false);
   const refPhotosRef = useRef([]);
+  const pendingMsgsRef = useRef([]); // messages queued before conversationId is ready (Tendr Team chat)
 
   // ── Chat state ───────────────────────────────────────────────────────────────
   const [messages, setMessages] = useState([]);
@@ -503,7 +516,7 @@ export default function VendorChatModal() {
     setMessages([]);
     setText("");
     setConversationId(chatState.conversationId || null);
-    setApproved(existing ? !!chatState.vendor?.approved : false);
+    setApproved(existing ? !!chatState.vendor?.approved : (chatState?.skipBotFlow ? true : false));
     const vid = chatState.vendor?._id;
     const chatDoneValid = (() => {
       if (!vid) return false;
@@ -604,6 +617,17 @@ export default function VendorChatModal() {
       setCtxConvoId(_id);
       if (isApproved) setApproved(true);
       if (vendor?.addToCompare !== false) dispatch(addVendorToCompare(vendor));
+
+      // Flush messages queued before conversationId was ready (Tendr Team chat)
+      if (pendingMsgsRef.current.length > 0) {
+        const toFlush = [...pendingMsgsRef.current];
+        pendingMsgsRef.current = [];
+        toFlush.forEach((content, i) => {
+          setTimeout(() => {
+            socket.emit("send_message", { conversationId: _id, sender: "user", content });
+          }, 300 + i * 100);
+        });
+      }
 
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
         summarySentRef.current = true;
@@ -802,11 +826,25 @@ export default function VendorChatModal() {
 
   const sendText = (override) => {
     const content = typeof override === "string" ? override : text.trim();
-    if (!approved || !content || !conversationId) return;
+    if (!content) return;
+    if (!isSkipBot && (!approved || !conversationId)) return;
     setMessages(prev => [...prev, { text: content, sender: "user", ts: Date.now() }]);
-    socketRef.current?.emit("send_message", { conversationId, sender: "user", content });
     localStorage.setItem("tendr:lastMsgAt", Date.now().toString());
     if (!override) setText("");
+    if (conversationId) {
+      socketRef.current?.emit("send_message", { conversationId, sender: "user", content });
+    } else if (isSkipBot) {
+      pendingMsgsRef.current.push(content);
+    }
+  };
+
+  const handleTendrQ = (q) => {
+    sendText(q);
+    const ans = TENDR_TEAM_QA.find(qa => qa.q === q)?.a;
+    if (!ans) return;
+    setTimeout(() => {
+      setMessages(prev => [...prev, { text: ans, sender: "vendor", ts: Date.now() }]);
+    }, 1100);
   };
 
   const sendImage = (e) => {
@@ -1255,8 +1293,29 @@ export default function VendorChatModal() {
             </div>
           )}
 
+          {/* Tendr Team welcome + Q&A chips (no-wizard mode) */}
+          {isSkipBot && isConcierge && messages.length === 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <div style={{ alignSelf: "flex-start", maxWidth: "88%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.6 }}>
+                👋 Hi! I'm from the Tendr team. Tell us what you're looking for and we'll personally help you find the right vendor for your event.
+              </div>
+              <div style={{ alignSelf: "stretch" }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Quick questions</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {TENDR_TEAM_QA.map(({ q }) => (
+                    <button key={q} onClick={() => handleTendrQ(q)}
+                      style={{ padding: "6px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.28)", background: "#fff", color: "#6B3A1F", fontSize: 12, fontWeight: 500, cursor: "pointer", fontFamily: font, transition: "all 0.12s", lineHeight: 1.3, textAlign: "left" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; }}
+                    >{q}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Waiting state — shown while chat is pending, even if summary message is present */}
-          {botDone && !approved && messages.length <= 1 && (
+          {!isSkipBot && botDone && !approved && messages.length <= 1 && (
             <div style={{ alignSelf: "stretch", margin: "12px 4px 4px", display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ textAlign: "center", padding: "20px 16px 8px" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>✦ In Progress</div>
@@ -1295,8 +1354,8 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Approval celebration — confetti + connected moment */}
-          {justApproved && (
+          {/* Approval celebration — confetti + connected moment (not for Tendr Team) */}
+          {!isSkipBot && justApproved && (
             <div style={{ alignSelf: "stretch", margin: "8px 4px", display: "flex", flexDirection: "column", gap: 10 }}>
               {/* Confetti burst */}
               <div style={{ position: "relative", height: 0, overflow: "visible", pointerEvents: "none" }}>
@@ -1408,8 +1467,8 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Suggested questions — hidden by default, toggled by arrow */}
-          {(approved || isExistingChat) && !messagesLoading && (() => {
+          {/* Suggested questions — hidden by default, toggled by arrow (not shown in Tendr Team mode) */}
+          {!isSkipBot && (approved || isExistingChat) && !messagesLoading && (() => {
             const QA = {
               Photographer: ["What is your style — candid or traditional?","How many hours are included?","Do you have backup equipment?","How long for edited photos?","Can we see a full gallery?"],
               Decorator:    ["Can you visit the venue first?","Do you handle setup and cleanup?","Can you work with our colour theme?","What is your cancellation policy?","Do you provide fresh or artificial flowers?"],

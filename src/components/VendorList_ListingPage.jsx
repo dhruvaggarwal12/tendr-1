@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import AuthModal from "./AuthModal";
 import { useChatOverlay } from "../context/ChatContext";
+import TalkToTendrStrip from "./TalkToTendrStrip";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 import { EventIdeasPanel } from "../utils/eventIdeas";
 
@@ -125,13 +126,14 @@ const VendorList_ListingPage = ({
   // true only when user arrived via planning flow (Save and Browse)
   const isFromPlanFlow = location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1";
   const dispatch = useDispatch();
-  const { openVendorChat, openExistingChat } = useChatOverlay();
+  const { openVendorChat, openExistingChat, openTendrTeamChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
   const formData = useSelector(s => s.eventPlanning?.formData || {});
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [authModalOpen, setAuthModalOpen]   = useState(false);
   const [pendingChatVendor, setPendingChatVendor] = useState(null);
+  const [pendingTendrChat, setPendingTendrChat] = useState(false);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
   const [invitePersonName, setInvitePersonName] = useState(() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } });
   const [inviteVenueAddress, setInviteVenueAddress] = useState(() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } });
@@ -200,6 +202,15 @@ const VendorList_ListingPage = ({
 
   const closePanel = () => setQuickViewVendor(null);
 
+  const handleTalkToTendr = () => {
+    if (!token) {
+      setPendingTendrChat(true);
+      setAuthModalOpen(true);
+      return;
+    }
+    openTendrTeamChat();
+  };
+
   return (
     <div className="flex flex-col min-h-full">
       <div className="mx-auto w-full max-w-7xl px-3 sm:px-5">
@@ -242,8 +253,10 @@ const VendorList_ListingPage = ({
                   ← Go back
                 </button>
               </div>
+              <TalkToTendrStrip onTalk={handleTalkToTendr} serviceType={serviceType} />
             </div>
           ) : (
+            <>
             <div className="vendor-list-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-2 pb-4">
               {serviceType === "Decorator" && (
                 <div style={{ background: "linear-gradient(145deg,#2C1A0E,#3D2210)", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", overflow: "hidden", fontFamily: font, display: "flex", flexDirection: "column" }}>
@@ -419,6 +432,8 @@ const VendorList_ListingPage = ({
                 );
               })}
             </div>
+            <TalkToTendrStrip onTalk={handleTalkToTendr} serviceType={serviceType} />
+            </>
           )}
         </div>
 
@@ -1000,12 +1015,16 @@ const VendorList_ListingPage = ({
       {/* Auth modal — triggered from "Sign In to Chat" inside quick view */}
       <AuthModal
         open={authModalOpen}
-        onClose={() => { setAuthModalOpen(false); setPendingChatVendor(null); }}
+        onClose={() => { setAuthModalOpen(false); setPendingChatVendor(null); setPendingTendrChat(false); }}
         onSuccess={() => {
           setAuthModalOpen(false);
           if (pendingChatVendor) {
             setQuickViewVendor(pendingChatVendor);
             setPendingChatVendor(null);
+          }
+          if (pendingTendrChat) {
+            setPendingTendrChat(false);
+            openTendrTeamChat();
           }
         }}
       />
