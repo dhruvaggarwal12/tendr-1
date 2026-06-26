@@ -454,6 +454,7 @@ export default function VendorChatModal() {
   const [chatCompleted, setChatCompleted] = useState(false);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [showFinalisePopup, setShowFinalisePopup] = useState(false);
+  const [finalising, setFinalising] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
   const isThisVendorFinalised = vendor?._id && (() => {
@@ -735,7 +736,9 @@ export default function VendorChatModal() {
   };
 
   const handleFinalise = async () => {
-    if (!chatCompleted || !vendor) return;
+    if (!chatCompleted || !vendor || isThisVendorFinalised || finalising) return;
+    setFinalising(true);
+    try {
 
     // Hold a slot on the vendor's availability calendar for the event date
     const eventDate = reduxFormData?.date;
@@ -778,6 +781,9 @@ export default function VendorChatModal() {
       sender: "system", ts: Date.now(),
     }]);
     setShowFinalisePopup(true);
+    } finally {
+      setFinalising(false);
+    }
   };
 
   const sendText = (override) => {
@@ -1467,11 +1473,11 @@ export default function VendorChatModal() {
                   </button>
                   <button
                     onClick={handleFinalise}
-                    disabled={!chatCompleted || isThisVendorFinalised}
+                    disabled={!chatCompleted || isThisVendorFinalised || finalising}
                     title={!chatCompleted ? "Mark chat as completed first" : ""}
                     style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : !chatCompleted ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: (!chatCompleted && !isThisVendorFinalised) ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: (!chatCompleted && !isThisVendorFinalised) ? "not-allowed" : "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: (chatCompleted && !isThisVendorFinalised) ? "0 2px 8px rgba(196,122,46,0.35)" : "none" }}
                   >
-                    {isThisVendorFinalised ? "✓ Finalised" : "Finalise Vendor"}
+                    {isThisVendorFinalised ? "✓ Finalised" : finalising ? "Finalising…" : "Finalise Vendor"}
                   </button>
                   </div>
                 </div>
@@ -1502,20 +1508,14 @@ export default function VendorChatModal() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 </div>
                 <p style={{ fontSize: 12, color: "#2C1A0E", margin: 0, lineHeight: 1.5 }}>
-                  Tap the <strong>gold pay button</strong> at the bottom right, or go to Review & Pay directly.
+                  Tap the <strong>gold pay button</strong> at the bottom right to go to Review & Pay.
                 </p>
               </div>
               <button
-                onClick={() => { setShowFinalisePopup(false); closeChat(); router.navigate("/booking/review"); }}
-                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, marginBottom: 8, boxShadow: "0 4px 14px rgba(44,26,14,0.25)" }}
-              >
-                Review & Pay →
-              </button>
-              <button
                 onClick={() => setShowFinalisePopup(false)}
-                style={{ width: "100%", padding: "10px", borderRadius: 12, border: "1.5px solid rgba(44,26,14,0.15)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}
+                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
               >
-                Stay here
+                Got it ✓
               </button>
             </div>
           </div>
