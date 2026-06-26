@@ -918,38 +918,52 @@ const BookingReviewPage = () => {
                   </div>
                 )}
 
-                {/* Platform Fee */}
-                {platformFee > 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a" }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 5, fontWeight: 600 }}>
-                      Platform Fee
-                      <span style={{ fontSize: 10, background: topRatedCount > 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.12)", color: topRatedCount > 0 ? "#fff" : "#6B3A1F", borderRadius: 100, padding: "1px 7px", fontWeight: 700, letterSpacing: "0.04em" }}>
-                        {topRatedCount > 0 ? "⭐ Top Rated" : "Standard"}
-                      </span>
-                    </span>
-                    {appliedCode
-                      ? <span style={{ fontWeight: 700, color: "#15803d", display: "flex", alignItems: "center", gap: 4 }}><s style={{ color: "#9B7450", fontWeight: 400 }}>{formatINR(platformFee)}</s> FREE</span>
-                      : <span style={{ fontWeight: 700, color: "#2C1A0E" }}>{formatINR(platformFee)}</span>
-                    }
-                  </div>
-                )}
-
-                {/* Grand Total */}
-                <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, marginTop: 4, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
-                  <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
-                  <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
-                    {(confirmedTotal + ghTotal + faTotal) > 0
-                      ? formatINR((appliedCode ? applyDiscount(confirmedTotal + ghTotal + faTotal).finalTotal : (confirmedTotal + ghTotal + faTotal)) + effectivePlatformFee)
-                      : "—"}
-                  </span>
-                </div>
-                <p style={{ fontSize: 11, color: "#9B7450", margin: 0 }}>
-                  {allConfirmed
-                    ? "✓ All prices confirmed by Tendr team."
-                    : anyPriceUnset
-                    ? "⏳ Some vendor quotes are still being confirmed. You'll be notified when all prices are ready."
-                    : "Prices confirmed in chat."}
-                </p>
+                {/* Tax + fee breakdown */}
+                {(() => {
+                  const rawSum = confirmedTotal + ghTotal + faTotal;
+                  if (rawSum <= 0) return null;
+                  const discountedSum = appliedCode ? applyDiscount(rawSum).finalTotal : rawSum;
+                  const gstAmount = Math.round(discountedSum * 0.18);
+                  const grandTotal = discountedSum + gstAmount + 100;
+                  return (
+                    <>
+                      <div style={{ borderTop: "1px dashed rgba(139,69,19,0.15)", paddingTop: 10, marginTop: 4 }}>
+                        {/* Subtotal */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a", marginBottom: 7 }}>
+                          <span style={{ fontWeight: 600 }}>Subtotal</span>
+                          <span style={{ fontWeight: 600 }}>{formatINR(discountedSum)}</span>
+                        </div>
+                        {/* GST */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a", marginBottom: 7 }}>
+                          <span style={{ fontWeight: 600 }}>GST (18%)</span>
+                          <span style={{ fontWeight: 600 }}>+ {formatINR(gstAmount)}</span>
+                        </div>
+                        {/* Platform fee */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a", marginBottom: 10 }}>
+                          <span style={{ fontWeight: 600 }}>Platform Fee</span>
+                          {appliedCode
+                            ? <span style={{ fontWeight: 700, color: "#15803d", display: "flex", alignItems: "center", gap: 4 }}><s style={{ color: "#9B7450", fontWeight: 400 }}>₹100</s> FREE</span>
+                            : <span style={{ fontWeight: 600 }}>+ ₹100</span>
+                          }
+                        </div>
+                      </div>
+                      {/* Grand Total */}
+                      <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
+                        <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
+                        <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
+                          {formatINR(appliedCode ? grandTotal - 100 : grandTotal)}
+                        </span>
+                      </div>
+                      <p style={{ fontSize: 11, color: "#9B7450", margin: "6px 0 0" }}>
+                        {allConfirmed
+                          ? "✓ All prices confirmed by Tendr team. Includes 18% GST."
+                          : anyPriceUnset
+                          ? "⏳ Some vendor quotes are still being confirmed. You'll be notified when all prices are ready."
+                          : "Prices confirmed in chat. Includes 18% GST."}
+                      </p>
+                    </>
+                  );
+                })()}
 
                 {/* Corporate: cost per head + export button */}
                 {isCorporate && headcount > 0 && (confirmedTotal + ghTotal) > 0 && (
@@ -1291,42 +1305,6 @@ const BookingReviewPage = () => {
         </div>
       </div>
 
-      {/* Floating Proceed to Payment button — visible until payment is initiated */}
-      {!anyPriceUnset && !showConfirmPopup && (
-        <div style={{
-          position: "fixed",
-          bottom: 80,
-          left: 0,
-          right: 0,
-          zIndex: 200,
-          display: "flex",
-          justifyContent: "center",
-          padding: "0 16px",
-          pointerEvents: "none",
-        }}>
-          <button
-            disabled={saving}
-            onClick={() => setShowConfirmPopup(true)}
-            style={{
-              pointerEvents: "all",
-              padding: "14px 32px",
-              borderRadius: 14,
-              border: "none",
-              background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-              color: "#fff",
-              fontSize: 15,
-              fontWeight: 700,
-              fontFamily: "'Outfit', sans-serif",
-              cursor: saving ? "not-allowed" : "pointer",
-              boxShadow: "0 6px 20px rgba(196,122,46,0.45)",
-              maxWidth: 360,
-              width: "100%",
-              opacity: saving ? 0.7 : 1,
-            }}>
-            {saving ? "Processing…" : "Confirm Booking →"}
-          </button>
-        </div>
-      )}
 
     </div>
   );
