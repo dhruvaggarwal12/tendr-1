@@ -419,7 +419,7 @@ export default function BudgetAllocator() {
         </div>
 
         {/* Summary cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(145px, 1fr))", gap: 10, marginBottom: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 20 }}>
           {summaryCards.map(({ label, value, color, bg }) => (
             <div key={label} style={{ background: bg, borderRadius: 14, padding: "16px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{label}</div>
@@ -432,7 +432,7 @@ export default function BudgetAllocator() {
         <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
 
           {/* Pie chart */}
-          <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "24px", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", minWidth: 240, flex: "0 0 auto" }}>
+          <div className="budget-pie-card" style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "24px", boxShadow: "0 2px 12px rgba(139,69,19,0.06)", minWidth: 240, flex: "0 0 auto" }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 16 }}>Allocation</div>
             <div style={{ position: "relative", width: 180, height: 180, margin: "0 auto 20px" }}>
               <div style={{ width: 180, height: 180, borderRadius: "50%", background: buildPie(categories), boxShadow: "0 4px 20px rgba(0,0,0,0.1)" }} />
@@ -493,6 +493,7 @@ export default function BudgetAllocator() {
                         type="number" min="0" value={c.spent}
                         onChange={e => updateSpent(c.id, e.target.value)}
                         placeholder="0"
+                        className="budget-cat-spent"
                         style={{ border: `1.5px solid ${tl?.color ? tl.color + "66" : "rgba(196,122,46,0.2)"}`, borderRadius: 7, padding: "4px 8px", fontSize: 13, fontFamily: font, color: tl ? tl.color : "#2C1A0E", outline: "none", width: "100%", background: tl ? tl.bg : "#fff", fontWeight: tl ? 700 : 400 }}
                       />
                       <button onClick={() => deleteCategory(c.id)}
@@ -566,10 +567,18 @@ export default function BudgetAllocator() {
         .budget-table-hdr { display: none !important; }
         .budget-cat-row { padding: 10px 12px !important; }
         .budget-cat-inner {
-          grid-template-columns: 1fr 52px 90px 24px !important;
+          grid-template-columns: 1fr 52px 80px 24px !important;
           gap: 5px !important;
         }
         .budget-cat-alloc { display: none !important; }
+      }
+      @media (max-width: 480px) {
+        .budget-cat-inner {
+          grid-template-columns: 1fr 48px 24px !important;
+          gap: 4px !important;
+        }
+        .budget-cat-spent { display: none !important; }
+        .budget-pie-card { padding: 16px !important; min-width: unset !important; width: 100% !important; box-sizing: border-box; }
       }
     `}</style>
 

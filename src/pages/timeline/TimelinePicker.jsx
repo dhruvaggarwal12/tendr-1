@@ -158,7 +158,7 @@ export default function TimelinePicker() {
         {/* Step 1: Event Type */}
         {step === 1 && (
           <StepWrapper label="Step 1 of 4" title="What type of event?" sub="We'll match the right planning structure for your event.">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 12 }}>
               {EVENT_TYPES.map(e => (
                 <OptionCard key={e.id} icon={e.icon} label={e.label} selected={eventType === e.id} onClick={() => { setEventType(e.id); setTimeout(() => setStep(2), 240); }} />
               ))}
@@ -194,7 +194,7 @@ export default function TimelinePicker() {
         {/* Step 3: Services */}
         {step === 3 && (
           <StepWrapper label="Step 3 of 4" title="Which services are you planning?" sub="Only tasks for your selected services will appear in the timeline.">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, marginBottom: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10, marginBottom: 12 }}>
               {SERVICES.map(s => {
                 const sel = services.includes(s.id);
                 return (
@@ -216,7 +216,7 @@ export default function TimelinePicker() {
             {services.length === 0 ? (
               <p style={{ textAlign: "center", color: "#9B7450", fontSize: 14, padding: "20px 0" }}>You didn't select any services — your timeline will show core planning tasks.</p>
             ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, marginBottom: 12 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10, marginBottom: 12 }}>
                 {services.map(sid => {
                   const s = SERVICES.find(x => x.id === sid);
                   if (!s) return null;

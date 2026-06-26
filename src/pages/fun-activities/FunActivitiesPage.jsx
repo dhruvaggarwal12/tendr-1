@@ -10,7 +10,10 @@ export default function FunActivitiesPage() {
       <HamburgerNav />
 
       {/* Hero */}
-      <style>{`@media(max-width:640px){.fun-hero{padding:24px 18px 20px!important}.fun-hero h1{font-size:1.6rem!important}.fun-hero p.sub{font-size:14px!important;margin-bottom:16px!important}}`}</style>
+      <style>{`
+        @media(max-width:640px){.fun-hero{padding:24px 18px 20px!important}.fun-hero h1{font-size:1.6rem!important}.fun-hero p.sub{font-size:14px!important;margin-bottom:16px!important}}
+        @media(max-width:480px){.fun-hero{padding:18px 16px 14px!important}.fun-hero h1{font-size:1.35rem!important}}
+      `}</style>
       <div className="fun-hero" style={{ background:"linear-gradient(135deg,#3D1F08 0%,#7A3A10 60%,#C47A2E 100%)", padding:"40px 24px 32px", textAlign:"center", position:"relative", overflow:"hidden" }}>
         <div style={{ position:"relative", maxWidth:580, margin:"0 auto" }}>
           <p style={{ fontSize:10, fontWeight:800, color:"rgba(255,255,255,0.55)", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px", fontFamily:F }}>

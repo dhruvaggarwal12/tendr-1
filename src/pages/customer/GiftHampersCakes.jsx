@@ -47,7 +47,7 @@ function ProductCard({ product, onViewDetails }) {
         />
       </div>
 
-      <div style={{ padding: isMobile ? "10px 10px" : "14px 16px", display: "flex", flexDirection: "column", gap: isMobile ? 5 : 8, flex: 1 }}>
+      <div style={{ padding: isMobile ? "12px 12px" : "14px 16px", display: "flex", flexDirection: "column", gap: isMobile ? 5 : 8, flex: 1 }}>
         {/* Category chip */}
         <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "2px 7px", alignSelf: "flex-start", textTransform: "uppercase", letterSpacing: "0.06em" }}>
           {product.category}
@@ -324,7 +324,7 @@ const GiftHampersCakes = () => {
             <p style={{ fontSize: 13, color: "#9B7450" }}>Check back soon — our vendors are adding products.</p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
             {filtered.map(p => (
               <ProductCard
                 key={p._id}

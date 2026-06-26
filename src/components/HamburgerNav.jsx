@@ -304,7 +304,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           )}
 
           {/* Search bar + suggestions */}
-          <div style={{ padding: "8px 14px 0", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+          <div style={{ padding: "8px clamp(10px,3vw,14px) 0", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
             <style>{`.sb-search::placeholder{color:rgba(255,255,255,0.35);}`}</style>
             <div style={{ display: "flex", alignItems: "center", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: showSuggest && (searchQuery.length > 0 || true) ? "8px 8px 0 0" : 8 }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.4)" strokeWidth="2.5" strokeLinecap="round" style={{ flexShrink: 0, marginLeft: 9 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>

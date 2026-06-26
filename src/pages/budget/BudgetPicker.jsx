@@ -68,7 +68,14 @@ export default function BudgetPicker() {
           ))}
         </div>
       </div>
-      <style>{`@media(max-width:640px){.budget-grid{grid-template-columns:repeat(2,1fr) !important;}}`}</style>
+      <style>{`
+        @media(max-width:640px){.budget-grid{grid-template-columns:repeat(2,1fr) !important;}}
+        @media(max-width:480px){
+          .budget-grid{gap:10px !important;}
+          .budget-grid button{padding:16px 12px !important;}
+          .budget-grid button span:first-child{font-size:26px !important;}
+        }
+      `}</style>
     </div>
   );
 

@@ -238,6 +238,7 @@ export default function AboutUs() {
       {/* ── Stats ── */}
       <section
         ref={statsRef}
+        className="about-stats-section"
         style={{
           background: "#2C1A0E",
           padding: "56px 24px",
@@ -644,6 +645,10 @@ export default function AboutUs() {
         @media (max-width: 540px) {
           .about-values-grid { grid-template-columns: 1fr !important; }
           .about-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (max-width: 480px) {
+          .about-stats-section { padding: 32px 16px !important; }
+          .about-stats-grid { gap: 12px !important; }
         }
       `}</style>
     </div>
