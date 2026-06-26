@@ -306,79 +306,228 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
 export function FunCartDrawer({ onClose }) {
   const dispatch = useDispatch();
   const cartItems = useSelector(selectFunCartItems);
-  const [bookingActivity, setBookingActivity] = useState(null);
+  const today = new Date().toISOString().split("T")[0];
+
+  const [step, setStep] = useState(0); // 0=cart 1=form 2=done
+  // per-perUnit item quantity map
+  const [qtyMap, setQtyMap] = useState(() =>
+    Object.fromEntries(cartItems.filter(i => i.perUnit).map(i => [i.id, 1]))
+  );
+  const [form, setForm] = useState({
+    eventType: "", guests: "", name: "", phone: "", date: "", time: "", address: "", notes: "",
+  });
+  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const valid = form.eventType && form.guests && form.name && form.phone && form.date && form.time && form.address;
+
+  const cartTotal = cartItems.reduce((sum, item) => {
+    const qty = item.perUnit ? (qtyMap[item.id] || 1) : 1;
+    return sum + item.price * qty;
+  }, 0);
+
+  const handleSubmit = () => {
+    if (!valid) return;
+    cartItems.forEach(item => {
+      const qty = item.perUnit ? (qtyMap[item.id] || 1) : 1;
+      const totalPrice = item.price * qty;
+      dispatch(saveActivityForm({ id: item.id, form: { ...form, qty }, totalPrice }));
+    });
+    dispatch(setFunConfirmed(true));
+    setStep(2);
+  };
+
+  const focusGold = e => (e.target.style.borderColor = GOLD);
+  const blurGrey  = e => (e.target.style.borderColor = "rgba(44,26,14,0.12)");
+  const inp = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(44,26,14,0.12)", fontFamily: F, fontSize: 13, color: BROWN, outline: "none", boxSizing: "border-box", background: "#fff" };
+
+  /* ── Step 2: success ── */
+  if (step === 2) return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,400px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: F, padding: "32px 24px", textAlign: "center" }}>
+        <div style={{ width: 76, height: 76, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 32px rgba(196,122,46,0.4)" }}>
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div>
+          <h3 data-ui-heading style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px", fontFamily: F }}>Booking Details Saved!</h3>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>Your activities are ready for payment.</p>
+          <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "14px 16px", fontSize: 13, color: "#5a3a1a", lineHeight: 1.7, textAlign: "left" }}>
+            Please <strong>close this window</strong> and tap the <strong>Pay</strong> button at the bottom right to proceed with payment.
+          </div>
+        </div>
+        <button onClick={onClose} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
+          Got it — Go to Pay →
+        </button>
+      </div>
+    </>
+  );
 
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
       <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,400px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: F }}>
+
         {/* Header */}
         <div style={{ padding: "18px 20px 14px", borderBottom: "1.5px solid rgba(44,26,14,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 2px" }}>🎭 Fun Activities</p>
-            <h3 style={{ fontSize: 17, fontWeight: 900, color: BROWN, margin: 0 }}>Your Cart ({cartItems.length})</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {step === 1 && (
+              <button onClick={() => setStep(0)} style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>←</button>
+            )}
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 2px" }}>🎭 Fun Activities</p>
+              <h3 data-ui-heading style={{ fontSize: 17, fontWeight: 900, color: BROWN, margin: 0 }}>
+                {step === 0 ? `Your Cart (${cartItems.length})` : "Event Details"}
+              </h3>
+            </div>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
         </div>
 
-        {/* Items */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-          {cartItems.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px 0", color: "#9B7450" }}>
-              <div style={{ fontSize: 40, marginBottom: 10 }}>🎭</div>
-              <p style={{ fontSize: 14, margin: 0 }}>No activities added yet.</p>
-            </div>
-          ) : cartItems.map(item => (
-            <div key={item.id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "14px 16px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                <div>
-                  <p style={{ fontSize: 15, fontWeight: 800, color: BROWN, margin: "0 0 3px" }}>{item.emoji} {item.name}</p>
-                  <p style={{ fontSize: 13, color: GOLD, fontWeight: 700, margin: 0 }}>
-                    ₹{item.price.toLocaleString("en-IN")}{item.perUnit ? ` ${item.unitLabel}` : ""}
-                  </p>
+        {/* ── Step 0: Cart ── */}
+        {step === 0 && (
+          <>
+            <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
+              {cartItems.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 0", color: "#9B7450" }}>
+                  <div style={{ fontSize: 40, marginBottom: 10 }}>🎭</div>
+                  <p style={{ fontSize: 14, margin: 0 }}>No activities added yet.</p>
                 </div>
-                <button onClick={() => dispatch(removeActivity(item.id))}
-                  style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.2)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  ✕
+              ) : cartItems.map(item => {
+                const qty = qtyMap[item.id] || 1;
+                return (
+                  <div key={item.id} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", padding: "14px 16px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: item.perUnit ? 10 : 0 }}>
+                      <div>
+                        <p style={{ fontSize: 15, fontWeight: 800, color: BROWN, margin: "0 0 3px" }}>{item.emoji} {item.name}</p>
+                        <p style={{ fontSize: 13, color: GOLD, fontWeight: 700, margin: 0 }}>
+                          ₹{item.price.toLocaleString("en-IN")}{item.perUnit ? ` ${item.unitLabel}` : " fixed"}
+                        </p>
+                      </div>
+                      <button onClick={() => dispatch(removeActivity(item.id))}
+                        style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.2)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+                    </div>
+                    {item.perUnit && (
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10 }}>
+                        <span style={{ fontSize: 11, color: "#9B7450", flex: 1 }}>Quantity</span>
+                        <button onClick={() => setQtyMap(m => ({ ...m, [item.id]: Math.max(1, (m[item.id] || 1) - 1) }))}
+                          style={{ width: 28, height: 28, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: BROWN, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                        <span style={{ fontSize: 14, fontWeight: 800, color: BROWN, minWidth: 20, textAlign: "center" }}>{qty}</span>
+                        <button onClick={() => setQtyMap(m => ({ ...m, [item.id]: (m[item.id] || 1) + 1 }))}
+                          style={{ width: 28, height: 28, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: BROWN, fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                        <span style={{ fontSize: 12, color: "#9B7450", marginLeft: "auto", fontWeight: 700 }}>
+                          ₹{(item.price * qty).toLocaleString("en-IN")}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {cartItems.length > 0 && (
+              <div style={{ padding: "14px 20px", borderTop: "1.5px solid rgba(44,26,14,0.07)" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: "#9B7450" }}>Estimated Total</span>
+                  <span style={{ fontSize: 18, fontWeight: 900, color: BROWN }}>₹{cartTotal.toLocaleString("en-IN")}</span>
+                </div>
+                <button onClick={() => setStep(1)}
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)", letterSpacing: "0.01em" }}>
+                  Proceed to Booking →
                 </button>
               </div>
-              {item.form ? (
-                <div style={{ fontSize: 12, color: "#7A5535", background: "rgba(196,122,46,0.05)", borderRadius: 8, padding: "8px 10px", marginBottom: 8, lineHeight: 1.6 }}>
-                  <div>📅 {item.form.date} · ⏰ {item.form.time}</div>
-                  <div>📍 {item.form.address}</div>
-                  <div>👥 {item.form.guests} guests</div>
-                  {item.totalPrice > 0 && <div style={{ fontWeight: 700, color: GOLD, marginTop: 2 }}>₹{item.totalPrice.toLocaleString("en-IN")}</div>}
-                </div>
-              ) : (
-                <p style={{ fontSize: 11, color: "#9B7450", margin: "0 0 8px" }}>Event details not filled yet</p>
-              )}
-              <button onClick={() => setBookingActivity(FUN_ACTIVITIES.find(a => a.id === item.id) || item)}
-                style={{ width: "100%", padding: "9px", borderRadius: 10, border: "none", background: item.form ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: item.form ? GOLD : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-                {item.form ? "Edit Details" : "Fill Event Details"}
-              </button>
-            </div>
-          ))}
-        </div>
+            )}
+          </>
+        )}
 
-        {/* Footer — always shown when cart has items */}
-        {cartItems.length > 0 && (
-          <div style={{ padding: "14px 20px", borderTop: "1.5px solid rgba(44,26,14,0.07)" }}>
-            <button onClick={() => { dispatch(setFunConfirmed(true)); onClose(); }}
-              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)", letterSpacing: "0.01em" }}>
-              Confirm Booking ✓
+        {/* ── Step 1: Shared event form ── */}
+        {step === 1 && (
+          <div style={{ flex: 1, overflowY: "auto", padding: "20px 20px 28px" }}>
+            <p style={{ fontSize: 12, color: "#9B7450", margin: "0 0 20px", lineHeight: 1.6 }}>
+              These details apply to all {cartItems.length} activit{cartItems.length === 1 ? "y" : "ies"} in your cart.
+            </p>
+
+            {/* Event type */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>Event Type <span style={{ color: "#DC2626" }}>*</span></label>
+              <select value={form.eventType} onChange={e => set("eventType", e.target.value)}
+                style={{ ...inp, appearance: "none", WebkitAppearance: "none", color: form.eventType ? BROWN : "#9B7450" }}
+                onFocus={focusGold} onBlur={blurGrey}>
+                <option value="">Select event type…</option>
+                {["Get-together", "Birthday", "Anniversary", "Wedding", "Office Party", "Others"].map(t => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Guests */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>Total Guests <span style={{ color: "#DC2626" }}>*</span></label>
+              <input type="number" value={form.guests} onChange={e => set("guests", e.target.value)}
+                placeholder="e.g. 50" style={inp} onFocus={focusGold} onBlur={blurGrey} />
+            </div>
+
+            {/* Name */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>Your Name <span style={{ color: "#DC2626" }}>*</span></label>
+              <input type="text" value={form.name} onChange={e => set("name", e.target.value)}
+                placeholder="Full name" style={inp} onFocus={focusGold} onBlur={blurGrey} />
+            </div>
+
+            {/* Phone */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>WhatsApp Number <span style={{ color: "#DC2626" }}>*</span></label>
+              <input type="tel" value={form.phone} onChange={e => set("phone", e.target.value)}
+                placeholder="10-digit number" style={inp} onFocus={focusGold} onBlur={blurGrey} />
+            </div>
+
+            {/* Date + Time */}
+            <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>Date <span style={{ color: "#DC2626" }}>*</span></label>
+                <input type="date" value={form.date} min={today} onChange={e => set("date", e.target.value)}
+                  style={{ ...inp, borderColor: "rgba(196,122,46,0.25)" }} onFocus={focusGold} onBlur={e => (e.target.style.borderColor = "rgba(196,122,46,0.25)")} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>Start Time <span style={{ color: "#DC2626" }}>*</span></label>
+                <input type="time" value={form.time} onChange={e => set("time", e.target.value)}
+                  style={{ ...inp, borderColor: "rgba(196,122,46,0.25)" }} onFocus={focusGold} onBlur={e => (e.target.style.borderColor = "rgba(196,122,46,0.25)")} />
+              </div>
+            </div>
+
+            {/* Venue */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>Venue / Address <span style={{ color: "#DC2626" }}>*</span></label>
+              <input type="text" value={form.address} onChange={e => set("address", e.target.value)}
+                placeholder="Event venue or full address" style={inp} onFocus={focusGold} onBlur={blurGrey} />
+            </div>
+
+            {/* Notes */}
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ fontSize: 12, fontWeight: 700, color: BROWN, display: "block", marginBottom: 5, fontFamily: F }}>Notes <span style={{ fontWeight: 400, color: "#9B7450" }}>(optional)</span></label>
+              <textarea value={form.notes} onChange={e => set("notes", e.target.value)}
+                rows={2} placeholder="Any special requirements or theme details…"
+                style={{ ...inp, resize: "vertical" }} onFocus={focusGold} onBlur={blurGrey} />
+            </div>
+
+            {/* Total summary */}
+            <div style={{ background: "rgba(196,122,46,0.06)", borderRadius: 10, padding: "10px 14px", marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: BROWN, fontWeight: 700 }}>
+                <span>Estimated Total</span>
+                <span>₹{cartTotal.toLocaleString("en-IN")}</span>
+              </div>
+              <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>{cartItems.length} activit{cartItems.length === 1 ? "y" : "ies"}</div>
+            </div>
+
+            <button onClick={handleSubmit} disabled={!valid}
+              style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: valid ? "linear-gradient(135deg,#2C1A0E,#4A2810)" : "#E5E7EB", color: valid ? "#CCAB4A" : "#9CA3AF", fontSize: 15, fontWeight: 800, cursor: valid ? "pointer" : "not-allowed", fontFamily: F, boxShadow: valid ? "0 4px 14px rgba(44,26,14,0.3)" : "none", letterSpacing: "0.01em" }}>
+              Review & Pay — ₹{cartTotal.toLocaleString("en-IN")} →
             </button>
+            <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "10px 0 0" }}>
+              Fixed price · WhatsApp confirmation within 2 hrs
+            </p>
           </div>
         )}
       </div>
-
-      {bookingActivity && (
-        <BookingPanel
-          activity={bookingActivity}
-          fromDrawer={true}
-          onClose={() => setBookingActivity(null)}
-          onReviewPay={() => setBookingActivity(null)}
-        />
-      )}
     </>
   );
 }

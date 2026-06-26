@@ -647,11 +647,6 @@ const Navbar = ({
           {/* Right cluster: conditional buttons + profile — always together */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
 
-            {/* Compare Vendors — visible when vendors are saved */}
-            {compareSelected.length > 0 && (
-              <SavedVendorsInline asStrip={false} />
-            )}
-
             {/* Auth area */}
             {token && user ? (
               <div ref={profileMenuRef} style={{ position: "relative" }}>
@@ -659,7 +654,7 @@ const Navbar = ({
                 <button
                   data-tour="profile-btn"
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: compareSelected.length > 0 && !user?.isAdmin ? "100px 100px 0 0" : 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
+                  style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, background: "rgba(139,69,19,0.06)", border: "1.5px solid rgba(139,69,19,0.18)", borderRadius: 100, padding: "6px 14px 6px 8px", cursor: "pointer", fontFamily: font, transition: "background 0.2s" }}
                   onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.12)")}
                   onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(139,69,19,0.06)")}
                 >
@@ -683,7 +678,6 @@ const Navbar = ({
                   <FaChevronDown size={9} style={{ color: "#9B7450", transform: showProfileMenu ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
                 </button>
 
-                {/* Compare Vendors strip removed — now shown as full button in navbar */}
                 </div>{/* end flex column */}
 
                 {showProfileMenu && (

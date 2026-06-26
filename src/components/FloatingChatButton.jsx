@@ -400,9 +400,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             {savedVendors.length > 0 && (
               <div style={{ position: "relative" }}>
                 <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#be185d,#ec4899)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(190,24,93,0.35)", flexShrink: 0 }}>
-                  ♥
-                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#9d174d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{savedVendors.length}</span>
+                  title="Saved Vendors"
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#CCAB4A" stroke="#CCAB4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#CCAB4A", color: "#2C1A0E", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{savedVendors.length}</span>
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); const list = []; try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch {} setSavedVendors(list); window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed")); setSavedOpen(false); }}
@@ -414,8 +415,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
             {compareSelected.length > 0 && (
               <div style={{ position: "relative" }}>
                 <button className="mobile-action-btn" onClick={() => { const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
-                  ⚖
+                  title="Compare Vendors"
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
                   <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
                 </button>
                 <button
@@ -429,8 +431,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
               <div style={{ position: "relative" }}>
                 <button className="mobile-action-btn" onClick={() => setFunCartOpen(true)}
                   title="Fun Activities Cart"
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7c3aed,#a855f7)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(124,58,237,0.4)", flexShrink: 0 }}>
-                  🎭
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                   <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
                 </button>
                 <button
@@ -446,9 +448,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                   className="mobile-action-btn"
                   onClick={() => setGhCartOpen(true)}
                   title="Gift Hampers Cart"
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, color: "#fff", boxShadow: "0 4px 14px rgba(21,128,61,0.4)", flexShrink: 0 }}>
-                  🎁
-                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#14532d", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.45)", flexShrink: 0 }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); dispatch(clearGhCart()); dispatch(setGhConfirmed(false)); }}
@@ -628,6 +630,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
         .mobile-action-btn { display: flex !important; }
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }
+        /* Desktop: larger action buttons */
+        @media (min-width: 768px) {
+          .mobile-action-btn {
+            width: 54px !important;
+            height: 54px !important;
+          }
+        }
         @media (max-width: 767px) {
           /* Position above nav bar — nav is calc(60px + safe-area-inset-bottom) tall */
           .floating-chat-btn {

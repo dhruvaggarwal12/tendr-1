@@ -211,6 +211,19 @@ button, a, input, select, textarea, [role="button"] {
 button { transition: transform 0.12s ease, opacity 0.12s ease; }
 button:active:not(:disabled) { transform: scale(0.97); }
 
+/* ── Brand typography — DM Serif Display for page-level headings ── */
+h1 {
+  font-family: 'DM Serif Display', Georgia, serif !important;
+}
+h2:not([data-ui-heading]) {
+  font-family: 'DM Serif Display', Georgia, serif !important;
+}
+/* Keep Outfit for tight UI contexts (modals, drawers, cards) */
+.vcm-root h1, .vcm-root h2,
+.active-chats-modal h1, .active-chats-modal h2 {
+  font-family: 'Outfit', sans-serif !important;
+}
+
 /* ── HamburgerNav: hide logo, show back arrow on mobile ── */
 @media (max-width: 767px) {
   .hamburger-logo { display: none !important; }
