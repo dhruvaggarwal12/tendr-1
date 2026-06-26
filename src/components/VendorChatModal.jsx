@@ -453,6 +453,7 @@ export default function VendorChatModal() {
   // ── Chat action state ────────────────────────────────────────────────────────
   const [chatCompleted, setChatCompleted] = useState(false);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
+  const [showFinalisePopup, setShowFinalisePopup] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
   const isThisVendorFinalised = vendor?._id && (() => {
@@ -775,6 +776,7 @@ export default function VendorChatModal() {
       text: `✅ ${vendor.name} added to your booking. Slot held for 2 hours. Tap "Review & Pay" when ready.`,
       sender: "system", ts: Date.now(),
     }]);
+    setShowFinalisePopup(true);
   };
 
   const sendText = (override) => {
@@ -1232,8 +1234,8 @@ export default function VendorChatModal() {
             </div>
           )}
 
-          {/* Waiting state — only shown when there are no messages yet; hides once messages arrive or chat is approved */}
-          {botDone && !approved && messages.length === 0 && (
+          {/* Waiting state — shown while chat is pending, even if summary message is present */}
+          {botDone && !approved && messages.length <= 1 && (
             <div style={{ alignSelf: "stretch", margin: "12px 4px 4px", display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ textAlign: "center", padding: "20px 16px 8px" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>✦ In Progress</div>
@@ -1346,7 +1348,7 @@ export default function VendorChatModal() {
         </div>
 
         {/* ── Input + action bar ── */}
-        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px", paddingBottom: isMobile ? "calc(10px + env(safe-area-inset-bottom, 0px))" : "10px", flexShrink: 0, background: "#fff", position: "relative" }}>
+        <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "10px 14px 10px", flexShrink: 0, background: "#fff", position: "relative" }}>
           {/* Reference photos — Decorator live chat only */}
           {(approved || isExistingChat) && vendor?.serviceType === "Decorator" && !messagesLoading && (
             <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", background: "#FDFCF8" }}>
@@ -1486,6 +1488,34 @@ export default function VendorChatModal() {
             </div>
           )}
         </div>
+
+        {/* ── Finalise popup — shown after vendor is finalised ── */}
+        {showFinalisePopup && (
+          <div style={{ position: "absolute", inset: 0, zIndex: 22, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 20 }}>
+            <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "85%", maxWidth: 340, boxShadow: "0 20px 60px rgba(44,26,14,0.25)", fontFamily: font, textAlign: "center" }}>
+              <div style={{ fontSize: 36, marginBottom: 10 }}>✅</div>
+              <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Vendor Finalised!</h3>
+              <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 6px", lineHeight: 1.6 }}>
+                {vendor?.name} has been added to your booking.
+              </p>
+              <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 16px", margin: "12px 0 20px", fontSize: 13, color: "#5a3a1a", lineHeight: 1.6 }}>
+                Please <strong>close this window</strong> and tap the <strong>Pay</strong> button at the bottom right to proceed with payment.
+              </div>
+              <button
+                onClick={() => { setShowFinalisePopup(false); handleMinimize(); }}
+                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, marginBottom: 8, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}
+              >
+                Got it — Go to Pay →
+              </button>
+              <button
+                onClick={() => setShowFinalisePopup(false)}
+                style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: font }}
+              >
+                Stay in chat
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Review & Pay popup — full modal overlay (not clipped by input bar) ── */}
         {showReviewPopup && (

@@ -1939,7 +1939,7 @@ const EventPlanning = () => {
                       if (!e.target.value || e.target.value < todayStr) return;
                       selectAndAdvance(currentQuestion.id, e.target.value);
                     }}
-                    style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 1 }}
+                    style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%", opacity: 0.01, cursor: "pointer", zIndex: 1, fontSize: "1px", color: "transparent", background: "transparent", border: "none", outline: "none" }}
                   />
                 </div>
               );

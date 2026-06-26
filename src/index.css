@@ -504,11 +504,15 @@ button:active:not(:disabled) { transform: scale(0.97); }
 /* ─── Global design system refinements ─── */
 
 /* Gold accent: keep ONLY on CTA buttons, active nav, star ratings */
-/* Neutralize any gold-tinted card/section borders elsewhere */
 .vendor-card,
 .vendor-card-listing {
-  border-color: rgba(0,0,0,0.07) !important;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05) !important;
+  border-color: rgba(196,122,46,0.1) !important;
+  box-shadow: 0 2px 14px rgba(196,122,46,0.07), inset 0 1px 0 rgba(255,255,255,0.9) !important;
+  transition: box-shadow 0.2s ease, transform 0.15s ease !important;
+}
+.vendor-card:hover,
+.vendor-card-listing:hover {
+  box-shadow: 0 6px 24px rgba(196,122,46,0.14), inset 0 1px 0 rgba(255,255,255,0.95) !important;
 }
 
 /* Section dividers & containers — neutral borders, no gold */
@@ -592,4 +596,114 @@ button.btn-text {
 @keyframes confetti-fall {
   0%   { opacity: 1; transform: translateY(0) rotate(0deg); }
   100% { opacity: 0; transform: translateY(120px) rotate(360deg); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   TENDR GLOSSY DESIGN SYSTEM
+   Subtle glass/sheen polish — keeps brown-gold identity
+   ══════════════════════════════════════════════════════════ */
+
+/* 1. Body — warm layered gradient background */
+body {
+  background: linear-gradient(155deg, #FAF5EE 0%, #FDF8F1 40%, #F6EEE0 100%) !important;
+  background-attachment: fixed !important;
+}
+
+/* 2. bg-white panels — inner top highlight gives glass feel */
+.bg-white {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 2px 16px rgba(196,122,46,0.06) !important;
+}
+
+/* 3. Floating chat button — richer glow + inner sheen */
+.floating-chat-btn {
+  box-shadow: 0 8px 28px rgba(196,122,46,0.46),
+              inset 0 1px 0 rgba(255,255,255,0.24),
+              inset 0 -1px 0 rgba(0,0,0,0.1) !important;
+}
+
+/* 4. Mobile action stack buttons — drop shadow for depth */
+.mobile-action-btn {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+}
+
+/* 5. Sticky sort/filter bar — stronger frosted glass */
+.listings-sort-sticky {
+  background: rgba(253,250,244,0.94) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  backdrop-filter: blur(18px) !important;
+  box-shadow: 0 2px 20px rgba(196,122,46,0.09),
+              0 1px 0 rgba(196,122,46,0.1) !important;
+}
+
+/* 6. Bottom nav — glass panel */
+.mobile-bottom-nav-root {
+  background: rgba(255,252,245,0.94) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  backdrop-filter: blur(16px) !important;
+  border-top: 1px solid rgba(196,122,46,0.13) !important;
+  box-shadow: 0 -4px 24px rgba(196,122,46,0.07) !important;
+}
+
+/* 7. Page-level section cards (Tailwind rounded-3xl / rounded-2xl on bg-white) */
+.rounded-3xl.bg-white,
+.rounded-2xl.bg-white {
+  box-shadow: 0 4px 24px rgba(196,122,46,0.09),
+              inset 0 1px 0 rgba(255,255,255,0.95),
+              inset 0 -1px 0 rgba(196,122,46,0.04) !important;
+}
+
+/* 8. Gold gradient CTA buttons — inner highlight via box-shadow inset */
+.btn-primary {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.22),
+              0 4px 14px rgba(196,122,46,0.32) !important;
+}
+
+/* 9. Input fields — gentle glass inset */
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="tel"],
+textarea,
+select {
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.06), inset 0 -1px 0 rgba(255,255,255,0.8);
+}
+
+/* 10. VendorChatModal root — slight frosted panel */
+.vcm-root {
+  background: rgba(255,252,245,0.98) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* 11. Active Chats modal */
+.active-chats-modal {
+  background: rgba(255,252,245,0.98) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* 12. HamburgerNav / sidebar — glass edge */
+.hamburger-nav-sidebar,
+.hamburger-nav-panel {
+  box-shadow: 4px 0 32px rgba(196,122,46,0.1), inset -1px 0 0 rgba(196,122,46,0.08) !important;
+}
+
+/* 13. Event question cards */
+.event-question-card {
+  box-shadow: 0 8px 32px rgba(196,122,46,0.1),
+              inset 0 1px 0 rgba(255,255,255,0.95) !important;
+}
+
+/* 14. Shimmer keyframe for loading states */
+@keyframes tendr-shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+.tendr-shimmer {
+  background: linear-gradient(90deg,
+    rgba(196,122,46,0.05) 25%,
+    rgba(204,171,74,0.12) 50%,
+    rgba(196,122,46,0.05) 75%);
+  background-size: 200% auto;
+  animation: tendr-shimmer 1.8s linear infinite;
 }

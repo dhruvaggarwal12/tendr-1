@@ -127,28 +127,32 @@ export default function PWAInstallPrompt() {
 
   const ios = isIOSDevice();
 
+  const showingSteps = showIOSSteps || showAndroidSteps;
+  const isLarge = source === "signup" || showingSteps;
+
   return (
     <>
-      {/* Backdrop (only for signup source or iOS steps) */}
-      {(source === "signup" || showIOSSteps) && (
+      {/* Backdrop (for signup source, steps, or iOS) */}
+      {(isLarge) && (
         <div onClick={dismiss} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 9997, backdropFilter: "blur(3px)" }} />
       )}
 
       {/* Main popup */}
       <div style={{
         position: "fixed",
-        bottom: source === "signup" ? "50%" : 16,
-        left: source === "signup" ? "50%" : "auto",
-        right: source === "signup" ? "auto" : 12,
-        transform: source === "signup" ? "translate(-50%, 50%)" : "none",
-        width: source === "signup" ? "min(93vw, 400px)" : "min(82vw, 300px)",
+        bottom: isLarge ? "50%" : 16,
+        left: isLarge ? "50%" : "auto",
+        right: isLarge ? "auto" : 12,
+        transform: isLarge ? "translate(-50%, 50%)" : "none",
+        width: isLarge ? "min(93vw, 400px)" : "min(82vw, 300px)",
         background: "#FFFCF5",
         borderRadius: 18,
         boxShadow: "0 16px 48px rgba(28,10,0,0.2)",
         border: "1.5px solid rgba(196,122,46,0.18)",
         zIndex: 9998,
         fontFamily: font,
-        overflow: "hidden",
+        overflow: "auto",
+        maxHeight: "85dvh",
         animation: "pwaSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1)",
       }}>
 
@@ -235,8 +239,8 @@ export default function PWAInstallPrompt() {
 
       <style>{`
         @keyframes pwaSlideUp {
-          from { opacity: 0; transform: ${source === "signup" ? "translate(-50%, 60%)" : "translateY(20px)"} }
-          to   { opacity: 1; transform: ${source === "signup" ? "translate(-50%, 50%)" : "translateY(0)"} }
+          from { opacity: 0; transform: ${isLarge ? "translate(-50%, 60%)" : "translateY(20px)"} }
+          to   { opacity: 1; transform: ${isLarge ? "translate(-50%, 50%)" : "translateY(0)"} }
         }
       `}</style>
     </>

@@ -425,7 +425,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                 </button>
               </div>
             )}
-            {funCartCount > 0 && (
+            {funCartCount > 0 && !funConfirmed && (
               <div style={{ position: "relative" }}>
                 <button className="mobile-action-btn" onClick={() => setFunCartOpen(true)}
                   title="Fun Activities Cart"
@@ -440,7 +440,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
                 </button>
               </div>
             )}
-            {ghCartCount > 0 && (
+            {ghCartCount > 0 && !ghConfirmed && (
               <div style={{ position: "relative" }}>
                 <button
                   className="mobile-action-btn"
