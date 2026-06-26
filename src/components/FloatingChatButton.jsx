@@ -11,8 +11,8 @@ import { GiftCartDrawer } from "./GiftCartDrawer";
 import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
-import { selectCartCount as selectGhCartCount, selectCartItems as selectGhCartItems, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart } from "../redux/giftHamperCartSlice";
-import { selectStConfirmed, selectStForm, selectStCartSnapshot } from "../redux/stationeryBookingSlice";
+import { selectCartCount as selectGhCartCount, selectCartItems as selectGhCartItems, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart, selectGhDeliveryForm } from "../redux/giftHamperCartSlice";
+import { selectStConfirmed, selectStForm, selectStCartSnapshot, clearStBooking } from "../redux/stationeryBookingSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -34,6 +34,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const funCartCount         = useSelector(selectFunCartCount);
   const ghCartCount          = useSelector(selectGhCartCount);
   const ghCartItems          = useSelector(selectGhCartItems);
+  const ghDeliveryForm       = useSelector(selectGhDeliveryForm);
   const funConfirmed         = useSelector(selectFunConfirmed);
   const ghConfirmed          = useSelector(selectGhConfirmed);
   const stConfirmed          = useSelector(selectStConfirmed);
@@ -551,21 +552,71 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
       {/* Add-ons panel */}
       {addOnsOpen && (() => {
-        const ghDeliveryData = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
+        const buildWaMsg = () => {
+          const lines = ["🌸 *Order Summary — Tendr*", ""];
+          if (ghConfirmed && ghCartItems.length > 0) {
+            lines.push("🎁 *GIFT HAMPERS*");
+            ghCartItems.forEach(item => {
+              lines.push(`• ${item.name} × ${item.quantity} — ₹${item.subtotal.toLocaleString("en-IN")}`);
+            });
+            const total = ghCartItems.reduce((s, i) => s + i.subtotal, 0);
+            lines.push(`*Total: ₹${total.toLocaleString("en-IN")}*`);
+            if (ghDeliveryForm) {
+              lines.push("");
+              lines.push("*Delivery Details:*");
+              if (ghDeliveryForm.name)         lines.push(`👤 ${ghDeliveryForm.name}`);
+              if (ghDeliveryForm.phone)        lines.push(`📞 ${ghDeliveryForm.phone}`);
+              if (ghDeliveryForm.address)      lines.push(`📦 ${ghDeliveryForm.address}${ghDeliveryForm.city ? `, ${ghDeliveryForm.city}` : ""}${ghDeliveryForm.pincode ? ` - ${ghDeliveryForm.pincode}` : ""}`);
+              if (ghDeliveryForm.deliveryDate) lines.push(`🗓 Delivery Date: ${ghDeliveryForm.deliveryDate}`);
+              if (ghDeliveryForm.instructions) lines.push(`📝 ${ghDeliveryForm.instructions}`);
+            }
+            lines.push("");
+          }
+          if (stConfirmed && stCartSnapshot.length > 0) {
+            lines.push("💒 *WEDDING STATIONERY*");
+            stCartSnapshot.forEach(({ item, quantity }, i) => {
+              const price = item.priceOnRequest ? "Price on request" : item.priceRange || (item.startingPrice ? `₹${(item.startingPrice * quantity).toLocaleString("en-IN")}` : "—");
+              lines.push(`${i + 1}. ${item.name} × ${quantity} ${item.unit || "pcs"} — ${price}`);
+            });
+            if (stForm) {
+              lines.push("");
+              lines.push("*Event Details:*");
+              if (stForm.name)    lines.push(`👤 ${stForm.name}`);
+              if (stForm.phone)   lines.push(`📞 ${stForm.phone}`);
+              if (stForm.address) lines.push(`📍 ${stForm.address}`);
+              if (stForm.date)    lines.push(`📅 Event Date: ${stForm.date}`);
+            }
+            lines.push("");
+          }
+          lines.push("📌 *Note:* Design prices shown. Final pricing will be confirmed by Tendr team.");
+          lines.push("");
+          lines.push("_Sent via tendr.co.in_");
+          return lines.join("\n");
+        };
+
+        const handleProceedWhatsApp = () => {
+          const url = `https://wa.me/919211668427?text=${encodeURIComponent(buildWaMsg())}`;
+          window.open(url, "_blank");
+          dispatch(clearGhCart());
+          dispatch(clearStBooking());
+          setAddOnsOpen(false);
+        };
+
         return (
           <>
             <div onClick={() => setAddOnsOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
-            <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: font, overflowY: "auto", animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)" }}>
+            <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: font, animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)" }}>
               {/* Header */}
               <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
                 <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: "0 0 2px" }}>🎁 Add-on Orders</h2>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", margin: 0 }}>Your special add-ons</p>
+                  <h2 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: "0 0 2px" }}>🎁 Your Orders</h2>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", margin: 0 }}>Review and send to Tendr on WhatsApp</p>
                 </div>
                 <button onClick={() => setAddOnsOpen(false)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
               </div>
 
-              <div style={{ flex: 1, padding: "20px 24px" }}>
+              {/* Scrollable content */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
                 {/* Gift Hampers section */}
                 {ghConfirmed && ghCartItems.length > 0 && (
                   <div style={{ marginBottom: 20, padding: 16, background: "rgba(196,122,46,0.06)", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)" }}>
@@ -576,12 +627,18 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                         <span style={{ fontWeight: 700, color: "#2C1A0E" }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
                       </div>
                     ))}
-                    {ghDeliveryData && (
+                    <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", marginTop: 8, paddingTop: 8, display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>
+                      <span>Total</span>
+                      <span>₹{ghCartItems.reduce((s, i) => s + i.subtotal, 0).toLocaleString("en-IN")}</span>
+                    </div>
+                    {ghDeliveryForm && (
                       <div style={{ marginTop: 10, fontSize: 12, color: "#9B7450", background: "#fff", borderRadius: 8, padding: "8px 12px", lineHeight: 1.6 }}>
                         <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>Delivery Details</div>
-                        {ghDeliveryData.name && <div>👤 {ghDeliveryData.name}</div>}
-                        {ghDeliveryData.address && <div>📦 {ghDeliveryData.address}{ghDeliveryData.city ? `, ${ghDeliveryData.city}` : ""}</div>}
-                        {ghDeliveryData.deliveryDate && <div>🗓 {ghDeliveryData.deliveryDate}</div>}
+                        {ghDeliveryForm.name && <div>👤 {ghDeliveryForm.name}</div>}
+                        {ghDeliveryForm.phone && <div>📞 {ghDeliveryForm.phone}</div>}
+                        {ghDeliveryForm.address && <div>📦 {ghDeliveryForm.address}{ghDeliveryForm.city ? `, ${ghDeliveryForm.city}` : ""}</div>}
+                        {ghDeliveryForm.deliveryDate && <div>🗓 {ghDeliveryForm.deliveryDate}</div>}
+                        {ghDeliveryForm.instructions && <div>📝 {ghDeliveryForm.instructions}</div>}
                       </div>
                     )}
                   </div>
@@ -601,19 +658,26 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                     ))}
                     {stForm && (
                       <div style={{ marginTop: 10, fontSize: 12, color: "#9B7450", background: "#fff", borderRadius: 8, padding: "8px 12px", lineHeight: 1.6 }}>
-                        <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>Booking Details</div>
+                        <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>Event Details</div>
                         {stForm.name && <div>👤 {stForm.name}</div>}
+                        {stForm.phone && <div>📞 {stForm.phone}</div>}
                         {stForm.address && <div>📍 {stForm.address}</div>}
-                        {stForm.date && <div>🗓 {stForm.date}</div>}
+                        {stForm.date && <div>📅 {stForm.date}</div>}
                       </div>
                     )}
                   </div>
                 )}
+              </div>
 
-                <div style={{ padding: "14px 16px", background: "rgba(196,122,46,0.06)", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.15)", fontSize: 12, color: "#7A5535", lineHeight: 1.6 }}>
-                  <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>✅ Order Received</div>
-                  Tendr will contact you within 24 hours to confirm your add-on order details.
-                </div>
+              {/* Fixed bottom — Proceed on WhatsApp */}
+              <div style={{ padding: "16px 24px", borderTop: "1.5px solid rgba(196,122,46,0.15)", background: "#FFFCF5", flexShrink: 0 }}>
+                <button
+                  onClick={handleProceedWhatsApp}
+                  style={{ width: "100%", padding: "14px", borderRadius: 13, border: "none", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 4px 16px rgba(37,211,102,0.4)" }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                  Proceed on WhatsApp
+                </button>
               </div>
             </div>
           </>

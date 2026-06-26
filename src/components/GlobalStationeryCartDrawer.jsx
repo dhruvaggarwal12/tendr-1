@@ -86,12 +86,6 @@ export default function GlobalStationeryCartDrawer() {
 
     const cartSnapshot = cart.map(({ item, quantity }) => ({ item, quantity }));
     dispatch(setStBooking({ form: { ...form }, cartSnapshot }));
-
-    // Notify Tendr via WhatsApp
-    const msg = buildWhatsAppMessage(cart, form);
-    const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
-    window.open(url, "_blank");
-
     clearCart();
     closeCart();
     setStep(2);
@@ -113,9 +107,9 @@ export default function GlobalStationeryCartDrawer() {
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <div>
-          <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px" }}>Booking Saved!</h3>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", lineHeight: 1.6 }}>Your stationery order is confirmed.</p>
-          <p style={{ fontSize: 13, color: BROWN, fontWeight: 700, margin: 0, lineHeight: 1.6 }}>Tap the gift icon to the left of the chat button to view your add-on orders.</p>
+          <h3 style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px" }}>Order Saved!</h3>
+          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 4px", lineHeight: 1.6 }}>Your stationery selection has been saved.</p>
+          <p style={{ fontSize: 13, color: BROWN, fontWeight: 700, margin: 0, lineHeight: 1.6 }}>Tap the <strong>🎁 gift icon</strong> to the left of the chat button to review and send your order on WhatsApp.</p>
         </div>
         <div style={{ width: "100%", background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "14px 16px", display: "flex", alignItems: "center", gap: 12 }}>
           <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 20 }}>

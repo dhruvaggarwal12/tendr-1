@@ -8,7 +8,7 @@ const save = (items) => localStorage.setItem('gh_cart', JSON.stringify(items));
 
 const giftHamperCartSlice = createSlice({
   name: 'giftHamperCart',
-  initialState: { items: load(), confirmed: false },
+  initialState: { items: load(), confirmed: false, deliveryForm: null },
   reducers: {
     addToCart(state, action) {
       const { product, quantity } = action.payload;
@@ -48,17 +48,23 @@ const giftHamperCartSlice = createSlice({
     clearCart(state) {
       state.items = [];
       state.confirmed = false;
+      state.deliveryForm = null;
       save([]);
     },
     setGhConfirmed(state, action) {
       state.confirmed = action.payload;
     },
+    setGhDelivery(state, action) {
+      state.deliveryForm = action.payload;
+      state.confirmed = true;
+    },
   },
 });
 
-export const { addToCart, removeFromCart, updateQuantity, clearCart, setGhConfirmed } = giftHamperCartSlice.actions;
-export const selectCartItems  = s => s.giftHamperCart.items;
-export const selectCartTotal  = s => s.giftHamperCart.items.reduce((sum, i) => sum + i.subtotal, 0);
-export const selectCartCount  = s => s.giftHamperCart.items.reduce((sum, i) => sum + i.quantity, 0);
-export const selectGhConfirmed = s => s.giftHamperCart.confirmed;
+export const { addToCart, removeFromCart, updateQuantity, clearCart, setGhConfirmed, setGhDelivery } = giftHamperCartSlice.actions;
+export const selectCartItems      = s => s.giftHamperCart.items;
+export const selectCartTotal      = s => s.giftHamperCart.items.reduce((sum, i) => sum + i.subtotal, 0);
+export const selectCartCount      = s => s.giftHamperCart.items.reduce((sum, i) => sum + i.quantity, 0);
+export const selectGhConfirmed    = s => s.giftHamperCart.confirmed;
+export const selectGhDeliveryForm = s => s.giftHamperCart.deliveryForm;
 export default giftHamperCartSlice.reducer;

@@ -8,7 +8,7 @@ import Footer from "../../components/Footer";
 import { Button, Input } from "../../components/ui";
 import {
   addToCart, removeFromCart, updateQuantity, clearCart,
-  selectCartItems, selectCartTotal, selectCartCount,
+  selectCartItems, selectCartTotal, selectCartCount, setGhDelivery,
 } from "../../redux/giftHamperCartSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -268,11 +268,10 @@ const GiftHampersCakes = () => {
   const categories = ["All", ...new Set(products.map(p => p.category).filter(Boolean))];
   const filtered   = filter === "All" ? products : products.filter(p => p.category === filter);
 
-  const handlePlaceOrder = async (deliveryInfo) => {
+  const handlePlaceOrder = (deliveryInfo) => {
     setShowCheckout(false);
-    // Store delivery info and navigate to review page
-    sessionStorage.setItem("gh_delivery", JSON.stringify(deliveryInfo));
-    navigate("/booking/review?gh=1");
+    dispatch(setGhDelivery(deliveryInfo));
+    setOrderSuccess(true);
   };
 
   return (
@@ -414,6 +413,23 @@ const GiftHampersCakes = () => {
           onClose={() => setShowCheckout(false)}
           onPlaceOrder={handlePlaceOrder}
         />
+      )}
+
+      {/* Order saved popup — points user to the gift icon */}
+      {orderSuccess && (
+        <>
+          <div onClick={() => setOrderSuccess(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100000, backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,360px)", background: "#FFFCF5", borderRadius: 20, zIndex: 100001, padding: "32px 24px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: font, textAlign: "center" }}>
+            <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: 28 }}>🎁</div>
+            <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Order Saved!</h3>
+            <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px", lineHeight: 1.6 }}>
+              Tap the <strong>🎁 gift icon</strong> to the left of the chat button at the bottom of the screen to review and send your order on WhatsApp.
+            </p>
+            <button onClick={() => setOrderSuccess(false)} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font }}>
+              Got it
+            </button>
+          </div>
+        </>
       )}
 
       <Footer />
