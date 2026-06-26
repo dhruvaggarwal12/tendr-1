@@ -2032,50 +2032,31 @@ const EventPlanning = () => {
               todayLocal.setHours(0, 0, 0, 0);
               const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}-${String(todayLocal.getDate()).padStart(2, "0")}`;
               const currentVal = formData[currentQuestion.id] || "";
-              const displayVal = currentVal >= todayStr ? currentVal : "";
-              const displayText = displayVal
-                ? new Date(displayVal + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
-                : "Tap to select a date";
               return (
-                <div style={{ position: "relative", width: "100%" }}>
-                  {/* Styled display — fully controlled, no iOS overflow */}
-                  <div style={{ width: "100%", padding: "14px 18px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 18, fontFamily: "'Outfit', sans-serif", color: displayVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", textAlign: "center", pointerEvents: "none", userSelect: "none" }}>
-                    {displayText}
-                  </div>
-                  {/* Invisible native input — captures tap and opens OS date picker */}
-                  <input
-                    type="date"
-                    min={todayStr}
-                    value={currentVal || ""}
-                    onChange={(e) => {
-                      if (!e.target.value || e.target.value < todayStr) return;
-                      selectAndAdvance(currentQuestion.id, e.target.value);
-                    }}
-                    style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 1, border: "none", outline: "none" }}
-                  />
-                </div>
+                <input
+                  type="date"
+                  min={todayStr}
+                  value={currentVal || ""}
+                  onChange={(e) => {
+                    const v = e.target.value;
+                    if (!v || v < todayStr) return;
+                    selectAndAdvance(currentQuestion.id, v);
+                  }}
+                  style={{ width: "100%", padding: "14px 18px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 18, fontFamily: "'Outfit', sans-serif", color: currentVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 56 }}
+                />
               );
             })()}
 
             {currentQuestion.type === "time" && (() => {
               const val = formData.eventTime || "";
-              const displayText = val ? (() => {
-                const [h, m] = val.split(":");
-                const hr = parseInt(h, 10);
-                return `${hr % 12 || 12}:${m} ${hr >= 12 ? "PM" : "AM"}`;
-              })() : "Tap to select a time";
               return (
                 <div>
-                  <div style={{ position: "relative", width: "100%" }}>
-                    <div style={{ width: "100%", padding: "14px 18px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 18, fontFamily: "'Outfit', sans-serif", color: val ? "#1f2937" : "#9ca3af", boxSizing: "border-box", textAlign: "center", pointerEvents: "none", userSelect: "none" }}>
-                      {displayText}
-                    </div>
-                    <input
-                      type="time"
-                      onChange={(e) => { if (e.target.value) selectAndAdvance(currentQuestion.id, e.target.value); }}
-                      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", opacity: 0, cursor: "pointer", zIndex: 1 }}
-                    />
-                  </div>
+                  <input
+                    type="time"
+                    value={val || ""}
+                    onChange={(e) => { if (e.target.value) selectAndAdvance(currentQuestion.id, e.target.value); }}
+                    style={{ width: "100%", padding: "14px 18px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 18, fontFamily: "'Outfit', sans-serif", color: val ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 56 }}
+                  />
                   <p style={{ textAlign: "center", marginTop: 14, fontSize: 13, color: "#9B7450" }}>
                     Don't know yet?{" "}
                     <button onClick={() => advance()} style={{ background: "none", border: "none", color: "#C47A2E", fontWeight: 700, cursor: "pointer", padding: 0, fontSize: 13, fontFamily: "'Outfit', sans-serif" }}>
