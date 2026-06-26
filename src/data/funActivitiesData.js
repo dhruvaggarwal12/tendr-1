@@ -1,11 +1,11 @@
-import gameCoordinatorImg from "../assets/fun-activities/game-coordinator.jpg";
-import magicShowImg      from "../assets/fun-activities/magic-show.jpg";
-import liveTeddyImg      from "../assets/fun-activities/live-teddy.jpg";
-import namePlateImg      from "../assets/fun-activities/name-plate-making.jpg";
-import stoneArtImg       from "../assets/fun-activities/stone-art.jpg";
-import dholImg           from "../assets/fun-activities/dhol-player.jpg";
-import bouncyCastleImg   from "../assets/fun-activities/bouncy-castle.jpg";
-import tattooArtistImg   from "../assets/fun-activities/tattoo-artist.jpg";
+import gameCoordinatorImg from "../assets/fun-activities/game-coordinator.jpeg";
+import magicShowImg      from "../assets/fun-activities/magic-show.jpeg";
+import liveTeddyImg      from "../assets/fun-activities/live-teddy.jpeg";
+import namePlateImg      from "../assets/fun-activities/name-plate-making.jpeg";
+import stoneArtImg       from "../assets/fun-activities/stone-art.jpeg";
+import dholImg           from "../assets/fun-activities/dhol-player.jpeg";
+import bouncyCastleImg   from "../assets/fun-activities/bouncy-castle.jpeg";
+import tattooArtistImg   from "../assets/fun-activities/tattoo-artist.jpeg";
 
 export const FUN_ACTIVITIES = [
   {
