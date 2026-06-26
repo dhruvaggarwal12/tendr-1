@@ -767,7 +767,7 @@ const VendorList_ListingPage = ({
       {chatFormVendor && (
         <div style={{ position: "fixed", inset: 0, zIndex: 99996, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}
           onClick={() => setChatFormVendor(null)}>
-          <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px", maxWidth: 480, width: "100%", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
+          <div style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px", maxWidth: 480, width: "100%", maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))", overflowY: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.25)" }}
             onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
               <div>
@@ -945,7 +945,7 @@ const VendorList_ListingPage = ({
         >
           <div
             onClick={e => e.stopPropagation()}
-            style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", maxWidth: 520, width: "100%", maxHeight: "85vh", overflowY: "auto", boxShadow: "0 32px 80px rgba(44,26,14,0.25)" }}
+            style={{ background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", maxWidth: 520, width: "100%", maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))", overflowY: "auto", boxShadow: "0 32px 80px rgba(44,26,14,0.25)" }}
           >
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>

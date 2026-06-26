@@ -605,7 +605,7 @@ export default function BudgetAllocator() {
     {vendorPanel && (
       <>
         <div onClick={() => setVendorPanel(null)} style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(28,10,0,0.45)", backdropFilter: "blur(3px)" }} />
-        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 401, width: "min(95vw,680px)", height: "min(88vh,700px)", background: "#FAF7F2", borderRadius: 20, boxShadow: "0 32px 80px rgba(28,10,0,0.22)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", flexDirection: "column", fontFamily: font, overflow: "hidden" }}>
+        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 401, width: "min(95vw,680px)", maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))", background: "#FAF7F2", borderRadius: 20, boxShadow: "0 32px 80px rgba(28,10,0,0.22)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", flexDirection: "column", fontFamily: font, overflow: "hidden" }}>
           {/* Header */}
           <div style={{ padding: "16px 22px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between", background: "#FFFCF7", flexShrink: 0 }}>
             <div>
@@ -682,7 +682,7 @@ export default function BudgetAllocator() {
     {miniFormOpen && pendingAction && (
       <>
         <div onClick={() => setMiniFormOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 500, background: "rgba(28,10,0,0.5)", backdropFilter: "blur(3px)" }} />
-        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, width: "min(95vw,460px)", background: "#FFFCF5", borderRadius: 20, boxShadow: "0 24px 64px rgba(28,10,0,0.25)", border: "1.5px solid rgba(196,122,46,0.2)", fontFamily: font, overflow: "hidden" }}>
+        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 501, width: "min(95vw,460px)", maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))", background: "#FFFCF5", borderRadius: 20, boxShadow: "0 24px 64px rgba(28,10,0,0.25)", border: "1.5px solid rgba(196,122,46,0.2)", fontFamily: font, overflowY: "auto" }}>
           <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
             <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: "0 0 3px" }}>Quick Event Details</h3>
             <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>

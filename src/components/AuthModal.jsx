@@ -164,7 +164,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
         position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
         zIndex: 110001,
         width: "min(92vw, 400px)",
-        maxHeight: "90dvh",
+        maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))",
         overflowY: "auto",
         background: "#FFFCF5",
         borderRadius: 22,
