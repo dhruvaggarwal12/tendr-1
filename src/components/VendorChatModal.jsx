@@ -503,7 +503,8 @@ export default function VendorChatModal() {
     setText("");
     setConversationId(chatState.conversationId || null);
     setApproved(existing ? !!chatState.vendor?.approved : false);
-    setChatCompleted(false);
+    const vid = chatState.vendor?._id;
+    setChatCompleted(vid ? !!localStorage.getItem(`tendr:chat-done:${vid}`) : false);
     setShowReviewPopup(false);
     setMinimizing(false);
     // Reset package step for every new vendor chat
@@ -1445,12 +1446,6 @@ export default function VendorChatModal() {
                         Book Other Vendors
                       </button>
                     </div>
-                    {totalCount > 0 && (
-                      <div style={{ textAlign: "center", fontSize: 11, color: "#9B7450", fontWeight: 600 }}>
-                        {bookedCount}/{totalCount} vendors booked
-                        {bookedCount < totalCount && <span style={{ color: "#C47A2E" }}> — {totalCount - bookedCount} more to go</span>}
-                      </div>
-                    )}
                   </div>
                 );
               })()}
@@ -1464,7 +1459,7 @@ export default function VendorChatModal() {
                   ) : <span />}
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button
-                    onClick={() => setChatCompleted(true)}
+                    onClick={() => { setChatCompleted(true); if (vendor?._id) localStorage.setItem(`tendr:chat-done:${vendor._id}`, "1"); }}
                     disabled={chatCompleted}
                     style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: chatCompleted ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
                   >
@@ -1507,14 +1502,20 @@ export default function VendorChatModal() {
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
                 </div>
                 <p style={{ fontSize: 12, color: "#2C1A0E", margin: 0, lineHeight: 1.5 }}>
-                  Close this window and tap the <strong>gold pay button</strong> at the bottom right to confirm your booking.
+                  Tap the <strong>gold pay button</strong> at the bottom right, or go to Review & Pay directly.
                 </p>
               </div>
               <button
-                onClick={() => setShowFinalisePopup(false)}
-                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(44,26,14,0.15)", background: "#fff", color: "#2C1A0E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                onClick={() => { setShowFinalisePopup(false); closeChat(); router.navigate("/booking/review"); }}
+                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, marginBottom: 8, boxShadow: "0 4px 14px rgba(44,26,14,0.25)" }}
               >
-                Close
+                Review & Pay →
+              </button>
+              <button
+                onClick={() => setShowFinalisePopup(false)}
+                style={{ width: "100%", padding: "10px", borderRadius: 12, border: "1.5px solid rgba(44,26,14,0.15)", background: "#fff", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}
+              >
+                Stay here
               </button>
             </div>
           </div>

@@ -1278,7 +1278,7 @@ const EventPlanning = () => {
 
       <style>{`
         @media (max-width: 900px) { .smart-vendor-grid { grid-template-columns: repeat(2,1fr) !important; } }
-        @media (max-width: 540px) { .smart-vendor-grid { grid-template-columns: 1fr !important; } }
+        @media (max-width: 540px) { .smart-vendor-grid { grid-template-columns: repeat(2,1fr) !important; } }
       `}</style>
       </>
     );
@@ -1521,10 +1521,10 @@ const EventPlanning = () => {
                         </div>
                         <p style={{ fontSize: 12.5, color: "#7A5535", fontWeight: 400, margin: "0 0 8px", lineHeight: 1.45 }}>{vendor.description}</p>
                         {isYouDoIt && (
-                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count !== undefined && count > 0 ? "#16a34a" : "#C47A2E", background: count !== undefined && count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100, animation: count === undefined ? "tendr-pulse 1.2s ease-in-out infinite" : "none" }}>
+                          <span style={{ display: "inline-block", fontSize: 11.5, fontWeight: 600, color: count !== undefined && count > 0 ? "#16a34a" : "#C47A2E", background: count !== undefined && count > 0 ? "rgba(22,163,74,0.08)" : "rgba(196,122,46,0.1)", padding: "3px 9px", borderRadius: 100, animation: (count === undefined && formData.date) ? "tendr-pulse 1.2s ease-in-out infinite" : "none" }}>
                             {count !== undefined
                               ? `✓ ${count} available on ${new Date(formData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}`
-                              : "Fetching availability…"}
+                              : formData.date ? "Fetching availability…" : "Add a date to check availability"}
                           </span>
                         )}
                       </div>
