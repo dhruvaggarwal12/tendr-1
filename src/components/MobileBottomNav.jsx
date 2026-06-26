@@ -128,14 +128,13 @@ function BottomNavInner() {
     { emoji: "💰", label: "Budget Allocator", href: "/budget-picker" },
     { emoji: "🎨", label: "Decor Finder",     href: "/decor-finder" },
     { emoji: "🎭", label: "Fun Activities",   href: "/fun-activities" },
-    ...(user?.isAdmin ? [{ emoji: "🎉", label: "Occasions", href: null, newTab: true, path: "/occasions" }] : []),
   ];
 
   const items = [
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
     ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
     { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
-    { label: "Plan",     paths: ["/booking","/plan-event","/occasions"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
+    { label: "Plan",     paths: ["/booking","/plan-event"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
@@ -172,11 +171,6 @@ function BottomNavInner() {
               {[
                 ...CATEGORIES,
                 { emoji: "🎭", label: "Fun Activities",       path: "/fun-activities" },
-                ...(user?.isAdmin ? [
-                  { emoji: "🎉", label: "Plan by Occasion", path: null, newTab: true },
-                  { emoji: "🏡", label: "Party Places",     path: "/party-places" },
-                  { emoji: "💌", label: "Memories",         path: "/stationery" },
-                ] : []),
               ].map(({ emoji, label, path, newTab }) => (
                 <button key={label}
                   onClick={() => { if (newTab) { window.open("/occasions", "_blank"); setBrowseOpen(false); } else { navigate(path); setBrowseOpen(false); } }}
@@ -236,30 +230,6 @@ function BottomNavInner() {
                   <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Browse and book vendors directly</div>
                 </div>
               </button>
-              {user?.isAdmin && (
-                <button onClick={() => { navigate("/occasions"); setPlanOpen(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.3)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.1)", textAlign: "left" }}
-                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.12)"}
-                  onTouchEnd={e => e.currentTarget.style.background = "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))"}>
-                  <span style={{ fontSize: 28 }}>🎉</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Plan by Occasion</div>
-                    <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Get décor, gifts & vendor ideas by occasion</div>
-                  </div>
-                </button>
-              )}
-              {user?.isAdmin && (
-                <button onClick={() => { navigate("/home-wedding-planner"); setPlanOpen(false); }}
-                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.3)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.1)", textAlign: "left" }}
-                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.12)"}
-                  onTouchEnd={e => e.currentTarget.style.background = "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.06))"}>
-                  <span style={{ fontSize: 28 }}>🏠</span>
-                  <div>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Home Wedding Planner</div>
-                    <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Multi-day rituals — Haldi to Reception</div>
-                  </div>
-                </button>
-              )}
             </div>
           </div>
         </>
@@ -277,8 +247,8 @@ function BottomNavInner() {
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Products</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
               {PRODUCTS.map(({ emoji, label, href, newTab, path }) => {
-                const savedKey = label === "Timeline" ? "tendr_timeline_saved" : label === "Budget Allocator" ? "tendr_budget_saved" : null;
-                const isSaved = savedKey ? (() => { try { return localStorage.getItem(savedKey) === "true"; } catch { return false; } })() : false;
+                const savedKey = label === "Timeline" ? "tendr_timeline_v2" : label === "Budget Allocator" ? "tendr_checklist_v2" : null;
+                const isSaved = savedKey ? (() => { try { return !!localStorage.getItem(savedKey); } catch { return false; } })() : false;
                 return (
                   <button key={label}
                     onClick={() => { if (newTab) { window.open(path, "_blank"); } else { navigate(href); } setProductsOpen(false); }}
@@ -374,8 +344,8 @@ function BottomNavInner() {
           // Green dot: Products tab gets a dot if any tool has been saved
           const hasProductsSaved = label === "Products" && (() => {
             try {
-              return localStorage.getItem("tendr_timeline_saved") === "true" ||
-                     localStorage.getItem("tendr_budget_saved") === "true";
+              return !!localStorage.getItem("tendr_timeline_v2") ||
+                     !!localStorage.getItem("tendr_checklist_v2");
             } catch { return false; }
           })();
           return (

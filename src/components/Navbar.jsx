@@ -315,7 +315,6 @@ const Navbar = ({
       label: "Booking",
       items: [
         { label: "Plan Your Event", href: "/booking" },
-        ...(user?.isAdmin ? [{ label: "🏠 Home Wedding Planner", href: "/home-wedding-planner" }] : []),
       ],
     },
     {

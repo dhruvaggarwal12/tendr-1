@@ -26,7 +26,6 @@ const getSavedVendors = () => {
 };
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", "/login", "/signup", "/otp"] }) {
-  if (new URLSearchParams(window.location.search).get("standalone") === "1") return null;
   const { user, token }      = useSelector((s) => s.auth);
   const selectedCategories   = useSelector((s) => s.eventPlanning.selectedVendors || []);
   const finalisedVendors     = useSelector((s) => s.listingFilters.finalisedVendors || {});
@@ -131,6 +130,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
   useEffect(() => { fetchVendorChats(); }, [fetchVendorChats]);
 
+  if (new URLSearchParams(search).get("standalone") === "1") return null;
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
 
   const handleSupport = () => {
