@@ -649,7 +649,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       }}>
         {/* Left: Logo */}
         <div onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
-          <img src={tendrLogo} alt="Tendr" style={{ height: 22, display: "block", objectFit: "contain" }} />
+          <img src={tendrLogo} alt="Tendr" style={{ height: 28, maxWidth: 120, display: "block", objectFit: "contain" }} />
         </div>
 
         {/* Center: Search bar — tapping opens full-screen overlay */}

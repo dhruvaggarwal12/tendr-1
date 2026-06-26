@@ -8,7 +8,7 @@ import { useChatOverlay } from "../context/ChatContext";
 import { useTour } from "../context/TourContext";
 import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
-import TendrLogo from "./TendrLogo";
+import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 
 const SEARCH_SUGGESTIONS = [
   { text: "Photographers in Delhi" },
@@ -410,7 +410,7 @@ const Navbar = ({
           onClick={handleLogoClick}
           style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none" }}
         >
-          <TendrLogo height={scrolled ? 42 : 50} />
+          <img src={tendrLogo} alt="Tendr" style={{ height: scrolled ? 32 : 36, maxWidth: 140, objectFit: "contain", display: "block" }} />
         </a>
 
 
