@@ -8,10 +8,10 @@ import HamburgerNav from "../../components/HamburgerNav";
 const font = "'Outfit', sans-serif";
 
 const STATS = [
-  { value: "500+", label: "Verified Vendors" },
-  { value: "4", label: "Cities Served" },
-  { value: "2,000+", label: "Events Planned" },
-  { value: "98%", label: "Happy Customers" },
+  { value: "5,000+", label: "Events by Our Vendors" },
+  { value: "Delhi NCR", label: "Where We Operate", noCount: true },
+  { value: "Hand-Picked", label: "Every Vendor, Verified by Us", noCount: true },
+  { value: "You First", label: "Always", noCount: true },
 ];
 
 const VALUES = [
@@ -98,13 +98,14 @@ function useCountUp(target, duration = 1800, started = false) {
   return count.toLocaleString("en-IN") + suffix;
 }
 
-function StatCard({ value, label, started }) {
-  const display = useCountUp(value, 1600, started);
+function StatCard({ value, label, started, noCount }) {
+  const counted = useCountUp(value, 1600, started && !noCount);
+  const display = noCount ? value : counted;
   return (
     <div style={{ textAlign: "center" }}>
       <div
         style={{
-          fontSize: "clamp(2.2rem, 5vw, 3.2rem)",
+          fontSize: noCount ? "clamp(1.3rem, 3.5vw, 1.9rem)" : "clamp(2.2rem, 5vw, 3.2rem)",
           fontWeight: 900,
           color: "#C47A2E",
           letterSpacing: "-0.02em",
@@ -253,7 +254,7 @@ export default function AboutUs() {
           className="about-stats-grid"
         >
           {STATS.map((s) => (
-            <StatCard key={s.label} value={s.value} label={s.label} started={statsVisible} />
+            <StatCard key={s.label} value={s.value} label={s.label} started={statsVisible} noCount={s.noCount} />
           ))}
         </div>
       </section>
