@@ -505,7 +505,20 @@ export default function VendorChatModal() {
     setConversationId(chatState.conversationId || null);
     setApproved(existing ? !!chatState.vendor?.approved : false);
     const vid = chatState.vendor?._id;
-    setChatCompleted(vid ? !!localStorage.getItem(`tendr:chat-done:${vid}`) : false);
+    const chatDoneValid = (() => {
+      if (!vid) return false;
+      if (!localStorage.getItem(`tendr:chat-done:${vid}`)) return false;
+      try {
+        const s = JSON.parse(localStorage.getItem("tendr_ep_session") || "{}");
+        const eventDate = s?.formData?.date;
+        if (eventDate && Date.now() > new Date(eventDate).getTime() + 86400000) {
+          localStorage.removeItem(`tendr:chat-done:${vid}`);
+          return false;
+        }
+      } catch {}
+      return true;
+    })();
+    setChatCompleted(chatDoneValid);
     setShowReviewPopup(false);
     setMinimizing(false);
     // Reset package step for every new vendor chat
@@ -769,6 +782,7 @@ export default function VendorChatModal() {
     }
 
     dispatch(setFinalisedVendor(vendor));
+    try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
     if (socketRef.current && conversationId) {
       socketRef.current.emit("send_message", {
         conversationId,
@@ -1480,7 +1494,13 @@ export default function VendorChatModal() {
                   ) : <span />}
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button
-                    onClick={() => { setChatCompleted(true); if (vendor?._id) localStorage.setItem(`tendr:chat-done:${vendor._id}`, "1"); }}
+                    onClick={() => {
+                      setChatCompleted(true);
+                      if (vendor?._id) {
+                        localStorage.setItem(`tendr:chat-done:${vendor._id}`, "1");
+                        try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
+                      }
+                    }}
                     disabled={chatCompleted}
                     style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: chatCompleted ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
                   >

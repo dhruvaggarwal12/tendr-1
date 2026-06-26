@@ -4,12 +4,16 @@ import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import MobileBottomNav from "./components/MobileBottomNav";
 import { fetchEventData } from "./redux/eventPlanningSlice";
+import { syncProgressOnLogin } from "./utils/progressSync";
 
 function AppInit() {
   const dispatch = useDispatch();
   const token = useSelector((s) => s.auth.token);
   useEffect(() => {
-    if (token) dispatch(fetchEventData(token));
+    if (token) {
+      dispatch(fetchEventData(token));
+      syncProgressOnLogin(token);
+    }
   }, [token, dispatch]);
   return null;
 }

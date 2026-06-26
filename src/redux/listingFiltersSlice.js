@@ -23,25 +23,40 @@ const getUserId = () => {
   } catch { return 'guest'; }
 };
 
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+const getEventExpiry = () => {
+  try {
+    const s = JSON.parse(localStorage.getItem("tendr_ep_session") || "{}");
+    const date = s?.formData?.date;
+    if (date) return new Date(date).getTime() + 24 * 60 * 60 * 1000;
+  } catch {}
+  return Date.now() + SEVEN_DAYS_MS;
+};
+
 const loadCompareSelected = () => {
   try {
     const uid = getUserId();
-    const saved = localStorage.getItem(`compareSelected_${uid}`);
-    return saved ? JSON.parse(saved) : [];
+    const raw = localStorage.getItem(`compareSelected_${uid}`);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    // Check 7-day expiry
+    if (parsed?.__expiresAt && Date.now() > parsed.__expiresAt) {
+      localStorage.removeItem(`compareSelected_${uid}`);
+      return [];
+    }
+    return Array.isArray(parsed?.items) ? parsed.items : (Array.isArray(parsed) ? parsed : []);
   } catch { return []; }
 };
 
 const saveCompareSelected = (arr) => {
   try {
     const uid = getUserId();
-    localStorage.setItem(`compareSelected_${uid}`, JSON.stringify(arr));
+    localStorage.setItem(`compareSelected_${uid}`, JSON.stringify({ items: arr, __expiresAt: Date.now() + SEVEN_DAYS_MS }));
   } catch {}
 };
 
-const TTL_24H = 7 * 24 * 60 * 60 * 1000; // 7 days — so vendors stay after dashboard revisit
-
 const loadFinalisedVendors = () => {
-  // Try user-specific key first, fall back to simple key, then empty
   const uid = getUserId();
   return loadFinalisedVendorsFromKey(`finalisedVendors_${uid}`)
       || loadFinalisedVendorsFromKey('tendr_finalised')
@@ -51,9 +66,8 @@ const loadFinalisedVendors = () => {
 const saveFinalisedVendors = (obj) => {
   try {
     const uid = getUserId();
-    const withTTL = { ...obj, __expiresAt: Date.now() + TTL_24H };
+    const withTTL = { ...obj, __expiresAt: getEventExpiry() };
     const encoded = JSON.stringify(withTTL);
-    // Save to both user-specific AND a simple fallback key for reliability
     localStorage.setItem(`finalisedVendors_${uid}`, encoded);
     localStorage.setItem('tendr_finalised', encoded);
   } catch {}

@@ -133,6 +133,30 @@ export const loadUserEventData = async (token) => {
   } catch { return null; }
 };
 
+export const saveUserProgress = async (token, progress) => {
+  try {
+    await fetch(`${BASE_URL}/consumers/me/progress`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      credentials: 'include',
+      body: JSON.stringify({ progress }),
+    });
+  } catch { /* silently fail — localStorage is the fallback */ }
+};
+
+export const loadUserProgress = async (token) => {
+  try {
+    const response = await fetch(`${BASE_URL}/consumers/me/progress`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      credentials: 'include',
+    });
+    if (!response.ok) return null;
+    const result = await response.json();
+    return result?.progress || null;
+  } catch { return null; }
+};
+
 export const getUserProfile = async (token) => {
   try {
     const response = await fetch(`${BASE_URL}/consumers/profile`, {

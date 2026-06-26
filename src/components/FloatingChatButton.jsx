@@ -17,7 +17,13 @@ import { selectStConfirmed, selectStForm, selectStCartSnapshot } from "../redux/
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 const SAVED_KEY = "tendr_saved_vendors";
-const getSavedVendors = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const getSavedVendors = () => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
+    return raw.filter(v => !v.__savedAt || Date.now() - v.__savedAt < SEVEN_DAYS_MS);
+  } catch { return []; }
+};
 
 export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", "/login", "/signup", "/otp"] }) {
   if (new URLSearchParams(window.location.search).get("standalone") === "1") return null;

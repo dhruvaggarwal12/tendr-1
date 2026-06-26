@@ -577,6 +577,7 @@ export default function Timeline() {
       personalized: pd || null,
       __expiresAt: computeExpiry(pd),
     }));
+    try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
   }, [phases, planKey, loaded]); // eslint-disable-line
 
   const applyPlan = (key) => {

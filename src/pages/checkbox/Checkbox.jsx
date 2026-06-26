@@ -406,6 +406,7 @@ export default function CheckBox() {
       personalized: pd || null,
       __expiresAt: computeExpiry(pd),
     }));
+    try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
   }, [categories, templateKey, loaded]); // eslint-disable-line
 
   const applyTemplate = (key) => {

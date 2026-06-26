@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { clearError, signup, login } from "../../redux/authSlice";
 import { fetchEventData } from "../../redux/eventPlanningSlice";
+import { syncProgressOnLogin } from "../../utils/progressSync";
 
 const font = "'Outfit', sans-serif";
 
@@ -158,7 +159,7 @@ const Auth = () => {
       if (login.fulfilled.match(result)) {
         const loggedUser = result.payload?.consumer;
         const token = result.payload?.token;
-        if (token) dispatch(fetchEventData(token));
+        if (token) { dispatch(fetchEventData(token)); syncProgressOnLogin(token); }
         // Extend discovery session TTL to event date on login
         try {
           const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");

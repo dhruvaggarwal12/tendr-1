@@ -169,9 +169,22 @@ const EventPlanning = () => {
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
   const [wizardAnswers, setWizardAnswers] = useState(() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_answers") || "{}"); } catch { return {}; } });
-  const [planSubmitted, setPlanSubmitted] = useState(() => !!localStorage.getItem("tendr_smart_plan"));
+  const [planSubmitted, setPlanSubmitted] = useState(() => {
+    try {
+      const raw = JSON.parse(localStorage.getItem("tendr_smart_plan") || "null");
+      if (!raw) return false;
+      if (raw.__expiresAt && Date.now() > raw.__expiresAt) { localStorage.removeItem("tendr_smart_plan"); return false; }
+      return true;
+    } catch { return false; }
+  });
   const [confirmedPlan, setConfirmedPlan] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("tendr_smart_plan") || "null"); } catch { return null; }
+    try {
+      const raw = JSON.parse(localStorage.getItem("tendr_smart_plan") || "null");
+      if (!raw) return null;
+      if (raw.__expiresAt && Date.now() > raw.__expiresAt) { localStorage.removeItem("tendr_smart_plan"); return null; }
+      const { __expiresAt, ...plan } = raw;
+      return plan;
+    } catch { return null; }
   });
   const [submitLoading, setSubmitLoading] = useState(false);
   const [selectedPackages, setSelectedPackages] = useState(() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_packages") || "{}"); } catch { return {}; } });
@@ -516,8 +529,11 @@ const EventPlanning = () => {
           })),
           wizardAnswers: { ...wizardAnswers, selectedPackages },
         });
-        const planData = { ...result.plan, _savedAt: Date.now() };
+        const eventDate = formData?.date;
+        const expiresAt = eventDate ? new Date(eventDate).getTime() + 86400000 : Date.now() + 7 * 86400000;
+        const planData = { ...result.plan, _savedAt: Date.now(), __expiresAt: expiresAt };
         localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
+        try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
         setConfirmedPlan(planData);
       } catch (e) {
         console.error('Plan submit failed:', e);

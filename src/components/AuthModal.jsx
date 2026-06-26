@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { clearError, login } from "../redux/authSlice";
 import { fetchEventData } from "../redux/eventPlanningSlice";
+import { syncProgressOnLogin } from "../utils/progressSync";
 import logo from "../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
@@ -89,7 +90,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
       const result = await dispatch(login({ phoneNumber: formData.phoneNumber, password: formData.password }));
       if (login.fulfilled.match(result)) {
         const token = result.payload?.token;
-        if (token) dispatch(fetchEventData(token));
+        if (token) { dispatch(fetchEventData(token)); syncProgressOnLogin(token); }
         try {
           const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
           if (raw?.date) {
@@ -133,6 +134,7 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
         return;
       }
       dispatch({ type: "auth/login/fulfilled", payload: data });
+      if (data?.token) syncProgressOnLogin(data.token);
       try {
         const raw = JSON.parse(localStorage.getItem("tendr:session:discovery") || "null");
         if (raw?.date) {

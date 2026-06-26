@@ -73,15 +73,25 @@ const setChatSave = (id, data) => {
 };
 
 const SAVED_KEY = "tendr_saved_vendors";
-const getSaved = () => { try { return JSON.parse(localStorage.getItem(SAVED_KEY) || "[]"); } catch { return []; } };
+const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+const getSaved = () => {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
+    // Filter out bookmarks older than 7 days
+    return raw.filter(v => !v.__savedAt || Date.now() - v.__savedAt < SEVEN_DAYS_MS);
+  } catch { return []; }
+};
 const isSaved = (id) => getSaved().some(v => v._id === id);
 const toggleSaved = (vendor) => {
   const list = getSaved();
   const exists = list.some(v => v._id === vendor._id);
-  localStorage.setItem(SAVED_KEY, JSON.stringify(
-    exists ? list.filter(v => v._id !== vendor._id) : [...list, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, image: vendor.image || vendor.portfolioPhotos?.[0] || "", city: vendor.city || "" }]
-  ));
+  const updated = exists
+    ? list.filter(v => v._id !== vendor._id)
+    : [...list, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, image: vendor.image || vendor.portfolioPhotos?.[0] || "", city: vendor.city || "", __savedAt: Date.now() }];
+  try { localStorage.setItem(SAVED_KEY, JSON.stringify(updated)); } catch {}
   window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed"));
+  // Sync to server
+  try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
 };
 
 const font = "'Outfit', sans-serif";
