@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getProductById } from "./memoriesData";
 import HamburgerNav from "../../components/HamburgerNav";
-import MobileBottomNav from "../../components/MobileBottomNav";
 
 const font = "'Outfit', sans-serif";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -136,8 +135,6 @@ export default function MemoryProfile() {
           </button>
         </div>
       </div>
-
-      <MobileBottomNav active="Products" />
 
       {/* Booking modal */}
       {showModal && (

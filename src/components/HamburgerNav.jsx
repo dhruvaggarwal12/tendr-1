@@ -7,7 +7,6 @@ import { removeVendorFromCompare, clearVendorCompare, clearFinalisedVendor, setF
 import { useChatOverlay } from "../context/ChatContext";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
-import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
 import CompareModal from "./CompareModal";
 
@@ -867,7 +866,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         </div>
       ); })()}
 
-      <MobileBottomNav />
 
 
       <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />

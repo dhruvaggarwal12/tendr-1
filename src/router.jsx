@@ -2,6 +2,7 @@ import { createBrowserRouter, Outlet, ScrollRestoration } from "react-router-dom
 import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
+import MobileBottomNav from "./components/MobileBottomNav";
 import { fetchEventData } from "./redux/eventPlanningSlice";
 
 function AppInit() {
@@ -22,6 +23,7 @@ function RootLayout() {
       <AppInit />
       <ScrollRestoration />
       <PWAInstallPrompt />
+      <MobileBottomNav />
       <Outlet />
     </>
   );

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProducts } from "./memoriesData";
 import HamburgerNav from "../../components/HamburgerNav";
-import MobileBottomNav from "../../components/MobileBottomNav";
 
 const font = "'Outfit', sans-serif";
 
@@ -65,7 +64,6 @@ export default function MemoriesPage() {
         )}
       </div>
 
-      <MobileBottomNav active="Products" />
     </div>
   );
 }

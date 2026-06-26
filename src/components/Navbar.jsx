@@ -6,7 +6,6 @@ import { logout } from "../redux/authSlice";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { useChatOverlay } from "../context/ChatContext";
 import { useTour } from "../context/TourContext";
-import MobileBottomNav from "./MobileBottomNav";
 import SearchOverlay from "./SearchOverlay";
 import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 
@@ -964,7 +963,6 @@ const Navbar = ({
         </div>
       </div>
 
-      <MobileBottomNav />
       <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
       <style>{`
         @media (min-width: 768px) {
