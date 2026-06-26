@@ -417,7 +417,22 @@ const BookingReviewPage = () => {
           .booking-review-main {
             min-width: 0 !important;
           }
+          .booking-sidebar-proceed { display: none !important; }
+          .booking-mobile-cta {
+            display: flex !important;
+            position: fixed;
+            bottom: calc(60px + env(safe-area-inset-bottom, 0px));
+            left: 0; right: 0;
+            background: #FFFCF5;
+            border-top: 1.5px solid rgba(196,122,46,0.15);
+            padding: 10px 16px;
+            box-shadow: 0 -4px 16px rgba(44,26,14,0.08);
+            z-index: 9800;
+            align-items: center;
+            gap: 12px;
+          }
         }
+        .booking-mobile-cta { display: none; }
       `}</style>
       <SEO title="Review & Pay" description="Review your booking details and confirm payment on Tendr." path="/booking/review" noIndex={true} />
       <BasicSpeedDial />
@@ -826,7 +841,7 @@ const BookingReviewPage = () => {
             )}
 
             {/* ── Total + Proceed ── */}
-            <div
+            <div className="booking-sidebar-proceed"
               style={{
                 background: "#fff",
                 borderRadius: 16,
@@ -1200,6 +1215,33 @@ const BookingReviewPage = () => {
         </div>
       </div>
 
+      {/* Mobile-only fixed checkout bar — hidden on desktop via CSS */}
+      <div className="booking-mobile-cta">
+        {(confirmedTotal + faTotal) > 0 && (() => {
+          const raw = confirmedTotal + faTotal;
+          const disc = appliedCode ? applyDiscount(raw).finalTotal : raw;
+          const total = disc + Math.round(disc * 0.18) + 100;
+          return (
+            <div style={{ fontSize: 13, lineHeight: 1.3, flexShrink: 0 }}>
+              <div style={{ color: "#9B7450", fontSize: 11 }}>Grand Total</div>
+              <div style={{ fontWeight: 900, color: "#2C1A0E", fontSize: 16 }}>{formatINR(total)}</div>
+            </div>
+          );
+        })()}
+        {anyPriceUnset ? (
+          <div style={{ flex: 1, padding: "11px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 13, fontWeight: 700, textAlign: "center", border: "1.5px dashed #d1d5db", fontFamily: "'Outfit', sans-serif" }}>
+            ⏳ Waiting for quotes
+          </div>
+        ) : (
+          <button
+            disabled={saving}
+            onClick={() => setShowConfirmPopup(true)}
+            style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.35)" }}
+          >
+            Proceed to Payment
+          </button>
+        )}
+      </div>
 
     </div>
   );

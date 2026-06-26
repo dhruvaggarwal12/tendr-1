@@ -101,7 +101,7 @@ function CartWindow({ onClose, onCheckout }) {
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.3)" }} />
       <div style={{
         position: "fixed", right: 16, top: "50%", transform: "translateY(-50%)",
-        zIndex: 100001, width: "min(360px, calc(100vw - 32px))", maxHeight: "80vh",
+        zIndex: 100001, width: "min(360px, calc(100vw - 32px))", maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))",
         background: "#FFFCF5", borderRadius: 20,
         boxShadow: "0 20px 60px rgba(44,26,14,0.2)",
         border: "1.5px solid rgba(196,122,46,0.2)",
@@ -186,7 +186,7 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
   return (
     <>
       <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.45)" }} />
-      <div className="gh-checkout-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 100001, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "min(92vw,440px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font }}>
+      <div className="gh-checkout-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 100001, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "min(92vw,440px)", maxHeight: "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))", overflowY: "auto", boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
           <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: 0 }}>Delivery Details</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 18 }}>✕</button>
@@ -359,7 +359,7 @@ const GiftHampersCakes = () => {
         return (
         <>
           <div onClick={() => setSelectedProduct(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100000, backdropFilter: "blur(4px)" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,480px)", maxHeight: isMob ? "80vh" : "85vh", background: "#FFFCF5", borderRadius: 18, zIndex: 100001, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: "'Outfit',sans-serif" }}>
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,480px)", maxHeight: isMob ? "calc(100dvh - 160px - env(safe-area-inset-bottom, 0px))" : "85vh", background: "#FFFCF5", borderRadius: 18, zIndex: 100001, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: "'Outfit',sans-serif" }}>
             {/* Close */}
             <button onClick={() => setSelectedProduct(null)} style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.18)", color: "#fff", fontSize: 15, cursor: "pointer", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
             {/* Image */}
