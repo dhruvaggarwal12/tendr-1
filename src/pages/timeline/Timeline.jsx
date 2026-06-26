@@ -715,7 +715,7 @@ export default function Timeline() {
       )}
 
       {/* Scrollable timeline */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px 40px" }}>
+      <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
         {/* Vertical timeline */}

@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import HamburgerNav from "../../components/HamburgerNav";
 import { GUIDES } from "./guideData";
 
 const font = "'Outfit', sans-serif";
@@ -21,14 +22,9 @@ export default function GuidesStore() {
 
   return (
     <div style={{ minHeight: "100vh", background: STORE.bg, fontFamily: font }}>
-      {/* Back bar */}
-      <div style={{ background: STORE.accentSoft, borderBottom: `1px solid ${STORE.border}`, padding: "8px 24px", display: "flex", alignItems: "center", gap: 8 }}>
-        <button onClick={() => navigate(-1)} style={{ background: "none", border: `1px solid ${STORE.border}`, color: STORE.accent, fontSize: 12, fontWeight: 600, padding: "4px 14px", borderRadius: 6, cursor: "pointer", fontFamily: font }}>
-          ← Back
-        </button>
-      </div>
+      <HamburgerNav title="Event Planning Guides" />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "60px 24px 80px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 60 }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: STORE.accentSoft, border: `1px solid ${STORE.border}`, borderRadius: 100, padding: "6px 18px", marginBottom: 20 }}>
@@ -43,7 +39,7 @@ export default function GuidesStore() {
         </div>
 
         {/* Guide cards grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: 20 }}>
           {GUIDES.map((guide) => (
             <GuideCard key={guide.slug} guide={guide} onOpen={() => navigate(`/guides/${guide.slug}`)} />
           ))}

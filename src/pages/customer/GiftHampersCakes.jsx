@@ -89,10 +89,10 @@ function CartWindow({ onClose, onCheckout }) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1100, background: "rgba(0,0,0,0.3)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.3)" }} />
       <div style={{
-        position: "fixed", right: 24, top: "50%", transform: "translateY(-50%)",
-        zIndex: 1101, width: 360, maxHeight: "80vh",
+        position: "fixed", right: 16, top: "50%", transform: "translateY(-50%)",
+        zIndex: 100001, width: "min(360px, calc(100vw - 32px))", maxHeight: "80vh",
         background: "#FFFCF5", borderRadius: 20,
         boxShadow: "0 20px 60px rgba(44,26,14,0.2)",
         border: "1.5px solid rgba(196,122,46,0.2)",
@@ -173,8 +173,8 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
   if (!token) {
     return (
       <>
-        <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.45)" }} />
-        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#FFFCF5", borderRadius: 20, padding: "32px 28px", width: 340, boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font, textAlign: "center" }}>
+        <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.45)" }} />
+        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 100001, background: "#FFFCF5", borderRadius: 20, padding: "32px 28px", width: 340, boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font, textAlign: "center" }}>
           <div style={{ fontSize: 36, marginBottom: 10 }}>🔒</div>
           <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Sign in to continue</h3>
           <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 20px" }}>Create an account or sign in to place your gift hamper order.</p>
@@ -189,8 +189,8 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.45)" }} />
-      <div className="gh-checkout-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "min(92vw,440px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font }}>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.45)" }} />
+      <div className="gh-checkout-modal" style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 100001, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", width: "min(92vw,440px)", maxHeight: "90vh", overflowY: "auto", boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font }}>
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 20 }}>
           <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: 0 }}>Delivery Details</h3>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 18 }}>✕</button>
@@ -300,7 +300,7 @@ const GiftHampersCakes = () => {
       </div>
 
       {/* Product grid — single-source 🎁 cart is in FloatingChatButton global stack */}
-      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 14px 80px" }}>
+      <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 14px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Category filters */}
         {categories.length > 1 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 16 }}>
@@ -348,8 +348,8 @@ const GiftHampersCakes = () => {
         const isMob = window.innerWidth < 768;
         return (
         <>
-          <div onClick={() => setSelectedProduct(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,480px)", maxHeight: isMob ? "80vh" : "85vh", background: "#FFFCF5", borderRadius: 18, zIndex: 1101, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: "'Outfit',sans-serif" }}>
+          <div onClick={() => setSelectedProduct(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100000, backdropFilter: "blur(4px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,480px)", maxHeight: isMob ? "80vh" : "85vh", background: "#FFFCF5", borderRadius: 18, zIndex: 100001, overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: "'Outfit',sans-serif" }}>
             {/* Close */}
             <button onClick={() => setSelectedProduct(null)} style={{ position: "absolute", top: 10, right: 10, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(0,0,0,0.18)", color: "#fff", fontSize: 15, cursor: "pointer", zIndex: 2, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
             {/* Image */}

@@ -25,7 +25,7 @@ function IntroScreen({ onStart }) {
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
       <HamburgerNav title="Guest List" />
-      <div style={{ maxWidth: 780, margin: "0 auto", padding: "48px 24px 80px" }}>
+      <div style={{ maxWidth: 780, margin: "0 auto", padding: "48px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Hero */}
         <div style={{ textAlign: "center", marginBottom: 44 }}>
           <div style={{ fontSize: 52, marginBottom: 16 }}>👥</div>
@@ -153,7 +153,7 @@ export default function GuestList() {
       <BasicSpeedDial />
       <HamburgerNav title="Guest List" />
 
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 20px 80px" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "36px 20px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Header */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, marginBottom: 24, flexWrap: "wrap" }}>
           <div>

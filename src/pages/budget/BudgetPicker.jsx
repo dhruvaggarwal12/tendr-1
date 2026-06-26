@@ -43,7 +43,7 @@ export default function BudgetPicker() {
       <BasicSpeedDial />
       <ToolNav title="Budget Allocator" />
 
-      <div style={{ maxWidth: 860, margin: "0 auto", padding: "52px 24px 80px" }}>
+      <div style={{ maxWidth: 860, margin: "0 auto", padding: "52px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         <div style={{ textAlign: "center", marginBottom: 44 }}>
           <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Planning Tool</p>
           <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>What are you planning?</h1>

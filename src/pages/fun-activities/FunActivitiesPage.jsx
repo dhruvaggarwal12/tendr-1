@@ -31,7 +31,7 @@ export default function FunActivitiesPage() {
       </div>
 
       {/* Activities grid */}
-      <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 20px 80px" }}>
+      <div style={{ maxWidth:1100, margin:"0 auto", padding:"36px 20px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         <FunActivitiesSection grid={true} />
       </div>
     </div>

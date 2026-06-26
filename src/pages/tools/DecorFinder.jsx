@@ -403,8 +403,8 @@ export default function DecorFinder() {
       {/* ── Quick View side panel ── */}
       {decorQV && (
         <>
-          <div onClick={() => setDecorQV(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1100 }} />
-          <div style={{ position: "fixed", right: 0, top: 0, height: "100vh", width: 420, maxWidth: "92vw", background: "#FFFCF5", zIndex: 1101, overflowY: "auto", boxShadow: "-8px 0 48px rgba(139,69,19,0.18)", animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)", fontFamily: font, paddingBottom: 80 }}>
+          <div onClick={() => setDecorQV(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000 }} />
+          <div style={{ position: "fixed", right: 0, top: 0, height: "100vh", width: 420, maxWidth: "92vw", background: "#FFFCF5", zIndex: 100001, overflowY: "auto", boxShadow: "-8px 0 48px rgba(139,69,19,0.18)", animation: "qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)", fontFamily: font, paddingBottom: 80 }}>
             {/* Cover photo */}
             <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
               <img src={decorQV.photos?.[0]?.imageUrl || "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=600&q=80"} alt={decorQV.vendorName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -448,8 +448,8 @@ export default function DecorFinder() {
       {/* ── Mini form modal (before profile/chat) ── */}
       {miniFormOpen && miniFormVendor && (
         <>
-          <div onClick={() => setMiniFormOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1201, background: "#FFFCF5", borderRadius: 20, width: "min(95vw,440px)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font, overflow: "hidden" }}>
+          <div onClick={() => setMiniFormOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 100001, background: "#FFFCF5", borderRadius: 20, width: "min(95vw,440px)", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font, overflow: "hidden" }}>
             <div style={{ padding: "16px 22px 12px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
               <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: "0 0 2px" }}>Quick Event Details</h3>
               <p style={{ fontSize: 11.5, color: "#9B7450", margin: 0 }}>
@@ -490,7 +490,7 @@ export default function DecorFinder() {
 
       {/* Old vendorProfile modal (kept for backward compat — replaced by decorQV) */}
       {vendorProfile && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 10000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}
           onClick={() => setVendorProfile(null)}>
           <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 400, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", overflow: "hidden" }}
             onClick={e => e.stopPropagation()}>
@@ -529,7 +529,7 @@ export default function DecorFinder() {
 
       {/* Pre-chat form modal */}
       {chatFormVendor && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 100000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, fontFamily: font }}>
           <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 480, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", overflow: "hidden" }}>
             <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", padding: "18px 24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
@@ -568,7 +568,7 @@ export default function DecorFinder() {
         </div>
       )}
 
-      <div style={{ maxWidth: step === 1 ? 1100 : 660, margin: "0 auto", padding: "clamp(16px,3.5vw,32px) clamp(12px,3vw,16px) 80px", transition: "max-width 0.3s" }}>
+      <div style={{ maxWidth: step === 1 ? 1100 : 660, margin: "0 auto", padding: "clamp(16px,3.5vw,32px) clamp(12px,3vw,16px) calc(80px + env(safe-area-inset-bottom, 0px))", transition: "max-width 0.3s" }}>
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 28 }}>

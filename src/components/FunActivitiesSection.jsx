@@ -188,8 +188,8 @@ function ActivityModal({ activity, onClose, onAddToCart }) {
   const isMob = window.innerWidth < 768;
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", zIndex: 1100, backdropFilter: "blur(4px)" }} />
-      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,520px)", maxHeight: isMob ? "82vh" : "90vh", overflowY: "auto", background: "#FFFCF5", borderRadius: isMob ? 18 : 22, zIndex: 1101, fontFamily: F, boxShadow: "0 28px 70px rgba(0,0,0,0.22)" }}>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.52)", zIndex: 100000, backdropFilter: "blur(4px)" }} />
+      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(94vw,520px)", maxHeight: isMob ? "82vh" : "90vh", overflowY: "auto", background: "#FFFCF5", borderRadius: isMob ? 18 : 22, zIndex: 100001, fontFamily: F, boxShadow: "0 28px 70px rgba(0,0,0,0.22)" }}>
 
         {/* Header */}
         <div style={{ background: `linear-gradient(135deg,${GOLD}20,${GOLD}08)`, padding: isMob ? "20px 16px 14px" : "32px 24px 20px", textAlign: "center", borderRadius: isMob ? "18px 18px 0 0" : "22px 22px 0 0", position: "relative" }}>

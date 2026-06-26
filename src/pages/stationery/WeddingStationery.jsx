@@ -123,7 +123,7 @@ export default function WeddingStationery() {
       )}
 
       {/* ── Items ── */}
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 20px 100px" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 20px calc(100px + env(safe-area-inset-bottom, 0px))" }}>
         {items.length === 0 && (
           <div style={{ textAlign: "center", padding: "80px 24px" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>💍</div>
@@ -252,7 +252,7 @@ export default function WeddingStationery() {
 
       {/* ── Quantity Picker Modal ── */}
       {qtyPicker && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 100000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div onClick={() => setQtyPicker(null)} style={{ position: "absolute", inset: 0, background: "rgba(28,10,0,0.6)", backdropFilter: "blur(4px)" }} />
           <div style={{ position: "relative", background: "#FFFCF7", borderRadius: 24, padding: "28px 28px 24px", width: "100%", maxWidth: 380, boxShadow: "0 24px 80px rgba(44,26,14,0.35)", animation: "ws-fadeIn 0.2s ease" }}>
             <button onClick={() => setQtyPicker(null)} style={{ position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: "50%", background: "rgba(44,26,14,0.07)", border: "none", cursor: "pointer", fontSize: 16, color: "#5a3a1a" }}>×</button>
@@ -302,7 +302,7 @@ export default function WeddingStationery() {
 
       {/* ── Detail Panel ── */}
       {selectedItem && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: font }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 100000, fontFamily: font }}>
           <div onClick={() => setSelectedItem(null)} style={{ position: "absolute", inset: 0, background: "rgba(28,10,0,0.55)", backdropFilter: "blur(3px)", animation: "ws-fadeIn 0.25s ease" }} />
           <div className="ws-panel" style={{ position: "absolute", right: 0, top: 0, bottom: 0, width: "min(52vw,540px)", background: "#FFFCF7", overflowY: "auto", boxShadow: "-20px 0 80px rgba(44,26,14,0.28)", animation: "ws-slideRight 0.35s cubic-bezier(0.4,0,0.2,1)" }}>
             <button onClick={() => setSelectedItem(null)} style={{ position: "absolute", top: 16, right: 16, width: 36, height: 36, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", cursor: "pointer", fontSize: 18, color: "#5a3a1a", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2 }}>×</button>
@@ -425,7 +425,7 @@ export default function WeddingStationery() {
           .ws-detail-img { min-height: 150px !important; max-height: 200px !important; }
           .ws-detail-img img { max-height: 200px !important; }
           /* Detail panel body: tighter horizontal padding */
-          .ws-panel-body { padding: 20px 18px 80px !important; }
+          .ws-panel-body { padding: 20px 18px calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
         }
         @media(max-width:360px){
           .stat-grid { grid-template-columns: 1fr !important; }
