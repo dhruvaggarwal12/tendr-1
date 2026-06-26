@@ -404,7 +404,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           {/* Button stack — dynamic, bottom-anchored, stacks upward as icons appear */}
           <div className="mobile-action-stack">
             {savedVendors.length > 0 && (
-              <div style={{ position: "relative" }}>
+              <div className="mobile-saved-btn" style={{ position: "relative" }}>
                 <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
                   title="Saved Vendors"
                   style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
@@ -419,7 +419,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               </div>
             )}
             {compareSelected.length > 0 && (
-              <div style={{ position: "relative" }}>
+              <div className="mobile-compare-btn" style={{ position: "relative" }}>
                 <button className="mobile-action-btn" onClick={() => { const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
                   title="Compare Vendors"
                   style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
@@ -717,6 +717,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         /* Action stack — above chat FAB on both desktop and mobile */
         .mobile-action-stack { display: flex; position: fixed; bottom: calc(82px + env(safe-area-inset-bottom, 0px)); right: 20px; z-index: 900; flex-direction: column; gap: 8px; align-items: flex-end; }
         .mobile-action-btn { display: flex !important; }
+        /* Compare + Saved buttons are for mobile only — desktop uses sidebar */
+        @media (min-width: 1024px) { .mobile-compare-btn, .mobile-saved-btn { display: none !important; } }
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }
         /* Desktop: larger action buttons */

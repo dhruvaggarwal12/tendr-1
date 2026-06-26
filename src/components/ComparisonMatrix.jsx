@@ -4,8 +4,9 @@ import { useChatOverlay } from "../context/ChatContext";
 
 const font    = "'Outfit', sans-serif";
 const FALLBACK = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=400&q=80";
-const ICON_W  = 34;   // px — narrow icon-only column (no text label)
-const COL_W   = 175;  // px — per vendor column
+const ICON_W  = 60;   // px — icon + short label
+const COL_W   = 175;  // px desktop — overridden to 130px on mobile
+const COL_W_M = 130;  // px mobile
 
 // ── Data extractors ───────────────────────────────────────────────────────────
 const getName     = (v) => v?.name ?? v?.businessName ?? "Vendor";
@@ -63,26 +64,25 @@ function Stars({ rating }) {
   );
 }
 
-// ── Stat row — icon only, no text label ───────────────────────────────────────
-function StatRow({ values, winIdx, icon }) {
+// ── Stat row — icon + short label ────────────────────────────────────────────
+function StatRow({ values, winIdx, icon, label }) {
   const hasAny = values.some(v => v != null && v !== "");
   if (!hasAny) return null;
   return (
     <tr>
-      {/* Icon-only cell — no text heading */}
       <td style={{
-        width: ICON_W, padding: "10px 4px",
-        fontSize: 15, textAlign: "center",
+        width: ICON_W, padding: "8px 6px",
         background: "#FDFAF5", borderBottom: "1px solid rgba(201,168,76,0.08)",
-        verticalAlign: "middle",
+        verticalAlign: "middle", textAlign: "center",
       }}>
-        {icon}
+        <div style={{ fontSize: 14, lineHeight: 1 }}>{icon}</div>
+        {label && <div style={{ fontSize: 9, fontWeight: 700, color: "#9B7450", marginTop: 2, textTransform: "uppercase", letterSpacing: "0.04em", lineHeight: 1.2 }}>{label}</div>}
       </td>
       {values.map((val, i) => {
         const isWinner = winIdx != null && i === winIdx && val != null;
         return (
           <td key={i} style={{
-            width: COL_W, padding: "10px 12px",
+            padding: "8px 10px",
             background: isWinner ? "rgba(201,168,76,0.1)" : "transparent",
             borderBottom: "1px solid rgba(201,168,76,0.08)",
             verticalAlign: "middle",
@@ -181,8 +181,9 @@ const ComparisonMatrix = ({ vendors = [] }) => {
 
   if (!vendors.length) return null;
 
-  const n = vendors.length;
-  const tableW = ICON_W + n * COL_W;
+  const n      = vendors.length;
+  const colW   = isMobile ? COL_W_M : COL_W;
+  const tableW = ICON_W + n * colW;
 
   const prices       = vendors.map(getPrice);
   const ratings      = vendors.map(getRating);
@@ -200,33 +201,20 @@ const ComparisonMatrix = ({ vendors = [] }) => {
   const bestEventsIdx = winnerIndex(events,       "high");
   const bestSlotsIdx  = winnerIndex(availability, "high");
 
-  // Mobile layout: stacked 2-column card grid — no horizontal scrolling
-  if (isMobile && n >= 3) {
-    return (
-      <div style={{ fontFamily: font, padding: "4px 2px" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-          {vendors.map((v, i) => (
-            <MobileVendorCard
-              key={v?._id || i}
-              v={v}
-              isBestPrice={i === bestPriceIdx  && getPrice(v)   != null}
-              isBestRating={i === bestRatingIdx && getRating(v) != null}
-              openVendorChat={openVendorChat}
-            />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div style={{ fontFamily: font, overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+      {/* Swipe hint — only on mobile with 3+ vendors */}
+      {isMobile && n >= 3 && (
+        <div style={{ textAlign: "center", fontSize: 11, color: "#9B7450", padding: "4px 0 8px", fontFamily: font }}>
+          ← swipe to compare all vendors →
+        </div>
+      )}
       <table style={{ width: tableW, minWidth: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
 
         {/* Colgroup — explicit widths */}
         <colgroup>
           <col style={{ width: ICON_W }} />
-          {vendors.map((_, i) => <col key={i} style={{ width: COL_W }} />)}
+          {vendors.map((_, i) => <col key={i} style={{ width: colW }} />)}
         </colgroup>
 
         {/* Photo + name + rating + price header */}
@@ -296,13 +284,13 @@ const ComparisonMatrix = ({ vendors = [] }) => {
 
         {/* Stat rows — icon only, no text labels */}
         <tbody>
-          <StatRow icon="📍" values={locations}                                                    winIdx={null} />
-          <StatRow icon="🌟" values={specialities}                                                 winIdx={null} />
-          <StatRow icon="⏱"  values={exps.map(e => e != null ? `${e} yrs` : null)}               winIdx={bestExpIdx} />
-          <StatRow icon="🎉" values={events.map(e => e != null ? `${e}+` : null)}                 winIdx={bestEventsIdx} />
-          <StatRow icon="👥" values={teams.map(t => t != null ? `${t} people` : null)}            winIdx={null} />
-          <StatRow icon="📅" values={availability.map(a => a != null ? `${a} at once` : null)}    winIdx={bestSlotsIdx} />
-          <StatRow icon="✦"  values={services}                                                     winIdx={null} />
+          <StatRow icon="📍" label="Location"    values={locations}                                                    winIdx={null} />
+          <StatRow icon="🌟" label="Speciality" values={specialities}                                                 winIdx={null} />
+          <StatRow icon="⏱"  label="Exp"        values={exps.map(e => e != null ? `${e} yrs` : null)}               winIdx={bestExpIdx} />
+          <StatRow icon="🎉" label="Events"      values={events.map(e => e != null ? `${e}+` : null)}                winIdx={bestEventsIdx} />
+          <StatRow icon="👥" label="Team"        values={teams.map(t => t != null ? `${t} people` : null)}           winIdx={null} />
+          <StatRow icon="📅" label="Slots"       values={availability.map(a => a != null ? `${a} at once` : null)}   winIdx={bestSlotsIdx} />
+          <StatRow icon="✦"  label="Service"     values={services}                                                    winIdx={null} />
 
           {/* CTA row */}
           <tr>

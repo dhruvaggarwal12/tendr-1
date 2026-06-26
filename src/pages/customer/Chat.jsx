@@ -152,8 +152,8 @@ const Chat = () => {
     socket.on("conversation_opened", async ({ _id, chatApproved: approved }) => {
       setConversationId(_id);
       if (approved) setVendorApprovedByAdmin(true);
-      // Add vendor to saved/compare list when chat starts
-      if (vendor?._id && vendor._id !== "concierge" && from !== "support") {
+      // Add vendor to compare only in "you do it" flow — not in let-us-do-it or other flows
+      if (vendor?._id && vendor._id !== "concierge" && from !== "support" && !isLetUsDoIt) {
         dispatch(addVendorToCompare(vendor));
       }
       // After bot finishes: send summary only for NEW conversations (no history yet)
