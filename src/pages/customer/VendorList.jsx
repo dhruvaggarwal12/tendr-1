@@ -368,7 +368,7 @@ const VendorList = () => {
         }}
       />
       <BasicSpeedDial />
-      <HamburgerNav active="Browse" />
+      <HamburgerNav active="Browse" showBack />
       <div>
         {/* Full-width main content */}
         <div className="p-3 lg:p-4" style={{ position: "relative" }}>

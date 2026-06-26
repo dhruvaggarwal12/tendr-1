@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import AuthModal from "./AuthModal";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { selectFunCartCount, selectFunConfirmed, setFunConfirmed, clearFunCart } from "../redux/funActivitiesCartSlice";
 import router from "../router";
@@ -35,6 +36,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const stCartSnapshot       = useSelector(selectStCartSnapshot);
   const [funCartOpen, setFunCartOpen] = useState(false);
   const [ghCartOpen, setGhCartOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [pendingCartAction, setPendingCartAction] = useState(null);
   const [addOnsOpen, setAddOnsOpen] = useState(false);
   const [showPayPopup, setShowPayPopup] = useState(false);
   const dispatch = useDispatch();
@@ -169,6 +172,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       <GlobalStationeryCartDrawer />
       {funCartOpen && <FunCartDrawer onClose={() => setFunCartOpen(false)} />}
       {ghCartOpen && <GiftCartDrawer onClose={() => setGhCartOpen(false)} />}
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => { setAuthModalOpen(false); setPendingCartAction(null); }}
+        onSuccess={() => {
+          setAuthModalOpen(false);
+          if (pendingCartAction === "gh")  setGhCartOpen(true);
+          if (pendingCartAction === "fun") setFunCartOpen(true);
+          if (pendingCartAction === "st")  openStCart();
+          setPendingCartAction(null);
+        }}
+      />
       {showPayPopup && (
         <>
           <div onClick={() => setShowPayPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1300, backdropFilter: "blur(4px)" }} />
@@ -435,7 +449,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             )}
             {funCartCount > 0 && !funConfirmed && (
               <div style={{ position: "relative" }}>
-                <button className="mobile-action-btn" onClick={() => setFunCartOpen(true)}
+                <button className="mobile-action-btn" onClick={() => { if (!token) { setPendingCartAction("fun"); setAuthModalOpen(true); } else { setFunCartOpen(true); } }}
                   title="Fun Activities Cart"
                   style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -452,7 +466,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               <div style={{ position: "relative" }}>
                 <button
                   className="mobile-action-btn"
-                  onClick={() => setGhCartOpen(true)}
+                  onClick={() => { if (!token) { setPendingCartAction("gh"); setAuthModalOpen(true); } else { setGhCartOpen(true); } }}
                   title="Gift Hampers Cart"
                   style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.45)", flexShrink: 0 }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
@@ -469,7 +483,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               <div style={{ position: "relative" }}>
                 <button
                   className="mobile-action-btn"
-                  onClick={openStCart}
+                  onClick={() => { if (!token) { setPendingCartAction("st"); setAuthModalOpen(true); } else { openStCart(); } }}
                   title="Stationery Cart"
                   style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7A3A1E,#C47A2E)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(122,58,30,0.5)", flexShrink: 0, fontSize: 20 }}>
                   💒

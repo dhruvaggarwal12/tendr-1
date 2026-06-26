@@ -755,7 +755,7 @@ const EventPlanning = () => {
       return (
         <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#f8f4ef", fontFamily: F }}>
           <BasicSpeedDial />
-          <HamburgerNav active="Browse" noCompare />
+          <HamburgerNav active="Browse" noCompare showBack />
 
           {/* Chat header — Tendr Concierge style */}
           <div style={{ background: "#fff", borderBottom: "1px solid rgba(139,69,19,0.1)", boxShadow: "0 1px 6px rgba(0,0,0,0.05)" }}>
@@ -910,7 +910,7 @@ const EventPlanning = () => {
       {/* ── Package view ── */}
       <div className="min-h-screen w-full" style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}>
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" noCompare />
+        <HamburgerNav active="Browse" noCompare showBack />
 
         <div className="w-full px-4 sm:px-6 lg:px-12 pt-8 pb-24 flex flex-col items-center">
 
@@ -1372,7 +1372,7 @@ const EventPlanning = () => {
       <>
       <div style={{ minHeight: "100vh", background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}>
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" noCompare />
+        <HamburgerNav active="Browse" noCompare showBack />
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "calc(100vh - 72px)", padding: "40px 20px", textAlign: "center" }}>
           <div style={{ width: 60, height: 60, border: "5px solid rgba(196,122,46,0.15)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "tendr-spin 0.8s linear infinite", marginBottom: 32 }} />
           <h2 style={{ fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 800, color: "#2C1A0E", marginBottom: 10, letterSpacing: "-0.01em" }}>
@@ -1428,7 +1428,7 @@ const EventPlanning = () => {
         style={{ background: "#fff8f2", fontFamily: "'Outfit', sans-serif" }}
       >
         <BasicSpeedDial />
-        <HamburgerNav active="Browse" noCompare />
+        <HamburgerNav active="Browse" noCompare showBack />
 
 
         <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-16 flex flex-col items-center">

@@ -41,7 +41,7 @@ function fmtINR(n) { return `₹${Number(n).toLocaleString("en-IN")}`; }
 
 // title: shown in center; showReviewPay: Review & Pay button; active: journey step
 // noSidebar: force drawer mode (use on form-filling pages like EventPlanning)
-export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false, noCompare = false }) {
+export default function HamburgerNav({ title = "", showReviewPay = false, active = "", noSidebar = false, noCompare = false, showBack = false }) {
   const navigate   = useNavigate();
   const location   = useLocation();
   const dispatch   = useDispatch();
@@ -291,6 +291,18 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             >‹</button>
           </div>
 
+          {/* Back button — desktop sidebar */}
+          {showBack && (
+            <div style={{ padding: "10px 16px 0", flexShrink: 0 }}>
+              <button
+                onClick={() => navigate(-1)}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: 9, padding: "7px 14px", cursor: "pointer", color: "#CCAB4A", fontFamily: font, fontSize: 13, fontWeight: 700, width: "100%" }}
+              >
+                <span style={{ fontSize: 16 }}>←</span> Back
+              </button>
+            </div>
+          )}
+
           {/* Search bar + suggestions */}
           <div style={{ padding: "8px 14px 0", borderBottom: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
             <style>{`.sb-search::placeholder{color:rgba(255,255,255,0.35);}`}</style>
@@ -357,7 +369,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           {/* Sign In — for logged-out users, shown prominently near top */}
           {!token && (
             <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
-              <button onClick={() => navigate("/login")}
+              <button onClick={() => navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } })}
                 style={{ width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
                 Sign In / Sign Up →
               </button>
@@ -646,10 +658,20 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
         padding: "0 16px",
         fontFamily: font,
       }}>
-        {/* Left: Logo */}
-        <div onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
-          <img src={tendrLogo} alt="Tendr" style={{ height: 28, maxWidth: 120, display: "block", objectFit: "contain" }} />
-        </div>
+        {/* Left: Back button or Logo */}
+        {showBack ? (
+          <button
+            onClick={() => navigate(-1)}
+            style={{ display: "flex", alignItems: "center", gap: 5, background: "none", border: "none", cursor: "pointer", padding: "4px 6px 4px 0", flexShrink: 0, color: "#2C1A0E" }}
+          >
+            <span style={{ fontSize: 18, lineHeight: 1, color: "#C47A2E" }}>←</span>
+            <span style={{ fontSize: 13, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}>Back</span>
+          </button>
+        ) : (
+          <div onClick={() => navigate("/")} style={{ cursor: "pointer", flexShrink: 0 }}>
+            <img src={tendrLogo} alt="Tendr" style={{ height: 28, maxWidth: 120, display: "block", objectFit: "contain" }} />
+          </div>
+        )}
 
         {/* Center: Search bar — tapping opens full-screen overlay */}
         <button
@@ -727,7 +749,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   </div>
                 </div>
               ) : (
-                <button onClick={() => { navigate("/login"); close(); }}
+                <button onClick={() => { navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } }); close(); }}
                   style={{ width: "100%", marginTop: 14, padding: "10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Sign In
                 </button>

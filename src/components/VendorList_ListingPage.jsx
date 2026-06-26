@@ -2,6 +2,7 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import AuthModal from "./AuthModal";
 import { useChatOverlay } from "../context/ChatContext";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 import { EventIdeasPanel } from "../utils/eventIdeas";
@@ -119,6 +120,8 @@ const VendorList_ListingPage = ({
   const formData = useSelector(s => s.eventPlanning?.formData || {});
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
+  const [authModalOpen, setAuthModalOpen]   = useState(false);
+  const [pendingChatVendor, setPendingChatVendor] = useState(null);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
   const [invitePersonName, setInvitePersonName] = useState(() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } });
   const [inviteVenueAddress, setInviteVenueAddress] = useState(() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } });
@@ -260,7 +263,13 @@ const VendorList_ListingPage = ({
                   <div
                     key={vendor._id || index}
                     className="vendor-card"
-                    onClick={() => setQuickViewVendor(vendor)}
+                    onClick={() => {
+                      if (window.innerWidth >= 1024) {
+                        window.open(`/vendor/${vendor._id}`, "_blank");
+                      } else {
+                        setQuickViewVendor(vendor);
+                      }
+                    }}
                     style={{
                       background: "#FFFCF5", borderRadius: 20,
                       border: "1.5px solid rgba(0,0,0,0.07)",
@@ -663,9 +672,8 @@ const VendorList_ListingPage = ({
                 <button
                   onClick={async () => {
                     if (!token) {
-                      sessionStorage.setItem("listings_scroll_y", String(window.scrollY));
-                      sessionStorage.setItem("tendr_pending_quickview", quickViewVendor._id);
-                      navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } });
+                      setPendingChatVendor(quickViewVendor);
+                      setAuthModalOpen(true);
                       return;
                     }
                     // Already have an active chat request for this vendor — open active chats
@@ -977,6 +985,19 @@ const VendorList_ListingPage = ({
           </div>
         </div>
       )}
+
+      {/* Auth modal — triggered from "Sign In to Chat" inside quick view */}
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => { setAuthModalOpen(false); setPendingChatVendor(null); }}
+        onSuccess={() => {
+          setAuthModalOpen(false);
+          if (pendingChatVendor) {
+            setQuickViewVendor(pendingChatVendor);
+            setPendingChatVendor(null);
+          }
+        }}
+      />
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
+import AuthModal from "../../components/AuthModal";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
 import { Button, Input } from "../../components/ui";
@@ -179,20 +180,7 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
   };
 
   if (!token) {
-    return (
-      <>
-        <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.45)" }} />
-        <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 100001, background: "#FFFCF5", borderRadius: 20, padding: "32px 28px", width: 340, boxShadow: "0 20px 60px rgba(44,26,14,0.2)", fontFamily: font, textAlign: "center" }}>
-          <div style={{ fontSize: 36, marginBottom: 10 }}>🔒</div>
-          <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Sign in to continue</h3>
-          <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 20px" }}>Create an account or sign in to place your gift hamper order.</p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <button onClick={() => navigate("/login")} style={{ padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Sign In</button>
-            <button onClick={() => navigate("/signup")} style={{ padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Create Account</button>
-          </div>
-        </div>
-      </>
-    );
+    return <AuthModal open onClose={onClose} onSuccess={() => {}} />;
   }
 
   return (
@@ -294,7 +282,7 @@ const GiftHampersCakes = () => {
         description="Curated gift hampers for every celebration. Browse and order premium gift hampers delivered across Delhi NCR."
         path="/gift-hampers-cakes"
       />
-      <HamburgerNav title="Gift Hampers" />
+      <HamburgerNav title="Gift Hampers" showBack />
 
       {/* Hero */}
       <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 60%,#6B3A1F 100%)", padding: "40px 24px 36px", textAlign: "center" }}>

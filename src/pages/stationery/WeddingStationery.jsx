@@ -87,7 +87,7 @@ export default function WeddingStationery() {
     <div style={{ minHeight: "100vh", fontFamily: font, backgroundImage: "linear-gradient(rgba(250,245,238,0.88),rgba(250,245,238,0.88)), url('https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&auto=format&q=65')", backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }}>
       <SEO title="Wedding Stationeries — Tendr" description="Custom wedding stationeries — itineraries, invitations, envelopes, hashtag packages, coffee table booklets and more." path="/stationery" />
       <BasicSpeedDial />
-      <HamburgerNav title="Wedding Stationeries" />
+      <HamburgerNav title="Wedding Stationeries" showBack />
 
       {/* ── HERO ── */}
       <div style={{ background: "linear-gradient(150deg,#FFFAF3 0%,#FFF6E8 40%,#FDF0D8 100%)", padding: "28px 24px 24px", textAlign: "center", position: "relative", overflow: "hidden", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
