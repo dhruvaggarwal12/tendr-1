@@ -10,7 +10,8 @@ import { GiftCartDrawer } from "./GiftCartDrawer";
 import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
-import { selectCartCount as selectGhCartCount, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart } from "../redux/giftHamperCartSlice";
+import { selectCartCount as selectGhCartCount, selectCartItems as selectGhCartItems, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart } from "../redux/giftHamperCartSlice";
+import { selectStConfirmed, selectStForm, selectStCartSnapshot } from "../redux/stationeryBookingSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -26,10 +27,15 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const activeServiceType    = useSelector((s) => s.listingFilters.serviceType);
   const funCartCount         = useSelector(selectFunCartCount);
   const ghCartCount          = useSelector(selectGhCartCount);
+  const ghCartItems          = useSelector(selectGhCartItems);
   const funConfirmed         = useSelector(selectFunConfirmed);
   const ghConfirmed          = useSelector(selectGhConfirmed);
+  const stConfirmed          = useSelector(selectStConfirmed);
+  const stForm               = useSelector(selectStForm);
+  const stCartSnapshot       = useSelector(selectStCartSnapshot);
   const [funCartOpen, setFunCartOpen] = useState(false);
   const [ghCartOpen, setGhCartOpen] = useState(false);
+  const [addOnsOpen, setAddOnsOpen] = useState(false);
   const [showPayPopup, setShowPayPopup] = useState(false);
   const dispatch = useDispatch();
   const { chatState, expandChat, openExistingChat, openConciergeChat } = useChatOverlay();
@@ -312,7 +318,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       )}
 
       {/* Mobile action stack — Saved / Compare / Fun Cart / Review & Pay — above chat button */}
-      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0 || funCartCount > 0 || ghCartCount > 0 || funConfirmed || ghConfirmed) && (
+      {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0 || funCartCount > 0 || ghCartCount > 0 || funConfirmed || stCartCount > 0) && (
         <>
           {(savedOpen || compareOpen) && (
             <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 897 }} />
@@ -459,7 +465,19 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                 </button>
               </div>
             )}
-            {(path !== "/booking/review") && (funConfirmed || ghConfirmed || Object.keys(finalisedVendors).length > 0) && (
+            {stCartCount > 0 && !stConfirmed && (
+              <div style={{ position: "relative" }}>
+                <button
+                  className="mobile-action-btn"
+                  onClick={openStCart}
+                  title="Stationery Cart"
+                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7A3A1E,#C47A2E)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(122,58,30,0.5)", flexShrink: 0, fontSize: 20 }}>
+                  💒
+                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{stCartCount}</span>
+                </button>
+              </div>
+            )}
+            {(path !== "/booking/review") && (funConfirmed || Object.keys(finalisedVendors).length > 0) && (
               <button className="mobile-action-btn" onClick={() => setShowPayPopup(true)}
                 title="Review & Pay"
                 style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0, fontFamily: font }}>
@@ -470,13 +488,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         </>
       )}
 
-      {/* Stationery cart button — left of chat button, appears on all pages */}
-      {stCartCount > 0 && (
+      {/* Add-ons confirmed button — left of chat, shows when gift hampers or stationery is confirmed */}
+      {(ghConfirmed || stConfirmed) && (
         <button
-          className="stat-cart-fab"
-          onClick={openStCart}
-          aria-label="Stationery Cart"
-          title={`${stCartCount} stationery item${stCartCount > 1 ? "s" : ""} in cart`}
+          className="addons-fab"
+          onClick={() => setAddOnsOpen(true)}
+          aria-label="View Add-on Orders"
+          title="View your add-on orders"
           style={{
             position: "fixed",
             bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
@@ -485,31 +503,102 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             height: 50,
             borderRadius: "50%",
             border: "none",
-            background: "linear-gradient(135deg,#7A3A1E,#C47A2E)",
+            background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
             color: "#fff",
             fontFamily: font,
             cursor: "pointer",
-            boxShadow: "0 6px 24px rgba(122,58,30,0.5)",
+            boxShadow: "0 6px 24px rgba(196,122,46,0.55)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: 20,
+            fontSize: 22,
             transition: "transform 0.2s, box-shadow 0.2s",
           }}
-          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; e.currentTarget.style.boxShadow = "0 10px 30px rgba(196,122,46,0.65)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.55)"; }}
         >
-          💒
+          🎁
           <span style={{
             position: "absolute", top: -4, right: -4,
             minWidth: 18, height: 18, borderRadius: 9,
-            background: "#C47A2E", color: "#fff",
+            background: "#2C1A0E", color: "#CCAB4A",
             fontSize: 10, fontWeight: 900,
             display: "flex", alignItems: "center", justifyContent: "center",
             padding: "0 4px", border: "2px solid #fff",
-          }}>{stCartCount}</span>
+          }}>{(ghConfirmed ? 1 : 0) + (stConfirmed ? 1 : 0)}</span>
         </button>
       )}
+
+      {/* Add-ons panel */}
+      {addOnsOpen && (() => {
+        const ghDeliveryData = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
+        return (
+          <>
+            <div onClick={() => setAddOnsOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
+            <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: font, overflowY: "auto", animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)" }}>
+              {/* Header */}
+              <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+                <div>
+                  <h2 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: "0 0 2px" }}>🎁 Add-on Orders</h2>
+                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", margin: 0 }}>Your special add-ons</p>
+                </div>
+                <button onClick={() => setAddOnsOpen(false)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+              </div>
+
+              <div style={{ flex: 1, padding: "20px 24px" }}>
+                {/* Gift Hampers section */}
+                {ghConfirmed && ghCartItems.length > 0 && (
+                  <div style={{ marginBottom: 20, padding: 16, background: "rgba(196,122,46,0.06)", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>🎁 Gift Hampers</div>
+                    {ghCartItems.map(item => (
+                      <div key={item.productId} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#5a3a1a", marginBottom: 6 }}>
+                        <span style={{ flex: 1 }}>{item.name} × {item.quantity}</span>
+                        <span style={{ fontWeight: 700, color: "#2C1A0E" }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
+                      </div>
+                    ))}
+                    {ghDeliveryData && (
+                      <div style={{ marginTop: 10, fontSize: 12, color: "#9B7450", background: "#fff", borderRadius: 8, padding: "8px 12px", lineHeight: 1.6 }}>
+                        <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>Delivery Details</div>
+                        {ghDeliveryData.name && <div>👤 {ghDeliveryData.name}</div>}
+                        {ghDeliveryData.address && <div>📦 {ghDeliveryData.address}{ghDeliveryData.city ? `, ${ghDeliveryData.city}` : ""}</div>}
+                        {ghDeliveryData.deliveryDate && <div>🗓 {ghDeliveryData.deliveryDate}</div>}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Stationery section */}
+                {stConfirmed && stCartSnapshot.length > 0 && (
+                  <div style={{ marginBottom: 20, padding: 16, background: "rgba(122,58,30,0.06)", borderRadius: 14, border: "1.5px solid rgba(122,58,30,0.15)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#7A3A1E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>💒 Wedding Stationery</div>
+                    {stCartSnapshot.map(({ item, quantity }) => (
+                      <div key={item._id || item.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#5a3a1a", marginBottom: 6 }}>
+                        <span style={{ flex: 1 }}>{item.name} × {quantity} {item.unit || "pcs"}</span>
+                        <span style={{ fontWeight: 700, color: "#C47A2E" }}>
+                          {item.priceOnRequest ? "On request" : item.priceRange || (item.startingPrice ? `₹${(item.startingPrice * quantity).toLocaleString("en-IN")}` : "—")}
+                        </span>
+                      </div>
+                    ))}
+                    {stForm && (
+                      <div style={{ marginTop: 10, fontSize: 12, color: "#9B7450", background: "#fff", borderRadius: 8, padding: "8px 12px", lineHeight: 1.6 }}>
+                        <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>Booking Details</div>
+                        {stForm.name && <div>👤 {stForm.name}</div>}
+                        {stForm.address && <div>📍 {stForm.address}</div>}
+                        {stForm.date && <div>🗓 {stForm.date}</div>}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div style={{ padding: "14px 16px", background: "rgba(196,122,46,0.06)", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.15)", fontSize: 12, color: "#7A5535", lineHeight: 1.6 }}>
+                  <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>✅ Order Received</div>
+                  Tendr will contact you within 24 hours to confirm your add-on order details.
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      })()}
 
       {/* Floating button */}
       <button
@@ -599,8 +688,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           bottom: calc(22px + env(safe-area-inset-bottom, 0px));
           right: 20px;
         }
-        /* Stationery cart FAB sits to the LEFT of the chat button */
-        .stat-cart-fab {
+        /* Add-ons confirmed button sits to the LEFT of the chat button */
+        .addons-fab {
           right: 168px; /* chat btn ~140px wide + 8px gap + 20px from edge */
           bottom: calc(22px + env(safe-area-inset-bottom, 0px));
         }
@@ -648,8 +737,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           }
           .mobile-action-stack { bottom: calc(138px + env(safe-area-inset-bottom, 0px)) !important; right: 14px !important; }
           .chat-btn-text { display: none; }
-          /* Stationery cart button: to the left of chat on mobile, above bottom nav */
-          .stat-cart-fab {
+          /* Add-ons confirmed button: to the left of chat on mobile, above bottom nav */
+          .addons-fab {
             bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
             right: 72px !important; /* 14 + 50 + 8 */
           }

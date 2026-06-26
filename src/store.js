@@ -5,6 +5,7 @@ import eventPlanningReducer from './redux/eventPlanningSlice.js';
 import listingFiltersReducer from './redux/listingFiltersSlice.js';
 import giftHamperCartReducer from './redux/giftHamperCartSlice.js';
 import funActivitiesCartReducer from './redux/funActivitiesCartSlice.js';
+import stationeryBookingReducer from './redux/stationeryBookingSlice.js';
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -50,6 +51,7 @@ export const store = configureStore({
     listingFilters: listingFiltersReducer,
     giftHamperCart: giftHamperCartReducer,
     funActivitiesCart: funActivitiesCartReducer,
+    stationeryBooking: stationeryBookingReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(vendorSyncMiddleware),

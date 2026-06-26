@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { selectCartItems, selectCartTotal, clearCart, removeFromCart } from "../../redux/giftHamperCartSlice";
+import { clearCart } from "../../redux/giftHamperCartSlice";
 import { selectFunCartItems, selectFunCartTotal, clearFunCart } from "../../redux/funActivitiesCartSlice";
 import SEO from "../../components/SEO";
 import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
@@ -69,13 +69,9 @@ const BookingReviewPage = () => {
   const location  = useLocation();
   const dispatch  = useDispatch();
   const token     = useSelector((s) => s.auth.token);
-  const ghItems    = useSelector(selectCartItems);
-  const ghTotal    = useSelector(selectCartTotal);
   const faItems    = useSelector(selectFunCartItems);
   const faTotal    = useSelector(selectFunCartTotal);
-  const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
   const faBooking  = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking")  || "null"); } catch { return null; } })();
-  const isGHMode   = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
@@ -117,7 +113,7 @@ const BookingReviewPage = () => {
   useEffect(() => {
     if (!token) return;
     const hasActiveVendors = Object.keys(finalisedVendors).length > 0;
-    if (hasActiveVendors || ghItems.length > 0 || faItems.length > 0) return;
+    if (hasActiveVendors || faItems.length > 0) return;
     fetch(`${BASE_URL}/event-plans`, {
       headers: { Authorization: `Bearer ${token}` },
       credentials: "include",
@@ -385,7 +381,7 @@ const BookingReviewPage = () => {
     }
   };
 
-  if (vendorEntries.length === 0 && ghItems.length === 0 && faItems.length === 0) {
+  if (vendorEntries.length === 0 && faItems.length === 0) {
     return (
       <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: "'Outfit', sans-serif", display: "flex", flexDirection: "column" }}>
         <BasicSpeedDial />
@@ -515,40 +511,6 @@ const BookingReviewPage = () => {
               </div>
             )}
 
-            {/* Gift Hamper Details card */}
-            {ghItems.length > 0 && ghDelivery && (
-              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎁</span>
-                  Gift Hamper Delivery
-                </h2>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {[
-                    { label: "Recipient",      val: ghDelivery.name },
-                    { label: "Phone",          val: ghDelivery.phone },
-                    { label: "Delivery Date",  val: ghDelivery.deliveryDate },
-                    { label: "Address",        val: ghDelivery.address ? `${ghDelivery.address}${ghDelivery.city ? `, ${ghDelivery.city}` : ""}${ghDelivery.pincode ? ` — ${ghDelivery.pincode}` : ""}` : null },
-                    { label: "Instructions",   val: ghDelivery.instructions },
-                  ].filter(r => r.val).map(({ label, val }) => (
-                    <div key={label}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
-                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
-                    </div>
-                  ))}
-                  {/* Items list */}
-                  <div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Items</div>
-                    {ghItems.map(item => (
-                      <div key={item.productId} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E", marginBottom: 4 }}>
-                        <span>{item.name} × {item.quantity}</span>
-                        <span style={{ fontWeight: 600 }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Fun Activity Details card */}
             {faBooking && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
@@ -578,7 +540,7 @@ const BookingReviewPage = () => {
             )}
 
             {/* Fallback if sidebar is completely empty */}
-            {vendorEntries.length === 0 && ghItems.length === 0 && faItems.length === 0 && (
+            {vendorEntries.length === 0 && faItems.length === 0 && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
                 <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>No order details yet.</p>
               </div>
@@ -884,8 +846,8 @@ const BookingReviewPage = () => {
                 ))}
 
                 {/* Referral discount line */}
-                {appliedCode && (confirmedTotal + ghTotal + faTotal) > 0 && (() => {
-                  const { discount } = applyDiscount(confirmedTotal + ghTotal + faTotal);
+                {appliedCode && (confirmedTotal + faTotal) > 0 && (() => {
+                  const { discount } = applyDiscount(confirmedTotal + faTotal);
                   return (
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 14, color: "#15803d" }}>
                       <span style={{ fontWeight: 600 }}>🎁 Referral Discount ({DISCOUNT_PERCENT}%)</span>
@@ -895,7 +857,7 @@ const BookingReviewPage = () => {
                 })()}
 
                 {/* Vendor subtotal */}
-                {confirmedTotal > 0 && (ghTotal > 0 || faTotal > 0) && (
+                {confirmedTotal > 0 && faTotal > 0 && (
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#9B7450", marginBottom: 4 }}>
                     <span>Vendors subtotal</span>
                     <span style={{ fontWeight: 600 }}>{formatINR(confirmedTotal)}</span>
@@ -910,17 +872,9 @@ const BookingReviewPage = () => {
                   </div>
                 )}
 
-                {/* Gift hampers in grand total line */}
-                {ghTotal > 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#9B7450", marginBottom: 6 }}>
-                    <span>Gift Hampers subtotal</span>
-                    <span style={{ fontWeight: 600 }}>₹{ghTotal.toLocaleString("en-IN")}</span>
-                  </div>
-                )}
-
                 {/* Tax + fee breakdown */}
                 {(() => {
-                  const rawSum = confirmedTotal + ghTotal + faTotal;
+                  const rawSum = confirmedTotal + faTotal;
                   if (rawSum <= 0) return null;
                   const discountedSum = appliedCode ? applyDiscount(rawSum).finalTotal : rawSum;
                   const gstAmount = Math.round(discountedSum * 0.18);
@@ -966,10 +920,10 @@ const BookingReviewPage = () => {
                 })()}
 
                 {/* Corporate: cost per head + export button */}
-                {isCorporate && headcount > 0 && (confirmedTotal + ghTotal) > 0 && (
+                {isCorporate && headcount > 0 && confirmedTotal > 0 && (
                   <div style={{ marginTop: 10, padding: "10px 14px", background: "rgba(124,58,237,0.06)", borderRadius: 10, border: "1px solid rgba(124,58,237,0.18)" }}>
                     <div style={{ fontSize: 13, fontWeight: 700, color: "#7c3aed" }}>
-                      💼 Cost per Employee: <span style={{ fontSize: 15, fontWeight: 900 }}>{formatINR(Math.round((confirmedTotal + ghTotal) / headcount))}</span>
+                      💼 Cost per Employee: <span style={{ fontSize: 15, fontWeight: 900 }}>{formatINR(Math.round(confirmedTotal / headcount))}</span>
                       <span style={{ fontSize: 11, fontWeight: 500, color: "#9B7450", marginLeft: 6 }}>({headcount} employees)</span>
                     </div>
                     {formData.companyName && <div style={{ fontSize: 11, color: "#7c3aed", marginTop: 2, opacity: 0.8 }}>🏢 {formData.companyName}</div>}
@@ -978,7 +932,7 @@ const BookingReviewPage = () => {
                 {isCorporate && (
                   <button
                     onClick={() => {
-                      const total = confirmedTotal + ghTotal;
+                      const total = confirmedTotal;
                       const lines = [
                         "CORPORATE EVENT — APPROVAL SUMMARY",
                         "=".repeat(40),
@@ -1014,24 +968,6 @@ const BookingReviewPage = () => {
               {/* People Also Get — upsell block */}
               <div style={{ margin: "14px 0 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
                 <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>People also get</p>
-
-                {/* Gift Hampers row — only if not already in cart */}
-                {ghItems.length === 0 && (
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <span style={{ fontSize: 22 }}>🎁</span>
-                      <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Gift Hampers &amp; Cakes</div>
-                        <div style={{ fontSize: 11, color: "#9B7450" }}>Curated gifts delivered to your guests</div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => navigate("/gift-hampers-cakes")}
-                      style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                      Browse →
-                    </button>
-                  </div>
-                )}
 
                 {/* Fun Activities row */}
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
@@ -1094,33 +1030,6 @@ const BookingReviewPage = () => {
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#7c3aed", borderTop: "1px solid rgba(124,58,237,0.15)", paddingTop: 8, marginTop: 6 }}>
                       <span>Fun Activities Total</span>
                       <span>₹{faTotal.toLocaleString("en-IN")}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Gift Hampers section — shown when cart has items */}
-              {ghItems.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 14px" }} />
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎁 Gift Hampers</div>
-                  {ghItems.map(item => (
-                    <div key={item.productId} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a", marginBottom: 6 }}>
-                      <span style={{ fontWeight: 500, flex: 1 }}>{item.name} × {item.quantity}</span>
-                      <span style={{ fontWeight: 700, color: "#2C1A0E", marginRight: 10 }}>₹{item.subtotal.toLocaleString("en-IN")}</span>
-                      <button
-                        onClick={() => { if (window.confirm(`Remove "${item.name}" from cart?`)) dispatch(removeFromCart(item.productId)); }}
-                        style={{ flexShrink: 0, width: 22, height: 22, borderRadius: "50%", border: "1.5px solid rgba(192,57,43,0.25)", background: "rgba(192,57,43,0.06)", color: "#c0392b", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit',sans-serif" }}
-                        title="Remove item">✕</button>
-                    </div>
-                  ))}
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 8, marginTop: 6 }}>
-                    <span>Gift Hampers Total</span>
-                    <span>₹{ghTotal.toLocaleString("en-IN")}</span>
-                  </div>
-                  {ghDelivery && (
-                    <div style={{ marginTop: 8, fontSize: 12, color: "#9B7450", background: "rgba(196,122,46,0.04)", borderRadius: 8, padding: "8px 10px" }}>
-                      📦 Deliver to: {ghDelivery.address}, {ghDelivery.city}
                     </div>
                   )}
                 </div>
@@ -1213,9 +1122,8 @@ const BookingReviewPage = () => {
                             }).catch(() => {});
                           }
                           // Build WhatsApp summary message
-                          const vendorGhFaTotal = confirmedTotal + ghTotal + faTotal;
-                          const finalAmount = (appliedCode ? applyDiscount(vendorGhFaTotal).finalTotal : vendorGhFaTotal) + effectivePlatformFee;
-                          const ghItemLines = ghItems.map(item => `   - ${item.name} × ${item.quantity} — Rs.${item.subtotal.toLocaleString("en-IN")}`);
+                          const vendorFaTotal = confirmedTotal + faTotal;
+                          const finalAmount = (appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) + effectivePlatformFee;
                           const lines = [
                             `📋 *New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
                             "",
@@ -1242,17 +1150,6 @@ const BookingReviewPage = () => {
                                 i.form.notes ? `   Notes: ${i.form.notes}` : null,
                               ].filter(Boolean).join("\n")),
                             ] : []),
-                            ...(ghItems.length > 0 ? [
-                              "",
-                              "*🎁 Gift Hampers:*",
-                              `• Total — Rs.${ghTotal.toLocaleString("en-IN")}`,
-                              ...ghItemLines,
-                              ghDelivery?.name        ? `   📦 Recipient: ${ghDelivery.name}` : null,
-                              ghDelivery?.phone       ? `   📱 Phone: ${ghDelivery.phone}` : null,
-                              ghDelivery?.deliveryDate ? `   🗓 Delivery Date: ${ghDelivery.deliveryDate}` : null,
-                              ghDelivery?.address     ? `   📍 Address: ${ghDelivery.address}${ghDelivery.city ? `, ${ghDelivery.city}` : ""}${ghDelivery.pincode ? ` — ${ghDelivery.pincode}` : ""}` : null,
-                              ghDelivery?.instructions ? `   📝 Instructions: ${ghDelivery.instructions}` : null,
-                            ].filter(Boolean) : []),
                             "",
                             effectivePlatformFee > 0 ? `🔧 *Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
                             appliedCode ? `🎁 *Referral Code:* ${appliedCode}` : null,
@@ -1267,11 +1164,9 @@ const BookingReviewPage = () => {
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
-                          sessionStorage.removeItem("gh_delivery");
                           sessionStorage.removeItem("fa_booking");
                           dispatch(clearFinalisedVendor());
                           dispatch(resetEventPlanning());
-                          dispatch(clearCart());
                           dispatch(clearFunCart());
 
                           setSaving(false);
