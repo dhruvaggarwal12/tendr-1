@@ -27,6 +27,10 @@ function getServiceType(catName = "") {
 
 const font = "'Outfit', sans-serif";
 
+const isStandalone = () =>
+  window.matchMedia("(display-mode: standalone)").matches ||
+  window.navigator.standalone === true;
+
 const EVENT_TYPES = {
   birthday: {
     label: "Birthday Party", icon: "🎂",
@@ -181,7 +185,11 @@ export default function BudgetAllocator() {
     setMiniFormOpen(false);
     setVendorPanel(null);
     if (pendingAction.type === "profile") {
-      window.open(`/vendor/${pendingAction.vendorId}`, "_blank");
+      if (isStandalone()) {
+        navigate(`/vendor/${pendingAction.vendorId}`);
+      } else {
+        window.open(`/vendor/${pendingAction.vendorId}`, "_blank");
+      }
     } else {
       navigate("/listings", {
         state: {

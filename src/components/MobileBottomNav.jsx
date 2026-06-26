@@ -247,7 +247,7 @@ function BottomNavInner() {
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Products</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
               {PRODUCTS.map(({ emoji, label, href, newTab, path }) => {
-                const savedKey = label === "Timeline" ? "tendr_timeline_v2" : label === "Budget Allocator" ? "tendr_checklist_v2" : null;
+                const savedKey = label === "Timeline" ? "tendr_timeline_v2" : label === "Budget Allocator" ? "tendr_budget_v2" : null;
                 const isSaved = savedKey ? (() => { try { return !!localStorage.getItem(savedKey); } catch { return false; } })() : false;
                 return (
                   <button key={label}
@@ -345,7 +345,7 @@ function BottomNavInner() {
           const hasProductsSaved = label === "Products" && (() => {
             try {
               return !!localStorage.getItem("tendr_timeline_v2") ||
-                     !!localStorage.getItem("tendr_checklist_v2");
+                     !!localStorage.getItem("tendr_budget_v2");
             } catch { return false; }
           })();
           return (
