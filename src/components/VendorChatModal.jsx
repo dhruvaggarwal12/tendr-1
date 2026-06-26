@@ -978,7 +978,7 @@ export default function VendorChatModal() {
       <div
         onClick={handleMinimize}
         style={{
-          position: "fixed", inset: 0, zIndex: 1200,
+          position: "fixed", inset: 0, zIndex: 100000,
           background: "rgba(0,0,0,0.38)",
           backdropFilter: "blur(2px)",
           opacity: minimizing ? 0 : 1,
@@ -996,7 +996,7 @@ export default function VendorChatModal() {
           bottom: isMobile ? "calc(60px + env(safe-area-inset-bottom, 0px))" : "auto",
           left: "50%",
           transform: isMobile ? "translateX(-50%)" : "translate(-50%, -50%)",
-          zIndex: 1201,
+          zIndex: 100001,
           width:  isMobile ? "96vw" : "min(94vw, 660px)",
           height: isMobile ? "calc(100dvh - 6px - 60px - env(safe-area-inset-bottom, 0px))" : "min(86vh, 700px)",
           maxHeight: isMobile ? "calc(100dvh - 6px - 60px - env(safe-area-inset-bottom, 0px))" : "min(86vh, 700px)",

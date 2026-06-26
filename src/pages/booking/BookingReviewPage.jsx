@@ -74,6 +74,7 @@ const BookingReviewPage = () => {
   const faItems    = useSelector(selectFunCartItems);
   const faTotal    = useSelector(selectFunCartTotal);
   const ghDelivery = (() => { try { return JSON.parse(sessionStorage.getItem("gh_delivery") || "null"); } catch { return null; } })();
+  const faBooking  = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking")  || "null"); } catch { return null; } })();
   const isGHMode   = new URLSearchParams(location.search).get("gh") === "1" || ghItems.length > 0;
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);

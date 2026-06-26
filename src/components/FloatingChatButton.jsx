@@ -196,13 +196,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats"] 
       {/* ── Active Chats panel — same size as VendorChatModal ── */}
       {showActiveChats && (
         <>
-          <div onClick={() => setShowActiveChats(false)} style={{ position: "fixed", inset: 0, zIndex: 1200, background: "rgba(0,0,0,0.38)", backdropFilter: "blur(2px)" }} />
+          <div onClick={() => setShowActiveChats(false)} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.38)", backdropFilter: "blur(2px)" }} />
           <div
             onClick={e => e.stopPropagation()}
             className="active-chats-modal"
             style={{
               position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-              zIndex: 1201, width: "min(94vw,660px)", height: "min(86vh,700px)",
+              zIndex: 100001, width: "min(94vw,660px)", height: "min(86vh,700px)",
               background: "#FFFCF5", borderRadius: 24,
               boxShadow: "0 32px 80px rgba(44,26,14,0.22)",
               border: "1.5px solid rgba(196,122,46,0.18)",

@@ -1,6 +1,7 @@
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import router from "../router";
 import { FUN_ACTIVITIES } from "../data/funActivitiesData";
 import { addActivity, removeActivity, saveActivityForm, clearFunCart, setFunConfirmed, selectFunCartItems } from "../redux/funActivitiesCartSlice";
 
@@ -47,12 +48,12 @@ function BookingPanel({ activity, onClose, onReviewPay, fromDrawer = false }) {
   );
 
   const panelStyle = window.innerWidth < 768
-    ? { position: "fixed", inset: 0, background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column" }
-    : { position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)" };
+    ? { position: "fixed", inset: 0, background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column" }
+    : { position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)" };
 
   if (done) return (
     <>
-      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
       <div style={{ ...panelStyle, alignItems: "center", justifyContent: "center", gap: 20 }}>
         <div style={{ width: 76, height: 76, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 32px rgba(21,128,61,0.35)", animation: "fa-pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275)" }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
@@ -68,7 +69,7 @@ function BookingPanel({ activity, onClose, onReviewPay, fromDrawer = false }) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
       <div style={{ ...panelStyle, overflowY: "auto" }}>
         {/* Header */}
         <div style={{ padding: "18px 20px 16px", borderBottom: "1.5px solid rgba(44,26,14,0.07)", position: "sticky", top: 0, background: "#FFFCF5", zIndex: 2 }}>
@@ -305,7 +306,6 @@ export function FunActivityCard({ activity, onQuickView, onBook, onAddToCart }) 
 // ── Fun Cart Drawer ───────────────────────────────────────────────────────────
 export function FunCartDrawer({ onClose }) {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const cartItems = useSelector(selectFunCartItems);
   const today = new Date().toISOString().split("T")[0];
 
@@ -344,8 +344,8 @@ export function FunCartDrawer({ onClose }) {
   /* ── Step 2: success ── */
   if (step === 2) return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
-      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,400px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: F, padding: "32px 24px", textAlign: "center" }}>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,400px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 20, boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: F, padding: "32px 24px", textAlign: "center" }}>
         <div style={{ width: 76, height: 76, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 32px rgba(196,122,46,0.4)" }}>
           <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
@@ -353,7 +353,7 @@ export function FunCartDrawer({ onClose }) {
           <h3 data-ui-heading style={{ fontSize: 20, fontWeight: 900, color: BROWN, margin: "0 0 8px", fontFamily: F }}>Booking Details Saved!</h3>
           <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>Your activities are ready for payment.</p>
         </div>
-        <button onClick={() => { onClose(); navigate("/booking/review"); }} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
+        <button onClick={() => { onClose(); router.navigate("/booking/review"); }} style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: F, boxShadow: "0 4px 14px rgba(44,26,14,0.3)" }}>
           Review & Pay →
         </button>
       </div>
@@ -362,8 +362,8 @@ export function FunCartDrawer({ onClose }) {
 
   return (
     <>
-      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1200, backdropFilter: "blur(3px)" }} />
-      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,400px)", background: "#FFFCF5", zIndex: 1201, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: F }}>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
+      <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,400px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: F }}>
 
         {/* Header */}
         <div style={{ padding: "18px 20px 14px", borderBottom: "1.5px solid rgba(44,26,14,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
