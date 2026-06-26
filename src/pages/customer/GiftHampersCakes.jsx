@@ -286,31 +286,24 @@ const GiftHampersCakes = () => {
 
       {/* Hero */}
       <style>{`
-        @media(max-width:640px){.gh-hero{padding:24px 18px 22px!important}.gh-hero h1{font-size:1.6rem!important}.gh-hero p.sub{font-size:14px!important}.gh-emoji-row span{font-size:22px!important}}
-        @media(max-width:480px){.gh-hero{padding:18px 14px 16px!important}.gh-hero h1{font-size:1.35rem!important}.gh-emoji-row{gap:8px!important}}
+        @media(max-width:640px){.gh-hero{padding:24px 18px 22px!important}.gh-hero h1{font-size:1.6rem!important}.gh-hero p.sub{font-size:14px!important}}
+        @media(max-width:480px){.gh-hero{padding:18px 14px 16px!important}.gh-hero h1{font-size:1.35rem!important}}
       `}</style>
-      <div className="gh-hero" style={{ background: "linear-gradient(135deg,#FFF8F2 0%,#FFF5EC 60%,#FFFDF8 100%)", padding: "40px 24px 36px", textAlign: "center", position: "relative", overflow: "hidden", borderBottom: "2px solid rgba(196,122,46,0.1)" }}>
+      <div className="gh-hero" style={{ background: "linear-gradient(135deg,#FDEBD0 0%,#FAE0BC 60%,#FDF0DC 100%)", padding: "40px 24px 36px", textAlign: "center", position: "relative", overflow: "hidden", borderBottom: "2px solid rgba(196,122,46,0.15)" }}>
         {/* Ghost decorations */}
-        <div style={{ position:"absolute", top:-8, left:"6%", fontSize:90, opacity:0.05, transform:"rotate(-12deg)", userSelect:"none", pointerEvents:"none" }}>🎁</div>
-        <div style={{ position:"absolute", top:12, right:"5%", fontSize:70, opacity:0.06, transform:"rotate(8deg)", userSelect:"none", pointerEvents:"none" }}>🎂</div>
-        <div style={{ position:"absolute", bottom:-12, right:"18%", fontSize:60, opacity:0.05, transform:"rotate(-6deg)", userSelect:"none", pointerEvents:"none" }}>🎀</div>
+        <div style={{ position:"absolute", top:-8, left:"6%", fontSize:90, opacity:0.14, transform:"rotate(-12deg)", userSelect:"none", pointerEvents:"none" }}>🎁</div>
+        <div style={{ position:"absolute", top:12, right:"5%", fontSize:70, opacity:0.13, transform:"rotate(8deg)", userSelect:"none", pointerEvents:"none" }}>🎂</div>
+        <div style={{ position:"absolute", bottom:-12, right:"18%", fontSize:60, opacity:0.12, transform:"rotate(-6deg)", userSelect:"none", pointerEvents:"none" }}>🎀</div>
 
         <div style={{ maxWidth: 720, margin: "0 auto", position: "relative" }}>
-          {/* Emoji showcase */}
-          <div className="gh-emoji-row" style={{ display:"flex", gap:14, justifyContent:"center", marginBottom:18, flexWrap:"wrap" }}>
-            {["🎁","🎂","🧁","🎀","🍰","💝"].map(e => (
-              <span key={e} style={{ fontSize:"clamp(24px,4.5vw,34px)", filter:"drop-shadow(0 2px 6px rgba(196,122,46,0.18))", lineHeight:1 }}>{e}</span>
-            ))}
-          </div>
-
-          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E" }}>Curated for every celebration</span>
+          <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8B4A0E" }}>Curated for every celebration</span>
           <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 900, color: "#2C1A0E", margin: "10px 0 8px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>Gift Hampers & Cakes</h1>
-          <p className="sub" style={{ fontSize: 15, color: "#7A5535", margin: "0 0 18px", lineHeight: 1.65 }}>
+          <p className="sub" style={{ fontSize: 15, color: "#6B3A10", margin: "0 0 18px", lineHeight: 1.65 }}>
             Premium, thoughtfully curated hampers & custom cakes — delivered across Delhi NCR
           </p>
           <div style={{ display:"flex", gap:8, flexWrap:"wrap", justifyContent:"center" }}>
             {["Custom orders", "Bulk orders welcome", "Delhi NCR delivery"].map(pt => (
-              <span key={pt} style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.18)", padding:"5px 12px", borderRadius:100, fontFamily:font }}>✓ {pt}</span>
+              <span key={pt} style={{ fontSize:11, fontWeight:700, color:"#7A3A0E", background:"rgba(139,74,14,0.12)", border:"1px solid rgba(139,74,14,0.22)", padding:"5px 12px", borderRadius:100, fontFamily:font }}>✓ {pt}</span>
             ))}
           </div>
         </div>
