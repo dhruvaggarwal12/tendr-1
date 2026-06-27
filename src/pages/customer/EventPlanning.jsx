@@ -1435,7 +1435,7 @@ const EventPlanning = () => {
 
         <style>{`
           @media(max-width:600px){
-            .event-cat-img{height:70px!important}
+            .event-cat-img{height:55px!important}
             .event-cat-body{padding:6px 8px 8px!important}
             .event-cat-body h3{font-size:11px!important}
             .event-cat-body p{font-size:10px!important;margin-bottom:3px!important}
@@ -1484,58 +1484,35 @@ const EventPlanning = () => {
             });
 
             return (
-              <div style={{ width: "100%", maxWidth: 1100, marginBottom: 28, borderRadius: 18, overflow: "hidden", background: "linear-gradient(135deg, #1a0f06 0%, #2C1A0E 55%, #3a1e0a 100%)", border: "1.5px solid rgba(204,171,74,0.2)", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
-
-                {/* Header row */}
-                <div className="tendr-suggests-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 20px 0", flexWrap: "wrap", gap: 8 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 15 }}>✨</span>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.06em", textTransform: "uppercase" }}>Tendr Suggests</span>
+              <div style={{ width: "100%", maxWidth: 1100, marginBottom: 16, borderRadius: 14, overflow: "hidden", background: "linear-gradient(135deg, #1a0f06 0%, #2C1A0E 55%, #3a1e0a 100%)", border: "1.5px solid rgba(204,171,74,0.2)", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
+                <div className="tendr-suggests-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "8px 14px", flexWrap: "wrap", gap: 6 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ fontSize: 13 }}>✨</span>
+                    <span style={{ fontSize: 11, fontWeight: 800, color: "#CCAB4A", letterSpacing: "0.06em", textTransform: "uppercase" }}>Tendr Suggests</span>
+                    <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.4)" }}>
+                      · For your {formData.eventType}
+                      {hasGuests ? ` · ${guests} Guests` : ""}
+                      {hasBudget ? ` · ${fmtBudgetShort(recs.totalBudget)}` : ""}
+                    </span>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.45)", letterSpacing: "0.02em" }}>
-                    For your {formData.eventType}
-                    {hasGuests ? ` · ${guests} Guest${guests === 1 ? "" : "s"}` : ""}
-                    {hasBudget ? ` · ${fmtBudgetShort(recs.totalBudget)} Budget` : ""}
-                  </span>
                 </div>
-
-                <div className="tendr-suggests-wrap" style={{ padding: "12px 20px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
-
-                  {/* Recommended services */}
-                  <div>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>
-                      Most customers planning similar events usually book
-                    </p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                      {recs.services.map((svc) => (
-                        <span key={svc} style={{ display: "inline-flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: "#fff", background: "rgba(204,171,74,0.14)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 13px" }}>
-                          <span style={{ color: "#CCAB4A", fontSize: 11, fontWeight: 900 }}>✓</span>
-                          {SERVICE_LABELS[svc] || svc}
-                        </span>
-                      ))}
-                    </div>
+                <div className="tendr-suggests-wrap" style={{ padding: "6px 14px 10px", display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {recs.services.map((svc) => (
+                      <span key={svc} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11, fontWeight: 700, color: "#fff", background: "rgba(204,171,74,0.14)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "3px 10px" }}>
+                        <span style={{ color: "#CCAB4A", fontSize: 10, fontWeight: 900 }}>✓</span>
+                        {SERVICE_LABELS[svc] || svc}
+                      </span>
+                    ))}
+                    {recs.themes.slice(0, 3).map((theme) => (
+                      <span key={theme} style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "3px 10px" }}>
+                        {theme}
+                      </span>
+                    ))}
                   </div>
-
-                  {/* Popular themes */}
-                  <div>
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>
-                      Popular themes
-                    </p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-                      {recs.themes.map((theme) => (
-                        <span key={theme} style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 100, padding: "4px 12px" }}>
-                          {theme}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Planning tip */}
-                  <div style={{ borderTop: "1px solid rgba(255,255,255,0.07)", paddingTop: 10 }}>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>💡 </span>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", lineHeight: 1.55 }}>{recs.tip}</span>
-                  </div>
-
+                  {recs.tip && (
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>💡 {recs.tip}</div>
+                  )}
                 </div>
               </div>
             );
@@ -1591,7 +1568,7 @@ const EventPlanning = () => {
                         transform: isSelected ? "translateY(-3px)" : "translateY(0)",
                       }}
                     >
-                      <div className="event-cat-img" style={{ position: "relative", height: 130, overflow: "hidden" }}>
+                      <div className="event-cat-img" style={{ position: "relative", height: 90, overflow: "hidden" }}>
                         <img
                           src={vendor.photo}
                           alt={vendor.title}

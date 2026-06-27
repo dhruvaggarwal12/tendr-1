@@ -81,22 +81,18 @@ export default function ChooseBooking() {
       <BasicSpeedDial />
 
       {/* Header */}
-      <div style={{ textAlign: "center", marginBottom: 52 }}>
-        <p style={{ fontSize: 12.5, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>
-          Event Planning
-        </p>
-        <h1 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px", lineHeight: 1.15 }}>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <h1 style={{ fontSize: "clamp(1.4rem, 3.5vw, 2rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 8px", lineHeight: 1.2 }}>
           How would you like to plan?
         </h1>
-        <p style={{ fontSize: 16, color: "#9B7450", margin: 0 }}>
+        <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>
           Both start with the same quick form. Choose how involved you want to be.
         </p>
-        <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "20px auto 0" }} />
       </div>
 
       {/* Flow cards */}
       <div
-        style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24, width: "100%", maxWidth: 860 }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, width: "100%", maxWidth: 660 }}
         className="choose-booking-grid"
       >
         {FLOWS.map((flow) => (
@@ -105,11 +101,11 @@ export default function ChooseBooking() {
             style={{
               background: "#FFFCF5",
               border: "2px solid " + flow.borderColor,
-              borderRadius: 20,
-              padding: "20px 20px 16px",
+              borderRadius: 16,
+              padding: "14px 14px 10px",
               display: "flex",
               flexDirection: "column",
-              boxShadow: "0 4px 24px rgba(139,69,19,0.08)",
+              boxShadow: "0 2px 12px rgba(139,69,19,0.08)",
               transition: "transform 0.2s, box-shadow 0.2s",
               cursor: "default",
             }}
@@ -117,11 +113,11 @@ export default function ChooseBooking() {
             onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 24px rgba(139,69,19,0.08)"; }}
           >
             {/* Icon + title */}
-            <div style={{ marginBottom: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>
+            <div style={{ marginBottom: 8 }}>
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 7 }}>
                 {flow.emoji}
               </div>
-              <h2 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 3px", letterSpacing: "-0.01em" }}>
+              <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 2px", letterSpacing: "-0.01em" }}>
                 {flow.title}
               </h2>
               <p style={{ fontSize: 12.5, fontWeight: 600, color: flow.accentColor, margin: 0 }}>
