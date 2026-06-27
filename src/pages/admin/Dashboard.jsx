@@ -906,7 +906,8 @@ const AdminDashboard = () => {
       const data = await res.json();
       if (data.success) {
         setSiteIsLive(true);
-        setLaunchSequenceActive(true);
+        // Open fullscreen launch sequence in a new tab
+        window.open("/launch-live", "_blank");
       } else {
         alert(`Launch failed: ${data.error || JSON.stringify(data)}`);
       }
@@ -5158,11 +5159,6 @@ const AdminDashboard = () => {
 
       </div>
     </div>
-
-    {/* ── Launch sequence overlay ── */}
-    {launchSequenceActive && (
-      <LaunchSequence onComplete={() => setLaunchSequenceActive(false)} />
-    )}
 
     {/* ── Photo viewer modal ── */}
     {viewingPhoto && (

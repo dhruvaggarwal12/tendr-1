@@ -105,7 +105,13 @@ const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivit
 const HomeWeddingPlanner  = lazy(() => import("./pages/home-wedding/HomeWeddingPlanner.jsx"));
 
 
+import LaunchLivePage from "./pages/LaunchLivePage";
+
 const router = createBrowserRouter([
+  {
+    path: "/launch-live",
+    element: <LaunchLivePage />,
+  },
   {
     element: <RootLayout />,
     children: [
