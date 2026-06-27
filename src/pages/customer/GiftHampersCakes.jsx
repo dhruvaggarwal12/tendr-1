@@ -296,7 +296,7 @@ const GiftHampersCakes = () => {
 
         <div style={{ maxWidth: 720, margin: "0 auto", position: "relative" }}>
           <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#8B4A0E" }}>Curated for every celebration</span>
-          <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 900, color: "#2C1A0E", margin: "10px 0 8px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>Gift Hampers & Cakes</h1>
+          <h1 className="page-main-h1" style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 900, color: "#2C1A0E", margin: "10px 0 8px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>Gift Hampers & Cakes</h1>
           <p className="sub" style={{ fontSize: 15, color: "#6B3A10", margin: "0 0 18px", lineHeight: 1.65 }}>
             Premium, thoughtfully curated hampers & custom cakes — delivered across Delhi NCR
           </p>

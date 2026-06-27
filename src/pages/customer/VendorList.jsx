@@ -361,7 +361,7 @@ const VendorList = () => {
               const range = CAT_RANGES[serviceType] || { min: 2000, max: 300000, step: 2000 };
               const val = currentCatBudget || range.max;
               return (
-                <div style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "calc(100vw - 40px)", boxSizing: "border-box" }}>
+                <div className="vendor-budget-strip" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "calc(100vw - 40px)", boxSizing: "border-box" }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0 }}>
                     💰 {serviceType}
                   </span>
@@ -605,17 +605,17 @@ const VendorList = () => {
 
           {/* How to book strip — shown for all users */}
           {showHint && (
-            <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "10px 14px", marginBottom: 16, fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <span><span style={{ fontSize: 15, marginRight: 5 }}>💡</span><span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>How to book:</span></span>
-                <button onClick={() => setShowHint(false)} style={{ background: "rgba(255,255,255,0.08)", border: "none", borderRadius: "50%", color: "rgba(255,255,255,0.5)", cursor: "pointer", fontSize: 12, width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
+            <div className="vendor-hint-strip" style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 12, padding: "10px 14px", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                <span><span style={{ fontSize: 14, marginRight: 4 }}>💡</span><span style={{ fontSize: 12, color: "#7A4A1A", fontWeight: 700 }}>How to book:</span></span>
+                <button onClick={() => setShowHint(false)} style={{ background: "rgba(196,122,46,0.1)", border: "none", borderRadius: "50%", color: "#9B7450", cursor: "pointer", fontSize: 12, width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
               </div>
-              <div style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none" }}>
+              <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none" }}>
                 {[{ step: "1", label: "Quick View" }, { step: "→" }, { step: "2", label: "Request to Chat" }, { step: "→" }, { step: "3", label: "Finalise Vendor" }, { step: "→" }, { step: "4", label: "Review & Pay" }].map((item, i) =>
                   item.label ? (
-                    <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 12, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0 }}>{item.step}. {item.label}</span>
+                    <span key={i} style={{ background: "rgba(196,122,46,0.14)", color: "#7A4020", fontWeight: 700, fontSize: 11, padding: "2px 9px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, border: "1px solid rgba(196,122,46,0.2)" }}>{item.step}. {item.label}</span>
                   ) : (
-                    <span key={i} style={{ color: "rgba(204,171,74,0.4)", fontSize: 11, flexShrink: 0, alignSelf: "center" }}>›</span>
+                    <span key={i} style={{ color: "rgba(196,122,46,0.4)", fontSize: 10, flexShrink: 0, alignSelf: "center" }}>›</span>
                   )
                 )}
               </div>

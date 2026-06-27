@@ -402,7 +402,7 @@ const VendorDetailsPage = () => {
             {vendor?.isTopRated && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>🏆 Top Rated</span>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-            <h1 style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", margin: 0, lineHeight: 1.1, letterSpacing: "-0.02em", flex: 1 }}>{vendor.name || "Vendor"}</h1>
+            <h1 className="vendor-detail-h1" style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", margin: 0, lineHeight: 1.1, letterSpacing: "-0.02em", flex: 1 }}>{vendor.name || "Vendor"}</h1>
             <button onClick={handleShare}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: shareCopied ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, transition: "all 0.2s" }}
               title={shareCopied ? "Link copied!" : "Share vendor"}>

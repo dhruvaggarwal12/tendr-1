@@ -506,7 +506,7 @@ export default function CustomerDashboard() {
 
         {/* Events section */}
         <div style={{ marginBottom: 20 }}>
-          <h3 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 16px", letterSpacing: "-0.01em" }}>Your Events</h3>
+          <h3 className="dashboard-events-title" style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "-0.01em" }}>Your Events</h3>
 
           {/* Tabs */}
           <div className="cust-tab-row" style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>

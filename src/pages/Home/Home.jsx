@@ -855,19 +855,19 @@ const Home = () => {
 
             {/* Fixed headline block */}
             <div style={{ marginBottom: 36 }}>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
+              <div className="home-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#C47A2E", display: "inline-block" }} />
                 <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E" }}>Delhi NCR's Celebration Platform</span>
               </div>
 
-              <h1 style={{ fontSize: "clamp(2.2rem, 4vw, 3.4rem)", lineHeight: 1.12, color: "#2C1A0E", marginBottom: 18, letterSpacing: "-0.03em" }}>
+              <h1 className="home-hero-h1" style={{ fontSize: "clamp(2.2rem, 4vw, 3.4rem)", lineHeight: 1.12, color: "#2C1A0E", marginBottom: 18, letterSpacing: "-0.03em" }}>
                 Everything your event needs.<br />
                 <span style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                   One place.
                 </span>
               </h1>
 
-              <p style={{ fontSize: 16, fontWeight: 400, color: "#6B4226", lineHeight: 1.7, maxWidth: 440, margin: 0 }}>
+              <p className="home-hero-para" style={{ fontSize: 16, fontWeight: 400, color: "#6B4226", lineHeight: 1.7, maxWidth: 440, margin: 0 }}>
                 From birthday parties and home celebrations to corporate events and house parties — book vendors, plan your budget, send invitations, manage guests, track payments and send curated gift hampers. All of it, right here.
               </p>
             </div>
@@ -876,6 +876,7 @@ const Home = () => {
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <button
                 onClick={() => navigate("/booking")}
+                className="home-hero-cta"
                 style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 17, fontWeight: 800, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(196,122,46,0.45)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", alignSelf: "flex-start" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.55)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(196,122,46,0.45)"; }}

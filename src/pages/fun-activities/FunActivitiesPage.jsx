@@ -24,7 +24,7 @@ export default function FunActivitiesPage() {
           <p style={{ fontSize:10, fontWeight:800, color:"#8B4A0E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px", fontFamily:F }}>
             Add Magic to Any Event
           </p>
-          <h1 style={{ fontSize:"clamp(1.6rem,4vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 10px", letterSpacing:"-0.02em", lineHeight:1.15, fontFamily:F }}>
+          <h1 className="page-main-h1" style={{ fontSize:"clamp(1.6rem,4vw,2.4rem)", fontWeight:900, color:"#2C1A0E", margin:"0 0 10px", letterSpacing:"-0.02em", lineHeight:1.15, fontFamily:F }}>
             Fun Activities
           </h1>
           <p className="sub" style={{ fontSize:15, color:"#6B3A10", margin:"0 0 20px", lineHeight:1.55, fontFamily:F }}>

@@ -98,7 +98,7 @@ export default function WeddingStationery() {
           <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C47A2E", margin: 0 }}>Crafted with love</p>
           <span style={{ color: "#C9A84C", fontSize: 14 }}>✦</span>
         </div>
-        <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.1rem,5.5vw,3.2rem)", fontWeight: 300, color: "#1C1208", margin: "0 0 8px", letterSpacing: "0.02em", fontStyle: "italic", lineHeight: 1.1 }}>
+        <h1 className="page-main-h1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.1rem,5.5vw,3.2rem)", fontWeight: 300, color: "#1C1208", margin: "0 0 8px", letterSpacing: "0.02em", fontStyle: "italic", lineHeight: 1.1 }}>
           Wedding Stationeries
         </h1>
         <p style={{ fontSize: 13, color: "#7A5535", maxWidth: 440, margin: "0 auto 6px", lineHeight: 1.5 }}>
