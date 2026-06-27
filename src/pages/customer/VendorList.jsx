@@ -485,27 +485,27 @@ const VendorList = () => {
                 ))}
             </div>
 
-            <div className="listings-sort-sticky vendor-sort-row" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, justifyContent: "space-between", flexWrap: "wrap" }}>
+            <div className="listings-sort-sticky vendor-sort-row" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
               {/* Sort controls — left */}
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
+                <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                   <option value="rankingScore">Best Match</option>
                   <option value="rating">Rating</option>
                   <option value="price">Price</option>
                   <option value="experience">Experience</option>
                 </select>
                 <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}
-                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 11, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                   <option value="desc">High to Low</option>
                   <option value="asc">Low to High</option>
                 </select>
                 {/* Corporate filter is now auto-applied when eventType === "Corporate Event" — no manual toggle */}
               </div>
 
-              {/* Filters button — right side, slightly inset */}
-              <div style={{ position: "relative", marginRight: 16 }}>
+              {/* Filters button */}
+              <div style={{ position: "relative" }}>
                 <button
                   onClick={() => setFiltersOpen(o => !o)}
                   style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 16px", borderRadius: 100, border: `1.5px solid ${filtersOpen ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: filtersOpen ? "rgba(196,122,46,0.07)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
