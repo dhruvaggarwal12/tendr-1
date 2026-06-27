@@ -487,87 +487,75 @@ const BookingReviewPage = () => {
           {/* ── LEFT: Sidebar (sticky wrapper) ── */}
           <div className="booking-review-sidebar" style={{ position: "sticky", top: 80, display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* Event Details card — only if vendors are finalised */}
-            {vendorEntries.length > 0 && (
+            {/* Event Details card — shows whenever event planning form is filled */}
+            {hasEventDetails && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
                 <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>📝</span>
                   Event Details
                 </h2>
-                {hasEventDetails ? (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
-                    {Object.entries(LABEL_MAP).map(([key, label]) => {
-                      const val = formData[key];
-                      if (!val && val !== 0) return null;
-                      return (
-                        <div key={key}>
-                          <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
-                          <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
-                        </div>
-                      );
-                    })}
-                    {Object.keys(categoryBudgets).length > 0 && (
-                      <div>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Budgets</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                          {Object.entries(categoryBudgets).map(([cat, amt]) => (
-                            <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
-                              <span style={{ fontWeight: 500 }}>{cat}</span>
-                              <span style={{ fontWeight: 700, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
-                            </div>
-                          ))}
-                        </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 13 }}>
+                  {Object.entries(LABEL_MAP).map(([key, label]) => {
+                    const val = formData[key];
+                    if (!val && val !== 0) return null;
+                    return (
+                      <div key={key}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
+                        <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
                       </div>
-                    )}
-                  </div>
-                ) : (
-                  <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>No event details found. Fill in the planning form first.</p>
-                )}
+                    );
+                  })}
+                  {Object.keys(categoryBudgets).length > 0 && (
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>Budgets</div>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        {Object.entries(categoryBudgets).map(([cat, amt]) => (
+                          <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#2C1A0E" }}>
+                            <span style={{ fontWeight: 500 }}>{cat}</span>
+                            <span style={{ fontWeight: 700, color: "#C47A2E" }}>{fmtBudget(amt)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
-            {/* Fun Activity Details — from Redux when no sessionStorage booking */}
-            {faItems.length > 0 && !faBooking && (
+            {/* Fun Activity Details — full form per activity */}
+            {faItems.length > 0 && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 20 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 14px", display: "flex", alignItems: "center", gap: 8 }}>
                   <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 24, height: 24, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎭</span>
                   Fun Activities
                 </h2>
-                {faItems.map(item => (
-                  <div key={item.id} style={{ marginBottom: 8 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>{item.emoji} {item.name}</div>
-                    {item.form && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2, lineHeight: 1.5 }}>📅 {item.form.date} · 👥 {item.form.guests} guests</div>}
-                    {item.totalPrice > 0 && <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>₹{Number(item.totalPrice).toLocaleString("en-IN")}</div>}
+                {faItems.map((item, idx) => (
+                  <div key={item.id} style={{ marginBottom: idx < faItems.length - 1 ? 14 : 0, paddingBottom: idx < faItems.length - 1 ? 14 : 0, borderBottom: idx < faItems.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{item.emoji} {item.name}</span>
+                      {item.totalPrice > 0 && <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", flexShrink: 0, marginLeft: 6 }}>₹{Number(item.totalPrice).toLocaleString("en-IN")}</span>}
+                    </div>
+                    {item.form ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 3, fontSize: 12, color: "#9B7450", background: "#f8f4ef", borderRadius: 8, padding: "8px 10px", lineHeight: 1.55 }}>
+                        {item.form.eventType && <span>🎉 {item.form.eventType}</span>}
+                        {item.form.date && <span>📅 {item.form.date}</span>}
+                        {item.form.time && <span>⏰ {item.form.time}</span>}
+                        {item.form.address && <span>📍 {item.form.address}</span>}
+                        {item.form.guests && <span>👥 {item.form.guests} guests</span>}
+                        {(item.form.name || item.form.phone) && <span>👤 {[item.form.name, item.form.phone].filter(Boolean).join(" · ")}</span>}
+                        {item.form.notes && <span>📝 {item.form.notes}</span>}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 11, color: "#c0392b" }}>⚠ Event details not filled</div>
+                    )}
                   </div>
                 ))}
-              </div>
-            )}
-
-            {/* Fun Activity Details card */}
-            {faBooking && (
-              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
-                <h2 style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", margin: "0 0 16px", display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 28, height: 28, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 14 }}>🎭</span>
-                  Fun Activity Details
-                </h2>
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {[
-                    { label: "Activity",    val: `${faBooking.activity?.emoji || ""} ${faBooking.activity?.name || ""}`.trim() },
-                    { label: "Event Type",  val: faBooking.form?.eventType },
-                    { label: "Date",        val: faBooking.form?.date },
-                    { label: "Start Time",  val: faBooking.form?.time },
-                    { label: "Address",     val: faBooking.form?.address },
-                    { label: "Guests",      val: faBooking.form?.guests },
-                    { label: "Contact",     val: faBooking.form?.name ? `${faBooking.form.name} · ${faBooking.form.phone}` : null },
-                    { label: "Notes",       val: faBooking.form?.notes },
-                    { label: "Total Price", val: faBooking.totalPrice ? `₹${Number(faBooking.totalPrice).toLocaleString("en-IN")}` : null },
-                  ].filter(r => r.val).map(({ label, val }) => (
-                    <div key={label}>
-                      <div style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 2 }}>{label}</div>
-                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 500 }}>{val}</div>
-                    </div>
-                  ))}
-                </div>
+                {faTotal > 0 && faItems.length > 1 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 8, marginTop: 10 }}>
+                    <span>Activities Total</span>
+                    <span>₹{faTotal.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
               </div>
             )}
 
@@ -857,6 +845,45 @@ const BookingReviewPage = () => {
               </div>
             )}
 
+            {/* Fun Activities — standalone card, visible on mobile too */}
+            {faItems.length > 0 && (
+              <div style={{ marginBottom: 20, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", padding: "18px 20px" }}>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 26, height: 26, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎭</span>
+                  Fun Activities
+                </div>
+                {faItems.map((item, idx) => (
+                  <div key={item.id} style={{ marginBottom: idx < faItems.length - 1 ? 14 : 0, paddingBottom: idx < faItems.length - 1 ? 14 : 0, borderBottom: idx < faItems.length - 1 ? "1px solid rgba(196,122,46,0.1)" : "none" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{item.emoji} {item.name}</span>
+                      <span style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", flexShrink: 0, marginLeft: 8 }}>
+                        {item.totalPrice ? `₹${Number(item.totalPrice).toLocaleString("en-IN")}` : "TBC"}
+                      </span>
+                    </div>
+                    {item.form ? (
+                      <div style={{ background: "#f8f4ef", borderRadius: 10, padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4, fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.5 }}>
+                        {item.form.eventType && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Event:</span>{item.form.eventType}</div>}
+                        {item.form.date && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Date:</span>{item.form.date}</div>}
+                        {item.form.time && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Time:</span>{item.form.time}</div>}
+                        {item.form.address && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Venue:</span>{item.form.address}</div>}
+                        {item.form.guests && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Guests:</span>{item.form.guests}</div>}
+                        {item.form.name && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Contact:</span>{item.form.name}{item.form.phone ? ` · ${item.form.phone}` : ""}</div>}
+                        {item.form.notes && <div><span style={{ fontWeight: 600, color: "#9B7450", display: "inline-block", minWidth: 62 }}>Notes:</span>{item.form.notes}</div>}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: "#c0392b" }}>⚠ Event details not filled — go back to add details</div>
+                    )}
+                  </div>
+                ))}
+                {faTotal > 0 && faItems.length > 1 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#C47A2E", borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 10, marginTop: 10 }}>
+                    <span>Activities Total</span>
+                    <span>₹{faTotal.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* ── Total + Proceed ── */}
             <div className="booking-sidebar-proceed"
               style={{
@@ -996,38 +1023,6 @@ const BookingReviewPage = () => {
                   </button>
                 )}
               </div>
-
-              {/* Fun Activities section — shown first when present */}
-              {faItems.length > 0 && (
-                <div style={{ marginBottom: 16, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(124,58,237,0.12)", padding: "16px 18px" }}>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>🎭 Fun Activities</div>
-                  {faItems.map(item => (
-                    <div key={item.id} style={{ marginBottom: 12 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: 13, color: "#5a3a1a" }}>
-                        <span style={{ fontWeight: 600 }}>{item.emoji} {item.name}</span>
-                        <span style={{ fontWeight: 700, color: "#2C1A0E" }}>
-                          {item.totalPrice ? `₹${Number(item.totalPrice).toLocaleString("en-IN")}` : "TBC"}
-                        </span>
-                      </div>
-                      {item.form && (
-                        <div style={{ fontSize: 11, color: "#9B7450", marginTop: 4, lineHeight: 1.6 }}>
-                          📅 {item.form.date} · ⏰ {item.form.time} · 👥 {item.form.guests} guests
-                          <br />📍 {item.form.address}
-                        </div>
-                      )}
-                      {!item.form && (
-                        <div style={{ fontSize: 11, color: "#c0392b", marginTop: 2 }}>⚠ Event details not filled — go back to add details</div>
-                      )}
-                    </div>
-                  ))}
-                  {faTotal > 0 && (
-                    <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#7c3aed", borderTop: "1px solid rgba(124,58,237,0.15)", paddingTop: 8, marginTop: 6 }}>
-                      <span>Fun Activities Total</span>
-                      <span>₹{faTotal.toLocaleString("en-IN")}</span>
-                    </div>
-                  )}
-                </div>
-              )}
 
               {/* People Also Get — upsell block (hide if both fun activities and stationery already in cart) */}
               <div style={{ margin: "14px 0 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
