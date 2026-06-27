@@ -746,8 +746,7 @@ const VendorList_ListingPage = ({
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: saveToCompare });
                       return;
                     }
-                    // Planning flow → always skip form, use Redux data directly
-                    setChatSave(vendor._id, { eventType: formData.eventType || "", date: formData.date || "", guests: String(formData.guests || ""), budget: formData.budget || "" });
+                    // Planning flow → open chat modal; chatSave is written after conversation is created
                     openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: saveToCompare });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
@@ -895,10 +894,9 @@ const VendorList_ListingPage = ({
               onClick={async () => {
                 const { eventType: et, guests: g, date: d, budget: b, location: loc, eventTime: et2 } = chatEventForm;
                 if (!requireFormBeforeChat) {
-                  // Planning flow — no availability check needed
+                  // Planning flow — no availability check needed; chatSave written after conversation opens
                   dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, eventTime: et2, token }));
                   dispatch(setBookingType("you-do-it"));
-                  setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
                   openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
                   setChatFormVendor(null);
                   return;
@@ -930,7 +928,7 @@ const VendorList_ListingPage = ({
                   } catch { /* on error fall through and open chat */ }
                   setCheckingAvail(false);
                 }
-                setChatSave(chatFormVendor._id, { eventType: et, date: d, guests: g, budget: b, location: loc });
+                // chatSave written after conversation opens in VendorChatModal
                 openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
                 setChatFormVendor(null);
               }}

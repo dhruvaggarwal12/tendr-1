@@ -689,10 +689,22 @@ const BookingReviewPage = () => {
                       <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E", marginBottom: 3 }}>
                         {isLetUsDoIt ? "Tendr" : (vendor.name || vendor.businessName || "Vendor")}
                       </div>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>
-                        {isLetUsDoIt ? "Concierge Planning" : serviceType}
-                      </span>
-                      {!isLetUsDoIt && vendor.city && <span style={{ fontSize: 12, color: "#9B7450", marginLeft: 8 }}>{vendor.city}</span>}
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: pinnedMap[vendor?._id?.toString()]?.length ? 6 : 0 }}>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>
+                          {isLetUsDoIt ? "Concierge Planning" : serviceType}
+                        </span>
+                        {!isLetUsDoIt && vendor.city && <span style={{ fontSize: 12, color: "#9B7450" }}>{vendor.city}</span>}
+                      </div>
+                      {/* Pinned messages — always visible */}
+                      {pinnedMap[vendor?._id?.toString()]?.length > 0 && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                          {pinnedMap[vendor._id.toString()].map((msg, i) => (
+                            <div key={i} style={{ fontSize: 12, color: "#5a3a1a", background: "#fffaf3", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 8, padding: "6px 10px", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.5, display: "flex", gap: 5, alignItems: "flex-start" }}>
+                              <span style={{ flexShrink: 0 }}>📌</span><span>{msg}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <div style={{ textAlign: "right", marginRight: 8, flexShrink: 0 }}>
                       {price !== null ? (
@@ -773,30 +785,6 @@ const BookingReviewPage = () => {
                         </div>
                       )}
 
-                      {/* Pinned messages from chat */}
-                      {pinnedMap[vendor?._id?.toString()]?.length > 0 && (
-                        <div style={{ padding: "12px 20px 4px" }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "#9B7450", marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
-                            <span>📌</span> Pinned from Chat
-                          </div>
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            {pinnedMap[vendor._id.toString()].map((msg, i) => (
-                              <div key={i} style={{ background: "#fffaf3", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "9px 13px", fontSize: 12.5, color: "#5a3a1a", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.55 }}>
-                                {msg}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Only pinned messages — no chat summary */}
-                      {!pinnedMap[vendor?._id?.toString()]?.length && (
-                        <div style={{ padding: "10px 20px 4px" }}>
-                          <div style={{ background: "#fffaf3", border: "1.5px dashed rgba(196,122,46,0.15)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#ccc", fontStyle: "italic" }}>
-                            Pinned messages from chat will appear here once admin confirms details.
-                          </div>
-                        </div>
-                      )}
 
                       {/* Additional requirements textarea */}
                       <div style={{ padding: "10px 20px 16px" }}>

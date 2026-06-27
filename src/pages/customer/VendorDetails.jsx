@@ -22,6 +22,28 @@ import { useSelector, useDispatch } from "react-redux";
 import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice";
 import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
 import { useChatOverlay } from "../../context/ChatContext";
+const openExistingChatForVendor = async (vendorId, vendorData, token, openExistingChat, openVendorChat) => {
+  const save = (() => { try { return JSON.parse(localStorage.getItem(`tendr:chat_req:${vendorId}`) || "null"); } catch { return null; } })();
+  if (save?.conversationId) {
+    openExistingChat(save.conversationId, { _id: vendorData._id, name: vendorData.name, serviceType: vendorData.serviceType });
+    return;
+  }
+  // Fallback: fetch conversations to find the right one
+  try {
+    const res = await fetch(`${import.meta.env.VITE_BASE_URL}/conversations`, {
+      headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const convo = (data.conversations || []).find(c => {
+        const cvid = typeof c.vendorId === "object" ? c.vendorId?._id : c.vendorId;
+        return String(cvid) === String(vendorId);
+      });
+      if (convo) { openExistingChat(convo._id, { _id: vendorData._id, name: vendorData.name, serviceType: vendorData.serviceType, approved: convo.chatApproved }); return; }
+    }
+  } catch {}
+  openVendorChat({ _id: vendorData._id, name: vendorData.name, serviceType: vendorData.serviceType });
+};
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
 import AuthModal from "../../components/AuthModal";
@@ -71,7 +93,7 @@ const VendorDetailsPage = () => {
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { openVendorChat, chatState } = useChatOverlay();
+  const { openVendorChat, openExistingChat, chatState } = useChatOverlay();
   const { id } = useParams();
   const location = useLocation();
 
@@ -535,7 +557,7 @@ const VendorDetailsPage = () => {
                 <button
                   onClick={() => {
                     if (!token) { setAuthModalOpen(true); return; }
-                    if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
+                    if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
                     if (hasEventContext) {
                       dispatch(setBookingType("you-do-it"));
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
@@ -770,7 +792,7 @@ const VendorDetailsPage = () => {
                   <button
                     onClick={() => {
                       if (!token) { setAuthModalOpen(true); return; }
-                      if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
+                      if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
                       if (hasEventContext) {
                         dispatch(setBookingType("you-do-it"));
                         openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });

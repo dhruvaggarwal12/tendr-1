@@ -635,6 +635,17 @@ export default function VendorChatModal() {
         });
       }
 
+      // Persist chat request to localStorage so "View Active Chat" can open it directly
+      if (vendor?._id && vendor._id !== "concierge" && vendor._id !== "tendr-team") {
+        try {
+          localStorage.setItem(`tendr:chat_req:${vendor._id}`, JSON.stringify({
+            conversationId: _id,
+            date: reduxFormData?.date || "",
+            submittedAt: Date.now(),
+          }));
+        } catch {}
+      }
+
       if (botDoneRef.current && Object.keys(botAnswersRef.current).length > 0 && !summarySentRef.current) {
         summarySentRef.current = true;
         const fullMsg = buildSummaryMessage(reduxFormData, botAnswersRef.current, vendor?.name, vendor?.serviceType);
