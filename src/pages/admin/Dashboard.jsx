@@ -900,15 +900,19 @@ const AdminDashboard = () => {
     try {
       const res = await fetch(`${BASE_URL}/launch`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         credentials: "include",
       });
       const data = await res.json();
       if (data.success) {
         setSiteIsLive(true);
         setLaunchSequenceActive(true);
+      } else {
+        alert(`Launch failed: ${data.error || JSON.stringify(data)}`);
       }
-    } catch {}
+    } catch (err) {
+      alert(`Launch error: ${err.message}`);
+    }
     setLaunchLoading(false);
   };
 
@@ -918,12 +922,18 @@ const AdminDashboard = () => {
     try {
       const res = await fetch(`${BASE_URL}/revert-launch`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
         credentials: "include",
       });
       const data = await res.json();
-      if (data.success) setSiteIsLive(false);
-    } catch {}
+      if (data.success) {
+        setSiteIsLive(false);
+      } else {
+        alert(`Revert failed: ${data.error || JSON.stringify(data)}`);
+      }
+    } catch (err) {
+      alert(`Revert error: ${err.message}`);
+    }
     setLaunchLoading(false);
   };
 
