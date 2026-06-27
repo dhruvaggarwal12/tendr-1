@@ -526,6 +526,23 @@ const BookingReviewPage = () => {
               </div>
             )}
 
+            {/* Fun Activity Details — from Redux when no sessionStorage booking */}
+            {faItems.length > 0 && !faBooking && (
+              <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 20 }}>
+                <h2 style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 12px", display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", borderRadius: 8, width: 24, height: 24, display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 13 }}>🎭</span>
+                  Fun Activities
+                </h2>
+                {faItems.map(item => (
+                  <div key={item.id} style={{ marginBottom: 8 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>{item.emoji} {item.name}</div>
+                    {item.form && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2, lineHeight: 1.5 }}>📅 {item.form.date} · 👥 {item.form.guests} guests</div>}
+                    {item.totalPrice > 0 && <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>₹{Number(item.totalPrice).toLocaleString("en-IN")}</div>}
+                  </div>
+                ))}
+              </div>
+            )}
+
             {/* Fun Activity Details card */}
             {faBooking && (
               <div style={{ background: "#fff", borderRadius: 18, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 4px 18px rgba(139,69,19,0.07)", padding: 24 }}>
@@ -980,48 +997,10 @@ const BookingReviewPage = () => {
                 )}
               </div>
 
-              {/* People Also Get — upsell block */}
-              <div style={{ margin: "14px 0 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>People also get</p>
-
-                {/* Fun Activities row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>🎭</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Fun Activities</div>
-                      <div style={{ fontSize: 11, color: "#9B7450" }}>Magic shows, live bands, photo booths & more</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate("/fun-activities")}
-                    style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                    Browse →
-                  </button>
-                </div>
-
-                {/* Wedding Stationeries chip */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>💌</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Wedding Stationeries</div>
-                      <div style={{ fontSize: 11, color: "#9B7450" }}>Invites, menus, cards &amp; more</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate("/stationery")}
-                    style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                    Browse →
-                  </button>
-                </div>
-              </div>
-
-              {/* Fun Activities section */}
+              {/* Fun Activities section — shown first when present */}
               {faItems.length > 0 && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ height: 1, background: "linear-gradient(90deg,transparent,rgba(196,122,46,0.3),transparent)", margin: "0 0 14px" }} />
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>🎭 Fun Activities</div>
+                <div style={{ marginBottom: 16, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(124,58,237,0.12)", padding: "16px 18px" }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#7c3aed", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>🎭 Fun Activities</div>
                   {faItems.map(item => (
                     <div key={item.id} style={{ marginBottom: 12 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: 13, color: "#5a3a1a" }}>
@@ -1049,6 +1028,45 @@ const BookingReviewPage = () => {
                   )}
                 </div>
               )}
+
+              {/* People Also Get — upsell block (hide if both fun activities and stationery already in cart) */}
+              <div style={{ margin: "14px 0 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>People also get</p>
+
+                {/* Fun Activities row — only show if user hasn't added them */}
+                {faItems.length === 0 && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 22 }}>🎭</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Fun Activities</div>
+                      <div style={{ fontSize: 11, color: "#9B7450" }}>Magic shows, live bands, photo booths & more</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate("/fun-activities")}
+                    style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    Browse →
+                  </button>
+                </div>
+                )}
+
+                {/* Wedding Stationeries chip */}
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 22 }}>💌</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Wedding Stationeries</div>
+                      <div style={{ fontSize: 11, color: "#9B7450" }}>Invites, menus, cards &amp; more</div>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => navigate("/stationery")}
+                    style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                    Browse →
+                  </button>
+                </div>
+              </div>
 
               {/* Referral code input */}
               <div style={{ marginBottom: 16 }}>

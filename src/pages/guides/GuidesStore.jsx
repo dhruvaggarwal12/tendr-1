@@ -26,20 +26,20 @@ export default function GuidesStore() {
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 60 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: STORE.accentSoft, border: `1px solid ${STORE.border}`, borderRadius: 100, padding: "6px 18px", marginBottom: 20 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: STORE.accent, textTransform: "uppercase", letterSpacing: "0.12em" }}>Tips by Tendr · Free Resource Library</span>
+        <div style={{ textAlign: "center", marginBottom: 32 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: STORE.accentSoft, border: `1px solid ${STORE.border}`, borderRadius: 100, padding: "4px 14px", marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: STORE.accent, textTransform: "uppercase", letterSpacing: "0.1em" }}>Tips by Tendr · Free Resource Library</span>
           </div>
-          <h1 style={{ fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 900, color: STORE.heading, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 16px" }}>
+          <h1 style={{ fontSize: "clamp(1.4rem, 4vw, 2.4rem)", fontWeight: 900, color: STORE.heading, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 10px" }}>
             Event Planning Guides
           </h1>
-          <p style={{ fontSize: 16.5, color: STORE.muted, maxWidth: 500, margin: "0 auto", lineHeight: 1.65 }}>
-            Practical, no-fluff guides for budgeting, decorating, and planning any event. Free to unlock with a WhatsApp number.
+          <p style={{ fontSize: 13, color: STORE.muted, maxWidth: 460, margin: "0 auto", lineHeight: 1.55 }}>
+            Practical, no-fluff guides for budgeting, decorating, and planning any event.
           </p>
         </div>
 
         {/* Guide cards grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(320px, 100%), 1fr))", gap: 20 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(280px, 100%), 1fr))", gap: 16 }}>
           {GUIDES.map((guide) => (
             <GuideCard key={guide.slug} guide={guide} onOpen={() => navigate(`/guides/${guide.slug}`)} />
           ))}

@@ -1,5 +1,4 @@
 import { useSelector, useDispatch } from "react-redux";
-import PageTour from "../../components/PageTour";
 import SEO, { vendorListTitle, vendorListDescription } from "../../components/SEO";
 import { setFilters, addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice.js";
 import { setCategoryBudgets } from "../../redux/eventPlanningSlice.js";
@@ -313,34 +312,10 @@ const VendorList = () => {
 
 
 
-  const LISTINGS_TOUR_STEPS = [
-    {
-      target: "body",
-      placement: "center",
-      disableBeacon: true,
-      title: "Browse Vendors",
-      content: "These are verified vendors available in your area. Scroll through or use filters to narrow by budget, location, guest count, and ratings.",
-    },
-    {
-      target: '[data-tour="vendor-card-area"]',
-      placement: "top",
-      disableBeacon: true,
-      title: "Vendor Cards",
-      content: "Click any card to open Quick View — photos, packages, and pricing. Use the Compare button on cards to shortlist up to 3 vendors and compare them side-by-side.",
-    },
-    {
-      target: "body",
-      placement: "center",
-      disableBeacon: true,
-      title: "Chat to Book",
-      content: 'Hit "Chat" on any vendor to begin booking. We\'ll ask for your event details and automatically check if the vendor is available on your date.',
-    },
-  ];
 
   return (
     <PullToRefresh onRefresh={doFetch}>
     <div style={{ minHeight: "100vh", background: "#F8F4EF" }}>
-      <PageTour pageKey="listings" steps={LISTINGS_TOUR_STEPS} />
       <SEO
         title={vendorListTitle(serviceType, locationType)}
         description={vendorListDescription(serviceType, locationType)}

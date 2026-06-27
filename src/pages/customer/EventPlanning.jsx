@@ -932,7 +932,7 @@ const EventPlanning = () => {
 
           {/* Package header card */}
           <div style={{ width: "100%", maxWidth: 1100, marginBottom: 20 }}>
-            <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", borderRadius: 20, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
+            <div className="sp-pkg-header" style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", borderRadius: 20, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", top: -24, right: -24, width: 110, height: 110, borderRadius: "50%", background: "rgba(204,171,74,0.07)" }} />
               <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>✨ Your Event Package</div>
               <h2 style={{ fontSize: "clamp(1.1rem,2.5vw,1.5rem)", fontWeight: 900, color: "#CCAB4A", marginBottom: 8, letterSpacing: "-0.01em" }}>
@@ -966,7 +966,7 @@ const EventPlanning = () => {
                 </div>
               </div>
               {/* 3 Tier Cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+              <div className="budget-tier-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
                 {['essential','balanced','premium'].map(tier => {
                   const meta = TIER_META[tier];
                   const splits = TIER_SPLITS[tier];
@@ -1011,14 +1011,14 @@ const EventPlanning = () => {
 
           {/* How to book strip — smart planning */}
           <div style={{ width: "100%", maxWidth: 1100, marginBottom: 14 }}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "11px 16px", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(44,26,14,0.18)" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 12, padding: "11px 16px", fontFamily: "'Outfit',sans-serif" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 15 }}>💡</span>
-                <span style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>How it works:</span>
+                <span style={{ fontSize: 14 }}>💡</span>
+                <span style={{ fontSize: 12, color: "#7A4A1A", fontWeight: 700 }}>How it works:</span>
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "nowrap", overflowX: "auto", paddingBottom: 2, msOverflowStyle: "none", scrollbarWidth: "none" }}>
                 {["Quick View", "Confirm Package", "Coordinate", "Review & Pay"].map((label, i) => (
-                  <span key={i} style={{ background: "rgba(204,171,74,0.22)", color: "#CCAB4A", fontWeight: 700, fontSize: 11, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0 }}>
+                  <span key={i} style={{ background: "rgba(196,122,46,0.15)", color: "#7A4020", fontWeight: 700, fontSize: 11, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, border: "1px solid rgba(196,122,46,0.22)" }}>
                     {i + 1}. {label}
                   </span>
                 ))}
@@ -1059,14 +1059,10 @@ const EventPlanning = () => {
                       {vendor.totalEventsCompleted > 0 && <span style={{ fontSize: 9.5, background: "rgba(196,122,46,0.08)", color: "#7A4A1A", borderRadius: 100, padding: "1px 5px", fontWeight: 700 }}>{vendor.totalEventsCompleted}+ events</span>}
                     </div>
                     {vendor.locations?.length > 0 && <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 7 }}>{vendor.locations.slice(0, 2).join(", ")}</div>}
-                    <div style={{ marginTop: "auto", display: "flex", gap: 5 }}>
+                    <div style={{ marginTop: "auto" }}>
                       <button onClick={() => openQuickView(vendor)}
-                        style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", touchAction: "manipulation" }}>
+                        style={{ width: "100%", padding: "7px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", touchAction: "manipulation" }}>
                         Quick View
-                      </button>
-                      <button onClick={() => openProfile(vendor)}
-                        style={{ flex: 1, padding: "7px 0", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", touchAction: "manipulation" }}>
-                        Profile
                       </button>
                     </div>
                   </div>
@@ -1255,24 +1251,10 @@ const EventPlanning = () => {
                 </div>
               )}
 
-              <div style={{ height: 1, background: "rgba(196,122,46,0.1)", margin: "0 0 16px" }} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <button
-                  onClick={() => { const v = spQuickView; setSpQuickView(null); openProfile(v); }}
-                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
-                  View Profile →
-                </button>
-                <button
-                  onClick={() => {
-                    const v = spQuickView;
-                    setSpQuickView(null);
-                    dispatch(setBookingType("let-us-do-it"));
-                    openVendorChat({ _id: v._id, name: v.name, serviceType: v.serviceType });
-                  }}
-                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer" }}>
-                  💬 Request to Chat
-                </button>
-              </div>
+              <button onClick={() => setSpQuickView(null)}
+                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: "'Outfit',sans-serif", cursor: "pointer", marginTop: 4 }}>
+                ✕ Close
+              </button>
             </div>
           </div>
           <style>{`@keyframes qv-slide { from { transform: translateX(100%) } to { transform: translateX(0) } }`}</style>
@@ -1449,12 +1431,15 @@ const EventPlanning = () => {
 
         <style>{`
           @media(max-width:600px){
-            .event-cat-img{height:90px!important}
-            .event-cat-body{padding:8px 10px 10px!important}
-            .event-cat-body h3{font-size:12px!important}
-            .event-cat-body p{font-size:11px!important}
-            .tendr-suggests-wrap{padding:10px 14px 12px!important}
-            .tendr-suggests-header{padding:10px 14px 0!important}
+            .event-cat-img{height:70px!important}
+            .event-cat-body{padding:6px 8px 8px!important}
+            .event-cat-body h3{font-size:11px!important}
+            .event-cat-body p{font-size:10px!important;margin-bottom:3px!important}
+            .tendr-suggests-wrap{padding:8px 12px 10px!important;gap:6px!important}
+            .tendr-suggests-header{padding:8px 12px 0!important}
+            .budget-tier-grid{grid-template-columns:1fr!important}
+            .sp-pkg-header{padding:14px 16px!important;border-radius:14px!important}
+            .smart-vendor-grid{gap:8px!important}
           }
         `}</style>
         <div className="w-full px-4 sm:px-8 lg:px-16 pt-10 pb-16 flex flex-col items-center">
@@ -1766,12 +1751,12 @@ const EventPlanning = () => {
                   </div>
 
                   {/* Two columns — single column on mobile */}
-                  <style>{`@media(max-width:640px){.budget-modal-cols{grid-template-columns:1fr!important}.budget-modal-left{border-right:none!important;border-bottom:1.5px solid rgba(196,122,46,0.15)!important}}`}</style>
+                  <style>{`@media(max-width:640px){.budget-modal-cols{grid-template-columns:1fr!important}.budget-modal-left{border-right:none!important;border-bottom:1.5px solid rgba(196,122,46,0.15)!important}.budget-modal-left,.budget-modal-right{padding:14px 16px!important}.budget-modal-title{font-size:14px!important}.budget-modal-inner{padding:14px 16px 18px!important;gap:12px!important}}`}</style>
                   <div style={{ overflowY: "auto", flex: 1 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="budget-modal-cols">
 
                     {/* LEFT — per-category sliders */}
-                    <div className="budget-modal-left" style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)" }}>
+                    <div className="budget-modal-left" style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)", overflowY: "auto", maxHeight: "60dvh" }}>
                       <div style={{ marginBottom: 16 }}>
                         <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set budget per service</div>
                         <div style={{ fontSize: 12, color: "#9B7450" }}>Set an upper limit for each category</div>
@@ -1803,7 +1788,7 @@ const EventPlanning = () => {
                     </div>
 
                     {/* RIGHT — total budget with split */}
-                    <div style={{ padding: "24px 28px" }}>
+                    <div className="budget-modal-right" style={{ padding: "24px 28px" }}>
                       <div style={{ marginBottom: 20 }}>
                         <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set your total budget</div>
                         <div style={{ fontSize: 12, color: "#9B7450" }}>We'll show you vendors that fit — you can adjust the split on the next screen</div>
@@ -1948,6 +1933,14 @@ const EventPlanning = () => {
 
   return (
     <div className="min-h-screen bg-[#F8F4EF]">
+      <style>{`
+        @media(max-width:600px){
+          .event-question-card{padding:16px 16px 14px!important}
+          .event-question-card h1{font-size:1.2rem!important}
+          .event-question-card p{font-size:0.8rem!important}
+          .event-question-card .w-14{width:40px!important;height:40px!important}
+        }
+      `}</style>
       <HamburgerNav active="Plan" />
       <BasicSpeedDial />
       <SelectedVendorsFloat />
@@ -2033,17 +2026,25 @@ const EventPlanning = () => {
               const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}-${String(todayLocal.getDate()).padStart(2, "0")}`;
               const currentVal = formData[currentQuestion.id] || "";
               return (
-                <input
-                  type="date"
-                  min={todayStr}
-                  value={currentVal || ""}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (!v || v < todayStr) return;
-                    selectAndAdvance(currentQuestion.id, v);
-                  }}
-                  style={{ width: "100%", padding: "14px 18px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 18, fontFamily: "'Outfit', sans-serif", color: currentVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 56 }}
-                />
+                <div>
+                  <input
+                    type="date"
+                    min={todayStr}
+                    value={currentVal || ""}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      if (!v || v < todayStr) return;
+                      handleInputChange(currentQuestion.id, v);
+                    }}
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 15, fontFamily: "'Outfit', sans-serif", color: currentVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 48 }}
+                  />
+                  {currentVal && (
+                    <button onClick={() => setTimeout(advance, 100)}
+                      style={{ width: "100%", marginTop: 12, padding: "12px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                      Confirm Date →
+                    </button>
+                  )}
+                </div>
               );
             })()}
 

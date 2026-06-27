@@ -321,6 +321,7 @@ export default function CheckBox() {
                           ref={provided.innerRef}
                           {...provided.draggableProps}
                           {...provided.dragHandleProps}
+                          style={{ ...provided.draggableProps.style, maxWidth: "100vw", boxSizing: "border-box" }}
                         >
                           <input
                             type="checkbox"

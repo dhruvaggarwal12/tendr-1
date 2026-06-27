@@ -38,12 +38,12 @@ button, a, input, select, textarea, [role="button"] {
 ───────────────────────────────────────────── */
 @media (max-width: 767px) {
   /* Base font scale-down */
-  body { font-size: 14px; }
+  body { font-size: 13px; }
 
   /* Section headings */
-  h1 { font-size: clamp(1.4rem, 5vw, 2rem) !important; }
-  h2 { font-size: clamp(1.2rem, 4.5vw, 1.7rem) !important; }
-  h3 { font-size: clamp(1rem, 4vw, 1.3rem) !important; }
+  h1 { font-size: clamp(1.2rem, 4.5vw, 1.7rem) !important; }
+  h2 { font-size: clamp(1rem, 4vw, 1.4rem) !important; }
+  h3 { font-size: clamp(0.9rem, 3.5vw, 1.1rem) !important; }
 
   /* EventPlanning step cards */
   .booking-flow-card {
@@ -106,7 +106,7 @@ button, a, input, select, textarea, [role="button"] {
 
   /* EventPlanning category selection cards */
   .event-cat-img {
-    height: 110px !important;
+    height: 70px !important;
   }
 
   /* Vendor card grid gap */

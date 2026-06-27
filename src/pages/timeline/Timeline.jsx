@@ -472,7 +472,7 @@ export default function Timeline() {
   const [loaded, setLoaded]     = useState(false);
   const [personalized, setPersonalized] = useState(null);
   const [expandedNote, setExpandedNote] = useState(null);
-  const [timelineSaved, setTimelineSaved]   = useState(() => { try { return localStorage.getItem("tendr_timeline_saved") === "true"; } catch { return false; } });
+  const [timelineSaved, setTimelineSaved]   = useState(false);
   const [notifyOpen,    setNotifyOpen]       = useState(false);
   const [notifyDone,    setNotifyDone]       = useState(() => { try { return !!localStorage.getItem('tendr_notify_phone'); } catch { return false; } });
 
@@ -600,45 +600,30 @@ export default function Timeline() {
 
   return (
     <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#F8F4EF", fontFamily: font }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .tl-header { padding: 6px 12px !important; }
+          .tl-progress { padding: 6px 12px !important; }
+          .tl-phase { margin-bottom: 16px !important; padding-left: 44px !important; }
+          .tl-phase-dot { width: 36px !important; height: 36px !important; top: 10px !important; font-size: 13px !important; }
+          .tl-phase-card-header { padding: 10px 14px !important; }
+          .tl-phase-card-header span { font-size: 13px !important; }
+          .tl-task-row { padding: 8px 14px !important; }
+          .tl-task-input { font-size: 12px !important; }
+          .tl-save-btn { font-size: 11px !important; padding: 4px 8px !important; }
+          .tl-notify-btn { font-size: 11px !important; padding: 4px 8px !important; }
+          .tl-progress-pct { font-size: 12px !important; }
+        }
+      `}</style>
       <SEO title="Event Timeline — Tendr" description="Step-by-step countdown plan for your event." path="/prebuilt-timeline" />
       <BasicSpeedDial />
       <div style={{ flexShrink: 0 }}><HamburgerNav active="Browse" /></div>
 
       {/* Fixed top: header + progress */}
       <div style={{ flexShrink: 0 }}>
-        {/* Personalization / days-left banner */}
-        {personalized?.eventDate && (() => {
-          const dl = Math.max(0, Math.ceil((new Date(personalized.eventDate) - new Date()) / 86400000));
-          const barW = Math.max(0, Math.min(100, dl > 90 ? 100 : Math.round((dl / 90) * 100)));
-          return (
-            <div style={{ background: dl <= 7 ? "linear-gradient(90deg,#c0392b,#e74c3c)" : dl <= 14 ? "linear-gradient(90deg,#b45309,#C47A2E)" : "linear-gradient(90deg,#2C1A0E,#3D2210)", padding: "7px 16px" }}>
-              <div style={{ maxWidth: 760, margin: "0 auto" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap", marginBottom: 3 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 13 }}>{dl <= 7 ? "🚨" : dl <= 14 ? "⚡" : "📅"}</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: "#fff" }}>
-                      {dl === 0 ? "Today is your event!" : `${dl} day${dl === 1 ? "" : "s"} to go`}
-                    </span>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>
-                      {new Date(personalized.eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                    </span>
-                  </div>
-                  <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
-                    {(personalized.services || []).map(s => (
-                      <span key={s} style={{ padding: "2px 8px", borderRadius: 100, background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>{s}</span>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ height: 2, background: "rgba(255,255,255,0.1)", borderRadius: 100, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${barW}%`, background: "rgba(255,255,255,0.4)", borderRadius: 100 }} />
-                </div>
-              </div>
-            </div>
-          );
-        })()}
 
         {/* Header */}
-        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "10px 16px" }}>
+        <div className="tl-header" style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "10px 16px" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
             <button onClick={() => { localStorage.removeItem("tendr_timeline_v2"); localStorage.removeItem("tendr_timeline_form"); navigate("/timeline-picker"); }}
               style={{ padding: "5px 10px", borderRadius: 8, border: "1.5px solid rgba(255,255,255,0.4)", background: "rgba(255,255,255,0.12)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
@@ -656,7 +641,7 @@ export default function Timeline() {
         </div>
 
         {/* Progress — fixed */}
-        <div style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "10px 16px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
+        <div className="tl-progress" style={{ background: "#FFFCF5", borderBottom: "1px solid rgba(196,122,46,0.12)", padding: "10px 16px", boxShadow: "0 2px 8px rgba(139,69,19,0.06)" }}>
           <div style={{ maxWidth: 760, margin: "0 auto", display: "flex", alignItems: "center", gap: 12 }}>
             <div style={{ flex: 1 }}>
               <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
@@ -671,11 +656,11 @@ export default function Timeline() {
               <div style={{ fontSize: 10, color: "#9B7450", marginTop: 2 }}>{done} of {total} tasks done</div>
             </div>
             <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-              <button onClick={saveTimeline}
+              <button className="tl-save-btn" onClick={saveTimeline}
                 style={{ padding: "6px 10px", borderRadius: 8, border: timelineSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.3)", background: timelineSaved ? "rgba(34,197,94,0.08)" : "#fff", color: timelineSaved ? "#15803d" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>
                 {timelineSaved ? "✓ Saved" : "Save"}
               </button>
-              <button onClick={() => setNotifyOpen(true)}
+              <button className="tl-notify-btn" onClick={() => setNotifyOpen(true)}
                 style={{ padding: "6px 10px", borderRadius: 8, border: notifyDone ? "1.5px solid #22c55e" : "1.5px solid rgba(196,122,46,0.35)", background: notifyDone ? "rgba(34,197,94,0.08)" : "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", color: notifyDone ? "#15803d" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0, whiteSpace: "nowrap" }}>
                 {notifyDone ? "Notified" : "Get Notified"}
               </button>
@@ -712,9 +697,9 @@ export default function Timeline() {
             const allDone = phaseDone === phaseTotal && phaseTotal > 0;
 
             return (
-              <div key={phase.id} style={{ position: "relative", marginBottom: 32, paddingLeft: 60 }}>
+              <div key={phase.id} className="tl-phase" style={{ position: "relative", marginBottom: 32, paddingLeft: 60 }}>
                 {/* Phase dot */}
-                <div style={{
+                <div className="tl-phase-dot" style={{
                   position: "absolute", left: 0, top: 14,
                   width: 48, height: 48, borderRadius: "50%",
                   background: allDone ? "#15803d" : phase.color,
@@ -729,7 +714,7 @@ export default function Timeline() {
                 {/* Phase card */}
                 <div style={{ background: "#FFFCF5", borderRadius: 16, border: `1.5px solid ${phase.color}30`, boxShadow: "0 2px 12px rgba(139,69,19,0.06)", overflow: "hidden" }}>
                   {/* Phase header */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", background: `${phase.color}10`, borderBottom: `1px solid ${phase.color}20` }}>
+                  <div className="tl-phase-card-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", background: `${phase.color}10`, borderBottom: `1px solid ${phase.color}20` }}>
                     <div>
                       <span style={{ fontWeight: 800, fontSize: 15, color: phase.color }}>{phase.label}</span>
                     </div>
@@ -742,7 +727,7 @@ export default function Timeline() {
                   <div>
                     {phase.tasks.map((task) => (
                       <div key={task.id}>
-                        <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 18px", borderBottom: "1px solid rgba(196,122,46,0.06)" }}>
+                        <div className="tl-task-row" style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "10px 18px", borderBottom: "1px solid rgba(196,122,46,0.06)" }}>
                           <button
                             onClick={() => toggleTask(phase.id, task.id)}
                             style={{ width: 22, height: 22, borderRadius: 6, border: `2px solid ${task.done ? "#15803d" : "rgba(196,122,46,0.3)"}`, background: task.done ? "#15803d" : "#fff", color: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0, marginTop: 1, transition: "all 0.15s" }}>
@@ -753,7 +738,7 @@ export default function Timeline() {
                               value={task.text}
                               onChange={e => updateTaskText(phase.id, task.id, e.target.value)}
                               placeholder="Task..."
-                              style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: font, fontSize: 14, color: task.done ? "#bbb" : "#2C1A0E", textDecoration: task.done ? "line-through" : "none" }}
+                              className="tl-task-input" style={{ width: "100%", background: "transparent", border: "none", outline: "none", fontFamily: font, fontSize: 14, color: task.done ? "#bbb" : "#2C1A0E", textDecoration: task.done ? "line-through" : "none" }}
                             />
                             {!task.done && (() => { const svc = detectServiceFromTask(task.text); return svc ? (
                               <button onClick={(e) => { e.stopPropagation(); goToVendors(svc); }}

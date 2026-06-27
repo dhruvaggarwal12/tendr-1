@@ -238,10 +238,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
       { label: "Decor Finder",     href: "/decor-finder" },
     ]},
-    { label: "Community", items: [
-      { label: "🎉 Celebration Hub", href: "/celebration-hub" },
-      ...(user?.isAdmin ? [{ label: "🌟 Community Wall", href: "/community" }] : []),
-    ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
       { label: "Memories (Preview)", href: "/memories" },
     ]}] : []),
@@ -819,7 +815,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
             </div>
 
             {/* Social + Footer */}
-            <div style={{ padding: "14px 20px 20px", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+            <div style={{ padding: "14px 20px calc(20px + env(safe-area-inset-bottom, 0px))", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
               {/* Social row */}
               <div style={{ display: "flex", gap: 10, justifyContent: "center", marginBottom: 14 }}>
                 {[

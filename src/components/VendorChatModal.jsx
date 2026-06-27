@@ -1339,18 +1339,16 @@ export default function VendorChatModal() {
                   ))}
                 </div>
               </div>
-              {canInstall && (
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
-                  <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Install the Tendr App</div>
-                    <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Get notified the moment {vendor?.name} responds.</div>
-                  </div>
-                  <button onClick={triggerInstall} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
-                    Install →
-                  </button>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
+                <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Install the Tendr App</div>
+                  <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Get notified the moment {vendor?.name} responds.</div>
                 </div>
-              )}
+                <button onClick={() => canInstall ? triggerInstall() : window.open("/install", "_self")} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                  Install →
+                </button>
+              </div>
             </div>
           )}
 

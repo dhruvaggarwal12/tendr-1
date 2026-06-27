@@ -197,7 +197,7 @@ export default function GlobalStationeryCartDrawer() {
                 </div>
 
                 {cart.length > 0 && (
-                  <div className="gsc-footer" style={{ padding: "16px 24px 24px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+                  <div className="gsc-footer" style={{ padding: "16px 24px calc(80px + env(safe-area-inset-bottom, 0px))", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
                     <div style={{ marginBottom: 14 }}>
                       {pricedTotal > 0 && (
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 800, color: "#1C1208", marginBottom: 4 }}>

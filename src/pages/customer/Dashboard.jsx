@@ -362,6 +362,22 @@ export default function CustomerDashboard() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <style>{`
+        @media (max-width: 768px) {
+          .dashboard-install-banner { padding: 8px 12px !important; }
+          .dashboard-install-banner span:first-child { font-size: 20px !important; }
+          .dashboard-install-banner .install-title { font-size: 12px !important; }
+          .dashboard-install-banner .install-sub { font-size: 10px !important; }
+          .dashboard-profile-card { padding: 14px 16px !important; gap: 12px !important; margin-bottom: 16px !important; }
+          .dashboard-profile-card > div:first-child { width: 40px !important; height: 40px !important; font-size: 16px !important; }
+          .dashboard-profile-card h2 { font-size: 15px !important; }
+          .dashboard-profile-card span { font-size: 11px !important; }
+          .dashboard-stats-row { gap: 6px !important; }
+          .dashboard-stats-row > div { padding: 6px 10px !important; }
+          .dashboard-stats-row > div > div:first-child { font-size: 16px !important; }
+          .dashboard-stats-row > div > div:last-child { font-size: 9px !important; }
+        }
+      `}</style>
       <BasicSpeedDial />
 
       {/* Main Navbar */}
@@ -371,13 +387,13 @@ export default function CustomerDashboard() {
 
         {/* Install App Banner — shown once per session, dismissible */}
         {showInstallBanner && (
-          <div style={{ display: "flex", alignItems: "center", gap: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "14px 18px", marginBottom: 24, flexWrap: "wrap" }}>
+          <div className="dashboard-install-banner" style={{ display: "flex", alignItems: "center", gap: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "14px 18px", marginBottom: 24, flexWrap: "wrap" }}>
             <span style={{ fontSize: 28, flexShrink: 0 }}>📲</span>
             <div style={{ flex: 1, minWidth: 180 }}>
-              <div style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A", marginBottom: 2 }}>
+              <div className="install-title" style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A", marginBottom: 2 }}>
                 {plans.length > 0 ? `You have ${plans.length} active booking${plans.length > 1 ? "s" : ""}` : "Manage bookings on the go"}
               </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Install Tendr for instant updates, chat and tracking.</div>
+              <div className="install-sub" style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Install Tendr for instant updates, chat and tracking.</div>
             </div>
             <button onClick={() => navigate("/install")}
               style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "#CCAB4A", color: "#2C1A0E", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>

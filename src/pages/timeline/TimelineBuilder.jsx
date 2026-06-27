@@ -439,7 +439,9 @@ export default function TimelineBuilder() {
                             borderRadius: 14, padding: "16px 18px",
                             border: `1.5px solid ${snapshot.isDragging ? "#C47A2E" : "rgba(196,122,46,0.15)"}`,
                             boxShadow: snapshot.isDragging ? "0 8px 24px rgba(196,122,46,0.18)" : "0 2px 8px rgba(139,69,19,0.05)",
+                            maxWidth: "100vw", boxSizing: "border-box",
                             ...provided.draggableProps.style,
+                            left: provided.draggableProps.style?.left !== undefined ? Math.max(0, provided.draggableProps.style.left) : undefined,
                           }}
                         >
                           <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
