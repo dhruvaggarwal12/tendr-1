@@ -252,7 +252,7 @@ const PLANS = {
       },
       {
         label: "Day Before",
-        color: "#c0392b",
+        color: "#b45309",
         tasks: [
           "Venue decoration setup (partial)",
           "Deliver any rental items to venue",
@@ -472,7 +472,7 @@ export default function Timeline() {
   const [loaded, setLoaded]     = useState(false);
   const [personalized, setPersonalized] = useState(null);
   const [expandedNote, setExpandedNote] = useState(null);
-  const [timelineSaved, setTimelineSaved]   = useState(false);
+  const [timelineSaved, setTimelineSaved]   = useState(() => { try { return !!localStorage.getItem("tendr_timeline_saved"); } catch { return false; } });
   const [notifyOpen,    setNotifyOpen]       = useState(false);
   const [notifyDone,    setNotifyDone]       = useState(() => { try { return !!localStorage.getItem('tendr_notify_phone'); } catch { return false; } });
 
