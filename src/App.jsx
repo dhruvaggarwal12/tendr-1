@@ -71,25 +71,19 @@ function App() {
     setSplashDone(true);
   };
 
-  // On tendr.co.in — fetch launch status first, then decide which app to show
+  // On tendr.co.in — fetch launch status, fall back to Coming Soon on any failure
   useEffect(() => {
     if (!isLiveDomain) return;
-    fetch(`${import.meta.env.VITE_BASE_URL}/launch-status`)
-      .then(r => r.json())
-      .then(d => setLiveStatus(!!d.isLive))
-      .catch(() => setLiveStatus(false));
+    const controller = new AbortController();
+    const timer = setTimeout(() => { controller.abort(); setLiveStatus(false); }, 4000);
+    fetch(`${import.meta.env.VITE_BASE_URL}/launch-status`, { signal: controller.signal })
+      .then(r => { if (!r.ok) throw new Error("not ok"); return r.json(); })
+      .then(d => { clearTimeout(timer); setLiveStatus(!!d.isLive); })
+      .catch(() => { clearTimeout(timer); setLiveStatus(false); });
+    return () => { clearTimeout(timer); controller.abort(); };
   }, []);
 
   if (isLiveDomain) {
-    // Still loading launch status — show minimal loader
-    if (liveStatus === null) {
-      return (
-        <HelmetProvider>
-          {!splashDone && <SplashScreen onDone={handleSplashDone} />}
-          <div style={{ minHeight: "100vh", background: "#FFFCF5" }} />
-        </HelmetProvider>
-      );
-    }
     // Live — show full app
     if (liveStatus === true) {
       return (
