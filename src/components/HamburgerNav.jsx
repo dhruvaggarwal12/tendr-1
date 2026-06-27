@@ -453,6 +453,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   }
                   return (
                     <button key={item.label}
+                      className="ham-nav-btn"
                       onClick={() => { close(); item.onClickOverride ? item.onClickOverride() : navigate(item.href); }}
                       style={{
                         display: "flex", alignItems: "center",

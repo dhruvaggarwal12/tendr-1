@@ -781,6 +781,9 @@ button::after {
   z-index: 1;
 }
 
+/* Suppress sheen on flat sidebar nav buttons */
+.ham-nav-btn::after { display: none; }
+
 /* ── Launcher FAB — polished glass orb ── */
 .launcher-fab {
   box-shadow:
