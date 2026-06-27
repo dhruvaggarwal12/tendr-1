@@ -4,6 +4,7 @@ import { useSelector } from "react-redux";
 import { generateEventDetailsPDF, generateInvoicePDF, generateInvitationPDF, generateTimelinePDF } from "../../utils/pdfGenerator";
 import { generateVendorReferralCode, formatCode } from "../../utils/referral";
 import AddVendorModal from "./AddVendorModal";
+import LaunchSequence from "../../components/LaunchSequence";
 import StationeryAdminTab from "./StationeryAdminTab";
 import RecommendationIntelligenceTab from "./RecommendationIntelligenceTab";
 import CommunityModerationTab from "./CommunityModerationTab";
@@ -276,6 +277,7 @@ const sidebar_arr = [
   { label: "Community",             icon: <span style={{ fontSize: 16 }}>🌟</span>,  key: "Community" },
   { label: "Event Day",             icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "EventDay" },
   { label: "Ebooks",               icon: <span style={{ fontSize: 16 }}>📚</span>,  key: "Ebooks" },
+  { label: "🚀 Launch",            icon: <span style={{ fontSize: 16 }}>🚀</span>,  key: "Launch" },
 ];
 
 // Simple inline markdown renderer — handles *bold*, _italic_, line breaks, [img:...] images
@@ -548,6 +550,9 @@ const AdminDashboard = () => {
   };
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [siteIsLive, setSiteIsLive] = useState(null); // null = loading, true/false = fetched
+  const [launchSequenceActive, setLaunchSequenceActive] = useState(false);
+  const [launchLoading, setLaunchLoading] = useState(false);
   const [activeDropdown, setactiveDropdown] = useState(() => {
     const s = new URLSearchParams(adminLocation.search).get("section");
     return s || "dashboard";
@@ -880,6 +885,46 @@ const AdminDashboard = () => {
     if (adminSocketRef.current) {
       adminSocketRef.current.emit('join_conversation', { conversationId: id });
     }
+  };
+
+  // Fetch launch status once on mount
+  useEffect(() => {
+    fetch(`${BASE_URL}/launch-status`)
+      .then(r => r.json())
+      .then(d => setSiteIsLive(!!d.isLive))
+      .catch(() => setSiteIsLive(false));
+  }, []);
+
+  const handleLaunch = async () => {
+    setLaunchLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/launch`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSiteIsLive(true);
+        setLaunchSequenceActive(true);
+      }
+    } catch {}
+    setLaunchLoading(false);
+  };
+
+  const handleRevertLaunch = async () => {
+    if (!window.confirm("Take tendr.co.in back to Coming Soon?")) return;
+    setLaunchLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/revert-launch`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (data.success) setSiteIsLive(false);
+    } catch {}
+    setLaunchLoading(false);
   };
 
   // Auto-refresh messages every 10s when a chat is selected
@@ -5028,8 +5073,87 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {/* ── LAUNCH TAB ── */}
+        {activeDropdown === "launch" && (
+          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#0d0d0d] border-l-2 border-[#CCAB4A] overflow-y-auto" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100%" }}>
+            <div style={{ textAlign: "center", padding: "48px 32px", fontFamily: "'Outfit', sans-serif", maxWidth: 540 }}>
+
+              {/* Status badge */}
+              <div style={{ marginBottom: 32 }}>
+                {siteIsLive === null ? (
+                  <span style={{ fontSize: 13, color: "#666" }}>Checking status…</span>
+                ) : siteIsLive ? (
+                  <span style={{ fontSize: 13, fontWeight: 700, background: "rgba(21,128,61,0.15)", color: "#15803d", border: "1.5px solid rgba(21,128,61,0.3)", borderRadius: 100, padding: "6px 18px" }}>
+                    🟢 tendr.co.in is LIVE
+                  </span>
+                ) : (
+                  <span style={{ fontSize: 13, fontWeight: 700, background: "rgba(196,122,46,0.12)", color: "#C47A2E", border: "1.5px solid rgba(196,122,46,0.3)", borderRadius: 100, padding: "6px 18px" }}>
+                    🔴 Coming Soon (not live yet)
+                  </span>
+                )}
+              </div>
+
+              {/* Logo / title */}
+              <div style={{ fontSize: "clamp(36px, 8vw, 64px)", fontWeight: 900, color: "#CCAB4A", letterSpacing: "-0.03em", marginBottom: 12, lineHeight: 1 }}>
+                tendr
+              </div>
+              <div style={{ fontSize: 14, color: "#666", marginBottom: 48, letterSpacing: "0.12em", textTransform: "uppercase" }}>
+                launch control
+              </div>
+
+              {/* Launch / Revert button */}
+              {!siteIsLive ? (
+                <button
+                  onClick={handleLaunch}
+                  disabled={launchLoading}
+                  style={{
+                    padding: "20px 56px", borderRadius: 18, border: "none",
+                    background: launchLoading ? "#333" : "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+                    color: "#fff", fontSize: 22, fontWeight: 900, cursor: launchLoading ? "wait" : "pointer",
+                    fontFamily: "'Outfit', sans-serif", letterSpacing: "-0.01em",
+                    boxShadow: launchLoading ? "none" : "0 8px 40px rgba(196,122,46,0.5)",
+                    transition: "all 0.2s", transform: launchLoading ? "scale(0.97)" : "scale(1)",
+                  }}
+                  onMouseEnter={e => { if (!launchLoading) e.currentTarget.style.transform = "scale(1.04)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+                >
+                  {launchLoading ? "Launching…" : "🚀 Launch tendr.co.in"}
+                </button>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 20 }}>
+                  <div style={{ fontSize: 48 }}>🎉</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#CCAB4A" }}>tendr.co.in is live!</div>
+                  <button
+                    onClick={handleRevertLaunch}
+                    disabled={launchLoading}
+                    style={{
+                      padding: "12px 32px", borderRadius: 12, border: "1.5px solid rgba(192,57,43,0.4)",
+                      background: "rgba(192,57,43,0.1)", color: "#c0392b",
+                      fontSize: 14, fontWeight: 700, cursor: launchLoading ? "wait" : "pointer",
+                      fontFamily: "'Outfit', sans-serif",
+                    }}
+                  >
+                    {launchLoading ? "Reverting…" : "⏸ Take Offline (Coming Soon)"}
+                  </button>
+                </div>
+              )}
+
+              <div style={{ marginTop: 40, fontSize: 12, color: "#444", lineHeight: 1.7 }}>
+                Launching makes <span style={{ color: "#CCAB4A" }}>tendr.co.in</span> show the full app to everyone.<br />
+                You can toggle it back to Coming Soon anytime.
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
+
+    {/* ── Launch sequence overlay ── */}
+    {launchSequenceActive && (
+      <LaunchSequence onComplete={() => setLaunchSequenceActive(false)} />
+    )}
+
     {/* ── Photo viewer modal ── */}
     {viewingPhoto && (
       <>

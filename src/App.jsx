@@ -64,14 +64,60 @@ const showSplash = !sessionStorage.getItem(SPLASH_KEY);
 
 function App() {
   const [splashDone, setSplashDone] = useState(!showSplash);
+  const [liveStatus, setLiveStatus] = useState(null); // null=loading, true/false
 
   const handleSplashDone = () => {
     sessionStorage.setItem(SPLASH_KEY, "1");
     setSplashDone(true);
   };
 
-  // On tendr.co.in — show splash then coming soon / community
+  // On tendr.co.in — fetch launch status first, then decide which app to show
+  useEffect(() => {
+    if (!isLiveDomain) return;
+    fetch(`${import.meta.env.VITE_BASE_URL}/launch-status`)
+      .then(r => r.json())
+      .then(d => setLiveStatus(!!d.isLive))
+      .catch(() => setLiveStatus(false));
+  }, []);
+
   if (isLiveDomain) {
+    // Still loading launch status — show minimal loader
+    if (liveStatus === null) {
+      return (
+        <HelmetProvider>
+          {!splashDone && <SplashScreen onDone={handleSplashDone} />}
+          <div style={{ minHeight: "100vh", background: "#FFFCF5" }} />
+        </HelmetProvider>
+      );
+    }
+    // Live — show full app
+    if (liveStatus === true) {
+      return (
+        <HelmetProvider>
+          <ErrorBoundary>
+            <StationeryCartProvider>
+            <TourProvider>
+            <ChatProvider>
+              <SiteTour />
+              {!splashDone && <SplashScreen onDone={handleSplashDone} />}
+              <Suspense fallback={
+                <div style={{ minHeight: "100vh", background: "#FFFCF5", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: 36, height: 36, border: "3px solid rgba(196,122,46,0.2)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "tendr-spin 0.65s linear infinite" }} />
+                  <style>{`@keyframes tendr-spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+              }>
+                <RouterProvider router={router} />
+              </Suspense>
+              <FloatingChatButton hideOnRoutes={["/chat", "/chats", "/login", "/signup", "/otp", "/guides"]} />
+              <VendorChatModal />
+            </ChatProvider>
+            </TourProvider>
+            </StationeryCartProvider>
+          </ErrorBoundary>
+        </HelmetProvider>
+      );
+    }
+    // Not live — Coming Soon
     return (
       <HelmetProvider>
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
