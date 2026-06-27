@@ -444,7 +444,7 @@ export function FunCartDrawer({ onClose }) {
             </div>
 
             {cartItems.length > 0 && (
-              <div style={{ padding: "14px 20px", borderTop: "1.5px solid rgba(44,26,14,0.07)" }}>
+              <div style={{ padding: "14px 20px", paddingBottom: "calc(14px + env(safe-area-inset-bottom, 0px))", borderTop: "1.5px solid rgba(44,26,14,0.07)" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
                   <span style={{ fontSize: 14, fontWeight: 700, color: "#9B7450" }}>Estimated Total</span>
                   <span style={{ fontSize: 18, fontWeight: 900, color: BROWN }}>₹{cartTotal.toLocaleString("en-IN")}</span>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
+import tendrLogo from "../assets/logos/tendr.png";
 import AuthModal from "./AuthModal";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
 import { selectFunCartCount, selectFunConfirmed, setFunConfirmed, clearFunCart } from "../redux/funActivitiesCartSlice";
@@ -51,6 +52,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const { cartCount: stCartCount, openCart: openStCart } = useStationeryCart();
   const hasMinimizedChat = chatState?.minimized && chatState?.vendor;
   const [open, setOpen] = useState(false);
+  const [launcherOpen, setLauncherOpen] = useState(false);
   const [savedOpen, setSavedOpen] = useState(false);
   const [compareOpen, setCompareOpen] = useState(false);
   const [compareCategory, setCompareCategory] = useState("");
@@ -87,6 +89,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       setPath(state.location.pathname);
       setSearch(state.location.search || "");
       setOpen(false);
+      setLauncherOpen(false);
     });
     return unsub;
   }, []);
@@ -338,11 +341,16 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         </div>
       )}
 
-      {/* Mobile action stack — Saved / Compare / Fun Cart / Review & Pay — above chat button */}
+      {/* ── Backdrop: closes launcher + saved/compare popups on outside tap ── */}
+      {(savedOpen || compareOpen || launcherOpen) && (
+        <div onClick={() => { setSavedOpen(false); setCompareOpen(false); setLauncherOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 897 }} />
+      )}
+
+      {/* ── Saved / Compare popups (unchanged) ── */}
       {(savedVendors.length > 0 || compareSelected.length > 0 || Object.keys(finalisedVendors).length > 0 || funCartCount > 0 || ghCartCount > 0 || funConfirmed || stCartCount > 0) && (
         <>
           {(savedOpen || compareOpen) && (
-            <div onClick={() => { setSavedOpen(false); setCompareOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 897 }} />
+            <div style={{ display: "none" }} />
           )}
           {/* Saved popup */}
           {savedOpen && (
@@ -422,132 +430,117 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               )}
             </div>
           )}
-          {/* Button stack — dynamic, bottom-anchored, stacks upward as icons appear */}
-          <div className="mobile-action-stack">
-            {savedVendors.length > 0 && (
-              <div className="mobile-saved-btn" style={{ position: "relative" }}>
-                <button className="mobile-action-btn" onClick={() => { setSavedOpen(v => !v); setCompareOpen(false); }}
-                  title="Saved Vendors"
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="#CCAB4A" stroke="#CCAB4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#CCAB4A", color: "#2C1A0E", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{savedVendors.length}</span>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); const list = []; try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch {} setSavedVendors(list); window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed")); setSavedOpen(false); }}
-                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
-                  ✕
-                </button>
-              </div>
-            )}
-            {compareSelected.length > 0 && (
-              <div className="mobile-compare-btn" style={{ position: "relative" }}>
-                <button className="mobile-action-btn" onClick={() => { const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
-                  title="Compare Vendors"
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); dispatch(clearVendorCompare()); setCompareOpen(false); setCompareCategory(""); setActiveCompare([]); }}
-                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
-                  ✕
-                </button>
-              </div>
-            )}
-            {funCartCount > 0 && !funConfirmed && (
-              <div style={{ position: "relative" }}>
-                <button className="mobile-action-btn" onClick={() => { if (!token) { setPendingCartAction("fun"); setAuthModalOpen(true); } else { setFunCartOpen(true); } }}
-                  title="Fun Activities Cart"
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); dispatch(clearFunCart()); dispatch(setFunConfirmed(false)); }}
-                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
-                  ✕
-                </button>
-              </div>
-            )}
-            {ghCartCount > 0 && !ghConfirmed && (
-              <div style={{ position: "relative" }}>
-                <button
-                  className="mobile-action-btn"
-                  onClick={() => { if (!token) { setPendingCartAction("gh"); setAuthModalOpen(true); } else { setGhCartOpen(true); } }}
-                  title="Gift Hampers Cart"
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.45)", flexShrink: 0 }}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
-                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); dispatch(clearGhCart()); dispatch(setGhConfirmed(false)); }}
-                  style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>
-                  ✕
-                </button>
-              </div>
-            )}
-            {stCartCount > 0 && !stConfirmed && (
-              <div style={{ position: "relative" }}>
-                <button
-                  className="mobile-action-btn"
-                  onClick={() => { if (!token) { setPendingCartAction("st"); setAuthModalOpen(true); } else { openStCart(); } }}
-                  title="Stationery Cart"
-                  style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7A3A1E,#C47A2E)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(122,58,30,0.5)", flexShrink: 0, fontSize: 20 }}>
-                  💒
-                  <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{stCartCount}</span>
-                </button>
-              </div>
-            )}
-            {(path !== "/booking/review") && (funConfirmed || Object.keys(finalisedVendors).length > 0) && (
-              <button className="mobile-action-btn" onClick={() => setShowPayPopup(true)}
-                title="Review & Pay"
-                style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0, fontFamily: font }}>
-                Pay
-              </button>
-            )}
-          </div>
+          {/* ── Launcher stack — expands upward when launcher is tapped ── */}
+          {launcherOpen && (
+            <div className="launcher-stack">
+              {savedVendors.length > 0 && (
+                <div className="launcher-saved-btn" style={{ position: "relative" }}>
+                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); setSavedOpen(v => !v); setCompareOpen(false); }}
+                    title="Saved Vendors"
+                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="#CCAB4A" stroke="#CCAB4A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#CCAB4A", color: "#2C1A0E", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{savedVendors.length}</span>
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); const list = []; try { localStorage.setItem(SAVED_KEY, JSON.stringify(list)); } catch {} setSavedVendors(list); window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed")); setSavedOpen(false); }}
+                    style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>✕</button>
+                </div>
+              )}
+              {compareSelected.length > 0 && (
+                <div className="launcher-compare-btn" style={{ position: "relative" }}>
+                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
+                    title="Compare Vendors"
+                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{compareSelected.length}</span>
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); dispatch(clearVendorCompare()); setCompareOpen(false); setCompareCategory(""); setActiveCompare([]); }}
+                    style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>✕</button>
+                </div>
+              )}
+              {funCartCount > 0 && !funConfirmed && (
+                <div style={{ position: "relative" }}>
+                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("fun"); setAuthModalOpen(true); } else { setFunCartOpen(true); } }}
+                    title="Fun Activities Cart"
+                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#5b21b6", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{funCartCount}</span>
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); dispatch(clearFunCart()); dispatch(setFunConfirmed(false)); }}
+                    style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>✕</button>
+                </div>
+              )}
+              {ghCartCount > 0 && !ghConfirmed && (
+                <div style={{ position: "relative" }}>
+                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("gh"); setAuthModalOpen(true); } else { setGhCartOpen(true); } }}
+                    title="Gift Hampers Cart"
+                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.45)", flexShrink: 0 }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#2C1A0E", color: "#CCAB4A", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{ghCartCount}</span>
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); dispatch(clearGhCart()); dispatch(setGhConfirmed(false)); }}
+                    style={{ position: "absolute", top: -4, left: -4, width: 18, height: 18, borderRadius: "50%", border: "2px solid #fff", background: "#c0392b", color: "#fff", fontSize: 9, fontWeight: 900, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1, padding: 0, lineHeight: 1 }}>✕</button>
+                </div>
+              )}
+              {stCartCount > 0 && !stConfirmed && (
+                <div style={{ position: "relative" }}>
+                  <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("st"); setAuthModalOpen(true); } else { openStCart(); } }}
+                    title="Stationery Cart"
+                    style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7A3A1E,#C47A2E)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(122,58,30,0.5)", flexShrink: 0, fontSize: 20 }}>
+                    💒
+                    <span style={{ position: "absolute", top: -3, right: -3, minWidth: 16, height: 16, borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 9, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px", border: "2px solid #fff" }}>{stCartCount}</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </>
       )}
 
-      {/* Add-ons confirmed button — left of chat, shows when gift hampers or stationery is confirmed */}
-      {(ghConfirmed || stConfirmed) && (
+      {/* ── Launcher FAB (wine glass, above chat) — shows when stack has any item ── */}
+      {(savedVendors.length > 0 || compareSelected.length > 0 || (funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed)) && (
         <button
-          className="addons-fab"
-          onClick={() => setAddOnsOpen(true)}
-          aria-label="View Add-on Orders"
-          title="View your add-on orders"
-          style={{
-            position: "fixed",
-            bottom: "calc(22px + env(safe-area-inset-bottom, 0px))",
-            zIndex: 900,
-            width: 50,
-            height: 50,
-            borderRadius: "50%",
-            border: "none",
-            background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-            color: "#fff",
-            fontFamily: font,
-            cursor: "pointer",
-            boxShadow: "0 6px 24px rgba(196,122,46,0.55)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: 22,
-            transition: "transform 0.2s, box-shadow 0.2s",
-          }}
-          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; e.currentTarget.style.boxShadow = "0 10px 30px rgba(196,122,46,0.65)"; }}
-          onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.55)"; }}
+          className="launcher-fab"
+          onClick={() => setLauncherOpen(v => !v)}
+          aria-label="Open activity tray"
+          title="Your activity"
         >
-          🎁
-          <span style={{
-            position: "absolute", top: -4, right: -4,
-            minWidth: 18, height: 18, borderRadius: 9,
-            background: "#2C1A0E", color: "#CCAB4A",
-            fontSize: 10, fontWeight: 900,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "0 4px", border: "2px solid #fff",
-          }}>{(ghConfirmed ? 1 : 0) + (stConfirmed ? 1 : 0)}</span>
+          <img src={tendrLogo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
+          <span className="launcher-badge">
+            {[savedVendors.length > 0, compareSelected.length > 0, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed].filter(Boolean).length}
+          </span>
         </button>
+      )}
+
+      {/* ── Chat-row-left: Pay + Gift FAB — horizontal row to the left of chat button ── */}
+      {((path !== "/booking/review" && (funConfirmed || Object.keys(finalisedVendors).length > 0)) || ghConfirmed || stConfirmed) && (
+        <div className="chat-row-left">
+          {path !== "/booking/review" && (funConfirmed || Object.keys(finalisedVendors).length > 0) && (
+            <button
+              onClick={() => setShowPayPopup(true)}
+              title="Review & Pay"
+              style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0, fontFamily: font }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+            >
+              Pay
+            </button>
+          )}
+          {(ghConfirmed || stConfirmed) && (
+            <button
+              onClick={() => setAddOnsOpen(true)}
+              aria-label="View Add-on Orders"
+              title="View your add-on orders"
+              style={{ position: "relative", width: 50, height: 50, borderRadius: "50%", border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontFamily: font, cursor: "pointer", boxShadow: "0 6px 24px rgba(196,122,46,0.55)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0, transition: "transform 0.2s, box-shadow 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; e.currentTarget.style.boxShadow = "0 10px 30px rgba(196,122,46,0.65)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.55)"; }}
+            >
+              🎁
+              <span style={{ position: "absolute", top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, background: "#2C1A0E", color: "#CCAB4A", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>
+                {(ghConfirmed ? 1 : 0) + (stConfirmed ? 1 : 0)}
+              </span>
+            </button>
+          )}
+        </div>
       )}
 
       {/* Add-ons panel */}
@@ -772,18 +765,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           bottom: calc(22px + env(safe-area-inset-bottom, 0px));
           right: 20px;
         }
-        /* Add-ons confirmed button sits to the LEFT of the chat button */
-        .addons-fab {
-          right: 168px; /* chat btn ~140px wide + 8px gap + 20px from edge */
-          bottom: calc(22px + env(safe-area-inset-bottom, 0px));
-        }
-        .chat-btn-text {
-          font-size: 14px;
-          font-weight: 700;
-        }
-        .chat-popup {
-          animation: chatPop 0.18s cubic-bezier(0.4,0,0.2,1);
-        }
+        .chat-btn-text { font-size: 14px; font-weight: 700; }
+        .chat-popup { animation: chatPop 0.18s cubic-bezier(0.4,0,0.2,1); }
         @keyframes chatPop {
           from { opacity: 0; transform: scale(0.92) translateY(10px); }
           to   { opacity: 1; transform: scale(1)    translateY(0); }
@@ -797,23 +780,69 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           50%  { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(239,68,68,0); }
           100% { transform: scale(1);    box-shadow: 0 0 0 0 rgba(239,68,68,0); }
         }
+        @keyframes lstack-pop {
+          from { opacity: 0; transform: translateY(10px) scale(0.9); }
+          to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
         .vendor-cluster-desktop { display: none !important; }
-        /* Action stack — above chat FAB on both desktop and mobile */
-        .mobile-action-stack { display: flex; position: fixed; bottom: calc(82px + env(safe-area-inset-bottom, 0px)); right: 20px; z-index: 900; flex-direction: column; gap: 8px; align-items: flex-end; }
-        .mobile-action-btn { display: flex !important; }
-        /* Compare + Saved buttons are for mobile only — desktop uses sidebar */
-        @media (min-width: 1024px) { .mobile-compare-btn, .mobile-saved-btn { display: none !important; } }
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }
-        /* Desktop: larger action buttons */
-        @media (min-width: 768px) {
-          .mobile-action-btn {
-            width: 54px !important;
-            height: 54px !important;
-          }
+
+        /* ── Launcher FAB (wine glass, above chat) ── */
+        .launcher-fab {
+          position: fixed;
+          bottom: calc(82px + env(safe-area-inset-bottom, 0px));
+          right: 20px;
+          z-index: 900;
+          width: 50px; height: 50px;
+          border-radius: 50%;
+          border: none; padding: 0;
+          cursor: pointer;
+          overflow: hidden;
+          box-shadow: 0 6px 24px rgba(44,26,14,0.45);
+          transition: transform 0.2s, box-shadow 0.2s;
+          display: flex; align-items: center; justify-content: center;
         }
+        .launcher-fab:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 30px rgba(44,26,14,0.55); }
+        .launcher-badge {
+          position: absolute; top: -4px; right: -4px;
+          min-width: 18px; height: 18px; border-radius: 9px;
+          background: #C47A2E; color: #fff;
+          font-size: 10px; font-weight: 900; font-family: 'Outfit', sans-serif;
+          display: flex; align-items: center; justify-content: center;
+          padding: 0 4px; border: 2px solid #fff;
+        }
+
+        /* ── Launcher stack (expands upward) ── */
+        .launcher-stack {
+          position: fixed;
+          bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+          right: 20px;
+          z-index: 900;
+          display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
+        }
+        .launcher-stack > * { animation: lstack-pop 0.18s ease forwards; }
+        .launcher-stack > *:nth-child(1) { animation-delay: 0s; }
+        .launcher-stack > *:nth-child(2) { animation-delay: 0.05s; }
+        .launcher-stack > *:nth-child(3) { animation-delay: 0.10s; }
+        .launcher-stack > *:nth-child(4) { animation-delay: 0.15s; }
+        .launcher-stack > *:nth-child(5) { animation-delay: 0.20s; }
+        .lstack-btn { display: flex !important; }
+        /* Saved + Compare hidden on desktop ≥1024px (handled by sidebar) */
+        @media (min-width: 1024px) { .launcher-saved-btn, .launcher-compare-btn { display: none !important; } }
+        /* Desktop: slightly larger stack buttons */
+        @media (min-width: 768px) { .lstack-btn { width: 54px !important; height: 54px !important; } }
+
+        /* ── Chat-row-left: Pay + Gift to the LEFT of chat button ── */
+        .chat-row-left {
+          position: fixed;
+          bottom: calc(22px + env(safe-area-inset-bottom, 0px));
+          right: 168px;
+          z-index: 900;
+          display: flex; flex-direction: row; gap: 8px; align-items: center;
+        }
+
         @media (max-width: 767px) {
-          /* Position above nav bar — nav is calc(60px + safe-area-inset-bottom) tall */
           .floating-chat-btn {
             bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
             right: 14px !important;
@@ -821,12 +850,19 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             width: 50px !important;
             height: 50px !important;
           }
-          .mobile-action-stack { bottom: calc(138px + env(safe-area-inset-bottom, 0px)) !important; right: 14px !important; }
           .chat-btn-text { display: none; }
-          /* Add-ons confirmed button: to the left of chat on mobile, above bottom nav */
-          .addons-fab {
+          .launcher-fab {
+            bottom: calc(138px + env(safe-area-inset-bottom, 0px)) !important;
+            right: 14px !important;
+            width: 44px !important; height: 44px !important;
+          }
+          .launcher-stack {
+            bottom: calc(192px + env(safe-area-inset-bottom, 0px)) !important;
+            right: 14px !important;
+          }
+          .chat-row-left {
             bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
-            right: 72px !important; /* 14 + 50 + 8 */
+            right: 72px !important;
           }
           .chat-popup {
             right: 12px !important;
@@ -835,7 +871,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             max-width: unset !important;
             bottom: calc(140px + env(safe-area-inset-bottom, 0px)) !important;
           }
-          /* Shift Active Chats modal up so it clears the bottom nav */
+          .mobile-saved-popup, .mobile-compare-popup {
+            bottom: calc(260px + env(safe-area-inset-bottom, 0px)) !important;
+            right: 12px !important;
+            left: 12px !important;
+            max-width: unset !important;
+          }
           .active-chats-modal {
             top: calc(50% - 36px) !important;
             height: min(78vh, 640px) !important;
