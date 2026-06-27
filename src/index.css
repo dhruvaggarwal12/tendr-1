@@ -729,3 +729,176 @@ select {
   background-size: 200% auto;
   animation: tendr-shimmer 1.8s linear infinite;
 }
+
+/* ══════════════════════════════════════════════════════════
+   TENDR FULL-SITE GLOSS
+   Specular highlights, page light source, frosted glass
+   No layout / colour changes — purely additive shine
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Page-level overhead light source ──
+   Creates the "everything is under glass" feel.
+   Fixed, pointer-events: none so nothing is blocked. */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 60%;
+  background:
+    radial-gradient(ellipse 100% 55% at 50% -5%,
+      rgba(255, 253, 248, 0.20) 0%,
+      rgba(255, 252, 245, 0.08) 45%,
+      transparent 72%),
+    radial-gradient(ellipse 50% 30% at 15% 0%,
+      rgba(255, 255, 255, 0.10) 0%,
+      transparent 60%),
+    radial-gradient(ellipse 50% 30% at 85% 0%,
+      rgba(255, 255, 255, 0.08) 0%,
+      transparent 60%);
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── Universal button specular sheen ──
+   Top 50% of every button looks lit from above. */
+button {
+  position: relative;
+  overflow: hidden;
+}
+button::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.26) 0%,
+    rgba(255, 255, 255, 0.10) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* ── Launcher FAB — polished glass orb ── */
+.launcher-fab {
+  box-shadow:
+    0 8px 28px rgba(44, 26, 14, 0.32),
+    0 2px 8px  rgba(196, 122, 46, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.14) !important;
+}
+
+/* ── Launcher stack items ── */
+.lstack-btn,
+.launcher-saved-btn,
+.launcher-compare-btn {
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.20),
+    inset 0 1px 0 rgba(255, 255, 255, 0.30),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.10) !important;
+}
+
+/* ── Pay / Gift row — glass pill buttons ── */
+.chat-row-left button {
+  box-shadow:
+    0 4px 18px rgba(44, 26, 14, 0.26),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ── Booking mobile CTA bar — frosted glass ── */
+.booking-mobile-cta {
+  background: rgba(255, 252, 245, 0.92) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.2) !important;
+  backdrop-filter: blur(16px) saturate(1.2) !important;
+  box-shadow: 0 -4px 24px rgba(196, 122, 46, 0.12), inset 0 1px 0 rgba(255,255,255,0.7) !important;
+}
+
+/* ── Listings sort/filter sticky bar — stronger glass ── */
+.listings-sort-sticky {
+  background: rgba(253, 250, 244, 0.88) !important;
+  -webkit-backdrop-filter: blur(22px) saturate(1.3) !important;
+  backdrop-filter: blur(22px) saturate(1.3) !important;
+  box-shadow:
+    0 2px 24px rgba(196, 122, 46, 0.10),
+    inset 0 1px 0 rgba(255, 255, 255, 0.80),
+    inset 0 -1px 0 rgba(196, 122, 46, 0.08) !important;
+}
+
+/* ── Vendor cards — polished surface ── */
+.vendor-card,
+.vendor-card-listing,
+.booking-vendor-card {
+  box-shadow:
+    0 4px 20px rgba(196, 122, 46, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(196, 122, 46, 0.05) !important;
+}
+.vendor-card:hover,
+.vendor-card-listing:hover {
+  box-shadow:
+    0 8px 32px rgba(196, 122, 46, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 1),
+    inset 0 -1px 0 rgba(196, 122, 46, 0.08) !important;
+}
+
+/* ── Tailwind card classes ── */
+.shadow, .shadow-md, .shadow-lg, .shadow-xl {
+  box-shadow:
+    0 4px 24px rgba(196, 122, 46, 0.09),
+    inset 0 1px 0 rgba(255, 255, 255, 0.90) !important;
+}
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl {
+  --gloss-inset: inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+/* ── Input / textarea / select — glass trough ── */
+input:not([type="range"]):not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.055),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.70),
+    0 1px 2px rgba(255, 255, 255, 0.50) !important;
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.70) 0%,
+    rgba(255, 255, 255, 0.96) 100%
+  );
+}
+
+/* ── VCM modal / active chats — stronger frost ── */
+.vcm-root {
+  -webkit-backdrop-filter: blur(18px) saturate(1.25) !important;
+  backdrop-filter: blur(18px) saturate(1.25) !important;
+  box-shadow: 0 16px 64px rgba(44, 26, 14, 0.24), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+.active-chats-modal {
+  -webkit-backdrop-filter: blur(18px) saturate(1.25) !important;
+  backdrop-filter: blur(18px) saturate(1.25) !important;
+  box-shadow: 0 16px 48px rgba(44, 26, 14, 0.20), inset 0 1px 0 rgba(255,255,255,0.5) !important;
+}
+
+/* ── Hamburger nav sidebar ── */
+.hamburger-nav-sidebar,
+.hamburger-nav-panel {
+  -webkit-backdrop-filter: blur(12px) !important;
+  backdrop-filter: blur(12px) !important;
+  box-shadow: 4px 0 48px rgba(44, 26, 14, 0.18), inset -1px 0 0 rgba(255,255,255,0.15) !important;
+}
+
+/* ── Gold gloss scrollbar ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(250, 246, 240, 0.55); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #CCAB4A 0%, #C47A2E 100%);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #D9BC60 0%, #D48A3A 100%);
+}
