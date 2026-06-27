@@ -134,6 +134,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
   useEffect(() => { fetchVendorChats(); }, [fetchVendorChats]);
 
+  // Listen for VendorChatModal "back to active chats" event
+  // Must be BEFORE any early returns to satisfy Rules of Hooks
+  useEffect(() => {
+    const handler = () => setShowActiveChats(true);
+    document.addEventListener("tendr:open-active-chats", handler);
+    return () => document.removeEventListener("tendr:open-active-chats", handler);
+  }, []);
+
   if (new URLSearchParams(search).get("standalone") === "1") return null;
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
 
@@ -147,13 +155,6 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     fetchVendorChats();
     setShowActiveChats(true);
   };
-
-  // Listen for VendorChatModal "back to active chats" event
-  useEffect(() => {
-    const handler = () => setShowActiveChats(true);
-    document.addEventListener("tendr:open-active-chats", handler);
-    return () => document.removeEventListener("tendr:open-active-chats", handler);
-  }, []);
 
   const handleVendorChatClick = (convo) => {
     setOpen(false);
