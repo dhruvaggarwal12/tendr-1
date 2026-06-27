@@ -7,6 +7,7 @@ import { useChatOverlay } from "../context/ChatContext";
 import TalkToTendrStrip from "./TalkToTendrStrip";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 import { EventIdeasPanel } from "../utils/eventIdeas";
+import VendorPhotoPlaceholder from "./VendorPhotoPlaceholder";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -305,14 +306,18 @@ const VendorList_ListingPage = ({
                   >
                     {/* Image — full bleed */}
                     <div className="vendor-card-img" style={{ height: 260, overflow: "hidden", position: "relative" }}>
-                      <img
-                        src={vendor.image || vendor.portfolioPhotos?.[0] || FALLBACK_IMG}
-                        alt={vendor.name}
-                        style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                        loading="lazy"
-                      />
+                      {(vendor.image || vendor.portfolioPhotos?.[0]) ? (
+                        <img
+                          src={vendor.image || vendor.portfolioPhotos[0]}
+                          alt={vendor.name}
+                          style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
+                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                          loading="lazy"
+                        />
+                      ) : (
+                        <VendorPhotoPlaceholder serviceType={vendor.serviceType} style={{ height: 260 }} />
+                      )}
                       {/* Gradient overlay — stronger at bottom for mobile text legibility */}
                       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(12,4,0,0.88) 0%, rgba(12,4,0,0.3) 45%, transparent 100%)", pointerEvents: "none" }} />
                       {/* Top Rated star badge */}
@@ -483,14 +488,19 @@ const VendorList_ListingPage = ({
             {/* Cover image with browsing arrows */}
             {(() => {
               const photos = (quickViewVendor.portfolioPhotos || []).filter(Boolean);
+              const hasPhoto = photos.length > 0 || quickViewVendor.image;
               const imgSrc = photos.length
                 ? photos[activePhotoIdx] || photos[0]
-                : (quickViewVendor.image || FALLBACK_IMG);
+                : (quickViewVendor.image || null);
               const total = photos.length || 1;
               const qvRating = quickViewVendor.avgReviewScore ?? quickViewVendor.rating;
               return (
                 <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
-                  <img src={imgSrc} alt={quickViewVendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  {hasPhoto ? (
+                    <img src={imgSrc} alt={quickViewVendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  ) : (
+                    <VendorPhotoPlaceholder serviceType={quickViewVendor.serviceType} style={{ height: 230 }} />
+                  )}
                   {/* Close + nav hint */}
                   <div style={{ position: "absolute", top: 12, right: 12, display: "flex", alignItems: "center", gap: 6 }}>
                     {vendors.length > 1 && (

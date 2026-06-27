@@ -17,6 +17,7 @@ import main5 from "../../assets/vendor-details/main-5.avif";
 import { getVendorById, getVendors } from "../../apis/vendorApi";
 import VendorAvailabilityCalendar from "../../components/VendorAvailabilityCalendar";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
+import VendorPhotoPlaceholder from "../../components/VendorPhotoPlaceholder";
 import { useSelector, useDispatch } from "react-redux";
 import { addVendorToCompare, removeVendorFromCompare, clearVendorCompare } from "../../redux/listingFiltersSlice";
 import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSlice";
@@ -181,7 +182,7 @@ const VendorDetailsPage = () => {
     const videos = (vendor?.portfolioVideos || []).filter(Boolean);
     const photoItems = photos.length
       ? photos.map(url => ({ type: 'image', url }))
-      : [main1, main2, main3, main4, main5].map(url => ({ type: 'image', url }));
+      : [{ type: 'placeholder', serviceType: vendor?.serviceType }];
     const videoItems = videos.map(url => ({ type: 'video', url }));
     return [...photoItems, ...videoItems];
   }, [vendor]);
@@ -456,7 +457,9 @@ const VendorDetailsPage = () => {
                 key={idx}
                 style={{ flex: "0 0 auto", width: "calc(55% - 4px)", minWidth: 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start", position: "relative" }}
               >
-                {item.type === 'video' ? (
+                {item.type === 'placeholder' ? (
+                  <VendorPhotoPlaceholder serviceType={item.serviceType} style={{ height: 300 }} />
+                ) : item.type === 'video' ? (
                   <>
                     <video
                       src={item.url}
