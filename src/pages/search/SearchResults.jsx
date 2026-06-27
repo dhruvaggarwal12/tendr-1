@@ -267,18 +267,18 @@ export default function SearchResults() {
           </div>
 
           {/* Sort row + Top Rated on right */}
-          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ fontFamily: font, fontSize: 10, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap" }}>Sort:</span>
+          <div className="listings-sort-sticky" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "nowrap", overflowX: "auto", scrollbarWidth: "none" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontFamily: font, fontSize: 14, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap" }}>Sort:</span>
               <select value={sortBy} onChange={e => { setSortBy(e.target.value); setCurrentPage(1); }}
-                style={{ fontFamily: font, fontSize: 10, padding: "2px 5px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                style={{ fontFamily: font, fontSize: 13, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                 <option value="rankingScore">Best Match</option>
                 <option value="rating">Rating</option>
                 <option value="price">Price</option>
                 <option value="experience">Experience</option>
               </select>
               <select value={sortOrder} onChange={e => { setSortOrder(e.target.value); setCurrentPage(1); }}
-                style={{ fontFamily: font, fontSize: 10, padding: "2px 5px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                style={{ fontFamily: font, fontSize: 13, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
                 <option value="desc">High → Low</option>
                 <option value="asc">Low → High</option>
               </select>
@@ -286,7 +286,7 @@ export default function SearchResults() {
             <button
               className="search-filter-chip"
               onClick={() => { setTopRatedOnly(v => !v); setCurrentPage(1); }}
-              style={{ padding: "4px 10px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 10, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap", flexShrink: 0 }}>
+              style={{ padding: "4px 12px", borderRadius: 100, border: `2px solid ${topRatedOnly ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: topRatedOnly ? "rgba(196,122,46,0.1)" : "#fff", color: topRatedOnly ? "#C47A2E" : "#9B7450", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 3, whiteSpace: "nowrap", flexShrink: 0 }}>
               ⭐ Top Rated {topRatedOnly ? "✓" : ""}
             </button>
           </div>
