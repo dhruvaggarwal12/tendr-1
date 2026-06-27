@@ -326,16 +326,10 @@ const VendorList_ListingPage = ({
                           ⭐ Top Rated
                         </div>
                       )}
-                      {/* Rating badge */}
-                      {rating != null && rating > 0 ? (
-                        <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(6px)", color: "#FFCC55", borderRadius: 100, padding: "4px 10px", fontSize: 12, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
-                          ★ {Number(rating).toFixed(1)}
-                        </div>
-                      ) : (
-                        <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.88)", backdropFilter: "blur(6px)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
-                          ✓ Verified
-                        </div>
-                      )}
+                      {/* Verified badge — always shown */}
+                      <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.88)", backdropFilter: "blur(6px)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+                        ✓ Verified
+                      </div>
                       {/* Service type badge — desktop only (hidden on mobile via CSS) */}
                       <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>
                         {vendor.serviceType}

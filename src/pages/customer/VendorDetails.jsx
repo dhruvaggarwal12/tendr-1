@@ -24,6 +24,7 @@ import { setMultipleFormData, setBookingType } from "../../redux/eventPlanningSl
 import { useChatOverlay } from "../../context/ChatContext";
 import ServiceAreaMap from "../../components/ServiceAreaMap";
 import Footer from "../../components/Footer";
+import AuthModal from "../../components/AuthModal";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const chatSaveKey = (id) => `tendr:chat_req:${id}`;
@@ -47,6 +48,7 @@ const VendorDetailsPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [chatFormOpen, setChatFormOpen] = useState(false);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
   const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
   const [hasActiveChatSave, setHasActiveChatSave] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
@@ -429,12 +431,20 @@ const VendorDetailsPage = () => {
 
         {/* ── Gallery — horizontal scroll with arrows ── */}
         <div style={{ position: "relative", marginBottom: 36 }}>
-          {/* Left arrow */}
-          <button
-            onClick={() => scrollGallery(-1)}
-            style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontWeight: 700 }}
-          >‹</button>
+          {/* Left arrow — only when multiple items */}
+          {galleryItems.length > 1 && (
+            <button
+              onClick={() => scrollGallery(-1)}
+              style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontWeight: 700 }}
+            >‹</button>
+          )}
 
+          {/* Single placeholder — centered, no scroll */}
+          {galleryItems.length === 1 && galleryItems[0].type === 'placeholder' ? (
+            <div style={{ borderRadius: 20, overflow: "hidden", height: 300 }}>
+              <VendorPhotoPlaceholder serviceType={galleryItems[0].serviceType} style={{ height: 300 }} />
+            </div>
+          ) : (
           <div
             ref={galleryRef}
             className="vendor-gallery-scroll"
@@ -457,9 +467,7 @@ const VendorDetailsPage = () => {
                 key={idx}
                 style={{ flex: "0 0 auto", width: "calc(55% - 4px)", minWidth: 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start", position: "relative" }}
               >
-                {item.type === 'placeholder' ? (
-                  <VendorPhotoPlaceholder serviceType={item.serviceType} style={{ height: 300 }} />
-                ) : item.type === 'video' ? (
+                {item.type === 'video' ? (
                   <>
                     <video
                       src={item.url}
@@ -479,21 +487,26 @@ const VendorDetailsPage = () => {
                   />
                 )}
               </div>
-            ))}
+              ))}
           </div>
+          )}
 
-          {/* Right arrow */}
-          <button
-            onClick={() => scrollGallery(1)}
-            style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontWeight: 700 }}
-          >›</button>
+          {/* Right arrow — only when multiple items */}
+          {galleryItems.length > 1 && (
+            <button
+              onClick={() => scrollGallery(1)}
+              style={{ position: "absolute", right: 10, top: "50%", transform: "translateY(-50%)", zIndex: 10, width: 38, height: 38, borderRadius: "50%", background: "rgba(255,255,255,0.92)", border: "1.5px solid rgba(196,122,46,0.2)", boxShadow: "0 2px 10px rgba(0,0,0,0.14)", cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", fontWeight: 700 }}
+            >›</button>
+          )}
 
-          {/* Dot indicators */}
-          <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 10 }}>
-            {[0,1,2,3,4].map(i => (
-              <div key={i} style={{ width: i === 0 ? 18 : 6, height: 5, borderRadius: 100, background: i === 0 ? "#C47A2E" : "rgba(196,122,46,0.2)" }} />
-            ))}
-          </div>
+          {/* Dot indicators — only when multiple items */}
+          {galleryItems.length > 1 && (
+            <div style={{ display: "flex", justifyContent: "center", gap: 5, marginTop: 10 }}>
+              {[0,1,2,3,4].map(i => (
+                <div key={i} style={{ width: i === 0 ? 18 : 6, height: 5, borderRadius: 100, background: i === 0 ? "#C47A2E" : "rgba(196,122,46,0.2)" }} />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Mobile-only compact booking card — appears right after gallery */}
@@ -521,7 +534,7 @@ const VendorDetailsPage = () => {
                 </button>
                 <button
                   onClick={() => {
-                    if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                    if (!token) { setAuthModalOpen(true); return; }
                     if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
                     if (hasEventContext) {
                       dispatch(setBookingType("you-do-it"));
@@ -756,7 +769,7 @@ const VendorDetailsPage = () => {
                   </button>
                   <button
                     onClick={() => {
-                      if (!token) { navigate("/login", { state: { returnTo: location.pathname } }); return; }
+                      if (!token) { setAuthModalOpen(true); return; }
                       if (hasActiveChatSave) { document.dispatchEvent(new CustomEvent("tendr:open-active-chats")); return; }
                       if (hasEventContext) {
                         dispatch(setBookingType("you-do-it"));
@@ -1152,6 +1165,12 @@ const VendorDetailsPage = () => {
           </div>
         </div>
       )}
+      <AuthModal
+        open={authModalOpen}
+        onClose={() => setAuthModalOpen(false)}
+        onSuccess={() => setAuthModalOpen(false)}
+        defaultMode="login"
+      />
     </div>
   );
 };

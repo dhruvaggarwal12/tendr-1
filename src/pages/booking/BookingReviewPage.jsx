@@ -427,7 +427,7 @@ const BookingReviewPage = () => {
             border-top: 1.5px solid rgba(196,122,46,0.15);
             padding: 10px 16px;
             box-shadow: 0 -4px 16px rgba(44,26,14,0.08);
-            z-index: 9800;
+            z-index: 99995;
             align-items: center;
             gap: 12px;
           }

@@ -135,7 +135,7 @@ export default function GlobalStationeryCartDrawer() {
     <>
       {/* Backdrop */}
       {isCartOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 1000, fontFamily: font }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 99995, fontFamily: font }}>
           <div
             onClick={() => { if (step === 0) closeCart(); }}
             style={{ position: "absolute", inset: 0, background: "rgba(28,10,0,0.55)", backdropFilter: "blur(3px)", animation: "gsc-fadeIn 0.25s ease" }}

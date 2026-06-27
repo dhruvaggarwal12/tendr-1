@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux";
 import tendrLogo from "../assets/logos/tendr.png";
 import AuthModal from "./AuthModal";
 import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
-import { selectFunCartCount, selectFunConfirmed, setFunConfirmed, clearFunCart } from "../redux/funActivitiesCartSlice";
+import { selectFunCartCount, selectFunConfirmed, setFunConfirmed, clearFunCart, selectFunCartItems, selectFunCartTotal } from "../redux/funActivitiesCartSlice";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
 import CompareModal from "./CompareModal";
@@ -41,6 +41,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const stConfirmed          = useSelector(selectStConfirmed);
   const stForm               = useSelector(selectStForm);
   const stCartSnapshot       = useSelector(selectStCartSnapshot);
+  const faItems              = useSelector(selectFunCartItems);
+  const faTotal              = useSelector(selectFunCartTotal);
   const [funCartOpen, setFunCartOpen] = useState(false);
   const [ghCartOpen, setGhCartOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -198,6 +200,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         <>
           <div onClick={() => setShowPayPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 1300, backdropFilter: "blur(4px)" }} />
           <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: "min(90vw,360px)", background: "#FFFCF5", borderRadius: 20, zIndex: 1301, padding: "28px 24px", boxShadow: "0 20px 60px rgba(0,0,0,0.25)", fontFamily: font, textAlign: "center" }}>
+            <button onClick={() => setShowPayPopup(false)} style={{ position: "absolute", top: 12, right: 12, width: 30, height: 30, borderRadius: "50%", border: "none", background: "rgba(155,116,80,0.12)", color: "#9B7450", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}>×</button>
             <div style={{ fontSize: 36, marginBottom: 12 }}>🎉</div>
             <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px" }}>Ready to book?</h3>
             <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.5 }}>Head to Review & Pay to confirm your booking, or keep exploring.</p>
@@ -513,9 +516,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       )}
 
       {/* ── Chat-row-left: Pay + Gift FAB — horizontal row to the left of chat button ── */}
-      {((path !== "/booking/review" && (funConfirmed || Object.keys(finalisedVendors).length > 0)) || ghConfirmed || stConfirmed) && (
+      {((path !== "/booking/review" && Object.keys(finalisedVendors).length > 0) || ghConfirmed || stConfirmed || funConfirmed) && (
         <div className="chat-row-left">
-          {path !== "/booking/review" && (funConfirmed || Object.keys(finalisedVendors).length > 0) && (
+          {path !== "/booking/review" && Object.keys(finalisedVendors).length > 0 && (
             <button
               onClick={() => setShowPayPopup(true)}
               title="Review & Pay"
@@ -526,7 +529,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               Pay
             </button>
           )}
-          {(ghConfirmed || stConfirmed) && (
+          {(ghConfirmed || stConfirmed || funConfirmed) && (
             <button
               onClick={() => setAddOnsOpen(true)}
               aria-label="View Add-on Orders"
@@ -537,7 +540,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             >
               🎁
               <span style={{ position: "absolute", top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 9, background: "#2C1A0E", color: "#CCAB4A", fontSize: 10, fontWeight: 900, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 4px", border: "2px solid #fff" }}>
-                {(ghConfirmed ? 1 : 0) + (stConfirmed ? 1 : 0)}
+                {(ghConfirmed ? 1 : 0) + (stConfirmed ? 1 : 0) + (funConfirmed ? 1 : 0)}
               </span>
             </button>
           )}
@@ -582,6 +585,22 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             }
             lines.push("");
           }
+          if (funConfirmed && faItems.length > 0) {
+            lines.push("🎭 *FUN ACTIVITIES*");
+            faItems.forEach((item, i) => {
+              lines.push(`${i + 1}. ${item.emoji || ""} ${item.name}${item.totalPrice ? ` — ₹${Number(item.totalPrice).toLocaleString("en-IN")}` : ""}`);
+              if (item.form) {
+                if (item.form.eventType) lines.push(`   Event: ${item.form.eventType}`);
+                if (item.form.date)      lines.push(`   📅 ${item.form.date}${item.form.time ? ` · ⏰ ${item.form.time}` : ""}`);
+                if (item.form.address)   lines.push(`   📍 ${item.form.address}`);
+                if (item.form.guests)    lines.push(`   👥 ${item.form.guests} guests`);
+                if (item.form.name)      lines.push(`   👤 ${item.form.name}${item.form.phone ? ` · ${item.form.phone}` : ""}`);
+                if (item.form.notes)     lines.push(`   📝 ${item.form.notes}`);
+              }
+            });
+            if (faTotal > 0) lines.push(`*Total: ₹${faTotal.toLocaleString("en-IN")}*`);
+            lines.push("");
+          }
           lines.push("📌 *Note:* Design prices shown. Final pricing will be confirmed by Tendr team.");
           lines.push("");
           lines.push("_Sent via tendr.co.in_");
@@ -593,6 +612,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           window.open(url, "_blank");
           dispatch(clearGhCart());
           dispatch(clearStBooking());
+          dispatch(clearFunCart());
+          dispatch(setFunConfirmed(false));
           setAddOnsOpen(false);
         };
 
@@ -664,10 +685,41 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                     )}
                   </div>
                 )}
+
+                {/* Fun Activities section */}
+                {funConfirmed && faItems.length > 0 && (
+                  <div style={{ marginBottom: 20, padding: 16, background: "rgba(91,33,182,0.05)", borderRadius: 14, border: "1.5px solid rgba(91,33,182,0.15)" }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#5b21b6", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>🎭 Fun Activities</div>
+                    {faItems.map((item, idx) => (
+                      <div key={item.id || idx} style={{ marginBottom: idx < faItems.length - 1 ? 12 : 0, paddingBottom: idx < faItems.length - 1 ? 12 : 0, borderBottom: idx < faItems.length - 1 ? "1px solid rgba(91,33,182,0.1)" : "none" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{item.emoji} {item.name}</span>
+                          {item.totalPrice > 0 && <span style={{ fontSize: 13, fontWeight: 800, color: "#5b21b6" }}>₹{Number(item.totalPrice).toLocaleString("en-IN")}</span>}
+                        </div>
+                        {item.form && (
+                          <div style={{ fontSize: 12, color: "#9B7450", background: "#fff", borderRadius: 8, padding: "6px 10px", lineHeight: 1.6 }}>
+                            {item.form.eventType && <div>🎉 {item.form.eventType}</div>}
+                            {item.form.date && <div>📅 {item.form.date}{item.form.time ? ` · ⏰ ${item.form.time}` : ""}</div>}
+                            {item.form.address && <div>📍 {item.form.address}</div>}
+                            {item.form.guests && <div>👥 {item.form.guests} guests</div>}
+                            {item.form.name && <div>👤 {item.form.name}{item.form.phone ? ` · ${item.form.phone}` : ""}</div>}
+                            {item.form.notes && <div>📝 {item.form.notes}</div>}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {faTotal > 0 && faItems.length > 1 && (
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, fontWeight: 800, color: "#5b21b6", borderTop: "1px solid rgba(91,33,182,0.15)", paddingTop: 8, marginTop: 8 }}>
+                        <span>Activities Total</span>
+                        <span>₹{faTotal.toLocaleString("en-IN")}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Fixed bottom — Proceed on WhatsApp */}
-              <div style={{ padding: "16px 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))", borderTop: "1.5px solid rgba(196,122,46,0.15)", background: "#FFFCF5", flexShrink: 0 }}>
+              <div style={{ padding: "16px 24px", paddingBottom: "max(16px, calc(env(safe-area-inset-bottom, 0px) + 70px))", borderTop: "1.5px solid rgba(196,122,46,0.15)", background: "#FFFCF5", flexShrink: 0 }}>
                 <button
                   onClick={handleProceedWhatsApp}
                   style={{ width: "100%", padding: "14px", borderRadius: 13, border: "none", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 4px 16px rgba(37,211,102,0.4)" }}
