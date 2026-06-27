@@ -899,16 +899,16 @@ const EventPlanning = () => {
       <>
       {/* ── Wizard overlay ── */}
       {showWizard && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 16, fontFamily: "'Outfit', sans-serif" }}>
-          <div style={{ background: "#fff", borderRadius: 22, width: "100%", maxWidth: 520, maxHeight: "90vh", overflow: "auto", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "max(16px, env(safe-area-inset-top, 16px)) 16px 16px", paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))", fontFamily: "'Outfit', sans-serif", overflowY: "auto" }}>
+          <div style={{ background: "#fff", borderRadius: 22, width: "100%", maxWidth: 520, flexShrink: 0, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", marginTop: "auto", marginBottom: "auto" }}>
             <div style={{ height: 4, background: "rgba(196,122,46,0.15)", borderRadius: "22px 22px 0 0", overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${((wizardStep + 1) / wizardSteps.length) * 100}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", transition: "width 0.3s ease" }} />
             </div>
-            <div style={{ padding: "22px 24px" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+            <div style={{ padding: "clamp(14px,4vw,22px) clamp(14px,4vw,24px)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
                 <div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Step {wizardStep + 1} of {wizardSteps.length}</div>
-                  <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{wizardSteps[wizardStep]?.label}</h3>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Step {wizardStep + 1} of {wizardSteps.length}</div>
+                  <h3 style={{ fontSize: "clamp(14px,4vw,18px)", fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{wizardSteps[wizardStep]?.label}</h3>
                 </div>
                 <button onClick={() => setShowWizard(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 20, lineHeight: 1, padding: 4 }}>✕</button>
               </div>
@@ -1036,7 +1036,7 @@ const EventPlanning = () => {
             {currentVendors.map(({ category, estimatedCost, vendor, totalVendors }) => (
               <div key={category} style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", overflow: "hidden", boxShadow: "0 2px 10px rgba(196,122,46,0.07)", display: "flex", flexDirection: "column" }}>
                 {/* Photo */}
-                <div style={{ position: "relative", height: 110, background: "#f3ebe0", overflow: "hidden" }}>
+                <div style={{ position: "relative", height: 140, background: "#f3ebe0", overflow: "hidden" }}>
                   {vendor?.portfolioPhotos?.[0] ? <img src={vendor.portfolioPhotos[0]} alt={vendor?.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "linear-gradient(135deg,#f3e8d4,#eddcc4)", fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>{category}</div>}
                   {/* Category + budget badges */}
                   <div style={{ position: "absolute", bottom: 8, left: 8, display: "flex", gap: 5 }}>
