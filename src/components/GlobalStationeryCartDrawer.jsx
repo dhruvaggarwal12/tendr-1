@@ -263,7 +263,7 @@ export default function GlobalStationeryCartDrawer() {
                   {err && <div style={{ padding: "10px 14px", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 8, color: "#c0392b", fontSize: 12, marginBottom: 14 }}>{err}</div>}
                 </div>
 
-                <div style={{ padding: "16px 24px 24px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+                <div className="gsc-footer" style={{ padding: "16px 24px 24px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
                   <button
                     onClick={handleSubmit}
                     style={{ width: "100%", padding: "14px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.4)" }}
@@ -281,8 +281,8 @@ export default function GlobalStationeryCartDrawer() {
         @keyframes gsc-fadeIn    { from { opacity: 0; } to { opacity: 1; } }
         @keyframes gsc-slideRight { from { transform: translateX(100%); } to { transform: translateX(0); } }
         @media (max-width: 767px) {
-          .gsc-panel { width: 100% !important; }
-          .gsc-footer { padding-bottom: 84px !important; }
+          .gsc-panel { width: min(82vw, 420px) !important; }
+          .gsc-footer { padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important; }
         }
       `}</style>
     </>

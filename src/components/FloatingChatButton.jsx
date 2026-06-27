@@ -598,7 +598,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         return (
           <>
             <div onClick={() => setAddOnsOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 100000, backdropFilter: "blur(3px)" }} />
-            <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(96vw,420px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: font, animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)" }}>
+            <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(82vw,420px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: font, animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)" }}>
               {/* Header */}
               <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
                 <div>
@@ -663,7 +663,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               </div>
 
               {/* Fixed bottom — Proceed on WhatsApp */}
-              <div style={{ padding: "16px 24px", borderTop: "1.5px solid rgba(196,122,46,0.15)", background: "#FFFCF5", flexShrink: 0 }}>
+              <div style={{ padding: "16px 24px", paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))", borderTop: "1.5px solid rgba(196,122,46,0.15)", background: "#FFFCF5", flexShrink: 0 }}>
                 <button
                   onClick={handleProceedWhatsApp}
                   style={{ width: "100%", padding: "14px", borderRadius: 13, border: "none", background: "linear-gradient(135deg,#25D366,#128C7E)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 10, boxShadow: "0 4px 16px rgba(37,211,102,0.4)" }}
