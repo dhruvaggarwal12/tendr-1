@@ -601,9 +601,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             <div style={{ position: "fixed", top: 0, right: 0, bottom: 0, width: "min(82vw,420px)", background: "#FFFCF5", zIndex: 100001, display: "flex", flexDirection: "column", boxShadow: "-8px 0 40px rgba(0,0,0,0.18)", fontFamily: font, animation: "chatPop 0.2s cubic-bezier(0.4,0,0.2,1)" }}>
               {/* Header */}
               <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-                <div>
-                  <h2 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: "0 0 2px" }}>🎁 Your Orders</h2>
-                  <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", margin: 0 }}>Review and send to Tendr on WhatsApp</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <button onClick={() => setAddOnsOpen(false)} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", fontSize: 16, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>←</button>
+                  <div>
+                    <h2 style={{ fontSize: 18, fontWeight: 900, color: "#fff", margin: "0 0 2px" }}>🎁 Your Orders</h2>
+                    <p style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", margin: 0 }}>Review and send to Tendr on WhatsApp</p>
+                  </div>
                 </div>
                 <button onClick={() => setAddOnsOpen(false)} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(255,255,255,0.2)", border: "none", cursor: "pointer", fontSize: 18, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
               </div>

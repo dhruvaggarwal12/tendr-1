@@ -83,9 +83,7 @@ export function GiftCartDrawer({ onClose }) {
         {/* Header */}
         <div style={{ padding: "18px 20px 14px", borderBottom: "1.5px solid rgba(44,26,14,0.07)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            {step === 1 && (
-              <button onClick={() => setStep(0)} style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>←</button>
-            )}
+            <button onClick={() => step === 0 ? onClose() : setStep(0)} style={{ width: 28, height: 28, borderRadius: "50%", border: "1.5px solid rgba(44,26,14,0.1)", background: "#fff", color: "#9B7450", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>←</button>
             <div>
               <p style={{ fontSize: 11, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 2px" }}>🎁 Gift Hampers</p>
               <h3 data-ui-heading style={{ fontSize: 17, fontWeight: 900, color: BROWN, margin: 0 }}>

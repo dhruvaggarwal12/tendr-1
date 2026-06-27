@@ -147,10 +147,13 @@ export default function GlobalStationeryCartDrawer() {
             {/* ── STEP 0: Cart ── */}
             {step === 0 && (
               <>
-                <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-                  <div>
-                    <h2 style={{ fontSize: 20, fontWeight: 900, color: "#1C1208", margin: "0 0 2px" }}>🛒 Your Cart</h2>
-                    <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>{cart.length} item{cart.length !== 1 ? "s" : ""} selected</p>
+                <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", gap: 12, justifyContent: "space-between", flexShrink: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <button onClick={handleClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(44,26,14,0.07)", border: "none", cursor: "pointer", fontSize: 16, color: "#5a3a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>←</button>
+                    <div>
+                      <h2 style={{ fontSize: 20, fontWeight: 900, color: "#1C1208", margin: "0 0 2px" }}>🛒 Your Cart</h2>
+                      <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>{cart.length} item{cart.length !== 1 ? "s" : ""} selected</p>
+                    </div>
                   </div>
                   <button onClick={closeCart} style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", cursor: "pointer", fontSize: 18, color: "#5a3a1a" }}>×</button>
                 </div>
