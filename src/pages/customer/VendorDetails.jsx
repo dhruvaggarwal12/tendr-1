@@ -66,6 +66,7 @@ const getVendorChatSave = (id) => {
 
 const VendorDetailsPage = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [brokenImgIdx, setBrokenImgIdx] = useState(new Set());
   const [vendor, setVendor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -461,57 +462,52 @@ const VendorDetailsPage = () => {
             >‹</button>
           )}
 
-          {/* Single placeholder — centered, no scroll */}
-          {galleryItems.length === 1 && galleryItems[0].type === 'placeholder' ? (
-            <div style={{ borderRadius: 20, overflow: "hidden", height: 300 }}>
-              <VendorPhotoPlaceholder serviceType={galleryItems[0].serviceType} style={{ height: 300 }} />
-            </div>
-          ) : (
-          <div
-            ref={galleryRef}
-            className="vendor-gallery-scroll"
-            onTouchStart={onTouchStart}
-            onTouchEnd={onTouchEnd}
-            style={{
-              display: "flex",
-              gap: 10,
-              overflowX: "auto",
-              scrollSnapType: "x mandatory",
-              borderRadius: 20,
-              scrollbarWidth: "none",
-              msOverflowStyle: "none",
-              cursor: "grab",
-            }}
-          >
-            <style>{`#vendor-gallery::-webkit-scrollbar { display: none; }`}</style>
-            {galleryItems.map((item, idx) => (
-              <div
-                key={idx}
-                style={{ flex: "0 0 auto", width: galleryItems.length === 1 ? "100%" : "calc(55% - 4px)", minWidth: galleryItems.length === 1 ? "100%" : 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start", position: "relative" }}
-              >
-                {item.type === 'video' ? (
-                  <>
-                    <video
+          {/* Gallery — show placeholder if no items or all images broken */}
+          {(() => {
+            const isPlaceholder = galleryItems.length === 1 && galleryItems[0].type === 'placeholder';
+            const imageItems = galleryItems.filter(i => i.type === 'image');
+            const allBroken = imageItems.length > 0 && imageItems.every((_, i) => brokenImgIdx.has(i));
+            if (isPlaceholder || allBroken) {
+              return (
+                <div style={{ borderRadius: 20, overflow: "hidden", height: 300 }}>
+                  <VendorPhotoPlaceholder serviceType={vendor?.serviceType} style={{ height: 300 }} />
+                </div>
+              );
+            }
+            const visibleItems = galleryItems.filter((item, idx) => item.type !== 'image' || !brokenImgIdx.has(idx));
+            return (
+            <div
+              ref={galleryRef}
+              className="vendor-gallery-scroll"
+              onTouchStart={onTouchStart}
+              onTouchEnd={onTouchEnd}
+              style={{ display: "flex", gap: 10, overflowX: "auto", scrollSnapType: "x mandatory", borderRadius: 20, scrollbarWidth: "none", msOverflowStyle: "none", cursor: "grab" }}
+            >
+              <style>{`#vendor-gallery::-webkit-scrollbar { display: none; }`}</style>
+              {visibleItems.map((item, idx) => (
+                <div
+                  key={idx}
+                  style={{ flex: "0 0 auto", width: visibleItems.length === 1 ? "100%" : "calc(55% - 4px)", minWidth: visibleItems.length === 1 ? "100%" : 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start", position: "relative" }}
+                >
+                  {item.type === 'video' ? (
+                    <>
+                      <video src={item.url} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} controls preload="metadata" playsInline />
+                      <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>VIDEO</div>
+                    </>
+                  ) : (
+                    <img
                       src={item.url}
+                      alt={`${vendor.name} photo ${idx + 1}`}
                       style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                      controls
-                      preload="metadata"
-                      playsInline
+                      onLoad={() => setIsLoaded(true)}
+                      onError={() => setBrokenImgIdx(prev => new Set([...prev, idx]))}
                     />
-                    <div style={{ position: "absolute", top: 8, left: 8, background: "rgba(0,0,0,0.6)", color: "#fff", borderRadius: 6, padding: "2px 8px", fontSize: 10, fontWeight: 700, letterSpacing: "0.06em" }}>VIDEO</div>
-                  </>
-                ) : (
-                  <img
-                    src={item.url}
-                    alt={`${vendor.name} photo ${idx + 1}`}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    onLoad={() => setIsLoaded(true)}
-                  />
-                )}
-              </div>
+                  )}
+                </div>
               ))}
-          </div>
-          )}
+            </div>
+            );
+          })()}
 
           {/* Right arrow — only when multiple items */}
           {galleryItems.length > 1 && (
