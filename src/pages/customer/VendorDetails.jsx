@@ -487,7 +487,7 @@ const VendorDetailsPage = () => {
             {galleryItems.map((item, idx) => (
               <div
                 key={idx}
-                style={{ flex: "0 0 auto", width: "calc(55% - 4px)", minWidth: 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start", position: "relative" }}
+                style={{ flex: "0 0 auto", width: galleryItems.length === 1 ? "100%" : "calc(55% - 4px)", minWidth: galleryItems.length === 1 ? "100%" : 260, height: 300, borderRadius: 16, overflow: "hidden", scrollSnapAlign: "start", position: "relative" }}
               >
                 {item.type === 'video' ? (
                   <>
