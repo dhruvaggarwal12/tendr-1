@@ -202,7 +202,7 @@ const VendorDetailsPage = () => {
   }, [rating]);
 
   const galleryItems = useMemo(() => {
-    const photos = (vendor?.portfolioPhotos || []).filter(Boolean);
+    const photos = (vendor?.portfolioPhotos || []).filter(u => u && typeof u === "string" && u.startsWith("http"));
     const videos = (vendor?.portfolioVideos || []).filter(Boolean);
     const photoItems = photos.length
       ? photos.map(url => ({ type: 'image', url }))

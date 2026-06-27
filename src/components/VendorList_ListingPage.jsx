@@ -503,12 +503,6 @@ const VendorList_ListingPage = ({
                     <button onClick={closePanel}
                       style={{ width: 34, height: 34, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
-                  {/* Rating badge */}
-                  {qvRating != null && (
-                    <div style={{ position: "absolute", top: 12, left: 12, background: "rgba(196,122,46,0.92)", color: "#fff", borderRadius: 100, padding: "5px 12px", fontSize: 13, fontWeight: 700 }}>
-                      ⭐ {Number(qvRating).toFixed(1)}
-                    </div>
-                  )}
                   {/* Photo prev/next arrows */}
                   {total > 1 && (
                     <>
