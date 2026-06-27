@@ -387,16 +387,16 @@ export default function CustomerDashboard() {
 
         {/* Install App Banner — shown once per session, dismissible */}
         {showInstallBanner && (
-          <div className="dashboard-install-banner" style={{ display: "flex", alignItems: "center", gap: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16, padding: "14px 18px", marginBottom: 24, flexWrap: "wrap" }}>
-            <span style={{ fontSize: 28, flexShrink: 0 }}>📲</span>
-            <div style={{ flex: 1, minWidth: 180 }}>
-              <div className="install-title" style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A", marginBottom: 2 }}>
+          <div className="dashboard-install-banner" style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 12, padding: "10px 14px", marginBottom: 16, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+            <div style={{ flex: 1, minWidth: 140 }}>
+              <div className="install-title" style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A", marginBottom: 1 }}>
                 {plans.length > 0 ? `You have ${plans.length} active booking${plans.length > 1 ? "s" : ""}` : "Manage bookings on the go"}
               </div>
-              <div className="install-sub" style={{ fontSize: 12, color: "rgba(255,255,255,0.6)" }}>Install Tendr for instant updates, chat and tracking.</div>
+              <div className="install-sub" style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Install Tendr for instant updates, chat and tracking.</div>
             </div>
             <button onClick={() => navigate("/install")}
-              style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "#CCAB4A", color: "#2C1A0E", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>
+              style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: "#CCAB4A", color: "#2C1A0E", fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>
               Install App →
             </button>
             <button onClick={() => { setShowInstallBanner(false); sessionStorage.setItem("tendr_install_dismissed", "1"); }}
@@ -405,18 +405,18 @@ export default function CustomerDashboard() {
         )}
 
         {/* Profile card */}
-        <div className="dashboard-profile-card" style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", padding: "28px 32px", marginBottom: 32, display: "flex", alignItems: "center", gap: 24, flexWrap: "wrap" }}>
-          <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+        <div className="dashboard-profile-card" style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 12px rgba(139,69,19,0.07)", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ width: 48, height: 48, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
             {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
           <div style={{ flex: 1 }}>
-            <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px", letterSpacing: "-0.01em" }}>{user?.name || "Customer"}</h2>
-            <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+            <h2 style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", margin: "0 0 3px", letterSpacing: "-0.01em" }}>{user?.name || "Customer"}</h2>
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               {user?.phoneNumber && (
-                <span style={{ fontSize: 14, color: "#9B7450" }}>📞 {user.phoneNumber}</span>
+                <span style={{ fontSize: 12, color: "#9B7450" }}>📞 {user.phoneNumber}</span>
               )}
               {user?.email && (
-                <span style={{ fontSize: 14, color: "#9B7450" }}>✉️ {user.email}</span>
+                <span style={{ fontSize: 12, color: "#9B7450" }}>✉️ {user.email}</span>
               )}
             </div>
           </div>

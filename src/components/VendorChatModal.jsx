@@ -462,6 +462,7 @@ export default function VendorChatModal() {
   const [justApproved, setJustApproved] = useState(false); // shows install banner on first approval
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const messagesTopRef = useRef(null);
 
   // ── Chat action state ────────────────────────────────────────────────────────
   const [chatCompleted, setChatCompleted] = useState(false);
@@ -548,8 +549,13 @@ export default function VendorChatModal() {
 
   // ── Auto-scroll ──────────────────────────────────────────────────────────────
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, botStep, botDone, confirmedPkg]);
+    // Pending state: show event details + Q&A at top, IN PROGRESS scrolls into view below
+    if (botDone && !approved && messages.length <= 1) {
+      messagesTopRef.current?.scrollIntoView({ behavior: "smooth" });
+    } else {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages, botStep, botDone, confirmedPkg, approved]);
 
   // ── Escape key ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1121,6 +1127,7 @@ export default function VendorChatModal() {
 
         {/* ── Messages / Bot area ── */}
         <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+          <div ref={messagesTopRef} />
 
           {/* Bot questions (new chats only) */}
           {!botDone && (

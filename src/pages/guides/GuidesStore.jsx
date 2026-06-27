@@ -26,14 +26,11 @@ export default function GuidesStore() {
 
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: STORE.accentSoft, border: `1px solid ${STORE.border}`, borderRadius: 100, padding: "4px 14px", marginBottom: 14 }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: STORE.accent, textTransform: "uppercase", letterSpacing: "0.1em" }}>Tips by Tendr · Free Resource Library</span>
-          </div>
-          <h1 style={{ fontSize: "clamp(1.4rem, 4vw, 2.4rem)", fontWeight: 900, color: STORE.heading, letterSpacing: "-0.03em", lineHeight: 1.1, margin: "0 0 10px" }}>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <h1 style={{ fontSize: "clamp(1.1rem, 3.5vw, 1.7rem)", fontWeight: 900, color: STORE.heading, letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 6px" }}>
             Event Planning Guides
           </h1>
-          <p style={{ fontSize: 13, color: STORE.muted, maxWidth: 460, margin: "0 auto", lineHeight: 1.55 }}>
+          <p style={{ fontSize: 12, color: STORE.muted, maxWidth: 400, margin: "0 auto", lineHeight: 1.5 }}>
             Practical, no-fluff guides for budgeting, decorating, and planning any event.
           </p>
         </div>

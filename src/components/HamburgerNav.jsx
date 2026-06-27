@@ -433,8 +433,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     (item.href !== "/" && location.pathname.startsWith(item.href)) ||
                     (item.activePaths || []).some(p => location.pathname === p || location.pathname.startsWith(p))
                   );
-                  const timelineSaved  = item.href === "/timeline-picker"  && (() => { try { return localStorage.getItem("tendr_timeline_saved")  === "true"; } catch { return false; } })();
-                  const budgetSaved    = item.href === "/budget-picker"     && (() => { try { return localStorage.getItem("tendr_budget_saved")    === "true"; } catch { return false; } })();
+                  const timelineSaved  = item.href === "/timeline-picker"  && (() => { try { const raw = localStorage.getItem("tendr_timeline_v2"); if (!raw) return false; const d = JSON.parse(raw); return d?.phases?.length > 0; } catch { return false; } })();
+                  const budgetSaved    = item.href === "/budget-picker"     && (() => { try { const raw = localStorage.getItem("tendr_budget_v2"); if (!raw) return false; const d = JSON.parse(raw); return !!d?.totalBudget; } catch { return false; } })();
                   if (isSoon) {
                     return (
                       <div key={item.label} style={{ display: "flex", alignItems: "center", padding: "9px 16px", borderLeft: "3px solid transparent", gap: 10 }}>
@@ -704,10 +704,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       {/* Slide-in Drawer */}
       {drawerOpen && (
         <>
-          <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, backdropFilter: "blur(2px)" }} />
+          <div onClick={close} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 99991, backdropFilter: "blur(2px)" }} />
           <div style={{
             position: "fixed", left: 0, top: 0, height: "100dvh", width: 310,
-            background: "#FFFCF5", zIndex: 201,
+            background: "#FFFCF5", zIndex: 99992,
             display: "flex", flexDirection: "column",
             animation: "drawerSlideIn 0.24s cubic-bezier(0.4,0,0.2,1)",
             boxShadow: "8px 0 48px rgba(139,69,19,0.22)",

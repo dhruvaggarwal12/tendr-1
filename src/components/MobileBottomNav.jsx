@@ -279,20 +279,6 @@ function BottomNavInner() {
             <p style={{ fontSize: 12, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 16px" }}>Tips by Tendr</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {/* Community */}
-              <button
-                onClick={() => { navigate("/community"); setTipsOpen(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(255,255,255,0.07)", background: "#0A0E1A", cursor: "pointer", fontFamily: font, textAlign: "left" }}
-                onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.06)"}
-                onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
-              >
-                <span style={{ fontSize: 28, lineHeight: 1 }}>💬</span>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Community Wall</div>
-                  <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>Real events shared by customers</div>
-                </div>
-              </button>
-
               {/* Guide Store */}
               <button
                 onClick={() => { navigate("/guides"); setTipsOpen(false); }}

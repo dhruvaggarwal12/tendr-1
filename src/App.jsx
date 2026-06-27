@@ -96,7 +96,7 @@ function App() {
           }>
             <RouterProvider router={router} />
           </Suspense>
-          <FloatingChatButton />
+          <FloatingChatButton hideOnRoutes={["/chat", "/chats", "/login", "/signup", "/otp", "/guides"]} />
           <VendorChatModal />
         </ChatProvider>
         </TourProvider>

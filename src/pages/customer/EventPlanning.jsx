@@ -2029,19 +2029,20 @@ const EventPlanning = () => {
               const todayLocal = new Date();
               todayLocal.setHours(0, 0, 0, 0);
               const todayStr = `${todayLocal.getFullYear()}-${String(todayLocal.getMonth() + 1).padStart(2, "0")}-${String(todayLocal.getDate()).padStart(2, "0")}`;
-              const currentVal = formData[currentQuestion.id] || "";
+              const rawVal = formData[currentQuestion.id] || "";
+              const currentVal = rawVal && rawVal >= todayStr ? rawVal : "";
               return (
                 <div>
                   <input
                     type="date"
                     min={todayStr}
-                    value={currentVal || ""}
+                    value={currentVal}
                     onChange={(e) => {
                       const v = e.target.value;
                       if (!v || v < todayStr) return;
                       handleInputChange(currentQuestion.id, v);
                     }}
-                    style={{ width: "100%", padding: "12px 14px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 15, fontFamily: "'Outfit', sans-serif", color: currentVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 48 }}
+                    style={{ width: "100%", padding: "12px 14px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: "clamp(13px, 3.8vw, 15px)", fontFamily: "'Outfit', sans-serif", color: currentVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 48 }}
                   />
                   {currentVal && (
                     <button onClick={() => setTimeout(advance, 100)}
