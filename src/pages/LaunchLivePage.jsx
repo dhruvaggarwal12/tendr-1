@@ -1,17 +1,21 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import LaunchSequence from "../components/LaunchSequence";
 
 export default function LaunchLivePage() {
   const [started, setStarted] = useState(false);
 
-  // Request fullscreen + landscape on mount
-  useEffect(() => {
-    const el = document.documentElement;
-    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
-    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    if (screen.orientation?.lock) screen.orientation.lock("landscape").catch(() => {});
-    return () => { document.exitFullscreen?.().catch?.(() => {}); };
-  }, []);
+  const handleStart = async () => {
+    // Must be called inside a user gesture for browsers to allow it
+    try {
+      const el = document.documentElement;
+      if (el.requestFullscreen) await el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    } catch {}
+    try {
+      if (screen.orientation?.lock) await screen.orientation.lock("landscape");
+    } catch {}
+    setStarted(true);
+  };
 
   if (started) {
     return (
@@ -35,7 +39,7 @@ export default function LaunchLivePage() {
         ready to launch
       </div>
       <button
-        onClick={() => setStarted(true)}
+        onClick={handleStart}
         style={{
           padding: "clamp(18px,4vw,28px) clamp(48px,10vw,100px)",
           borderRadius: 20,
