@@ -347,7 +347,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
       {/* ── Backdrop: closes launcher + saved/compare popups on outside tap ── */}
       {(savedOpen || compareOpen || launcherOpen) && (
-        <div onClick={() => { setSavedOpen(false); setCompareOpen(false); setLauncherOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 897 }} />
+        <div onClick={() => { setSavedOpen(false); setCompareOpen(false); setLauncherOpen(false); }} style={{ position: "fixed", inset: 0, zIndex: 99993 }} />
       )}
 
       {/* ── Saved / Compare popups (unchanged) ── */}
@@ -358,7 +358,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           )}
           {/* Saved popup */}
           {savedOpen && (
-            <div className="mobile-saved-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 901, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "10px", minWidth: 240, maxWidth: 300, fontFamily: font, animation: "chatPop 0.18s ease" }}>
+            <div className="mobile-saved-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 99996, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "10px", minWidth: 240, maxWidth: 300, fontFamily: font, animation: "chatPop 0.18s ease" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "2px 8px 8px" }}>💛 Saved Vendors</div>
               {savedVendors.map(v => (
                 <div key={v._id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 8px", borderRadius: 10 }}>
@@ -378,7 +378,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           )}
           {/* Compare popup — category dropdown + per-vendor Add/Remove toggle */}
           {compareOpen && (
-            <div className="mobile-compare-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 901, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "12px", minWidth: 280, maxWidth: 320, fontFamily: font, animation: "chatPop 0.18s ease" }}>
+            <div className="mobile-compare-popup" style={{ position: "fixed", bottom: 190, right: 12, zIndex: 99996, background: "#FFFCF5", borderRadius: 16, boxShadow: "0 10px 40px rgba(196,122,46,0.22)", border: "1.5px solid rgba(196,122,46,0.18)", padding: "12px", minWidth: 280, maxWidth: 320, fontFamily: font, animation: "chatPop 0.18s ease" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", padding: "2px 8px 10px" }}>⚖ Compare Vendors</div>
               {compareSelected.length === 0 ? (
                 <div style={{ padding: "8px 8px 4px", fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>Chat with or save vendors to build your compare list.</div>
@@ -849,7 +849,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           position: fixed;
           bottom: calc(82px + env(safe-area-inset-bottom, 0px));
           right: 20px;
-          z-index: 900;
+          z-index: 99995;
           width: 50px; height: 50px;
           border-radius: 50%;
           border: none; padding: 0;
@@ -874,7 +874,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           position: fixed;
           bottom: calc(140px + env(safe-area-inset-bottom, 0px));
           right: 20px;
-          z-index: 900;
+          z-index: 99995;
           display: flex; flex-direction: column; gap: 8px; align-items: flex-end;
         }
         .launcher-stack > * { animation: lstack-pop 0.18s ease forwards; }

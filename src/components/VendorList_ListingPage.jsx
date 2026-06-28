@@ -143,6 +143,7 @@ const VendorList_ListingPage = ({
   const [savedTick, setSavedTick] = useState(0);
   const [shareCopiedId, setShareCopiedId] = useState(null);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+  const [brokenQvPhotos, setBrokenQvPhotos] = useState(new Set());
   const [unavailModal, setUnavailModal] = useState(null); // null or { vendor, date, alternatives[] }
   const [checkingAvail, setCheckingAvail] = useState(false);
 
@@ -165,9 +166,10 @@ const VendorList_ListingPage = ({
     }
   }, [vendors]);
 
-  // Reset photo index when quick view opens
+  // Reset photo index + broken photos when quick view opens
   useEffect(() => {
     setActivePhotoIdx(0);
+    setBrokenQvPhotos(new Set());
   }, [quickViewVendor?._id]);
 
   // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
@@ -306,18 +308,24 @@ const VendorList_ListingPage = ({
                   >
                     {/* Image — full bleed */}
                     <div className="vendor-card-img" style={{ height: 260, overflow: "hidden", position: "relative" }}>
-                      {(vendor.image || vendor.portfolioPhotos?.[0]) ? (
-                        <img
-                          src={vendor.image || vendor.portfolioPhotos[0]}
-                          alt={vendor.name}
-                          style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                          onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
-                          onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                          loading="lazy"
-                        />
-                      ) : (
-                        <VendorPhotoPlaceholder serviceType={vendor.serviceType} style={{ height: 260 }} />
-                      )}
+                      {(() => {
+                        const cardPhoto = [vendor.image, ...(vendor.portfolioPhotos || [])].find(u => u && typeof u === "string" && u.startsWith("http"));
+                        return cardPhoto ? (
+                          <img
+                            src={cardPhoto}
+                            alt={vendor.name}
+                            style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+                            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
+                            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                            onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling?.style && (e.currentTarget.nextSibling.style.display = "block"); }}
+                            loading="lazy"
+                          />
+                        ) : null;
+                      })()}
+                      {(() => {
+                        const cardPhoto = [vendor.image, ...(vendor.portfolioPhotos || [])].find(u => u && typeof u === "string" && u.startsWith("http"));
+                        return !cardPhoto ? <VendorPhotoPlaceholder serviceType={vendor.serviceType} style={{ height: 260 }} /> : <VendorPhotoPlaceholder serviceType={vendor.serviceType} style={{ height: 260, display: "none" }} />;
+                      })()}
                       {/* Gradient overlay — stronger at bottom for mobile text legibility */}
                       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(12,4,0,0.88) 0%, rgba(12,4,0,0.3) 45%, transparent 100%)", pointerEvents: "none" }} />
                       {/* Top Rated star badge */}
@@ -481,17 +489,25 @@ const VendorList_ListingPage = ({
           >
             {/* Cover image with browsing arrows */}
             {(() => {
-              const photos = (quickViewVendor.portfolioPhotos || []).filter(Boolean);
-              const hasPhoto = photos.length > 0 || quickViewVendor.image;
-              const imgSrc = photos.length
-                ? photos[activePhotoIdx] || photos[0]
-                : (quickViewVendor.image || null);
-              const total = photos.length || 1;
+              const allPhotos = (quickViewVendor.portfolioPhotos || []).filter(u => u && typeof u === "string" && u.startsWith("http"));
+              const photos = allPhotos.filter((_, i) => !brokenQvPhotos.has(i));
+              const hasPhoto = photos.length > 0;
+              const safeIdx = Math.min(activePhotoIdx, Math.max(0, photos.length - 1));
+              const imgSrc = photos[safeIdx] || null;
+              const total = photos.length;
               const qvRating = quickViewVendor.avgReviewScore ?? quickViewVendor.rating;
               return (
                 <div style={{ position: "relative", height: 230, flexShrink: 0 }}>
                   {hasPhoto ? (
-                    <img src={imgSrc} alt={quickViewVendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img
+                      src={imgSrc}
+                      alt={quickViewVendor.name}
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      onError={() => {
+                        const origIdx = allPhotos.indexOf(imgSrc);
+                        if (origIdx !== -1) setBrokenQvPhotos(prev => new Set([...prev, origIdx]));
+                      }}
+                    />
                   ) : (
                     <VendorPhotoPlaceholder serviceType={quickViewVendor.serviceType} style={{ height: 230 }} />
                   )}
