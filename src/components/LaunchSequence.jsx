@@ -181,7 +181,7 @@ export default function LaunchSequence({ onComplete, autoFullscreen = false }) {
       setTimeout(() => {
         setPhase("live");
         setLiveVisible(true);
-        setTimeout(() => onComplete?.(), 4000);
+        // Stay on live screen permanently — user closes the tab manually
       }, 2000);
     }, 2200);
     return () => clearTimeout(t);

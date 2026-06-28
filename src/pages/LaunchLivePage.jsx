@@ -19,9 +19,7 @@ export default function LaunchLivePage() {
 
   if (started) {
     return (
-      <LaunchSequence
-        onComplete={() => { try { window.close(); } catch {} }}
-      />
+      <LaunchSequence />
     );
   }
 
