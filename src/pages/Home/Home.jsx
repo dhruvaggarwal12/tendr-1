@@ -1444,72 +1444,19 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Gift Hampers & Cakes ── */}
+      {/* ── Gift Hampers & Cakes — Coming Soon ── */}
       <section style={{ background: "#FFFDF7", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          {/* Header row */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28, flexWrap: "wrap", gap: 12 }}>
-            <div>
-              <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 7px" }}>🎁 Gift Hampers & Cakes</p>
-              <h2 style={{ fontSize: "clamp(1.5rem,3vw,2.1rem)", color: "#2C1A0E", margin: "0 0 7px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
-                The Perfect Gift,<br /><span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
-              </h2>
-              <p style={{ fontSize: 13, color: "#9B7450", margin: 0, maxWidth: 400, lineHeight: 1.65 }}>
-                Curated hampers, custom cakes and celebration kits for every occasion.
-              </p>
-            </div>
-            <button
-              onClick={() => navigate("/gift-hampers-cakes")}
-              style={{ padding: "11px 24px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.28)", whiteSpace: "nowrap" }}>
-              Browse All →
-            </button>
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+          <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>🎁 Gift Hampers & Cakes</p>
+          <h2 style={{ fontSize: "clamp(1.5rem,3vw,2.1rem)", color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+            The Perfect Gift,&nbsp;<span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
+          </h2>
+          <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14 }}>
+            Coming Soon
           </div>
-
-          {/* Cards — horizontal scroll on all widths, compact product tiles */}
-          <div
-            ref={ghCarouselRef}
-            className="gh-carousel-track"
-            style={{ display: "flex", gap: 14, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}
-          >
-            {(ghProducts.length > 0 ? ghProducts.slice(0, 10) : GH_FALLBACKS).map((p) => (
-              <div
-                key={p._id}
-                className="gh-card"
-                onClick={() => navigate("/gift-hampers-cakes")}
-                style={{ flexShrink: 0, width: 164, cursor: "pointer", background: "#fff", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.13)", boxShadow: "0 2px 10px rgba(196,122,46,0.07)", overflow: "hidden", transition: "transform 0.2s, box-shadow 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 22px rgba(196,122,46,0.17)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(196,122,46,0.07)"; }}
-              >
-                {/* Product image */}
-                <div style={{ width: "100%", height: 118, overflow: "hidden", background: "linear-gradient(135deg,#FFF4E8,#F5DFB5)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  {p.images?.[0]
-                    ? <img src={p.images[0]} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
-                    : <span style={{ fontSize: 40 }}>🎁</span>
-                  }
-                </div>
-                {/* Info */}
-                <div style={{ padding: "9px 11px 12px" }}>
-                  {p.category && (
-                    <div style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 4 }}>{p.category}</div>
-                  )}
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.35, marginBottom: 7, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.name}</div>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>
-                      {p.pricePerUnit ? `₹${p.pricePerUnit.toLocaleString("en-IN")}` : "View"}
-                    </span>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.09)", borderRadius: 100, padding: "2px 8px" }}>View →</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <style>{`
-            .gh-carousel-track::-webkit-scrollbar { display: none; }
-            @media (max-width: 640px) {
-              .gh-card { width: 140px !important; }
-              .gh-card > div:first-child { height: 100px !important; }
-            }
-          `}</style>
+          <p style={{ fontSize: 14, color: "#9B7450", maxWidth: 420, lineHeight: 1.7, margin: 0 }}>
+            We're curating the most beautiful hampers and cakes for your celebrations. Check back soon!
+          </p>
         </div>
       </section>
 
@@ -1787,14 +1734,11 @@ const Home = () => {
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="events-portfolio-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }} className="events-portfolio-grid">
             {[
-              { title: "Decoration",       slug: "decoration" },
-              { title: "Entertainment",    slug: "entertainment" },
-              { title: "Catering",         slug: "catering" },
-              { title: "Photography",      slug: "photography" },
-              { title: "Full Event Setup", slug: "full-event-setup" },
-              { title: "Corporate Events", slug: "corporate-events" },
+              { title: "Decoration",    slug: "decoration" },
+              { title: "Entertainment", slug: "entertainment" },
+              { title: "Photography",   slug: "photography" },
             ].map(({ title, slug }, catIdx) => {
               const catPhotos = galleryByCategory[title] || [];
               // Each tile cycles at a different offset so they don't all flip at the same time

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 
 const font = "'Outfit', sans-serif";
-const APP_URL = "https://tendr-1.vercel.app";
+const APP_URL = "https://tendr.co.in";
 
 // iOS steps (no programmatic install API on iOS)
 const IOS_STEPS = [
@@ -20,15 +20,19 @@ export default function InstallApp() {
   const [installing, setInstalling] = useState(false);
   const [installed, setInstalled] = useState(false);
 
-  // Capture the beforeinstallprompt event for Android/Desktop
   useEffect(() => {
+    // Read from global capture (set in main.jsx before any navigation)
+    if (window.__deferredInstallPrompt) {
+      setDeferredPrompt(window.__deferredInstallPrompt);
+    }
+    // Also listen in case it fires while on this page
     const handler = (e) => {
       e.preventDefault();
+      window.__deferredInstallPrompt = e;
       setDeferredPrompt(e);
     };
     window.addEventListener("beforeinstallprompt", handler);
 
-    // Detect if already installed
     if (window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone) {
       setInstalled(true);
     }
@@ -37,17 +41,15 @@ export default function InstallApp() {
   }, []);
 
   const handleInstall = async () => {
-    if (!deferredPrompt) {
-      // Fallback: open the app URL if prompt isn't available
-      window.open(APP_URL, "_blank");
-      return;
-    }
+    const prompt = deferredPrompt || window.__deferredInstallPrompt;
+    if (!prompt) return; // button is hidden when no prompt — shouldn't reach here
     setInstalling(true);
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
     if (outcome === "accepted") {
       setInstalled(true);
       setDeferredPrompt(null);
+      window.__deferredInstallPrompt = null;
     }
     setInstalling(false);
   };
@@ -124,15 +126,16 @@ export default function InstallApp() {
                       ? "Tap the button below to install Tendr directly to your Android home screen — no app store needed."
                       : "Click the button below to install Tendr as a desktop app — opens instantly without a browser."}
                   </p>
-                  <button onClick={handleInstall} disabled={installing}
-                    style={{ width: "100%", padding: "15px", borderRadius: 14, border: "none", background: installing ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: installing ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 800, cursor: installing ? "not-allowed" : "pointer", fontFamily: font, boxShadow: installing ? "none" : "0 4px 18px rgba(196,122,46,0.35)", marginBottom: 12 }}>
-                    {installing ? "Installing..." : "📲 Install Tendr App"}
-                  </button>
-                  {!deferredPrompt && (
-                    <p style={{ fontSize: 12, color: "#9B7450", textAlign: "center", margin: 0, lineHeight: 1.5 }}>
-                      💡 If the button doesn't work, open {APP_URL} in{" "}
+                  {(deferredPrompt || window.__deferredInstallPrompt) ? (
+                    <button onClick={handleInstall} disabled={installing}
+                      style={{ width: "100%", padding: "15px", borderRadius: 14, border: "none", background: installing ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: installing ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 800, cursor: installing ? "not-allowed" : "pointer", fontFamily: font, boxShadow: installing ? "none" : "0 4px 18px rgba(196,122,46,0.35)", marginBottom: 12 }}>
+                      {installing ? "Installing..." : "📲 Install Tendr App"}
+                    </button>
+                  ) : (
+                    <p style={{ fontSize: 13, color: "#9B7450", textAlign: "center", margin: "0 0 12px", lineHeight: 1.6, background: "rgba(196,122,46,0.06)", borderRadius: 12, padding: "14px 16px" }}>
+                      💡 Open <strong>tendr.co.in</strong> in{" "}
                       {active === "android" ? "Chrome" : "Chrome or Edge"} and look for the
-                      {active === "android" ? " install banner at the bottom" : " ⊕ icon in the address bar"}.
+                      {active === "android" ? " install banner at the bottom of the screen" : ' ⊕ icon in the address bar'} to install.
                     </p>
                   )}
                 </>

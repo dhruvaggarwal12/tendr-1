@@ -13,6 +13,13 @@ setupGlobalErrorHandling();
 // Disable browser's automatic scroll restoration so SPA pages can restore manually via sessionStorage
 window.history.scrollRestoration = 'manual';
 
+// Capture PWA install prompt as early as possible so /install page never misses it
+window.__deferredInstallPrompt = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  window.__deferredInstallPrompt = e;
+});
+
 // Global 401 interceptor — if a deleted user makes any API call,
 // their session is cleared automatically and they must sign up again
 const _originalFetch = window.fetch;
