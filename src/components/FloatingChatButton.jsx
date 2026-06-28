@@ -500,20 +500,26 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         </>
       )}
 
-      {/* ── Launcher FAB (wine glass, above chat) — shows when stack has any item ── */}
-      {(savedVendors.length > 0 || compareSelected.length > 0 || (funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed)) && (
-        <button
-          className="launcher-fab"
-          onClick={() => setLauncherOpen(v => !v)}
-          aria-label="Open activity tray"
-          title="Your activity"
-        >
-          <img src={tendrLogo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
-          <span className="launcher-badge">
-            {[savedVendors.length > 0, compareSelected.length > 0, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed].filter(Boolean).length}
-          </span>
-        </button>
-      )}
+      {/* ── Launcher FAB — on desktop, saved/compare live in sidebar so only show for cart items ── */}
+      {(() => {
+        const hasCartItems = (funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed);
+        const hasMobileItems = savedVendors.length > 0 || compareSelected.length > 0;
+        const isDesktop = window.innerWidth >= 1024;
+        if (!hasCartItems && !hasMobileItems) return null;
+        if (isDesktop && !hasCartItems) return null; // saved/compare handled by sidebar on desktop
+        const count = [savedVendors.length > 0 && !isDesktop, compareSelected.length > 0 && !isDesktop, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed].filter(Boolean).length;
+        return (
+          <button
+            className="launcher-fab"
+            onClick={() => setLauncherOpen(v => !v)}
+            aria-label="Open activity tray"
+            title="Your activity"
+          >
+            <img src={tendrLogo} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%", display: "block" }} />
+            <span className="launcher-badge">{count}</span>
+          </button>
+        );
+      })()}
 
       {/* ── Chat-row-left: Pay + Gift FAB — horizontal row to the left of chat button ── */}
       {((path !== "/booking/review" && Object.keys(finalisedVendors).length > 0) || ghConfirmed || stConfirmed || funConfirmed) && (
