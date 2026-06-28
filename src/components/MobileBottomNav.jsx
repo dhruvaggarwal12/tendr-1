@@ -18,7 +18,7 @@ const CATEGORIES = [
   { emoji: "🍽", label: "Catering",            path: "/search?categories=Caterer" },
   { emoji: "🎵", label: "DJ & Music",          path: "/search?categories=DJ" },
   { emoji: "🎀", label: "Decoration",          path: "/search?categories=Decorator" },
-  { emoji: "🎁", label: "Gift Hampers",        path: "/gift-hampers-cakes" },
+  { emoji: "🎁", label: "Gift Hampers",        path: "/gift-hampers-cakes", soon: true },
   { emoji: "💒", label: "Wedding Stationeries",path: "/stationery" },
 ];
 
@@ -171,7 +171,7 @@ function BottomNavInner() {
               {[
                 ...CATEGORIES,
                 { emoji: "🎭", label: "Fun Activities",       path: "/fun-activities" },
-              ].map(({ emoji, label, path, newTab }) => (
+              ].map(({ emoji, label, path, newTab, soon }) => (
                 <button key={label}
                   onClick={() => { if (newTab) { window.open("/occasions", "_blank"); setBrowseOpen(false); } else { navigate(path); setBrowseOpen(false); } }}
                   style={{
@@ -182,10 +182,12 @@ function BottomNavInner() {
                     cursor: "pointer", fontFamily: font,
                     boxShadow: "0 2px 8px rgba(196,122,46,0.08)",
                     transition: "background 0.15s",
+                    position: "relative",
                   }}
                   onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
                   onTouchEnd={e => e.currentTarget.style.background = "#fff"}
                 >
+                  {soon && <span style={{ position: "absolute", top: 6, right: 8, fontSize: 9, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "1px 5px", letterSpacing: "0.04em" }}>SOON</span>}
                   <span style={{ fontSize: 26, lineHeight: 1 }}>{emoji}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3 }}>{label}</span>
                 </button>

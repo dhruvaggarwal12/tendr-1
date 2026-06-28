@@ -224,7 +224,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
-      { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+      { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes", tag: "Soon" },
       { label: "💒 Wedding Stationeries", href: "/stationery" },
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
@@ -470,6 +470,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                       onMouseLeave={e => { if (!isActive) { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "rgba(255,255,255,0.85)"; } }}
                     >
                       <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "left", flex: 1 }}>{item.label}</span>
+                      {item.tag && <span style={{ fontSize: 8, fontWeight: 800, color: "#CCAB4A", background: "rgba(196,122,46,0.15)", border: "1px solid rgba(196,122,46,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>{item.tag.toUpperCase()}</span>}
                       {(timelineSaved || budgetSaved) && <span style={{ fontSize: 8, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.15)", border: "1px solid rgba(34,197,94,0.3)", borderRadius: 100, padding: "1px 5px", flexShrink: 0, letterSpacing: "0.05em" }}>✓ CHECK</span>}
                     </button>
                   );
@@ -617,14 +618,15 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
                   { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
                   { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                  { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
+                  { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes", soon: true },
                   { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
                 ].map(cat => (
                   <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 8px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "16px 8px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s", position: "relative" }}
                     onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
                   >
+                    {cat.soon && <span style={{ position: "absolute", top: 6, right: 6, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 6, padding: "1px 5px", fontSize: 9, fontWeight: 800, letterSpacing: "0.05em" }}>SOON</span>}
                     <span style={{ fontSize: 28 }}>{cat.emoji}</span>
                     <span style={{ fontSize: 12.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
                   </button>
@@ -804,7 +806,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "20px"; }}
                       >
                         <span style={{ fontSize: 16, width: 22, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
-                        <span>{item.label}</span>
+                        <span style={{ flex: 1 }}>{item.label}</span>
+                        {item.tag && <span style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "1px 6px", flexShrink: 0, letterSpacing: "0.05em" }}>{item.tag.toUpperCase()}</span>}
                       </button>
                     )
                   ))}
@@ -904,14 +907,15 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
                 { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
                 { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
+                { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes", soon: true },
                 { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
               ].map(cat => (
                 <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
-                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "14px 6px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                  style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, padding: "14px 6px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s", position: "relative" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
                 >
+                  {cat.soon && <span style={{ position: "absolute", top: 5, right: 5, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 5, padding: "1px 5px", fontSize: 8, fontWeight: 800, letterSpacing: "0.05em" }}>SOON</span>}
                   <span style={{ fontSize: 26 }}>{cat.emoji}</span>
                   <span style={{ fontSize: 11.5, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{cat.label}</span>
                 </button>

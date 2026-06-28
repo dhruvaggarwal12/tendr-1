@@ -19,8 +19,8 @@ import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
 
 // Minimal router for tendr.co.in: coming soon at / and community at /community
 const liveSiteRouter = createBrowserRouter([
-  { path: "/community", element: <CommunityWall /> },
-  { path: "*",          element: <ComingSoon /> },
+  { path: "/community", element: <CommunityWall />, errorElement: <ComingSoon /> },
+  { path: "*",          element: <ComingSoon />,    errorElement: <ComingSoon /> },
 ]);
 
 const LIVE_DOMAINS = ["tendr.co.in", "www.tendr.co.in"];
@@ -114,8 +114,10 @@ function App() {
     // Not live — Coming Soon
     return (
       <HelmetProvider>
-        {!splashDone && <SplashScreen onDone={handleSplashDone} />}
-        <RouterProvider router={liveSiteRouter} />
+        <ErrorBoundary>
+          {!splashDone && <SplashScreen onDone={handleSplashDone} />}
+          <RouterProvider router={liveSiteRouter} />
+        </ErrorBoundary>
       </HelmetProvider>
     );
   }

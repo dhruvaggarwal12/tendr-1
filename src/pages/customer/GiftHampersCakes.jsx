@@ -243,6 +243,33 @@ function CheckoutModal({ onClose, onPlaceOrder }) {
 const GiftHampersCakes = () => {
   const navigate  = useNavigate();
   const dispatch  = useDispatch();
+
+  // ── COMING SOON ──────────────────────────────────────────────────────────────
+  return (
+    <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: "'Outfit', sans-serif" }}>
+      <HamburgerNav />
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "80vh", padding: "40px 24px", textAlign: "center" }}>
+        <div style={{ fontSize: 64, marginBottom: 20 }}>🎁</div>
+        <div style={{ fontSize: "clamp(28px, 6vw, 42px)", fontWeight: 900, color: "#2C1A0E", marginBottom: 12, letterSpacing: "-0.02em" }}>
+          Gift Hampers & Cakes
+        </div>
+        <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "8px 24px", fontWeight: 800, fontSize: 14, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 24 }}>
+          Coming Soon
+        </div>
+        <div style={{ fontSize: 16, color: "#9B7450", maxWidth: 400, lineHeight: 1.7 }}>
+          We're curating the most beautiful hampers and cakes for your celebrations. Check back soon!
+        </div>
+        <button
+          onClick={() => navigate("/")}
+          style={{ marginTop: 36, padding: "14px 36px", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 800, fontSize: 16, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+        >
+          Back to Home
+        </button>
+      </div>
+      <Footer />
+    </div>
+  );
+  // ── END COMING SOON ──────────────────────────────────────────────────────────
   const cartCount = useSelector(selectCartCount);
   const cartTotal = useSelector(selectCartTotal);
   const cartItems = useSelector(selectCartItems);
