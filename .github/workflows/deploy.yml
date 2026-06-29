@@ -28,6 +28,9 @@ jobs:
           VITE_BASE_URL: ${{ secrets.VITE_BASE_URL }}
           VITE_RAZORPAY_KEY_ID: ${{ secrets.VITE_RAZORPAY_KEY_ID }}
 
+      - name: Fetch sitemap from API into dist
+        run: curl -f -o dist/sitemap.xml https://api.tendr.co.in/sitemap.xml || echo "Sitemap fetch failed, skipping"
+
       - name: Deploy to S3
         uses: aws-actions/configure-aws-credentials@v4
         with:
