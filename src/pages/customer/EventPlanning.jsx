@@ -45,6 +45,7 @@ import { setFilters } from "../../redux/listingFiltersSlice";
 import MakeAGroup_Nav from "../../components/MakeAGroup_Nav.jsx";
 import EventFormSummary from "../../components/EventFormSummary.jsx";
 import { getVendors, getSmartPlan, confirmSmartPlan } from "../../apis/vendorApi.js";
+import AuthModal from "../../components/AuthModal.jsx";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -168,6 +169,8 @@ const EventPlanning = () => {
   };
   const [showWizard, setShowWizard] = useState(false);
   const [wizardStep, setWizardStep] = useState(0);
+  const [showAuthForPlan, setShowAuthForPlan] = useState(false);
+  const [createdConversationId, setCreatedConversationId] = useState(null);
   const [wizardAnswers, setWizardAnswers] = useState(() => { try { return JSON.parse(sessionStorage.getItem("tendr_wiz_answers") || "{}"); } catch { return {}; } });
   const [planSubmitted, setPlanSubmitted] = useState(() => {
     try {
@@ -540,6 +543,7 @@ const EventPlanning = () => {
         localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
         try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
         setConfirmedPlan(planData);
+        if (result.conversationId) setCreatedConversationId(result.conversationId);
       } catch (e) {
         console.error('Plan submit failed:', e);
       }
@@ -887,9 +891,9 @@ const EventPlanning = () => {
               style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.25)`, background: "#fff", color: GOLD, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
               Back to Home
             </button>
-            <button onClick={() => navigate("/dashboard")}
+            <button onClick={() => navigate(createdConversationId ? `/chat?conversationId=${createdConversationId}&from=concierge` : "/chats")}
               style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
-              My Dashboard →
+              View My Chat →
             </button>
           </div>
         </div>
@@ -1159,7 +1163,10 @@ const EventPlanning = () => {
           {/* Primary CTA */}
           <div style={{ width: "100%", maxWidth: 1100, display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
             <button
-              onClick={() => { setWizardStep(0); setWizardAnswers({}); setShowWizard(true); }}
+              onClick={() => {
+                if (!token) { setShowAuthForPlan(true); return; }
+                setWizardStep(0); setWizardAnswers({}); setShowWizard(true);
+              }}
               style={{ width: "100%", padding: "15px 0", borderRadius: 14, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.38)", letterSpacing: "0.01em" }}>
               Confirm This Package →
             </button>
@@ -1170,6 +1177,13 @@ const EventPlanning = () => {
           </div>
         </div>
       </div>
+      {/* Auth gate for Confirm Package */}
+      <AuthModal
+        open={showAuthForPlan}
+        onClose={() => setShowAuthForPlan(false)}
+        onSuccess={() => { setShowAuthForPlan(false); setWizardStep(0); setWizardAnswers({}); setShowWizard(true); }}
+      />
+
       {/* Smart Plan QuickView side panel */}
       {spQuickView && (
         <>
