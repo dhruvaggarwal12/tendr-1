@@ -2474,7 +2474,6 @@ const AdminDashboard = () => {
                       {/* Vendor Referral Code */}
                       {(() => {
                         const vCode = formatCode(generateVendorReferralCode(v._id));
-                        const [copied, setCopied] = useState(false);
                         return (
                           <div onClick={e => e.stopPropagation()} style={{ marginTop: 12, borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 10, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
                             <div>
@@ -2484,10 +2483,15 @@ const AdminDashboard = () => {
                               <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", fontFamily: "'Courier New', monospace", letterSpacing: "0.05em" }}>{vCode}</div>
                             </div>
                             <button
-                              onClick={() => { navigator.clipboard.writeText(vCode); setCopied(true); setTimeout(() => setCopied(false), 2000); }}
-                              style={{ padding: "5px 12px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: copied ? "rgba(196,122,46,0.12)" : "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0 }}
+                              onClick={(e) => {
+                                navigator.clipboard.writeText(vCode);
+                                const btn = e.currentTarget;
+                                btn.textContent = "✓ Copied";
+                                setTimeout(() => { btn.textContent = "Copy"; }, 2000);
+                              }}
+                              style={{ padding: "5px 12px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0 }}
                             >
-                              {copied ? "✓ Copied" : "Copy"}
+                              Copy
                             </button>
                           </div>
                         );
