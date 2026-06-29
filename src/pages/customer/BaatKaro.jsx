@@ -5,7 +5,7 @@ import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 
 const font = "'Outfit', sans-serif";
-const WHATSAPP_NUMBER = "919999999999"; // replace with real number
+const WHATSAPP_NUMBER = "919211668427";
 
 export default function BaatKaro() {
   const navigate = useNavigate();
