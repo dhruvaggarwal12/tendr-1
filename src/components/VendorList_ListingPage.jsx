@@ -172,6 +172,14 @@ const VendorList_ListingPage = ({
     setBrokenQvPhotos(new Set());
   }, [quickViewVendor?._id]);
 
+  // Signal quick view open/close to navbar + FAB
+  useEffect(() => {
+    if (!window.__tendrDrawers) window.__tendrDrawers = new Set();
+    quickViewVendor ? window.__tendrDrawers.add('quick-view') : window.__tendrDrawers.delete('quick-view');
+    window.dispatchEvent(new Event('tendr:drawer'));
+    return () => { window.__tendrDrawers?.delete('quick-view'); window.dispatchEvent(new Event('tendr:drawer')); };
+  }, [quickViewVendor]);
+
   // Keyboard: Esc closes QuickView/form, arrows navigate between vendors in QuickView
   useEffect(() => {
     const onKey = (e) => {

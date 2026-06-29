@@ -86,6 +86,7 @@ function BottomNavInner() {
   const [productsOpen, setProductsOpen] = useState(false);
   const [planOpen, setPlanOpen] = useState(false);
   const [tipsOpen, setTipsOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const scrollTimer = useRef(null);
 
   // Hide while scrolling, show 400ms after scroll stops
@@ -108,8 +109,16 @@ function BottomNavInner() {
     setTipsOpen(false);
   }, [location.pathname]);
 
+  // Listen for drawer open/close events (WS cart, quick view, etc.)
+  useEffect(() => {
+    const h = () => setDrawerOpen((window.__tendrDrawers?.size || 0) > 0);
+    window.addEventListener('tendr:drawer', h);
+    return () => window.removeEventListener('tendr:drawer', h);
+  }, []);
+
   const shouldHide = HIDE_PATHS.some((p) => location.pathname.startsWith(p));
   if (shouldHide) return null;
+  if (drawerOpen) return null;
 
   const fromPlan = location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1";
 

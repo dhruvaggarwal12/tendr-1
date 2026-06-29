@@ -71,6 +71,15 @@ export default function GlobalStationeryCartDrawer() {
     return () => { document.body.style.overflow = ""; };
   }, [isCartOpen, step]);
 
+  // Signal drawer open/close to navbar + FAB
+  useEffect(() => {
+    const open = isCartOpen || step === 2;
+    if (!window.__tendrDrawers) window.__tendrDrawers = new Set();
+    open ? window.__tendrDrawers.add('ws-cart') : window.__tendrDrawers.delete('ws-cart');
+    window.dispatchEvent(new Event('tendr:drawer'));
+    return () => { window.__tendrDrawers?.delete('ws-cart'); window.dispatchEvent(new Event('tendr:drawer')); };
+  }, [isCartOpen, step]);
+
   const pricedTotal = cart.reduce((sum, { item, quantity }) => {
     if (item.priceOnRequest || !item.startingPrice) return sum;
     return sum + item.startingPrice * Number(quantity);

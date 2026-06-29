@@ -45,6 +45,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const faTotal              = useSelector(selectFunCartTotal);
   const [funCartOpen, setFunCartOpen] = useState(false);
   const [ghCartOpen, setGhCartOpen] = useState(false);
+  const [anyDrawerOpen, setAnyDrawerOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [pendingCartAction, setPendingCartAction] = useState(null);
   const [addOnsOpen, setAddOnsOpen] = useState(false);
@@ -100,9 +101,15 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   useEffect(() => {
     const refresh = () => setSavedVendors(getSavedVendors());
     window.addEventListener("tendr:saved-vendors-changed", refresh);
-    // Also poll on storage events (cross-tab)
     window.addEventListener("storage", refresh);
     return () => { window.removeEventListener("tendr:saved-vendors-changed", refresh); window.removeEventListener("storage", refresh); };
+  }, []);
+
+  // Hide FAB + chat when any drawer (WS cart, quick view) is open
+  useEffect(() => {
+    const h = () => setAnyDrawerOpen((window.__tendrDrawers?.size || 0) > 0);
+    window.addEventListener('tendr:drawer', h);
+    return () => window.removeEventListener('tendr:drawer', h);
   }, []);
 
   const removeSaved = (id) => {
@@ -317,6 +324,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           </div>
         </>
       )}
+
+      {/* Hide all floating UI when a cart drawer or quick-view panel is open on mobile */}
+      {(funCartOpen || ghCartOpen || anyDrawerOpen) ? null : <>
 
       {/* Decor Finder chip — above View Chats on Decorator listings */}
       {showDecorChip && (
@@ -1040,6 +1050,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           </div>
         </>
       )}
+      </> /* end hide-when-drawer-open */}
     </>
   );
 }
