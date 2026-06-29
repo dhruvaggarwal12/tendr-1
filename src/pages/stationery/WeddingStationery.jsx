@@ -189,7 +189,7 @@ export default function WeddingStationery() {
                           <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 10 }}>
                             <div>
                               <div style={{ fontSize: 17, fontWeight: 900, color: "#C9A84C", letterSpacing: "-0.01em" }}>{price.main}</div>
-                              {item.unit && <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginTop: 2 }}>per {item.unit}</div>}
+                              {item.unit && <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginTop: 2 }}>{item.unit}</div>}
                               {price.note && !item.unit && <div style={{ fontSize: 9, color: "#9B7450", fontStyle: "italic", marginTop: 1 }}>{price.note}</div>}
                             </div>
                             <div style={{ background: isHov ? meta.grad : "transparent", color: isHov ? "#fff" : meta.color, border: `1.5px solid ${meta.color}50`, borderRadius: 100, padding: "5px 13px", fontSize: 11, fontWeight: 700, transition: "all 0.22s", whiteSpace: "nowrap" }}>
