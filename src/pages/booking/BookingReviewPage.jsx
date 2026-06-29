@@ -102,6 +102,15 @@ const BookingReviewPage = () => {
   const categoryBudgets  = useSelector((s) => s.eventPlanning.categoryBudgets || {});
   const bookingType      = useSelector((s) => s.eventPlanning.bookingType);
   const isLetUsDoIt      = bookingType === "let-us-do-it";
+
+  // Smart Plan detection — Concierge entry with _id "concierge" means customer finalised a Smart Plan
+  const isSmartPlan = !!(finalisedVendors.Concierge?.[0]?._id === "concierge" || finalisedVendors.Concierge?._id === "concierge");
+  const smartPlanData = (() => {
+    if (!isSmartPlan) return null;
+    try { return JSON.parse(localStorage.getItem("tendr_smart_plan") || "null"); } catch { return null; }
+  })();
+  const smartPlanSlots = smartPlanData?.vendorSlots || [];
+  const smartPlanTotal = smartPlanSlots.reduce((s, slot) => s + (Number(slot.estimatedCost) || 0), 0);
   const fmtBudget = (n) => n ? `₹${Number(n).toLocaleString("en-IN")}` : null;
 
   // Corporate features — admin only
@@ -309,11 +318,14 @@ const BookingReviewPage = () => {
     acc[key] = getPrice(v);
     return acc;
   }, {});
-  const confirmedTotal = Object.values(prices).filter(p => p !== null).reduce((a, b) => a + b, 0);
-  const allConfirmed = vendorEntries.every(([, v]) => isConfirmed(v));
-  const anyPriceUnset = vendorEntries.some(([, v]) => getPrice(v) === null);
+  // For Smart Plan: use the estimated slot total directly; otherwise use admin-confirmed priceMap
+  const confirmedTotal = isSmartPlan
+    ? smartPlanTotal
+    : Object.values(prices).filter(p => p !== null).reduce((a, b) => a + b, 0);
+  const allConfirmed = isSmartPlan ? (smartPlanSlots.length > 0) : vendorEntries.every(([, v]) => isConfirmed(v));
+  const anyPriceUnset = isSmartPlan ? false : vendorEntries.some(([, v]) => getPrice(v) === null);
 
-  // Platform fee: ₹250 per top-rated tier + ₹100 per normal tier (capped)
+  // Platform fee: ₹200 flat for Smart Plan; tiered for regular bookings
   const topRatedCount = vendorEntries.filter(([, v]) => v?.isTopRated).length;
   const normalCount   = vendorEntries.filter(([, v]) => !v?.isTopRated).length;
   const topRatedFee   = topRatedCount > 0 ? 250 : 0;
@@ -321,7 +333,7 @@ const BookingReviewPage = () => {
     : topRatedCount > 0 ? 100   // any normals alongside top-rated = flat ₹100
     : normalCount === 1 ? 100   // only 1 normal vendor
     : 200;                      // 2+ normals, no top-rated = ₹200
-  const platformFee   = vendorEntries.length > 0 ? topRatedFee + normalFee : 0;
+  const platformFee   = isSmartPlan ? 200 : vendorEntries.length > 0 ? topRatedFee + normalFee : 0;
   // Any referral code (customer or vendor) waives the platform fee entirely
   const effectivePlatformFee = appliedCode ? 0 : platformFee;
 
@@ -571,7 +583,41 @@ const BookingReviewPage = () => {
           {/* ── RIGHT: Vendor cards grouped by service category ── */}
           <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
 
-            {normEntries.map(([serviceType, candidateArr], catIdx) => {
+            {/* ── Smart Plan breakdown — replaces per-vendor cards ── */}
+            {isSmartPlan && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+                  <span style={{ fontSize: 20 }}>✨</span>
+                  <h3 style={{ fontSize: 16, fontWeight: 900, color: "#2C1A0E", margin: 0, letterSpacing: "-0.01em" }}>Smart Plan Breakdown</h3>
+                </div>
+                <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(139,69,19,0.1)", boxShadow: "0 3px 14px rgba(139,69,19,0.06)", overflow: "hidden" }}>
+                  {smartPlanSlots.length > 0 ? smartPlanSlots.map((slot, i) => (
+                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 18px", borderBottom: i < smartPlanSlots.length - 1 ? "1px solid rgba(196,122,46,0.08)" : "none" }}>
+                      <div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{slot.category}</div>
+                        {slot.vendorName && <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>{slot.vendorName}</div>}
+                      </div>
+                      <div style={{ fontSize: 15, fontWeight: 800, color: "#C47A2E" }}>
+                        {slot.estimatedCost ? `₹${Number(slot.estimatedCost).toLocaleString("en-IN")}` : "TBC"}
+                      </div>
+                    </div>
+                  )) : (
+                    <div style={{ padding: "20px 18px", fontSize: 13, color: "#9B7450" }}>
+                      Your Smart Plan is being finalized. Vendor costs will appear here.
+                    </div>
+                  )}
+                  {/* Pricing note */}
+                  <div style={{ background: "rgba(196,122,46,0.04)", padding: "10px 18px", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+                    <p style={{ fontSize: 11, color: "#9B7450", margin: 0, lineHeight: 1.5 }}>
+                      💡 These are estimated costs. Final prices will be confirmed by the Tendr team before payment.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Regular vendor cards — hidden for Smart Plan */}
+            {!isSmartPlan && normEntries.map(([serviceType, candidateArr], catIdx) => {
               const vendor = vendorEntries.find(([k]) => k === serviceType)?.[1] || candidateArr[0];
               const price = prices[serviceType];
               const isOpen = !!openKeys[serviceType];
@@ -925,7 +971,7 @@ const BookingReviewPage = () => {
                   if (rawSum <= 0) return null;
                   const discountedSum = appliedCode ? applyDiscount(rawSum).finalTotal : rawSum;
                   const gstAmount = Math.round(discountedSum * 0.18);
-                  const grandTotal = discountedSum + gstAmount + 100;
+                  const grandTotal = discountedSum + gstAmount + effectivePlatformFee;
                   return (
                     <>
                       <div style={{ borderTop: "1px dashed rgba(139,69,19,0.15)", paddingTop: 10, marginTop: 4 }}>
@@ -943,8 +989,8 @@ const BookingReviewPage = () => {
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#5a3a1a", marginBottom: 10 }}>
                           <span style={{ fontWeight: 600 }}>Platform Fee</span>
                           {appliedCode
-                            ? <span style={{ fontWeight: 700, color: "#15803d", display: "flex", alignItems: "center", gap: 4 }}><s style={{ color: "#9B7450", fontWeight: 400 }}>₹100</s> FREE</span>
-                            : <span style={{ fontWeight: 600 }}>+ ₹100</span>
+                            ? <span style={{ fontWeight: 700, color: "#15803d", display: "flex", alignItems: "center", gap: 4 }}><s style={{ color: "#9B7450", fontWeight: 400 }}>₹{platformFee}</s> FREE</span>
+                            : <span style={{ fontWeight: 600 }}>+ ₹{platformFee}</span>
                           }
                         </div>
                       </div>
@@ -952,7 +998,7 @@ const BookingReviewPage = () => {
                       <div style={{ borderTop: "1.5px solid rgba(139,69,19,0.1)", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 18, fontWeight: 800, color: "#2C1A0E" }}>
                         <span>{anyPriceUnset ? "Confirmed So Far" : "Grand Total"}</span>
                         <span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>
-                          {formatINR(appliedCode ? grandTotal - 100 : grandTotal)}
+                          {formatINR(grandTotal)}
                         </span>
                       </div>
                       <p style={{ fontSize: 11, color: "#9B7450", margin: "6px 0 0" }}>
@@ -1147,7 +1193,11 @@ const BookingReviewPage = () => {
                             formData.date     ? `📅 *Date:* ${formData.date}` : null,
                             formData.location ? `📍 *Location:* ${formData.location}` : null,
                             formData.guests   ? `👥 *Guests:* ${formData.guests}` : null,
-                            ...(vendorEntries.length > 0 ? [
+                            ...(isSmartPlan && smartPlanSlots.length > 0 ? [
+                              "",
+                              "*✨ Smart Plan Breakdown:*",
+                              ...smartPlanSlots.map(s => `• ${s.category}: Rs.${Number(s.estimatedCost || 0).toLocaleString("en-IN")}${s.vendorName ? ` (${s.vendorName})` : ""}`),
+                            ] : vendorEntries.length > 0 ? [
                               "",
                               "*Finalised Vendors:*",
                               ...vendorEntries.map(([cat, v]) =>
@@ -1169,7 +1219,7 @@ const BookingReviewPage = () => {
                             "",
                             effectivePlatformFee > 0 ? `🔧 *Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
                             appliedCode ? `🎁 *Referral Code:* ${appliedCode}` : null,
-                            `💰 *Grand Total:* Rs.${Number(finalAmount).toLocaleString("en-IN")}`,
+                            `💰 *Grand Total (incl. 18% GST):* Rs.${Number(finalAmount + Math.round((appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) * 0.18)).toLocaleString("en-IN")}`,
                             "",
                             currentUser?.name ? `👤 *Customer:* ${currentUser.name}` : null,
                             currentUser?.phoneNumber || currentUser?.phone ? `📱 *Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,

@@ -621,6 +621,8 @@ const AdminDashboard = () => {
   const [smartPlans, setSmartPlans] = useState([]);
   const [smartPlansLoaded, setSmartPlansLoaded] = useState(false);
   const [smartPlanExpanded, setSmartPlanExpanded] = useState(null);
+  const [smartPlanBudgets, setSmartPlanBudgets] = useState({}); // { [planId]: { [category]: amount } }
+  const [budgetPinning, setBudgetPinning] = useState({}); // { [planId]: bool }
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
@@ -5002,6 +5004,60 @@ const AdminDashboard = () => {
                             ))}
                           </div>
                         )}
+
+                        {/* Budget per category — only for accepted plans with vendor slots */}
+                        {isExp && plan.status === 'active' && (plan.vendorSlots || []).length > 0 && (() => {
+                          const planBudgets = smartPlanBudgets[plan._id] || {};
+                          // Init defaults from estimatedCost if not set
+                          const slots = plan.vendorSlots || [];
+                          const isPinning = !!budgetPinning[plan._id];
+                          return (
+                            <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.02)" }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>📌 Set Budget per Category</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
+                                {slots.map((slot, si) => {
+                                  const cat = slot.category;
+                                  const val = planBudgets[cat] !== undefined ? planBudgets[cat] : (slot.estimatedCost || '');
+                                  return (
+                                    <div key={si} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                      <span style={{ fontSize: 13, color: "#2C1A0E", fontWeight: 600, minWidth: 110 }}>{cat}</span>
+                                      <input
+                                        type="number"
+                                        placeholder={`₹${(slot.estimatedCost || 0).toLocaleString('en-IN')}`}
+                                        value={val}
+                                        onChange={e => setSmartPlanBudgets(prev => ({ ...prev, [plan._id]: { ...(prev[plan._id] || {}), [cat]: Number(e.target.value) || '' } }))}
+                                        style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", outline: "none" }}
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <button
+                                disabled={isPinning}
+                                onClick={async () => {
+                                  setBudgetPinning(prev => ({ ...prev, [plan._id]: true }));
+                                  const budgets = planBudgets;
+                                  const categoryBudgets = slots.map(s => ({
+                                    category: s.category,
+                                    amount: budgets[s.category] !== undefined ? Number(budgets[s.category]) : (s.estimatedCost || 0),
+                                  }));
+                                  try {
+                                    await fetch(`${BASE_URL}/smart-plans/${plan._id}/pin-budget`, {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                      credentials: 'include',
+                                      body: JSON.stringify({ categoryBudgets }),
+                                    });
+                                  } catch (e) { console.error(e); }
+                                  setBudgetPinning(prev => ({ ...prev, [plan._id]: false }));
+                                }}
+                                style={{ padding: "8px 18px", borderRadius: 9, border: "none", background: isPinning ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isPinning ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: isPinning ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}
+                              >
+                                {isPinning ? "Pinning…" : "📌 Pin Budget to Chat"}
+                              </button>
+                            </div>
+                          );
+                        })()}
 
                         {/* Actions row */}
                         <div style={{ padding: "10px 22px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
