@@ -891,7 +891,7 @@ const EventPlanning = () => {
               style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: `1.5px solid rgba(196,122,46,0.25)`, background: "#fff", color: GOLD, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
               Back to Home
             </button>
-            <button onClick={() => navigate(createdConversationId ? `/chat?conversationId=${createdConversationId}&from=concierge` : "/chats")}
+            <button onClick={() => createdConversationId ? openConciergeChat(createdConversationId, false) : navigate("/chats")}
               style={{ flex: 1, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: F }}>
               View My Chat →
             </button>
