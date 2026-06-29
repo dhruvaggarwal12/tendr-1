@@ -80,7 +80,6 @@ function resolveKey(serviceType = "") {
 export default function VendorPhotoPlaceholder({ serviceType, className, style }) {
   const key    = resolveKey(serviceType);
   const photos = CATEGORY_PHOTOS[key];
-  const label  = serviceType ? `${serviceType} at Tendr` : "Vendor at Tendr";
 
   return (
     <div
@@ -94,7 +93,6 @@ export default function VendorPhotoPlaceholder({ serviceType, className, style }
         ...style,
       }}
     >
-      {/* 2×2 collage grid */}
       <div
         style={{
           display: "grid",
@@ -116,53 +114,9 @@ export default function VendorPhotoPlaceholder({ serviceType, className, style }
               height: "100%",
               objectFit: "cover",
               display: "block",
-              filter: "brightness(0.82) saturate(1.1)",
             }}
           />
         ))}
-      </div>
-
-      {/* Dark vignette overlay */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(135deg,rgba(0,0,0,0.45) 0%,rgba(0,0,0,0.6) 100%)",
-          pointerEvents: "none",
-        }}
-      />
-
-      {/* Highlighted label */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: 12,
-        }}
-      >
-        <span
-          style={{
-            fontFamily: "'Outfit', sans-serif",
-            fontWeight: 900,
-            fontSize: "clamp(13px, 3.5vw, 18px)",
-            letterSpacing: "0.03em",
-            textAlign: "center",
-            lineHeight: 1.2,
-            color: "#fff",
-            background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-            padding: "10px 22px",
-            borderRadius: 100,
-            boxShadow:
-              "0 0 0 2.5px rgba(255,255,255,0.22), 0 6px 28px rgba(0,0,0,0.55), 0 2px 8px rgba(196,122,46,0.6)",
-            textShadow: "0 1px 6px rgba(0,0,0,0.45)",
-          }}
-        >
-          {label}
-        </span>
       </div>
     </div>
   );

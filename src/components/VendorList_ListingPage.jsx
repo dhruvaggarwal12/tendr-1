@@ -318,24 +318,29 @@ const VendorList_ListingPage = ({
                     <div className="vendor-card-img" style={{ height: 260, overflow: "hidden", position: "relative" }}>
                       {(() => {
                         const cardPhoto = [vendor.image, ...(vendor.portfolioPhotos || [])].find(u => u && typeof u === "string" && u.startsWith("http"));
-                        return cardPhoto ? (
-                          <img
-                            src={cardPhoto}
-                            alt={vendor.name}
-                            style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
-                            onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
-                            onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
-                            onError={(e) => { e.currentTarget.style.display = "none"; e.currentTarget.nextSibling?.style && (e.currentTarget.nextSibling.style.display = "block"); }}
-                            loading="lazy"
-                          />
-                        ) : null;
+                        if (cardPhoto) {
+                          return (
+                            <>
+                              <img
+                                src={cardPhoto}
+                                alt={vendor.name}
+                                style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.4s ease" }}
+                                onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.06)")}
+                                onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+                                onError={(e) => { e.currentTarget.style.display = "none"; }}
+                                loading="lazy"
+                              />
+                              {/* Gradient overlay — only over real photos */}
+                              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(12,4,0,0.88) 0%, rgba(12,4,0,0.3) 45%, transparent 100%)", pointerEvents: "none" }} />
+                              {/* Service type badge — desktop only, only over real photos */}
+                              <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>
+                                {vendor.serviceType}
+                              </span>
+                            </>
+                          );
+                        }
+                        return <VendorPhotoPlaceholder serviceType={vendor.serviceType} style={{ height: 260 }} />;
                       })()}
-                      {(() => {
-                        const cardPhoto = [vendor.image, ...(vendor.portfolioPhotos || [])].find(u => u && typeof u === "string" && u.startsWith("http"));
-                        return !cardPhoto ? <VendorPhotoPlaceholder serviceType={vendor.serviceType} style={{ height: 260 }} /> : <VendorPhotoPlaceholder serviceType={vendor.serviceType} style={{ height: 260, display: "none" }} />;
-                      })()}
-                      {/* Gradient overlay — stronger at bottom for mobile text legibility */}
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(12,4,0,0.88) 0%, rgba(12,4,0,0.3) 45%, transparent 100%)", pointerEvents: "none" }} />
                       {/* Top Rated star badge */}
                       {vendor.isTopRated && (
                         <div style={{ position: "absolute", top: 10, left: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 800, display: "flex", alignItems: "center", gap: 4, boxShadow: "0 2px 8px rgba(196,122,46,0.5)" }}>
@@ -346,10 +351,6 @@ const VendorList_ListingPage = ({
                       <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(196,122,46,0.88)", backdropFilter: "blur(6px)", color: "#fff", borderRadius: 100, padding: "4px 10px", fontSize: 10.5, fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
                         ✓ Verified
                       </div>
-                      {/* Service type badge — desktop only (hidden on mobile via CSS) */}
-                      <span style={{ position: "absolute", bottom: 10, left: 12, fontSize: 10, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.9)", color: "#fff", padding: "3px 9px", borderRadius: 20 }}>
-                        {vendor.serviceType}
-                      </span>
                       {/* Mobile-only full-bleed text overlay */}
                       <div className="vendor-card-mobile-overlay" style={{
                         display: "none",
