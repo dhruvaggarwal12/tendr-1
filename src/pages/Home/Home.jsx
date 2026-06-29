@@ -1798,32 +1798,6 @@ const Home = () => {
         `}</style>
       </section>
 
-      {/* ── Join the Celebration Hub — admin preview only ── */}
-      {/* ── Celebration Hub — Community CTA ── */}
-      <section style={{ background: "linear-gradient(160deg,#0F172A 0%,#1E293B 60%,#0F172A 100%)", padding: "56px 24px 64px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        <div style={{ position:"absolute", top:-80, right:-60, width:300, height:300, borderRadius:"50%", background:"rgba(196,122,46,0.06)", pointerEvents:"none" }} />
-        <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", display:"flex", alignItems:"center", justifyContent:"space-between", gap:32, flexWrap:"wrap" }}>
-          <div style={{ maxWidth: 520 }}>
-            <div style={{ display:"inline-flex", alignItems:"center", gap:6, padding:"4px 14px", borderRadius:100, border:"1px solid rgba(204,171,74,0.25)", background:"rgba(196,122,46,0.1)", marginBottom:16 }}>
-              <span style={{ fontSize:11, color:"#CCAB4A", fontWeight:700, letterSpacing:"0.1em", textTransform:"uppercase" }}>🎉 Community</span>
-            </div>
-            <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,4.5vw,3.2rem)", fontWeight:400, color:"#fff", margin:"0 0 12px", letterSpacing:"0.01em", lineHeight:1.2 }}>
-              Join the Celebration Hub
-            </h2>
-            <p style={{ fontSize:15, color:"rgba(255,255,255,0.55)", margin:0, lineHeight:1.75 }}>
-              Share ideas, get inspiration, discuss event challenges — a space shaped by the community.
-            </p>
-          </div>
-          <div style={{ display:"flex", flexDirection:"column", gap:12, flexShrink:0 }}>
-            <button onClick={() => navigate("/celebration-hub")}
-              style={{ display:"inline-flex", alignItems:"center", justifyContent:"center", gap:8, padding:"15px 36px", borderRadius:14, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:16, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 18px rgba(196,122,46,0.38)", whiteSpace:"nowrap", transition:"opacity 0.2s" }}
-              onMouseEnter={e => e.currentTarget.style.opacity="0.88"}
-              onMouseLeave={e => e.currentTarget.style.opacity="1"}>
-              Enter the Hub →
-            </button>
-          </div>
-        </div>
-      </section>
 
       {/* ── Tips by Tendr ── */}
       <TipsByTendrSection />
