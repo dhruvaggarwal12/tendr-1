@@ -6,9 +6,9 @@ const U = (id) =>
 const CATEGORY_PHOTOS = {
   DJ: [
     U("1571266028243-d220c6a3a027"),
-    U("1493225457124-a3eb161ffa5f"),
     U("1516450360452-9312f5e86fc7"),
     U("1470229722913-7c0e2dbbafd3"),
+    U("1598387993441-a364f854b322"),
   ],
   Caterer: [
     U("1555244162-803834f70033"),
@@ -20,13 +20,13 @@ const CATEGORY_PHOTOS = {
     U("1492691527719-9d1e07e534b4"),
     U("1519741497674-611481863552"),
     U("1511285560929-80b456fea0bc"),
-    U("1605462863863-10d9e47e15ee"),
+    U("1537633552985-df8429e8048b"),
   ],
   Decorator: [
     U("1464366400600-7168b8af9bc3"),
-    U("1478145787956-9a99f8c1a6a0"),
     U("1519225421980-715cb0215aed"),
-    U("1520854221256-17296d498cc1"),
+    U("1532712938310-34cb3982ef88"),
+    U("1507003211169-0a1dd7228f2d"),
   ],
   Anchor: [
     U("1540575467063-178a50c2df87"),
@@ -43,8 +43,8 @@ const CATEGORY_PHOTOS = {
   Mehendi: [
     U("1519657337289-077653f724ed"),
     U("1609220136736-443140cfeaa3"),
-    U("1576179635662-9d1983e97e1e"),
-    U("1599639957043-f3aa5c986398"),
+    U("1583095927792-7d4e8e6b834a"),
+    U("1561883442-4f1e3bac2d45"),
   ],
   Makeup: [
     U("1522337360788-8b13dee7a37e"),
@@ -59,6 +59,8 @@ const CATEGORY_PHOTOS = {
     U("1555244162-803834f70033"),
   ],
 };
+
+const FALLBACK_COLORS = ["#3a1f0d", "#2c1a0e", "#4a2810", "#3d2208"];
 
 function resolveKey(serviceType = "") {
   const s = (serviceType || "").toLowerCase();
@@ -104,18 +106,20 @@ export default function VendorPhotoPlaceholder({ serviceType, className, style }
         }}
       >
         {photos.map((url, i) => (
-          <img
-            key={i}
-            src={url}
-            alt=""
-            loading="lazy"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-            }}
-          />
+          <div key={i} style={{ background: FALLBACK_COLORS[i], overflow: "hidden" }}>
+            <img
+              src={url}
+              alt=""
+              loading="lazy"
+              onError={(e) => { e.currentTarget.style.display = "none"; }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
+              }}
+            />
+          </div>
         ))}
       </div>
     </div>
