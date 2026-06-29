@@ -236,6 +236,7 @@ const EventPlanning = () => {
   const [draftBudgets, setDraftBudgets] = useState({});
   const [budgetModalCallback, setBudgetModalCallback] = useState(null);
   const [totalDraftBudget, setTotalDraftBudget] = useState(50000);
+  const [budgetTab, setBudgetTab] = useState("per-service");
   const SPLIT_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 };
 
   const CAT_BUDGET_RANGES = {
@@ -1732,13 +1733,32 @@ const EventPlanning = () => {
                       style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", width: 32, height: 32, borderRadius: "50%", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
                   </div>
 
-                  {/* Two columns — single column on mobile */}
-                  <style>{`@media(max-width:640px){.budget-modal-cols{grid-template-columns:1fr!important}.budget-modal-left{border-right:none!important;border-bottom:1.5px solid rgba(196,122,46,0.15)!important}.budget-modal-left,.budget-modal-right{padding:14px 16px!important}.budget-modal-title{font-size:14px!important}.budget-modal-inner{padding:14px 16px 18px!important;gap:12px!important}}`}</style>
+                  {/* Two columns on desktop, tabs on mobile */}
+                  <style>{`
+                    @media(max-width:640px){
+                      .budget-modal-cols{grid-template-columns:1fr!important}
+                      .budget-modal-left{border-right:none!important;border-bottom:none!important;padding:12px 14px 14px!important;max-height:none!important}
+                      .budget-modal-right{padding:12px 14px 14px!important}
+                      .budget-modal-tab-bar{display:flex!important}
+                      .budget-modal-left,.budget-modal-right{display:none}
+                      .budget-modal-left.tab-active,.budget-modal-right.tab-active{display:block!important}
+                    }
+                    @media(min-width:641px){.budget-modal-tab-bar{display:none!important}.budget-modal-left,.budget-modal-right{display:block!important}}
+                  `}</style>
+                  {/* Mobile tab switcher */}
+                  <div className="budget-modal-tab-bar" style={{ display: "none", borderBottom: "1.5px solid rgba(196,122,46,0.15)", background: "#fff" }}>
+                    {[["per-service","Per Service"],["total","Total Budget"]].map(([id, label]) => (
+                      <button key={id} onClick={() => setBudgetTab(id)}
+                        style={{ flex: 1, padding: "10px 0", border: "none", background: "transparent", fontFamily: "'Outfit', sans-serif", fontSize: 13, fontWeight: 700, cursor: "pointer", color: budgetTab === id ? "#C47A2E" : "#9B7450", borderBottom: budgetTab === id ? "2.5px solid #C47A2E" : "2.5px solid transparent" }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
                   <div style={{ overflowY: "auto", flex: 1 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="budget-modal-cols">
 
                     {/* LEFT — per-category sliders */}
-                    <div className="budget-modal-left" style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)", overflowY: "auto", maxHeight: "60dvh" }}>
+                    <div className={`budget-modal-left${budgetTab === "per-service" ? " tab-active" : ""}`} style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)", overflowY: "auto", maxHeight: "60dvh" }}>
                       <div style={{ marginBottom: 16 }}>
                         <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set budget per service</div>
                         <div style={{ fontSize: 12, color: "#9B7450" }}>Set an upper limit for each category</div>
@@ -1770,7 +1790,7 @@ const EventPlanning = () => {
                     </div>
 
                     {/* RIGHT — total budget with split */}
-                    <div className="budget-modal-right" style={{ padding: "24px 28px" }}>
+                    <div className={`budget-modal-right${budgetTab === "total" ? " tab-active" : ""}`} style={{ padding: "24px 28px" }}>
                       <div style={{ marginBottom: 20 }}>
                         <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set your total budget</div>
                         <div style={{ fontSize: 12, color: "#9B7450" }}>We'll show you vendors that fit — you can adjust the split on the next screen</div>
@@ -2010,6 +2030,11 @@ const EventPlanning = () => {
               const currentVal = rawVal && rawVal >= todayStr ? rawVal : "";
               return (
                 <div>
+                  <style>{`
+                    input[type="date"]::-webkit-date-and-time-value{text-align:left;font-size:14px;padding:0}
+                    input[type="date"]::-webkit-inner-spin-button{display:none}
+                    input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.6;cursor:pointer;min-width:20px}
+                  `}</style>
                   <input
                     type="date"
                     min={todayStr}
@@ -2019,7 +2044,7 @@ const EventPlanning = () => {
                       if (!v || v < todayStr) return;
                       handleInputChange(currentQuestion.id, v);
                     }}
-                    style={{ width: "100%", padding: "12px 14px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: "clamp(13px, 3.8vw, 15px)", fontFamily: "'Outfit', sans-serif", color: currentVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 48 }}
+                    style={{ width: "100%", minWidth: 0, padding: "14px 12px", borderRadius: 16, border: "2px solid #CCAB4A", background: "#fff", fontSize: 15, fontFamily: "'Outfit', sans-serif", color: currentVal ? "#1f2937" : "#9ca3af", boxSizing: "border-box", cursor: "pointer", outline: "none", colorScheme: "light", minHeight: 52, WebkitAppearance: "none", display: "block" }}
                   />
                   {currentVal && (
                     <button onClick={() => setTimeout(advance, 100)}
