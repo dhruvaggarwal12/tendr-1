@@ -143,7 +143,7 @@ function BottomNavInner() {
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
     ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
     { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
-    { label: "Plan",     paths: ["/booking","/plan-event"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
+    { label: "Plan",     paths: ["/booking","/plan-event","/baat-karo"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
   ];
@@ -231,16 +231,26 @@ function BottomNavInner() {
             </div>
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>How do you want to plan?</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              <button onClick={() => { navigate("/booking"); setPlanOpen(false); }}
-                style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
-                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
-                onTouchEnd={e => e.currentTarget.style.background = "#fff"}>
-                <span style={{ fontSize: 28 }}>📋</span>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Normal Booking</div>
-                  <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>Browse and book vendors directly</div>
-                </div>
-              </button>
+              {[
+                { emoji: "🔍", title: "You Do It", desc: "Browse vendors, compare & book yourself", path: "/booking", active: location.pathname === "/booking" || location.pathname.startsWith("/plan-event") },
+                { emoji: "✨", title: "Smart Planner", desc: "Tell us once, we build your full package", path: "/booking", active: false },
+                { emoji: "💬", title: "Baat Karo", desc: "Likh do apni requirements — WhatsApp pe reply karenge", path: "/baat-karo", active: location.pathname === "/baat-karo", green: true },
+              ].map(({ emoji, title, desc, path, active, green }) => (
+                <button key={title}
+                  onClick={() => { navigate(path); setPlanOpen(false); }}
+                  style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${active ? (green ? "rgba(37,211,102,0.5)" : "rgba(196,122,46,0.5)") : "rgba(196,122,46,0.15)"}`, background: active ? (green ? "rgba(37,211,102,0.06)" : "rgba(196,122,46,0.06)") : "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
+                  onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
+                  onTouchEnd={e => e.currentTarget.style.background = active ? (green ? "rgba(37,211,102,0.06)" : "rgba(196,122,46,0.06)") : "#fff"}>
+                  <span style={{ fontSize: 26 }}>{emoji}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", display: "flex", alignItems: "center", gap: 6 }}>
+                      {title}
+                      {active && <span style={{ fontSize: 9, fontWeight: 800, color: green ? "#25D366" : "#C47A2E", background: green ? "rgba(37,211,102,0.12)" : "rgba(196,122,46,0.1)", borderRadius: 100, padding: "2px 7px" }}>Active</span>}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>{desc}</div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
         </>

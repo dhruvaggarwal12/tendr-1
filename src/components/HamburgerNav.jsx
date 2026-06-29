@@ -230,7 +230,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
     ]},
     { label: "Booking", hideOnMobile: true, items: [
-      { label: "Plan Your Event", href: "/booking", activePaths: ["/booking", "/plan-event"] },
+      { label: "🔍 You Do It", href: "/booking", activePaths: ["/booking", "/plan-event"] },
+      { label: "✨ Smart Planner", href: "/booking", activePaths: ["/booking", "/plan-event"] },
+      { label: "💬 Baat Karo", href: "/baat-karo", activePaths: ["/baat-karo"] },
     ]},
     { label: "Tools", hideOnMobile: true, items: [
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],

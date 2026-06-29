@@ -65,6 +65,7 @@ const UserDashboard       = lazy(() => import("./pages/customer/Dashboard"));
 // CustomerChatList = eagerly loaded above (not lazy — must not show blank Suspense fallback)
 const Chat                = lazy(() => import('./pages/customer/Chat'));
 const ChooseBooking       = lazy(() => import("./pages/customer/ChooseBooking"));
+const BaatKaro            = lazy(() => import("./pages/customer/BaatKaro"));
 const GiftHampersCakes    = lazy(() => import('./pages/customer/GiftHampersCakes'));
 const DecorFinder         = lazy(() => import('./pages/tools/DecorFinder.jsx'));
 const GuestList           = lazy(() => import('./pages/tools/GuestList.jsx'));
@@ -282,10 +283,15 @@ const router = createBrowserRouter([
   },
 
   // Booking entry
-  { 
-    path: "/booking", 
-    element: <ChooseBooking />, 
-    errorElement: <ErrorPage /> 
+  {
+    path: "/booking",
+    element: <ChooseBooking />,
+    errorElement: <ErrorPage />
+  },
+  {
+    path: "/baat-karo",
+    element: <BaatKaro />,
+    errorElement: <ErrorPage />
   },
     {
       path: "/booking/review",

@@ -29,11 +29,12 @@ const FLOWS = [
     accentColor: "#C47A2E",
     bgAccent: "rgba(196,122,46,0.06)",
     borderColor: "rgba(196,122,46,0.25)",
+    route: null,
   },
   {
     type: "let-us-do-it",
     emoji: "✨",
-    title: "Let Us Do It — Smart Planner",
+    title: "Smart Planner",
     subtitle: "Tell us once. We build your complete vendor package.",
     description: "Tell us your event details once. We suggest a complete package — one vendor per service, within your budget. You confirm, we coordinate everything.",
     bestFor: "People who want it handled without going back and forth.",
@@ -47,6 +48,26 @@ const FLOWS = [
     accentColor: "#7A4A1E",
     bgAccent: "rgba(122,74,30,0.05)",
     borderColor: "rgba(122,74,30,0.18)",
+    route: null,
+  },
+  {
+    type: "baat-karo",
+    emoji: "💬",
+    title: "Baat Karo",
+    subtitle: "Bas likh do — hum WhatsApp pe reply karenge",
+    description: "Koi form nahi. Apni bhasha mein batao — date, location, guests, budget, kya chahiye. Tendr team directly WhatsApp pe connect karegi.",
+    bestFor: "Jo sirf ek message mein sab batana chahte hain.",
+    steps: [
+      "Apni requirements likh do",
+      "Send on WhatsApp tap karo",
+      "Tendr team 2 ghante mein reply karegi",
+      "Hum sab handle kar lete hain",
+    ],
+    cta: "Baat Karo on WhatsApp",
+    accentColor: "#25D366",
+    bgAccent: "rgba(37,211,102,0.06)",
+    borderColor: "rgba(37,211,102,0.28)",
+    route: "/baat-karo",
   },
 ];
 
@@ -54,8 +75,8 @@ export default function ChooseBooking() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
 
-  const handleChoose = (type) => {
-    // Don't reset form — preserve session data so returning users keep their details
+  const handleChoose = (type, route) => {
+    if (route) { navigate(route); return; }
     dispatch(clearVendorCompare());
     dispatch(clearFinalisedVendor());
     dispatch(setBookingType(type));
@@ -92,7 +113,7 @@ export default function ChooseBooking() {
 
       {/* Flow cards */}
       <div
-        style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 14, width: "100%", maxWidth: 660 }}
+        style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, width: "100%", maxWidth: 980 }}
         className="choose-booking-grid"
       >
         {FLOWS.map((flow) => (
@@ -102,7 +123,7 @@ export default function ChooseBooking() {
               background: "#FFFCF5",
               border: "2px solid " + flow.borderColor,
               borderRadius: 16,
-              padding: "14px 14px 10px",
+              padding: "16px 14px 12px",
               display: "flex",
               flexDirection: "column",
               boxShadow: "0 2px 12px rgba(139,69,19,0.08)",
@@ -120,38 +141,45 @@ export default function ChooseBooking() {
               <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 2px", letterSpacing: "-0.01em" }}>
                 {flow.title}
               </h2>
-              <p style={{ fontSize: 12.5, fontWeight: 600, color: flow.accentColor, margin: 0 }}>
+              <p style={{ fontSize: 12, fontWeight: 600, color: flow.accentColor, margin: "0 0 6px" }}>
                 {flow.subtitle}
+              </p>
+              <p style={{ fontSize: 11.5, color: "#7A5535", margin: 0, lineHeight: 1.5 }}>
+                {flow.description}
               </p>
             </div>
 
-            {/* Steps — 4 points, prominent */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 9, marginBottom: 18, flex: 1 }}>
+            {/* Steps */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16, flex: 1, marginTop: 10 }}>
               {flow.steps.map((step, i) => (
-                <div key={step} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ width: 24, height: 24, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: flow.accentColor, flexShrink: 0 }}>
+                <div key={step} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: flow.accentColor, flexShrink: 0, marginTop: 1 }}>
                     {i + 1}
                   </span>
-                  <span style={{ fontSize: 13, color: "#2C1A0E", fontWeight: 600, lineHeight: 1.3 }}>{step}</span>
+                  <span style={{ fontSize: 12, color: "#2C1A0E", fontWeight: 600, lineHeight: 1.4 }}>{step}</span>
                 </div>
               ))}
             </div>
 
             {/* CTA */}
             <button
-              onClick={() => handleChoose(flow.type)}
+              onClick={() => handleChoose(flow.type, flow.route)}
               style={{
                 width: "100%",
                 padding: "11px",
                 borderRadius: 12,
                 border: "none",
-                background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+                background: flow.type === "baat-karo"
+                  ? "linear-gradient(135deg,#25D366,#128C7E)"
+                  : "linear-gradient(135deg, #C47A2E, #CCAB4A)",
                 color: "#fff",
-                fontSize: 15,
+                fontSize: 13,
                 fontWeight: 700,
                 fontFamily: font,
                 cursor: "pointer",
-                boxShadow: "0 4px 14px rgba(196,122,46,0.32)",
+                boxShadow: flow.type === "baat-karo"
+                  ? "0 4px 14px rgba(37,211,102,0.32)"
+                  : "0 4px 14px rgba(196,122,46,0.32)",
                 transition: "opacity 0.18s",
               }}
               onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
@@ -163,13 +191,16 @@ export default function ChooseBooking() {
         ))}
       </div>
 
-      <p style={{ marginTop: 32, fontSize: 13, color: "#9B7450", textAlign: "center" }}>
-        Both options start with the same event form — you can always switch later.
+      <p style={{ marginTop: 28, fontSize: 13, color: "#9B7450", textAlign: "center" }}>
+        Pehle do options ek hi form se shuru hote hain — aap baad mein bhi switch kar sakte hain.
       </p>
 
       <style>{`
-        @media (max-width: 640px) {
+        @media (max-width: 760px) {
           .choose-booking-grid { grid-template-columns: 1fr !important; }
+        }
+        @media (min-width: 761px) and (max-width: 980px) {
+          .choose-booking-grid { grid-template-columns: repeat(2, 1fr) !important; }
         }
       `}</style>
       </div>{/* inner flex column */}

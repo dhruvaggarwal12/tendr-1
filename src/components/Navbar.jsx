@@ -314,7 +314,9 @@ const Navbar = ({
     {
       label: "Booking",
       items: [
-        { label: "Plan Your Event", href: "/booking" },
+        { label: "🔍 You Do It", href: "/booking" },
+        { label: "✨ Smart Planner", href: "/booking" },
+        { label: "💬 Baat Karo", href: "/baat-karo" },
       ],
     },
     {
