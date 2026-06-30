@@ -621,6 +621,8 @@ const AdminDashboard = () => {
   const [smartPlans, setSmartPlans] = useState([]);
   const [smartPlansLoaded, setSmartPlansLoaded] = useState(false);
   const [smartPlanExpanded, setSmartPlanExpanded] = useState(null);
+  const [smartPlanBudgets, setSmartPlanBudgets] = useState({}); // { [planId]: { [category]: amount } }
+  const [budgetPinning, setBudgetPinning] = useState({}); // { [planId]: bool }
   // PDF + pinned messages in bookings
   const [pdfGenerating, setPdfGenerating] = useState(false);
 
@@ -5003,52 +5005,118 @@ const AdminDashboard = () => {
                           </div>
                         )}
 
-                        {/* Start Chat + Mark Payment + Timestamp */}
+                        {/* Budget per category — only for accepted plans with vendor slots */}
+                        {isExp && plan.status === 'active' && (plan.vendorSlots || []).length > 0 && (() => {
+                          const planBudgets = smartPlanBudgets[plan._id] || {};
+                          // Init defaults from estimatedCost if not set
+                          const slots = plan.vendorSlots || [];
+                          const isPinning = !!budgetPinning[plan._id];
+                          return (
+                            <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.02)" }}>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>📌 Set Budget per Category</div>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
+                                {slots.map((slot, si) => {
+                                  const cat = slot.category;
+                                  const val = planBudgets[cat] !== undefined ? planBudgets[cat] : (slot.estimatedCost || '');
+                                  return (
+                                    <div key={si} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                      <span style={{ fontSize: 13, color: "#2C1A0E", fontWeight: 600, minWidth: 110 }}>{cat}</span>
+                                      <input
+                                        type="number"
+                                        placeholder={`₹${(slot.estimatedCost || 0).toLocaleString('en-IN')}`}
+                                        value={val}
+                                        onChange={e => setSmartPlanBudgets(prev => ({ ...prev, [plan._id]: { ...(prev[plan._id] || {}), [cat]: Number(e.target.value) || '' } }))}
+                                        style={{ flex: 1, padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit', sans-serif", outline: "none" }}
+                                      />
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                              <button
+                                disabled={isPinning}
+                                onClick={async () => {
+                                  setBudgetPinning(prev => ({ ...prev, [plan._id]: true }));
+                                  const budgets = planBudgets;
+                                  const categoryBudgets = slots.map(s => ({
+                                    category: s.category,
+                                    amount: budgets[s.category] !== undefined ? Number(budgets[s.category]) : (s.estimatedCost || 0),
+                                  }));
+                                  try {
+                                    await fetch(`${BASE_URL}/smart-plans/${plan._id}/pin-budget`, {
+                                      method: 'POST',
+                                      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                      credentials: 'include',
+                                      body: JSON.stringify({ categoryBudgets }),
+                                    });
+                                  } catch (e) { console.error(e); }
+                                  setBudgetPinning(prev => ({ ...prev, [plan._id]: false }));
+                                }}
+                                style={{ padding: "8px 18px", borderRadius: 9, border: "none", background: isPinning ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: isPinning ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: isPinning ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}
+                              >
+                                {isPinning ? "Pinning…" : "📌 Pin Budget to Chat"}
+                              </button>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Actions row */}
                         <div style={{ padding: "10px 22px 14px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
-                          <span style={{ fontSize: 11, color: "#bbb" }}>
-                            Submitted {new Date(plan.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                          <div style={{ display: "flex", gap: 8 }}>
-                            <button
-                              onClick={async () => {
-                                try {
-                                  const res = await fetch(`${BASE_URL}/admin/smart-plans/${plan._id}/start-chat`, {
-                                    method: 'POST',
-                                    headers: { Authorization: `Bearer ${token}` },
-                                    credentials: 'include',
-                                  });
-                                  const data = await res.json();
-                                  if (data.conversationId) {
-                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, conversationId: data.conversationId } : p));
-                                    setPendingConciergeId(data.conversationId.toString());
-                                    reloadConversations();
-                                    setactiveDropdown('chatconcierge');
-                                  }
-                                } catch (e) { console.error(e); }
-                              }}
-                              style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: plan.conversationId ? "rgba(196,122,46,0.1)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: plan.conversationId ? "#C47A2E" : "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                              {plan.conversationId ? "💬 Open Chat" : "💬 Start Chat"}
-                            </button>
-                            {plan.status !== 'completed' && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                            <span style={{ fontSize: 11, color: "#bbb" }}>
+                              Submitted {new Date(plan.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            {plan.status === 'pending' && <span style={{ fontSize: 11, fontWeight: 700, color: "#b45309", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 100, padding: "2px 10px" }}>Pending</span>}
+                            {plan.status === 'active' && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 100, padding: "2px 10px" }}>✓ Accepted</span>}
+                            {plan.status === 'cancelled' && <span style={{ fontSize: 11, fontWeight: 700, color: "#dc2626", background: "rgba(220,38,38,0.07)", border: "1px solid rgba(220,38,38,0.2)", borderRadius: 100, padding: "2px 10px" }}>Rejected</span>}
+                            {plan.status === 'completed' && <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 8, padding: "7px 12px" }}>✓ Paid</span>}
+                          </div>
+                          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            {/* Accept / Reject — only show when pending */}
+                            {plan.status === 'pending' && (<>
                               <button
                                 onClick={async () => {
-                                  if (!window.confirm(`Mark payment done for ${plan.customerName || 'this customer'}? A WhatsApp will be sent automatically.`)) return;
                                   try {
-                                    const res = await fetch(`${BASE_URL}/admin/smart-plans/${plan._id}/mark-payment`, {
-                                      method: 'PATCH',
-                                      headers: { Authorization: `Bearer ${token}` },
-                                      credentials: 'include',
-                                    });
-                                    const data = await res.json();
-                                    if (data.plan) setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'completed' } : p));
+                                    await fetch(`${BASE_URL}/smart-plans/${plan._id}/accept`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'active' } : p));
+                                    if (plan.conversationId) { reloadConversations(); setactiveDropdown('chatconcierge'); }
+                                  } catch (e) { console.error(e); }
+                                }}
+                                style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                ✓ Accept
+                              </button>
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm(`Reject this plan? The customer will be notified in chat.`)) return;
+                                  try {
+                                    await fetch(`${BASE_URL}/smart-plans/${plan._id}/reject`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'cancelled' } : p));
+                                  } catch (e) { console.error(e); }
+                                }}
+                                style={{ padding: "7px 16px", borderRadius: 9, border: "1.5px solid rgba(220,38,38,0.3)", background: "#fff", color: "#dc2626", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                ✕ Reject
+                              </button>
+                            </>)}
+                            {/* Open Chat */}
+                            {plan.conversationId && (
+                              <button
+                                onClick={() => { setPendingConciergeId(plan.conversationId.toString()); reloadConversations(); setactiveDropdown('chatconcierge'); }}
+                                style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                💬 Open Chat
+                              </button>
+                            )}
+                            {/* Mark Payment Done */}
+                            {plan.status === 'active' && (
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm(`Mark payment done for ${plan.customerName || 'this customer'}?`)) return;
+                                  try {
+                                    await fetch(`${BASE_URL}/admin/smart-plans/${plan._id}/mark-payment`, { method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                                    setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'completed' } : p));
                                   } catch (e) { console.error(e); }
                                 }}
                                 style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "#0369a1", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                                 💳 Mark Payment Done
                               </button>
-                            )}
-                            {plan.status === 'completed' && (
-                              <span style={{ fontSize: 11, fontWeight: 700, color: "#15803d", background: "rgba(22,163,74,0.1)", border: "1px solid rgba(22,163,74,0.25)", borderRadius: 8, padding: "7px 12px" }}>✓ Paid</span>
                             )}
                           </div>
                         </div>

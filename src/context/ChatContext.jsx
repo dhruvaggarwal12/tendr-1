@@ -15,13 +15,16 @@ export function ChatProvider({ children }) {
     setChatState({ vendor, conversationId, minimized: false, isExisting: true });
 
   // Open Tendr Concierge chat (same window, no bot)
-  const openConciergeChat = (conversationId = null) =>
+  // chatApproved=false → Smart Plan pending (input disabled until admin accepts)
+  // chatApproved=true  → regular concierge / already accepted (input enabled)
+  const openConciergeChat = (conversationId = null, chatApproved = true) =>
     setChatState({
-      vendor: { _id: "concierge", name: "Tendr Concierge", serviceType: "Concierge", approved: true },
+      vendor: { _id: "concierge", name: "Tendr Concierge", serviceType: "Concierge", approved: chatApproved },
       conversationId,
       minimized: false,
       isExisting: !!conversationId,
       isConcierge: true,
+      isSmartPlan: !!conversationId && !chatApproved,
     });
 
   // Open "Talk to Tendr Team" chat — no wizard, no approval wait, suggested Q&A

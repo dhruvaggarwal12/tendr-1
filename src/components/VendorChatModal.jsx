@@ -405,6 +405,7 @@ export default function VendorChatModal() {
   const fromActiveChats = !!chatState?.vendor?.fromActiveChats;
   const isConcierge = !!chatState?.isConcierge;
   const isSkipBot = !!chatState?.skipBotFlow;
+  const isSmartPlan = !!chatState?.isSmartPlan;
 
   // ── Bot state ────────────────────────────────────────────────────────────────
   const selectedVendorTypes = useSelector(s => s.eventPlanning.selectedVendors || []);
@@ -794,32 +795,35 @@ export default function VendorChatModal() {
     setFinalising(true);
     try {
 
-    // Hold a slot on the vendor's availability calendar for the event date
-    const eventDate = reduxFormData?.date;
-    if (eventDate && vendor._id && authToken) {
-      const monthKey = eventDate.slice(0, 7); // "YYYY-MM"
-      const availability = await getVendorAvailability(vendor._id, monthKey, authToken);
-      const daySlots = availability[eventDate] || {};
+    // Skip calendar slot booking for Smart Plan concierge chats
+    if (!isConcierge) {
+      // Hold a slot on the vendor's availability calendar for the event date
+      const eventDate = reduxFormData?.date;
+      if (eventDate && vendor._id && authToken) {
+        const monthKey = eventDate.slice(0, 7); // "YYYY-MM"
+        const availability = await getVendorAvailability(vendor._id, monthKey, authToken);
+        const daySlots = availability[eventDate] || {};
 
-      // Pick first available slot (slot1 → slot2)
-      const slotToHold = daySlots.slot1 !== false ? "slot1"
-        : daySlots.slot2 !== false ? "slot2"
-        : null;
+        // Pick first available slot (slot1 → slot2)
+        const slotToHold = daySlots.slot1 !== false ? "slot1"
+          : daySlots.slot2 !== false ? "slot2"
+          : null;
 
-      if (!slotToHold) {
-        setMessages(prev => [...prev, {
-          text: `⚠️ No available slots left for ${vendor.name} on ${eventDate}. Please choose a different date or vendor.`,
-          sender: "system", ts: Date.now(),
-        }]);
-        return;
+        if (!slotToHold) {
+          setMessages(prev => [...prev, {
+            text: `⚠️ No available slots left for ${vendor.name} on ${eventDate}. Please choose a different date or vendor.`,
+            sender: "system", ts: Date.now(),
+          }]);
+          return;
+        }
+
+        await holdVendorSlot(vendor._id, eventDate, slotToHold, authToken);
+
+        // Persist held slot info so BookingConfirmation can confirm it on payment
+        localStorage.setItem(`tendr:held:${vendor._id}`, JSON.stringify({
+          date: eventDate, slot: slotToHold, heldAt: Date.now(),
+        }));
       }
-
-      await holdVendorSlot(vendor._id, eventDate, slotToHold, authToken);
-
-      // Persist held slot info so BookingConfirmation can confirm it on payment
-      localStorage.setItem(`tendr:held:${vendor._id}`, JSON.stringify({
-        date: eventDate, slot: slotToHold, heldAt: Date.now(),
-      }));
     }
 
     dispatch(setFinalisedVendor(vendor));
@@ -828,11 +832,15 @@ export default function VendorChatModal() {
       socketRef.current.emit("send_message", {
         conversationId,
         sender: "customer-care",
-        content: `[FINALISED] ✅ Customer has completed the chat and finalised ${vendor.name || "this vendor"}. Ready for payment.`,
+        content: isConcierge
+          ? `[FINALISED] ✅ Customer has finalised the Smart Plan. Ready for payment.`
+          : `[FINALISED] ✅ Customer has completed the chat and finalised ${vendor.name || "this vendor"}. Ready for payment.`,
       });
     }
     setMessages(prev => [...prev, {
-      text: `✅ ${vendor.name} added to your booking. Slot held for 2 hours. Tap the gold pay button at the bottom right to confirm.`,
+      text: isConcierge
+        ? `✅ Smart Plan finalised! Tap the pay button at the bottom right to proceed.`
+        : `✅ ${vendor.name} added to your booking. Slot held for 2 hours. Tap the gold pay button at the bottom right to confirm.`,
       sender: "system", ts: Date.now(),
     }]);
     setShowFinalisePopup(true);
@@ -1137,7 +1145,7 @@ export default function VendorChatModal() {
         )}
 
         {/* ── Messages / Bot area ── */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
           <div ref={messagesTopRef} />
 
           {/* Bot questions (new chats only) */}
@@ -1332,8 +1340,36 @@ export default function VendorChatModal() {
             </div>
           )}
 
+          {/* Smart Plan pending state — shown while admin hasn't accepted yet */}
+          {isSmartPlan && !approved && (
+            <div style={{ alignSelf: "stretch", margin: "12px 4px 4px", display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ textAlign: "center", padding: "20px 16px 8px" }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>✨</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.45, marginBottom: 6 }}>
+                  Your Smart Plan is under review
+                </div>
+                <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.6 }}>Our team is checking vendor availability for your event. We'll get back to you soon!</div>
+              </div>
+              <div style={{ background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 14, padding: "14px 18px", textAlign: "left" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>What happens next</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {[
+                    { icon: "⏱️", text: "We'll review your plan within a few hours" },
+                    { icon: "✅", text: "Once accepted, this chat opens for you to ask questions" },
+                    { icon: "💳", text: "After vendors are confirmed, you can pay through the pay button" },
+                  ].map(({ icon, text }) => (
+                    <div key={text} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                      <span style={{ flexShrink: 0 }}>{icon}</span>
+                      <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{text}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Waiting state — shown while chat is pending, even if summary message is present */}
-          {!isSkipBot && botDone && !approved && messages.length <= 1 && (
+          {!isSkipBot && botDone && !approved && !isSmartPlan && messages.length <= 1 && (
             <div style={{ alignSelf: "stretch", margin: "12px 4px 4px", display: "flex", flexDirection: "column", gap: 12 }}>
               <div style={{ textAlign: "center", padding: "20px 16px 8px" }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>✦ In Progress</div>
@@ -1490,8 +1526,10 @@ export default function VendorChatModal() {
               Decorator:    ["Can you visit the venue first?","Do you handle setup and cleanup?","Can you work with our colour theme?","What is your cancellation policy?","Do you provide fresh or artificial flowers?"],
               Caterer:      ["Is your quote per plate or flat fee?","Can we do a tasting?","Do you handle serving staff?","What is included — crockery, chafing dishes?","What is your minimum guest count?"],
               DJ:           ["Do you do a playlist session before the event?","Can you take guest requests?","What if equipment fails?","Do you provide sound and lighting both?","How early do you arrive to set up?"],
+              SmartPlan:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
+              Concierge:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
             };
-            const questions = QA[vendor?.serviceType] || ["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"];
+            const questions = QA[vendor?.serviceType] || (isConcierge ? QA.Concierge : ["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"]);
             return (
               <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", background: "#FDFCF8" }}>
                 <button onClick={() => setShowSuggestions(p => !p)}
@@ -1564,7 +1602,7 @@ export default function VendorChatModal() {
                 <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                   {!chatCompleted ? (
                     <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600, borderLeft: "3px solid #C47A2E", paddingLeft: 8, lineHeight: 1.4 }}>
-                      Click <b>Mark as Done</b> when price is finalised
+                      Click <b>Mark as Done</b> when {isConcierge ? "plan is ready" : "price is finalised"}
                     </p>
                   ) : <span />}
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
@@ -1579,15 +1617,15 @@ export default function VendorChatModal() {
                     disabled={chatCompleted}
                     style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: chatCompleted ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
                   >
-                    {chatCompleted ? "✓ Completed" : "Chat Completed"}
+                    {chatCompleted ? "✓ Done" : "Mark as Done"}
                   </button>
                   <button
                     onClick={handleFinalise}
                     disabled={!chatCompleted || isThisVendorFinalised || finalising}
-                    title={!chatCompleted ? "Mark chat as completed first" : ""}
+                    title={!chatCompleted ? "Mark as Done first" : ""}
                     style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : !chatCompleted ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: (!chatCompleted && !isThisVendorFinalised) ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: (!chatCompleted && !isThisVendorFinalised) ? "not-allowed" : "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: (chatCompleted && !isThisVendorFinalised) ? "0 2px 8px rgba(196,122,46,0.35)" : "none" }}
                   >
-                    {isThisVendorFinalised ? "✓ Finalised" : finalising ? "Finalising…" : "Finalise Vendor"}
+                    {isThisVendorFinalised ? "✓ Finalised" : finalising ? "Finalising…" : isConcierge ? "Finalise Plan" : "Finalise Vendor"}
                   </button>
                   </div>
                 </div>
@@ -1595,7 +1633,7 @@ export default function VendorChatModal() {
             </>
           ) : (
             <div style={{ textAlign: "center", fontSize: 12, color: "#9B7450", padding: "4px 0" }}>
-              {botDone ? "Waiting for team approval…" : showPkgStep ? "Choose a package or skip to continue" : "Answer the questions above to continue"}
+              {isSmartPlan ? "Your Smart Plan is under review — you'll be notified once accepted." : botDone ? "Waiting for team approval…" : showPkgStep ? "Choose a package or skip to continue" : "Answer the questions above to continue"}
             </div>
           )}
         </div>
@@ -1608,9 +1646,13 @@ export default function VendorChatModal() {
               <div style={{ width: 64, height: 64, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 14px", boxShadow: "0 8px 24px rgba(196,122,46,0.35)" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>Vendor Finalised!</h3>
+              <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>
+                {isConcierge ? "Smart Plan Finalised!" : "Vendor Finalised!"}
+              </h3>
               <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>
-                {vendor?.name} has been added to your booking.
+                {isConcierge
+                  ? "You can pay through the pay button at the bottom right. Please close this window."
+                  : `${vendor?.name} has been added to your booking.`}
               </p>
               {/* Pay icon info box */}
               <div style={{ background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 12, padding: "12px 14px", display: "flex", alignItems: "center", gap: 12, marginBottom: 16, textAlign: "left" }}>

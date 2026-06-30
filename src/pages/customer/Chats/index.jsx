@@ -28,8 +28,8 @@ export default function CustomerChatList() {
       .then(r => r.ok ? r.json() : { conversations: [] })
       .then(data => {
         const list = (data.conversations || []).filter(
-          c => c.chatApproved &&
-            (c.chatType === "vendor" || c.chatType === "concierge" || c.chatType === "support")
+          c => (c.chatType === "vendor" || c.chatType === "concierge" || c.chatType === "support") &&
+            (c.chatApproved || c.chatType === "concierge") // show concierge chats even if pending
         );
         setChats(list);
       })
@@ -48,7 +48,7 @@ export default function CustomerChatList() {
 
   const openChat = (convo) => {
     if (convo.chatType === "concierge" || convo.chatType === "support") {
-      openConciergeChat(convo._id);
+      openConciergeChat(convo._id, !!convo.chatApproved);
       setTimeout(() => document.dispatchEvent(new CustomEvent("tendr:set-from-active-chats")), 50);
     } else {
       openExistingChat(convo._id, {
@@ -61,6 +61,7 @@ export default function CustomerChatList() {
   };
 
   const vendorChats = chats.filter(c => c.chatType === "vendor");
+  const conciergeChats = chats.filter(c => c.chatType === "concierge");
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
@@ -107,6 +108,61 @@ export default function CustomerChatList() {
             <span style={{ fontSize: 18, color: "#C47A2E", flexShrink: 0 }}>›</span>
           </button>
         </div>
+
+        {/* ── Smart Plan / Tendr Concierge Chats ── */}
+        {token && !loading && conciergeChats.length > 0 && (
+          <div style={{ marginBottom: 24 }}>
+            <p style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 10px" }}>
+              Smart Plan
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {conciergeChats.map(convo => {
+                const isPending = !convo.chatApproved;
+                const hasUnread = convo.unseenByCustomer > 0;
+                return (
+                  <button
+                    key={convo._id}
+                    onClick={() => openChat(convo)}
+                    style={{
+                      width: "100%", display: "flex", alignItems: "center", gap: 14,
+                      padding: "14px 16px", borderRadius: 16,
+                      background: "#fff",
+                      border: `1.5px solid ${hasUnread ? "rgba(196,122,46,0.35)" : isPending ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.12)"}`,
+                      boxShadow: hasUnread ? "0 4px 16px rgba(196,122,46,0.15)" : "0 2px 8px rgba(196,122,46,0.06)",
+                      cursor: "pointer", fontFamily: font, textAlign: "left",
+                    }}
+                  >
+                    <div style={{
+                      width: 46, height: 46, borderRadius: 14, flexShrink: 0,
+                      background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
+                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22,
+                      position: "relative",
+                    }}>
+                      ✨
+                      {hasUnread && (
+                        <div style={{ position: "absolute", top: -4, right: -4, width: 18, height: 18, borderRadius: "50%", background: "#C47A2E", border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff" }}>
+                          {convo.unseenByCustomer > 9 ? "9+" : convo.unseenByCustomer}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                        <span style={{ fontSize: 14, fontWeight: hasUnread ? 800 : 600, color: "#2C1A0E" }}>Tendr Concierge</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, background: isPending ? "rgba(196,122,46,0.12)" : "rgba(21,128,61,0.1)", color: isPending ? "#C47A2E" : "#15803d", padding: "2px 6px", borderRadius: 100, flexShrink: 0 }}>
+                          {isPending ? "Under Review" : "Active"}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: 12, color: "#9B7450", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        {convo.lastMessage || (isPending ? "Your plan is being reviewed…" : "Tap to continue")}
+                      </div>
+                    </div>
+                    <span style={{ fontSize: 18, color: "#C47A2E", flexShrink: 0 }}>›</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* ── Active Vendor Chats ── */}
         <div>
