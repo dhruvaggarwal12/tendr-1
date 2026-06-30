@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { addVendorToCompare, removeVendorFromCompare } from "../../redux/listingFiltersSlice.js";
 import { EventIdeasPanel } from "../../utils/eventIdeas";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
@@ -147,6 +148,13 @@ export default function TopRatedVendors() {
   const navigate = useNavigate();
   const { category } = useParams();
   const token = useSelector((s) => s.auth.token);
+  const dispatch = useDispatch();
+  const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
+  const toggleCompare = (vendor) => {
+    const exists = compareSelected.find((v) => v._id === vendor._id);
+    if (exists) dispatch(removeVendorFromCompare(vendor._id));
+    else dispatch(addVendorToCompare(vendor));
+  };
 
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -349,6 +357,8 @@ export default function TopRatedVendors() {
             isLoggedIn={!!token}
             hideCompare={true}
             requireFormBeforeChat={true}
+            compareSelected={compareSelected}
+            onToggleCompare={toggleCompare}
           />
         )}
 

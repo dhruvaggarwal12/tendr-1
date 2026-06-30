@@ -74,27 +74,6 @@ const setChatSave = (id, data) => {
   try { localStorage.setItem(chatSaveKey(id), JSON.stringify({ ...data, submittedAt: Date.now() })); } catch {}
 };
 
-const SAVED_KEY = "tendr_saved_vendors";
-const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
-const getSaved = () => {
-  try {
-    const raw = JSON.parse(localStorage.getItem(SAVED_KEY) || "[]");
-    // Filter out bookmarks older than 7 days
-    return raw.filter(v => !v.__savedAt || Date.now() - v.__savedAt < SEVEN_DAYS_MS);
-  } catch { return []; }
-};
-const isSaved = (id) => getSaved().some(v => v._id === id);
-const toggleSaved = (vendor) => {
-  const list = getSaved();
-  const exists = list.some(v => v._id === vendor._id);
-  const updated = exists
-    ? list.filter(v => v._id !== vendor._id)
-    : [...list, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, image: vendor.image || vendor.portfolioPhotos?.[0] || "", city: vendor.city || "", __savedAt: Date.now() }];
-  try { localStorage.setItem(SAVED_KEY, JSON.stringify(updated)); } catch {}
-  window.dispatchEvent(new CustomEvent("tendr:saved-vendors-changed"));
-  // Sync to server
-  try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
-};
 
 const font = "'Outfit', sans-serif";
 const FALLBACK_IMG = "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80";
@@ -118,7 +97,6 @@ const VendorList_ListingPage = ({
   onToggleCompare,
   hideCompare = false,
   compareInProfile = false,
-  saveToCompare = false, // when true: ♡ toggles compareSelected (normal flow), else localStorage
   isLoggedIn = false,
   requireFormBeforeChat = false,
 }) => {
@@ -140,20 +118,11 @@ const VendorList_ListingPage = ({
   const [inviteVenueAddress, setInviteVenueAddress] = useState(() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } });
   // Page-session pre-fill for search/top-rated — isolated from Redux planning data
   const [localFormData, setLocalFormData] = useState(() => getDiscoverySession() || { eventType: "", guests: "", date: "", budget: "", location: "", eventTime: "" });
-  const [savedTick, setSavedTick] = useState(0);
   const [shareCopiedId, setShareCopiedId] = useState(null);
   const [activePhotoIdx, setActivePhotoIdx] = useState(0);
   const [brokenQvPhotos, setBrokenQvPhotos] = useState(new Set());
   const [unavailModal, setUnavailModal] = useState(null); // null or { vendor, date, alternatives[] }
   const [checkingAvail, setCheckingAvail] = useState(false);
-
-  const handleToggleSave = useCallback((vendor) => {
-    toggleSaved(vendor);
-    setSavedTick(t => t + 1);
-    // Notify HamburgerNav sidebar to refresh saved vendors count
-    window.dispatchEvent(new CustomEvent("tendr:saved-updated"));
-  }, []);
-
 
   // Restore quick view after login redirect
   useEffect(() => {
@@ -422,26 +391,13 @@ const VendorList_ListingPage = ({
                         >
                           Quick View
                         </button>
-                        {/* Normal booking → ♡ compare; Discovery (top-rated/search) → "Save" text */}
-                        {saveToCompare ? (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
-                            title={isSelected ? "In compare list" : "Add to compare"}
-                            style={{ padding: "9px 13px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(0,0,0,0.12)"}`, background: isSelected ? "rgba(196,122,46,0.08)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 16, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}
-                          >
-                            {isSelected ? "♥" : "♡"}
-                          </button>
-                        ) : (
-                          (() => { const saved = isSaved(vendor._id); return (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleToggleSave(vendor); }}
-                              title={saved ? "Saved" : "Save vendor"}
-                              style={{ padding: "9px 13px", borderRadius: 10, border: `1.5px solid ${saved ? "#C47A2E" : "rgba(0,0,0,0.12)"}`, background: saved ? "rgba(196,122,46,0.08)" : "transparent", color: saved ? "#C47A2E" : "#9B7450", fontSize: 16, cursor: "pointer", flexShrink: 0 }}
-                            >
-                              {saved ? "♥" : "♡"}
-                            </button>
-                          ); })()
-                        )}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onToggleCompare?.(vendor); }}
+                          title={isSelected ? "In compare list" : "Add to compare"}
+                          style={{ padding: "9px 13px", borderRadius: 10, border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(0,0,0,0.12)"}`, background: isSelected ? "rgba(196,122,46,0.08)" : "transparent", color: isSelected ? "#C47A2E" : "#9B7450", fontSize: 16, cursor: "pointer", flexShrink: 0, lineHeight: 1 }}
+                        >
+                          {isSelected ? "♥" : "♡"}
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -756,17 +712,17 @@ const VendorList_ListingPage = ({
                             return String(cvid) === String(vendor._id);
                           });
                           if (convo) {
-                            openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: saveToCompare });
+                            openExistingChat(convo._id, { _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, approved: convo.chatApproved, addToCompare: true });
                             return;
                           }
                         }
                       } catch {}
                       // Fallback if conversation not found yet
-                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: saveToCompare });
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
                       return;
                     }
                     // Planning flow → open chat modal; chatSave is written after conversation is created
-                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: saveToCompare });
+                    openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
                   }}
                   style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
                 >
@@ -916,7 +872,7 @@ const VendorList_ListingPage = ({
                   // Planning flow — no availability check needed; chatSave written after conversation opens
                   dispatch(setMultipleFormData({ eventType: et, guests: g, date: d, budget: b, location: loc, eventTime: et2, token }));
                   dispatch(setBookingType("you-do-it"));
-                  openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
+                  openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: true });
                   setChatFormVendor(null);
                   return;
                 }
@@ -948,7 +904,7 @@ const VendorList_ListingPage = ({
                   setCheckingAvail(false);
                 }
                 // chatSave written after conversation opens in VendorChatModal
-                openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: saveToCompare });
+                openVendorChat({ _id: chatFormVendor._id, name: chatFormVendor.name, serviceType: chatFormVendor.serviceType, addToCompare: true });
                 setChatFormVendor(null);
               }}
               style={{ width: "100%", marginTop: 20, padding: "13px", borderRadius: 12, border: "none", background: checkingAvail ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: checkingAvail ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 800, cursor: checkingAvail ? "not-allowed" : "pointer", fontFamily: font, boxShadow: checkingAvail ? "none" : "0 4px 14px rgba(196,122,46,0.3)" }}>

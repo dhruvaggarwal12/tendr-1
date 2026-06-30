@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { setFilters } from "../../redux/listingFiltersSlice";
+import { setFilters, addVendorToCompare, removeVendorFromCompare } from "../../redux/listingFiltersSlice";
 import HamburgerNav from "../../components/HamburgerNav";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import VendorList_ListingPage from "../../components/VendorList_ListingPage";
@@ -27,6 +27,12 @@ export default function SearchResults() {
   const { openTendrTeamChat } = useChatOverlay();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [pendingTendrChat, setPendingTendrChat] = useState(false);
+  const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
+  const toggleCompare = (vendor) => {
+    const exists = compareSelected.find((v) => v._id === vendor._id);
+    if (exists) dispatch(removeVendorFromCompare(vendor._id));
+    else dispatch(addVendorToCompare(vendor));
+  };
 
   const handleTalkToTendr = () => {
     if (!token) { setPendingTendrChat(true); setAuthModalOpen(true); return; }
@@ -389,6 +395,8 @@ export default function SearchResults() {
               isLoggedIn={true}
               hideCompare={true}
               requireFormBeforeChat={true}
+              compareSelected={compareSelected}
+              onToggleCompare={toggleCompare}
             />
           )
         )}

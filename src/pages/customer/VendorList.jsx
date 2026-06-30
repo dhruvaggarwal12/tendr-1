@@ -670,7 +670,6 @@ const VendorList = () => {
               compareSelected={compareSelected}
               onToggleCompare={toggleCompare}
               compareInProfile={isFromPlanFlow}
-              saveToCompare={isFromPlanFlow}
               requireFormBeforeChat={!isFromPlanFlow}
               isLoggedIn={!!token}
             />
