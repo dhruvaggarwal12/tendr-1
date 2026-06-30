@@ -234,7 +234,7 @@ function BottomNavInner() {
               {[
                 { emoji: "🔍", title: "You Do It", desc: "Browse vendors, compare & book yourself", path: "/booking", active: location.pathname === "/booking" || location.pathname.startsWith("/plan-event") },
                 { emoji: "✨", title: "Smart Planner", desc: "Tell us once, we build your full package", path: "/booking", active: false },
-                { emoji: "💬", title: "Baat Karo", desc: "Likh do apni requirements — WhatsApp pe reply karenge", path: "/baat-karo", active: location.pathname === "/baat-karo", green: true },
+                { emoji: "💬", title: "Baat Karo", desc: "Likh do apni requirements — Tendr Team yahin reply karegi", path: "/baat-karo", active: location.pathname === "/baat-karo", green: true },
               ].map(({ emoji, title, desc, path, active, green }) => (
                 <button key={title}
                   onClick={() => { navigate(path); setPlanOpen(false); }}
