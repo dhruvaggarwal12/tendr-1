@@ -266,7 +266,6 @@ const sidebar_arr = [
   { label: "Payments",         icon: <BadgeIndianRupee size={22} />,  key: "Payments" },
   { label: "Chat",             icon: <MessageCircle size={22} />,     key: "Chat" },
   { label: "Chat-Support",     icon: <MessagesSquare size={22} />,    key: "ChatSupport" },
-  { label: "Chat-Concierge",   icon: <MessagesSquare size={22} />,    key: "ChatConcierge" },
   { label: "Gift Hampers",     icon: <span style={{ fontSize: 18 }}>🎁</span>, key: "GiftHampers" },
   { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
@@ -781,14 +780,14 @@ const AdminDashboard = () => {
 
   // Auto-select conversation when navigating from Smart Plans tab
   useEffect(() => {
-    if (!pendingConciergeId || !adminChats.length) return;
-    const convo = adminChats.find(c => c._id?.toString() === pendingConciergeId.toString());
+    if (!pendingConciergeId || !recentChats.length) return;
+    const convo = recentChats.find(c => c._id?.toString() === pendingConciergeId.toString());
     if (convo) {
       setSelectedChat(convo);
       loadConversation(convo._id);
       setPendingConciergeId(null);
     }
-  }, [adminChats, pendingConciergeId]);
+  }, [recentChats, pendingConciergeId]);
 
 
   // Fetch real stats from backend
@@ -994,10 +993,12 @@ const AdminDashboard = () => {
 
   const [pricingAmount, setPricingAmount] = useState("");
   const [pricingVendorName, setPricingVendorName] = useState("");
+  const [categoryBudgets, setCategoryBudgetsState] = useState({}); // { [category]: amountString }
+  const [savingCategoryBudgets, setSavingCategoryBudgets] = useState(false);
 
   // Sync pinned messages + pricing from selectedChat when chat changes
   useEffect(() => {
-    if (!selectedChat?._id) { setPinnedMsgs([]); setPricingAmount(""); setPricingVendorName(""); return; }
+    if (!selectedChat?._id) { setPinnedMsgs([]); setPricingAmount(""); setPricingVendorName(""); setCategoryBudgetsState({}); return; }
     const existing = (selectedChat.pinnedMessages || []).map(m => ({
       content: m.content,
       conversationId: selectedChat._id,
@@ -1011,7 +1012,38 @@ const AdminDashboard = () => {
       setPricingAmount("");
       setPricingVendorName(selectedChat.vendorName || selectedChat.vendorId?.name || "");
     }
+    // Pre-fill per-category budgets for Smart Plan chats — from previously saved
+    // categoryBudgets if set, else from the original vendorSlots estimate
+    if (selectedChat.serviceType === "SmartPlan") {
+      let slots = [];
+      try { slots = JSON.parse(selectedChat.eventDetails?.vendorSlots || "[]"); } catch {}
+      const saved = selectedChat.eventDetails?.categoryBudgets;
+      const init = {};
+      if (Array.isArray(saved) && saved.length) {
+        saved.forEach(b => { init[b.category] = String(b.amount); });
+      } else {
+        slots.forEach(s => { init[s.category] = String(s.estimatedCost || ""); });
+      }
+      setCategoryBudgetsState(init);
+    } else {
+      setCategoryBudgetsState({});
+    }
   }, [selectedChat?._id]);
+
+  const saveCategoryBudgets = () => {
+    if (!selectedChat?._id) return;
+    const categoryBudgetsArr = Object.entries(categoryBudgets)
+      .filter(([, amt]) => amt && Number(amt) > 0)
+      .map(([category, amt]) => ({ category, amount: Number(amt) }));
+    if (categoryBudgetsArr.length === 0) return;
+    setSavingCategoryBudgets(true);
+    fetch(`${BASE_URL}/admin/conversations/${selectedChat._id}/category-budgets`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      credentials: 'include',
+      body: JSON.stringify({ categoryBudgets: categoryBudgetsArr }),
+    }).finally(() => setSavingCategoryBudgets(false));
+  };
 
   // Pin a user message during chat
   const pinMessage = (content) => {
@@ -3681,7 +3713,8 @@ const AdminDashboard = () => {
                           </div>
                         ))}
                       </div>
-                      {/* Pricing input */}
+                      {/* Pricing input — single vendor chats only */}
+                      {selectedChat.serviceType !== "SmartPlan" && (
                       <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>💰 Agreed Price</div>
                         <input
@@ -3706,6 +3739,39 @@ const AdminDashboard = () => {
                           </div>
                         )}
                       </div>
+                      )}
+
+                      {/* Per-category budget — Smart Plan chats only */}
+                      {selectedChat.serviceType === "SmartPlan" && (
+                        <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>💰 Budget per Category</div>
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 8 }}>
+                            {Object.keys(categoryBudgets).map(cat => (
+                              <div key={cat} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", minWidth: 80 }}>{cat}</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "#9B7450", flexShrink: 0 }}>₹</span>
+                                <input
+                                  type="number"
+                                  placeholder="0"
+                                  value={categoryBudgets[cat]}
+                                  onChange={e => setCategoryBudgetsState(prev => ({ ...prev, [cat]: e.target.value }))}
+                                  style={{ flex: 1, padding: "6px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 12, fontWeight: 700, fontFamily: "'Outfit', sans-serif", color: "#2C1A0E", outline: "none" }}
+                                />
+                              </div>
+                            ))}
+                            {Object.keys(categoryBudgets).length === 0 && (
+                              <p style={{ fontSize: 11, color: "#bbb", fontStyle: "italic", margin: 0 }}>No categories found on this plan.</p>
+                            )}
+                          </div>
+                          <button
+                            onClick={saveCategoryBudgets}
+                            disabled={savingCategoryBudgets}
+                            style={{ width: "100%", padding: "8px 0", borderRadius: 9, border: "none", background: savingCategoryBudgets ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: savingCategoryBudgets ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: savingCategoryBudgets ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}
+                          >
+                            {savingCategoryBudgets ? "Saving…" : "📌 Pin Budget to Chat"}
+                          </button>
+                        </div>
+                      )}
 
                       <button onClick={handleSummaryDone}
                         style={{ margin: "10px 12px 12px", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 10px rgba(196,122,46,0.25)" }}>
@@ -3734,226 +3800,6 @@ const AdminDashboard = () => {
               {/* LEFT - User List */}
               <div className="w-full sm:w-1/3 border-b sm:border-b-0 sm:border-r border-[#F1E1A8] overflow-y-auto max-h-[300px] sm:max-h-none">
                 {supportChats.map((c, idx) => (
-                  <div
-                    key={idx}
-                    onClick={() => {
-                      setSelectedChat(c);
-                      loadConversation(c._id);
-                    }}
-                    className={`flex items-center justify-between p-3 sm:p-4 cursor-pointer hover:bg-[#FFF4D4] transition flex-col sm:flex-row text-center sm:text-left ${
-                      selectedChat?.customerId.name === c.customerId.name
-                        ? "bg-[#FFF4D4]"
-                        : ""
-                    }`}
-                  >
-                    <div className="flex items-center justify-center sm:justify-start gap-2 w-full">
-                      <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                        {getInitials(c.customerId.name)}
-                      </div>
-
-                      <div className="flex flex-col">
-                        <span className="font-semibold text-xs sm:text-base">
-                          {c.customerId.name}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center sm:items-end text-xs sm:text-sm mt-2 sm:mt-0">
-                      <span className="text-gray-500">
-                        {formatTimeIST(c.updatedAt)}
-                      </span>
-                      {(() => { const h = hoursLeft(c); return h !== null && h <= 6 && !isClosed(c) ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: h <= 2 ? "#c0392b" : "#b45309" }}>
-                          ⏳ {h === 0 ? "Expiring" : `${h}h left`}
-                        </span>
-                      ) : null; })()}
-                      {isClosed(c) && <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: 6, padding: "2px 7px", marginTop: 2 }}>🔒 Closed</span>}
-                      <button
-                        onClick={(e) => handleDeleteChat(e, c._id)}
-                        style={{ fontSize: 10, fontWeight: 700, color: "#c0392b", background: "#fff5f5", border: "1px solid #fca5a5", borderRadius: 6, padding: "2px 7px", cursor: "pointer", marginTop: 2 }}
-                      >🗑</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* RIGHT - Chat Window */}
-              <div className="flex-1 flex flex-col">
-                {selectedChat ? (
-                  <div style={{ display: "flex", flex: 1, overflow: "hidden", height: "100%" }}>
-                  <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                    <div className="p-3 sm:p-4 border-b border-[#F1E1A8] flex items-center justify-between flex-wrap gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                          {getInitials(selectedChat.customerId.name)}
-                        </div>
-
-                        <span className="font-semibold text-sm sm:text-lg">
-                          {selectedChat.customerId.name}
-                        </span>
-                      </div>
-
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <span className="text-xs sm:text-sm text-gray-500">
-                          {formatTimeIST(selectedChat.updatedAt)}
-                        </span>
-                        {activeDropdown !== "chatsupport" && (
-                          <button
-                            onClick={() => {
-                              fetch(`${BASE_URL}/admin/conversations/${selectedChat._id}/close`, {
-                                method: 'PATCH', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
-                              }).then(r => { if (r.ok) { setSelectedChat(null); setCurrentConversation([]); } }).catch(() => {});
-                            }}
-                            style={{ padding: "4px 12px", borderRadius: 7, border: "1.5px solid #fca5a5", background: "#fff5f5", color: "#c0392b", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                          >
-                            ✕ Close Chat
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Event details strip */}
-                    {selectedChat.eventDetails && Object.values(selectedChat.eventDetails).some(Boolean) && (
-                      <div style={{ background: "#fffaf3", borderBottom: "1px solid #fde9c4", padding: "8px 16px", display: "flex", gap: 16, flexWrap: "wrap", fontSize: 12, color: "#7a5c1e", fontFamily: "'Outfit', sans-serif" }}>
-                        {selectedChat.eventDetails.eventName && <span><b>Event:</b> {selectedChat.eventDetails.eventName}</span>}
-                        {selectedChat.eventDetails.eventType && <span><b>Type:</b> {selectedChat.eventDetails.eventType}</span>}
-                        {selectedChat.eventDetails.date && <span><b>Date:</b> {selectedChat.eventDetails.date}</span>}
-                        {selectedChat.eventDetails.location && <span><b>City:</b> {selectedChat.eventDetails.location}</span>}
-                        {selectedChat.eventDetails.guests && <span><b>Guests:</b> {selectedChat.eventDetails.guests}</span>}
-                        {selectedChat.eventDetails.budget && <span><b>Budget:</b> {selectedChat.eventDetails.budget}</span>}
-                      </div>
-                    )}
-
-                    <div className="flex-1 p-3 sm:p-4 overflow-y-auto flex flex-col space-y-2 sm:space-y-3">
-                      {currentConversation && currentConversation.length > 0 && (
-                        <div className="flex flex-col space-y-2 sm:space-y-3">
-                          {currentConversation.map((msg, index) => {
-                            const msgText = msg.content || msg.text || "";
-                            const isUser = msg.sender === "user";
-                            const isPinned = currentPinned.some(m => m.content === msgText);
-                            return (
-                              <div key={index} style={{ display: "flex", alignItems: "flex-start", gap: 6, alignSelf: isUser ? "flex-start" : "flex-end" }}>
-                                {activeDropdown !== "chatsupport" && (
-                                  <button
-                                    onClick={() => isPinned ? unpinMessage(msgText) : pinMessage(msgText)}
-                                    title={isPinned ? "Unpin" : "Pin this message"}
-                                    style={{ background: isPinned ? "rgba(196,122,46,0.15)" : "none", border: "none", cursor: "pointer", fontSize: 13, color: isPinned ? "#C47A2E" : "#ddd", padding: "4px 5px", borderRadius: 6, flexShrink: 0, marginTop: 4, lineHeight: 1 }}
-                                  >📌</button>
-                                )}
-                                <div style={{
-                                  background: isUser ? "#f3f4f6" : "#d08f4e",
-                                  color: isUser ? "#1f2937" : "#ffffff",
-                                  padding: "8px 14px", borderRadius: 14, maxWidth: "75%",
-                                  fontSize: 14, fontFamily: "'Outfit', sans-serif", wordBreak: "break-word", lineHeight: 1.5,
-                                }}>
-                                  <span style={{ fontSize: 10, opacity: 0.65, display: "block", marginBottom: 3, fontWeight: 600 }}>
-                                    {isUser ? "Customer" : "Admin"}
-                                  </span>
-                                  {msgText.startsWith("[img:") ? (
-                                    <img src={msgText.replace("[img:", "").replace(/\]$/, "")} alt="sent" style={{ maxWidth: 200, borderRadius: 8, marginTop: 4 }} />
-                                  ) : <RenderMessage text={msgText} />}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="p-2 sm:p-3 border-t border-[#F1E1A8] flex gap-2">
-                      {/* Image upload */}
-                      <label style={{ cursor: "pointer", flexShrink: 0, width: 36, height: 36, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #e5e7eb" }}>
-                        📎
-                        <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (!file || !selectedChat) return;
-                          const reader = new FileReader();
-                          reader.onload = (ev) => {
-                            const content = `[img:${ev.target.result}]`;
-                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content };
-                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
-                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
-                          };
-                          reader.readAsDataURL(file);
-                          e.target.value = '';
-                        }} />
-                      </label>
-
-                      <input
-                        type="text"
-                        value={adminMsgInput}
-                        onChange={(e) => setAdminMsgInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' && adminMsgInput.trim()) {
-                            const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
-                            if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
-                            setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
-                            setAdminMsgInput("");
-                          }
-                        }}
-                        placeholder="Type a message and press Enter or Send..."
-                        className="flex-1 px-3 sm:px-4 py-2 rounded-full border border-[#CCAB4A] focus:outline-none text-sm"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                      />
-                      <button
-                        onClick={() => {
-                          if (!adminMsgInput.trim() || !selectedChat) return;
-                          const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: adminMsgInput.trim() };
-                          if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
-                          setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
-                          setAdminMsgInput("");
-                        }}
-                        className="px-3 sm:px-4 py-2 bg-[#CCAB4A] text-white rounded-full font-semibold hover:opacity-90 transition text-sm"
-                        style={{ fontFamily: "'Outfit', sans-serif" }}
-                      >
-                        Send
-                      </button>
-                    </div>
-                  </div>
-                  {/* Summary sidebar — only for concierge, not support */}
-                  {currentPinned.length > 0 && activeDropdown !== "chatsupport" && (
-                    <div style={{ width: 230, borderLeft: "1px solid rgba(196,122,46,0.15)", display: "flex", flexDirection: "column", background: "#fffbf5", flexShrink: 0 }}>
-                      <div style={{ padding: "12px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", fontWeight: 700, fontSize: 13, color: "#2C1A0E", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <span>📋 Summary</span>
-                        <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450" }}>{currentPinned.length} pinned</span>
-                      </div>
-                      <div style={{ flex: 1, overflowY: "auto", padding: "10px 12px", display: "flex", flexDirection: "column", gap: 6 }}>
-                        {currentPinned.map((m, i) => (
-                          <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a", padding: "7px 10px", background: "#fff", borderRadius: 9, border: "1px solid rgba(196,122,46,0.12)", display: "flex", gap: 6, alignItems: "flex-start" }}>
-                            <span style={{ color: "#C47A2E", flexShrink: 0, marginTop: 1 }}>•</span>
-                            <span style={{ flex: 1, lineHeight: 1.45, wordBreak: "break-word" }}>{m.content}</span>
-                            <button onClick={() => unpinMessage(m.content)}
-                              style={{ background: "none", border: "none", color: "#ccc", cursor: "pointer", fontSize: 13, padding: 0, flexShrink: 0 }}>✕</button>
-                          </div>
-                        ))}
-                      </div>
-                      <button onClick={handleSummaryDone}
-                        style={{ margin: "10px 12px 12px", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                        Done ✓
-                      </button>
-                    </div>
-                  )}
-                  </div>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center text-gray-400 text-sm sm:text-base">
-                    Select a user to start chatting
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {activeDropdown === "chatconcierge" && (
-          <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
-              Chat - Events
-            </div>
-
-            <div className="min-h-[500px] sm:min-h-[600px] w-full bg-white border-2 border-[#CCAB4A] rounded-[16px] sm:rounded-[20px] flex flex-col sm:flex-row overflow-hidden hover:shadow-md transition-shadow">
-              {/* LEFT - User List */}
-              <div className="w-full sm:w-1/3 border-b sm:border-b-0 sm:border-r border-[#F1E1A8] overflow-y-auto max-h-[300px] sm:max-h-none">
-                {adminChats.map((c, idx) => (
                   <div
                     key={idx}
                     onClick={() => {
@@ -5116,7 +4962,7 @@ const AdminDashboard = () => {
                                   try {
                                     await fetch(`${BASE_URL}/smart-plans/${plan._id}/accept`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
                                     setSmartPlans(prev => prev.map(p => p._id === plan._id ? { ...p, status: 'active' } : p));
-                                    if (plan.conversationId) { reloadConversations(); setactiveDropdown('chatconcierge'); }
+                                    if (plan.conversationId) { setPendingConciergeId(plan.conversationId.toString()); reloadConversations(); setactiveDropdown('chat'); }
                                   } catch (e) { console.error(e); }
                                 }}
                                 style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
@@ -5137,7 +4983,7 @@ const AdminDashboard = () => {
                             {/* Open Chat */}
                             {plan.conversationId && (
                               <button
-                                onClick={() => { setPendingConciergeId(plan.conversationId.toString()); reloadConversations(); setactiveDropdown('chatconcierge'); }}
+                                onClick={() => { setPendingConciergeId(plan.conversationId.toString()); reloadConversations(); setactiveDropdown('chat'); }}
                                 style={{ padding: "7px 16px", borderRadius: 9, border: "none", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                                 💬 Open Chat
                               </button>

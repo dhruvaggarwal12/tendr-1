@@ -105,11 +105,18 @@ const BookingReviewPage = () => {
 
   // Smart Plan detection — Concierge entry with _id "concierge" means customer finalised a Smart Plan
   const isSmartPlan = !!(finalisedVendors.Concierge?.[0]?._id === "concierge" || finalisedVendors.Concierge?._id === "concierge");
+  const [liveCategoryBudgets, setLiveCategoryBudgets] = useState(null); // admin-set Smart Plan budgets, if any
   const smartPlanData = (() => {
     if (!isSmartPlan) return null;
     try { return JSON.parse(localStorage.getItem("tendr_smart_plan") || "null"); } catch { return null; }
   })();
-  const smartPlanSlots = smartPlanData?.vendorSlots || [];
+  // Prefer live admin-set budgets over the original estimate, once admin has set them
+  const smartPlanSlots = liveCategoryBudgets
+    ? (smartPlanData?.vendorSlots || []).map(slot => {
+        const live = liveCategoryBudgets.find(b => b.category === slot.category);
+        return live ? { ...slot, estimatedCost: live.amount } : slot;
+      })
+    : (smartPlanData?.vendorSlots || []);
   const smartPlanTotal = smartPlanSlots.reduce((s, slot) => s + (Number(slot.estimatedCost) || 0), 0);
   const fmtBudget = (n) => n ? `₹${Number(n).toLocaleString("en-IN")}` : null;
 
@@ -211,6 +218,13 @@ const BookingReviewPage = () => {
         const sm = {};
         const pinned = {};
         const convList = data.conversations || [];
+
+        // Smart Plan conversations have no vendorId — pull admin-set category
+        // budgets separately so Review & Pay reflects live admin pricing
+        const smartPlanConvo = convList.find(c => c.serviceType === "SmartPlan");
+        if (Array.isArray(smartPlanConvo?.eventDetails?.categoryBudgets) && smartPlanConvo.eventDetails.categoryBudgets.length) {
+          setLiveCategoryBudgets(smartPlanConvo.eventDetails.categoryBudgets);
+        }
 
         convList.forEach(c => {
           const vid = c.vendorId?._id || c.vendorId;

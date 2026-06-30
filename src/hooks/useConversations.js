@@ -14,13 +14,21 @@ export default function useConversations({ enabled = true } = {}) {
       setLoading(true);
       setError("");
       const list = await getAllConversation({ signal , chatType: "vendor"});
-      setRecentChats(Array.isArray(list) ? list : []);
+      const vendorList = Array.isArray(list) ? list : [];
 
       const supportList = await getAllConversation({ signal , chatType: "support"});
       setSupportChats(Array.isArray(supportList) ? supportList : []);
 
+      // "event" maps to chatType:"concierge" on the backend (Smart Plan chats).
+      // Merged into the same Chat tab list as normal vendor chats — no separate panel.
       const adminList = await getAllConversation({ signal , chatType: "event"});
-      setAdminChats(Array.isArray(adminList) ? adminList : []);
+      const conciergeList = Array.isArray(adminList) ? adminList : [];
+      setAdminChats(conciergeList);
+
+      const merged = [...vendorList, ...conciergeList].sort(
+        (a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
+      );
+      setRecentChats(merged);
 
     } catch (e) {
       const status = e?.status ?? e?.response?.status;

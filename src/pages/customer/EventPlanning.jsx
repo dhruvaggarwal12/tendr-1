@@ -564,7 +564,7 @@ const EventPlanning = () => {
         });
         const eventDate = formData?.date;
         const expiresAt = eventDate ? new Date(eventDate).getTime() + 86400000 : Date.now() + 7 * 86400000;
-        const planData = { ...result.plan, _savedAt: Date.now(), __expiresAt: expiresAt };
+        const planData = { ...result.plan, conversationId: result.conversationId || null, _savedAt: Date.now(), __expiresAt: expiresAt };
         localStorage.setItem("tendr_smart_plan", JSON.stringify(planData));
         try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
         setConfirmedPlan(planData);
