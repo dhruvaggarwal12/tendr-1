@@ -1145,7 +1145,7 @@ export default function VendorChatModal() {
         )}
 
         {/* ── Messages / Bot area ── */}
-        <div style={{ flex: 1, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "16px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
           <div ref={messagesTopRef} />
 
           {/* Bot questions (new chats only) */}

@@ -141,6 +141,31 @@ const EventPlanning = () => {
   const [totalPlanBudget, setTotalPlanBudget] = useState(50000);
   const [selectedTier, setSelectedTier] = useState('balanced');
 
+  // Declared early (before the early-return Smart Plan view block) so closures
+  // created earlier in this render — like applyTier — never hit it in the TDZ.
+  const fetchSmartPlan = async () => {
+    if (selectedVendors.length === 0) return;
+    setPlanLoading(true);
+    setPlanError(false);
+    setPlanErrorMsg("");
+    try {
+      const result = await getSmartPlan({
+        eventType: formData?.eventType,
+        guests: formData?.guests,
+        location: formData?.location,
+        categories: selectedVendors,
+        categoryBudgets: savedCategoryBudgets,
+      });
+      setSmartPlan(result);
+    } catch (err) {
+      console.error('Smart plan fetch failed:', err);
+      setPlanError(true);
+      setPlanErrorMsg(err?.message || "Unknown error");
+    } finally {
+      setPlanLoading(false);
+    }
+  };
+
   const TIER_SPLITS = {
     essential: { Caterer: 45, Decorator: 20, Photographer: 20, DJ: 15 },
     balanced:  { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 },
@@ -904,29 +929,33 @@ const EventPlanning = () => {
       <>
       {/* ── Wizard overlay ── */}
       {showWizard && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 9999, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "max(16px, env(safe-area-inset-top, 16px)) 16px 16px", paddingBottom: "max(16px, env(safe-area-inset-bottom, 16px))", fontFamily: "'Outfit', sans-serif", overflowY: "auto" }}>
-          <div style={{ background: "#fff", borderRadius: 22, width: "100%", maxWidth: 520, flexShrink: 0, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", marginTop: "auto", marginBottom: "auto" }}>
-            <div style={{ height: 4, background: "rgba(196,122,46,0.15)", borderRadius: "22px 22px 0 0", overflow: "hidden" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.72)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "max(12px, env(safe-area-inset-top, 12px)) 16px max(12px, env(safe-area-inset-bottom, 12px))", fontFamily: "'Outfit', sans-serif" }}>
+          <div style={{ background: "#fff", borderRadius: 20, width: "100%", maxWidth: 520, maxHeight: "88dvh", display: "flex", flexDirection: "column", boxShadow: "0 20px 60px rgba(0,0,0,0.3)", overflow: "hidden" }}>
+            {/* Progress bar — fixed */}
+            <div style={{ height: 4, background: "rgba(196,122,46,0.15)", flexShrink: 0 }}>
               <div style={{ height: "100%", width: `${((wizardStep + 1) / wizardSteps.length) * 100}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", transition: "width 0.3s ease" }} />
             </div>
-            <div style={{ padding: "clamp(14px,4vw,22px) clamp(14px,4vw,24px)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                <div>
-                  <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Step {wizardStep + 1} of {wizardSteps.length}</div>
-                  <h3 style={{ fontSize: "clamp(14px,4vw,18px)", fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{wizardSteps[wizardStep]?.label}</h3>
-                </div>
-                <button onClick={() => setShowWizard(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 20, lineHeight: 1, padding: 4 }}>✕</button>
+            {/* Header — fixed */}
+            <div style={{ padding: "clamp(10px,3vw,16px) clamp(14px,4vw,24px) 8px", flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Step {wizardStep + 1} of {wizardSteps.length}</div>
+                <h3 style={{ fontSize: "clamp(14px,4vw,18px)", fontWeight: 800, color: "#2C1A0E", margin: 0 }}>{wizardSteps[wizardStep]?.label}</h3>
               </div>
+              <button onClick={() => setShowWizard(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 20, lineHeight: 1, padding: 4, flexShrink: 0 }}>✕</button>
+            </div>
+            {/* Step content — scrollable */}
+            <div style={{ flex: 1, minHeight: 0, overflowY: "auto", padding: "0 clamp(14px,4vw,24px)" }}>
               {renderWizardStep()}
-              <div style={{ display: "flex", gap: 10, marginTop: 24 }}>
-                {wizardStep > 0 && (
-                  <button onClick={() => setWizardStep(s => s - 1)} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>← Back</button>
-                )}
-                <button onClick={() => isLastStep ? submitPlan() : setWizardStep(s => s + 1)} disabled={submitLoading}
-                  style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: submitLoading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", opacity: submitLoading ? 0.7 : 1 }}>
-                  {submitLoading ? "Submitting…" : isLastStep ? "Confirm Plan →" : "Next →"}
-                </button>
-              </div>
+            </div>
+            {/* Back/Next — fixed footer, always visible */}
+            <div style={{ display: "flex", gap: 10, padding: "12px clamp(14px,4vw,24px) clamp(12px,3vw,18px)", flexShrink: 0, borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+              {wizardStep > 0 && (
+                <button onClick={() => setWizardStep(s => s - 1)} style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>← Back</button>
+              )}
+              <button onClick={() => isLastStep ? submitPlan() : setWizardStep(s => s + 1)} disabled={submitLoading}
+                style={{ flex: 1, padding: "11px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: submitLoading ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", opacity: submitLoading ? 0.7 : 1 }}>
+                {submitLoading ? "Submitting…" : isLastStep ? "Confirm Plan →" : "Next →"}
+              </button>
             </div>
           </div>
         </div>
@@ -943,19 +972,19 @@ const EventPlanning = () => {
           <div style={{ width: "100%", maxWidth: 1100, marginBottom: 20 }}>
             <div className="sp-pkg-header" style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", borderRadius: 20, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
               <div style={{ position: "absolute", top: -24, right: -24, width: 110, height: 110, borderRadius: "50%", background: "rgba(204,171,74,0.07)" }} />
-              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>✨ Your Event Package</div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Your Event Package</div>
               <h2 style={{ fontSize: "clamp(1.1rem,2.5vw,1.5rem)", fontWeight: 900, color: "#CCAB4A", marginBottom: 8, letterSpacing: "-0.01em" }}>
                 {formData?.eventType || "Your Event"} — Smart Package
               </h2>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 14, display: "flex", gap: 12, flexWrap: "wrap" }}>
-                {formData?.location && <span>📍 {formData.location}</span>}
-                {formData?.date && <span>📅 {formData.date}</span>}
-                {formData?.guests && <span>👥 {formData.guests} guests</span>}
+                {formData?.location && <span>{formData.location}</span>}
+                {formData?.date && <span>{formData.date}</span>}
+                {formData?.guests && <span>{formData.guests} guests</span>}
               </div>
               <div style={{ display: "flex", flexWrap: "nowrap", overflowX: "auto", gap: 8, paddingBottom: 2, msOverflowStyle: "none", scrollbarWidth: "none" }}>
                 {currentVendors.map(({ category, estimatedCost }) => (
                   <div key={category} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 10, padding: "6px 12px", border: "1px solid rgba(255,255,255,0.1)", flexShrink: 0, display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
-                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{CAT_EMOJI_MAP[category]} {category}</span>
+                    <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{category}</span>
                     <span style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A" }}>{fmt(estimatedCost)}</span>
                   </div>
                 ))}
@@ -970,13 +999,13 @@ const EventPlanning = () => {
               {/* Header */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10, flexWrap: "wrap", gap: 8 }}>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>💰 How would you like to split your {fmt(totalPlanBudget)} budget?</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>How would you like to split your {fmt(totalPlanBudget)} budget?</div>
                   <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>Based on past choices of customers with similar events</div>
                 </div>
               </div>
-              {/* 3 Tier Cards */}
-              <div className="budget-tier-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-                {['essential','balanced','premium'].map(tier => {
+              {/* Tier Cards */}
+              <div className="budget-tier-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 10 }}>
+                {['balanced','premium'].map(tier => {
                   const meta = TIER_META[tier];
                   const splits = TIER_SPLITS[tier];
                   const isActive = selectedTier === tier;
@@ -984,29 +1013,29 @@ const EventPlanning = () => {
                   const totalPct = cats.reduce((s, c) => s + splits[c], 0) || 1;
                   return (
                     <div key={tier} onClick={() => applyTier(tier)}
-                      style={{ background: isActive ? (tier === 'balanced' ? "linear-gradient(145deg,#FFFCF0,#FFF4E0)" : tier === 'premium' ? "linear-gradient(145deg,#F5F0FF,#EDE8FF)" : "#F9F9F9") : "#fff", borderRadius: 16, border: isActive ? `2.5px solid ${meta.color}` : "2px solid rgba(0,0,0,0.06)", padding: "16px 14px 14px", cursor: "pointer", position: "relative", boxShadow: isActive ? `0 4px 20px ${meta.color}28` : "0 2px 8px rgba(0,0,0,0.05)", transition: "all 0.2s" }}>
+                      style={{ background: isActive ? (tier === 'balanced' ? "linear-gradient(145deg,#FFFCF0,#FFF4E0)" : "linear-gradient(145deg,#F5F0FF,#EDE8FF)") : "#fff", borderRadius: 14, border: isActive ? `2px solid ${meta.color}` : "1.5px solid rgba(0,0,0,0.06)", padding: "12px 10px 10px", cursor: "pointer", position: "relative", boxShadow: isActive ? `0 4px 16px ${meta.color}28` : "0 2px 8px rgba(0,0,0,0.05)", transition: "all 0.2s" }}>
                       {/* Recommended badge */}
                       {meta.recommended && (
-                        <div style={{ position: "absolute", top: -10, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 100, padding: "2px 12px", whiteSpace: "nowrap" }}>
-                          <span style={{ fontSize: 10, fontWeight: 800, color: "#fff", letterSpacing: "0.04em" }}>★ RECOMMENDED</span>
+                        <div style={{ position: "absolute", top: -9, left: "50%", transform: "translateX(-50%)", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", borderRadius: 100, padding: "2px 10px", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 9, fontWeight: 800, color: "#fff", letterSpacing: "0.04em" }}>RECOMMENDED</span>
                         </div>
                       )}
                       {/* Tier label */}
-                      <div style={{ marginTop: meta.recommended ? 4 : 0, marginBottom: 4 }}>
-                        <span style={{ fontSize: 14, fontWeight: 800, color: meta.color }}>{meta.label}</span>
-                        {isActive && <span style={{ marginLeft: 6, fontSize: 11, color: meta.color }}>✓</span>}
+                      <div style={{ marginTop: meta.recommended ? 4 : 0, marginBottom: 3 }}>
+                        <span style={{ fontSize: 13, fontWeight: 800, color: meta.color }}>{meta.label}</span>
+                        {isActive && <span style={{ marginLeft: 5, fontSize: 11, color: meta.color }}>✓</span>}
                       </div>
-                      <div style={{ fontSize: 11, color: "#9B7450", marginBottom: 12 }}>{meta.desc}</div>
+                      <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 9 }}>{meta.desc}</div>
                       {/* Per-category split rows */}
-                      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         {cats.map(cat => {
                           const pct = splits[cat];
                           const amt = Math.round(totalPlanBudget * pct / totalPct);
                           return (
-                            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                              <span style={{ fontSize: 11, color: "#5A3E2B", flex: 1, fontWeight: 600 }}>{CAT_EMOJI_MAP[cat]} {cat}</span>
-                              <span style={{ fontSize: 11, color: "#9B7450" }}>{pct}%</span>
-                              <span style={{ fontSize: 12, fontWeight: 800, color: meta.color, minWidth: 56, textAlign: "right" }}>{fmt(amt)}</span>
+                            <div key={cat} style={{ display: "flex", alignItems: "center", gap: 5 }}>
+                              <span style={{ fontSize: 10, color: "#5A3E2B", flex: 1, fontWeight: 600 }}>{cat}</span>
+                              <span style={{ fontSize: 10, color: "#9B7450" }}>{pct}%</span>
+                              <span style={{ fontSize: 11, fontWeight: 800, color: meta.color, minWidth: 48, textAlign: "right" }}>{fmt(amt)}</span>
                             </div>
                           );
                         })}
@@ -1022,7 +1051,6 @@ const EventPlanning = () => {
           <div style={{ width: "100%", maxWidth: 1100, marginBottom: 14 }}>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 12, padding: "11px 16px", fontFamily: "'Outfit',sans-serif" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                <span style={{ fontSize: 14 }}>💡</span>
                 <span style={{ fontSize: 12, color: "#7A4A1A", fontWeight: 700 }}>How it works:</span>
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "nowrap", overflowX: "auto", paddingBottom: 2, msOverflowStyle: "none", scrollbarWidth: "none" }}>
@@ -1412,29 +1440,6 @@ const EventPlanning = () => {
     );
   }
 
-  const fetchSmartPlan = async () => {
-    if (selectedVendors.length === 0) return;
-    setPlanLoading(true);
-    setPlanError(false);
-    setPlanErrorMsg("");
-    try {
-      const result = await getSmartPlan({
-        eventType: formData?.eventType,
-        guests: formData?.guests,
-        location: formData?.location,
-        categories: selectedVendors,
-        categoryBudgets: savedCategoryBudgets,
-      });
-      setSmartPlan(result);
-    } catch (err) {
-      console.error('Smart plan fetch failed:', err);
-      setPlanError(true);
-      setPlanErrorMsg(err?.message || "Unknown error");
-    } finally {
-      setPlanLoading(false);
-    }
-  };
-
   if (showVendorScreen) {
     const isYouDoIt = bookingType === "you-do-it";
 
@@ -1456,7 +1461,7 @@ const EventPlanning = () => {
             .event-cat-body p{font-size:10px!important;margin-bottom:3px!important}
             .tendr-suggests-wrap{padding:8px 12px 10px!important;gap:6px!important}
             .tendr-suggests-header{padding:8px 12px 0!important}
-            .budget-tier-grid{grid-template-columns:1fr!important}
+            .budget-tier-grid{gap:8px!important}
             .sp-pkg-header{padding:14px 16px!important;border-radius:14px!important}
             .smart-vendor-grid{gap:8px!important}
           }
@@ -1734,25 +1739,25 @@ const EventPlanning = () => {
                 selectedVendors.map(c => [c, Math.round(totalDraftBudget * (SPLIT_PCT[c] || 25) / totalWeight)])
               );
               return (
-              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20, paddingLeft: window.innerWidth >= 1024 ? 240 : 20, fontFamily: "'Outfit', sans-serif" }}>
-                <div style={{ background: "#F8F4EF", borderRadius: 22, width: "100%", maxWidth: 860, boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden", maxHeight: "90dvh", display: "flex", flexDirection: "column" }}>
+              <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px 16px max(16px, env(safe-area-inset-bottom, 16px))", paddingLeft: window.innerWidth >= 1024 ? 240 : 16, fontFamily: "'Outfit', sans-serif" }}>
+                <div style={{ background: "#F8F4EF", borderRadius: 20, width: "100%", maxWidth: 860, boxShadow: "0 24px 64px rgba(0,0,0,0.35)", overflow: "hidden", maxHeight: "80dvh", display: "flex", flexDirection: "column" }}>
 
                   {/* Header */}
-                  <div style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", padding: "18px 28px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div className="budget-modal-header" style={{ background: "linear-gradient(135deg,#4A2810,#7A4020)", padding: "14px 22px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
                     <div>
-                      <h3 style={{ fontSize: 17, fontWeight: 800, color: "#CCAB4A", margin: "0 0 3px" }}>How would you like to set your budget?</h3>
-                      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", margin: 0 }}>Choose the approach that works best for you</p>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#CCAB4A", margin: "0 0 2px" }}>How would you like to set your budget?</h3>
+                      <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: 0 }}>Choose the approach that works best for you</p>
                     </div>
                     <button onClick={() => setShowBudgetModal(false)}
-                      style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", width: 32, height: 32, borderRadius: "50%", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+                      style={{ background: "rgba(255,255,255,0.12)", border: "none", color: "#fff", width: 28, height: 28, borderRadius: "50%", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
                   </div>
 
                   {/* Two columns on desktop, tabs on mobile */}
                   <style>{`
                     @media(max-width:640px){
                       .budget-modal-cols{grid-template-columns:1fr!important}
-                      .budget-modal-left{border-right:none!important;border-bottom:none!important;padding:12px 14px 14px!important;max-height:none!important}
-                      .budget-modal-right{padding:12px 14px 14px!important}
+                      .budget-modal-left{border-right:none!important;border-bottom:none!important;padding:10px 14px 12px!important;max-height:none!important}
+                      .budget-modal-right{padding:10px 14px 12px!important}
                       .budget-modal-tab-bar{display:flex!important}
                       .budget-modal-left,.budget-modal-right{display:none}
                       .budget-modal-left.tab-active,.budget-modal-right.tab-active{display:block!important}
@@ -1768,29 +1773,29 @@ const EventPlanning = () => {
                       </button>
                     ))}
                   </div>
-                  <div style={{ overflowY: "auto", flex: 1 }}>
+                  <div style={{ overflowY: "auto", flex: 1, minHeight: 0 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }} className="budget-modal-cols">
 
                     {/* LEFT — per-category sliders */}
-                    <div className={`budget-modal-left${budgetTab === "per-service" ? " tab-active" : ""}`} style={{ padding: "24px 28px", borderRight: "1.5px solid rgba(196,122,46,0.15)", overflowY: "auto", maxHeight: "60dvh" }}>
-                      <div style={{ marginBottom: 16 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set budget per service</div>
-                        <div style={{ fontSize: 12, color: "#9B7450" }}>Set an upper limit for each category</div>
+                    <div className={`budget-modal-left${budgetTab === "per-service" ? " tab-active" : ""}`} style={{ padding: "16px 20px", borderRight: "1.5px solid rgba(196,122,46,0.15)", overflowY: "auto", maxHeight: "55dvh" }}>
+                      <div style={{ marginBottom: 10 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Set budget per service</div>
+                        <div style={{ fontSize: 11, color: "#9B7450" }}>Set an upper limit for each category</div>
                       </div>
-                      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
                         {selectedVendors.map(cat => {
                           const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 10000, emoji: "🏷️" };
                           const val = draftBudgets[cat] || range.default;
                           return (
                             <div key={cat}>
-                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                                <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji} {cat}</span>
-                                <span style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
+                              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{cat}</span>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
                               </div>
                               <input type="range" min={range.min} max={range.max} step={range.step} value={val}
                                 onChange={e => setDraftBudgets(p => ({ ...p, [cat]: Number(e.target.value) }))}
                                 style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
-                              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 2 }}>
+                              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#bbb", marginTop: 1 }}>
                                 <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
                               </div>
                             </div>
@@ -1798,30 +1803,30 @@ const EventPlanning = () => {
                         })}
                       </div>
                       <button onClick={() => { setSmartPlanMode('perCategory'); confirmBudgets(); }}
-                        style={{ width: "100%", marginTop: 18, padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                        style={{ width: "100%", marginTop: 12, padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
                         Get My Plan →
                       </button>
                     </div>
 
                     {/* RIGHT — total budget with split */}
-                    <div className={`budget-modal-right${budgetTab === "total" ? " tab-active" : ""}`} style={{ padding: "24px 28px" }}>
-                      <div style={{ marginBottom: 20 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 3 }}>Set your total budget</div>
-                        <div style={{ fontSize: 12, color: "#9B7450" }}>We'll show you vendors that fit — you can adjust the split on the next screen</div>
+                    <div className={`budget-modal-right${budgetTab === "total" ? " tab-active" : ""}`} style={{ padding: "16px 20px" }}>
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Set your total budget</div>
+                        <div style={{ fontSize: 11, color: "#9B7450" }}>We'll show you vendors that fit — you can adjust the split on the next screen</div>
                       </div>
-                      <div style={{ marginBottom: 20 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>💰 Total Budget</span>
-                          <span style={{ fontSize: 22, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(totalDraftBudget)}</span>
+                      <div style={{ marginBottom: 12 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>Total Budget</span>
+                          <span style={{ fontSize: 19, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(totalDraftBudget)}</span>
                         </div>
                         <input type="range" min={5000} max={1000000} step={5000} value={totalDraftBudget}
                           onChange={e => setTotalDraftBudget(Number(e.target.value))}
                           style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 6 }} />
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#bbb", marginTop: 4 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#bbb", marginTop: 3 }}>
                           <span>₹5,000</span><span>₹10,00,000</span>
                         </div>
                       </div>
-                      <div style={{ padding: "12px 14px", background: "rgba(196,122,46,0.05)", borderRadius: 10, marginBottom: 20, fontSize: 12, color: "#9B7450", lineHeight: 1.6 }}>
+                      <div style={{ padding: "9px 12px", background: "rgba(196,122,46,0.05)", borderRadius: 9, marginBottom: 12, fontSize: 11, color: "#9B7450", lineHeight: 1.5 }}>
                         After seeing your vendors, you'll be able to adjust how the budget is split across each service and change the % allocation.
                       </div>
                       <button
@@ -1838,7 +1843,7 @@ const EventPlanning = () => {
                             setBudgetModalCallback(null);
                           }
                         }}
-                        style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(44,26,14,0.25)" }}>
+                        style={{ width: "100%", padding: "10px 0", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(44,26,14,0.25)" }}>
                         Get My Plan →
                       </button>
                     </div>
