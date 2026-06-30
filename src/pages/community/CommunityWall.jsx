@@ -84,11 +84,11 @@ export default function CommunityWall() {
   const { user } = useSelector(s => s.auth);
   const isAdmin = user?.isAdmin === true;
   const isLoggedIn = !!localStorage.getItem("tendr_token");
-  const standalone = ["tendr.co.in", "www.tendr.co.in"].includes(window.location.hostname)
-    || new URLSearchParams(window.location.search).get("standalone") === "1";
-
   const { canInstall, triggerInstall, installed } = useInstallPrompt();
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || !!window.navigator.standalone;
+  // True only when actually running as an installed PWA (no browser chrome) —
+  // not just because the page happens to be served from the production domain.
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || !!window.navigator.standalone
+    || new URLSearchParams(window.location.search).get("standalone") === "1";
   const [posts, setPosts]               = useState([]);
   const [postsLoading, setPostsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState("all");
@@ -439,9 +439,9 @@ export default function CommunityWall() {
 
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font, paddingTop: standalone ? "env(safe-area-inset-top, 0px)" : 0 }}>
-      {standalone && <style>{`body { padding-top: env(safe-area-inset-top, 0px); }`}</style>}
-      {!standalone && <HamburgerNav />}
+    <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font, paddingTop: isStandalone ? "env(safe-area-inset-top, 0px)" : 0 }}>
+      {isStandalone && <style>{`body { padding-top: env(safe-area-inset-top, 0px); }`}</style>}
+      {!isStandalone && <HamburgerNav />}
 
       {isAdmin && (
         <div style={{ background: "linear-gradient(90deg,#92400e,#C47A2E)", padding: "10px 24px", display: "flex", alignItems: "center", justifyContent: "center", gap: 10 }}>
@@ -465,13 +465,13 @@ export default function CommunityWall() {
           </p>
           <button
             onClick={() => {
-              if (standalone || isLoggedIn) { setFormOpen(v => !v); return; }
+              if (isStandalone || isLoggedIn) { setFormOpen(v => !v); return; }
               navigate("/login");
             }}
             style={{ padding: "13px 32px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.4)" }}>
             {formOpen ? "Close Form" : "+ Share Your Story"}
           </button>
-          {!isLoggedIn && !standalone && (
+          {!isLoggedIn && !isStandalone && (
             <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", margin: "10px 0 0", fontStyle: "italic" }}>
               Log in to share your story or create a poll
             </p>

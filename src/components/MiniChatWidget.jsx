@@ -101,6 +101,8 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [conversationId, setConversationId] = useState(existingConvoId || null);
+  const [connectError, setConnectError] = useState(false);
+  const [retryTick, setRetryTick] = useState(0);
   const socketRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -114,74 +116,74 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
       return;
     }
 
-    const socket = io(BASE_URL, {
-      auth: { token: authToken },
-      transports: ["websocket", "polling"],
-      withCredentials: true,
-    });
-    socketRef.current = socket;
+    let cancelled = false;
+    setConnectError(false);
 
-    socket.on("connect", async () => {
-      if (isVendorChat) {
-        // Join the existing approved conversation room
-        socket.emit("join_conversation", { conversationId: existingConvoId });
-        // Load history
+    const connectSocketAndJoin = (convoId, fallbackGreeting) => {
+      const socket = io(BASE_URL, {
+        auth: { token: authToken },
+        transports: ["websocket", "polling"],
+        withCredentials: true,
+      });
+      socketRef.current = socket;
+
+      socket.on("connect_error", () => { if (!cancelled) setConnectError(true); });
+
+      socket.on("connect", async () => {
+        socket.emit("join_conversation", { conversationId: convoId });
         try {
-          const res = await fetch(`${BASE_URL}/messages/${existingConvoId}/messages`, { credentials: "include" });
+          const res = await fetch(`${BASE_URL}/messages/${convoId}/messages`, { credentials: "include" });
           if (res.ok) {
             const hist = await res.json();
+            if (cancelled) return;
             if (Array.isArray(hist) && hist.length > 0) {
               setMessages(hist.map(m => ({
                 text: m.content,
-                sender: m.sender === "user" ? "user" : "vendor",
+                sender: m.sender === "user" ? "user" : (isVendorChat ? "vendor" : "support"),
                 ts: new Date(m.createdAt).getTime(),
               })));
             } else {
-              setMessages([{ text: `Start chatting with ${vendorName || "the vendor"}.`, sender: "system", ts: Date.now() }]);
+              setMessages([{ text: fallbackGreeting, sender: isVendorChat ? "system" : "support", ts: Date.now() }]);
             }
+          } else if (!cancelled) {
+            setMessages([{ text: fallbackGreeting, sender: isVendorChat ? "system" : "support", ts: Date.now() }]);
           }
         } catch {
-          setMessages([{ text: `Chat with ${vendorName || "the vendor"}.`, sender: "system", ts: Date.now() }]);
-        }
-      } else {
-        socket.emit("open_conversation", { chatType: "SUPPORT" });
-      }
-    });
-
-    if (!isVendorChat) {
-      socket.on("conversation_opened", async ({ _id }) => {
-        setConversationId(_id);
-        try {
-          const res = await fetch(`${BASE_URL}/messages/${_id}/messages`, { credentials: "include" });
-          if (res.ok) {
-            const hist = await res.json();
-            if (Array.isArray(hist) && hist.length > 0) {
-              setMessages(hist.map(m => ({
-                text: m.content,
-                sender: m.sender === "user" ? "user" : "support",
-                ts: new Date(m.createdAt).getTime(),
-              })));
-            } else {
-              setMessages([{ text: "Hi! How can we help you today? 😊", sender: "support", ts: Date.now() }]);
-            }
-          }
-        } catch {
-          setMessages([{ text: "Hi! How can we help you today? 😊", sender: "support", ts: Date.now() }]);
+          if (!cancelled) setMessages([{ text: fallbackGreeting, sender: isVendorChat ? "system" : "support", ts: Date.now() }]);
         }
       });
+
+      socket.on("new_message", (msg) => {
+        if (msg.sender === "user") return;
+        setMessages(prev => [...prev, {
+          text: msg.content,
+          sender: isVendorChat ? "vendor" : "support",
+          ts: Date.now(),
+        }]);
+      });
+    };
+
+    if (isVendorChat) {
+      connectSocketAndJoin(existingConvoId, `Start chatting with ${vendorName || "the vendor"}.`);
+    } else {
+      // Reliable REST find-or-create instead of a fire-and-forget socket round trip —
+      // any failure here is caught and shown, instead of leaving the chat silently stuck.
+      fetch(`${BASE_URL}/conversations/support`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${authToken}` },
+        credentials: "include",
+      })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+        .then(data => {
+          if (cancelled || !data?.conversationId) throw new Error("No conversationId returned");
+          setConversationId(data.conversationId);
+          connectSocketAndJoin(data.conversationId, "Hi! How can we help you today? 😊");
+        })
+        .catch(() => { if (!cancelled) setConnectError(true); });
     }
 
-    socket.on("new_message", (msg) => {
-      if (msg.sender === "user") return;
-      setMessages(prev => [...prev, {
-        text: msg.content,
-        sender: isVendorChat ? "vendor" : "support",
-        ts: Date.now(),
-      }]);
-    });
-
-    return () => socket.disconnect();
-  }, [user?._id]);
+    return () => { cancelled = true; socketRef.current?.disconnect(); };
+  }, [user?._id, retryTick]);
 
   const sendMessage = (text) => {
     const convoId = isVendorChat ? existingConvoId : conversationId;
@@ -213,6 +215,8 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
     reader.readAsDataURL(file);
     e.target.value = "";
   };
+
+  const chatReady = !!user?._id && !connectError && !!conversationId;
 
   const renderMsg = (text) => {
     if (text?.startsWith("[img:")) {
@@ -256,6 +260,19 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
         <button onClick={onClose} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", color: "#fff", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
       </div>
 
+      {/* Connection error — visible instead of silently stuck */}
+      {connectError && (
+        <div style={{ margin: "10px 14px 0", padding: "10px 12px", borderRadius: 10, background: "rgba(220,38,38,0.07)", border: "1.5px solid rgba(220,38,38,0.2)", display: "flex", alignItems: "center", gap: 8 }}>
+          <span style={{ fontSize: 12, color: "#c0392b", flex: 1, lineHeight: 1.4 }}>Couldn't connect to chat. Please try again.</span>
+          <button
+            onClick={() => setRetryTick(t => t + 1)}
+            style={{ flexShrink: 0, padding: "5px 12px", borderRadius: 8, border: "none", background: "#c0392b", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
       {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "14px", display: "flex", flexDirection: "column", gap: 8 }}>
         {messages.map((msg, i) => (
@@ -295,22 +312,22 @@ export default function MiniChatWidget({ onClose, conversationId: existingConvoI
 
       {/* Input */}
       <div style={{ padding: "10px 12px", borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 8, alignItems: "center" }}>
-        <label style={{ cursor: "pointer", width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>
+        <label style={{ cursor: chatReady ? "pointer" : "not-allowed", width: 32, height: 32, borderRadius: "50%", background: "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0, opacity: chatReady ? 1 : 0.5 }}>
           📎
-          <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImage} />
+          <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleImage} disabled={!chatReady} />
         </label>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === "Enter" && sendMessage(input)}
-          placeholder={user?._id ? "Type a message..." : "Sign in to chat"}
-          disabled={!user?._id}
-          style={{ flex: 1, padding: "9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: font, outline: "none", background: user?._id ? "#fff" : "#f9f9f9" }}
+          placeholder={!user?._id ? "Sign in to chat" : connectError ? "Connection failed — tap Retry" : !chatReady ? "Connecting…" : "Type a message..."}
+          disabled={!chatReady}
+          style={{ flex: 1, padding: "9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: font, outline: "none", background: chatReady ? "#fff" : "#f9f9f9" }}
         />
         <button
           onClick={() => sendMessage(input)}
-          disabled={!input.trim() || !user?._id}
-          style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: input.trim() && user?._id ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: input.trim() && user?._id ? "pointer" : "not-allowed", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+          disabled={!input.trim() || !chatReady}
+          style={{ width: 34, height: 34, borderRadius: "50%", border: "none", background: input.trim() && chatReady ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: input.trim() && chatReady ? "pointer" : "not-allowed", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
           ➤
         </button>
       </div>
