@@ -909,7 +909,20 @@ export default function VendorChatModal() {
     if (!text) return null;
     if (text.startsWith("[img:")) {
       const src = text.replace("[img:", "").replace(/\]$/, "");
-      return <img src={src} alt="sent" onLoad={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })} style={{ maxWidth: "100%", maxHeight: 240, borderRadius: 8, display: "block", objectFit: "contain" }} />;
+      return (
+        <div style={{ position: "relative", display: "inline-block" }}>
+          <img src={src} alt="sent" onLoad={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })} style={{ maxWidth: "100%", maxHeight: 240, borderRadius: 8, display: "block", objectFit: "contain" }} />
+          <a
+            href={src}
+            download={`tendr-image-${Date.now()}.jpg`}
+            onClick={e => e.stopPropagation()}
+            title="Download image"
+            style={{ position: "absolute", bottom: 6, right: 6, width: 26, height: 26, borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "#fff", fontSize: 13 }}
+          >
+            ⬇
+          </a>
+        </div>
+      );
     }
     if (text.startsWith("[FINALISED]")) {
       return <span style={{ color: "#15803d", fontWeight: 600 }}>{text.replace("[FINALISED] ", "")}</span>;
@@ -1528,6 +1541,7 @@ export default function VendorChatModal() {
               DJ:           ["Do you do a playlist session before the event?","Can you take guest requests?","What if equipment fails?","Do you provide sound and lighting both?","How early do you arrive to set up?"],
               SmartPlan:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
               Concierge:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
+              "Baat Karo":  ["Aap kis date ke liye plan kar rahe hain?","Budget kitna rakha hai?","Konsi services chahiye — caterer, decorator, DJ?","Kitne guests honge?","Kab tak reply mil jayega?"],
             };
             const questions = QA[vendor?.serviceType] || (isConcierge ? QA.Concierge : ["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"]);
             return (

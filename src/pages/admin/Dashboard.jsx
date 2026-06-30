@@ -286,11 +286,22 @@ function RenderMessage({ text }) {
   if (text.startsWith("[img:")) {
     const src = text.slice(5, -1);
     return (
-      <img
-        src={src}
-        alt="shared"
-        style={{ maxWidth: "min(220px, 100%)", maxHeight: 220, borderRadius: 10, display: "block", objectFit: "contain" }}
-      />
+      <div style={{ position: "relative", display: "inline-block" }}>
+        <img
+          src={src}
+          alt="shared"
+          style={{ maxWidth: "min(220px, 100%)", maxHeight: 220, borderRadius: 10, display: "block", objectFit: "contain" }}
+        />
+        <a
+          href={src}
+          download={`tendr-image-${Date.now()}.jpg`}
+          onClick={e => e.stopPropagation()}
+          title="Download image"
+          style={{ position: "absolute", bottom: 6, right: 6, width: 24, height: 24, borderRadius: "50%", background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", color: "#fff", fontSize: 12 }}
+        >
+          ⬇
+        </a>
+      </div>
     );
   }
   const lines = text.split("\n");
@@ -1310,6 +1321,7 @@ const AdminDashboard = () => {
                             coverage:"Hours", musicVibe:"Music", djHours:"DJ Hours",
                             soundSetup:"Sound", servicesNeeded:"Services",
                             timeline:"Timeline", venueAddress:"Address", queryType:"Query",
+                            message:"Message",
                           };
                           const entries = Object.entries(req.eventDetails).filter(([,v]) => v);
                           return (
@@ -3291,10 +3303,10 @@ const AdminDashboard = () => {
                       {/* Vendor */}
                       <div className="flex items-center gap-1">
                         <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                          {getInitials(c.vendorId.name)}
+                          {getInitials(c.vendorId?.name || c.vendorName || "Tendr Team")}
                         </div>
                         <span className="font-semibold text-xs sm:text-base hidden sm:inline">
-                          {c.vendorId.name}
+                          {c.vendorId?.name || c.vendorName || "Tendr Team"}
                         </span>
                       </div>
                     </div>
@@ -3397,6 +3409,32 @@ const AdminDashboard = () => {
                             </div>
                           );
                         })}
+                      </div>
+                    )}
+
+                    {/* Hinglish quick replies — Baat Karo chats only */}
+                    {selectedChat?.serviceType === "Baat Karo" && (
+                      <div style={{ padding: "8px 10px 0", display: "flex", gap: 6, flexWrap: "wrap", borderTop: "1px solid #F1E1A8" }}>
+                        {[
+                          "Dhanyawad! Hum aapke liye best vendors dhoondh rahe hain.",
+                          "Aapka budget kitna hai?",
+                          "Konsi date confirm hai?",
+                          "Hum 2 ghante mein reply denge.",
+                          "Kya aap location bata sakte hain?",
+                        ].map((q) => (
+                          <button
+                            key={q}
+                            onClick={() => {
+                              if (!selectedChat) return;
+                              const msg = { conversationId: selectedChat._id, sender: 'customer-care', content: q };
+                              if (adminSocketRef.current) adminSocketRef.current.emit('send_message', msg);
+                              setCurrentConversation((prev) => [...(prev || []), { ...msg, createdAt: new Date().toISOString() }]);
+                            }}
+                            style={{ padding: "4px 10px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.4)", background: "#FFFCF0", color: "#7A5535", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                          >
+                            {q}
+                          </button>
+                        ))}
                       </div>
                     )}
 

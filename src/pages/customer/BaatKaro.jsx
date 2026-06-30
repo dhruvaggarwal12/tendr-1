@@ -1,37 +1,60 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
+import AuthModal from "../../components/AuthModal.jsx";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const font = "'Outfit', sans-serif";
-const WHATSAPP_NUMBER = "919211668427";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export default function BaatKaro() {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { token } = useSelector((s) => s.auth);
+  const { openExistingChat } = useChatOverlay();
 
   const [text, setText] = useState(() => {
     try { return sessionStorage.getItem("baat_karo_draft") || ""; } catch { return ""; }
   });
   const [charCount, setCharCount] = useState(0);
+  const [showAuth, setShowAuth] = useState(false);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     setCharCount(text.length);
     try { sessionStorage.setItem("baat_karo_draft", text); } catch {}
   }, [text]);
 
+  const submitMessage = async () => {
+    if (!text.trim() || sending) return;
+    setSending(true);
+    try {
+      const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        credentials: "include",
+        body: JSON.stringify({ message: text.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.conversationId) {
+        try { sessionStorage.removeItem("baat_karo_draft"); } catch {}
+        setText("");
+        openExistingChat(data.conversationId, {
+          _id: null,
+          name: "Tendr Team",
+          serviceType: "Baat Karo",
+          approved: false,
+        });
+      }
+    } catch (e) {
+      console.error("Baat Karo submit failed:", e);
+    }
+    setSending(false);
+  };
+
   const handleSend = () => {
     if (!text.trim()) return;
-    if (!token) {
-      // Save draft and redirect to login, come back after
-      try { sessionStorage.setItem("baat_karo_draft", text); } catch {}
-      navigate("/login?redirect=/baat-karo");
-      return;
-    }
-    const msg = encodeURIComponent(`Hi Tendr! 🎉\n\nMeri requirements:\n${text.trim()}`);
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${msg}`, "_blank");
+    if (!token) { setShowAuth(true); return; }
+    submitMessage();
   };
 
   const suggestions = [
@@ -42,7 +65,7 @@ export default function BaatKaro() {
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", fontFamily: font }}>
-      <SEO title="Baat Karo — Quick Connect | Tendr" description="Just tell us what you need in plain words. We'll get back to you on WhatsApp." path="/baat-karo" />
+      <SEO title="Baat Karo — Quick Connect | Tendr" description="Just tell us what you need in plain words. We'll get back to you right here in the app." path="/baat-karo" />
       <HamburgerNav />
 
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "48px 20px 80px" }}>
@@ -57,7 +80,7 @@ export default function BaatKaro() {
           </h1>
           <p style={{ fontSize: 14, color: "#9B7450", margin: 0, lineHeight: 1.6 }}>
             Koi form nahi, koi category nahi — bas likh do apni requirements.<br />
-            Hum WhatsApp pe reply karenge.
+            Hamari Tendr Team yahin app mein reply karegi.
           </p>
         </div>
 
@@ -131,19 +154,19 @@ export default function BaatKaro() {
         {/* Send button */}
         <button
           onClick={handleSend}
-          disabled={!text.trim()}
+          disabled={!text.trim() || sending}
           style={{
             width: "100%",
             padding: "14px",
             borderRadius: 14,
             border: "none",
-            background: text.trim() ? "linear-gradient(135deg,#25D366,#128C7E)" : "rgba(196,122,46,0.15)",
-            color: text.trim() ? "#fff" : "#9B7450",
+            background: text.trim() && !sending ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.15)",
+            color: text.trim() && !sending ? "#fff" : "#9B7450",
             fontSize: 16,
             fontWeight: 800,
             fontFamily: font,
-            cursor: text.trim() ? "pointer" : "not-allowed",
-            boxShadow: text.trim() ? "0 4px 18px rgba(37,211,102,0.35)" : "none",
+            cursor: text.trim() && !sending ? "pointer" : "not-allowed",
+            boxShadow: text.trim() && !sending ? "0 4px 18px rgba(196,122,46,0.35)" : "none",
             transition: "all 0.2s",
             display: "flex",
             alignItems: "center",
@@ -152,15 +175,19 @@ export default function BaatKaro() {
           }}
         >
           <span style={{ fontSize: 20 }}>💬</span>
-          {!token ? "Sign in & Send on WhatsApp →" : "Send on WhatsApp →"}
+          {sending ? "Sending…" : !token ? "Sign in & Send →" : "Send →"}
         </button>
 
-        {!token && text.trim() && (
-          <p style={{ textAlign: "center", fontSize: 12, color: "#9B7450", marginTop: 8 }}>
-            Aapka message save rahega — sign in ke baad wapas aa jaega
-          </p>
-        )}
+        <p style={{ textAlign: "center", fontSize: 12, color: "#9B7450", marginTop: 8 }}>
+          Tendr Team is reviewing your message — track it under My Chats.
+        </p>
       </div>
+
+      <AuthModal
+        open={showAuth}
+        onClose={() => setShowAuth(false)}
+        onSuccess={() => { setShowAuth(false); submitMessage(); }}
+      />
     </div>
   );
 }
