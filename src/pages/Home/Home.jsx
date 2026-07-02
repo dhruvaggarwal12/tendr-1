@@ -1226,6 +1226,85 @@ const Home = () => {
         `}</style>
       </section>
 
+      {/* ── Plan by Occasion ── */}
+      {(() => {
+        const OCCASIONS = [
+          { label: "Birthday",        emoji: "🎂", bg: "#FFF3E0", shadow: "rgba(255,183,77,0.22)" },
+          { label: "Wedding",         emoji: "💍", bg: "#FCE4EC", shadow: "rgba(240,98,146,0.18)" },
+          { label: "Anniversary",     emoji: "❤️", bg: "#FFEBEE", shadow: "rgba(229,57,53,0.16)" },
+          { label: "Baby Shower",     emoji: "🍼", bg: "#E3F2FD", shadow: "rgba(30,136,229,0.16)" },
+          { label: "Corporate Event", emoji: "💼", bg: "#EDE7F6", shadow: "rgba(94,53,177,0.16)" },
+          { label: "House Party",     emoji: "🏠", bg: "#E8F5E9", shadow: "rgba(56,142,60,0.16)" },
+          { label: "Festival",        emoji: "🎊", bg: "#FFFDE7", shadow: "rgba(249,168,37,0.2)"  },
+          { label: "Pre Wedding",     emoji: "💒", bg: "#FBE9E7", shadow: "rgba(216,67,21,0.16)" },
+          { label: "Graduation",      emoji: "🎓", bg: "#F1F8E9", shadow: "rgba(104,159,56,0.16)" },
+          { label: "Housewarming",    emoji: "🏡", bg: "#FFF8E1", shadow: "rgba(255,160,0,0.2)"  },
+          { label: "Get Together",    emoji: "🥂", bg: "#E0F7FA", shadow: "rgba(0,172,193,0.16)" },
+          { label: "Kids Party",      emoji: "🎈", bg: "#F3E5F5", shadow: "rgba(142,36,170,0.16)" },
+        ];
+        return (
+          <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
+              <div style={{ textAlign: "center", marginBottom: 40 }}>
+                <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.16em", margin: "0 0 10px" }}>Plan by Occasion</p>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
+                <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
+              </div>
+            </div>
+
+            {/* Scrollable card row — 2 rows on mobile, full grid on desktop */}
+            <div className="occ-scroll-wrap" style={{ overflowX: "auto", paddingBottom: 12 }}>
+              <div className="occ-grid" style={{ display: "grid", gridTemplateRows: "repeat(2, auto)", gridAutoFlow: "column", gridAutoColumns: 148, gap: 12, padding: "4px 24px 4px" }}>
+                {OCCASIONS.map(({ label, emoji, bg, shadow }) => (
+                  <button
+                    key={label}
+                    onClick={() => navigate("/booking")}
+                    style={{
+                      width: 148, height: 174,
+                      borderRadius: 20,
+                      background: bg,
+                      border: "none",
+                      cursor: "pointer",
+                      padding: "14px 12px 10px",
+                      display: "flex", flexDirection: "column",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      boxShadow: `0 4px 16px ${shadow}`,
+                      transition: "transform 0.18s, box-shadow 0.18s",
+                      fontFamily: "'Outfit', sans-serif",
+                      textAlign: "left",
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 10px 28px ${shadow}`; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 4px 16px ${shadow}`; }}
+                  >
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.3 }}>{label}</span>
+                    <span style={{ fontSize: 60, lineHeight: 1, alignSelf: "flex-end" }}>{emoji}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <style>{`
+              .occ-scroll-wrap { scrollbar-width: none; }
+              .occ-scroll-wrap::-webkit-scrollbar { display: none; }
+              @media (min-width: 860px) {
+                .occ-scroll-wrap { overflow-x: visible !important; }
+                .occ-grid {
+                  display: grid !important;
+                  grid-template-rows: unset !important;
+                  grid-auto-flow: unset !important;
+                  grid-auto-columns: unset !important;
+                  grid-template-columns: repeat(6, 148px) !important;
+                  justify-content: center !important;
+                  max-width: 1200px;
+                  margin: 0 auto;
+                }
+              }
+            `}</style>
+          </section>
+        );
+      })()}
+
       {/* ── 5s Rotating Feature Carousel ── */}
       <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
         {/* Decorative background blobs — no photos, warm light tones */}
