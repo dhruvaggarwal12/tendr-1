@@ -1,4 +1,4 @@
-// src/pages/Home/Home.jsx
+﻿// src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate as useNav } from "react-router-dom";
 import PageTour from "../../components/PageTour";
@@ -345,6 +345,7 @@ const Home = () => {
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideVisible, setSlideVisible] = useState(true);
   const faCarouselRef = useRef(null);
+  const occRef = useRef(null);
   const [htwStep, setHtwStep] = useState(0);
   const [faModal, setFaModal] = useState(null);
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
@@ -1229,83 +1230,81 @@ const Home = () => {
       {/* ── Plan by Occasion ── */}
       {(() => {
         const OCCASIONS = [
-          { label: "Birthday",        emoji: "🎂", bg: "#FFF3E0", shadow: "rgba(255,183,77,0.22)" },
-          { label: "Wedding",         emoji: "💍", bg: "#FCE4EC", shadow: "rgba(240,98,146,0.18)" },
-          { label: "Anniversary",     emoji: "❤️", bg: "#FFEBEE", shadow: "rgba(229,57,53,0.16)" },
-          { label: "Baby Shower",     emoji: "🍼", bg: "#E3F2FD", shadow: "rgba(30,136,229,0.16)" },
-          { label: "Corporate Event", emoji: "💼", bg: "#EDE7F6", shadow: "rgba(94,53,177,0.16)" },
-          { label: "House Party",     emoji: "🏠", bg: "#E8F5E9", shadow: "rgba(56,142,60,0.16)" },
-          { label: "Festival",        emoji: "🎊", bg: "#FFFDE7", shadow: "rgba(249,168,37,0.2)"  },
-          { label: "Pre Wedding",     emoji: "💒", bg: "#FBE9E7", shadow: "rgba(216,67,21,0.16)" },
-          { label: "Graduation",      emoji: "🎓", bg: "#F1F8E9", shadow: "rgba(104,159,56,0.16)" },
-          { label: "Housewarming",    emoji: "🏡", bg: "#FFF8E1", shadow: "rgba(255,160,0,0.2)"  },
-          { label: "Get Together",    emoji: "🥂", bg: "#E0F7FA", shadow: "rgba(0,172,193,0.16)" },
-          { label: "Kids Party",      emoji: "🎈", bg: "#F3E5F5", shadow: "rgba(142,36,170,0.16)" },
+          { label: "Birthday",        photo: "https://images.unsplash.com/photo-1558636508-e0969431e541?w=280&h=180&fit=crop&q=75" },
+          { label: "Wedding",         photo: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=280&h=180&fit=crop&q=75" },
+          { label: "Anniversary",     photo: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=280&h=180&fit=crop&q=75" },
+          { label: "Baby Shower",     photo: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=280&h=180&fit=crop&q=75" },
+          { label: "Corporate Event", photo: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=280&h=180&fit=crop&q=75" },
+          { label: "House Party",     photo: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=280&h=180&fit=crop&q=75" },
+          { label: "Festival",        photo: "https://images.unsplash.com/photo-1604871000636-074fa5117945?w=280&h=180&fit=crop&q=75" },
+          { label: "Pre Wedding",     photo: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=280&h=180&fit=crop&q=75" },
+          { label: "Graduation",      photo: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=280&h=180&fit=crop&q=75" },
+          { label: "Housewarming",    photo: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=280&h=180&fit=crop&q=75" },
+          { label: "Get Together",    photo: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=280&h=180&fit=crop&q=75" },
+          { label: "Kids Party",      photo: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=280&h=180&fit=crop&q=75" },
         ];
+        const CARD_W = 130, CARD_H = 162, GAP = 10;
+        const scrollOcc = (dir) => occRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: "smooth" });
         return (
           <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
-              <div style={{ textAlign: "center", marginBottom: 40 }}>
+              <div style={{ textAlign: "center", marginBottom: 36 }}>
                 <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.16em", margin: "0 0 10px" }}>Plan by Occasion</p>
                 <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
                 <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
               </div>
             </div>
 
-            {/* Scrollable card row — 2 rows on mobile, full grid on desktop */}
-            <div className="occ-scroll-wrap" style={{ overflowX: "auto", paddingBottom: 12 }}>
-              <div className="occ-grid" style={{ display: "grid", gridTemplateRows: "repeat(2, auto)", gridAutoFlow: "column", gridAutoColumns: 148, gap: 12, padding: "4px 24px 4px" }}>
-                {OCCASIONS.map(({ label, emoji, bg, shadow }) => (
-                  <button
-                    key={label}
-                    onClick={() => navigate("/booking")}
-                    style={{
-                      width: 148, height: 174,
-                      borderRadius: 20,
-                      background: bg,
-                      border: "none",
-                      cursor: "pointer",
-                      padding: "14px 12px 10px",
-                      display: "flex", flexDirection: "column",
-                      justifyContent: "space-between",
-                      alignItems: "flex-start",
-                      boxShadow: `0 4px 16px ${shadow}`,
-                      transition: "transform 0.18s, box-shadow 0.18s",
-                      fontFamily: "'Outfit', sans-serif",
-                      textAlign: "left",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = `0 10px 28px ${shadow}`; }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = `0 4px 16px ${shadow}`; }}
-                  >
-                    <span style={{ fontSize: 13, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.3 }}>{label}</span>
-                    <span style={{ fontSize: 60, lineHeight: 1, alignSelf: "flex-end" }}>{emoji}</span>
-                  </button>
-                ))}
+            <div className="occ-outer" style={{ position: "relative" }}>
+              <button className="occ-arrow occ-arrow-l" onClick={() => scrollOcc(-1)}>&#8249;</button>
+              <button className="occ-arrow occ-arrow-r" onClick={() => scrollOcc(1)}>&#8250;</button>
+              <div ref={occRef} className="occ-scroll" style={{ overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 8 }}>
+                <div className="occ-grid" style={{ display: "grid", gridTemplateRows: `repeat(2, ${CARD_H}px)`, gridAutoFlow: "column", gridAutoColumns: CARD_W, gap: GAP, padding: "4px 24px 4px", width: "max-content" }}>
+                  {OCCASIONS.map(({ label, photo }) => (
+                    <button key={label} onClick={() => navigate("/booking")}
+                      style={{ width: CARD_W, height: CARD_H, borderRadius: 16, border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", scrollSnapAlign: "start", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", flexShrink: 0 }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.14)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)"; }}
+                    >
+                      <div style={{ padding: "12px 10px 5px", background: "#fff", flexShrink: 0 }}>
+                        <span style={{ fontSize: 12.5, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.25, display: "block" }}>{label}</span>
+                      </div>
+                      <div style={{ flex: 1, overflow: "hidden" }}>
+                        <img src={photo} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
+            <div style={{ textAlign: "center", marginTop: 28 }}>
+              <button onClick={() => navigate("/booking")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)", transition: "all 0.18s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}
+              >See all occasions &#8594;</button>
+            </div>
+
             <style>{`
-              .occ-scroll-wrap { scrollbar-width: none; }
-              .occ-scroll-wrap::-webkit-scrollbar { display: none; }
+              .occ-scroll { scrollbar-width: none; }
+              .occ-scroll::-webkit-scrollbar { display: none; }
+              .occ-arrow { display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 10; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.95); border: 1.5px solid rgba(196,122,46,0.3); color: #C47A2E; font-size: 20px; font-weight: 700; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.12); line-height: 1; }
+              .occ-arrow-l { left: 4px; }
+              .occ-arrow-r { right: 4px; }
+              @media (max-width: 859px) { .occ-arrow { display: flex !important; } }
               @media (min-width: 860px) {
-                .occ-scroll-wrap { overflow-x: visible !important; }
-                .occ-grid {
-                  display: grid !important;
-                  grid-template-rows: unset !important;
-                  grid-auto-flow: unset !important;
-                  grid-auto-columns: unset !important;
-                  grid-template-columns: repeat(6, 148px) !important;
-                  justify-content: center !important;
-                  max-width: 1200px;
-                  margin: 0 auto;
-                }
+                .occ-outer { position: static; }
+                .occ-scroll { overflow-x: visible !important; }
+                .occ-grid { display: grid !important; grid-template-rows: unset !important; grid-auto-flow: unset !important; grid-auto-columns: unset !important; grid-template-columns: repeat(6, ${CARD_W}px) !important; width: auto !important; justify-content: center; max-width: 1100px; margin: 0 auto; padding: 4px 24px !important; }
+                .occ-grid button { width: ${CARD_W}px !important; height: ${CARD_H}px !important; }
               }
             `}</style>
           </section>
         );
       })()}
 
-      {/* ── 5s Rotating Feature Carousel ── */}
+            {/* ── 5s Rotating Feature Carousel ── */}
       <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
         {/* Decorative background blobs — no photos, warm light tones */}
         <div style={{ position: "absolute", top: -60, right: -60, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
