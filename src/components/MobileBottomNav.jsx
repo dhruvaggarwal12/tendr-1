@@ -136,7 +136,6 @@ function BottomNavInner() {
     { emoji: "⏱️", label: "Timeline",         href: "/timeline-picker" },
     { emoji: "💰", label: "Budget Allocator", href: "/budget-picker" },
     { emoji: "🎨", label: "Decor Finder",     href: "/decor-finder" },
-    { emoji: "🎭", label: "Fun Activities",   href: "/fun-activities" },
   ];
 
   const items = [
@@ -175,24 +174,15 @@ function BottomNavInner() {
             </div>
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Browse Vendors</p>
 
-            {/* Category grid — auto-fills based on count */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 12 }}>
+            {/* Category grid */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 10 }}>
               {[
                 ...CATEGORIES,
-                { emoji: "🎭", label: "Fun Activities",       path: "/fun-activities" },
-              ].map(({ emoji, label, path, newTab, soon }) => (
+                { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
+              ].map(({ emoji, label, path, soon }) => (
                 <button key={label}
-                  onClick={() => { if (newTab) { window.open("/occasions", "_blank"); setBrowseOpen(false); } else { navigate(path); setBrowseOpen(false); } }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 12,
-                    padding: "14px 16px", borderRadius: 14,
-                    border: "1.5px solid rgba(196,122,46,0.15)",
-                    background: "#fff",
-                    cursor: "pointer", fontFamily: font,
-                    boxShadow: "0 2px 8px rgba(196,122,46,0.08)",
-                    transition: "background 0.15s",
-                    position: "relative",
-                  }}
+                  onClick={() => { navigate(path); setBrowseOpen(false); }}
+                  style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", transition: "background 0.15s", position: "relative" }}
                   onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
                   onTouchEnd={e => e.currentTarget.style.background = "#fff"}
                 >
@@ -203,17 +193,30 @@ function BottomNavInner() {
               ))}
             </div>
 
+            {/* Secondary links row */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+              <button
+                onClick={() => { navigate("/top-rated/Photographer"); setBrowseOpen(false); }}
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 700, color: "#7A4A1E" }}
+                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.1)"}
+                onTouchEnd={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
+              >
+                <span>⭐</span> Top Rated
+              </button>
+              <button
+                onClick={() => { navigate("/vendor/register"); setBrowseOpen(false); }}
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 700, color: "#7A4A1E" }}
+                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.1)"}
+                onTouchEnd={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
+              >
+                <span>🤝</span> Register as Vendor
+              </button>
+            </div>
+
             {/* All Vendors full-width button */}
             <button
               onClick={() => { navigate("/listings"); setBrowseOpen(false); }}
-              style={{
-                width: "100%", padding: "12px",
-                borderRadius: 12, border: "none",
-                background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-                color: "#fff", fontSize: 14, fontWeight: 700,
-                cursor: "pointer", fontFamily: font,
-                boxShadow: "0 4px 14px rgba(196,122,46,0.3)",
-              }}>
+              style={{ width: "100%", padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
               Browse All Vendors →
             </button>
           </div>
@@ -311,6 +314,19 @@ function BottomNavInner() {
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Guide Store</div>
                   <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>Free event planning guides — unlock with WhatsApp</div>
+                </div>
+              </button>
+              {/* Community Wall */}
+              <button
+                onClick={() => { navigate("/community"); setTipsOpen(false); }}
+                style={{ display: "flex", alignItems: "center", gap: 14, padding: "15px 16px", borderRadius: 14, border: "1px solid rgba(79,142,247,0.2)", background: "#0A0E1A", cursor: "pointer", fontFamily: font, textAlign: "left" }}
+                onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.08)"}
+                onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
+              >
+                <span style={{ fontSize: 28, lineHeight: 1 }}>💬</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Community Wall</div>
+                  <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>See real events shared by customers — photos, setups, ideas</div>
                 </div>
               </button>
             </div>
