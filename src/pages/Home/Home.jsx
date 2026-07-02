@@ -1482,17 +1482,27 @@ const Home = () => {
 
       {/* ── Gift Hampers & Cakes — Coming Soon ── */}
       <section style={{ background: "#FFFDF7", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
+        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
           <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>🎁 Gift Hampers & Cakes</p>
           <h2 style={{ fontSize: "clamp(1.5rem,3vw,2.1rem)", color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
             The Perfect Gift,&nbsp;<span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
           </h2>
-          <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 14 }}>
+          <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>
             Coming Soon
           </div>
-          <p style={{ fontSize: 14, color: "#9B7450", maxWidth: 420, lineHeight: 1.7, margin: 0 }}>
-            We're curating the most beautiful hampers and cakes for your celebrations. Check back soon!
+          <p style={{ fontSize: 14, color: "#6B4226", maxWidth: 500, lineHeight: 1.75, margin: "0 0 10px" }}>
+            We're building a full gifting experience — curated hampers, custom cakes, theme-based collections and doorstep delivery across Delhi NCR.
           </p>
+          <p style={{ fontSize: 14, color: "#9B7450", maxWidth: 460, lineHeight: 1.7, margin: "0 0 28px" }}>
+            While we get everything ready, our team can still help you find the perfect gift. Just tell us your occasion, budget and preferences — we'll sort it out.
+          </p>
+          <button
+            onClick={() => navigate("/baat-karo")}
+            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, padding: "13px 32px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}
+          >
+            Chat with Our Team →
+          </button>
+          <p style={{ fontSize: 12, color: "#C0A070", marginTop: 10 }}>In-app chat · Replies within 2 hours</p>
         </div>
       </section>
 

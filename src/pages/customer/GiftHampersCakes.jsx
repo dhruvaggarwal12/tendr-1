@@ -335,6 +335,28 @@ const GiftHampersCakes = () => {
         </div>
       </div>
 
+      {/* Coming Soon Banner */}
+      <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", margin: "0", padding: "28px 24px", textAlign: "center", fontFamily: font }}>
+        <div style={{ maxWidth: 640, margin: "0 auto" }}>
+          <div style={{ display: "inline-block", background: "rgba(196,122,46,0.25)", border: "1px solid rgba(196,122,46,0.4)", color: "#CCAB4A", borderRadius: 100, padding: "4px 16px", fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>
+            Building Something Special
+          </div>
+          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", lineHeight: 1.7, margin: "0 0 8px" }}>
+            We're putting together a full gifting experience — curated hampers, custom cakes, theme collections and doorstep delivery.
+          </p>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, margin: "0 0 20px" }}>
+            Until then, our team can help you pick the perfect gift. Tell us your occasion, budget and preferences — we'll handle the rest.
+          </p>
+          <button
+            onClick={() => navigate("/baat-karo")}
+            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.4)" }}
+          >
+            Chat with Our Team →
+          </button>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>In-app chat · Replies within 2 hours</p>
+        </div>
+      </div>
+
       {/* Product grid — single-source 🎁 cart is in FloatingChatButton global stack */}
       <div style={{ maxWidth: 1200, margin: "0 auto", padding: "20px 14px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Category filters */}
@@ -360,8 +382,14 @@ const GiftHampersCakes = () => {
         ) : filtered.length === 0 ? (
           <div style={{ textAlign: "center", padding: "60px 24px" }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No products available yet</h3>
-            <p style={{ fontSize: 13, color: "#9B7450" }}>Check back soon — our vendors are adding products.</p>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Products coming soon</h3>
+            <p style={{ fontSize: 13, color: "#9B7450", marginBottom: 20 }}>Our team can still help you find the perfect gift — just tell us your occasion and budget.</p>
+            <button
+              onClick={() => navigate("/baat-karo")}
+              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.3)" }}
+            >
+              Chat with Our Team →
+            </button>
           </div>
         ) : (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
