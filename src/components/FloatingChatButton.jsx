@@ -510,14 +510,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         </>
       )}
 
-      {/* ── Launcher FAB — on desktop, saved/compare live in sidebar so only show for cart items ── */}
+      {/* ── Launcher FAB — saved/compare/cart cluster, shown on both mobile and desktop ── */}
       {(() => {
         const hasCartItems = (funCartCount > 0 && !funConfirmed) || (ghCartCount > 0 && !ghConfirmed) || (stCartCount > 0 && !stConfirmed);
-        const hasMobileItems = savedVendors.length > 0 || compareSelected.length > 0;
-        const isDesktop = window.innerWidth >= 1024;
-        if (!hasCartItems && !hasMobileItems) return null;
-        if (isDesktop && !hasCartItems) return null; // saved/compare handled by sidebar on desktop
-        const count = [savedVendors.length > 0 && !isDesktop, compareSelected.length > 0 && !isDesktop, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed].filter(Boolean).length;
+        const hasOtherItems = savedVendors.length > 0 || compareSelected.length > 0;
+        if (!hasCartItems && !hasOtherItems) return null;
+        const count = [savedVendors.length > 0, compareSelected.length > 0, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed].filter(Boolean).length;
         return (
           <button
             className="launcher-fab"
