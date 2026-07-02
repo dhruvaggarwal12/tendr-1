@@ -18,7 +18,7 @@ const CATEGORIES = [
   { emoji: "🍽", label: "Catering",            path: "/search?categories=Caterer" },
   { emoji: "🎵", label: "DJ & Music",          path: "/search?categories=DJ" },
   { emoji: "🎀", label: "Decoration",          path: "/search?categories=Decorator" },
-  { emoji: "🎁", label: "Gift Hampers",        path: "/gift-hampers-cakes", soon: true },
+  { emoji: "🎁", label: "Gift Hampers",        path: "/gift-hampers-cakes" },
   { emoji: "💒", label: "Wedding Stationeries",path: "/stationery" },
 ];
 
