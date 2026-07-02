@@ -345,7 +345,7 @@ const Home = () => {
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideVisible, setSlideVisible] = useState(true);
   const faCarouselRef = useRef(null);
-  const htwRef = useRef(null);
+  const [htwStep, setHtwStep] = useState(0);
   const [faModal, setFaModal] = useState(null);
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
   const [ghProducts, setGhProducts] = useState([]);
@@ -1130,7 +1130,7 @@ const Home = () => {
       `}</style>
 
       {/* How Tendr Works */}
-      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflowX: "clip" }}>
+      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {/* Heading */}
@@ -1151,69 +1151,47 @@ const Home = () => {
           </motion.div>
 
           {/* Steps */}
-          <div style={{ position: "relative" }}>
-            {/* Mobile prev arrow */}
-            <button className="htw-arrow htw-arrow-left" onClick={() => htwRef.current?.scrollBy({ left: -(htwRef.current.offsetWidth * 0.8), behavior: "smooth" })}>‹</button>
-            {/* Mobile next arrow */}
-            <button className="htw-arrow htw-arrow-right" onClick={() => htwRef.current?.scrollBy({ left: htwRef.current.offsetWidth * 0.8, behavior: "smooth" })}>›</button>
-          <div ref={htwRef} style={{ display: "flex", gap: 16, alignItems: "stretch" }} className="htw-row">
-            {[
+          {(() => {
+            const HTW_STEPS = [
               { n: "01", icon: "📋", title: "Tell Us About Your Event",  desc: "Event type, date, budget, guests — 2 minutes.",          time: "2 min"    },
               { n: "02", icon: "🔍", title: "Browse & Shortlist",        desc: "Find verified caterers, decorators, photographers, DJs.", time: "5–10 min" },
               { n: "03", icon: "💬", title: "Chat & Get a Price",        desc: "Direct chat. Real quote. No surprises.",                 time: "24–48 hrs" },
               { n: "04", icon: "✅", title: "Review & Confirm",          desc: "One summary page. All vendors. All prices.",              time: "5 min"    },
               { n: "05", icon: "🎉", title: "Pay & Celebrate",           desc: "Instant invoice, event docs and vendor contacts — all downloaded in one tap.", time: "Instant"  },
-            ].map(({ n, icon, title, desc, time }, i) => (
-              <motion.div
-                key={n}
-                initial={{ opacity: 0, y: 50, scale: 0.94 }}
-                whileInView={{ opacity: 1, y: 0, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1, type: "spring", stiffness: 120, damping: 14 }}
-                whileHover={{ y: -6, transition: { duration: 0.2 } }}
-                style={{
-                  flex: 1,
-                  background: "#2C1A0E",
-                  border: "1px solid rgba(196,122,46,0.2)",
-                  borderRadius: 20, padding: "28px 22px 26px",
-                  display: "flex", flexDirection: "column", gap: 14,
-                  cursor: "default",
-                  position: "relative", overflow: "hidden",
-                  boxShadow: "0 6px 24px rgba(44,26,14,0.14)",
-                }}
-              >
-                {/* Step number watermark */}
-                <span style={{
-                  position: "absolute", top: -8, right: 14,
-                  fontSize: 72, fontWeight: 900, color: "rgba(204,171,74,0.08)",
-                  lineHeight: 1, fontFamily: "'Outfit',sans-serif", pointerEvents: "none", userSelect: "none",
-                }}>
-                  {n}
-                </span>
-
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>
-                  Step {n} · {time}
-                </span>
+            ];
+            const StepCard = ({ n, icon, title, desc, time, i, showConnector }) => (
+              <div style={{ background: "#2C1A0E", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 20, padding: "28px 22px 26px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", boxShadow: "0 6px 24px rgba(44,26,14,0.14)", flex: 1 }}>
+                <span style={{ position: "absolute", top: -8, right: 14, fontSize: 72, fontWeight: 900, color: "rgba(204,171,74,0.08)", lineHeight: 1, fontFamily: "'Outfit',sans-serif", pointerEvents: "none", userSelect: "none" }}>{n}</span>
+                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Step {n} · {time}</span>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
                 <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
-
-                {/* Connector arrow — hidden on mobile via CSS */}
-                {i < 4 && (
-                  <motion.div
-                    className="htw-connector"
-                    initial={{ opacity: 0, x: -8 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.1 + 0.4, duration: 0.3 }}
-                    style={{ position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)", zIndex: 10, fontSize: 18, color: "rgba(196,122,46,0.4)" }}
-                  >
-                    ›
+                {showConnector && <span style={{ position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)", zIndex: 10, fontSize: 18, color: "rgba(196,122,46,0.4)" }}>›</span>}
+              </div>
+            );
+            if (isMobile) return (
+              <div style={{ position: "relative" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <button onClick={() => setHtwStep(s => Math.max(0, s - 1))} style={{ width: 38, height: 38, borderRadius: "50%", background: htwStep === 0 ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.9)", border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: htwStep === 0 ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
+                  <StepCard {...HTW_STEPS[htwStep]} i={htwStep} showConnector={false} />
+                  <button onClick={() => setHtwStep(s => Math.min(HTW_STEPS.length - 1, s + 1))} style={{ width: 38, height: 38, borderRadius: "50%", background: htwStep === HTW_STEPS.length - 1 ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.9)", border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: htwStep === HTW_STEPS.length - 1 ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
+                </div>
+                <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
+                  {HTW_STEPS.map((_, i) => (
+                    <button key={i} onClick={() => setHtwStep(i)} style={{ width: i === htwStep ? 20 : 7, height: 7, borderRadius: 100, background: i === htwStep ? "#C47A2E" : "rgba(196,122,46,0.25)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.25s" }} />
+                  ))}
+                </div>
+              </div>
+            );
+            return (
+              <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
+                {HTW_STEPS.map(({ n, icon, title, desc, time }, i) => (
+                  <motion.div key={n} initial={{ opacity: 0, y: 50, scale: 0.94 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1, type: "spring", stiffness: 120, damping: 14 }} whileHover={{ y: -6, transition: { duration: 0.2 } }} style={{ flex: 1 }}>
+                    <StepCard n={n} icon={icon} title={title} desc={desc} time={time} i={i} showConnector={i < 4} />
                   </motion.div>
-                )}
-              </motion.div>
-            ))}
-          </div>
-          </div>
+                ))}
+              </div>
+            );
+          })()}
 
           {/* Callout + CTA */}
           <motion.div
@@ -1240,50 +1218,9 @@ const Home = () => {
         </div>
 
         <style>{`
-          .htw-arrow { display: none; }
           @media (max-width: 860px) and (min-width: 541px) {
-            .htw-row { flex-wrap: wrap !important; }
-            .htw-row > div { flex: 0 0 calc(33% - 10px) !important; }
-          }
-          @media (max-width: 540px) {
-            .htw-row {
-              flex-wrap: nowrap !important;
-              overflow-x: auto !important;
-              scroll-snap-type: x mandatory !important;
-              gap: 12px !important;
-              padding: 4px 4px 16px !important;
-              -webkit-overflow-scrolling: touch;
-              scrollbar-width: none;
-            }
-            .htw-row::-webkit-scrollbar { display: none; }
-            .htw-row > div {
-              flex: 0 0 78% !important;
-              scroll-snap-align: center !important;
-              min-width: 0 !important;
-            }
-            .htw-connector { display: none !important; }
-            .htw-arrow {
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              position: absolute;
-              top: 50%;
-              transform: translateY(-50%);
-              z-index: 20;
-              width: 36px;
-              height: 36px;
-              border-radius: 50%;
-              background: rgba(196,122,46,0.92);
-              border: none;
-              color: #fff;
-              font-size: 22px;
-              font-weight: 700;
-              cursor: pointer;
-              box-shadow: 0 3px 12px rgba(44,26,14,0.28);
-              line-height: 1;
-            }
-            .htw-arrow-left { left: 0px; }
-            .htw-arrow-right { right: 0px; }
+            .htw-desktop-row { flex-wrap: wrap !important; }
+            .htw-desktop-row > div { flex: 0 0 calc(33% - 10px) !important; }
           }
         `}</style>
       </section>
