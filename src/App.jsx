@@ -9,6 +9,7 @@ import store from "./store";
 import ErrorBoundary from "./components/ErrorBoundary";
 import FloatingChatButton from "./components/FloatingChatButton";
 import VendorChatModal from "./components/VendorChatModal";
+import SignInPromptController from "./components/SignInPromptController";
 import { ChatProvider } from "./context/ChatContext";
 import { StationeryCartProvider } from "./context/StationeryCartContext";
 import { TourProvider } from "./context/TourContext";
@@ -93,6 +94,7 @@ function App() {
             <TourProvider>
             <ChatProvider>
               <SiteTour />
+              <SignInPromptController />
               {!splashDone && <SplashScreen onDone={handleSplashDone} />}
               <Suspense fallback={
                 <div style={{ minHeight: "100vh", background: "#FFFCF5", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -129,6 +131,7 @@ function App() {
         <TourProvider>
         <ChatProvider>
           <SiteTour />
+          <SignInPromptController />
           {!splashDone && <SplashScreen onDone={handleSplashDone} />}
           <Suspense fallback={
             <div style={{ minHeight: "100vh", background: "#FFFCF5", display: "flex", alignItems: "center", justifyContent: "center" }}>

@@ -75,7 +75,7 @@ function TourTooltip({ index, step, backProps, closeProps, primaryProps, tooltip
   );
 }
 
-export default function PageTour({ pageKey, steps, condition = true }) {
+export default function PageTour({ pageKey, steps, condition = true, onDone }) {
   const storageKey = TOUR_PREFIX + pageKey;
 
   const alreadySeen = () => _seen.has(storageKey) || !!lsGet(storageKey);
@@ -102,6 +102,7 @@ export default function PageTour({ pageKey, steps, condition = true }) {
     lsSet(storageKey, "1");
     _seen.add(storageKey);
     setRun(false);
+    onDone?.();
     // Remove any lingering Joyride beacon/floater elements
     try {
       setTimeout(() => {
@@ -109,7 +110,7 @@ export default function PageTour({ pageKey, steps, condition = true }) {
         document.querySelectorAll('[class*="__floater"]').forEach(el => el.remove());
       }, 50);
     } catch {}
-  }, [storageKey]);
+  }, [storageKey, onDone]);
 
   const handleCallback = useCallback(
     ({ status, action, type }) => {

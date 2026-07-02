@@ -441,10 +441,8 @@ const VendorDetailsPage = () => {
             <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14, color: "#7A5535" }}>
               <MapPin size={14} color="#C47A2E" /> {primaryCity}{stateName ? ", " + stateName : ""}
             </span>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 14, color: "#7A5535" }}>
-              <span style={{ display: "flex", gap: 1 }}>{ratingStars}</span>
-              <span style={{ fontWeight: 800, color: "#2C1A0E" }}>{rating.toFixed(1)}</span>
-              <span style={{ color: "#bbb", fontSize: 12 }}>average rating</span>
+            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, fontWeight: 700, color: "#15803d", background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 100, padding: "3px 10px" }}>
+              ✓ Verified
             </span>
             {yearsOfExperience != null && (
               <span style={{ fontSize: 14, color: "#7A5535" }}>🗓️ {yearsOfExperience} yrs in business</span>
@@ -586,15 +584,15 @@ const VendorDetailsPage = () => {
             {/* ── Stats Row ── */}
             <div className="vendor-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10, marginBottom: 28 }}>
               {[
-                { icon: "⭐", value: rating.toFixed(1), label: "Rating", sub: "out of 5" },
+                { icon: "✓", value: "Verified", label: "Tendr", sub: "verified vendor", isVerified: true },
                 { icon: "📅", value: yearsOfExperience ?? "—", label: "Years Active", sub: "experience" },
                 { icon: "👥", value: teamSize ?? "—", label: "Team Size", sub: "professionals" },
                 { icon: "🎉", value: totalEventsCompleted ?? "—", label: "Events Done", sub: "completed" },
-              ].map(({ icon, value, label, sub }) => (
-                <div key={label} style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.16)", padding: "18px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(44,26,14,0.04)" }}>
-                  <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
-                  <div style={{ fontSize: 24, fontWeight: 900, color: "#2C1A0E", lineHeight: 1 }}>{value}</div>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginTop: 4 }}>{label}</div>
+              ].map(({ icon, value, label, sub, isVerified }) => (
+                <div key={label} style={{ background: isVerified ? "#f0fdf4" : "#FFFCF5", borderRadius: 16, border: `1.5px solid ${isVerified ? "#bbf7d0" : "rgba(196,122,46,0.16)"}`, padding: "18px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(44,26,14,0.04)" }}>
+                  <div style={{ fontSize: isVerified ? 22 : 22, marginBottom: 6, color: isVerified ? "#15803d" : undefined, fontWeight: isVerified ? 900 : undefined }}>{icon}</div>
+                  <div style={{ fontSize: isVerified ? 16 : 24, fontWeight: 900, color: isVerified ? "#15803d" : "#2C1A0E", lineHeight: 1 }}>{value}</div>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: isVerified ? "#16a34a" : "#7A5535", marginTop: 4 }}>{label}</div>
                   <div style={{ fontSize: 10, color: "#bbb", marginTop: 1 }}>{sub}</div>
                 </div>
               ))}

@@ -43,7 +43,7 @@ const EyeIcon = ({ open }) => (
  *   onSuccess  — called after successful login or signup (no args)
  *   defaultMode — "login" | "signup" (default: "login")
  */
-export default function AuthModal({ open, onClose, onSuccess, defaultMode = "login" }) {
+export default function AuthModal({ open, onClose, onSuccess, defaultMode = "login", showSkip = false }) {
   const dispatch = useDispatch();
   const { loading } = useSelector(s => s.auth);
 
@@ -319,7 +319,16 @@ export default function AuthModal({ open, onClose, onSuccess, defaultMode = "log
             </form>
           )}
 
-          <p style={{ marginTop: 16, fontSize: 12, color: "#9B7450", textAlign: "center" }}>
+          {showSkip && (
+            <button
+              type="button"
+              onClick={() => { if (!isBusy) onClose?.(); }}
+              style={{ display: "block", width: "100%", marginTop: 12, padding: "9px", background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, textAlign: "center" }}
+            >
+              Skip for now
+            </button>
+          )}
+          <p style={{ marginTop: 12, fontSize: 12, color: "#9B7450", textAlign: "center" }}>
             Serving Delhi · Noida · Greater Noida · Ghaziabad
           </p>
         </div>

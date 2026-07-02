@@ -764,7 +764,7 @@ const Home = () => {
 
   return (
     <div className="App">
-      <PageTour pageKey="home" steps={HOME_TOUR_STEPS} />
+      <PageTour pageKey="home" steps={HOME_TOUR_STEPS} onDone={() => window.dispatchEvent(new CustomEvent("tendr:show-signin"))} />
       <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Faridabad. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}
       <div
