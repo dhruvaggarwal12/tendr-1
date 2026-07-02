@@ -345,6 +345,7 @@ const Home = () => {
   const [slideIdx, setSlideIdx] = useState(0);
   const [slideVisible, setSlideVisible] = useState(true);
   const faCarouselRef = useRef(null);
+  const htwRef = useRef(null);
   const [faModal, setFaModal] = useState(null);
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
   const [ghProducts, setGhProducts] = useState([]);
@@ -867,9 +868,18 @@ const Home = () => {
                 </span>
               </h1>
 
-              <p className="home-hero-para" style={{ fontSize: 16, fontWeight: 400, color: "#6B4226", lineHeight: 1.7, maxWidth: 440, margin: 0 }}>
-                From birthday parties and home celebrations to corporate events and house parties — book vendors, plan your budget, send invitations, manage guests, track payments and send curated gift hampers. All of it, right here.
+              <p className="home-hero-para" style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", lineHeight: 1.65, maxWidth: 420, margin: 0 }}>
+                Vendors, budget planning, invitations, gift hampers and more — for every celebration in Delhi NCR.
               </p>
+            </div>
+
+            {/* Trust chips */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
+              {["✓ Verified vendors", "✓ Free to browse", "✓ Price locked before you pay", "✓ 100+ vendors"].map(chip => (
+                <span key={chip} style={{ fontSize: 12, fontWeight: 600, color: "#7A5535", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 12px", whiteSpace: "nowrap" }}>
+                  {chip}
+                </span>
+              ))}
             </div>
 
             {/* CTA */}
@@ -883,7 +893,6 @@ const Home = () => {
               >
                 Start Planning →
               </button>
-
             </div>
 
           </div>
@@ -1121,7 +1130,7 @@ const Home = () => {
       `}</style>
 
       {/* How Tendr Works */}
-      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflowX: "clip" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
           {/* Heading */}
@@ -1142,13 +1151,18 @@ const Home = () => {
           </motion.div>
 
           {/* Steps */}
-          <div style={{ display: "flex", gap: 16, alignItems: "stretch" }} className="htw-row">
+          <div style={{ position: "relative" }}>
+            {/* Mobile prev arrow */}
+            <button className="htw-arrow htw-arrow-left" onClick={() => htwRef.current?.scrollBy({ left: -(htwRef.current.offsetWidth * 0.8), behavior: "smooth" })}>‹</button>
+            {/* Mobile next arrow */}
+            <button className="htw-arrow htw-arrow-right" onClick={() => htwRef.current?.scrollBy({ left: htwRef.current.offsetWidth * 0.8, behavior: "smooth" })}>›</button>
+          <div ref={htwRef} style={{ display: "flex", gap: 16, alignItems: "stretch" }} className="htw-row">
             {[
               { n: "01", icon: "📋", title: "Tell Us About Your Event",  desc: "Event type, date, budget, guests — 2 minutes.",          time: "2 min"    },
               { n: "02", icon: "🔍", title: "Browse & Shortlist",        desc: "Find verified caterers, decorators, photographers, DJs.", time: "5–10 min" },
               { n: "03", icon: "💬", title: "Chat & Get a Price",        desc: "Direct chat. Real quote. No surprises.",                 time: "24–48 hrs" },
               { n: "04", icon: "✅", title: "Review & Confirm",          desc: "One summary page. All vendors. All prices.",              time: "5 min"    },
-              { n: "05", icon: "🎉", title: "Pay & Celebrate",           desc: "Pay securely. Show up and enjoy.",                       time: "Instant"  },
+              { n: "05", icon: "🎉", title: "Pay & Celebrate",           desc: "Instant invoice, event docs and vendor contacts — all downloaded in one tap.", time: "Instant"  },
             ].map(({ n, icon, title, desc, time }, i) => (
               <motion.div
                 key={n}
@@ -1199,6 +1213,7 @@ const Home = () => {
               </motion.div>
             ))}
           </div>
+          </div>
 
           {/* Callout + CTA */}
           <motion.div
@@ -1209,8 +1224,7 @@ const Home = () => {
             style={{ textAlign: "center", marginTop: 52 }}
           >
             <p style={{ fontSize: 13.5, color: "#6B4226", marginBottom: 24, maxWidth: 520, margin: "0 auto 28px" }}>
-              Choose <strong style={{ color: "#C47A2E" }}>I'll Find My Vendors</strong> to explore yourself, or{" "}
-              <strong style={{ color: "#C47A2E" }}>Tendr Plans It For Me</strong> and we handle everything.
+              Three ways to plan — <strong style={{ color: "#C47A2E" }}>browse & book yourself</strong>, <strong style={{ color: "#C47A2E" }}>get a ready package</strong>, or <strong style={{ color: "#C47A2E" }}>just chat with our team</strong>.
             </p>
             <motion.button
               whileHover={{ scale: 1.04, boxShadow: "0 12px 36px rgba(196,122,46,0.4)" }}
@@ -1226,6 +1240,7 @@ const Home = () => {
         </div>
 
         <style>{`
+          .htw-arrow { display: none; }
           @media (max-width: 860px) and (min-width: 541px) {
             .htw-row { flex-wrap: wrap !important; }
             .htw-row > div { flex: 0 0 calc(33% - 10px) !important; }
@@ -1236,18 +1251,39 @@ const Home = () => {
               overflow-x: auto !important;
               scroll-snap-type: x mandatory !important;
               gap: 12px !important;
-              padding: 4px 24px 16px !important;
-              margin: 0 -24px !important;
+              padding: 4px 4px 16px !important;
               -webkit-overflow-scrolling: touch;
               scrollbar-width: none;
             }
             .htw-row::-webkit-scrollbar { display: none; }
             .htw-row > div {
-              flex: 0 0 76% !important;
+              flex: 0 0 78% !important;
               scroll-snap-align: center !important;
               min-width: 0 !important;
             }
             .htw-connector { display: none !important; }
+            .htw-arrow {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              position: absolute;
+              top: 50%;
+              transform: translateY(-50%);
+              z-index: 20;
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+              background: rgba(196,122,46,0.92);
+              border: none;
+              color: #fff;
+              font-size: 22px;
+              font-weight: 700;
+              cursor: pointer;
+              box-shadow: 0 3px 12px rgba(44,26,14,0.28);
+              line-height: 1;
+            }
+            .htw-arrow-left { left: 0px; }
+            .htw-arrow-right { right: 0px; }
           }
         `}</style>
       </section>
