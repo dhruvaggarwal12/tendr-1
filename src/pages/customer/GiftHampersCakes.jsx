@@ -258,13 +258,7 @@ const GiftHampersCakes = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalQty,        setModalQty]        = useState(1);
 
-  useEffect(() => {
-    fetch(`${BASE_URL}/gift-hampers/products`)
-      .then(r => r.ok ? r.json() : { products: [] })
-      .then(d => setProducts(d.products || []))
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
+  useEffect(() => { setLoading(false); }, []);
 
   const categories = ["All", ...new Set(products.map(p => p.category).filter(Boolean))];
   const filtered   = filter === "All" ? products : products.filter(p => p.category === filter);

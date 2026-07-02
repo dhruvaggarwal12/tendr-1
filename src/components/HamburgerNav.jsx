@@ -224,7 +224,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
-      { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes", tag: "Soon" },
+      { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
       { label: "💒 Wedding Stationeries", href: "/stationery" },
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
@@ -620,7 +620,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
                   { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
                   { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                  { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes", soon: true },
+                  { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
                   { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
                 ].map(cat => (
                   <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
@@ -909,7 +909,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
                 { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
                 { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes", soon: true },
+                { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
                 { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
               ].map(cat => (
                 <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
