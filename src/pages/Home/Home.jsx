@@ -1490,11 +1490,8 @@ const Home = () => {
           <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>
             Coming Soon
           </div>
-          <p style={{ fontSize: 14, color: "#6B4226", maxWidth: 500, lineHeight: 1.75, margin: "0 0 10px" }}>
-            We're building a full gifting experience — curated hampers, custom cakes, theme-based collections and doorstep delivery across Delhi NCR.
-          </p>
-          <p style={{ fontSize: 14, color: "#9B7450", maxWidth: 460, lineHeight: 1.7, margin: "0 0 28px" }}>
-            While we get everything ready, our team can still help you find the perfect gift. Just tell us your occasion, budget and preferences — we'll sort it out.
+          <p style={{ fontSize: 14, color: "#9B7450", maxWidth: 420, lineHeight: 1.7, margin: "0 0 24px" }}>
+            Full gifting flow coming soon. Until then, our team can still help — just tell us your occasion and budget.
           </p>
           <button
             onClick={() => navigate("/baat-karo")}
