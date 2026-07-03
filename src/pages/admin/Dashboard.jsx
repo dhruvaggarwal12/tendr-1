@@ -599,6 +599,7 @@ const AdminDashboard = () => {
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [addedVendorCount, setAddedVendorCount] = useState(0);
   const [deletingVendorId, setDeletingVendorId] = useState(null);
+  const [togglingHideId, setTogglingHideId] = useState(null);
   const [editingVendor, setEditingVendor] = useState(null);
   const [menuVendor, setMenuVendor] = useState(null);
   const [registeringAppId, setRegisteringAppId] = useState(null);
@@ -2472,6 +2473,29 @@ const AdminDashboard = () => {
                           ✏️
                         </button>
                         <button
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            const newVal = !v.isHidden;
+                            setTogglingHideId(v._id);
+                            try {
+                              await fetch(`${BASE_URL}/admin/vendors/${v._id}`, {
+                                method: 'PATCH',
+                                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                                credentials: 'include',
+                                body: JSON.stringify({ isHidden: newVal }),
+                              });
+                              setVendorStats(prev => prev.map(x => x._id === v._id ? { ...x, isHidden: newVal } : x));
+                            } catch {} finally { setTogglingHideId(null); }
+                          }}
+                          disabled={togglingHideId === v._id}
+                          title={v.isHidden ? "Vendor is hidden — click to show on website" : "Hide vendor from website"}
+                          style={{ padding: "2px 8px", height: 26, borderRadius: 7, border: `1.5px solid ${v.isHidden ? "rgba(239,68,68,0.4)" : "rgba(107,114,128,0.3)"}`, background: v.isHidden ? "rgba(239,68,68,0.1)" : "rgba(107,114,128,0.06)", color: v.isHidden ? "#dc2626" : "#6b7280", cursor: togglingHideId === v._id ? "not-allowed" : "pointer", fontSize: 11, fontWeight: 700, fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", transition: "all 0.15s" }}
+                          onMouseEnter={e => { if (togglingHideId !== v._id) { e.currentTarget.style.background = v.isHidden ? "rgba(239,68,68,0.2)" : "rgba(107,114,128,0.15)"; } }}
+                          onMouseLeave={e => { e.currentTarget.style.background = v.isHidden ? "rgba(239,68,68,0.1)" : "rgba(107,114,128,0.06)"; }}
+                        >
+                          {togglingHideId === v._id ? "…" : v.isHidden ? "Unhide" : "Hide"}
+                        </button>
+                        <button
                           onClick={(e) => { e.stopPropagation(); handleDeleteVendor(v); }}
                           disabled={deletingVendorId === v._id}
                           title="Delete vendor"
@@ -2485,7 +2509,10 @@ const AdminDashboard = () => {
 
                       {/* Card content — click opens detail */}
                       <div onClick={() => setSelectedVendor(v)} style={{ cursor: "pointer" }}>
-                        <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E", marginBottom: 4, paddingRight: 24 }}>{v.name}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4, paddingRight: 24 }}>
+                          <span style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E" }}>{v.name}</span>
+                          {v.isHidden && <span style={{ fontSize: 9, fontWeight: 800, padding: "2px 6px", borderRadius: 4, background: "rgba(239,68,68,0.1)", color: "#dc2626", border: "1px solid rgba(239,68,68,0.25)", letterSpacing: "0.05em", flexShrink: 0 }}>HIDDEN</span>}
+                        </div>
                         <div style={{ fontSize: 12, color: "#C47A2E", fontWeight: 600, marginBottom: 10 }}>{v.serviceType} · {v.city}</div>
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                           {[
