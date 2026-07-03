@@ -9,7 +9,7 @@ import GET_TOGETHER_THEMES from '../data/getTogetherThemes';
 import KITTY_PARTY_THEMES from '../data/kittyPartyThemes';
 import NAMING_CEREMONY_THEMES from '../data/namingCeremonyThemes';
 
-// ── Data ──────────────────────────────────────────────────────────────────
+// ── Data maps ─────────────────────────────────────────────────────────────
 
 const THEME_DATA_MAP = {
   'Birthday':        BIRTHDAY_THEMES,
@@ -34,205 +34,626 @@ const OCCASIONS_LIST = [
 ];
 
 const BUDGET_OPTIONS = [
-  { key: 'Budget',   label: 'Basic',    desc: 'Simple & charming',      stars: 1 },
-  { key: 'Standard', label: 'Standard', desc: 'Balanced & beautiful',   stars: 2 },
-  { key: 'Premium',  label: 'Premium',  desc: 'Elevated & elegant',     stars: 3 },
-  { key: 'Luxury',   label: 'Luxury',   desc: 'Opulent & grand',        stars: 4 },
+  { key: 'Budget',   label: 'Basic',    desc: 'Simple & charming',    stars: 1 },
+  { key: 'Standard', label: 'Standard', desc: 'Balanced & beautiful', stars: 2 },
+  { key: 'Premium',  label: 'Premium',  desc: 'Elevated & elegant',   stars: 3 },
+  { key: 'Luxury',   label: 'Luxury',   desc: 'Opulent & grand',      stars: 4 },
 ];
 
 const VENUE_OPTIONS = [
-  {
-    key: 'house', label: 'At Home / Venue', desc: 'House, apartment, banquet hall',
-    venues: ['Home','Apartment','Villa','Hotel','Banquet','Club','Indoor Party Hall','Studio','Library Café','Café','Gaming Café','Heritage Venue','Ancestral Home','Community Hall','Sports Bar','Winery'],
-  },
-  {
-    key: 'lawn', label: 'Lawn / Farmhouse', desc: 'Open outdoor ground or resort',
-    venues: ['Lawn','Farmhouse','Resort','Ground','Poolside','Beach Resort'],
-  },
-  {
-    key: 'garden', label: 'Garden', desc: 'Lush green garden setting',
-    venues: ['Garden','Farmhouse','Lawn'],
-  },
-  {
-    key: 'terrace', label: 'Terrace / Rooftop', desc: 'Elevated open-sky spot',
-    venues: ['Rooftop','Penthouse','Terrace','Villa','Hotel'],
-  },
+  { key: 'house',   label: 'At Home / Venue',    desc: 'House, apartment, banquet hall', venues: ['Home','Apartment','Villa','Hotel','Banquet','Club','Indoor Party Hall','Studio','Library Café','Café','Gaming Café','Heritage Venue','Ancestral Home','Community Hall','Sports Bar','Winery'] },
+  { key: 'lawn',    label: 'Lawn / Farmhouse',   desc: 'Open outdoor ground or resort',  venues: ['Lawn','Farmhouse','Resort','Ground','Poolside','Beach Resort'] },
+  { key: 'garden',  label: 'Garden',             desc: 'Lush green garden setting',      venues: ['Garden','Farmhouse','Lawn'] },
+  { key: 'terrace', label: 'Terrace / Rooftop',  desc: 'Elevated open-sky spot',         venues: ['Rooftop','Penthouse','Terrace','Villa','Hotel'] },
 ];
 
 const TIME_OPTIONS = [
-  { key: 'Morning',   label: 'Morning',   desc: '8 am – 12 pm',  icon: '🌅' },
-  { key: 'Afternoon', label: 'Afternoon', desc: '12 pm – 4 pm',  icon: '☀️' },
-  { key: 'Evening',   label: 'Evening',   desc: '4 pm – 8 pm',   icon: '🌆' },
-  { key: 'Night',     label: 'Night',     desc: '8 pm onwards',  icon: '🌙' },
+  { key: 'Morning',   label: 'Morning',   desc: '8 am – 12 pm', icon: '🌅' },
+  { key: 'Afternoon', label: 'Afternoon', desc: '12 pm – 4 pm', icon: '☀️' },
+  { key: 'Evening',   label: 'Evening',   desc: '4 pm – 8 pm',  icon: '🌆' },
+  { key: 'Night',     label: 'Night',     desc: '8 pm onwards', icon: '🌙' },
 ];
+
+const PAGE_NAMES = ['Overview', 'The Details', 'Checklist & Decor'];
+
+// ── Colour system (warm, Tendr-resonant) ──────────────────────────────────
+
+// Per-occasion accent colours — all warm earth/gold tones matching the website
+const OCC_COLOR = {
+  'Birthday':        '#E8855A',  // warm coral
+  'Anniversary':     '#C4728A',  // dusty rose
+  'Baby Shower':     '#8AB4A0',  // sage mint
+  'House Party':     '#D4A53A',  // bright amber
+  'Housewarming':    '#C47A2E',  // exact Tendr gold
+  'Get Together':    '#7A9A5A',  // forest sage
+  'Kitty Party':     '#D4778A',  // warm pink
+  'Naming Ceremony': '#D4922E',  // saffron
+};
+const FALLBACK_COLOR = '#C47A2E';
+
+// Warm palette for per-theme unique colours (hashed from theme id)
+const WARM_SWATCHES = [
+  '#C47A2E','#E8855A','#D4A53A','#C4728A',
+  '#D4778A','#D4922E','#8AB4A0','#7A9A5A',
+  '#9A7A50','#C47A5A','#B47A30','#A4728A',
+  '#9A5A3A','#D49A5A','#8A7A50','#C4924A',
+];
+
+function themeAccentColor(themeId) {
+  let h = 5381;
+  for (const c of (themeId || '')) { h = ((h << 5) + h) + c.charCodeAt(0); h |= 0; }
+  return WARM_SWATCHES[Math.abs(h) % WARM_SWATCHES.length];
+}
+
+function darken(hex, pct) {
+  const n = parseInt(hex.replace('#', ''), 16);
+  const f = 1 - pct / 100;
+  const r = Math.max(0, Math.round(((n >> 16) & 255) * f));
+  const g = Math.max(0, Math.round(((n >> 8) & 255) * f));
+  const b = Math.max(0, Math.round((n & 255) * f));
+  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
 
 // ── Photos ────────────────────────────────────────────────────────────────
 
 const U = 'https://images.unsplash.com/';
-const PHOTOS = {
-  elegant_night:  `${U}photo-1530103862676-de8c9debad1d?w=720&h=440&fit=crop&auto=format&q=80`,
-  luxury_gold:    `${U}photo-1464366400600-7168b8af9bc3?w=720&h=440&fit=crop&auto=format&q=80`,
-  kids_fun:       `${U}photo-1513151233558-d860c5398176?w=720&h=440&fit=crop&auto=format&q=80`,
-  garden_day:     `${U}photo-1510076857177-7470076d4098?w=720&h=440&fit=crop&auto=format&q=80`,
-  romantic:       `${U}photo-1519167758481-83f575bb0ea2?w=720&h=440&fit=crop&auto=format&q=80`,
-  dj_neon:        `${U}photo-1574391884720-bbc3740c59d1?w=720&h=440&fit=crop&auto=format&q=80`,
-  baby_pastel:    `${U}photo-1587825140708-dfaf72ae4b04?w=720&h=440&fit=crop&auto=format&q=80`,
-  traditional:    `${U}photo-1576091160550-2173dba999ef?w=720&h=440&fit=crop&auto=format&q=80`,
-  boho_rustic:    `${U}photo-1501339847302-ac426a4a7cbb?w=720&h=440&fit=crop&auto=format&q=80`,
-  outdoor:        `${U}photo-1506157786151-b8491531f063?w=720&h=440&fit=crop&auto=format&q=80`,
-  masquerade:     `${U}photo-1493843978996-26b3a5d03ae5?w=720&h=440&fit=crop&auto=format&q=80`,
-  movie:          `${U}photo-1489599849927-2ee91cede3ba?w=720&h=440&fit=crop&auto=format&q=80`,
-  pool:           `${U}photo-1519046904884-53103b34b206?w=720&h=440&fit=crop&auto=format&q=80`,
-  carnival:       `${U}photo-1429514513361-8fa32282fd5f?w=720&h=440&fit=crop&auto=format&q=80`,
+const PH = {
+  elegant_night:  `${U}photo-1530103862676-de8c9debad1d?w=800&h=480&fit=crop&auto=format&q=80`,
+  luxury_gold:    `${U}photo-1464366400600-7168b8af9bc3?w=800&h=480&fit=crop&auto=format&q=80`,
+  kids_fun:       `${U}photo-1513151233558-d860c5398176?w=800&h=480&fit=crop&auto=format&q=80`,
+  garden_day:     `${U}photo-1510076857177-7470076d4098?w=800&h=480&fit=crop&auto=format&q=80`,
+  romantic:       `${U}photo-1519167758481-83f575bb0ea2?w=800&h=480&fit=crop&auto=format&q=80`,
+  dj_neon:        `${U}photo-1574391884720-bbc3740c59d1?w=800&h=480&fit=crop&auto=format&q=80`,
+  baby_pastel:    `${U}photo-1587825140708-dfaf72ae4b04?w=800&h=480&fit=crop&auto=format&q=80`,
+  traditional:    `${U}photo-1576091160550-2173dba999ef?w=800&h=480&fit=crop&auto=format&q=80`,
+  boho_rustic:    `${U}photo-1501339847302-ac426a4a7cbb?w=800&h=480&fit=crop&auto=format&q=80`,
+  outdoor:        `${U}photo-1506157786151-b8491531f063?w=800&h=480&fit=crop&auto=format&q=80`,
+  masquerade:     `${U}photo-1493843978996-26b3a5d03ae5?w=800&h=480&fit=crop&auto=format&q=80`,
+  movie:          `${U}photo-1489599849927-2ee91cede3ba?w=800&h=480&fit=crop&auto=format&q=80`,
+  pool:           `${U}photo-1519046904884-53103b34b206?w=800&h=480&fit=crop&auto=format&q=80`,
+  carnival:       `${U}photo-1429514513361-8fa32282fd5f?w=800&h=480&fit=crop&auto=format&q=80`,
 };
 
-const THEME_PHOTO_OVERRIDES = {
-  'neon-glow': PHOTOS.dj_neon, 'neon-glow-party': PHOTOS.dj_neon,
-  'retro-disco': PHOTOS.dj_neon, 'dj-night': PHOTOS.dj_neon,
-  'silent-disco': PHOTOS.dj_neon, 'gaming': PHOTOS.elegant_night,
-  'gaming-party': PHOTOS.elegant_night,
-  'masquerade': PHOTOS.masquerade,
-  'movie-night': PHOTOS.movie,
-  'carnival': PHOTOS.carnival, 'circus': PHOTOS.carnival,
-  'pool-party': PHOTOS.pool,
-  'boho-picnic': PHOTOS.boho_rustic, 'rustic-chic': PHOTOS.boho_rustic,
-  'boho-home': PHOTOS.boho_rustic, 'boho-chic': PHOTOS.boho_rustic,
-  'garden-party': PHOTOS.garden_day, 'garden-picnic': PHOTOS.garden_day,
-  'garden-brunch': PHOTOS.garden_day, 'rustic-garden': PHOTOS.garden_day,
-  'eco-green-home': PHOTOS.garden_day,
-  'black-and-gold': PHOTOS.luxury_gold, 'black-and-gold-elegance': PHOTOS.luxury_gold,
-  'black-and-gold-night': PHOTOS.luxury_gold, 'royal-celebration': PHOTOS.luxury_gold,
-  'silver-jubilee': PHOTOS.luxury_gold, 'royal-welcome': PHOTOS.luxury_gold,
-  'royal-queen': PHOTOS.luxury_gold, 'royal-prince': PHOTOS.luxury_gold,
-  'royal-princess': PHOTOS.luxury_gold,
-  'romantic-candlelight': PHOTOS.romantic, 'rooftop-dinner': PHOTOS.romantic,
-  'starry-night': PHOTOS.romantic, 'paris-romance': PHOTOS.romantic,
-  'cruise-night': PHOTOS.romantic, 'rooftop-chill': PHOTOS.romantic,
-  'rooftop-vibes': PHOTOS.elegant_night,
-  'beach-sunset': PHOTOS.outdoor, 'tropical-paradise': PHOTOS.outdoor,
-  'tropical-escape': PHOTOS.outdoor, 'backyard-bbq': PHOTOS.outdoor,
-  'bonfire-night': PHOTOS.outdoor, 'camping-adventure': PHOTOS.outdoor,
-  'hawaiian-luau': PHOTOS.outdoor,
-  'traditional-namkaran': PHOTOS.traditional, 'traditional-griha-pravesh': PHOTOS.traditional,
-  'temple-blessing': PHOTOS.traditional, 'heritage-haveli': PHOTOS.traditional,
-  'festival-home': PHOTOS.traditional, 'festival-house-party': PHOTOS.elegant_night,
-  'pastel-dreams': PHOTOS.baby_pastel, 'teddy-bear': PHOTOS.baby_pastel,
-  'cloud-and-moon': PHOTOS.baby_pastel, 'twinkle-twinkle': PHOTOS.baby_pastel,
-  'moon-and-stars': PHOTOS.baby_pastel, 'little-prince': PHOTOS.baby_pastel,
-  'little-princess': PHOTOS.baby_pastel,
-  'bollywood-glam': PHOTOS.elegant_night, 'casino-night': PHOTOS.elegant_night,
-  'hollywood-glam': PHOTOS.elegant_night,
-  'white-party': PHOTOS.elegant_night, 'white-and-gold': PHOTOS.luxury_gold,
-  'cocktail-lounge': PHOTOS.elegant_night, 'mystery-murder-night': PHOTOS.masquerade,
-  'denim-and-diamonds': PHOTOS.luxury_gold,
+const PHOTO_ID_MAP = {
+  'neon-glow':PH.dj_neon,'neon-glow-party':PH.dj_neon,'retro-disco':PH.dj_neon,'dj-night':PH.dj_neon,'silent-disco':PH.dj_neon,
+  'gaming':PH.elegant_night,'gaming-party':PH.elegant_night,
+  'masquerade':PH.masquerade,'mystery-murder-night':PH.masquerade,
+  'movie-night':PH.movie,
+  'carnival':PH.carnival,'circus':PH.carnival,
+  'pool-party':PH.pool,
+  'boho-picnic':PH.boho_rustic,'rustic-chic':PH.boho_rustic,'boho-home':PH.boho_rustic,'boho-chic':PH.boho_rustic,'rustic-garden':PH.boho_rustic,
+  'garden-party':PH.garden_day,'garden-picnic':PH.garden_day,'garden-brunch':PH.garden_day,'eco-green-home':PH.garden_day,
+  'black-and-gold':PH.luxury_gold,'black-and-gold-elegance':PH.luxury_gold,'black-and-gold-night':PH.luxury_gold,
+  'royal-celebration':PH.luxury_gold,'silver-jubilee':PH.luxury_gold,'royal-welcome':PH.luxury_gold,
+  'royal-queen':PH.luxury_gold,'royal-prince':PH.luxury_gold,'royal-princess':PH.luxury_gold,
+  'denim-and-diamonds':PH.luxury_gold,'white-and-gold':PH.luxury_gold,
+  'romantic-candlelight':PH.romantic,'rooftop-dinner':PH.romantic,'starry-night':PH.romantic,'paris-romance':PH.romantic,'cruise-night':PH.romantic,
+  'beach-sunset':PH.outdoor,'tropical-paradise':PH.outdoor,'tropical-escape':PH.outdoor,'backyard-bbq':PH.outdoor,
+  'bonfire-night':PH.outdoor,'camping-adventure':PH.outdoor,'hawaiian-luau':PH.outdoor,
+  'traditional-namkaran':PH.traditional,'traditional-griha-pravesh':PH.traditional,'temple-blessing':PH.traditional,'heritage-haveli':PH.traditional,'festival-home':PH.traditional,
+  'pastel-dreams':PH.baby_pastel,'teddy-bear':PH.baby_pastel,'cloud-and-moon':PH.baby_pastel,'twinkle-twinkle':PH.baby_pastel,'moon-and-stars':PH.baby_pastel,
+  'bollywood-glam':PH.elegant_night,'casino-night':PH.elegant_night,'hollywood-glam':PH.elegant_night,'white-party':PH.elegant_night,'cocktail-lounge':PH.elegant_night,'rooftop-vibes':PH.elegant_night,'festival-house-party':PH.elegant_night,
 };
 
 function occFallback(occasion) {
-  return `/occasions/${occasion.toLowerCase().replace(/ /g, '-')}-desktop.png`;
+  return `/occasions/${(occasion||'birthday').toLowerCase().replace(/ /g,'-')}-desktop.png`;
 }
 
 function getThemePhoto(theme, occasion) {
-  if (THEME_PHOTO_OVERRIDES[theme.id]) return THEME_PHOTO_OVERRIDES[theme.id];
-  const bestTime = theme.bestTime || [];
-  const budget = theme.budget || '';
-  const isNight = bestTime.includes('Night') && !bestTime.includes('Morning');
-  const isKids  = occasion === 'Birthday' && parseInt((theme.bestAgeGroup || '').split(/[-–]/)[1]) <= 13;
-  const isGarden = (theme.bestVenue || []).includes('Garden');
-  const isBaby = occasion === 'Baby Shower' || occasion === 'Naming Ceremony';
-  if (isBaby)         return PHOTOS.baby_pastel;
-  if (isKids)         return PHOTOS.kids_fun;
-  if (budget === 'Luxury') return PHOTOS.luxury_gold;
-  if (isGarden)       return PHOTOS.garden_day;
-  if (isNight)        return PHOTOS.dj_neon;
+  if (PHOTO_ID_MAP[theme.id]) return PHOTO_ID_MAP[theme.id];
+  const bt = theme.bestTime || [];
+  const isBaby   = occasion === 'Baby Shower' || occasion === 'Naming Ceremony';
+  const isKids   = occasion === 'Birthday' && parseInt((theme.bestAgeGroup||'').split(/[-–]/)[1]) <= 13;
+  const isLux    = theme.budget === 'Luxury';
+  const isGarden = (theme.bestVenue||[]).includes('Garden');
+  const isNight  = bt.includes('Night') && !bt.includes('Morning');
+  if (isBaby)   return PH.baby_pastel;
+  if (isKids)   return PH.kids_fun;
+  if (isLux)    return PH.luxury_gold;
+  if (isGarden) return PH.garden_day;
+  if (isNight)  return PH.dj_neon;
   return occFallback(occasion);
 }
 
 // ── Filtering ─────────────────────────────────────────────────────────────
 
-function parseGuestRange(str = '') {
-  const m = str.match(/(\d+)[–\-](\d+)/);
-  if (m) return [parseInt(m[1]), parseInt(m[2])];
-  const s = str.match(/(\d+)/);
-  return s ? [0, parseInt(s[1])] : [0, 999];
+function parseGuestRange(s = '') {
+  const m = s.match(/(\d+)[–\-](\d+)/);
+  return m ? [parseInt(m[1]), parseInt(m[2])] : [0, 999];
 }
 
 function filterThemes(themes, { budget, guests, venue, timeOfDay }) {
-  return themes.filter(theme => {
-    if (budget) {
-      const tb = (theme.budget || '');
-      if (!tb.includes(budget)) return false;
-    }
+  return themes.filter(t => {
+    if (budget && !(t.budget||'').includes(budget)) return false;
     if (guests && !isNaN(parseInt(guests))) {
       const g = parseInt(guests);
-      const [min, max] = parseGuestRange(theme.recommendedGuests);
-      if (g < min * 0.65 || g > max * 1.4) return false;
+      const [mn, mx] = parseGuestRange(t.recommendedGuests);
+      if (g < mn * 0.65 || g > mx * 1.4) return false;
     }
     if (venue) {
       const opt = VENUE_OPTIONS.find(v => v.key === venue);
-      if (opt) {
-        const tv = theme.bestVenue || [];
-        if (!tv.some(v => opt.venues.includes(v))) return false;
-      }
+      if (opt && !(t.bestVenue||[]).some(v => opt.venues.includes(v))) return false;
     }
-    if (timeOfDay) {
-      const tt = theme.bestTime || [];
-      if (!tt.includes(timeOfDay)) return false;
-    }
+    if (timeOfDay && !(t.bestTime||[]).includes(timeOfDay)) return false;
     return true;
   });
 }
 
-function getFilteredWithFallback(occasion, filters) {
+function getFiltered(occasion, filters) {
   const all = THEME_DATA_MAP[occasion] || [];
   let r = filterThemes(all, filters);
-  if (r.length === 0) r = filterThemes(all, { ...filters, budget: null });
-  if (r.length === 0) r = filterThemes(all, { ...filters, budget: null, venue: null });
-  if (r.length === 0) r = all.slice(0, 8);
+  if (!r.length) r = filterThemes(all, { ...filters, budget: null });
+  if (!r.length) r = filterThemes(all, { ...filters, budget: null, venue: null });
+  if (!r.length) r = all.slice(0, 8);
   return r;
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────
+// ── CSS ───────────────────────────────────────────────────────────────────
 
 const CSS = `
-  @keyframes op-fadein { from { opacity:0; transform:scale(0.96) translateY(10px); } to { opacity:1; transform:scale(1) translateY(0); } }
-  @keyframes op-slide  { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
-  .op-overlay   { animation: op-fadein 0.25s ease forwards; }
-  .op-step      { animation: op-slide  0.22s ease forwards; }
-  .op-occ-card:hover { transform:translateY(-4px) scale(1.02) !important; box-shadow:0 12px 36px rgba(0,0,0,0.45) !important; }
-  .op-occ-card:hover .op-occ-label { opacity:1 !important; }
-  .op-budget-btn:hover, .op-venue-btn:hover, .op-time-btn:hover { border-color:rgba(201,168,76,0.7) !important; background:rgba(201,168,76,0.1) !important; }
-  .op-theme-card:hover { transform:translateY(-5px) scale(1.015) !important; box-shadow:0 20px 56px rgba(0,0,0,0.55) !important; }
-  .op-quick-pill:hover { border-color:#C9A84C !important; color:#C9A84C !important; }
+  @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap');
+
+  @keyframes op-rise {
+    from { opacity:0; transform:scale(0.97) translateY(10px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+  @keyframes op-step {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+  @keyframes book-fwd {
+    from { opacity:0; transform:perspective(900px) rotateY(22deg) translateX(6%) scale(0.97); }
+    to   { opacity:1; transform:perspective(900px) rotateY(0) translateX(0) scale(1); }
+  }
+  @keyframes book-bwd {
+    from { opacity:0; transform:perspective(900px) rotateY(-22deg) translateX(-6%) scale(0.97); }
+    to   { opacity:1; transform:perspective(900px) rotateY(0) translateX(0) scale(1); }
+  }
+
+  .op-rise  { animation: op-rise  0.28s cubic-bezier(0.3,0,0.2,1) forwards; }
+  .op-step  { animation: op-step  0.22s cubic-bezier(0.3,0,0.2,1) forwards; }
+  .book-fwd { animation: book-fwd 0.38s cubic-bezier(0.25,0.8,0.25,1) forwards; }
+  .book-bwd { animation: book-bwd 0.38s cubic-bezier(0.25,0.8,0.25,1) forwards; }
+
   .op-scroll::-webkit-scrollbar { display:none; }
   .op-scroll { scrollbar-width:none; }
+
+  .op-occ-card:hover  { transform:translateY(-5px) scale(1.03) !important; box-shadow:0 14px 40px rgba(0,0,0,0.5) !important; }
+  .op-theme-card:hover{ transform:translateY(-5px) !important; box-shadow:0 22px 52px rgba(0,0,0,0.55) !important; }
+
+  .op-opt:hover { opacity:0.95; }
+
   @media (max-width:600px) {
-    .op-panel { border-radius:20px 20px 0 0 !important; margin-top:auto !important; max-height:93vh !important; }
+    .op-panel        { border-radius:22px 22px 0 0 !important; max-height:93vh !important; margin-top:auto; }
     .op-overlay-wrap { align-items:flex-end !important; padding:0 !important; }
-    .op-results-grid { grid-template-columns:1fr 1fr !important; }
-    .op-detail-hero { height:200px !important; }
-    .op-detail-grid { grid-template-columns:1fr !important; }
-    .op-occ-picker-grid { grid-template-columns:repeat(4,1fr) !important; gap:8px !important; }
-    .op-occ-picker-card { height:82px !important; }
-    .op-budget-grid { grid-template-columns:1fr 1fr !important; }
-    .op-venue-grid  { grid-template-columns:1fr 1fr !important; }
-    .op-time-grid   { grid-template-columns:1fr 1fr !important; }
+    .op-picker-grid  { gap:7px !important; }
+    .op-picker-card  { height:78px !important; }
+    .op-2col-form    { grid-template-columns:1fr 1fr !important; }
+    .book-detail-panel{ border-radius:20px 20px 0 0 !important; max-height:95vh !important; margin-top:auto; }
+    .book-detail-wrap { align-items:flex-end !important; padding:0 !important; }
+    .book-detail-col  { grid-template-columns:1fr !important; }
+    .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
+    .book-hero-img    { height:190px !important; }
+    .book-title       { font-size:1.7rem !important; }
   }
 `;
 
-// ── Main Component ────────────────────────────────────────────────────────
+// ── Helper components ─────────────────────────────────────────────────────
+
+function SectionLabel({ color, children }) {
+  return (
+    <h4 style={{
+      fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em',
+      margin: '0 0 8px', color: color || FALLBACK_COLOR,
+      fontFamily: "'Outfit', sans-serif",
+    }}>{children}</h4>
+  );
+}
+
+function StatTile({ label, value, color }) {
+  return (
+    <div style={{
+      padding: '12px 10px', borderRadius: 12, textAlign: 'center',
+      background: `${color}12`, border: `1px solid ${color}28`,
+    }}>
+      <div style={{ fontSize: 9, color: `${color}BB`, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 5, fontFamily: "'Outfit',sans-serif" }}>{label}</div>
+      <div style={{ fontSize: 12, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.3, fontFamily: "'Outfit',sans-serif" }}>{value}</div>
+    </div>
+  );
+}
+
+function BulletList({ items, color, max = 5 }) {
+  if (!items?.length) return null;
+  return (
+    <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none' }}>
+      {items.slice(0, max).map((item, i) => (
+        <li key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'flex-start' }}>
+          <span style={{ color, fontSize: 7, marginTop: 5, flexShrink: 0 }}>◆</span>
+          <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.78)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
+        </li>
+      ))}
+      {items.length > max && (
+        <li style={{ fontSize: 11, color: 'rgba(245,236,216,0.3)', marginTop: 2, fontFamily: "'Outfit',sans-serif" }}>+{items.length - max} more</li>
+      )}
+    </ul>
+  );
+}
+
+function PageDots({ current, total, color }) {
+  return (
+    <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
+      {Array.from({ length: total }, (_, i) => (
+        <div key={i} style={{
+          width: i === current ? 22 : 6, height: 6, borderRadius: 3,
+          background: i === current ? color : 'rgba(245,236,216,0.2)',
+          transition: 'all 0.3s ease',
+        }} />
+      ))}
+    </div>
+  );
+}
+
+function NavRow({ onBack, onNext, nextLabel = 'Next →', color }) {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
+      <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.38)', fontSize: 13, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif" }}>← Back</button>
+      {onNext && (
+        <button onClick={onNext} style={{ padding: '10px 26px', borderRadius: 100, background: color || FALLBACK_COLOR, color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 4px 14px ${color||FALLBACK_COLOR}44` }}>
+          {nextLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function Breadcrumb({ occasion, current, color }) {
+  if (!occasion) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
+      <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
+      <span style={{ color: 'rgba(245,236,216,0.2)' }}>›</span>
+      <span style={{ fontSize: 10, color, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{current}</span>
+    </div>
+  );
+}
+
+function OptButton({ selected, color, onClick, children, className = 'op-opt' }) {
+  return (
+    <button className={className} onClick={onClick} style={{
+      padding: '18px 15px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+      border: `1.5px solid ${selected ? color : 'rgba(245,236,216,0.12)'}`,
+      background: selected ? `${color}1C` : 'rgba(245,236,216,0.04)',
+      transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+    }}>
+      {children}
+    </button>
+  );
+}
+
+// ── Book carousel pages ───────────────────────────────────────────────────
+
+function BookPage1({ theme, occasion, photo, color }) {
+  return (
+    <div>
+      {/* Full-bleed hero — negative margin to cancel parent padding */}
+      <div className="book-hero-img" style={{ margin: '0 -24px', height: 250, position: 'relative', overflow: 'hidden' }}>
+        <img src={photo} alt={theme.theme} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          onError={e => { e.target.src = occFallback(occasion); }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, #1A0902 0%, rgba(26,9,2,0.5) 45%, transparent 100%)` }} />
+        {/* Badges + Title inside photo */}
+        <div style={{ position: 'absolute', bottom: 20, left: 24, right: 24 }}>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', padding: '3px 10px', borderRadius: 100, background: `${color}28`, border: `1px solid ${color}55`, color, backdropFilter: 'blur(8px)', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
+            <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.12)', border: '1px solid rgba(245,236,216,0.25)', color: 'rgba(245,236,216,0.8)', backdropFilter: 'blur(8px)', fontFamily: "'Outfit',sans-serif" }}>{theme.budget}</span>
+          </div>
+          <h2 className="book-title" style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: 'clamp(1.9rem,5vw,2.8rem)', fontWeight: 400, letterSpacing: '-0.01em',
+            color: '#F5ECD8', margin: '0 0 5px', lineHeight: 1.1,
+          }}>{theme.theme}</h2>
+          <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.68)', margin: 0, fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>{theme.oneLineDesc}</p>
+        </div>
+      </div>
+
+      <div style={{ paddingTop: 22 }}>
+        {/* Overview */}
+        {theme.overview && (
+          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, color: 'rgba(245,236,216,0.68)', lineHeight: 1.85, margin: '0 0 22px', borderLeft: `3px solid ${color}40`, paddingLeft: 14 }}>{theme.overview}</p>
+        )}
+
+        {/* Colour palette */}
+        {theme.colourPalette?.length > 0 && (
+          <div style={{ marginBottom: 22 }}>
+            <SectionLabel color={color}>Colour Palette</SectionLabel>
+            <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 4 }}>
+              {theme.colourPalette.map(c => (
+                <span key={c} style={{ padding: '5px 14px', borderRadius: 100, fontSize: 12, background: `${color}14`, border: `1px solid ${color}35`, color: 'rgba(245,236,216,0.8)', fontFamily: "'Outfit',sans-serif" }}>{c}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Stats row */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+          <StatTile label="Guests" value={theme.recommendedGuests} color={color} />
+          <StatTile label="Budget" value={theme.budget} color={color} />
+          <StatTile label="Best Time" value={(theme.bestTime||[]).join(' · ')} color={color} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BookPage2({ theme, color }) {
+  const food = theme.foodSuggestions || theme.foodIdeas || [];
+  const col1 = [
+    { title: 'Decoration Ideas',  items: theme.decorationIdeas },
+    { title: 'Food & Drinks',     items: food },
+    { title: 'Entertainment',     items: theme.entertainment },
+  ];
+  const col2 = [
+    { title: 'Games & Activities', items: theme.gamesActivities },
+    { title: 'Cake Ideas',         items: theme.cakeIdeas || theme.returnGiftIdeas },
+    { title: 'Photography Tips',   items: theme.photographyIdeas },
+  ];
+
+  return (
+    <div style={{ paddingTop: 8 }}>
+      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.4rem,3.5vw,1.9rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
+        What's Included
+      </h3>
+      <div className="book-detail-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
+        <div>
+          {col1.map(({ title, items }) => items?.length > 0 && (
+            <div key={title} style={{ marginBottom: 22 }}>
+              <SectionLabel color={color}>{title}</SectionLabel>
+              <BulletList items={items} color={color} max={5} />
+            </div>
+          ))}
+        </div>
+        <div>
+          {col2.map(({ title, items }) => items?.length > 0 && (
+            <div key={title} style={{ marginBottom: 22 }}>
+              <SectionLabel color={color}>{title}</SectionLabel>
+              <BulletList items={items} color={color} max={5} />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BookPage3({ theme, color, onClose }) {
+  return (
+    <div style={{ paddingTop: 8 }}>
+      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.4rem,3.5vw,1.9rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
+        Plan & Decor
+      </h3>
+
+      {/* Planning checklist */}
+      {theme.planningChecklist?.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <SectionLabel color={color}>Planning Checklist</SectionLabel>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 }}>
+            {theme.planningChecklist.map((item, i) => (
+              <span key={i} style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '5px 12px', borderRadius: 100, fontSize: 11,
+                background: `${color}12`, border: `1px solid ${color}2E`,
+                color: 'rgba(245,236,216,0.72)', fontFamily: "'Outfit',sans-serif",
+              }}>
+                <span style={{ color, fontSize: 8 }}>✓</span>{item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Decor photos placeholder */}
+      <div style={{ marginBottom: 28 }}>
+        <SectionLabel color={color}>Suggested Decor Photos</SectionLabel>
+        <p style={{ fontSize: 12, color: 'rgba(245,236,216,0.32)', margin: '4px 0 12px', fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>
+          Curated decor photos for this theme — photos coming soon
+        </p>
+        <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
+          {[1,2,3,4,5,6].map(i => (
+            <div key={i} style={{
+              aspectRatio: '4/3', borderRadius: 11,
+              background: `${color}0A`,
+              border: `1.5px dashed ${color}28`,
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center', gap: 5,
+            }}>
+              <span style={{ fontSize: 20, opacity: 0.22 }}>📷</span>
+              <span style={{ fontSize: 8, color: 'rgba(245,236,216,0.2)', fontFamily: "'Outfit',sans-serif" }}>Photo {i}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CTAs */}
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 18, borderTop: `1px solid ${color}18` }}>
+        <button style={{
+          flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
+          background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
+          color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
+        }}>Book This Theme</button>
+        <button onClick={onClose} style={{
+          flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
+          background: 'rgba(245,236,216,0.05)', color: 'rgba(245,236,216,0.52)',
+          border: '1px solid rgba(245,236,216,0.12)', fontSize: 14, cursor: 'pointer',
+          fontFamily: "'Outfit',sans-serif",
+        }}>See Other Themes</button>
+      </div>
+    </div>
+  );
+}
+
+// ── Book Detail modal (3-page carousel) ──────────────────────────────────
+
+function BookDetail({ theme, occasion, onClose }) {
+  const [pg, setPg]         = useState(0);
+  const [animDir, setAnimDir] = useState(null); // null = no anim on first mount
+
+  const color = themeAccentColor(theme.id);
+  const photo = getThemePhoto(theme, occasion);
+
+  useEffect(() => {
+    const fn = (e) => { if (e.key === 'Escape') onClose(); };
+    window.addEventListener('keydown', fn);
+    return () => window.removeEventListener('keydown', fn);
+  }, [onClose]);
+
+  const goPage = (dir) => {
+    const next = pg + dir;
+    if (next < 0 || next > 2) return;
+    setAnimDir(dir > 0 ? 'fwd' : 'bwd');
+    setPg(next);
+  };
+
+  const pageAnimClass = animDir ? `book-${animDir}` : '';
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, zIndex: 10100,
+      background: 'rgba(10,4,0,0.82)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+      overflowY: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '20px 16px',
+    }}>
+      <div className="book-detail-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '100%' }}>
+        <div className="book-detail-panel op-scroll" onClick={e => e.stopPropagation()} style={{
+          width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto',
+          background: 'linear-gradient(160deg, #1C0A04 0%, #130600 100%)',
+          border: `1px solid ${color}30`,
+          borderRadius: 26, overflow: 'hidden',
+          boxShadow: `0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px ${color}18`,
+        }}>
+
+          {/* Sticky header */}
+          <div style={{
+            position: 'sticky', top: 0, zIndex: 20,
+            background: 'linear-gradient(to bottom, #1C0A04 70%, transparent 100%)',
+            padding: '14px 20px 6px',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <PageDots current={pg} total={3} color={color} />
+              <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.35)', textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{PAGE_NAMES[pg]}</span>
+            </div>
+            <button onClick={onClose} style={{
+              width: 32, height: 32, borderRadius: '50%',
+              background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.12)',
+              color: 'rgba(245,236,216,0.65)', fontSize: 15, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>✕</button>
+          </div>
+
+          {/* Flipping page content */}
+          <div key={pg} className={pageAnimClass} style={{ padding: '0 24px 8px' }}>
+            {pg === 0 && <BookPage1 theme={theme} occasion={occasion} photo={photo} color={color} />}
+            {pg === 1 && <BookPage2 theme={theme} color={color} />}
+            {pg === 2 && <BookPage3 theme={theme} color={color} onClose={onClose} />}
+          </div>
+
+          {/* Navigation footer */}
+          <div style={{
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            padding: '10px 24px 26px',
+            borderTop: `1px solid ${color}14`,
+          }}>
+            <button onClick={() => goPage(-1)} disabled={pg === 0} style={{
+              background: 'none', border: 'none', cursor: pg === 0 ? 'not-allowed' : 'pointer',
+              color: pg === 0 ? 'rgba(245,236,216,0.18)' : 'rgba(245,236,216,0.48)',
+              fontSize: 13, padding: '8px 0', fontFamily: "'Outfit',sans-serif",
+              display: 'flex', alignItems: 'center', gap: 5,
+            }}>← Previous</button>
+
+            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.28)', fontFamily: "'Outfit',sans-serif" }}>{pg + 1} / 3</span>
+
+            {pg < 2 ? (
+              <button onClick={() => goPage(1)} style={{
+                padding: '9px 22px', borderRadius: 100,
+                background: `linear-gradient(135deg, ${color}, ${darken(color,20)})`,
+                color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                fontFamily: "'Outfit',sans-serif",
+              }}>Next →</button>
+            ) : (
+              <span style={{ fontSize: 10, color: `${color}88`, fontFamily: "'Outfit',sans-serif" }}>Last page</span>
+            )}
+          </div>
+
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Theme card (results grid) ─────────────────────────────────────────────
+
+const BUDGET_BADGE_COLOR = {
+  Luxury: '#A4728A', Premium: '#C47A2E', Standard: '#7A9A5A', Budget: '#8AB4A0',
+  'Budget / Standard': '#8AB4A0',
+};
+
+function ThemeCard({ theme, occasion, onExpand, occColor }) {
+  const photo = getThemePhoto(theme, occasion);
+  const badgeColor = BUDGET_BADGE_COLOR[theme.budget] || occColor;
+
+  return (
+    <button className="op-theme-card" onClick={onExpand} style={{
+      position: 'relative', height: 210, borderRadius: 18,
+      overflow: 'hidden', border: `1px solid ${occColor}18`,
+      cursor: 'pointer', padding: 0, background: '#160800',
+      transition: 'transform 0.22s, box-shadow 0.22s',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.42)', textAlign: 'left',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{ height: '58%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+        <img src={photo} alt={theme.theme} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          onError={e => { e.target.src = occFallback(occasion); }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 35%, rgba(0,0,0,0.45))' }} />
+      </div>
+      <div style={{
+        position: 'absolute', top: 8, right: 8,
+        padding: '2px 8px', borderRadius: 100, fontSize: 9, fontWeight: 800,
+        background: `${badgeColor}28`, border: `1px solid ${badgeColor}55`, color: badgeColor,
+        backdropFilter: 'blur(8px)', textTransform: 'uppercase', letterSpacing: '0.06em',
+        fontFamily: "'Outfit',sans-serif",
+      }}>{theme.budget}</div>
+      <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+        <div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.25, marginBottom: 4, fontFamily: "'Outfit',sans-serif" }}>{theme.theme}</div>
+          <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.45)', lineHeight: 1.4, fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
+          <span style={{ fontSize: 9, color: 'rgba(245,236,216,0.28)', fontFamily: "'Outfit',sans-serif" }}>{theme.recommendedGuests} guests</span>
+          <span style={{ fontSize: 9, color: occColor, fontFamily: "'Outfit',sans-serif", fontWeight: 700 }}>Tap to explore ↗</span>
+        </div>
+      </div>
+    </button>
+  );
+}
+
+// ── Main OccasionPlanner component ────────────────────────────────────────
 
 export default function OccasionPlanner({ initialOccasion, onClose }) {
   const fromCard = !!initialOccasion;
-  const [step, setStep] = useState(fromCard ? 1 : 0);
-  const [occasion, setOccasion] = useState(initialOccasion || null);
-  const [budget, setBudget] = useState(null);
-  const [guests, setGuests] = useState('');
-  const [venue, setVenue] = useState(null);
+
+  const [step,      setStep]      = useState(fromCard ? 1 : 0);
+  const [occasion,  setOccasion]  = useState(initialOccasion || null);
+  const [budget,    setBudget]    = useState(null);
+  const [guests,    setGuests]    = useState('');
+  const [venue,     setVenue]     = useState(null);
   const [timeOfDay, setTimeOfDay] = useState(null);
+  const [showAll,   setShowAll]   = useState(false);
   const [expandedTheme, setExpandedTheme] = useState(null);
 
+  const occColor = OCC_COLOR[occasion] || FALLBACK_COLOR;
+
   const results = step === 5 && occasion
-    ? getFilteredWithFallback(occasion, { budget, guests, venue, timeOfDay })
+    ? (showAll ? (THEME_DATA_MAP[occasion] || []) : getFiltered(occasion, { budget, guests, venue, timeOfDay }))
     : [];
 
   useEffect(() => {
@@ -242,103 +663,106 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   }, []);
 
   useEffect(() => {
-    const fn = (e) => {
-      if (e.key === 'Escape') expandedTheme ? setExpandedTheme(null) : onClose();
-    };
+    const fn = (e) => { if (e.key === 'Escape' && !expandedTheme) onClose(); };
     window.addEventListener('keydown', fn);
     return () => window.removeEventListener('keydown', fn);
   }, [expandedTheme, onClose]);
 
   const goNext = (n) => setStep(s => n !== undefined ? n : s + 1);
   const goBack = () => {
+    setShowAll(false);
     if (step === 1 && fromCard) { onClose(); return; }
     setStep(s => s - 1);
   };
-  const restart = () => {
-    setBudget(null); setGuests(''); setVenue(null); setTimeOfDay(null);
-    setStep(fromCard ? 1 : 0);
-    if (!fromCard) setOccasion(null);
-  };
+  const adjustFilters = () => { setShowAll(false); setStep(1); };
+  const restart = () => { setBudget(null); setGuests(''); setVenue(null); setTimeOfDay(null); setShowAll(false); setStep(fromCard ? 1 : 0); if (!fromCard) setOccasion(null); };
 
-  const occInfo = OCCASIONS_LIST.find(o => o.label === occasion);
+  // Form option button shared style
+  const optStyle = (selected) => ({
+    padding: '18px 15px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+    border: `1.5px solid ${selected ? occColor : 'rgba(245,236,216,0.11)'}`,
+    background: selected ? `${occColor}1C` : 'rgba(245,236,216,0.04)',
+    transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+  });
+
+  const h2Style = {
+    fontFamily: "'Cormorant Garamond', Georgia, serif",
+    fontSize: 'clamp(1.5rem,4vw,2.1rem)', fontWeight: 400,
+    color: '#F5ECD8', margin: '0 0 5px', letterSpacing: '0.01em',
+  };
+  const subStyle = { fontSize: 13, color: 'rgba(245,236,216,0.42)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif" };
 
   return (
     <>
       <style>{CSS}</style>
 
-      {/* ── Backdrop ── */}
-      <div className="op-overlay" onClick={onClose} style={{
+      {/* Backdrop */}
+      <div className="op-rise" onClick={onClose} style={{
         position: 'fixed', inset: 0, zIndex: 9990,
-        background: 'rgba(6,3,14,0.88)',
-        backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+        background: 'rgba(10,4,0,0.88)', backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         padding: '20px 16px', overflowY: 'auto',
       }}>
-        <div className="op-overlay-wrap" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          width: '100%', minHeight: '100%',
-        }}>
-          {/* ── Panel ── */}
+        <div className="op-overlay-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '100%' }}>
+
+          {/* Panel */}
           <div className="op-panel op-scroll" onClick={e => e.stopPropagation()} style={{
-            width: '100%', maxWidth: 640, maxHeight: '90vh',
-            overflowY: 'auto',
-            background: 'linear-gradient(160deg, #0e0920 0%, #0a0618 100%)',
-            border: '1px solid rgba(201,168,76,0.22)',
+            width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto',
+            background: 'linear-gradient(160deg, #1C0A04 0%, #130600 100%)',
+            border: `1px solid ${occColor}28`,
             borderRadius: 26,
-            fontFamily: "'Outfit', sans-serif",
+            fontFamily: "'Outfit',sans-serif",
+            boxShadow: `0 32px 100px rgba(0,0,0,0.75), 0 0 0 1px ${occColor}14`,
             position: 'relative',
-            boxShadow: '0 32px 100px rgba(0,0,0,0.7)',
           }}>
 
             {/* Close */}
             <button onClick={onClose} style={{
               position: 'absolute', top: 16, right: 16, zIndex: 20,
               width: 34, height: 34, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.07)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              color: 'rgba(255,255,255,0.65)', fontSize: 16,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
+              background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.12)',
+              color: 'rgba(245,236,216,0.62)', fontSize: 15, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>✕</button>
 
-            {/* Progress bar (steps 1-4) */}
+            {/* Progress bar — steps 1-4 */}
             {step >= 1 && step <= 4 && (
               <div style={{ padding: '18px 22px 0', display: 'flex', gap: 5 }}>
                 {[1,2,3,4].map(s => (
                   <div key={s} style={{
                     flex: 1, height: 3, borderRadius: 3,
-                    background: s <= step ? '#C9A84C' : 'rgba(255,255,255,0.1)',
+                    background: s <= step ? occColor : 'rgba(245,236,216,0.1)',
                     transition: 'background 0.3s',
                   }} />
                 ))}
               </div>
             )}
 
-            {/* ── Content ── */}
+            {/* ─── Step content ─── */}
             <div key={step} className="op-step" style={{ padding: '26px 24px 32px' }}>
 
-              {/* ── Step 0: Occasion picker ── */}
+              {/* Step 0 — Occasion picker */}
               {step === 0 && (
                 <div>
-                  <p style={{ fontSize: 10, fontWeight: 800, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: '0.16em', margin: '0 0 8px' }}>Plan your event</p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.55rem,4vw,2.1rem)', fontWeight: 400, color: '#fff', margin: '0 0 5px', letterSpacing: '0.01em' }}>What's the occasion?</h2>
-                  <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', margin: '0 0 22px' }}>Select to get personalised theme suggestions</p>
-                  <div className="op-occ-picker-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
+                  <p style={{ fontSize: 10, fontWeight: 800, color: FALLBACK_COLOR, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Plan your event</p>
+                  <h2 style={h2Style}>What's the occasion?</h2>
+                  <p style={subStyle}>Choose your celebration to get started</p>
+                  <div className="op-picker-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
                     {OCCASIONS_LIST.map(({ label, photo }) => (
-                      <button key={label} className="op-occ-card op-occ-picker-card" onClick={() => { setOccasion(label); goNext(1); }}
+                      <button key={label} className="op-occ-card op-picker-card" onClick={() => { setOccasion(label); goNext(1); }}
                         style={{
-                          position: 'relative', height: 96, borderRadius: 14,
-                          overflow: 'hidden', border: '1.5px solid rgba(255,255,255,0.07)',
-                          cursor: 'pointer', padding: 0, background: '#0f0a1e',
-                          transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 4px 18px rgba(0,0,0,0.4)',
+                          position: 'relative', height: 94, borderRadius: 14,
+                          overflow: 'hidden', border: '1.5px solid rgba(245,236,216,0.07)',
+                          cursor: 'pointer', padding: 0, background: '#160800',
+                          transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 4px 18px rgba(0,0,0,0.42)',
                         }}>
-                        <img src={photo} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.75 }} />
+                        <img src={photo} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78 }} />
                         <div style={{
                           position: 'absolute', inset: 0,
-                          background: 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)',
-                          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '8px 7px',
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)',
+                          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '7px 7px',
                         }}>
-                          <span className="op-occ-label" style={{ fontSize: 10, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>{label}</span>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Outfit',sans-serif" }}>{label}</span>
                         </div>
                       </button>
                     ))}
@@ -346,145 +770,158 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                 </div>
               )}
 
-              {/* ── Step 1: Budget ── */}
+              {/* Step 1 — Budget */}
               {step === 1 && (
                 <div>
-                  <Breadcrumb occasion={occasion} current="Budget" />
-                  <h2 style={stepH2}>What's your budget range?</h2>
-                  <p style={stepSub}>We'll match themes that fit your spending comfort</p>
-                  <div className="op-budget-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11 }}>
+                  <Breadcrumb occasion={occasion} current="Budget" color={occColor} />
+                  <h2 style={h2Style}>What's your budget?</h2>
+                  <p style={subStyle}>We'll match themes that fit your spending comfort</p>
+                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11 }}>
                     {BUDGET_OPTIONS.map(({ key, label, desc, stars }) => (
-                      <button key={key} className="op-budget-btn"
-                        onClick={() => { setBudget(key); setTimeout(() => goNext(), 260); }}
-                        style={optBtn(budget === key)}>
-                        <div style={{ color: '#C9A84C', fontSize: 11, letterSpacing: 2, marginBottom: 5 }}>{'★'.repeat(stars)}</div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 3 }}>{label}</div>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)' }}>{desc}</div>
+                      <button key={key} onClick={() => { setBudget(key); setTimeout(() => goNext(), 260); }}
+                        style={optStyle(budget === key)}>
+                        <div style={{ color: occColor, fontSize: 11, letterSpacing: 2, marginBottom: 5 }}>{'★'.repeat(stars)}</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', marginBottom: 3 }}>{label}</div>
+                        <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.4)' }}>{desc}</div>
                       </button>
                     ))}
                   </div>
-                  <NavRow onBack={goBack} onNext={budget ? () => goNext() : null} />
+                  <NavRow onBack={goBack} onNext={budget ? () => goNext() : null} color={occColor} />
                 </div>
               )}
 
-              {/* ── Step 2: Guests ── */}
+              {/* Step 2 — Guests */}
               {step === 2 && (
                 <div>
-                  <Breadcrumb occasion={occasion} current="Guests" />
-                  <h2 style={stepH2}>How many guests?</h2>
-                  <p style={stepSub}>Approximate headcount helps us suggest the right scale</p>
+                  <Breadcrumb occasion={occasion} current="Guests" color={occColor} />
+                  <h2 style={h2Style}>How many guests?</h2>
+                  <p style={subStyle}>Approximate headcount helps us find the right scale</p>
                   <div style={{ position: 'relative', marginBottom: 12 }}>
                     <input
-                      type="number" min="1" max="1000"
-                      placeholder="e.g. 50"
-                      value={guests}
-                      onChange={e => setGuests(e.target.value)}
+                      type="number" min="1" max="1000" placeholder="e.g. 50"
+                      value={guests} onChange={e => setGuests(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && guests && goNext()}
                       autoFocus
                       style={{
-                        width: '100%', boxSizing: 'border-box',
-                        padding: '16px 80px 16px 20px',
+                        width: '100%', boxSizing: 'border-box', padding: '16px 80px 16px 20px',
                         fontSize: 28, fontWeight: 700,
-                        background: 'rgba(255,255,255,0.05)',
-                        border: '1.5px solid rgba(201,168,76,0.3)',
-                        borderRadius: 14, color: '#fff', outline: 'none',
-                        fontFamily: "'Outfit', sans-serif",
+                        background: 'rgba(245,236,216,0.05)', border: `1.5px solid ${occColor}35`,
+                        borderRadius: 14, color: '#F5ECD8', outline: 'none', fontFamily: "'Outfit',sans-serif",
                       }}
                     />
-                    <span style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(255,255,255,0.3)', pointerEvents: 'none' }}>guests</span>
+                    <span style={{ position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(245,236,216,0.28)', pointerEvents: 'none', fontFamily: "'Outfit',sans-serif" }}>guests</span>
                   </div>
                   <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 22 }}>
                     {['10','25','50','100','150','250'].map(g => (
-                      <button key={g} className="op-quick-pill" onClick={() => setGuests(g)} style={{
+                      <button key={g} onClick={() => setGuests(g)} style={{
                         padding: '7px 13px', borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                        background: guests === g ? 'rgba(201,168,76,0.18)' : 'rgba(255,255,255,0.05)',
-                        border: `1px solid ${guests === g ? '#C9A84C' : 'rgba(255,255,255,0.12)'}`,
-                        color: guests === g ? '#C9A84C' : 'rgba(255,255,255,0.5)',
-                        transition: 'all 0.18s',
+                        background: guests === g ? `${occColor}20` : 'rgba(245,236,216,0.05)',
+                        border: `1px solid ${guests === g ? occColor : 'rgba(245,236,216,0.12)'}`,
+                        color: guests === g ? occColor : 'rgba(245,236,216,0.48)',
+                        transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                       }}>{g}</button>
                     ))}
                   </div>
-                  <NavRow onBack={goBack} onNext={guests ? () => goNext() : null} nextLabel="Continue →" />
+                  <NavRow onBack={goBack} onNext={guests ? () => goNext() : null} nextLabel="Continue →" color={occColor} />
                 </div>
               )}
 
-              {/* ── Step 3: Venue ── */}
+              {/* Step 3 — Venue */}
               {step === 3 && (
                 <div>
-                  <Breadcrumb occasion={occasion} current="Venue" />
-                  <h2 style={stepH2}>Where is the event?</h2>
-                  <p style={stepSub}>The setting shapes the mood of your celebration</p>
-                  <div className="op-venue-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
+                  <Breadcrumb occasion={occasion} current="Venue" color={occColor} />
+                  <h2 style={h2Style}>Where is the event?</h2>
+                  <p style={subStyle}>The setting shapes the mood of your celebration</p>
+                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
                     {VENUE_OPTIONS.map(({ key, label, desc }) => (
-                      <button key={key} className="op-venue-btn"
-                        onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
-                        style={optBtn(venue === key)}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)' }}>{desc}</div>
+                      <button key={key} onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
+                        style={optStyle(venue === key)}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5ECD8', marginBottom: 4 }}>{label}</div>
+                        <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.4)' }}>{desc}</div>
                       </button>
                     ))}
                   </div>
-                  <NavRow onBack={goBack} onNext={venue ? () => goNext() : null} />
+                  <NavRow onBack={goBack} onNext={venue ? () => goNext() : null} color={occColor} />
                 </div>
               )}
 
-              {/* ── Step 4: Time ── */}
+              {/* Step 4 — Time */}
               {step === 4 && (
                 <div>
-                  <Breadcrumb occasion={occasion} current="Time" />
-                  <h2 style={stepH2}>When is the celebration?</h2>
-                  <p style={stepSub}>Timing shapes the ambiance and lighting of your theme</p>
-                  <div className="op-time-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
+                  <Breadcrumb occasion={occasion} current="Time" color={occColor} />
+                  <h2 style={h2Style}>When is the celebration?</h2>
+                  <p style={subStyle}>Timing shapes the ambiance and lighting of your theme</p>
+                  <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
                     {TIME_OPTIONS.map(({ key, label, desc, icon }) => (
-                      <button key={key} className="op-time-btn"
-                        onClick={() => { setTimeOfDay(key); setTimeout(() => goNext(5), 260); }}
-                        style={optBtn(timeOfDay === key)}>
+                      <button key={key} onClick={() => { setTimeOfDay(key); setTimeout(() => goNext(5), 260); }}
+                        style={optStyle(timeOfDay === key)}>
                         <div style={{ fontSize: 22, marginBottom: 5 }}>{icon}</div>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 3 }}>{label}</div>
-                        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.42)' }}>{desc}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5ECD8', marginBottom: 3 }}>{label}</div>
+                        <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.4)' }}>{desc}</div>
                       </button>
                     ))}
                   </div>
-                  <NavRow onBack={goBack} onNext={timeOfDay ? () => goNext(5) : null} nextLabel="See themes →" />
+                  <NavRow onBack={goBack} onNext={timeOfDay ? () => goNext(5) : null} nextLabel="See themes →" color={occColor} />
                 </div>
               )}
 
-              {/* ── Step 5: Results ── */}
+              {/* Step 5 — Results */}
               {step === 5 && (
                 <div>
                   {/* Header */}
                   <div style={{ marginBottom: 20 }}>
-                    <p style={{ fontSize: 10, fontWeight: 800, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: '0.16em', margin: '0 0 4px' }}>
-                      {results.length} theme{results.length !== 1 ? 's' : ''} matched
+                    <p style={{ fontSize: 10, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 4px', fontFamily: "'Outfit',sans-serif" }}>
+                      {showAll ? `All ${results.length} themes` : `${results.length} theme${results.length !== 1 ? 's' : ''} matched`}
                     </p>
-                    <h2 style={{ ...stepH2, margin: '0 0 10px' }}>
-                      {occasion} themes for you
+                    <h2 style={{ ...h2Style, margin: '0 0 10px' }}>
+                      {showAll ? `All ${occasion} Themes` : `${occasion} themes for you`}
                     </h2>
-                    {/* Filter pills */}
-                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                      {budget && <Pill label={BUDGET_OPTIONS.find(b => b.key === budget)?.label} gold />}
-                      {guests && <Pill label={`${guests} guests`} />}
-                      {venue && <Pill label={VENUE_OPTIONS.find(v => v.key === venue)?.label} />}
-                      {timeOfDay && <Pill label={timeOfDay} />}
-                    </div>
+                    {!showAll && (
+                      <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                        {budget    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: `${occColor}14`, border: `1px solid ${occColor}38`, color: occColor, fontFamily: "'Outfit',sans-serif" }}>{BUDGET_OPTIONS.find(b => b.key === budget)?.label}</span>}
+                        {guests    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
+                        {venue     && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
+                        {timeOfDay && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
+                      </div>
+                    )}
                   </div>
 
+                  {/* Theme cards — fixed 2-column grid, always same card size */}
                   {results.length > 0 ? (
-                    <div className="op-results-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 13 }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 13 }}>
                       {results.map(theme => (
-                        <ThemeCard key={theme.id} theme={theme} occasion={occasion} onExpand={() => setExpandedTheme(theme)} />
+                        <ThemeCard key={theme.id} theme={theme} occasion={occasion} occColor={occColor} onExpand={() => setExpandedTheme(theme)} />
                       ))}
                     </div>
                   ) : (
                     <div style={{ textAlign: 'center', padding: '40px 16px' }}>
-                      <div style={{ fontSize: 36, marginBottom: 10, opacity: 0.3 }}>✦</div>
-                      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14 }}>No themes matched exactly — try adjusting your filters</p>
+                      <div style={{ fontSize: 36, opacity: 0.25, marginBottom: 10 }}>✦</div>
+                      <p style={{ color: 'rgba(245,236,216,0.38)', fontSize: 14, fontFamily: "'Outfit',sans-serif" }}>No themes matched — try adjusting your filters</p>
                     </div>
                   )}
 
-                  <div style={{ marginTop: 22, display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
-                    <button onClick={() => goBack()} style={ghostBtn}>← Adjust filters</button>
-                    <button onClick={restart} style={ghostBtn}>Start over</button>
+                  {/* Action buttons below results */}
+                  <div style={{ marginTop: 24, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'center' }}>
+                    {!showAll && (
+                      <button onClick={() => setShowAll(true)} style={{
+                        width: '100%', padding: '12px 20px', borderRadius: 12,
+                        background: `${occColor}14`, border: `1.5px solid ${occColor}38`,
+                        color: occColor, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                        fontFamily: "'Outfit',sans-serif", transition: 'all 0.18s',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                      }}>
+                        See all {occasion} themes →
+                      </button>
+                    )}
+                    <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+                      <button onClick={adjustFilters} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.42)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                        Adjust filters
+                      </button>
+                      <span style={{ color: 'rgba(245,236,216,0.18)' }}>·</span>
+                      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.42)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                        Continue without theme
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -494,288 +931,14 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
         </div>
       </div>
 
-      {/* ── Theme detail overlay ── */}
+      {/* Book detail carousel overlay */}
       {expandedTheme && (
-        <ThemeDetail theme={expandedTheme} occasion={occasion} onClose={() => setExpandedTheme(null)} />
+        <BookDetail
+          theme={expandedTheme}
+          occasion={occasion}
+          onClose={() => setExpandedTheme(null)}
+        />
       )}
     </>
-  );
-}
-
-// ── Shared style objects ──────────────────────────────────────────────────
-
-const stepH2 = {
-  fontFamily: "'Cormorant Garamond', Georgia, serif",
-  fontSize: 'clamp(1.45rem,3.8vw,2rem)', fontWeight: 400,
-  color: '#fff', margin: '0 0 5px', letterSpacing: '0.01em',
-};
-const stepSub = { fontSize: 13, color: 'rgba(255,255,255,0.43)', margin: '0 0 22px' };
-const optBtn = (selected) => ({
-  padding: '18px 15px', borderRadius: 16, textAlign: 'left',
-  border: `1.5px solid ${selected ? '#C9A84C' : 'rgba(255,255,255,0.1)'}`,
-  background: selected ? 'rgba(201,168,76,0.16)' : 'rgba(255,255,255,0.04)',
-  cursor: 'pointer', transition: 'all 0.18s',
-});
-const ghostBtn = {
-  padding: '9px 20px', borderRadius: 100,
-  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.12)',
-  color: 'rgba(255,255,255,0.5)', fontSize: 13, cursor: 'pointer',
-};
-
-// ── Sub-components ────────────────────────────────────────────────────────
-
-function Breadcrumb({ occasion, current }) {
-  if (!occasion) return null;
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{occasion}</span>
-      <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 12 }}>›</span>
-      <span style={{ fontSize: 11, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{current}</span>
-    </div>
-  );
-}
-
-function NavRow({ onBack, onNext, nextLabel = 'Next →' }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 18 }}>
-      <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.38)', fontSize: 14, cursor: 'pointer', padding: '8px 0' }}>← Back</button>
-      {onNext && (
-        <button onClick={onNext} style={{ padding: '10px 26px', borderRadius: 100, background: '#C9A84C', color: '#0a0618', fontSize: 14, fontWeight: 700, border: 'none', cursor: 'pointer' }}>{nextLabel}</button>
-      )}
-    </div>
-  );
-}
-
-function Pill({ label, gold }) {
-  return (
-    <span style={{
-      fontSize: 11, padding: '3px 10px', borderRadius: 100,
-      background: gold ? 'rgba(201,168,76,0.15)' : 'rgba(255,255,255,0.06)',
-      border: `1px solid ${gold ? 'rgba(201,168,76,0.4)' : 'rgba(255,255,255,0.12)'}`,
-      color: gold ? '#C9A84C' : 'rgba(255,255,255,0.55)',
-    }}>{label}</span>
-  );
-}
-
-const BUDGET_BADGE = {
-  Luxury: '#A855F7', Premium: '#C9A84C',
-  Standard: '#22C55E', Budget: '#3B82F6',
-  'Budget / Standard': '#3B82F6',
-};
-
-function ThemeCard({ theme, occasion, onExpand }) {
-  const photo = getThemePhoto(theme, occasion);
-  const badgeColor = BUDGET_BADGE[theme.budget] || '#C9A84C';
-  return (
-    <button className="op-theme-card" onClick={onExpand} style={{
-      position: 'relative', height: 208, borderRadius: 18,
-      overflow: 'hidden', border: '1px solid rgba(255,255,255,0.07)',
-      cursor: 'pointer', padding: 0, background: '#0d0920',
-      transition: 'transform 0.22s, box-shadow 0.22s',
-      boxShadow: '0 8px 30px rgba(0,0,0,0.45)', textAlign: 'left',
-      display: 'flex', flexDirection: 'column',
-    }}>
-      {/* Photo */}
-      <div style={{ height: '58%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
-        <img src={photo} alt={theme.theme}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          onError={e => { e.target.src = occFallback(occasion); }}
-        />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.4))' }} />
-      </div>
-      {/* Budget badge */}
-      <div style={{
-        position: 'absolute', top: 9, right: 9,
-        padding: '2px 8px', borderRadius: 100, fontSize: 9, fontWeight: 800,
-        background: `${badgeColor}25`, border: `1px solid ${badgeColor}55`,
-        color: badgeColor, backdropFilter: 'blur(8px)',
-        textTransform: 'uppercase', letterSpacing: '0.06em',
-      }}>{theme.budget}</div>
-      {/* Text */}
-      <div style={{ flex: 1, padding: '10px 11px 11px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 800, color: '#fff', lineHeight: 1.25, marginBottom: 3 }}>{theme.theme}</div>
-          <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.47)', lineHeight: 1.35 }}>{theme.oneLineDesc}</div>
-        </div>
-        <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.28)', marginTop: 6 }}>
-          {theme.recommendedGuests} · Tap to explore ↗
-        </div>
-      </div>
-    </button>
-  );
-}
-
-// ── Theme Detail ──────────────────────────────────────────────────────────
-
-function ThemeDetail({ theme, occasion, onClose }) {
-  const photo = getThemePhoto(theme, occasion);
-
-  useEffect(() => {
-    const fn = (e) => { if (e.key === 'Escape') onClose(); };
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, [onClose]);
-
-  const food = theme.foodSuggestions || theme.foodIdeas;
-  const badgeColor = BUDGET_BADGE[theme.budget] || '#C9A84C';
-
-  return (
-    <div onClick={onClose} style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(18px)',
-      overflowY: 'auto', padding: '20px 16px',
-      display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-    }}>
-      <div onClick={e => e.stopPropagation()} style={{
-        width: '100%', maxWidth: 700, borderRadius: 26,
-        background: 'linear-gradient(160deg,#0e0920,#0a0618)',
-        border: '1px solid rgba(201,168,76,0.2)',
-        overflow: 'hidden', boxShadow: '0 40px 120px rgba(0,0,0,0.8)',
-        animation: 'op-fadein 0.25s ease',
-      }}>
-        {/* Hero */}
-        <div className="op-detail-hero" style={{ position: 'relative', height: 260 }}>
-          <img src={photo} alt={theme.theme}
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            onError={e => { e.target.src = occFallback(occasion); }}
-          />
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(10,6,24,1) 0%, rgba(10,6,24,0.25) 50%, transparent 100%)' }} />
-          <button onClick={onClose} style={{
-            position: 'absolute', top: 14, right: 14,
-            width: 34, height: 34, borderRadius: '50%',
-            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
-            border: '1px solid rgba(255,255,255,0.15)', color: '#fff',
-            fontSize: 15, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>✕</button>
-          {/* Title overlay */}
-          <div style={{ position: 'absolute', bottom: 20, left: 24, right: 60 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: 10, fontWeight: 800, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: '0.12em' }}>{occasion}</span>
-              <span style={{ fontSize: 9, padding: '2px 8px', borderRadius: 100, background: `${badgeColor}30`, border: `1px solid ${badgeColor}55`, color: badgeColor, fontWeight: 700, textTransform: 'uppercase' }}>{theme.budget}</span>
-            </div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.5rem,3.5vw,2rem)', fontWeight: 400, color: '#fff', margin: '0 0 4px', letterSpacing: '0.01em' }}>{theme.theme}</h2>
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', margin: 0 }}>{theme.oneLineDesc}</p>
-          </div>
-        </div>
-
-        {/* Body */}
-        <div style={{ padding: '22px 24px 30px' }}>
-          {/* Overview */}
-          {theme.overview && (
-            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', lineHeight: 1.75, margin: '0 0 22px' }}>{theme.overview}</p>
-          )}
-
-          {/* Colour palette */}
-          {theme.colourPalette?.length > 0 && (
-            <div style={{ marginBottom: 22 }}>
-              <SectionLabel>Colour Palette</SectionLabel>
-              <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
-                {theme.colourPalette.map(c => (
-                  <span key={c} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 11, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.68)' }}>{c}</span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Quick stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginBottom: 22 }}>
-            <StatBox label="Guests" value={theme.recommendedGuests} />
-            <StatBox label="Budget" value={theme.budget} />
-            <StatBox label="Best Time" value={(theme.bestTime || []).join(' · ')} />
-          </div>
-
-          {/* Info grid */}
-          <div className="op-detail-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 18, marginBottom: 22 }}>
-            <InfoBlock title="Decoration Ideas" items={theme.decorationIdeas} />
-            <InfoBlock title="Food & Drinks" items={food} />
-            <InfoBlock title="Entertainment" items={theme.entertainment} />
-            <InfoBlock title="Games & Activities" items={theme.gamesActivities} />
-          </div>
-
-          {theme.cakeIdeas?.length > 0 && (
-            <div style={{ marginBottom: 22 }}>
-              <InfoBlock title="Cake Ideas" items={theme.cakeIdeas} />
-            </div>
-          )}
-
-          {theme.photographyIdeas?.length > 0 && (
-            <div style={{ marginBottom: 22 }}>
-              <InfoBlock title="Photography Tips" items={theme.photographyIdeas} />
-            </div>
-          )}
-
-          {/* Planning checklist */}
-          {theme.planningChecklist?.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <SectionLabel>Planning Checklist</SectionLabel>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                {theme.planningChecklist.slice(0, 10).map((item, i) => (
-                  <span key={i} style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    fontSize: 11, color: 'rgba(255,255,255,0.52)',
-                    padding: '4px 10px', borderRadius: 100,
-                    background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                  }}>
-                    <span style={{ color: '#C9A84C', fontSize: 8 }}>✓</span>{item}
-                  </span>
-                ))}
-                {theme.planningChecklist.length > 10 && (
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', padding: '4px 0' }}>+{theme.planningChecklist.length - 10} more</span>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* CTA */}
-          <div style={{ paddingTop: 18, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <button style={{
-              flex: 1, minWidth: 140, padding: '13px 22px', borderRadius: 100,
-              background: 'linear-gradient(135deg,#C9A84C,#8B6914)',
-              color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-            }}>Book This Theme</button>
-            <button onClick={onClose} style={{
-              flex: 1, minWidth: 140, padding: '13px 22px', borderRadius: 100,
-              background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.55)',
-              border: '1px solid rgba(255,255,255,0.12)', fontSize: 14, cursor: 'pointer',
-            }}>See Other Themes</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SectionLabel({ children }) {
-  return <h4 style={{ fontSize: 10, fontWeight: 800, color: '#C9A84C', textTransform: 'uppercase', letterSpacing: '0.14em', margin: '0 0 10px' }}>{children}</h4>;
-}
-
-function InfoBlock({ title, items }) {
-  if (!items?.length) return null;
-  return (
-    <div>
-      <SectionLabel>{title}</SectionLabel>
-      <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-        {items.slice(0, 5).map((item, i) => (
-          <li key={i} style={{ display: 'flex', gap: 7, alignItems: 'flex-start', marginBottom: 5 }}>
-            <span style={{ color: '#C9A84C', fontSize: 8, marginTop: 4, flexShrink: 0 }}>◆</span>
-            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.62)', lineHeight: 1.5 }}>{item}</span>
-          </li>
-        ))}
-        {items.length > 5 && <li style={{ fontSize: 11, color: 'rgba(255,255,255,0.28)', marginTop: 3 }}>+{items.length - 5} more</li>}
-      </ul>
-    </div>
-  );
-}
-
-function StatBox({ label, value }) {
-  return (
-    <div style={{
-      padding: '12px 14px', borderRadius: 12,
-      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-      textAlign: 'center',
-    }}>
-      <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.38)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 4 }}>{label}</div>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.3 }}>{value}</div>
-    </div>
   );
 }
