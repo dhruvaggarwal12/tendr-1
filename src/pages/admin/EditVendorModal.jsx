@@ -161,7 +161,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
       });
       const data = await res.json();
       if (res.ok) {
-        setPhotos(prev => [...prev, data.url]);
+        setPhotos(data.portfolioPhotos?.length ? data.portfolioPhotos : (prev => [...prev, data.url]));
         setPhotoMsg(pendingCat ? `Uploaded to ${pendingCat}!` : "Photo uploaded!");
       } else setPhotoMsg(data.error || "Upload failed.");
     } catch (err) { setPhotoMsg(err.message); }
