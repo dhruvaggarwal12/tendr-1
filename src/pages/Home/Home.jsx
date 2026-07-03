@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import PlatformFlow from "../../components/PlatformFlow";
+import OccasionPlanner from "../../components/OccasionPlanner";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { easeIn, motion } from "framer-motion";
@@ -351,6 +352,7 @@ const Home = () => {
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
+  const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
   const scrollFaCarousel = (dir) => {
     const el = faCarouselRef.current;
     if (!el) return;
@@ -1228,77 +1230,52 @@ const Home = () => {
       </section>
 
       {/* ── Plan by Occasion ── */}
-      {(() => {
-        const OCCASIONS = [
-          { label: "Birthday",          photoMobile: "/occasions/birthday-mobile.png",          photoDesktop: "/occasions/birthday-desktop.png" },
-          { label: "Anniversary",       photoMobile: "/occasions/anniversary-mobile.png",       photoDesktop: "/occasions/anniversary-desktop.png" },
-          { label: "Baby Shower",       photoMobile: "/occasions/baby-shower-mobile.png",       photoDesktop: "/occasions/baby-shower-desktop.png" },
-          { label: "House Party",       photoMobile: "/occasions/house-party-mobile.png",       photoDesktop: "/occasions/house-party-desktop.png" },
-          { label: "Housewarming",      photoMobile: "/occasions/housewarming-mobile.png",      photoDesktop: "/occasions/housewarming-desktop.png" },
-          { label: "Get Together",      photoMobile: "/occasions/get-together-mobile.png",      photoDesktop: "/occasions/get-together-desktop.png" },
-          { label: "Kitty Party",       photoMobile: "/occasions/kitty-party-mobile.png",       photoDesktop: "/occasions/kitty-party-desktop.png" },
-          { label: "Naming Ceremony",   photoMobile: "/occasions/naming-ceremony-mobile.png",   photoDesktop: "/occasions/naming-ceremony-desktop.png" },
-        ];
-        const CARD_W = 108, CARD_H = 136, GAP = 8;
-        const scrollOcc = (dir) => occRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: "smooth" });
-        return (
-          <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
-            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px" }}>
-              <div style={{ textAlign: "center", marginBottom: 36 }}>
-                <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.16em", margin: "0 0 10px" }}>Plan by Occasion</p>
-                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
-                <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
-              </div>
-            </div>
+      <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.16em", margin: "0 0 10px" }}>Plan by Occasion</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
+            <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
+          </div>
 
-            <div className="occ-outer" style={{ position: "relative" }}>
-              <button className="occ-arrow occ-arrow-l" onClick={() => scrollOcc(-1)}>&#8249;</button>
-              <button className="occ-arrow occ-arrow-r" onClick={() => scrollOcc(1)}>&#8250;</button>
-              <div ref={occRef} className="occ-scroll" style={{ overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 8 }}>
-                <div className="occ-grid" style={{ display: "grid", gridTemplateRows: `repeat(2, ${CARD_H}px)`, gridAutoFlow: "column", gridAutoColumns: CARD_W, gap: GAP, padding: "4px 24px 4px", width: "max-content" }}>
-                  {OCCASIONS.map(({ label, photoMobile, photoDesktop }) => (
-                    <button key={label} onClick={() => navigate("/booking")}
-                      style={{ width: CARD_W, height: CARD_H, borderRadius: 16, border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", scrollSnapAlign: "start", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", flexShrink: 0 }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.14)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)"; }}
-                    >
-                      <div style={{ padding: "12px 10px 5px", background: "#fff", flexShrink: 0 }}>
-                        <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
-                      </div>
-                      <div style={{ flex: 1, overflow: "hidden" }}>
-                        <img src={isMobile ? photoMobile : photoDesktop} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                      </div>
-                    </button>
-                  ))}
+          {/* 4×2 grid — no scroll, no arrows */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "clamp(8px,1.5vw,16px)" }}>
+            {[
+              { label: "Birthday",        photoM: "/occasions/birthday-mobile.png",        photoD: "/occasions/birthday-desktop.png" },
+              { label: "Anniversary",     photoM: "/occasions/anniversary-mobile.png",     photoD: "/occasions/anniversary-desktop.png" },
+              { label: "Baby Shower",     photoM: "/occasions/baby-shower-mobile.png",     photoD: "/occasions/baby-shower-desktop.png" },
+              { label: "House Party",     photoM: "/occasions/house-party-mobile.png",     photoD: "/occasions/house-party-desktop.png" },
+              { label: "Housewarming",    photoM: "/occasions/housewarming-mobile.png",    photoD: "/occasions/housewarming-desktop.png" },
+              { label: "Get Together",    photoM: "/occasions/get-together-mobile.png",    photoD: "/occasions/get-together-desktop.png" },
+              { label: "Kitty Party",     photoM: "/occasions/kitty-party-mobile.png",     photoD: "/occasions/kitty-party-desktop.png" },
+              { label: "Naming Ceremony", photoM: "/occasions/naming-ceremony-mobile.png", photoD: "/occasions/naming-ceremony-desktop.png" },
+            ].map(({ label, photoM, photoD }) => (
+              <button key={label}
+                onClick={() => setPlannerOccasion(label)}
+                style={{ borderRadius: "clamp(10px,1.5vw,18px)", border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 2px 14px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", aspectRatio: "4/5" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(0,0,0,0.15)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(0,0,0,0.08)"; }}
+              >
+                <div style={{ padding: "clamp(6px,1.2vw,12px) clamp(6px,1.2vw,12px) 4px", background: "#fff", flexShrink: 0 }}>
+                  <span style={{ fontSize: "clamp(9px,1.3vw,13px)", fontWeight: 900, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
                 </div>
-              </div>
-            </div>
+                <div style={{ flex: 1, overflow: "hidden" }}>
+                  <img src={isMobile ? photoM : photoD} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                </div>
+              </button>
+            ))}
+          </div>
 
-            <div style={{ textAlign: "center", marginTop: 28 }}>
-              <button onClick={() => navigate("/booking")}
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)", transition: "all 0.18s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}
-              >See all occasions &#8594;</button>
-            </div>
-
-            <style>{`
-              .occ-scroll { scrollbar-width: none; }
-              .occ-scroll::-webkit-scrollbar { display: none; }
-              .occ-arrow { display: none; position: absolute; top: 50%; transform: translateY(-50%); z-index: 10; width: 34px; height: 34px; border-radius: 50%; background: rgba(255,255,255,0.95); border: 1.5px solid rgba(196,122,46,0.3); color: #C47A2E; font-size: 20px; font-weight: 700; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.12); line-height: 1; }
-              .occ-arrow-l { left: 4px; }
-              .occ-arrow-r { right: 4px; }
-              @media (max-width: 859px) { .occ-arrow { display: flex !important; } }
-              @media (min-width: 860px) {
-                .occ-outer { position: static; }
-                .occ-scroll { overflow-x: visible !important; }
-                .occ-grid { display: grid !important; grid-template-rows: unset !important; grid-auto-flow: unset !important; grid-auto-columns: unset !important; grid-template-columns: repeat(6, 138px) !important; gap: 16px !important; width: auto !important; justify-content: center; max-width: 1100px; margin: 0 auto; padding: 4px 24px !important; }
-                .occ-grid button { width: 138px !important; height: 168px !important; }
-              }
-            `}</style>
-          </section>
-        );
-      })()}
+          <div style={{ textAlign: "center", marginTop: 28 }}>
+            <button
+              onClick={() => setPlannerOccasion("")}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)", transition: "all 0.18s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}
+            >See all occasions &#8594;</button>
+          </div>
+        </div>
+      </section>
 
             {/* ── 5s Rotating Feature Carousel ── */}
       <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
@@ -1965,6 +1942,14 @@ const Home = () => {
             </div>
           </div>
         </>
+      )}
+
+      {/* ── Occasion Planner Modal ── */}
+      {plannerOccasion !== null && (
+        <OccasionPlanner
+          initialOccasion={plannerOccasion || null}
+          onClose={() => setPlannerOccasion(null)}
+        />
       )}
     </div>
   );
