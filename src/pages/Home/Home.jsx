@@ -1243,7 +1243,7 @@ const Home = () => {
           { label: "Get Together",    photo: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=280&h=180&fit=crop&q=75" },
           { label: "Kids Party",      photo: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=280&h=180&fit=crop&q=75" },
         ];
-        const CARD_W = 130, CARD_H = 162, GAP = 10;
+        const CARD_W = 108, CARD_H = 136, GAP = 8;
         const scrollOcc = (dir) => occRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: "smooth" });
         return (
           <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
@@ -1267,7 +1267,7 @@ const Home = () => {
                       onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)"; }}
                     >
                       <div style={{ padding: "12px 10px 5px", background: "#fff", flexShrink: 0 }}>
-                        <span style={{ fontSize: 12.5, fontWeight: 800, color: "#1A1A1A", lineHeight: 1.25, display: "block" }}>{label}</span>
+                        <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
                       </div>
                       <div style={{ flex: 1, overflow: "hidden" }}>
                         <img src={photo} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -1296,8 +1296,8 @@ const Home = () => {
               @media (min-width: 860px) {
                 .occ-outer { position: static; }
                 .occ-scroll { overflow-x: visible !important; }
-                .occ-grid { display: grid !important; grid-template-rows: unset !important; grid-auto-flow: unset !important; grid-auto-columns: unset !important; grid-template-columns: repeat(6, ${CARD_W}px) !important; width: auto !important; justify-content: center; max-width: 1100px; margin: 0 auto; padding: 4px 24px !important; }
-                .occ-grid button { width: ${CARD_W}px !important; height: ${CARD_H}px !important; }
+                .occ-grid { display: grid !important; grid-template-rows: unset !important; grid-auto-flow: unset !important; grid-auto-columns: unset !important; grid-template-columns: repeat(6, 138px) !important; gap: 16px !important; width: auto !important; justify-content: center; max-width: 1100px; margin: 0 auto; padding: 4px 24px !important; }
+                .occ-grid button { width: 138px !important; height: 168px !important; }
               }
             `}</style>
           </section>
