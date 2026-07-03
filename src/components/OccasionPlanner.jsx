@@ -523,18 +523,19 @@ function BookDetail({ theme, occasion, onClose }) {
       padding: '20px 16px',
     }}>
       <div className="book-detail-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '100%' }}>
-        <div className="book-detail-panel op-scroll" onClick={e => e.stopPropagation()} style={{
-          width: '100%', maxWidth: 680, maxHeight: '92vh', overflowY: 'auto',
+        <div className="book-detail-panel" onClick={e => e.stopPropagation()} style={{
+          width: '100%', maxWidth: 680, maxHeight: '92vh',
+          display: 'flex', flexDirection: 'column',
           background: 'linear-gradient(160deg, #1C0A04 0%, #130600 100%)',
           border: `1px solid ${color}30`,
           borderRadius: 26, overflow: 'hidden',
           boxShadow: `0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px ${color}18`,
         }}>
 
-          {/* Sticky header */}
+          {/* Header — always visible */}
           <div style={{
-            position: 'sticky', top: 0, zIndex: 20,
-            background: 'linear-gradient(to bottom, #1C0A04 70%, transparent 100%)',
+            flexShrink: 0, zIndex: 20,
+            background: '#1C0A04',
             padding: '14px 20px 6px',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
@@ -550,17 +551,21 @@ function BookDetail({ theme, occasion, onClose }) {
             }}>✕</button>
           </div>
 
-          {/* Flipping page content */}
-          <div key={pg} className={pageAnimClass} style={{ padding: '0 24px 8px' }}>
-            {pg === 0 && <BookPage1 theme={theme} occasion={occasion} photo={photo} color={color} />}
-            {pg === 1 && <BookPage2 theme={theme} color={color} />}
-            {pg === 2 && <BookPage3 theme={theme} color={color} onClose={onClose} />}
+          {/* Scrollable page content */}
+          <div className="op-scroll" style={{ flex: 1, overflowY: 'auto' }}>
+            <div key={pg} className={pageAnimClass} style={{ padding: '0 24px 8px' }}>
+              {pg === 0 && <BookPage1 theme={theme} occasion={occasion} photo={photo} color={color} />}
+              {pg === 1 && <BookPage2 theme={theme} color={color} />}
+              {pg === 2 && <BookPage3 theme={theme} color={color} onClose={onClose} />}
+            </div>
           </div>
 
-          {/* Navigation footer */}
+          {/* Navigation footer — always visible */}
           <div style={{
+            flexShrink: 0,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '10px 24px 26px',
+            background: '#1C0A04',
             borderTop: `1px solid ${color}14`,
           }}>
             <button onClick={() => goPage(-1)} disabled={pg === 0} style={{
