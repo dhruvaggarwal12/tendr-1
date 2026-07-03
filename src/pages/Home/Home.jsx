@@ -1230,18 +1230,14 @@ const Home = () => {
       {/* ── Plan by Occasion ── */}
       {(() => {
         const OCCASIONS = [
-          { label: "Birthday",        photoMobile: "https://images.unsplash.com/photo-1558636508-e0969431e541?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1558636508-e0969431e541?w=276&h=270&fit=crop&q=80" },
-          { label: "Wedding",         photoMobile: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=276&h=270&fit=crop&q=80" },
-          { label: "Anniversary",     photoMobile: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=276&h=270&fit=crop&q=80" },
-          { label: "Baby Shower",     photoMobile: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=276&h=270&fit=crop&q=80" },
-          { label: "Corporate Event", photoMobile: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=276&h=270&fit=crop&q=80" },
-          { label: "House Party",     photoMobile: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=276&h=270&fit=crop&q=80" },
-          { label: "Festival",        photoMobile: "https://images.unsplash.com/photo-1604871000636-074fa5117945?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1604871000636-074fa5117945?w=276&h=270&fit=crop&q=80" },
-          { label: "Pre Wedding",     photoMobile: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=276&h=270&fit=crop&q=80" },
-          { label: "Graduation",      photoMobile: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=276&h=270&fit=crop&q=80" },
-          { label: "Housewarming",    photoMobile: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=276&h=270&fit=crop&q=80" },
-          { label: "Get Together",    photoMobile: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=276&h=270&fit=crop&q=80" },
-          { label: "Kids Party",      photoMobile: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=276&h=270&fit=crop&q=80" },
+          { label: "Birthday",          photoMobile: "/occasions/birthday-mobile.png",          photoDesktop: "/occasions/birthday-desktop.png" },
+          { label: "Anniversary",       photoMobile: "/occasions/anniversary-mobile.png",       photoDesktop: "/occasions/anniversary-desktop.png" },
+          { label: "Baby Shower",       photoMobile: "/occasions/baby-shower-mobile.png",       photoDesktop: "/occasions/baby-shower-desktop.png" },
+          { label: "House Party",       photoMobile: "/occasions/house-party-mobile.png",       photoDesktop: "/occasions/house-party-desktop.png" },
+          { label: "Housewarming",      photoMobile: "/occasions/housewarming-mobile.png",      photoDesktop: "/occasions/housewarming-desktop.png" },
+          { label: "Get Together",      photoMobile: "/occasions/get-together-mobile.png",      photoDesktop: "/occasions/get-together-desktop.png" },
+          { label: "Kitty Party",       photoMobile: "/occasions/kitty-party-mobile.png",       photoDesktop: "/occasions/kitty-party-desktop.png" },
+          { label: "Naming Ceremony",   photoMobile: "/occasions/naming-ceremony-mobile.png",   photoDesktop: "/occasions/naming-ceremony-desktop.png" },
         ];
         const CARD_W = 108, CARD_H = 136, GAP = 8;
         const scrollOcc = (dir) => occRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: "smooth" });
