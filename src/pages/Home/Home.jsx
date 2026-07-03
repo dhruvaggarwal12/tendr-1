@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import "./Home.css";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import PlatformFlow from "../../components/PlatformFlow";
-import OccasionPlanner from "../../components/OccasionPlanner";
+// import OccasionPlanner from "../../components/OccasionPlanner";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { easeIn, motion } from "framer-motion";
@@ -352,7 +352,7 @@ const Home = () => {
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
-  const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
+  // const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
   const scrollFaCarousel = (dir) => {
     const el = faCarouselRef.current;
     if (!el) return;
@@ -1229,7 +1229,7 @@ const Home = () => {
         `}</style>
       </section>
 
-      {/* ── Plan by Occasion ── */}
+      {/* ── Plan by Occasion ── TEMPORARILY HIDDEN ──
       <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
@@ -1238,7 +1238,7 @@ const Home = () => {
             <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
           </div>
 
-          {/* 4×2 grid — no scroll, no arrows */}
+          4×2 grid — no scroll, no arrows
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "clamp(8px,1.5vw,16px)" }}>
             {[
               { label: "Birthday",        photoM: "/occasions/birthday-mobile.png",        photoD: "/occasions/birthday-desktop.png" },
@@ -1276,6 +1276,7 @@ const Home = () => {
           </div>
         </div>
       </section>
+      ── END Plan by Occasion ── */}
 
             {/* ── 5s Rotating Feature Carousel ── */}
       <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
@@ -1944,13 +1945,14 @@ const Home = () => {
         </>
       )}
 
-      {/* ── Occasion Planner Modal ── */}
+      {/* ── Occasion Planner Modal ── TEMPORARILY HIDDEN ──
       {plannerOccasion !== null && (
         <OccasionPlanner
           initialOccasion={plannerOccasion || null}
           onClose={() => setPlannerOccasion(null)}
         />
       )}
+      ── END Occasion Planner Modal ── */}
     </div>
   );
 };
