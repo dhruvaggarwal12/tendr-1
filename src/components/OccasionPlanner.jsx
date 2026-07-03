@@ -235,6 +235,7 @@ const CSS = `
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
     .book-hero-img    { height:190px !important; }
     .book-title       { font-size:1.7rem !important; }
+    .op-theme-grid    { grid-template-columns:repeat(2,1fr) !important; }
   }
 `;
 
@@ -891,9 +892,9 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     )}
                   </div>
 
-                  {/* Theme cards — fixed 2-column grid, always same card size */}
+                  {/* Theme cards — 4-column on desktop, 2-column on mobile */}
                   {results.length > 0 ? (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 13 }}>
+                    <div className="op-theme-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 13 }}>
                       {results.map(theme => (
                         <ThemeCard key={theme.id} theme={theme} occasion={occasion} occColor={occColor} onExpand={() => setExpandedTheme(theme)} />
                       ))}
