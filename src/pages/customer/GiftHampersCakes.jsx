@@ -257,8 +257,16 @@ const GiftHampersCakes = () => {
   const [orderSuccess,    setOrderSuccess]    = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [modalQty,        setModalQty]        = useState(1);
+  const [samples,         setSamples]         = useState([]);
 
   useEffect(() => { setLoading(false); }, []);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/admin/gift-hamper-samples`)
+      .then(r => r.json())
+      .then(d => setSamples(d.samples || []))
+      .catch(() => {});
+  }, []);
 
   const categories = ["All", ...new Set(products.map(p => p.category).filter(Boolean))];
   const filtered   = filter === "All" ? products : products.filter(p => p.category === filter);
@@ -322,6 +330,54 @@ const GiftHampersCakes = () => {
             Chat with Our Team →
           </button>
           <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 8 }}>In-app chat · Replies within 2 hours</p>
+        </div>
+      </div>
+
+      {/* ── Sample Gift Hamper Photos ── */}
+      <div style={{ background: "#FFFCF5", padding: "52px 24px 56px" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 10 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>For Reference</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3.5vw,2.4rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px" }}>Sample Gift Hamper Options</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>You can download these images for reference</p>
+            <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "14px auto 0" }} />
+          </div>
+
+          {samples.length === 0 ? (
+            /* Blurred placeholder when no photos */
+            <div style={{ position: "relative", marginTop: 28, borderRadius: 20, overflow: "hidden", minHeight: 200 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12, filter: "blur(8px)", opacity: 0.35, pointerEvents: "none" }}>
+                {[1,2,3,4,5,6].map(i => (
+                  <div key={i} style={{ aspectRatio: "4/3", borderRadius: 14, background: "linear-gradient(135deg,#F5E6CC,#FDEBD0)" }} />
+                ))}
+              </div>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <div style={{ fontSize: 32 }}>🎁</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Sample photos coming soon</div>
+                <div style={{ fontSize: 12, color: "#9B7450" }}>Our team is curating the best options for you</div>
+              </div>
+            </div>
+          ) : (
+            <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14 }}>
+              {samples.map(s => (
+                <div key={s._id} style={{ borderRadius: 14, overflow: "hidden", background: "#fff", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(44,26,14,0.07)", display: "flex", flexDirection: "column" }}>
+                  <img src={s.url} alt={s.name || "Gift Hamper"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                  <div style={{ padding: "10px 12px 12px", display: "flex", flexDirection: "column", gap: 8, flex: 1 }}>
+                    {s.name && <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
+                    <a
+                      href={s.url}
+                      download
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", alignSelf: "flex-start", fontFamily: font, marginTop: "auto" }}
+                    >
+                      ⬇ Download
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 

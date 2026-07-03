@@ -581,6 +581,11 @@ const AdminDashboard = () => {
   const [selectedGhId, setSelectedGhId] = useState(null);
   const [ghEdits, setGhEdits]           = useState({}); // { [orderId]: items[] }
   const [ghSaving, setGhSaving]         = useState(false);
+  const [ghSamples, setGhSamples]       = useState([]);
+  const [ghSampleName, setGhSampleName] = useState("");
+  const [ghSampleFile, setGhSampleFile] = useState(null);
+  const [ghSampleUploading, setGhSampleUploading] = useState(false);
+  const [ghSampleMsg, setGhSampleMsg]   = useState("");
   const [vendorStats, setVendorStats] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [userList, setUserList] = useState([]);
@@ -844,6 +849,11 @@ const AdminDashboard = () => {
       .then(d => setGhOrders(d.orders || []))
       .catch((e) => { if (e?.message !== '401') console.error('gift-hampers fetch:', e); })
       .finally(() => setGhLoading(false));
+    // Also fetch sample photos
+    fetch(`${BASE_URL}/admin/gift-hamper-samples`)
+      .then(r => r.json())
+      .then(d => setGhSamples(d.samples || []))
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDropdown, token]);
 
@@ -4228,6 +4238,85 @@ const AdminDashboard = () => {
                   </div>
                 </div>
               )}
+
+              {/* ── Sample Gift Hamper Photos ── */}
+              <div style={{ marginTop: 32, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: "20px 22px" }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>🖼️ Sample Gift Hamper Photos</div>
+                <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 18 }}>These photos appear on the Gift Hampers customer page as downloadable reference images.</div>
+
+                {/* Upload form */}
+                <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 18, padding: "14px 16px", background: "#FFFCF7", borderRadius: 12, border: "1.5px dashed rgba(196,122,46,0.3)" }}>
+                  <div style={{ flex: "1 1 180px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo Name</div>
+                    <input
+                      type="text"
+                      placeholder="e.g. Luxury Birthday Hamper"
+                      value={ghSampleName}
+                      onChange={e => setGhSampleName(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <div style={{ flex: "1 1 160px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo File</div>
+                    <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 12, color: "#7A5535", fontFamily: "'Outfit',sans-serif" }}>
+                      📷 {ghSampleFile ? ghSampleFile.name.slice(0, 22) + (ghSampleFile.name.length > 22 ? "…" : "") : "Choose image"}
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => setGhSampleFile(e.target.files?.[0] || null)} />
+                    </label>
+                  </div>
+                  <button
+                    disabled={!ghSampleFile || ghSampleUploading}
+                    onClick={async () => {
+                      if (!ghSampleFile || ghSampleUploading) return;
+                      setGhSampleUploading(true); setGhSampleMsg("");
+                      const fd = new FormData();
+                      fd.append("photo", ghSampleFile);
+                      fd.append("name", ghSampleName.trim());
+                      try {
+                        const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples`, {
+                          method: "POST", headers: { Authorization: `Bearer ${token}` },
+                          credentials: "include", body: fd,
+                        });
+                        const d = await r.json();
+                        if (d.success) {
+                          setGhSamples(prev => [d.sample, ...prev]);
+                          setGhSampleFile(null); setGhSampleName("");
+                          setGhSampleMsg("Uploaded!");
+                        } else { setGhSampleMsg(d.error || "Upload failed."); }
+                      } catch (e) { setGhSampleMsg(e.message); }
+                      finally { setGhSampleUploading(false); setTimeout(() => setGhSampleMsg(""), 3000); }
+                    }}
+                    style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: !ghSampleFile || ghSampleUploading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !ghSampleFile || ghSampleUploading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: !ghSampleFile || ghSampleUploading ? "not-allowed" : "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0 }}
+                  >{ghSampleUploading ? "Uploading…" : "✓ Upload"}</button>
+                  {ghSampleMsg && <span style={{ fontSize: 12, color: ghSampleMsg.includes("fail") || ghSampleMsg.includes("Error") ? "#ef4444" : "#15803d", fontWeight: 600 }}>{ghSampleMsg}</span>}
+                </div>
+
+                {/* Samples grid */}
+                {ghSamples.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", fontSize: 13, background: "#faf7f2", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.2)" }}>
+                    No sample photos uploaded yet. Add some above and they'll appear on the customer page.
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
+                    {ghSamples.map(s => (
+                      <div key={s._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.18)", background: "#faf5ee" }}>
+                        <img src={s.url} alt={s.name || "Sample"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                        {s.name && <div style={{ padding: "6px 8px", fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm(`Remove "${s.name || "this photo"}"?`)) return;
+                            const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/${s._id}`, {
+                              method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                            });
+                            if (r.ok) setGhSamples(prev => prev.filter(x => x._id !== s._id));
+                          }}
+                          style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
             </div>
           );
         })()}
