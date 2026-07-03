@@ -127,20 +127,21 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
   const [photos, setPhotos]       = useState(vendor.portfolioPhotos || []);
   const [uploading, setUploading] = useState(false);
   const [photoMsg, setPhotoMsg]   = useState("");
-  // Pending file — holds selected file until user confirms tag
-  const [pendingFile, setPendingFile]   = useState(null);
-  const [pendingPreview, setPendingPreview] = useState("");
+  // Multi-photo queue — each entry: {file, preview}. Head of queue is the "pending" file.
+  const [pendingQueue, setPendingQueue] = useState([]);
   const [pendingCat, setPendingCat]     = useState("");
   const [pendingTheme, setPendingTheme] = useState("");
+  const pendingFile    = pendingQueue[0]?.file    ?? null;
+  const pendingPreview = pendingQueue[0]?.preview ?? "";
 
   const GALLERY_CATS      = ["Decoration", "Entertainment", "Catering", "Photography", "Full Event Setup", "Corporate Events"];
   const DECOR_THEMES_LIST = ["Floral", "Balloon Art", "Lighting", "Themed Decoration", "Traditional", "Modern", "Rustic", "Minimalist"];
 
   const handleFileSelect = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setPendingFile(file);
-    setPendingPreview(URL.createObjectURL(file));
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    const items = files.map(f => ({ file: f, preview: URL.createObjectURL(f) }));
+    setPendingQueue(prev => [...prev, ...items]);
     setPendingCat("");
     setPendingTheme("");
     e.target.value = "";
@@ -167,7 +168,8 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
     } catch (err) { setPhotoMsg(err.message); }
     finally {
       setUploading(false);
-      setPendingFile(null); setPendingPreview("");
+      setPendingQueue(prev => prev.slice(1));
+      setPendingCat(""); setPendingTheme("");
       setTimeout(() => setPhotoMsg(""), 3000);
     }
   };
@@ -309,7 +311,10 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
             {/* Pending file — tag before upload */}
             {pendingFile ? (
               <div style={{ background: "#FFFCF7", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "14px 16px", marginBottom: 12 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Tag this photo before uploading</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 10, marginBottom: 10 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em" }}>Tag this photo before uploading</span>
+                  {pendingQueue.length > 1 && <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600 }}>{pendingQueue.length - 1} more in queue</span>}
+                </div>
                 <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
                   <img src={pendingPreview} alt="preview" style={{ width: 80, height: 80, borderRadius: 10, objectFit: "cover", flexShrink: 0, border: "1.5px solid rgba(196,122,46,0.18)" }} />
                   <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -330,7 +335,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
                         style={{ flex: 1, padding: "9px 0", borderRadius: 9, border: "none", background: uploading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: uploading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: uploading ? "not-allowed" : "pointer", fontFamily: font }}>
                         {uploading ? "Uploading…" : "✓ Upload"}
                       </button>
-                      <button type="button" onClick={() => { setPendingFile(null); setPendingPreview(""); }}
+                      <button type="button" onClick={() => setPendingQueue(prev => prev.slice(1))}
                         style={{ padding: "9px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                         Cancel
                       </button>
@@ -343,7 +348,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
                 <label style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", gap: 6 }}>
                   📷 Upload Photo
-                  <input type="file" accept="image/*" onChange={handleFileSelect} style={{ display: "none" }} />
+                  <input type="file" accept="image/*" multiple onChange={handleFileSelect} style={{ display: "none" }} />
                 </label>
                 {photoMsg && <span style={{ fontSize: 12, color: "#15803d", fontWeight: 600 }}>{photoMsg}</span>}
                 <span style={{ fontSize: 11, color: "#9B7450", marginLeft: "auto" }}>{photos.length}/10 photos</span>
@@ -365,7 +370,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
                 {!pendingFile && photos.length < 10 && (
                   <label style={{ aspectRatio: "1", borderRadius: 10, border: "2px dashed rgba(196,122,46,0.3)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", cursor: "pointer", color: "#C47A2E", fontSize: 11, fontWeight: 600, gap: 4 }}>
                     <span style={{ fontSize: 22 }}>+</span> Add
-                    <input type="file" accept="image/*" onChange={handleFileSelect} style={{ display: "none" }} />
+                    <input type="file" accept="image/*" multiple onChange={handleFileSelect} style={{ display: "none" }} />
                   </label>
                 )}
               </div>
@@ -374,7 +379,7 @@ export default function EditVendorModal({ vendor, onClose, onSaved }) {
                 <label style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "28px", border: "2px dashed rgba(196,122,46,0.25)", borderRadius: 12, cursor: "pointer", color: "#9B7450", gap: 8 }}>
                   <span style={{ fontSize: 32 }}>🖼️</span>
                   <span style={{ fontSize: 13, fontWeight: 600 }}>Click to upload first photo</span>
-                  <input type="file" accept="image/*" onChange={handleFileSelect} style={{ display: "none" }} />
+                  <input type="file" accept="image/*" multiple onChange={handleFileSelect} style={{ display: "none" }} />
                 </label>
               )
             )}

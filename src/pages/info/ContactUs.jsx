@@ -10,7 +10,7 @@ const font = "'Outfit', sans-serif";
 export default function ContactUs() {
   const navigate = useNavigate();
   const [focused, setFocused] = useState("");
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -29,6 +29,7 @@ export default function ContactUs() {
           access_key: "b6e1a881-5d38-4228-bfc4-379df27385c0",
           name: form.name,
           email: form.email,
+          phone: form.phone || "Not provided",
           message: form.message,
           subject: `New message from ${form.name} via Tendr Contact Form`,
         }),
@@ -152,6 +153,10 @@ export default function ContactUs() {
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B3A1F", marginBottom: 6 }}>Email Address</label>
                   <input name="email" type="email" placeholder="rahul@example.com" value={form.email} onChange={handleChange} onFocus={() => setFocused("email")} onBlur={() => setFocused("")} style={inputStyle("email")} required />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B3A1F", marginBottom: 6 }}>Phone Number <span style={{ fontWeight: 400, color: "#9B7450" }}>(optional)</span></label>
+                  <input name="phone" type="tel" placeholder="+91 98765 43210" value={form.phone} onChange={handleChange} onFocus={() => setFocused("phone")} onBlur={() => setFocused("")} style={inputStyle("phone")} />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B3A1F", marginBottom: 6 }}>Message</label>
