@@ -1230,18 +1230,18 @@ const Home = () => {
       {/* ── Plan by Occasion ── */}
       {(() => {
         const OCCASIONS = [
-          { label: "Birthday",        photo: "https://images.unsplash.com/photo-1558636508-e0969431e541?w=280&h=180&fit=crop&q=75" },
-          { label: "Wedding",         photo: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=280&h=180&fit=crop&q=75" },
-          { label: "Anniversary",     photo: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=280&h=180&fit=crop&q=75" },
-          { label: "Baby Shower",     photo: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=280&h=180&fit=crop&q=75" },
-          { label: "Corporate Event", photo: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=280&h=180&fit=crop&q=75" },
-          { label: "House Party",     photo: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=280&h=180&fit=crop&q=75" },
-          { label: "Festival",        photo: "https://images.unsplash.com/photo-1604871000636-074fa5117945?w=280&h=180&fit=crop&q=75" },
-          { label: "Pre Wedding",     photo: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=280&h=180&fit=crop&q=75" },
-          { label: "Graduation",      photo: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=280&h=180&fit=crop&q=75" },
-          { label: "Housewarming",    photo: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=280&h=180&fit=crop&q=75" },
-          { label: "Get Together",    photo: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=280&h=180&fit=crop&q=75" },
-          { label: "Kids Party",      photo: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=280&h=180&fit=crop&q=75" },
+          { label: "Birthday",        photoMobile: "https://images.unsplash.com/photo-1558636508-e0969431e541?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1558636508-e0969431e541?w=276&h=270&fit=crop&q=80" },
+          { label: "Wedding",         photoMobile: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=276&h=270&fit=crop&q=80" },
+          { label: "Anniversary",     photoMobile: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=276&h=270&fit=crop&q=80" },
+          { label: "Baby Shower",     photoMobile: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=276&h=270&fit=crop&q=80" },
+          { label: "Corporate Event", photoMobile: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=276&h=270&fit=crop&q=80" },
+          { label: "House Party",     photoMobile: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=276&h=270&fit=crop&q=80" },
+          { label: "Festival",        photoMobile: "https://images.unsplash.com/photo-1604871000636-074fa5117945?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1604871000636-074fa5117945?w=276&h=270&fit=crop&q=80" },
+          { label: "Pre Wedding",     photoMobile: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=276&h=270&fit=crop&q=80" },
+          { label: "Graduation",      photoMobile: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=276&h=270&fit=crop&q=80" },
+          { label: "Housewarming",    photoMobile: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=276&h=270&fit=crop&q=80" },
+          { label: "Get Together",    photoMobile: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=276&h=270&fit=crop&q=80" },
+          { label: "Kids Party",      photoMobile: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=216&h=206&fit=crop&q=80", photoDesktop: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=276&h=270&fit=crop&q=80" },
         ];
         const CARD_W = 108, CARD_H = 136, GAP = 8;
         const scrollOcc = (dir) => occRef.current?.scrollBy({ left: dir * (CARD_W + GAP) * 2, behavior: "smooth" });
@@ -1260,7 +1260,7 @@ const Home = () => {
               <button className="occ-arrow occ-arrow-r" onClick={() => scrollOcc(1)}>&#8250;</button>
               <div ref={occRef} className="occ-scroll" style={{ overflowX: "auto", scrollSnapType: "x mandatory", paddingBottom: 8 }}>
                 <div className="occ-grid" style={{ display: "grid", gridTemplateRows: `repeat(2, ${CARD_H}px)`, gridAutoFlow: "column", gridAutoColumns: CARD_W, gap: GAP, padding: "4px 24px 4px", width: "max-content" }}>
-                  {OCCASIONS.map(({ label, photo }) => (
+                  {OCCASIONS.map(({ label, photoMobile, photoDesktop }) => (
                     <button key={label} onClick={() => navigate("/booking")}
                       style={{ width: CARD_W, height: CARD_H, borderRadius: 16, border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", scrollSnapAlign: "start", boxShadow: "0 2px 12px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", flexShrink: 0 }}
                       onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.14)"; }}
@@ -1270,7 +1270,7 @@ const Home = () => {
                         <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
                       </div>
                       <div style={{ flex: 1, overflow: "hidden" }}>
-                        <img src={photo} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                        <img src={isMobile ? photoMobile : photoDesktop} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                       </div>
                     </button>
                   ))}
