@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux";
 import router from "../router";
 import { io } from "socket.io-client";
 import { getBotFlow, BOT_FLOWS, ADDRESS_STEP, OTHER_OPTION, CHAT_PACKAGES, buildSummaryMessage } from "../utils/chatbot";
-import { addVendorToCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
+import { addVendorToCompare, setFinalisedVendor, clearFinalisedVendor } from "../redux/listingFiltersSlice";
 import { saveVendorTiming } from "../redux/eventPlanningSlice";
 import { getVendorAvailability, holdVendorSlot } from "../apis/vendorApi";
 import { useChatOverlay } from "../context/ChatContext";
@@ -479,6 +479,7 @@ export default function VendorChatModal() {
     const arr = Array.isArray(entry) ? entry : [entry];
     return arr.some(v => v._id === vendor._id);
   })();
+  const bookingSubmitted = isThisVendorFinalised && !!localStorage.getItem(`tendr:booking-submitted:${vendor?._id}`);
 
   // ── Minimise animation state ─────────────────────────────────────────────────
   const [minimizing, setMinimizing] = useState(false);
@@ -713,6 +714,13 @@ export default function VendorChatModal() {
     socket.on("new_message", (msg) => {
       if (msg.sender === "user") return;
       setMessages(prev => [...prev, { text: msg.content, sender: "vendor", ts: Date.now() }]);
+    });
+
+    socket.on("payment_confirmed", () => {
+      dispatch(clearFinalisedVendor());
+      Object.keys(localStorage).filter(k => k.startsWith("tendr:booking-submitted:")).forEach(k => localStorage.removeItem(k));
+      window.dispatchEvent(new CustomEvent("tendr:payment-confirmed"));
+      closeChat();
     });
 
     return () => socket.disconnect();
@@ -1594,22 +1602,29 @@ export default function VendorChatModal() {
 
           {(approved || isExistingChat) ? (
             <>
+              {/* Booking submitted — chat locked until admin marks payment done */}
+              {bookingSubmitted && (
+                <div style={{ background: "linear-gradient(135deg,#eff6ff,#dbeafe)", border: "1.5px solid #93c5fd", borderRadius: 10, padding: "10px 14px", marginBottom: 8, textAlign: "center" }}>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#0369a1", marginBottom: 2 }}>Booking Submitted</div>
+                  <div style={{ fontSize: 11, color: "#1e40af" }}>Chat is locked — awaiting payment confirmation from Tendr</div>
+                </div>
+              )}
               {/* Message row */}
               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
-                <label title="Attach image" style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: approved ? "pointer" : "not-allowed", flexShrink: 0, opacity: approved ? 1 : 0.4 }}>
+                <label title="Attach image" style={{ width: 34, height: 34, borderRadius: "50%", background: "#f5f0ea", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, cursor: (approved && !bookingSubmitted) ? "pointer" : "not-allowed", flexShrink: 0, opacity: (approved && !bookingSubmitted) ? 1 : 0.4 }}>
                   📌
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={approved ? sendImage : undefined} disabled={!approved} />
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={(approved && !bookingSubmitted) ? sendImage : undefined} disabled={!approved || bookingSubmitted} />
                 </label>
                 <input
                   value={text}
-                  onChange={e => approved && setText(e.target.value)}
-                  onKeyDown={e => approved && e.key === "Enter" && !e.shiftKey && sendText()}
-                  placeholder={approved ? "Write your message…" : "Waiting for approval…"}
-                  disabled={!approved}
-                  style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: `1.5px solid ${approved ? "rgba(196,122,46,0.22)" : "rgba(0,0,0,0.08)"}`, fontSize: 13, fontFamily: font, outline: "none", background: approved ? "#fff" : "#f5f5f5", color: approved ? "inherit" : "#bbb", cursor: approved ? "text" : "not-allowed" }}
+                  onChange={e => (approved && !bookingSubmitted) && setText(e.target.value)}
+                  onKeyDown={e => (approved && !bookingSubmitted) && e.key === "Enter" && !e.shiftKey && sendText()}
+                  placeholder={bookingSubmitted ? "Awaiting payment confirmation…" : approved ? "Write your message…" : "Waiting for approval…"}
+                  disabled={!approved || bookingSubmitted}
+                  style={{ flex: 1, padding: "9px 14px", borderRadius: 100, border: `1.5px solid ${(approved && !bookingSubmitted) ? "rgba(196,122,46,0.22)" : "rgba(0,0,0,0.08)"}`, fontSize: 13, fontFamily: font, outline: "none", background: (approved && !bookingSubmitted) ? "#fff" : "#f5f5f5", color: (approved && !bookingSubmitted) ? "inherit" : "#bbb", cursor: (approved && !bookingSubmitted) ? "text" : "not-allowed" }}
                 />
-                <button onClick={sendText} disabled={!text.trim() || !approved}
-                  style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: text.trim() && approved ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: text.trim() && approved ? "pointer" : "not-allowed", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <button onClick={sendText} disabled={!text.trim() || !approved || bookingSubmitted}
+                  style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: (text.trim() && approved && !bookingSubmitted) ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#e5e7eb", color: "#fff", cursor: (text.trim() && approved && !bookingSubmitted) ? "pointer" : "not-allowed", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   ➤
                 </button>
               </div>

@@ -1346,6 +1346,34 @@ const BookingReviewPage = () => {
                               body: JSON.stringify({ code: appliedCode, orderId: eventPlanId }),
                             }).catch(() => {});
                           }
+                          // Fetch pinned messages from customer's conversations
+                          let pinnedLines = [];
+                          try {
+                            const pr = await fetch(`${BASE_URL}/conversations`, {
+                              headers: { Authorization: `Bearer ${token}` },
+                              credentials: "include",
+                            });
+                            if (pr.ok) {
+                              const pd = await pr.json();
+                              const convos = (pd.conversations || []).filter(c => c.chatType === "vendor");
+                              const allPinned = [];
+                              convos.forEach(c => {
+                                (c.pinnedMessages || []).forEach(m => {
+                                  const text = m.content || (typeof m === "string" ? m : "");
+                                  if (text) allPinned.push(`  • ${text}`);
+                                });
+                              });
+                              if (allPinned.length > 0) {
+                                pinnedLines = ["", "*Vendor Quotes (Pinned):*", ...allPinned];
+                              }
+                            }
+                          } catch {}
+
+                          // Mark booking submitted for each finalised vendor (keeps Pay button + locks chat)
+                          vendorEntries.forEach(([, v]) => {
+                            if (v?._id) localStorage.setItem(`tendr:booking-submitted:${v._id}`, "1");
+                          });
+
                           // Build WhatsApp summary message
                           const vendorFaTotal = confirmedTotal + faTotal;
                           const finalAmount = (appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) + effectivePlatformFee;
@@ -1358,7 +1386,7 @@ const BookingReviewPage = () => {
                             formData.guests   ? `👥 *Guests:* ${formData.guests}` : null,
                             ...(isSmartPlan && smartPlanSlots.length > 0 ? [
                               "",
-                              "*✨ Smart Plan Breakdown:*",
+                              "*Smart Plan Breakdown:*",
                               ...smartPlanSlots.map(s => `• ${s.category}: Rs.${Number(s.estimatedCost || 0).toLocaleString("en-IN")}${s.vendorName ? ` (${s.vendorName})` : ""}`),
                             ] : vendorEntries.length > 0 ? [
                               "",
@@ -1367,9 +1395,10 @@ const BookingReviewPage = () => {
                                 `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
                               ),
                             ] : []),
+                            ...pinnedLines,
                             ...(faItems.length > 0 ? [
                               "",
-                              "*🎭 Fun Activities:*",
+                              "*Fun Activities:*",
                               ...faItems.filter(i => i.form).map(i => [
                                 `• ${i.emoji} ${i.name} — Rs.${Number(i.totalPrice || 0).toLocaleString("en-IN")}`,
                                 `   📅 ${i.form.date} · ⏰ ${i.form.time}`,
@@ -1386,15 +1415,13 @@ const BookingReviewPage = () => {
                             "",
                             currentUser?.name ? `👤 *Customer:* ${currentUser.name}` : null,
                             currentUser?.phoneNumber || currentUser?.phone ? `📱 *Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,
-                            eventPlanId ? `🆔 *Plan ID:* ${eventPlanId}` : null,
                           ].filter(Boolean).join("\n");
 
-                          // Clear state so review page redirects away
+                          // Clear session state (but keep finalisedVendors so Pay button stays until payment confirmed)
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
                           sessionStorage.removeItem("fa_booking");
-                          dispatch(clearFinalisedVendor());
                           dispatch(resetEventPlanning());
                           dispatch(clearFunCart());
 

@@ -991,6 +991,38 @@ const AdminDashboard = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDropdown, token]);
 
+  // Auto-fetch pinned messages for all plans when the bookings tab is active
+  useEffect(() => {
+    if (activeDropdown !== 'bookings' || !token || !isAdminToken || !eventPlans.length) return;
+    const alreadyFetched = eventPlans.every(p => pinnedByPlan[p._id] !== undefined);
+    if (alreadyFetched) return;
+    adminFetch(`${BASE_URL}/admin/conversations?chatType=vendor`)
+      .then(r => r.json())
+      .then(data => {
+        const allConvos = data.conversations || [];
+        const pinnedByCust = {};
+        allConvos.forEach(c => {
+          const custId = (c.customerId?._id || c.customerId)?.toString();
+          if (!custId) return;
+          if (!pinnedByCust[custId]) pinnedByCust[custId] = [];
+          (c.pinnedMessages || []).forEach(m => {
+            if (m.content) pinnedByCust[custId].push({ text: m.content, vendor: c.vendorId?.name || c.vendorName || "Vendor" });
+          });
+        });
+        setPinnedByPlan(prev => {
+          const next = { ...prev };
+          eventPlans.forEach(plan => {
+            if (next[plan._id] !== undefined) return;
+            const custId = (plan.customerId?._id || plan.customerId)?.toString();
+            next[plan._id] = { loading: false, messages: pinnedByCust[custId] || [] };
+          });
+          return next;
+        });
+      })
+      .catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDropdown, token, eventPlans.length]);
+
   // Auto-refresh messages every 10s when a chat is selected
   useEffect(() => {
     if (!selectedChat?._id) return;
@@ -1631,38 +1663,9 @@ const AdminDashboard = () => {
             return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
           };
           const buildEventDetailsWhatsApp = (plan) => {
-            const name  = plan.customerId?.name || "there";
             const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
             if (!phone) return null;
-            const services = (plan.selectedServices || []).map(s => `  • ${s}`).join("\n") || "  • Not specified";
-            const typeLabel = plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It";
-            const msg = [
-              `Hi ${name}! 👋`,
-              ``,
-              `Your *Tendr Event Details* are confirmed! 🎉`,
-              ``,
-              `*📋 Event Details*`,
-              `  • Event: ${plan.eventName || plan.eventType || "—"}`,
-              `  • Type: ${plan.eventType || "—"}`,
-              `  • Date: ${plan.date || "—"}`,
-              `  • Location: ${plan.location || "—"}`,
-              `  • Guests: ${plan.guests || "—"}`,
-              `  • Budget: ${plan.budget || "—"}`,
-              ``,
-              `*✅ Confirmed Services*`,
-              services,
-              ``,
-              `*🎯 Booking Type:* ${typeLabel}`,
-              ``,
-              `*📌 Next Steps:*`,
-              `  • Our team will contact you within 24 hours.`,
-              `  • Vendors have been notified.`,
-              `  • Keep your Tendr dashboard updated for logistics.`,
-              ``,
-              `For any queries, feel free to reach out to us on WhatsApp.`,
-              ``,
-              `— Team Tendr 🌟`,
-            ].join("\n");
+            const msg = `Your payment is completed and event is booked. Move to your dashboard and download the timeline, event details, invitation flyer and invoice. Do share stories on social media with Tendr tagged. — Team Tendr`;
             return `https://wa.me/91${phone}?text=${encodeURIComponent(msg)}`;
           };
 
@@ -1941,34 +1944,10 @@ const AdminDashboard = () => {
                                     </a>
                                   );
                                 })()}
-                                {/* Pinned messages — only shown before payment */}
+                                {/* Pinned messages — auto-loaded when bookings tab opens */}
                                 {(plan.status === "submitted" || plan.status === "draft") && (() => {
                                   const ps = pinnedByPlan[plan._id];
-                                  if (!ps) {
-                                    return (
-                                      <button onClick={async () => {
-                                        setPinnedByPlan(prev => ({ ...prev, [plan._id]: { loading: true, messages: [] } }));
-                                        try {
-                                          const r = await fetch(`${BASE_URL}/conversations?customerId=${plan.customerId?._id || plan.customerId}`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
-                                          const d = await r.json();
-                                          const convList = (d.conversations || []).filter(c => c.chatType === "vendor");
-                                          const allPinned = [];
-                                          await Promise.allSettled(convList.map(async c => {
-                                            try {
-                                              const r2 = await fetch(`${BASE_URL}/conversations/${c._id}`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
-                                              const full = await r2.json();
-                                              const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || [];
-                                              msgs.forEach(m => { const text = typeof m === "string" ? m : m.content || m.text; if (text) allPinned.push({ text, vendor: c.vendorName || "Vendor" }); });
-                                            } catch {}
-                                          }));
-                                          setPinnedByPlan(prev => ({ ...prev, [plan._id]: { loading: false, messages: allPinned } }));
-                                        } catch { setPinnedByPlan(prev => ({ ...prev, [plan._id]: { loading: false, messages: [] } })); }
-                                      }} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 9px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fffcf5", color: "#C47A2E", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                        📌 View Pinned
-                                      </button>
-                                    );
-                                  }
-                                  if (ps.loading) return <span style={{ fontSize: 11, color: "#9B7450" }}>Loading…</span>;
+                                  if (!ps || ps.loading) return <span style={{ fontSize: 11, color: "#9B7450" }}>Loading pins…</span>;
                                   if (!ps.messages.length) return <span style={{ fontSize: 11, color: "#bbb" }}>No pinned msgs</span>;
                                   return (
                                     <div style={{ background: "#fffbeb", borderRadius: 8, padding: "7px 10px", display: "flex", flexDirection: "column", gap: 4, maxWidth: 220 }}>

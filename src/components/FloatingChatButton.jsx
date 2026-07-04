@@ -177,6 +177,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     return () => window.removeEventListener("tendr:chat-started", handler);
   }, [fetchVendorChats]);
 
+  // Re-fetch (and clear) active chats when payment is confirmed by admin
+  useEffect(() => {
+    const handler = () => fetchVendorChats();
+    window.addEventListener("tendr:payment-confirmed", handler);
+    return () => window.removeEventListener("tendr:payment-confirmed", handler);
+  }, [fetchVendorChats]);
+
   if (new URLSearchParams(search).get("standalone") === "1") return null;
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
 
