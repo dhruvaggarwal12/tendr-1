@@ -136,7 +136,17 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         const active = (data.conversations || []).filter(
           (c) => !c.chatRejected && c.chatType !== "support"
         );
-        setVendorChats(active);
+        // Deduplicate Tendr Team (null vendorId) entries — keep the most recently updated one
+        const seen = new Set();
+        const deduped = active.filter((c) => {
+          const vid = c.vendorId?._id || c.vendorId || null;
+          if (!vid) {
+            if (seen.has("__tendr_team__")) return false;
+            seen.add("__tendr_team__");
+          }
+          return true;
+        });
+        setVendorChats(deduped);
       })
       .catch(() => {});
   }, [token, user?._id]);

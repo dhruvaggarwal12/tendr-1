@@ -241,10 +241,13 @@ export async function getAllConversation({ signal, chatType }) {
  */
 export async function getConversationMessages(id) {
   const path = `/messages/${id}/messages`;
+  const token = localStorage.getItem('tendr_token') || localStorage.getItem('jwt') || '';
 
   try {
     const res = await tryFetch([path] , {
-      method: "GET"
+      method: "GET",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      credentials: "include",
     })
 
     if(res.ok){

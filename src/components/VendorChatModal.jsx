@@ -691,6 +691,14 @@ export default function VendorChatModal() {
     });
 
     socket.on("chat_approved", () => { setApproved(true); setJustApproved(true); });
+    socket.on("conversation_error", ({ message: errMsg } = {}) => {
+      console.error("[VendorChatModal] conversation_error:", errMsg);
+      setMessages(prev => [...prev, {
+        text: "⚠️ Something went wrong sending your request. Please try again or contact support.",
+        sender: "vendor",
+        ts: Date.now(),
+      }]);
+    });
     socket.on("new_message", (msg) => {
       if (msg.sender === "user") return;
       setMessages(prev => [...prev, { text: msg.content, sender: "vendor", ts: Date.now() }]);
