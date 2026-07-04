@@ -344,18 +344,8 @@ const GiftHampersCakes = () => {
           </div>
 
           {samples.length === 0 ? (
-            /* Blurred placeholder when no photos */
-            <div style={{ position: "relative", marginTop: 28, borderRadius: 20, overflow: "hidden", minHeight: 200 }}>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 12, filter: "blur(8px)", opacity: 0.35, pointerEvents: "none" }}>
-                {[1,2,3,4,5,6].map(i => (
-                  <div key={i} style={{ aspectRatio: "4/3", borderRadius: 14, background: "linear-gradient(135deg,#F5E6CC,#FDEBD0)" }} />
-                ))}
-              </div>
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <div style={{ fontSize: 32 }}>🎁</div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>Sample photos coming soon</div>
-                <div style={{ fontSize: 12, color: "#9B7450" }}>Our team is curating the best options for you</div>
-              </div>
+            <div style={{ marginTop: 28, textAlign: "center", padding: "32px 0", color: "#9B7450", fontSize: 14 }}>
+              No samples for now
             </div>
           ) : (
             <div style={{ marginTop: 28, display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14 }}>
