@@ -701,14 +701,22 @@ export default function VendorChatModal() {
 
   const openConversation = useCallback((answers) => {
     if (!socketRef.current) return;
-    if (isConcierge) {
-      socketRef.current.emit("open_conversation", { chatType: "concierge" });
-    } else if (vendor?._id && vendor._id !== "concierge") {
-      socketRef.current.emit("open_conversation", {
-        chatType: "VENDOR",
-        vendorId: vendor._id,
-        eventDetails: { ...reduxFormData, ...answers },
-      });
+    const doEmit = () => {
+      if (isConcierge) {
+        socketRef.current?.emit("open_conversation", { chatType: "concierge" });
+      } else if (vendor?._id && vendor._id !== "concierge") {
+        socketRef.current?.emit("open_conversation", {
+          chatType: "VENDOR",
+          vendorId: vendor._id,
+          eventDetails: { ...reduxFormData, ...answers },
+        });
+      }
+    };
+    // Always emit after connection is confirmed — prevents silent drop when socket is still connecting
+    if (socketRef.current.connected) {
+      doEmit();
+    } else {
+      socketRef.current.once("connect", doEmit);
     }
   }, [vendor?._id, isConcierge, reduxFormData]);
 
@@ -1138,8 +1146,8 @@ export default function VendorChatModal() {
               style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 18, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, paddingBottom: 3 }}
             >—</button>
             <button
-              onClick={closeChat}
-              title="Close chat"
+              onClick={handleMinimize}
+              title="Minimise chat"
               style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
             >✕</button>
           </div>
