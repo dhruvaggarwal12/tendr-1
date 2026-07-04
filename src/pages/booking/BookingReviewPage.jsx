@@ -1364,7 +1364,7 @@ const BookingReviewPage = () => {
                                 });
                               });
                               if (allPinned.length > 0) {
-                                pinnedLines = ["", "*Vendor Quotes (Pinned):*", ...allPinned];
+                                pinnedLines = ["", "*Vendor Quotes:*", ...allPinned];
                               }
                             }
                           } catch {}
@@ -1378,12 +1378,12 @@ const BookingReviewPage = () => {
                           const vendorFaTotal = confirmedTotal + faTotal;
                           const finalAmount = (appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) + effectivePlatformFee;
                           const lines = [
-                            `📋 *New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
+                            `*New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
                             "",
-                            `🎉 *Event:* ${formData.eventType || "—"}`,
-                            formData.date     ? `📅 *Date:* ${formData.date}` : null,
-                            formData.location ? `📍 *Location:* ${formData.location}` : null,
-                            formData.guests   ? `👥 *Guests:* ${formData.guests}` : null,
+                            `*Event:* ${formData.eventType || "—"}`,
+                            formData.date     ? `*Date:* ${formData.date}` : null,
+                            formData.location ? `*Location:* ${formData.location}` : null,
+                            formData.guests   ? `*Guests:* ${formData.guests}` : null,
                             ...(isSmartPlan && smartPlanSlots.length > 0 ? [
                               "",
                               "*Smart Plan Breakdown:*",
@@ -1400,21 +1400,21 @@ const BookingReviewPage = () => {
                               "",
                               "*Fun Activities:*",
                               ...faItems.filter(i => i.form).map(i => [
-                                `• ${i.emoji} ${i.name} — Rs.${Number(i.totalPrice || 0).toLocaleString("en-IN")}`,
-                                `   📅 ${i.form.date} · ⏰ ${i.form.time}`,
-                                `   📍 ${i.form.address}`,
-                                `   👥 ${i.form.guests} guests · ${i.form.eventType}`,
+                                `• ${i.name} — Rs.${Number(i.totalPrice || 0).toLocaleString("en-IN")}`,
+                                `   Date: ${i.form.date} · Time: ${i.form.time}`,
+                                `   Address: ${i.form.address}`,
+                                `   Guests: ${i.form.guests} · ${i.form.eventType}`,
                                 i.form.name ? `   Contact: ${i.form.name} · ${i.form.phone}` : null,
                                 i.form.notes ? `   Notes: ${i.form.notes}` : null,
                               ].filter(Boolean).join("\n")),
                             ] : []),
                             "",
-                            effectivePlatformFee > 0 ? `🔧 *Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
-                            appliedCode ? `🎁 *Referral Code:* ${appliedCode}` : null,
-                            `💰 *Grand Total (incl. 18% GST):* Rs.${Number(finalAmount + Math.round((appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) * 0.18)).toLocaleString("en-IN")}`,
+                            effectivePlatformFee > 0 ? `*Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
+                            appliedCode ? `*Referral Code:* ${appliedCode}` : null,
+                            `*Grand Total (incl. 18% GST):* Rs.${Number(finalAmount + Math.round((appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) * 0.18)).toLocaleString("en-IN")}`,
                             "",
-                            currentUser?.name ? `👤 *Customer:* ${currentUser.name}` : null,
-                            currentUser?.phoneNumber || currentUser?.phone ? `📱 *Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,
+                            currentUser?.name ? `*Customer:* ${currentUser.name}` : null,
+                            currentUser?.phoneNumber || currentUser?.phone ? `*Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,
                           ].filter(Boolean).join("\n");
 
                           // Clear session state (but keep finalisedVendors so Pay button stays until payment confirmed)

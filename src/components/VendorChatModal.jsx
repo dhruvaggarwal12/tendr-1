@@ -479,7 +479,7 @@ export default function VendorChatModal() {
     const arr = Array.isArray(entry) ? entry : [entry];
     return arr.some(v => v._id === vendor._id);
   })();
-  const bookingSubmitted = isThisVendorFinalised && !!localStorage.getItem(`tendr:booking-submitted:${vendor?._id}`);
+  const bookingSubmitted = !!localStorage.getItem(`tendr:booking-submitted:${vendor?._id}`);
 
   // ── Minimise animation state ─────────────────────────────────────────────────
   const [minimizing, setMinimizing] = useState(false);

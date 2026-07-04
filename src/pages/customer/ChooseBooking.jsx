@@ -78,7 +78,6 @@ export default function ChooseBooking() {
   const handleChoose = (type, route) => {
     if (route) { navigate(route); return; }
     dispatch(clearVendorCompare());
-    dispatch(clearFinalisedVendor());
     dispatch(setBookingType(type));
     navigate("/plan-event/form?bookingType=" + type);
   };

@@ -65,6 +65,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [vendorChats, setVendorChats] = useState([]);
   const [savedVendors, setSavedVendors] = useState(() => getSavedVendors());
+  const [newlyAdded, setNewlyAdded] = useState(null); // 'compare' | 'fun' | 'st' — drives fly-in animation
+  const prevCompareLen = useRef(compareSelected.length);
+  const prevFunCount   = useRef(funCartCount);
+  const prevStCount    = useRef(stCartCount);
   // Persist seen conversation IDs so badge stays gone after viewing
   const [seenIds, setSeenIds] = useState(() => {
     try { return new Set(JSON.parse(localStorage.getItem("chatBadgeSeenIds") || "[]")); }
@@ -183,6 +187,40 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     window.addEventListener("tendr:payment-confirmed", handler);
     return () => window.removeEventListener("tendr:payment-confirmed", handler);
   }, [fetchVendorChats]);
+
+  // Fly-in animation: auto-open launcher when Compare/Fun/Stationery icon first appears
+  useEffect(() => {
+    const prev = prevCompareLen.current;
+    prevCompareLen.current = compareSelected.length;
+    if (prev === 0 && compareSelected.length > 0) {
+      setLauncherOpen(true);
+      setNewlyAdded('compare');
+      const t = setTimeout(() => setNewlyAdded(null), 600);
+      return () => clearTimeout(t);
+    }
+  }, [compareSelected.length]);
+
+  useEffect(() => {
+    const prev = prevFunCount.current;
+    prevFunCount.current = funCartCount;
+    if (prev === 0 && funCartCount > 0) {
+      setLauncherOpen(true);
+      setNewlyAdded('fun');
+      const t = setTimeout(() => setNewlyAdded(null), 600);
+      return () => clearTimeout(t);
+    }
+  }, [funCartCount]);
+
+  useEffect(() => {
+    const prev = prevStCount.current;
+    prevStCount.current = stCartCount;
+    if (prev === 0 && stCartCount > 0) {
+      setLauncherOpen(true);
+      setNewlyAdded('st');
+      const t = setTimeout(() => setNewlyAdded(null), 600);
+      return () => clearTimeout(t);
+    }
+  }, [stCartCount]);
 
   if (new URLSearchParams(search).get("standalone") === "1") return null;
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
@@ -496,7 +534,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                 </div>
               )}
               {compareSelected.length > 0 && (
-                <div className="launcher-compare-btn" style={{ position: "relative" }}>
+                <div className={`launcher-compare-btn${newlyAdded === 'compare' ? ' lstack-new-item' : ''}`} style={{ position: "relative" }}>
                   <button className="lstack-btn" onClick={() => { setLauncherOpen(false); const opening = !compareOpen; setCompareOpen(v => !v); setSavedOpen(false); if (opening) { setCompareCategory(""); setActiveCompare([]); } }}
                     title="Compare Vendors"
                     style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(196,122,46,0.4)", flexShrink: 0 }}>
@@ -508,7 +546,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                 </div>
               )}
               {funCartCount > 0 && !funConfirmed && (
-                <div style={{ position: "relative" }}>
+                <div className={newlyAdded === 'fun' ? 'lstack-new-item' : ''} style={{ position: "relative" }}>
                   <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("fun"); setAuthModalOpen(true); } else { setFunCartOpen(true); } }}
                     title="Fun Activities Cart"
                     style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#CCAB4A", boxShadow: "0 4px 14px rgba(44,26,14,0.45)", flexShrink: 0 }}>
@@ -532,7 +570,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                 </div>
               )}
               {stCartCount > 0 && !stConfirmed && (
-                <div style={{ position: "relative" }}>
+                <div className={newlyAdded === 'st' ? 'lstack-new-item' : ''} style={{ position: "relative" }}>
                   <button className="lstack-btn" onClick={() => { setLauncherOpen(false); if (!token) { setPendingCartAction("st"); setAuthModalOpen(true); } else { openStCart(); } }}
                     title="Stationery Cart"
                     style={{ position: "relative", width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#7A3A1E,#C47A2E)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", boxShadow: "0 4px 14px rgba(122,58,30,0.5)", flexShrink: 0, fontSize: 20 }}>
@@ -905,6 +943,12 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           from { opacity: 0; transform: translateY(10px) scale(0.9); }
           to   { opacity: 1; transform: translateY(0)    scale(1); }
         }
+        @keyframes lstack-fly-in {
+          0%   { opacity: 0; transform: translateY(80px) scale(0.3); }
+          60%  { opacity: 1; transform: translateY(-10px) scale(1.15); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .lstack-new-item { animation: lstack-fly-in 0.48s cubic-bezier(0.34,1.56,0.64,1) forwards !important; }
         .vendor-cluster-desktop { display: none !important; }
         .mobile-saved-popup { display: block; }
         .mobile-compare-popup { display: block; }
