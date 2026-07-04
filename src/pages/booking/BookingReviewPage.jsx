@@ -64,6 +64,130 @@ const ChevronIcon = ({ open }) => (
   </svg>
 );
 
+// ── Terms & Conditions content ────────────────────────────────────────────────
+const TC_CONTENT = {
+  General: {
+    title: "General Terms",
+    icon: "📋",
+    points: [
+      "The advance you pay locks in your vendors and date. No one else gets your slot after this.",
+      "Final balance is due as per the schedule we share after confirmation — usually split into 1–2 parts.",
+      "Cancellation refunds: 7+ days before → 50% back · 3–6 days before → 25% back · Under 72 hours → no refund, vendors have already blocked their time · Same-day or next-day bookings → no refund applies at all.",
+      "If something changes on your end (guest count, venue, timing) — tell us 5 days before and we'll sort it. Last minute changes may cost extra.",
+      "If a vendor cancels on you — that's on us to fix. Full refund of advance or we find you a replacement, your call.",
+    ],
+  },
+  Decorator: {
+    title: "Decorator",
+    icon: "🎨",
+    points: [
+      "Whatever design, palette, and theme we've finalised — that's what gets executed. Changes after this point may cost extra.",
+      "Please make sure the venue allows the team in 2–3 hours before the event. If they can't get access on time, we can't guarantee the setup will be complete — that's not on them.",
+      "Decoration involves tape, pins, and sometimes small fixings on walls. Minor marks or nail holes are a normal part of the process — please check with your venue in advance if this is a concern.",
+      "Props, stands, and equipment go back with the decorator after the event. Please make sure nothing is missing or damaged by guests.",
+    ],
+  },
+  Caterer: {
+    title: "Caterer",
+    icon: "🍽️",
+    points: [
+      "Final headcount is locked 48 hours before. Food is prepared based on that number — we can't refund for fewer guests after that point.",
+      "If you have any allergies or specific dietary needs in your guest list, please tell us now if you haven't already.",
+      "We strongly suggest tasting the food before service begins — if anything needs adjusting, that's the right time to flag it. Changes after service has started may not be possible.",
+      "Please do a quick plate and utensil count with the team before service starts — this avoids any confusion at the end of the event.",
+      "Extra time beyond the agreed service window will be billed separately.",
+    ],
+  },
+  DJ: {
+    title: "DJ",
+    icon: "🎧",
+    points: [
+      "Share your must-play and do-not-play songs before the event — the earlier the better.",
+      "The booking covers the agreed number of hours. Short breaks of 5–10 minutes are normal. If you want to extend beyond the agreed time, that'll be charged at the hourly rate we agreed on.",
+      "Please make sure the venue has a proper, stable power connection ready. Technical issues from bad or unstable power aren't the DJ's fault.",
+      "If the venue has a noise curfew or local authorities ask to stop early — that's outside anyone's control and no refund applies for time lost due to that.",
+    ],
+  },
+  Photographer: {
+    title: "Photographer / Videographer",
+    icon: "📸",
+    points: [
+      "At the start of the event, please take 2 minutes to introduce the photographer to key people — parents, couple, close family — and share who the important moments are with. This makes a huge difference to the final album.",
+      "Edited photos come within 15–21 days. Videos take longer — 30–45 days depending on the package.",
+      "If you have a shot list, share it before the event. We'll do our best but can't guarantee every shot, especially in crowded or outdoor settings.",
+      "Raw/unedited files are only included if it was part of your package.",
+    ],
+  },
+};
+
+// Map vendor serviceType → T&C key
+const TC_KEY_MAP = {
+  Decorator:    "Decorator",
+  Caterer:      "Caterer",
+  DJ:           "DJ",
+  Photographer: "Photographer",
+  Videographer: "Photographer",
+};
+
+function TnCModal({ onClose, vendorTypes }) {
+  const font = "'Outfit', sans-serif";
+  const relevantKeys = ["General", ...vendorTypes.map(t => TC_KEY_MAP[t]).filter(Boolean).filter((v, i, a) => a.indexOf(v) === i)];
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 10200, background: "rgba(10,4,0,0.7)", backdropFilter: "blur(6px)" }} />
+      <div style={{
+        position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+        zIndex: 10201, width: "min(92vw, 560px)", maxHeight: "80vh",
+        background: "#FFFCF5", borderRadius: 20, display: "flex", flexDirection: "column",
+        boxShadow: "0 32px 80px rgba(44,26,14,0.25)", fontFamily: font,
+        border: "1px solid rgba(196,122,46,0.2)",
+      }}>
+        {/* Header */}
+        <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>Terms & Conditions</div>
+            <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>Please read before confirming your booking</div>
+          </div>
+          <button onClick={onClose} style={{ width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: "auto", padding: "18px 22px 24px" }}>
+          {relevantKeys.map((key, idx) => {
+            const section = TC_CONTENT[key];
+            if (!section) return null;
+            return (
+              <div key={key} style={{ marginBottom: idx < relevantKeys.length - 1 ? 24 : 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <span style={{ fontSize: 16 }}>{section.icon}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", textTransform: "uppercase", letterSpacing: "0.06em" }}>{section.title}</span>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {section.points.map((pt, i) => (
+                    <div key={i} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                      <div style={{ width: 5, height: 5, borderRadius: "50%", background: "#C47A2E", flexShrink: 0, marginTop: 7 }} />
+                      <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.6 }}>{pt}</span>
+                    </div>
+                  ))}
+                </div>
+                {idx < relevantKeys.length - 1 && <div style={{ height: 1, background: "rgba(196,122,46,0.1)", marginTop: 20 }} />}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: "14px 22px", borderTop: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+          <button onClick={onClose} style={{ width: "100%", padding: "11px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+            Got it
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
+
 const BookingReviewPage = () => {
   const navigate  = useNavigate();
   const location  = useLocation();
@@ -74,6 +198,8 @@ const BookingReviewPage = () => {
   const faBooking  = (() => { try { return JSON.parse(sessionStorage.getItem("fa_booking")  || "null"); } catch { return null; } })();
   const currentUser = useSelector((s) => s.auth.user);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [tcAgreed, setTcAgreed]     = useState(false);
+  const [showTcModal, setShowTcModal] = useState(false);
 
   // Referral code state — persisted to sessionStorage so navigating away and back doesn't lose it
   const [referralInput, setReferralInput] = useState(() => sessionStorage.getItem("wr_referralInput") || "");
@@ -1158,18 +1284,41 @@ const BookingReviewPage = () => {
                 ))}
               </div>
 
+              {/* T&C checkbox */}
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 14, padding: "12px 14px", background: "rgba(196,122,46,0.05)", borderRadius: 10, border: `1.5px solid ${tcAgreed ? "rgba(196,122,46,0.35)" : "rgba(196,122,46,0.15)"}` }}>
+                <input
+                  type="checkbox"
+                  id="tc-agree"
+                  checked={tcAgreed}
+                  onChange={e => setTcAgreed(e.target.checked)}
+                  style={{ marginTop: 2, width: 16, height: 16, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }}
+                />
+                <label htmlFor="tc-agree" style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5, cursor: "pointer" }}>
+                  I have read and agree to the{" "}
+                  <span
+                    onClick={e => { e.preventDefault(); setShowTcModal(true); }}
+                    style={{ color: "#C47A2E", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}
+                  >
+                    Terms & Conditions
+                  </span>
+                </label>
+              </div>
+
               {anyPriceUnset ? (
                 <div style={{ width: "100%", padding: "14px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", textAlign: "center", border: "1.5px dashed #d1d5db" }}>
                   ⏳ Waiting for all quotes to be confirmed
                 </div>
               ) : (
                 <button
-                  disabled={saving}
+                  disabled={saving || !tcAgreed}
                   onClick={() => setShowConfirmPopup(true)}
-                  style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
+                  style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: !tcAgreed ? "not-allowed" : "pointer", boxShadow: !tcAgreed ? "none" : "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s" }}
                 >
                   Proceed to Payment
                 </button>
+              )}
+              {!tcAgreed && !anyPriceUnset && (
+                <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "6px 0 0" }}>Please agree to the terms to continue</p>
               )}
 
               {/* Confirmation popup */}
@@ -1281,32 +1430,59 @@ const BookingReviewPage = () => {
       </div>
 
       {/* Mobile-only fixed checkout bar — hidden on desktop via CSS */}
-      <div className="booking-mobile-cta">
-        {(confirmedTotal + faTotal) > 0 && (() => {
-          const raw = confirmedTotal + faTotal;
-          const disc = appliedCode ? applyDiscount(raw).finalTotal : raw;
-          const total = disc + Math.round(disc * 0.18) + 100;
-          return (
-            <div style={{ fontSize: 13, lineHeight: 1.3, flexShrink: 0 }}>
-              <div style={{ color: "#9B7450", fontSize: 11 }}>Grand Total</div>
-              <div style={{ fontWeight: 900, color: "#2C1A0E", fontSize: 16 }}>{formatINR(total)}</div>
+      <div className="booking-mobile-cta" style={{ flexDirection: "column", gap: 8, paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
+        {/* T&C checkbox — mobile */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
+          <input
+            type="checkbox"
+            id="tc-agree-mob"
+            checked={tcAgreed}
+            onChange={e => setTcAgreed(e.target.checked)}
+            style={{ width: 15, height: 15, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }}
+          />
+          <label htmlFor="tc-agree-mob" style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.4, cursor: "pointer" }}>
+            I agree to the{" "}
+            <span onClick={() => setShowTcModal(true)} style={{ color: "#C47A2E", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}>
+              Terms & Conditions
+            </span>
+          </label>
+        </div>
+
+        <div style={{ display: "flex", gap: 10, alignItems: "center", width: "100%" }}>
+          {(confirmedTotal + faTotal) > 0 && (() => {
+            const raw = confirmedTotal + faTotal;
+            const disc = appliedCode ? applyDiscount(raw).finalTotal : raw;
+            const total = disc + Math.round(disc * 0.18) + 100;
+            return (
+              <div style={{ fontSize: 13, lineHeight: 1.3, flexShrink: 0 }}>
+                <div style={{ color: "#9B7450", fontSize: 11 }}>Grand Total</div>
+                <div style={{ fontWeight: 900, color: "#2C1A0E", fontSize: 16 }}>{formatINR(total)}</div>
+              </div>
+            );
+          })()}
+          {anyPriceUnset ? (
+            <div style={{ flex: 1, padding: "11px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 13, fontWeight: 700, textAlign: "center", border: "1.5px dashed #d1d5db", fontFamily: "'Outfit', sans-serif" }}>
+              ⏳ Waiting for quotes
             </div>
-          );
-        })()}
-        {anyPriceUnset ? (
-          <div style={{ flex: 1, padding: "11px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 13, fontWeight: 700, textAlign: "center", border: "1.5px dashed #d1d5db", fontFamily: "'Outfit', sans-serif" }}>
-            ⏳ Waiting for quotes
-          </div>
-        ) : (
-          <button
-            disabled={saving}
-            onClick={() => setShowConfirmPopup(true)}
-            style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 3px 12px rgba(196,122,46,0.35)" }}
-          >
-            Proceed to Payment
-          </button>
-        )}
+          ) : (
+            <button
+              disabled={saving || !tcAgreed}
+              onClick={() => setShowConfirmPopup(true)}
+              style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, cursor: !tcAgreed || saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: !tcAgreed ? "none" : "0 3px 12px rgba(196,122,46,0.35)", transition: "all 0.2s" }}
+            >
+              Proceed to Payment
+            </button>
+          )}
+        </div>
       </div>
+
+      {/* T&C Modal */}
+      {showTcModal && (
+        <TnCModal
+          onClose={() => setShowTcModal(false)}
+          vendorTypes={vendorEntries.map(([cat]) => cat)}
+        />
+      )}
 
     </div>
   );
