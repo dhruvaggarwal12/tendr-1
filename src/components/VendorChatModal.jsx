@@ -1507,10 +1507,6 @@ export default function VendorChatModal() {
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>Vendor Finalised</div>
                 <div style={{ fontSize: 11, color: "#6B7450" }}>You've selected {vendor?.name} for your event.</div>
               </div>
-              <button onClick={() => setShowReviewPopup(true)}
-                style={{ marginLeft: "auto", padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>
-                Review & Pay →
-              </button>
             </div>
           )}
 
@@ -1624,12 +1620,6 @@ export default function VendorChatModal() {
                 return (
                   <div style={{ marginBottom: 8 }}>
                     <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>
-                      <button
-                        onClick={() => setShowReviewPopup(true)}
-                        style={{ flex: 1, padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 13, fontWeight: 800, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(21,128,61,0.35)" }}
-                      >
-                        Review & Pay →
-                      </button>
                       <button
                         onClick={() => { closeChat(); router.navigate("/listings"); }}
                         style={{ flex: 1, padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer" }}
