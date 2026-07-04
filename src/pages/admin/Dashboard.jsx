@@ -972,13 +972,24 @@ const AdminDashboard = () => {
     if (!token || !isAdminToken) return;
     const poll = () => {
       fetch(`${BASE_URL}/admin/chat-requests`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
-        .then(r => r.json())
-        .then(data => { const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); })
+        .then(r => r.ok ? r.json() : null)
+        .then(data => { if (!data) return; const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); })
         .catch(() => {});
     };
+    poll(); // fire immediately on mount — don't wait 30s for first data
     const id = setInterval(poll, 30000);
     return () => clearInterval(id);
   }, [token, isAdminToken]);
+
+  // Re-fetch chat requests whenever the Chat Requests tab is clicked
+  useEffect(() => {
+    if (activeDropdown !== 'chatrequests' || !token || !isAdminToken) return;
+    adminFetch(`${BASE_URL}/admin/chat-requests`)
+      .then(r => r.json())
+      .then(data => { const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); })
+      .catch(e => { if (e?.message !== '401') console.error('chat-requests tab fetch:', e); });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDropdown, token]);
 
   // Auto-refresh messages every 10s when a chat is selected
   useEffect(() => {
@@ -1004,8 +1015,9 @@ const AdminDashboard = () => {
       console.log('Admin socket connected:', socket.id);
       // Re-fetch chat requests on reconnect so backend restarts don't cause missed requests
       fetch(`${BASE_URL}/admin/chat-requests`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
-        .then(r => r.json())
+        .then(r => r.ok ? r.json() : null)
         .then(data => {
+          if (!data) return; // don't wipe list on auth/server error
           const all = data.conversations || [];
           setChatRequests(all.filter(c => !c.chatRejected));
         })
@@ -1353,8 +1365,16 @@ const AdminDashboard = () => {
         {/* ── CHAT REQUESTS TAB ── */}
         {activeDropdown === "chatrequests" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-4 overflow-y-auto">
-            <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
-              Chat Requests
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+              <div className="heading font-semibold text-2xl sm:text-3xl md:text-4xl lg:text-5xl my-4 text-[#d08f4e]">
+                Chat Requests
+              </div>
+              <button
+                onClick={() => adminFetch(`${BASE_URL}/admin/chat-requests`).then(r => r.json()).then(data => { const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); }).catch(() => {})}
+                style={{ background: '#CCAB4A', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
+              >
+                Refresh
+              </button>
             </div>
 
             {chatRequests.length === 0 ? (
