@@ -623,6 +623,8 @@ export default function VendorChatModal() {
       setConversationId(_id);
       setCtxConvoId(_id);
       if (isApproved) setApproved(true);
+      // Trigger FloatingChatButton to re-fetch active chats list
+      window.dispatchEvent(new CustomEvent("tendr:chat-started"));
       if (vendor?.addToCompare !== false) dispatch(addVendorToCompare(vendor));
 
       // Flush messages queued before conversationId was ready (Tendr Team chat)

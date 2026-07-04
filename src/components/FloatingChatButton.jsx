@@ -134,7 +134,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       .then((data) => {
         // Show vendor + concierge chats only — exclude support (MiniChatWidget creates support conversations)
         const active = (data.conversations || []).filter(
-          (c) => !c.chatRejected && c.chatType !== undefined && c.chatType !== "support"
+          (c) => !c.chatRejected && c.chatType !== "support"
         );
         setVendorChats(active);
       })
@@ -150,6 +150,13 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     document.addEventListener("tendr:open-active-chats", handler);
     return () => document.removeEventListener("tendr:open-active-chats", handler);
   }, []);
+
+  // Re-fetch chats when a new vendor conversation is created
+  useEffect(() => {
+    const handler = () => fetchVendorChats();
+    window.addEventListener("tendr:chat-started", handler);
+    return () => window.removeEventListener("tendr:chat-started", handler);
+  }, [fetchVendorChats]);
 
   if (new URLSearchParams(search).get("standalone") === "1") return null;
   if (hideOnRoutes.some((r) => path === r || path.startsWith(r + "/"))) return null;
@@ -265,8 +272,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                   const cvid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
                   return String(cvid) === String(minimizedVendorId);
                 });
-                const displayChats = (!alreadyInList && chatState?.vendor && !chatState.isConcierge && chatState?.conversationId)
-                  ? [{ _id: chatState.conversationId, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: false, chatType: "VENDOR", _synthetic: true }, ...vendorChats]
+                const displayChats = (!alreadyInList && chatState?.vendor && !chatState.isConcierge)
+                  ? [{ _id: chatState.conversationId || `syn-${minimizedVendorId}`, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: false, chatType: "vendor", _synthetic: true }, ...vendorChats]
                   : vendorChats;
                 if (displayChats.length === 0) return (
                   <div style={{ textAlign: "center", padding: "60px 20px" }}>
@@ -289,6 +296,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                           setTimeout(() => {
                             document.dispatchEvent(new CustomEvent("tendr:set-from-active-chats"));
                           }, 50);
+                        } else if (convo._synthetic && String(convo._id).startsWith('syn-')) {
+                          // Conversation still being created — just expand the minimized chat
+                          expandChat();
                         } else {
                           openExistingChat(convo._id, {
                             _id: typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId,
