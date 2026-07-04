@@ -462,6 +462,7 @@ export default function VendorChatModal() {
   const [approved, setApproved] = useState(false);
   const [justApproved, setJustApproved] = useState(false); // shows install banner on first approval
   const socketRef = useRef(null);
+  const conversationIdRef = useRef(null); // tracks current convo ID for reconnect
   const messagesEndRef = useRef(null);
   const messagesTopRef = useRef(null);
 
@@ -557,6 +558,9 @@ export default function VendorChatModal() {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, botStep, botDone, confirmedPkg, approved]);
+
+  // Keep ref in sync so socket reconnect handlers can always read the latest conversationId
+  useEffect(() => { conversationIdRef.current = conversationId; }, [conversationId]);
 
   // ── Escape key ───────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -691,6 +695,13 @@ export default function VendorChatModal() {
     });
 
     socket.on("chat_approved", () => { setApproved(true); setJustApproved(true); });
+
+    // Re-join conversation room on reconnect (e.g. after backend restart)
+    socket.on("connect", () => {
+      const cid = conversationIdRef.current;
+      if (cid) socket.emit("join_conversation", { conversationId: cid });
+    });
+
     socket.on("conversation_error", ({ message: errMsg } = {}) => {
       console.error("[VendorChatModal] conversation_error:", errMsg);
       setMessages(prev => [...prev, {
