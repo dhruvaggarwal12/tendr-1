@@ -2,7 +2,7 @@
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import { Provider } from "react-redux";
 import { HelmetProvider } from "react-helmet-async";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import "./App.css";
 import router from "./router";
 import store from "./store";
@@ -18,10 +18,14 @@ import ComingSoon from "./pages/ComingSoon";
 import CommunityWall from "./pages/community/CommunityWall";
 import tendrLogo from "./assets/logos/tendr-logo-secondary.png";
 
+const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
+
 // Minimal router for tendr.co.in: coming soon at / and community at /community
+// AdminDashboard is included so admin can always log in and toggle launch status
 const liveSiteRouter = createBrowserRouter([
-  { path: "/community", element: <CommunityWall />, errorElement: <ComingSoon /> },
-  { path: "*",          element: <ComingSoon />,    errorElement: <ComingSoon /> },
+  { path: "/community",      element: <CommunityWall />,  errorElement: <ComingSoon /> },
+  { path: "/AdminDashboard", element: <AdminDashboard />, errorElement: <ComingSoon /> },
+  { path: "*",               element: <ComingSoon />,     errorElement: <ComingSoon /> },
 ]);
 
 const LIVE_DOMAINS = ["tendr.co.in", "www.tendr.co.in"];

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import tendrLogo from "../assets/logos/tendr.png";
 import AuthModal from "./AuthModal";
@@ -104,6 +104,15 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     window.addEventListener("storage", refresh);
     return () => { window.removeEventListener("tendr:saved-vendors-changed", refresh); window.removeEventListener("storage", refresh); };
   }, []);
+
+  // Auto-open launcher when compare list gains its first vendor (gives immediate feedback)
+  const prevCompareCountRef = useRef(0);
+  useEffect(() => {
+    if (compareSelected.length > 0 && prevCompareCountRef.current === 0) {
+      setLauncherOpen(true);
+    }
+    prevCompareCountRef.current = compareSelected.length;
+  }, [compareSelected.length]);
 
   // Hide FAB + chat when any drawer (WS cart, quick view) is open
   useEffect(() => {

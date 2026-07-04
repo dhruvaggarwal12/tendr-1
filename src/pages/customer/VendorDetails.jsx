@@ -552,11 +552,13 @@ const VendorDetailsPage = () => {
                   onClick={() => {
                     if (!token) { setAuthModalOpen(true); return; }
                     if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
-                    if (hasEventContext) {
+                    if (isFromListingFlow) {
+                      openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                    } else if (hasEventContext) {
                       dispatch(setBookingType("you-do-it"));
                       openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                     } else {
-                      setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
+                      setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
                       setChatFormOpen(true);
                     }
                   }}
@@ -787,11 +789,13 @@ const VendorDetailsPage = () => {
                     onClick={() => {
                       if (!token) { setAuthModalOpen(true); return; }
                       if (hasActiveChatSave) { openExistingChatForVendor(vendor._id, vendor, token, openExistingChat, openVendorChat); return; }
-                      if (hasEventContext) {
+                      if (isFromListingFlow) {
+                        openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
+                      } else if (hasEventContext) {
                         dispatch(setBookingType("you-do-it"));
                         openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType });
                       } else {
-                        setChatEventForm({ eventType: isFromListingFlow ? "" : (formEventType || ""), guests: isFromListingFlow ? "" : (formGuests ? String(formGuests) : ""), date: isFromListingFlow ? "" : (formDate || ""), location: isFromListingFlow ? "" : (formLocation || "") });
+                        setChatEventForm({ eventType: formEventType || "", guests: formGuests ? String(formGuests) : "", date: formDate || "", location: formLocation || "" });
                         setChatFormOpen(true);
                       }
                     }}

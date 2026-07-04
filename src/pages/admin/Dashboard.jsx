@@ -982,7 +982,17 @@ const AdminDashboard = () => {
     });
     adminSocketRef.current = socket;
 
-    socket.on('connect', () => console.log('Admin socket connected:', socket.id));
+    socket.on('connect', () => {
+      console.log('Admin socket connected:', socket.id);
+      // Re-fetch chat requests on reconnect so backend restarts don't cause missed requests
+      fetch(`${BASE_URL}/admin/chat-requests`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+        .then(r => r.json())
+        .then(data => {
+          const all = data.conversations || [];
+          setChatRequests(all.filter(c => !c.chatRejected));
+        })
+        .catch(() => {});
+    });
     socket.on('connect_error', (e) => console.error('Admin socket error:', e.message));
 
     socket.on('new_chat_request', (req) => {
