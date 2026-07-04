@@ -581,7 +581,7 @@ export default function VendorChatModal() {
 
     const socket = io(BASE_URL, {
       auth: { token: authToken },
-      transports: ["websocket"],
+      transports: ["websocket", "polling"],
       withCredentials: true,
     });
     socketRef.current = socket;
