@@ -966,6 +966,20 @@ const AdminDashboard = () => {
   // Keep selectedChatRef in sync so socket handlers can read current value
   useEffect(() => { selectedChatRef.current = selectedChat; }, [selectedChat]);
 
+  // Poll chat requests every 30s — catches new requests that arrive while socket is
+  // already connected (socket events can be missed; poll is the reliable fallback)
+  useEffect(() => {
+    if (!token || !isAdminToken) return;
+    const poll = () => {
+      fetch(`${BASE_URL}/admin/chat-requests`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
+        .then(r => r.json())
+        .then(data => { const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); })
+        .catch(() => {});
+    };
+    const id = setInterval(poll, 30000);
+    return () => clearInterval(id);
+  }, [token, isAdminToken]);
+
   // Auto-refresh messages every 10s when a chat is selected
   useEffect(() => {
     if (!selectedChat?._id) return;

@@ -105,10 +105,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     return () => { window.removeEventListener("tendr:saved-vendors-changed", refresh); window.removeEventListener("storage", refresh); };
   }, []);
 
-  // Auto-open launcher when compare list gains its first vendor (gives immediate feedback)
-  const prevCompareCountRef = useRef(0);
+  // Auto-open launcher whenever a vendor is added to compare (gives immediate feedback)
+  const prevCompareCountRef = useRef(compareSelected.length);
   useEffect(() => {
-    if (compareSelected.length > 0 && prevCompareCountRef.current === 0) {
+    if (compareSelected.length > prevCompareCountRef.current) {
       setLauncherOpen(true);
     }
     prevCompareCountRef.current = compareSelected.length;
