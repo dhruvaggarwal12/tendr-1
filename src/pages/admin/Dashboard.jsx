@@ -819,7 +819,8 @@ const AdminDashboard = () => {
       .then((r) => r.json())
       .then((data) => {
         const all = data.conversations || [];
-        setChatRequests(all.filter(c => !isExpired(c) || isClosed(c)));
+        // Show ALL vendor chat requests — admin must see every request regardless of event date
+        setChatRequests(all.filter(c => !c.chatRejected));
       })
       .catch((e) => { if (e?.message !== '401') console.error('chat-requests fetch:', e); });
 

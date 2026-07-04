@@ -526,10 +526,25 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         const hasOtherItems = savedVendors.length > 0 || compareSelected.length > 0;
         if (!hasCartItems && !hasOtherItems) return null;
         const count = [savedVendors.length > 0, compareSelected.length > 0, funCartCount > 0 && !funConfirmed, ghCartCount > 0 && !ghConfirmed, stCartCount > 0 && !stConfirmed].filter(Boolean).length;
+        const hasSaved = savedVendors.length > 0;
+        const hasCompare = compareSelected.length > 0;
+        const handleLauncherClick = () => {
+          // If only one item type exists, skip the stack and open that popup directly
+          if (hasCompare && !hasSaved && !hasCartItems) {
+            setCompareCategory(""); setActiveCompare([]);
+            setCompareOpen(v => !v); setSavedOpen(false); setLauncherOpen(false);
+            return;
+          }
+          if (hasSaved && !hasCompare && !hasCartItems) {
+            setSavedOpen(v => !v); setCompareOpen(false); setLauncherOpen(false);
+            return;
+          }
+          setLauncherOpen(v => !v);
+        };
         return (
           <button
             className="launcher-fab"
-            onClick={() => setLauncherOpen(v => !v)}
+            onClick={handleLauncherClick}
             aria-label="Open activity tray"
             title="Your activity"
           >
