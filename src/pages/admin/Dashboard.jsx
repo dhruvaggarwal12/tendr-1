@@ -568,6 +568,7 @@ const AdminDashboard = () => {
     return s || "dashboard";
   });
   const [selectedChat, setSelectedChat] = useState(null);
+  const selectedChatRef = useRef(null);
   const [currentConversation, setCurrentConversation] = useState([]);
   const [adminMsgInput, setAdminMsgInput] = useState("");
   const adminSocketRef = useRef(null);
@@ -962,6 +963,9 @@ const AdminDashboard = () => {
     setLaunchLoading(false);
   };
 
+  // Keep selectedChatRef in sync so socket handlers can read current value
+  useEffect(() => { selectedChatRef.current = selectedChat; }, [selectedChat]);
+
   // Auto-refresh messages every 10s when a chat is selected
   useEffect(() => {
     if (!selectedChat?._id) return;
@@ -1003,9 +1007,12 @@ const AdminDashboard = () => {
       });
     });
 
-    // Receive new messages in real-time — skip own messages (already added locally)
+    // Receive new messages in real-time — only for the currently selected chat
+    // Use selectedChatRef to avoid stale closure (socket effect only runs on token change)
     socket.on('new_message', (msg) => {
       if (msg.sender === 'customer-care') return;
+      const cid = selectedChatRef.current?._id?.toString();
+      if (!cid || msg.conversationId?.toString() !== cid) return;
       setCurrentConversation((prev) => [...(prev || []), msg]);
     });
 
