@@ -42,27 +42,46 @@ const winnerIndex = (vals, mode) => {
   return idx >= 0 ? idx : null;
 };
 
-// Tendr's Pick: rating (50%) + experience (25%) + events (25%)
+// Tendr's Pick: rating (40%) + experience (30%) + events (20%) + portfolio (10%)
+// Falls back gracefully when data is missing — uses whatever signals exist
 function calcTendersPickIdx(vendors) {
-  const ratings = vendors.map(v => getRating(v) ?? 0);
-  const exps    = vendors.map(v => getExp(v)    ?? 0);
-  const evts    = vendors.map(v => getEvents(v) ?? 0);
+  const ratings = vendors.map(v => getRating(v)    ?? 0);
+  const exps    = vendors.map(v => getExp(v)        ?? 0);
+  const evts    = vendors.map(v => getEvents(v)     ?? 0);
+  const ports   = vendors.map(v => getPortfolio(v)  ?? 0);
+  const prices  = vendors.map(v => getPrice(v));
   const maxR = Math.max(...ratings) || 0;
   const maxE = Math.max(...exps)    || 0;
   const maxV = Math.max(...evts)    || 0;
-  if (maxR === 0 && maxE === 0 && maxV === 0) return null;
+  const maxP = Math.max(...ports)   || 0;
+  // If absolutely no signal data, fall back to lowest price
+  if (maxR === 0 && maxE === 0 && maxV === 0 && maxP === 0) {
+    return winnerIndex(prices, "low");
+  }
   const scores = vendors.map((_, i) =>
-    (maxR ? ratings[i] / maxR : 0) * 0.5 +
-    (maxE ? exps[i]    / maxE : 0) * 0.25 +
-    (maxV ? evts[i]    / maxV : 0) * 0.25
+    (maxR ? ratings[i] / maxR : 0) * 0.4 +
+    (maxE ? exps[i]    / maxE : 0) * 0.3 +
+    (maxV ? evts[i]    / maxV : 0) * 0.2 +
+    (maxP ? ports[i]   / maxP : 0) * 0.1
   );
   const best = Math.max(...scores);
-  return best > 0 ? scores.indexOf(best) : null;
+  return best > 0 ? scores.indexOf(best) : winnerIndex(prices, "low");
+}
+
+// What the pick is actually based on (for the strip description)
+function pickReason(v) {
+  const parts = [];
+  if (getRating(v))    parts.push(`${Number(getRating(v)).toFixed(1)}★ rated`);
+  if (getExp(v))       parts.push(`${getExp(v)} yrs experience`);
+  if (getEvents(v))    parts.push(`${getEvents(v)}+ events done`);
+  if (getPortfolio(v)) parts.push(`${getPortfolio(v)} portfolio photos`);
+  if (!parts.length && getPrice(v)) parts.push("best starting price");
+  return parts.slice(0, 2).join(" · ");
 }
 
 // ── Stars ─────────────────────────────────────────────────────────────────────
 function Stars({ rating, size = 13 }) {
-  if (rating == null) return <span style={{ fontSize: size - 1, color: "#ccc" }}>No rating yet</span>;
+  if (rating == null) return null;
   const n = Number(rating);
   return (
     <span style={{ display: "inline-flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}>
@@ -243,8 +262,7 @@ const ComparisonMatrix = ({ vendors = [] }) => {
           Tendr's Pick: {getName(pickVendor)}
         </div>
         <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2, lineHeight: 1.5 }}>
-          Best combination of rating{getExp(pickVendor) ? `, ${getExp(pickVendor)} yrs experience` : ""}
-          {getEvents(pickVendor) ? ` & ${getEvents(pickVendor)}+ events done` : ""}. Chat with them first.
+          {pickReason(pickVendor) || "Best available option based on profile strength"}. Chat with them first.
         </div>
       </div>
     </div>
