@@ -103,14 +103,79 @@ const EVENT_TYPES = {
   },
 };
 
-const initCategories = (eventKey, totalBudget) =>
-  EVENT_TYPES[eventKey].cats.map((c, i) => ({
-    id: `cat_${i}_${Date.now()}`,
-    name: c.name,
-    pct: c.pct,
-    color: c.color,
-    spent: 0,
-  }));
+// ── Guest-count personalisation ──────────────────────────────────────────────
+const GUEST_SHIFTS = {
+  intimate: [
+    { matches: ['food', 'cater', 'drink'], delta: -6 },
+    { matches: ['venue', 'mandap'],        delta: -4 },
+    { matches: ['decor'],                  delta: +4 },
+    { matches: ['photo', 'video'],         delta: +4 },
+    { matches: ['entertain', 'music', 'dj'], delta: +2 },
+  ],
+  small: [
+    { matches: ['food', 'cater', 'drink'], delta: -3 },
+    { matches: ['venue', 'mandap'],        delta: -2 },
+    { matches: ['decor'],                  delta: +2 },
+    { matches: ['photo', 'video'],         delta: +2 },
+  ],
+  medium: [],
+  large: [
+    { matches: ['food', 'cater', 'drink'], delta: +6 },
+    { matches: ['venue', 'mandap'],        delta: +2 },
+    { matches: ['decor'],                  delta: -3 },
+    { matches: ['photo', 'video'],         delta: -2 },
+    { matches: ['misc'],                   delta: -3 },
+  ],
+  xlarge: [
+    { matches: ['food', 'cater', 'drink'], delta: +12 },
+    { matches: ['venue', 'mandap'],        delta: +3 },
+    { matches: ['decor'],                  delta: -5 },
+    { matches: ['photo', 'video'],         delta: -4 },
+    { matches: ['entertain', 'music', 'dj'], delta: -2 },
+    { matches: ['misc'],                   delta: -4 },
+  ],
+};
+
+const GUEST_TIER_INFO = {
+  intimate: { label: 'Intimate (< 30 guests)',    hint: 'Photography & decoration weighted higher, catering leaner' },
+  small:    { label: 'Small (30–75 guests)',       hint: 'Photo & decor boosted slightly' },
+  medium:   { label: 'Standard (75–150 guests)',   hint: 'Balanced across all categories' },
+  large:    { label: 'Large (150–300 guests)',     hint: 'Catering & venue weighted higher' },
+  xlarge:   { label: 'Very large (300+ guests)',   hint: 'Catering heavily weighted for high headcount' },
+};
+
+function getGuestTier(guests) {
+  const n = parseInt(guests) || 0;
+  if (n < 30)  return 'intimate';
+  if (n < 75)  return 'small';
+  if (n < 150) return 'medium';
+  if (n < 300) return 'large';
+  return 'xlarge';
+}
+
+function applyGuestAdjustment(cats, guests) {
+  const n = parseInt(guests) || 0;
+  if (n <= 0) return cats;
+  const shifts = GUEST_SHIFTS[getGuestTier(n)] || [];
+  if (!shifts.length) return cats;
+  return cats.map(c => {
+    const lower = c.name.toLowerCase();
+    const rule = shifts.find(r => r.matches.some(m => lower.includes(m)));
+    return rule ? { ...c, pct: Math.max(1, c.pct + rule.delta) } : c;
+  });
+}
+
+const initCategories = (eventKey, guests) =>
+  applyGuestAdjustment(
+    EVENT_TYPES[eventKey].cats.map((c, i) => ({
+      id: `cat_${i}_${Date.now()}`,
+      name: c.name,
+      pct: c.pct,
+      color: c.color,
+      spent: 0,
+    })),
+    guests
+  );
 
 const formatINR = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
 
@@ -233,6 +298,7 @@ export default function BudgetAllocator() {
 
   const [eventKey, setEventKey] = useState("birthday");
   const [totalBudget, setTotalBudget] = useState(50000);
+  const [guestCount, setGuestCount] = useState(() => parseInt(planFormData.guests) || 0);
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [syncMsg, setSyncMsg] = useState("");
@@ -268,46 +334,57 @@ export default function BudgetAllocator() {
   const SERVICE_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15, Anchor: 10, Transport: 8, Mehendi: 8, Makeup: 12 };
 
   useEffect(() => {
+    const guests = parseInt(planFormData.guests) || 0;
     // Pre-fill from BudgetSplitModal / EventPlanning navigate state
     if (prefillServices?.length > 0) {
       const raw   = prefillServices.map(s => ({ s, pct: SERVICE_PCT[s] ?? 10 }));
       const total = raw.reduce((a, b) => a + b.pct, 0);
-      const cats  = raw.map((r, i) => ({
+      const cats  = applyGuestAdjustment(raw.map((r, i) => ({
         id:    `cat_${i}_${Date.now()}`,
         name:  SERVICE_LABEL[r.s] ?? r.s,
         pct:   Math.round((r.pct / total) * 100),
         color: SERVICE_COLOR[r.s] ?? "#C47A2E",
         spent: 0,
-      }));
+      })), guests);
       const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
       setEventKey(key);
       setTotalBudget(prefillBudget > 0 ? prefillBudget : 50000);
+      setGuestCount(guests);
       setCategories(cats);
       setLoaded(true);
       return;
     }
     const d = loadBudget();
     if (d && !routeEventType) {
+      const savedGuests = d.guestCount ?? guests;
       setEventKey(d.eventKey || "birthday");
       setTotalBudget(d.totalBudget || 50000);
-      setCategories(d.categories || initCategories(d.eventKey || "birthday", d.totalBudget || 50000));
+      setGuestCount(savedGuests);
+      setCategories(d.categories || initCategories(d.eventKey || "birthday", savedGuests));
     } else {
       const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
       setEventKey(key);
       setTotalBudget(prefillBudget > 0 ? prefillBudget : 50000);
-      setCategories(initCategories(key, prefillBudget > 0 ? prefillBudget : 50000));
+      setGuestCount(guests);
+      setCategories(initCategories(key, guests));
     }
     setLoaded(true);
   }, []);
 
   useEffect(() => {
     if (!loaded) return;
-    localStorage.setItem("tendr_budget_v2", JSON.stringify({ eventKey, totalBudget, categories, __expiresAt: Date.now() + TTL_7D }));
-  }, [eventKey, totalBudget, categories, loaded]);
+    localStorage.setItem("tendr_budget_v2", JSON.stringify({ eventKey, totalBudget, guestCount, categories, __expiresAt: Date.now() + TTL_7D }));
+  }, [eventKey, totalBudget, guestCount, categories, loaded]);
 
   const applyEventType = (key) => {
     setEventKey(key);
-    setCategories(initCategories(key, totalBudget));
+    setCategories(initCategories(key, guestCount));
+  };
+
+  const handleGuestCountChange = (val) => {
+    const n = Math.max(0, parseInt(val) || 0);
+    setGuestCount(n);
+    setCategories(initCategories(eventKey, n));
   };
 
   const updatePct = (id, val) => {
@@ -418,11 +495,11 @@ export default function BudgetAllocator() {
 
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px" }}>
 
-        {/* Total budget input only */}
-        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "16px 24px", marginBottom: 20, boxShadow: "0 2px 12px rgba(139,69,19,0.06)", display: "flex", alignItems: "center", gap: 20, flexWrap: "wrap" }}>
-          <div style={{ flex: 1 }}>
+        {/* Budget + guests input */}
+        <div style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", padding: "16px 24px", marginBottom: 12, boxShadow: "0 2px 12px rgba(139,69,19,0.06)", display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 140 }}>
             <div style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Total Budget</div>
-            <div style={{ fontSize: 11, color: "#9B7450" }}>Adjust to recalculate all category allocations</div>
+            <div style={{ fontSize: 11, color: "#9B7450" }}>Recalculates all category allocations</div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "8px 14px" }}>
             <span style={{ fontSize: 16, fontWeight: 700, color: "#9B7450" }}>₹</span>
@@ -430,11 +507,39 @@ export default function BudgetAllocator() {
               type="number"
               value={totalBudget}
               onChange={e => setTotalBudget(Math.max(1000, Number(e.target.value) || 1000))}
-              style={{ width: 120, border: "none", outline: "none", fontSize: 16, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}
+              style={{ width: 110, border: "none", outline: "none", fontSize: 16, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}
               min="1000" step="5000"
             />
           </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#fff", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "8px 14px" }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#9B7450" }}>Guests</span>
+            <input
+              type="number"
+              value={guestCount || ""}
+              onChange={e => handleGuestCountChange(e.target.value)}
+              placeholder="e.g. 100"
+              style={{ width: 80, border: "none", outline: "none", fontSize: 15, fontWeight: 700, fontFamily: font, color: "#2C1A0E" }}
+              min="0" step="10"
+            />
+          </div>
         </div>
+
+        {/* Personalisation tier label */}
+        {guestCount > 0 && (() => {
+          const tier = getGuestTier(guestCount);
+          const info = GUEST_TIER_INFO[tier];
+          const tierColors = { intimate: '#7c3aed', small: '#3B82F6', medium: '#10B981', large: '#C47A2E', xlarge: '#ef4444' };
+          const col = tierColors[tier];
+          return (
+            <div style={{ display: "flex", alignItems: "center", gap: 10, background: `${col}0f`, border: `1.5px solid ${col}30`, borderRadius: 12, padding: "10px 16px", marginBottom: 16 }}>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: col, flexShrink: 0 }} />
+              <div>
+                <span style={{ fontSize: 12, fontWeight: 800, color: col }}>{info.label}</span>
+                <span style={{ fontSize: 12, color: "#9B7450", marginLeft: 8 }}>— {info.hint}</span>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Summary cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: 10, marginBottom: 20 }}>
@@ -566,7 +671,7 @@ export default function BudgetAllocator() {
             </div>
 
             <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap" }}>
-              <button onClick={() => applyEventType(eventKey)}
+              <button onClick={() => setCategories(initCategories(eventKey, guestCount))}
                 style={{ padding: "9px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#fff", color: "#9B7450", fontSize: "clamp(12px,2vw,14px)", fontWeight: 600, cursor: "pointer", fontFamily: font }}>
                 Reset to defaults
               </button>

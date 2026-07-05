@@ -26,7 +26,6 @@ const EVENT_TYPES = [
   { id: "wedding", label: "Wedding", icon: "💒", desc: "Your perfect day, perfectly planned" },
   { id: "corporate", label: "Corporate Event", icon: "🏢", desc: "Professional and polished" },
   { id: "party", label: "Party", icon: "🎉", desc: "Fun, casual, memorable" },
-  { id: "concert", label: "Concert / Show", icon: "🎵", desc: "Large-scale entertainment" },
 ];
 
 export default function BudgetPicker() {

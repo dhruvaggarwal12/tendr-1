@@ -388,6 +388,44 @@ const buildFromPlan = (planKey) =>
     })),
   }));
 
+// ── Compressed plan for events ≤7 days away ─────────────────────────────────
+function buildCompressedPlan(daysLeft) {
+  if (daysLeft <= 0) return [
+    { label: "Event Day", color: "#15803d", tasks: ["Arrive early and supervise setup", "Welcome guests", "Enjoy the celebration!"] },
+  ];
+  if (daysLeft === 1) return [
+    { label: "Today", color: "#7c3aed", tasks: ["Confirm all vendor arrivals", "Finalize headcount", "Make remaining vendor payments", "Prepare event-day schedule"] },
+    { label: "Event Day", color: "#15803d", tasks: ["Arrive early and supervise setup", "Welcome guests", "Enjoy the celebration!"] },
+  ];
+  if (daysLeft === 2) return [
+    { label: "Day 1", color: "#7c3aed", tasks: ["Confirm venue and all vendors", "Send final invitations", "Finalize menu and headcount", "Make all vendor payments"] },
+    { label: "Day 2 (Event Day)", color: "#15803d", tasks: ["Arrive early", "Oversee setup", "Welcome guests", "Celebrate!"] },
+  ];
+  if (daysLeft === 3) return [
+    { label: "Day 1", color: "#7c3aed", tasks: ["Confirm venue", "Book caterer", "Send invitations immediately", "Confirm headcount"] },
+    { label: "Day 2", color: "#C47A2E", tasks: ["Book decoration if needed", "Finalize menu", "Make all vendor payments", "Prepare event-day schedule", "Confirm all arrivals"] },
+    { label: "Day 3 (Event Day)", color: "#15803d", tasks: ["Arrive early", "Oversee setup", "Welcome guests", "Celebrate!"] },
+  ];
+  if (daysLeft <= 5) return [
+    { label: "Day 1–2", color: "#7c3aed", tasks: ["Confirm venue", "Book caterer", "Send invitations immediately", "Confirm headcount"] },
+    { label: `Day 3–${daysLeft - 1}`, color: "#C47A2E", tasks: ["Book decoration if needed", "Finalize menu", "Make all vendor payments", "Prepare event-day schedule", "Confirm all arrivals"] },
+    { label: `Day ${daysLeft} (Event Day)`, color: "#15803d", tasks: ["Arrive early", "Oversee setup", "Welcome guests", "Celebrate!"] },
+  ];
+  if (daysLeft === 6) return [
+    { label: "Day 1–2", color: "#7c3aed", tasks: ["Confirm venue", "Book caterer", "Send invitations immediately"] },
+    { label: "Day 3–4", color: "#C47A2E", tasks: ["Book decoration if needed", "Finalize menu", "Confirm headcount", "Arrange photography if needed"] },
+    { label: "Day 5", color: "#b45309", tasks: ["Track RSVPs", "Make all vendor payments", "Prepare event-day schedule", "Confirm all arrivals"] },
+    { label: "Day 6 (Event Day)", color: "#15803d", tasks: ["Arrive early", "Oversee setup", "Welcome guests", "Celebrate!"] },
+  ];
+  // 7 days — mirrors existing 7day plan phases
+  return [
+    { label: "Day 1–2", color: "#7c3aed", tasks: ["Confirm venue", "Book caterer", "Send invitations immediately"] },
+    { label: "Day 3–4", color: "#C47A2E", tasks: ["Book decoration if needed", "Finalize menu", "Confirm headcount", "Arrange photography if needed"] },
+    { label: "Day 5–6", color: "#b45309", tasks: ["Track RSVPs", "Make all vendor payments", "Prepare event-day schedule", "Confirm all arrivals"] },
+    { label: "Day 7 (Event Day)", color: "#15803d", tasks: ["Arrive early", "Oversee setup", "Welcome guests", "Celebrate!"] },
+  ];
+}
+
 // ── Personalized timeline builder ───────────────────────────────────────────
 function buildPersonalizedTimeline({ eventType = "birthday", eventDate, services = [], booked = [] }) {
   const daysLeft = eventDate
@@ -430,7 +468,9 @@ function buildPersonalizedTimeline({ eventType = "birthday", eventDate, services
     );
   };
 
-  return plan.phases
+  const phasesToUse = daysLeft <= 7 ? buildCompressedPlan(daysLeft) : plan.phases;
+
+  return phasesToUse
     .map((phase, pi) => ({
       id: `phase_${pi}_${Date.now()}`,
       label: phase.label,
@@ -598,6 +638,20 @@ export default function Timeline() {
 
   const plan = PLANS[planKey];
 
+  // Compute a display label that reflects actual days left for short-window events
+  const displayDaysLeft = (() => {
+    const pd = personalized || personalizationData;
+    if (!pd?.eventDate) return null;
+    return Math.max(0, Math.ceil((new Date(pd.eventDate) - new Date()) / 86400000));
+  })();
+  const planDisplayLabel = displayDaysLeft === null
+    ? plan.label
+    : displayDaysLeft > 60 ? "90-Day Plan"
+    : displayDaysLeft > 21 ? "30-Day Plan"
+    : displayDaysLeft > 7  ? "7-Day Plan"
+    : displayDaysLeft > 0  ? `${displayDaysLeft}-Day Plan`
+    : "Event Day";
+
   return (
     <div style={{ height: "100dvh", overflow: "hidden", display: "flex", flexDirection: "column", background: "#F8F4EF", fontFamily: font }}>
       <style>{`
@@ -634,7 +688,7 @@ export default function Timeline() {
                 {personalized ? "Personalized Timeline" : "Event Timeline"}
               </div>
               <h1 style={{ fontSize: 15, fontWeight: 900, color: "#fff", margin: 0 }}>
-                {plan.label} <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.75 }}>— {plan.subtitle}</span>
+                {planDisplayLabel} <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.75 }}>— {plan.subtitle}</span>
               </h1>
             </div>
           </div>

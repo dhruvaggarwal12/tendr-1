@@ -79,7 +79,9 @@ export default function TimelinePicker() {
   const planLabel = daysLeft === null ? null
     : daysLeft > 60 ? "90-Day Plan"
     : daysLeft > 21 ? "30-Day Plan"
-    : "7-Day Plan";
+    : daysLeft > 7  ? "7-Day Plan"
+    : daysLeft > 0  ? `${daysLeft}-Day Plan`
+    : "Event Day";
 
   const startLoading = () => {
     setLoading(true);
