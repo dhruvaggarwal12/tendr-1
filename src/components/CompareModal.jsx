@@ -48,7 +48,9 @@ const CompareModal = ({ open, onClose, vendors = [] }) => {
         <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
           <div style={{ flex: 1 }}>
             <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", margin: 0 }}>Compare Vendors</h2>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: "2px 0 0" }}>Side-by-side to help you decide</p>
+            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.55)", margin: "2px 0 0" }}>
+              {fullVendors.length} vendor{fullVendors.length !== 1 ? "s" : ""} · Tendr picks the best for you
+            </p>
           </div>
           <button onClick={onClose} style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
         </div>
