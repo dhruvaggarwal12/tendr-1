@@ -487,7 +487,7 @@ export default function BudgetAllocator() {
             </p>
           </div>
           <button onClick={saveBudget}
-            style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: budgetSaved ? "1.5px solid rgba(34,197,94,0.6)" : "1.5px solid rgba(255,255,255,0.4)", background: budgetSaved ? "rgba(34,197,94,0.15)" : "rgba(255,255,255,0.12)", color: budgetSaved ? "#bbf7d0" : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}>
+            style={{ flexShrink: 0, padding: "8px 16px", borderRadius: 10, border: budgetSaved ? "1.5px solid #22c55e" : "1.5px solid rgba(255,255,255,0.4)", background: budgetSaved ? "#dcfce7" : "rgba(255,255,255,0.12)", color: budgetSaved ? "#15803d" : "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}>
             {budgetSaved ? "✓ Saved" : "💾 Save"}
           </button>
         </div>
@@ -690,17 +690,18 @@ export default function BudgetAllocator() {
         .budget-table-hdr { display: none !important; }
         .budget-cat-row { padding: 10px 12px !important; }
         .budget-cat-inner {
-          grid-template-columns: 1fr 52px 80px 24px !important;
-          gap: 5px !important;
+          grid-template-columns: 1fr 48px 72px 22px !important;
+          gap: 4px !important;
         }
         .budget-cat-alloc { display: none !important; }
+        .budget-cat-spent { font-size: 12px !important; padding: 4px 6px !important; }
       }
       @media (max-width: 480px) {
         .budget-cat-inner {
-          grid-template-columns: 1fr 48px 24px !important;
-          gap: 4px !important;
+          grid-template-columns: 1fr 42px 60px 20px !important;
+          gap: 3px !important;
         }
-        .budget-cat-spent { display: none !important; }
+        .budget-cat-spent { display: flex !important; font-size: 11px !important; padding: 3px 5px !important; }
         .budget-pie-card { padding: 16px !important; min-width: unset !important; width: 100% !important; box-sizing: border-box; }
       }
     `}</style>
