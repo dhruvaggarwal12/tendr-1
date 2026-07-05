@@ -703,6 +703,7 @@ const AdminDashboard = () => {
     window.open(`https://wa.me/91${phone}?text=${msg}`, "_blank");
   };
   const [pinnedByPlan, setPinnedByPlan] = useState({}); // { [planId]: { loading, messages } }
+  const [pinnedOpenByVendor, setPinnedOpenByVendor] = useState({}); // { [planId__vendorName]: bool }
 
   // Notified tracking — persisted to localStorage so it survives page refresh
   const [notifiedAt, setNotifiedAt] = useState(() => {
@@ -1944,17 +1945,41 @@ const AdminDashboard = () => {
                                     </a>
                                   );
                                 })()}
-                                {/* Pinned messages — auto-loaded when bookings tab opens */}
+                                {/* Pinned messages — per-vendor dropdowns, auto-loaded when bookings tab opens */}
                                 {(plan.status === "submitted" || plan.status === "draft") && (() => {
                                   const ps = pinnedByPlan[plan._id];
                                   if (!ps || ps.loading) return <span style={{ fontSize: 11, color: "#9B7450" }}>Loading pins…</span>;
                                   if (!ps.messages.length) return <span style={{ fontSize: 11, color: "#bbb" }}>No pinned msgs</span>;
+                                  // Group by vendor
+                                  const byVendor = {};
+                                  ps.messages.forEach(m => {
+                                    if (!byVendor[m.vendor]) byVendor[m.vendor] = [];
+                                    byVendor[m.vendor].push(m.text);
+                                  });
                                   return (
-                                    <div style={{ background: "#fffbeb", borderRadius: 8, padding: "7px 10px", display: "flex", flexDirection: "column", gap: 4, maxWidth: 220 }}>
-                                      <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>📌 Pinned</div>
-                                      {ps.messages.map((m, mi) => (
-                                        <div key={mi} style={{ fontSize: 11, color: "#5a3a1a", lineHeight: 1.4 }}>• {m.text} <span style={{ color: "#bbb" }}>({m.vendor})</span></div>
-                                      ))}
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 4, maxWidth: 240 }}>
+                                      {Object.entries(byVendor).map(([vendorName, texts]) => {
+                                        const key = `${plan._id}__${vendorName}`;
+                                        const isOpen = !!pinnedOpenByVendor[key];
+                                        return (
+                                          <div key={vendorName} style={{ borderRadius: 8, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.2)" }}>
+                                            <button
+                                              onClick={() => setPinnedOpenByVendor(prev => ({ ...prev, [key]: !isOpen }))}
+                                              style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6, padding: "5px 9px", background: isOpen ? "rgba(196,122,46,0.12)" : "#fffcf5", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+                                            >
+                                              <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textAlign: "left" }}>📌 {vendorName} ({texts.length})</span>
+                                              <span style={{ fontSize: 10, color: "#C47A2E" }}>{isOpen ? "▲" : "▼"}</span>
+                                            </button>
+                                            {isOpen && (
+                                              <div style={{ background: "#fffbeb", padding: "5px 9px 7px", display: "flex", flexDirection: "column", gap: 3 }}>
+                                                {texts.map((t, ti) => (
+                                                  <div key={ti} style={{ fontSize: 11, color: "#5a3a1a", lineHeight: 1.4 }}>• {t}</div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   );
                                 })()}
