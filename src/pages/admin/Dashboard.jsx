@@ -2544,13 +2544,13 @@ const AdminDashboard = () => {
                             const newVal = !v.isHidden;
                             setTogglingHideId(v._id);
                             try {
-                              await fetch(`${BASE_URL}/admin/vendors/${v._id}`, {
+                              const res = await fetch(`${BASE_URL}/admin/vendors/${v._id}`, {
                                 method: 'PATCH',
                                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                                 credentials: 'include',
                                 body: JSON.stringify({ isHidden: newVal }),
                               });
-                              setVendorStats(prev => prev.map(x => x._id === v._id ? { ...x, isHidden: newVal } : x));
+                              if (res.ok) setVendorStats(prev => prev.map(x => x._id === v._id ? { ...x, isHidden: newVal } : x));
                             } catch {} finally { setTogglingHideId(null); }
                           }}
                           disabled={togglingHideId === v._id}
