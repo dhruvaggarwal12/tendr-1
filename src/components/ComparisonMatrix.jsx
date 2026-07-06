@@ -140,9 +140,9 @@ function MobileCard({ v, isTendrsPick, isBestPrice, isBestRating, openVendorChat
 
       {/* Price */}
       <div style={{ margin: "8px 10px", padding: "10px 12px", borderRadius: 10, textAlign: "center", background: isBestPrice ? "rgba(21,128,61,0.07)" : "rgba(201,168,76,0.06)", border: `1.5px solid ${isBestPrice ? "rgba(21,128,61,0.3)" : "rgba(201,168,76,0.2)"}` }}>
-        <div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>Starting from</div>
+        <div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 3 }}>Starting price</div>
         <div style={{ fontSize: 18, fontWeight: 900, color: isBestPrice ? "#15803d" : "#C9A84C" }}>
-          {price != null ? fmtINR(price) : <span style={{ color: "#bbb", fontSize: 12 }}>Quote on chat</span>}
+          {price ? fmtINR(price) : <span style={{ color: "#bbb", fontSize: 12 }}>Price based on request</span>}
         </div>
       </div>
 
@@ -365,9 +365,9 @@ const ComparisonMatrix = ({ vendors = [] }) => {
 
                     {/* Price */}
                     <div style={{ margin: "0 12px 12px", padding: "10px 12px", borderRadius: 10, textAlign: "center", background: isBestPrice ? "rgba(21,128,61,0.07)" : "rgba(201,168,76,0.06)", border: `1.5px solid ${isBestPrice ? "rgba(21,128,61,0.3)" : "rgba(201,168,76,0.2)"}` }}>
-                      <div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Starting from</div>
+                      <div style={{ fontSize: 10, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Starting price</div>
                       <div style={{ fontSize: 20, fontWeight: 900, color: isBestPrice ? "#15803d" : "#C9A84C", lineHeight: 1.2 }}>
-                        {price != null ? fmtINR(price) : <span style={{ color: "#bbb", fontSize: 12 }}>Quote on chat</span>}
+                        {price ? fmtINR(price) : <span style={{ color: "#bbb", fontSize: 12 }}>Price based on request</span>}
                       </div>
                     </div>
                   </div>

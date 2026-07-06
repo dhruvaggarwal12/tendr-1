@@ -531,9 +531,9 @@ const VendorDetailsPage = () => {
           <div style={{ background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.22)", boxShadow: "0 4px 20px rgba(139,69,19,0.1)", overflow: "hidden" }}>
             <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div>
-                <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting from</div>
+                <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting price</div>
                 <div style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>
-                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Price on request"}
+                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Price based on request"}
                 </div>
               </div>
               {vendor?.totalEventsCompleted > 0 && (
@@ -771,11 +771,10 @@ const VendorDetailsPage = () => {
 
               {/* Card header */}
               <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "20px 22px" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Starting from</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Starting price</div>
                 <div style={{ fontSize: 28, fontWeight: 900, color: "#fff" }}>
-                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Price on request"}
+                  {vendor.price ? `₹${Number(vendor.price).toLocaleString("en-IN")}` : "Price based on request"}
                 </div>
-                {!vendor.price && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", marginTop: 3 }}>Shared after consultation with vendor</div>}
               </div>
 
               <div style={{ padding: "20px 22px" }}>
@@ -938,11 +937,9 @@ const VendorDetailsPage = () => {
                             {v.primaryService || activeModalCategory}
                             {v.city ? " - " + v.city : ""}
                           </div>
-                          {v.startingPrice != null && (
-                            <div style={{ fontSize: 13, color: "#3B2F2F", marginTop: 2 }}>
-                              Starting from ₹{Number(v.startingPrice).toLocaleString("en-IN")}
-                            </div>
-                          )}
+                          <div style={{ fontSize: 13, color: "#3B2F2F", marginTop: 2 }}>
+                            {v.startingPrice ? `Starting from ₹${Number(v.startingPrice).toLocaleString("en-IN")}` : "Starting price : Price based on request"}
+                          </div>
                           <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                             <button
                               onClick={() => toggleModalCompare(v._id)}
@@ -1051,7 +1048,7 @@ const VendorDetailsPage = () => {
                     </div>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                       {svRating > 0 && <span style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E" }}>★ {svRating.toFixed(1)}</span>}
-                      {sv.price && <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>Starting from ₹{Number(sv.price).toLocaleString("en-IN")}</span>}
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{sv.price ? `Starting from ₹${Number(sv.price).toLocaleString("en-IN")}` : "Starting price : Price based on request"}</span>
                     </div>
                   </div>
                 </a>

@@ -377,9 +377,9 @@ const VendorList_ListingPage = ({
                               {vendor.reviewCount > 0 && <span style={{ fontWeight: 500, color: "#9B7450" }}> · {vendor.reviewCount} review{vendor.reviewCount !== 1 ? "s" : ""}</span>}
                             </span>
                           )}
-                          {(vendor.price > 0 || vendor.startingPrice > 0) && (
-                            <span style={{ color: "#5a3a1a", fontWeight: 700 }}>Starting from ₹{Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")}</span>
-                          )}
+                          <span style={{ color: "#5a3a1a", fontWeight: 700 }}>
+                            {(vendor.price > 0 || vendor.startingPrice > 0) ? `Starting from ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")}` : "Starting price : Price based on request"}
+                          </span>
                         </div>
                       </div>
 
@@ -517,12 +517,12 @@ const VendorList_ListingPage = ({
               </div>
 
               {/* Starting price */}
-              {(quickViewVendor.price || quickViewVendor.startingPrice) && (
-                <div style={{ display: "inline-flex", alignItems: "baseline", gap: 4, marginBottom: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 10, padding: "8px 16px" }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting from</span>
-                  <span style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>₹{Number(quickViewVendor.price || quickViewVendor.startingPrice).toLocaleString("en-IN")}</span>
-                </div>
-              )}
+              <div style={{ display: "inline-flex", alignItems: "baseline", gap: 4, marginBottom: 14, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 10, padding: "8px 16px" }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Starting price</span>
+                <span style={{ fontSize: 18, fontWeight: 900, color: "#fff" }}>
+                  {(quickViewVendor.price || quickViewVendor.startingPrice) ? `₹${Number(quickViewVendor.price || quickViewVendor.startingPrice).toLocaleString("en-IN")}` : "Price based on request"}
+                </span>
+              </div>
               {/* Stats pills */}
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
                 {[
@@ -964,7 +964,7 @@ const VendorList_ListingPage = ({
                           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                             {(v.city || v.locations?.[0]) && <span style={{ fontSize: 11, color: "#9B7450" }}>📍 {v.city || v.locations?.[0]}</span>}
                             {rating > 0 && <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
-                            {(v.price || v.startingPrice) > 0 && <span style={{ fontSize: 11, color: "#5a3a1a", fontWeight: 600 }}>Starting from ₹{Number(v.price || v.startingPrice).toLocaleString("en-IN")}</span>}
+                            <span style={{ fontSize: 11, color: "#5a3a1a", fontWeight: 600 }}>{(v.price || v.startingPrice) > 0 ? `Starting from ₹${Number(v.price || v.startingPrice).toLocaleString("en-IN")}` : "Starting price : Price based on request"}</span>
                           </div>
                         </div>
                         <span style={{ fontSize: 13, color: "#C47A2E", fontWeight: 700, flexShrink: 0 }}>View →</span>
