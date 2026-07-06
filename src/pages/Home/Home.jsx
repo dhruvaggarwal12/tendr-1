@@ -1767,18 +1767,19 @@ const Home = () => {
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24 }} className="events-portfolio-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }} className="events-portfolio-grid">
             {[
-              { title: "Decoration",    slug: "decoration" },
-              { title: "Entertainment", slug: "entertainment" },
-              { title: "Photography",   slug: "photography" },
-            ].map(({ title, slug }, catIdx) => {
-              const catPhotos = galleryByCategory[title] || [];
+              { title: "Decoration",       slug: "decoration",    key: "Decoration" },
+              { title: "DJ & Entertainment", slug: "entertainment", key: "Entertainment" },
+              { title: "Photography",      slug: "photography",   key: "Photography" },
+              { title: "Catering",         slug: "catering",      key: "Catering" },
+            ].map(({ title, slug, key }, catIdx) => {
+              const catPhotos = galleryByCategory[key] || [];
               // Each tile cycles at a different offset so they don't all flip at the same time
               const imgIdx = catPhotos.length > 0
                 ? Math.floor((glimpseCounter + catIdx * 2) / 1) % catPhotos.length
                 : 0;
-              const img = catPhotos[imgIdx]?.imageUrl || GALLERY_FALLBACKS[title];
+              const img = catPhotos[imgIdx]?.imageUrl || GALLERY_FALLBACKS[key];
               return (
               <div key={title} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <div className="portfolio-img-wrap" style={{ position: "relative", borderRadius: 16, overflow: "hidden", height: 220, background: "#2C1A0E" }}>
@@ -1806,7 +1807,7 @@ const Home = () => {
           </div>
         </div>
         <style>{`
-          @media (max-width: 768px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } }
+          @media (max-width: 900px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } }
           @media (max-width: 520px) {
             .events-portfolio-grid {
               display: flex !important;
