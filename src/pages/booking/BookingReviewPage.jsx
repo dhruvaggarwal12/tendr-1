@@ -524,6 +524,9 @@ const BookingReviewPage = () => {
           selectedServices: selectedVendors,
           finalisedVendors: finalisedVendorIds,
           platformFee,
+          eventTime: formData.eventTime || (() => { try { return localStorage.getItem('tendr_event_time') || ''; } catch { return ''; } })(),
+          personName: (() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } })(),
+          venueAddress: (() => { try { return localStorage.getItem('tendr_venue_address') || ''; } catch { return ''; } })(),
         }),
       });
       const data = await res.json();

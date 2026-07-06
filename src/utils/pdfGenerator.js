@@ -119,9 +119,7 @@ function row(doc, label, value, y, labelX = 14, valueX = 70) {
 }
 
 // ── Invoice PDF ──────────────────────────────────────────────────────────────
-// serviceAmounts (optional): [{ category, amount, vendorName? }]
-// confirmedVendors: [{ name, serviceType }] — used when serviceAmounts not provided
-export async function generateInvoicePDF({ eventSummary, confirmedVendors = [], amount, orderId, paymentId, userName, serviceAmounts = null }) {
+export async function generateInvoicePDF({ eventSummary, orderId, paymentId, userName }) {
   await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const date = new Date().toLocaleDateString("en-IN", { day: "2-digit", month: "long", year: "numeric" });
@@ -148,7 +146,7 @@ export async function generateInvoicePDF({ eventSummary, confirmedVendors = [], 
   if (orderId)   doc.text(`Order ID: ${orderId}`, 20, y + 21);
   if (paymentId) doc.text(`Payment ID: ${paymentId}`, 20, y + 26);
 
-  // "PAID" badge — no checkmark emoji (Helvetica cannot render it)
+  // "PAID" badge
   doc.setFillColor(21, 128, 61);
   doc.roundedRect(158, y + 5, 28, 10, 2, 2, "F");
   doc.setFont("helvetica", "bold");
@@ -158,7 +156,22 @@ export async function generateInvoicePDF({ eventSummary, confirmedVendors = [], 
 
   y += 36;
 
-  // Bill to
+  // Service Provider (Tendr)
+  y = sectionTitle(doc, "Service Provider", y);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9.5);
+  doc.setTextColor(44, 26, 14);
+  doc.text("tendr", 14, y);
+  y += 5;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(92, 58, 26);
+  doc.text("GSTIN: 09AAMCT7747E1ZT", 14, y);
+  y += 5;
+  doc.text("contact@tendr.co.in  |  tendr.co.in", 14, y);
+  y += 10;
+
+  // Billed To
   y = sectionTitle(doc, "Billed To", y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(9.5);
@@ -172,61 +185,57 @@ export async function generateInvoicePDF({ eventSummary, confirmedVendors = [], 
   if (eventSummary.date)      y = row(doc, "Event Date:", eventSummary.date, y);
   if (eventSummary.location)  y = row(doc, "Location:",   eventSummary.location, y);
   if (eventSummary.guests)    y = row(doc, "Guests:",     eventSummary.guests, y);
+  y += 6;
+
+  // Fee breakdown
+  y = sectionTitle(doc, "Fee Breakdown", y);
+
+  // Table header
+  doc.setFillColor(255, 250, 240);
+  doc.rect(14, y - 4, 182, 7, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
+  doc.setTextColor(92, 58, 26);
+  doc.text("Description", 18, y);
+  doc.text("Amount", 190, y, { align: "right" });
+  y += 3;
+  doc.setDrawColor(204, 171, 74);
+  doc.setLineWidth(0.2);
+  doc.line(14, y, 196, y);
+  y += 5;
+
+  // Platform fee row
+  doc.setFillColor(255, 252, 247);
+  doc.rect(14, y - 3.5, 182, 12, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(44, 26, 14);
+  doc.text("Tendr Platform Fee", 18, y);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8);
+  doc.setTextColor(92, 58, 26);
+  doc.text("Event planning & vendor curation service", 18, y + 5);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(44, 26, 14);
+  doc.text("Rs. 169.49", 190, y, { align: "right" });
+  y += 14;
+
+  // GST row
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(92, 58, 26);
+  doc.text("GST @ 18%", 18, y);
+  doc.text("Rs. 30.51", 190, y, { align: "right" });
+  y += 8;
+
+  // Divider
+  doc.setDrawColor(196, 122, 46);
+  doc.setLineWidth(0.3);
+  doc.line(14, y, 196, y);
   y += 4;
 
-  // Build service rows — include vendor name
-  const hasAmounts = serviceAmounts && serviceAmounts.length > 0;
-  const serviceRows = hasAmounts
-    ? serviceAmounts.map(s => ({ label: s.category || s.serviceType, vendorName: s.vendorName || null, amount: s.amount }))
-    : confirmedVendors.map(v => ({ label: v.serviceType, vendorName: v.name }));
-
-  if (serviceRows.length > 0) {
-    y = sectionTitle(doc, "Services Booked", y);
-
-    // Table header
-    doc.setFillColor(255, 250, 240);
-    doc.rect(14, y - 4, 182, 7, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.5);
-    doc.setTextColor(92, 58, 26);
-    doc.text("Service", 18, y);
-    doc.text("Vendor", 85, y);
-    if (hasAmounts) doc.text("Amount", 178, y, { align: "right" });
-    y += 3;
-    doc.setDrawColor(204, 171, 74);
-    doc.setLineWidth(0.2);
-    doc.line(14, y, 196, y);
-    y += 4;
-
-    serviceRows.forEach((s, i) => {
-      const rowH = 8;
-      if (i % 2 === 0) {
-        doc.setFillColor(255, 252, 247);
-        doc.rect(14, y - 3.5, 182, rowH + 1, "F");
-      }
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(9);
-      doc.setTextColor(44, 26, 14);
-      doc.text(sanitize(s.label), 18, y);
-
-      if (s.vendorName) {
-        doc.setFont("helvetica", "normal");
-        doc.setFontSize(8.5);
-        doc.setTextColor(92, 58, 26);
-        doc.text(sanitize(s.vendorName), 85, y);
-      }
-
-      if (hasAmounts && s.amount) {
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(196, 122, 46);
-        doc.text(`Rs. ${Number(s.amount).toLocaleString("en-IN")}`, 192, y, { align: "right" });
-      }
-      y += rowH;
-    });
-    y += 4;
-  }
-
-  // Total amount
+  // Total bar
   doc.setFillColor(44, 26, 14);
   doc.roundedRect(14, y, 182, 16, 3, 3, "F");
   doc.setFont("helvetica", "bold");
@@ -235,7 +244,7 @@ export async function generateInvoicePDF({ eventSummary, confirmedVendors = [], 
   doc.text("Total Amount Paid:", 20, y + 10);
   doc.setFontSize(13);
   doc.setTextColor(255, 255, 255);
-  doc.text(`Rs. ${Number(amount || 0).toLocaleString("en-IN")}`, 190, y + 10, { align: "right" });
+  doc.text("Rs. 200.00", 190, y + 10, { align: "right" });
 
   addFooter(doc, 1, 1);
   doc.save("tendr-invoice.pdf");
@@ -574,184 +583,229 @@ function fmt12h(val) {
   return `${hr % 12 || 12}:${m} ${hr >= 12 ? "PM" : "AM"}`;
 }
 
+function fmtDate(d) {
+  if (!d) return "";
+  const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  const m = String(d).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (m) return `${parseInt(m[3])} ${MONTHS[parseInt(m[2]) - 1]} ${m[1]}`;
+  return d;
+}
+
 export async function generateInvitationPDF({ eventSummary = {}, confirmedVendors = [], userName = "", eventTime = "", personName = "", venueAddress = "" }) {
   await _assetsReady;
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const W = 210, H = 297, CX = W / 2;
 
-  // Cream background
-  doc.setFillColor(245, 240, 232);
-  doc.rect(0, 0, W, H, "F");
+  const resolvedPersonName = personName || eventSummary.personName || "";
+  const resolvedTime       = eventTime  || eventSummary.eventTime  || "";
+  const resolvedVenue      = venueAddress || eventSummary.venueAddress || eventSummary.location || "";
+  const eventType          = eventSummary.eventType || "Celebration";
 
-  // Double gold border frame
-  doc.setDrawColor(196, 122, 46);
-  doc.setLineWidth(1.5);
-  doc.rect(8, 8, W - 16, H - 16);
-  doc.setLineWidth(0.5);
-  doc.rect(12, 12, W - 24, H - 24);
+  // ── HERO (dark top block) ──────────────────────────────────────────
+  const heroH = 72;
+  doc.setFillColor(44, 26, 14);
+  doc.rect(0, 0, W, heroH, "F");
 
-  let y = 24;
+  // Gold stripe
+  doc.setFillColor(196, 122, 46);
+  doc.rect(0, heroH, W, 1.5, "F");
 
-  // Logo — larger than before for more impact
-  if (_logoDark) {
-    doc.addImage(_logoDark, "PNG", CX - 27, y, 54, 21);
-    y += 30;
+  // Ivory body background
+  doc.setFillColor(250, 246, 239);
+  doc.rect(0, heroH + 1.5, W, H - heroH - 1.5, "F");
+
+  // Hero top diamond divider
+  drawOrnamentDivider(doc, CX, 16);
+
+  // Event type — italic gold
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(12);
+  doc.setTextColor(232, 193, 122);
+  doc.text(sanitize(eventType), CX, 27, { align: "center" });
+
+  // Person name — large white
+  const heroName = resolvedPersonName ? `${sanitize(resolvedPersonName)}'s` : sanitize(eventType);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(36);
+  doc.setTextColor(255, 255, 255);
+  doc.text(heroName, CX, 46, { align: "center" });
+
+  // Event type again — gold italic below name
+  doc.setFont("helvetica", "bolditalic");
+  doc.setFontSize(16);
+  doc.setTextColor(196, 122, 46);
+  doc.text(sanitize(eventType), CX, 58, { align: "center" });
+
+  // Hero bottom diamond divider
+  drawOrnamentDivider(doc, CX, 67);
+
+  // ── LOGO STRIP ────────────────────────────────────────────────────
+  const bodyStart = heroH + 1.5;
+  if (_logoLight) {
+    doc.addImage(_logoLight, "PNG", CX - 27, bodyStart + 6, 54, 18);
   } else {
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
+    doc.setFontSize(18);
     doc.setTextColor(196, 122, 46);
-    doc.text("tendr", CX, y + 12, { align: "center" });
+    doc.text("tendr", CX, bodyStart + 16, { align: "center" });
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
     doc.setTextColor(155, 116, 80);
-    doc.text("WE CURATE YOU CELEBRATE", CX, y + 18, { align: "center", charSpace: 1 });
-    y += 26;
+    doc.text("WE CURATE YOU CELEBRATE", CX, bodyStart + 22, { align: "center", charSpace: 1 });
   }
 
-  // Tagline
+  // Hairline below logo
+  const lineY = bodyStart + 30;
+  doc.setDrawColor(155, 116, 80);
+  doc.setLineWidth(0.25);
+  doc.line(14, lineY, W - 14, lineY);
+
+  // ── INVITE LINE ───────────────────────────────────────────────────
+  let y = lineY + 9;
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(155, 116, 80);
-  doc.text("YOU ARE CORDIALLY INVITED TO", CX, y, { align: "center", charSpace: 1.5 });
-  y += 9;
-
-  // Top ornamental divider — drawn, not unicode chars
-  drawOrnamentDivider(doc, CX, y);
+  doc.text("YOU ARE CORDIALLY INVITED TO JOIN THE CELEBRATION", CX, y, { align: "center", charSpace: 1.2 });
   y += 10;
 
-  // "YOU'RE"
+  // ── INFO GRID (Date | Time | Guests) ─────────────────────────────
+  const gridH = 22;
+  doc.setFillColor(240, 233, 223);
+  doc.roundedRect(14, y, 182, gridH, 2, 2, "F");
+
+  // Vertical dividers
+  doc.setDrawColor(92, 58, 26);
+  doc.setLineWidth(0.15);
+  const divX1 = 14 + 60, divX2 = 14 + 120;
+  doc.line(divX1, y + 3, divX1, y + gridH - 3);
+  doc.line(divX2, y + 3, divX2, y + gridH - 3);
+
+  const c1 = 14 + 30, c2 = 14 + 90, c3 = 14 + 150;
+  const lblY = y + 7, valY = y + 16;
+
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(40);
-  doc.setTextColor(44, 26, 14);
-  doc.text("YOU'RE", CX, y, { align: "center" });
-  y += 13;
+  doc.setFontSize(7);
+  doc.setTextColor(155, 116, 80);
+  doc.text("DATE",   c1, lblY, { align: "center", charSpace: 1 });
+  doc.text("TIME",   c2, lblY, { align: "center", charSpace: 1 });
+  doc.text("GUESTS", c3, lblY, { align: "center", charSpace: 1 });
 
-  // "Invited!"
-  doc.setFont("helvetica", "bolditalic");
-  doc.setFontSize(36);
-  doc.setTextColor(196, 122, 46);
-  doc.text("Invited!", CX, y, { align: "center" });
-  y += 15;
-
-  // Center-dot divider — drawn, not unicode heart
-  drawCenterDot(doc, CX, y);
-  y += 10;
-
-  // Event type
-  const eventTypeUpper = (eventSummary.eventType || "SPECIAL CELEBRATION").toUpperCase();
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.setTextColor(44, 26, 14);
-  const resolvedPersonName = personName || eventSummary.personName || "";
-  const eventLine = resolvedPersonName
-    ? `YOU ARE INVITED TO ${sanitize(resolvedPersonName).toUpperCase()}'S ${eventTypeUpper}`
-    : `YOU ARE INVITED TO THE ${eventTypeUpper}`;
-  const eventLineWrapped = doc.splitTextToSize(eventLine, W - 56);
-  doc.text(eventLineWrapped, CX, y, { align: "center", charSpace: 0.3 });
-  y += eventLineWrapped.length * 6.5 + 4;
+  doc.text(fmtDate(eventSummary.date) || "—", c1, valY, { align: "center" });
 
-  if (userName) {
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(9.5);
+  if (resolvedTime) {
+    doc.setFontSize(13);
+    doc.setTextColor(92, 58, 26);
+    doc.text(fmt12h(resolvedTime), c2, valY, { align: "center" });
+  } else {
+    doc.setFontSize(11);
     doc.setTextColor(155, 116, 80);
-    doc.text(`Hosted by ${sanitize(userName)}`, CX, y, { align: "center" });
-    y += 9;
+    doc.text("—", c2, valY, { align: "center" });
   }
 
-  // Divider
-  doc.setDrawColor(196, 122, 46);
-  doc.setLineWidth(0.4);
-  doc.line(45, y, W - 45, y);
-  y += 12;
+  doc.setFontSize(11);
+  doc.setTextColor(44, 26, 14);
+  doc.text(eventSummary.guests ? `${eventSummary.guests} guests` : "—", c3, valY, { align: "center" });
 
-  // Date / Venue / RSVP rows
-  const resolvedTime = eventTime || eventSummary.eventTime || "";
-  const resolvedVenue = venueAddress || eventSummary.venueAddress || eventSummary.location || "";
-  const infoRows = [
-    eventSummary.date && { label: "DATE",  val: eventSummary.date },
-    resolvedVenue     && { label: "VENUE", val: resolvedVenue },
-    resolvedTime      && { label: "TIME",  val: fmt12h(resolvedTime) },
-    { label: "RSVP", val: "contact@tendr.co.in  ·  +91 9211668427" },
-  ].filter(Boolean);
+  y += gridH + 6;
 
-  const circleX = CX - 42;
-  infoRows.forEach(({ label, val }) => {
-    doc.setFillColor(196, 122, 46);
-    doc.circle(circleX, y, 4, "F");
+  // ── VENUE ROW ─────────────────────────────────────────────────────
+  if (resolvedVenue) {
+    const venueLines = doc.splitTextToSize(sanitize(resolvedVenue), 148);
+    const venueH = Math.max(16, venueLines.length * 5 + 10);
+    doc.setFillColor(240, 233, 223);
+    doc.roundedRect(14, y, 182, venueH, 2, 2, "F");
+
+    // Pin icon (dark circle with "V")
+    doc.setFillColor(44, 26, 14);
+    doc.circle(26, y + venueH / 2, 5, "F");
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(6);
-    doc.setTextColor(255, 255, 255);
-    doc.text(label[0], circleX, y + 1.2, { align: "center" });
+    doc.setFontSize(9);
+    doc.setTextColor(196, 122, 46);
+    doc.text("V", 26, y + venueH / 2 + 2, { align: "center" });
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.5);
+    doc.setFontSize(7);
     doc.setTextColor(155, 116, 80);
-    doc.text(label, circleX + 8, y - 3, { charSpace: 0.5 });
+    doc.text("VENUE", 34, y + venueH / 2 - 3, { charSpace: 1 });
 
-    doc.setFont("helvetica", "normal");
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(10);
     doc.setTextColor(44, 26, 14);
-    const valLines = doc.splitTextToSize(sanitize(val), W - (circleX + 8) - 20);
-    doc.text(valLines, circleX + 8, y + 3);
-    y += Math.max(14, valLines.length * 5 + 8);
-  });
+    doc.text(venueLines, 34, y + venueH / 2 + 4);
 
-  // Divider
+    y += venueH + 6;
+  }
+
+  // ── HOSTED BY + RSVP ─────────────────────────────────────────────
   doc.setDrawColor(196, 122, 46);
-  doc.setLineWidth(0.4);
-  doc.line(45, y, W - 45, y);
-  y += 12;
+  doc.setLineWidth(1.5);
+  doc.line(14, y, 101, y);
+  doc.line(111, y, 196, y);
+  y += 5;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7);
+  doc.setTextColor(155, 116, 80);
+  doc.text("HOSTED BY", 14, y, { charSpace: 1 });
+  doc.text("RSVP", 111, y, { charSpace: 1 });
+  y += 6;
 
   doc.setFont("helvetica", "italic");
   doc.setFontSize(11);
+  doc.setTextColor(44, 26, 14);
+  doc.text(sanitize(userName) || "—", 14, y);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.setTextColor(92, 58, 26);
+  doc.text("contact@tendr.co.in", 111, y);
+  doc.text("+91 9211668427", 111, y + 6);
+
+  y += 14;
+
+  // ── CLOSING ───────────────────────────────────────────────────────
+  y += 6;
+  doc.setDrawColor(155, 116, 80);
+  doc.setLineWidth(0.25);
+  doc.line(14, y, W - 14, y);
+  y += 10;
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
   doc.setTextColor(155, 116, 80);
   doc.text("We look forward to", CX, y, { align: "center" });
   y += 9;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(14);
+  doc.setFont("helvetica", "bolditalic");
+  doc.setFontSize(20);
   doc.setTextColor(44, 26, 14);
-  doc.text("CELEBRATING WITH YOU!", CX, y, { align: "center", charSpace: 0.5 });
-  y += 14;
+  doc.text("Celebrating with you!", CX, y, { align: "center" });
 
-  // Bottom ornamental divider — drawn, not unicode chars
-  drawOrnamentDivider(doc, CX, y);
-  y += 10;
+  // ── FOOTER DARK STRIP ─────────────────────────────────────────────
+  const footerY = 264;
+  doc.setFillColor(44, 26, 14);
+  doc.rect(0, footerY, W, 33, "F");
 
-  // Website QR section — replaces gift hampers box
-  const webQRTop = Math.max(y + 6, 222);
-  if (_websiteQR) {
-    doc.setFillColor(255, 252, 247);
-    doc.setDrawColor(196, 122, 46);
-    doc.setLineWidth(0.8);
-    doc.roundedRect(20, webQRTop, W - 40, 38, 3, 3, "FD");
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.setTextColor(44, 26, 14);
-    doc.text("PLAN YOUR NEXT EVENT WITH TENDR", 30, webQRTop + 9);
-
-    doc.addImage(_websiteQR, "PNG", W - 52, webQRTop + 5, 24, 24);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(196, 122, 46);
-    doc.text("tendr.in", 30, webQRTop + 18);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(7.5);
-    doc.setTextColor(155, 116, 80);
-    doc.text("Scan the QR to browse & book vendors", 30, webQRTop + 25);
-    doc.text("tendr - We Curate, You Celebrate", 30, webQRTop + 32);
+  if (_logoLight) {
+    doc.addImage(_logoLight, "PNG", 14, footerY + 7, 40, 16);
   }
 
-  // Footer dark strip
-  doc.setFillColor(44, 26, 14);
-  doc.rect(12, H - 22, W - 24, 10, "F");
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(155, 116, 80);
+  doc.text("WE CURATE · YOU CELEBRATE", 60, footerY + 12, { charSpace: 0.5 });
+
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8);
   doc.setTextColor(196, 122, 46);
-  doc.text("contact@tendr.co.in  ·  +91 9211668427  ·  tendr.in", CX, H - 22 + 6.5, { align: "center" });
+  doc.text("contact@tendr.co.in  ·  tendr.co.in  ·  +91 9211668427", 60, footerY + 20);
+
+  if (_websiteQR) {
+    doc.addImage(_websiteQR, "PNG", W - 30, footerY + 5, 18, 18);
+  }
 
   doc.save("tendr-invitation.pdf");
 }

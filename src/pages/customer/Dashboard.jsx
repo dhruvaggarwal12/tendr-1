@@ -1119,20 +1119,16 @@ export default function CustomerDashboard() {
                     return (
                       <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 14 }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Your Documents</div>
-                        <div className="plan-card-actions" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 8 }}>
+                        <div className="plan-card-actions" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                           <button disabled={pdfGenerating} onClick={() => { setPdfGenerating(true); try { generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: user?.name, serviceAmounts }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>🧾</span>Invoice
-                          </button>
-                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: {}, userName: user?.name, orderId: plan.orderId }); } finally { setPdfGenerating(false); } }}
-                            style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
-                            <span style={{ fontSize: 18 }}>📋</span>Details
                           </button>
                           <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { const stored = JSON.parse(localStorage.getItem("tendr_dayof") || "{}"); await generateTimelinePDF({ slots: stored.slots || [], eventSummary, userName: user?.name }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>🗓</span>Timeline
                           </button>
-                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateInvitationPDF({ eventSummary, confirmedVendors, userName: user?.name, giftHamperUrl: `${window.location.origin}/gift-hampers-cakes` }); } finally { setPdfGenerating(false); } }}
+                          <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateInvitationPDF({ eventSummary, confirmedVendors, userName: user?.name, eventTime: plan.eventTime || "", personName: plan.personName || "", venueAddress: plan.venueAddress || "" }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>📬</span>Invitation
                           </button>

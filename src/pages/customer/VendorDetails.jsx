@@ -72,7 +72,8 @@ const VendorDetailsPage = () => {
   const [error, setError] = useState(null);
   const [chatFormOpen, setChatFormOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "" });
+  const [chatEventForm, setChatEventForm] = useState({ eventType: "", guests: "", date: "", location: "", eventTime: "" });
+  const [invitePersonName, setInvitePersonName] = useState(() => { try { return localStorage.getItem('tendr_person_name') || ''; } catch { return ''; } });
   const [hasActiveChatSave, setHasActiveChatSave] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const [similarVendors, setSimilarVendors] = useState([]);
@@ -1089,6 +1090,28 @@ const VendorDetailsPage = () => {
                     style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
                 </div>
               ))}
+              {["Birthday","1st Birthday","Anniversary","Baby Shower","Newborn Welcome","Graduation"].includes(chatEventForm.eventType) && (
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#C47A2E", marginBottom: 4 }}>
+                    {{"Birthday":"Whose birthday is it?","1st Birthday":"Whose birthday is it?","Anniversary":"Whose anniversary?","Baby Shower":"Baby's name (if decided)","Newborn Welcome":"Baby's name","Graduation":"Who's graduating?"}[chatEventForm.eventType]}
+                    <span style={{ fontWeight: 400, color: "#9B7450" }}> — for invitation flyer</span>
+                  </label>
+                  <input type="text" value={invitePersonName}
+                    onChange={e => { setInvitePersonName(e.target.value); try { localStorage.setItem('tendr_person_name', e.target.value); } catch {} }}
+                    placeholder={{"Birthday":"e.g., Aarav's","1st Birthday":"e.g., little Riya's","Anniversary":"e.g., Priya & Rahul","Baby Shower":"e.g., Arjun","Newborn Welcome":"e.g., Aanya","Graduation":"e.g., Ananya"}[chatEventForm.eventType] || "Optional"}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.35)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              )}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 600, color: "#6B3A1F", marginBottom: 4 }}>
+                    Start time <span style={{ fontWeight: 400, color: "#9B7450" }}>(flyer)</span>
+                  </label>
+                  <input type="time" value={chatEventForm.eventTime}
+                    onChange={e => { setChatEventForm(p => ({ ...p, eventTime: e.target.value })); try { localStorage.setItem('tendr_event_time', e.target.value); } catch {} }}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", fontFamily: "'Outfit', sans-serif", fontSize: 13, color: chatEventForm.eventTime ? "#2C1A0E" : "#9B7450", outline: "none", boxSizing: "border-box" }} />
+                </div>
+              </div>
             </div>
             <button
               disabled={checkingAvail}
@@ -1128,6 +1151,7 @@ const VendorDetailsPage = () => {
                     guests: chatEventForm.guests,
                     date: chatEventForm.date,
                     location: chatEventForm.location,
+                    eventTime: chatEventForm.eventTime,
                     token,
                   }));
                   dispatch(setBookingType("you-do-it"));

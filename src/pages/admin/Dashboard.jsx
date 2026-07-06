@@ -1855,10 +1855,10 @@ const AdminDashboard = () => {
                                     <>
                                       <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
                                         {phone && (
-                                          <button onClick={() => notifyEventDetailsWhatsApp(plan)}
-                                            style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
-                                            📲 Event Details
-                                          </button>
+                                          <a href={`https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${plan.customerId?.name || "there"}! We have received your event planning request. Your payment is currently pending — our team will confirm and process your booking shortly. — Team Tendr`)}`} target="_blank" rel="noopener noreferrer"
+                                            style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
+                                            📲 Notify Customer
+                                          </a>
                                         )}
                                         <button
                                           onClick={() => {
