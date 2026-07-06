@@ -230,9 +230,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
     ]},
     { label: "Booking", hideOnMobile: true, items: [
-      { label: "🔍 You Do It", href: "/booking", activePaths: ["/booking", "/plan-event"] },
-      { label: "✨ Smart Planner", href: "/booking", activePaths: ["/booking", "/plan-event"] },
-      { label: "💬 Baat Karo", href: "/baat-karo", activePaths: ["/baat-karo"] },
+      { label: "🔍 You Do It",    href: "/booking", activePaths: ["/plan-event"], activeBookingType: "you-do-it" },
+      { label: "✨ Smart Planner", href: "/booking", activePaths: ["/plan-event"], activeBookingType: "let-us-do-it" },
+      { label: "💬 Baat Karo",    href: "/baat-karo", activePaths: ["/baat-karo"] },
     ]},
     { label: "Tools", hideOnMobile: true, items: [
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
@@ -430,11 +430,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                 {sec.items.map(item => {
                   const isSoon     = !!item.comingSoon;
                   const isDisabled = !!item.disabled;
-                  const isActive   = !isSoon && !isDisabled && (
-                    location.pathname === item.href ||
-                    (item.href !== "/" && location.pathname.startsWith(item.href)) ||
-                    (item.activePaths || []).some(p => location.pathname === p || location.pathname.startsWith(p))
-                  );
+                  const pathMatch = item.activeBookingType
+                    ? (item.activePaths || []).some(p => location.pathname === p || location.pathname.startsWith(p))
+                    : (location.pathname === item.href ||
+                       (item.href !== "/" && location.pathname.startsWith(item.href)) ||
+                       (item.activePaths || []).some(p => location.pathname === p || location.pathname.startsWith(p)));
+                  const isActive = !isSoon && !isDisabled && pathMatch &&
+                    (!item.activeBookingType || bookingType === item.activeBookingType);
                   const timelineSaved  = item.href === "/timeline-picker"  && (() => { try { const raw = localStorage.getItem("tendr_timeline_v2"); if (!raw) return false; const d = JSON.parse(raw); return d?.phases?.length > 0; } catch { return false; } })();
                   const budgetSaved    = item.href === "/budget-picker"     && (() => { try { const raw = localStorage.getItem("tendr_budget_v2"); if (!raw) return false; const d = JSON.parse(raw); return !!d?.totalBudget; } catch { return false; } })();
                   if (isSoon) {

@@ -378,7 +378,7 @@ const VendorList_ListingPage = ({
                             </span>
                           )}
                           {(vendor.price > 0 || vendor.startingPrice > 0) && (
-                            <span style={{ color: "#5a3a1a", fontWeight: 700 }}>From ₹{Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")}</span>
+                            <span style={{ color: "#5a3a1a", fontWeight: 700 }}>Starting from ₹{Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")}</span>
                           )}
                         </div>
                       </div>
@@ -964,7 +964,7 @@ const VendorList_ListingPage = ({
                           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                             {(v.city || v.locations?.[0]) && <span style={{ fontSize: 11, color: "#9B7450" }}>📍 {v.city || v.locations?.[0]}</span>}
                             {rating > 0 && <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
-                            {(v.price || v.startingPrice) > 0 && <span style={{ fontSize: 11, color: "#5a3a1a", fontWeight: 600 }}>From ₹{Number(v.price || v.startingPrice).toLocaleString("en-IN")}</span>}
+                            {(v.price || v.startingPrice) > 0 && <span style={{ fontSize: 11, color: "#5a3a1a", fontWeight: 600 }}>Starting from ₹{Number(v.price || v.startingPrice).toLocaleString("en-IN")}</span>}
                           </div>
                         </div>
                         <span style={{ fontSize: 13, color: "#C47A2E", fontWeight: 700, flexShrink: 0 }}>View →</span>
