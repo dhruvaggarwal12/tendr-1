@@ -71,7 +71,6 @@ function calcTendersPickIdx(vendors) {
 // What the pick is actually based on (for the strip description)
 function pickReason(v) {
   const parts = [];
-  if (getRating(v))    parts.push(`${Number(getRating(v)).toFixed(1)}★ rated`);
   if (getExp(v))       parts.push(`${getExp(v)} yrs experience`);
   if (getEvents(v))    parts.push(`${getEvents(v)}+ events done`);
   if (getPortfolio(v)) parts.push(`${getPortfolio(v)} portfolio photos`);
@@ -132,18 +131,11 @@ function MobileCard({ v, isTendrsPick, isBestPrice, isBestRating, openVendorChat
           <span style={{ position: "absolute", top: 8, left: 8, fontSize: 10, fontWeight: 700, background: "rgba(21,128,61,0.92)", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>✓ Verified</span>
         )}
         <div style={{ position: "absolute", bottom: 8, right: 8, display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-end" }}>
-          {isBestRating && <span style={{ fontSize: 10, fontWeight: 700, background: "#C9A84C", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>Top Rated</span>}
-          {isBestPrice  && <span style={{ fontSize: 10, fontWeight: 700, background: "#15803d", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>Best Price</span>}
+            {isBestPrice  && <span style={{ fontSize: 10, fontWeight: 700, background: "#15803d", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>Best Price</span>}
         </div>
         <div style={{ position: "absolute", bottom: 8, left: 10 }}>
           <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1.3, textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>{getName(v)}</div>
         </div>
-      </div>
-
-      {/* Rating */}
-      <div style={{ padding: "10px 12px 4px" }}>
-        <Stars rating={rating} size={14} />
-        {reviews != null && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>{reviews} review{reviews !== 1 ? "s" : ""}</div>}
       </div>
 
       {/* Price */}
@@ -362,16 +354,13 @@ const ComparisonMatrix = ({ vendors = [] }) => {
                         <span style={{ position: "absolute", top: 8, left: 8, fontSize: 10, fontWeight: 700, background: "rgba(21,128,61,0.92)", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>✓ Verified</span>
                       )}
                       <div style={{ position: "absolute", bottom: 8, right: 8, display: "flex", flexDirection: "column", gap: 3, alignItems: "flex-end" }}>
-                        {isBestRating && <span style={{ fontSize: 11, fontWeight: 700, background: "#C9A84C", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>Top Rated</span>}
                         {isBestPrice  && <span style={{ fontSize: 11, fontWeight: 700, background: "#15803d", color: "#fff", padding: "3px 8px", borderRadius: 20 }}>Best Price</span>}
                       </div>
                     </div>
 
-                    {/* Name + rating */}
+                    {/* Name */}
                     <div style={{ padding: "10px 12px 8px" }}>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 5, lineHeight: 1.3 }}>{getName(v)}</div>
-                      <Stars rating={rating} size={14} />
-                      {reviews != null && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 3 }}>{reviews} review{reviews !== 1 ? "s" : ""}</div>}
+                      <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.3 }}>{getName(v)}</div>
                     </div>
 
                     {/* Price */}
