@@ -118,6 +118,7 @@ export default function ChooseBooking() {
         {FLOWS.map((flow) => (
           <div
             key={flow.type}
+            className="choose-booking-card"
             style={{
               background: "#FFFCF5",
               border: "2px solid " + flow.borderColor,
@@ -134,16 +135,16 @@ export default function ChooseBooking() {
           >
             {/* Icon + title */}
             <div style={{ marginBottom: 8 }}>
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 7 }}>
+              <div className="cbcard-icon" style={{ width: 32, height: 32, borderRadius: 10, background: flow.bgAccent, border: "1.5px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, marginBottom: 7 }}>
                 {flow.emoji}
               </div>
-              <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 2px", letterSpacing: "-0.01em" }}>
+              <h2 className="cbcard-title" style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 2px", letterSpacing: "-0.01em" }}>
                 {flow.title}
               </h2>
-              <p style={{ fontSize: 12, fontWeight: 600, color: flow.accentColor, margin: "0 0 6px" }}>
+              <p className="cbcard-subtitle" style={{ fontSize: 12, fontWeight: 600, color: flow.accentColor, margin: "0 0 6px" }}>
                 {flow.subtitle}
               </p>
-              <p style={{ fontSize: 11.5, color: "#7A5535", margin: 0, lineHeight: 1.5 }}>
+              <p className="cbcard-desc" style={{ fontSize: 11.5, color: "#7A5535", margin: 0, lineHeight: 1.5 }}>
                 {flow.description}
               </p>
             </div>
@@ -152,10 +153,10 @@ export default function ChooseBooking() {
             <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16, flex: 1, marginTop: 10 }}>
               {flow.steps.map((step, i) => (
                 <div key={step} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: flow.accentColor, flexShrink: 0, marginTop: 1 }}>
+                  <span className="cbcard-step-num" style={{ width: 20, height: 20, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: flow.accentColor, flexShrink: 0, marginTop: 1 }}>
                     {i + 1}
                   </span>
-                  <span style={{ fontSize: 12, color: "#2C1A0E", fontWeight: 600, lineHeight: 1.4 }}>{step}</span>
+                  <span className="cbcard-step-text" style={{ fontSize: 12, color: "#2C1A0E", fontWeight: 600, lineHeight: 1.4 }}>{step}</span>
                 </div>
               ))}
             </div>
@@ -163,6 +164,7 @@ export default function ChooseBooking() {
             {/* CTA */}
             <button
               onClick={() => handleChoose(flow.type, flow.route)}
+              className="cbcard-cta"
               style={{
                 width: "100%",
                 padding: "11px",
@@ -200,6 +202,17 @@ export default function ChooseBooking() {
         }
         @media (min-width: 761px) and (max-width: 980px) {
           .choose-booking-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+        @media (min-width: 761px) {
+          .choose-booking-grid { max-width: 1140px !important; gap: 20px !important; }
+          .choose-booking-card { padding: 26px 22px 20px !important; }
+          .cbcard-icon { width: 42px !important; height: 42px !important; font-size: 20px !important; margin-bottom: 10px !important; }
+          .cbcard-title { font-size: 19px !important; margin-bottom: 4px !important; }
+          .cbcard-subtitle { font-size: 13.5px !important; margin-bottom: 8px !important; }
+          .cbcard-desc { font-size: 13px !important; line-height: 1.6 !important; }
+          .cbcard-step-num { width: 22px !important; height: 22px !important; font-size: 11px !important; }
+          .cbcard-step-text { font-size: 13.5px !important; }
+          .cbcard-cta { font-size: 15px !important; padding: 13px !important; border-radius: 13px !important; }
         }
       `}</style>
       </div>{/* inner flex column */}
