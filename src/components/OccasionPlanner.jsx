@@ -119,23 +119,23 @@ async function resolveThemePhoto(themeId, themeName, occasion) {
     if (data.url) { _photoCache.set(themeId, data.url); return data.url; }
   } catch {}
 
-  // 2. Fetch from Unsplash
+  // 2. Fetch from Unsplash (fallback — bulk script handles this permanently)
   const key = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
   if (!key) return null;
   try {
-    const q   = encodeURIComponent(`${themeName} ${occasion} party celebration decoration`);
-    const res = await fetch(`https://api.unsplash.com/search/photos?query=${q}&per_page=1&orientation=landscape&content_filter=high&client_id=${key}`);
+    const q   = encodeURIComponent(`indian ${themeName} ${occasion} decoration celebration`);
+    const res = await fetch(`https://api.unsplash.com/search/photos?query=${q}&per_page=8&orientation=landscape&content_filter=high&client_id=${key}`);
     const data = await res.json();
-    const url  = data?.results?.[0]?.urls?.regular;
-    if (url) {
-      // 3. Save to DB permanently
+    const urls = (data?.results || []).map(r => r.urls?.regular).filter(Boolean);
+    if (urls.length) {
+      // 3. Save all photos to DB permanently
       fetch(`${BASE}/theme-photos/${themeId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ urls }),
       }).catch(() => {});
-      _photoCache.set(themeId, url);
-      return url;
+      _photoCache.set(themeId, urls[0]);
+      return urls[0];
     }
   } catch {}
   return null;
