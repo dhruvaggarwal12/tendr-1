@@ -60,7 +60,7 @@ const PAGE_NAMES = ['Overview', 'The Details', 'Checklist & Decor'];
 
 // Per-occasion accent colours — all warm earth/gold tones matching the website
 const OCC_COLOR = {
-  'Birthday':        '#E8855A',  // warm coral
+  'Birthday':        '#FF4B8B',  // vibrant pink — festive & fun
   'Anniversary':     '#C4728A',  // dusty rose
   'Baby Shower':     '#8AB4A0',  // sage mint
   'House Party':     '#D4A53A',  // bright amber
@@ -70,6 +70,17 @@ const OCC_COLOR = {
   'Naming Ceremony': '#D4922E',  // saffron
 };
 const FALLBACK_COLOR = '#C47A2E';
+
+const OCC_BG = {
+  'Birthday':        ['#220814', '#140408'],  // deep pink/berry
+  'Anniversary':     ['#1E0A18', '#120412'],
+  'Baby Shower':     ['#061A14', '#031008'],
+  'House Party':     ['#1E1608', '#120E02'],
+  'Housewarming':    ['#1C0A04', '#130600'],
+  'Get Together':    ['#081806', '#041002'],
+  'Kitty Party':     ['#220A14', '#140408'],
+  'Naming Ceremony': ['#201008', '#140802'],
+};
 
 // Warm palette for per-theme unique colours (hashed from theme id)
 const WARM_SWATCHES = [
@@ -92,6 +103,53 @@ function darken(hex, pct) {
   const g = Math.max(0, Math.round(((n >> 8) & 255) * f));
   const b = Math.max(0, Math.round((n & 255) * f));
   return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
+}
+
+// ── Unsplash photo hook ───────────────────────────────────────────────────
+
+const _photoCache = new Map();
+
+async function resolveThemePhoto(themeId, themeName, occasion) {
+  const BASE = import.meta.env.VITE_BASE_URL;
+
+  // 1. Check DB first
+  try {
+    const res  = await fetch(`${BASE}/theme-photos/${themeId}`);
+    const data = await res.json();
+    if (data.url) { _photoCache.set(themeId, data.url); return data.url; }
+  } catch {}
+
+  // 2. Fetch from Unsplash
+  const key = import.meta.env.VITE_UNSPLASH_ACCESS_KEY;
+  if (!key) return null;
+  try {
+    const q   = encodeURIComponent(`${themeName} ${occasion} party celebration decoration`);
+    const res = await fetch(`https://api.unsplash.com/search/photos?query=${q}&per_page=1&orientation=landscape&content_filter=high&client_id=${key}`);
+    const data = await res.json();
+    const url  = data?.results?.[0]?.urls?.regular;
+    if (url) {
+      // 3. Save to DB permanently
+      fetch(`${BASE}/theme-photos/${themeId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url }),
+      }).catch(() => {});
+      _photoCache.set(themeId, url);
+      return url;
+    }
+  } catch {}
+  return null;
+}
+
+function useUnsplashPhoto(themeId, themeName, occasion, fallback) {
+  const [url, setUrl] = useState(fallback);
+  useEffect(() => {
+    if (_photoCache.has(themeId)) { setUrl(_photoCache.get(themeId)); return; }
+    resolveThemePhoto(themeId, themeName, occasion)
+      .then(photoUrl => { if (photoUrl) setUrl(photoUrl); })
+      .catch(() => {});
+  }, [themeId]);
+  return url;
 }
 
 // ── Photos ────────────────────────────────────────────────────────────────
@@ -219,7 +277,7 @@ const CSS = `
   .op-scroll { scrollbar-width:none; }
 
   .op-occ-card:hover  { transform:translateY(-5px) scale(1.03) !important; box-shadow:0 14px 40px rgba(0,0,0,0.5) !important; }
-  .op-theme-card:hover{ transform:translateY(-5px) !important; box-shadow:0 22px 52px rgba(0,0,0,0.55) !important; }
+  .op-theme-card:hover{ background:rgba(245,236,216,0.07) !important; }
 
   .op-opt:hover { opacity:0.95; }
 
@@ -235,7 +293,7 @@ const CSS = `
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
     .book-hero-img    { height:190px !important; }
     .book-title       { font-size:1.7rem !important; }
-    .op-theme-grid    { grid-template-columns:repeat(2,1fr) !important; }
+    .op-theme-grid    { grid-template-columns:1fr !important; }
   }
 `;
 
@@ -244,8 +302,8 @@ const CSS = `
 function SectionLabel({ color, children }) {
   return (
     <h4 style={{
-      fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.18em',
-      margin: '0 0 8px', color: color || FALLBACK_COLOR,
+      fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em',
+      margin: '0 0 10px', color: color || FALLBACK_COLOR,
       fontFamily: "'Outfit', sans-serif",
     }}>{children}</h4>
   );
@@ -257,24 +315,30 @@ function StatTile({ label, value, color }) {
       padding: '12px 10px', borderRadius: 12, textAlign: 'center',
       background: `${color}12`, border: `1px solid ${color}28`,
     }}>
-      <div style={{ fontSize: 9, color: `${color}BB`, textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 5, fontFamily: "'Outfit',sans-serif" }}>{label}</div>
-      <div style={{ fontSize: 12, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.3, fontFamily: "'Outfit',sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 11, color: `${color}CC`, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 5, fontFamily: "'Outfit',sans-serif" }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.3, fontFamily: "'Outfit',sans-serif" }}>{value}</div>
     </div>
   );
 }
 
 function BulletList({ items, color, max = 5 }) {
+  const [expanded, setExpanded] = useState(false);
   if (!items?.length) return null;
+  const shown = expanded ? items : items.slice(0, max);
   return (
     <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none' }}>
-      {items.slice(0, max).map((item, i) => (
+      {shown.map((item, i) => (
         <li key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'flex-start' }}>
           <span style={{ color, fontSize: 7, marginTop: 5, flexShrink: 0 }}>◆</span>
-          <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.78)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
+          <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.88)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
         </li>
       ))}
-      {items.length > max && (
-        <li style={{ fontSize: 11, color: 'rgba(245,236,216,0.3)', marginTop: 2, fontFamily: "'Outfit',sans-serif" }}>+{items.length - max} more</li>
+      {!expanded && items.length > max && (
+        <li>
+          <button onClick={() => setExpanded(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color, fontFamily: "'Outfit',sans-serif", fontWeight: 700, padding: '2px 0', textDecoration: 'underline', textUnderlineOffset: 3 }}>
+            +{items.length - max} more
+          </button>
+        </li>
       )}
     </ul>
   );
@@ -297,9 +361,9 @@ function PageDots({ current, total, color }) {
 function NavRow({ onBack, onNext, nextLabel = 'Next →', color }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
-      <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.38)', fontSize: 13, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif" }}>← Back</button>
+      <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif" }}>← Back</button>
       {onNext && (
-        <button onClick={onNext} style={{ padding: '10px 26px', borderRadius: 100, background: color || FALLBACK_COLOR, color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 4px 14px ${color||FALLBACK_COLOR}44` }}>
+        <button onClick={onNext} style={{ padding: '12px 30px', borderRadius: 100, background: color || FALLBACK_COLOR, color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 4px 14px ${color||FALLBACK_COLOR}44` }}>
           {nextLabel}
         </button>
       )}
@@ -311,9 +375,9 @@ function Breadcrumb({ occasion, current, color }) {
   if (!occasion) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-      <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
-      <span style={{ color: 'rgba(245,236,216,0.2)' }}>›</span>
-      <span style={{ fontSize: 10, color, textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{current}</span>
+      <span style={{ fontSize: 12, color: 'rgba(245,236,216,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
+      <span style={{ color: 'rgba(245,236,216,0.3)', fontSize: 14 }}>›</span>
+      <span style={{ fontSize: 12, color, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>{current}</span>
     </div>
   );
 }
@@ -352,14 +416,14 @@ function BookPage1({ theme, occasion, photo, color }) {
             fontSize: 'clamp(1.9rem,5vw,2.8rem)', fontWeight: 400, letterSpacing: '-0.01em',
             color: '#F5ECD8', margin: '0 0 5px', lineHeight: 1.1,
           }}>{theme.theme}</h2>
-          <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.68)', margin: 0, fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>{theme.oneLineDesc}</p>
+          <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.82)', margin: 0, fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>{theme.oneLineDesc}</p>
         </div>
       </div>
 
       <div style={{ paddingTop: 22 }}>
         {/* Overview */}
         {theme.overview && (
-          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, color: 'rgba(245,236,216,0.68)', lineHeight: 1.85, margin: '0 0 22px', borderLeft: `3px solid ${color}40`, paddingLeft: 14 }}>{theme.overview}</p>
+          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, color: 'rgba(245,236,216,0.82)', lineHeight: 1.85, margin: '0 0 22px', borderLeft: `3px solid ${color}40`, paddingLeft: 14 }}>{theme.overview}</p>
         )}
 
         {/* Colour palette */}
@@ -400,7 +464,7 @@ function BookPage2({ theme, color }) {
 
   return (
     <div style={{ paddingTop: 8 }}>
-      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.4rem,3.5vw,1.9rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
+      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
         What's Included
       </h3>
       <div className="book-detail-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
@@ -428,7 +492,7 @@ function BookPage2({ theme, color }) {
 function BookPage3({ theme, color, onClose }) {
   return (
     <div style={{ paddingTop: 8 }}>
-      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.4rem,3.5vw,1.9rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
+      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
         Plan & Decor
       </h3>
 
@@ -499,7 +563,7 @@ function BookDetail({ theme, occasion, onClose }) {
   const [animDir, setAnimDir] = useState(null); // null = no anim on first mount
 
   const color = themeAccentColor(theme.id);
-  const photo = getThemePhoto(theme, occasion);
+  const photo = useUnsplashPhoto(theme.id, theme.theme, occasion, getThemePhoto(theme, occasion));
 
   useEffect(() => {
     const fn = (e) => { if (e.key === 'Escape') onClose(); };
@@ -527,8 +591,8 @@ function BookDetail({ theme, occasion, onClose }) {
         <div className="book-detail-panel" onClick={e => e.stopPropagation()} style={{
           width: '100%', maxWidth: 680, maxHeight: '92vh',
           display: 'flex', flexDirection: 'column',
-          background: 'linear-gradient(160deg, #1C0A04 0%, #130600 100%)',
-          border: `1px solid ${color}30`,
+          background: (() => { const b = OCC_BG[occasion] || ['#1C0A04','#130600']; return `linear-gradient(160deg, ${b[0]} 0%, ${b[1]} 100%)`; })(),
+          border: `1px solid ${color}40`,
           borderRadius: 26, overflow: 'hidden',
           boxShadow: `0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px ${color}18`,
         }}>
@@ -536,7 +600,7 @@ function BookDetail({ theme, occasion, onClose }) {
           {/* Header — always visible */}
           <div style={{
             flexShrink: 0, zIndex: 20,
-            background: '#1C0A04',
+            background: (OCC_BG[occasion] || ['#1C0A04'])[0],
             padding: '14px 20px 6px',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
@@ -566,7 +630,7 @@ function BookDetail({ theme, occasion, onClose }) {
             flexShrink: 0,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '10px 24px 26px',
-            background: '#1C0A04',
+            background: (OCC_BG[occasion] || ['#1C0A04'])[0],
             borderTop: `1px solid ${color}14`,
           }}>
             <button onClick={() => goPage(-1)} disabled={pg === 0} style={{
@@ -604,39 +668,28 @@ const BUDGET_BADGE_COLOR = {
 };
 
 function ThemeCard({ theme, occasion, onExpand, occColor }) {
-  const photo = getThemePhoto(theme, occasion);
+  const photo = useUnsplashPhoto(theme.id, theme.theme, occasion, getThemePhoto(theme, occasion));
   const badgeColor = BUDGET_BADGE_COLOR[theme.budget] || occColor;
 
   return (
     <button className="op-theme-card" onClick={onExpand} style={{
-      position: 'relative', height: 210, borderRadius: 18,
-      overflow: 'hidden', border: `1px solid ${occColor}18`,
-      cursor: 'pointer', padding: 0, background: '#160800',
-      transition: 'transform 0.22s, box-shadow 0.22s',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.42)', textAlign: 'left',
-      display: 'flex', flexDirection: 'column',
+      display: 'flex', flexDirection: 'row', alignItems: 'center',
+      width: '100%', borderRadius: 12, overflow: 'hidden',
+      border: `1px solid ${occColor}22`, cursor: 'pointer', padding: 0,
+      background: 'rgba(245,236,216,0.04)',
+      transition: 'background 0.18s', textAlign: 'left',
     }}>
-      <div style={{ height: '58%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+      <div style={{ width: 80, height: 60, flexShrink: 0, overflow: 'hidden' }}>
         <img src={photo} alt={theme.theme} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
           onError={e => { e.target.src = occFallback(occasion); }} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 35%, rgba(0,0,0,0.45))' }} />
       </div>
-      <div style={{
-        position: 'absolute', top: 8, right: 8,
-        padding: '2px 8px', borderRadius: 100, fontSize: 9, fontWeight: 800,
-        background: `${badgeColor}28`, border: `1px solid ${badgeColor}55`, color: badgeColor,
-        backdropFilter: 'blur(8px)', textTransform: 'uppercase', letterSpacing: '0.06em',
-        fontFamily: "'Outfit',sans-serif",
-      }}>{theme.budget}</div>
-      <div style={{ flex: 1, padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-        <div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.25, marginBottom: 4, fontFamily: "'Outfit',sans-serif" }}>{theme.theme}</div>
-          <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.45)', lineHeight: 1.4, fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-          <span style={{ fontSize: 9, color: 'rgba(245,236,216,0.28)', fontFamily: "'Outfit',sans-serif" }}>{theme.recommendedGuests} guests</span>
-          <span style={{ fontSize: 9, color: occColor, fontFamily: "'Outfit',sans-serif", fontWeight: 700 }}>Tap to explore ↗</span>
-        </div>
+      <div style={{ flex: 1, padding: '0 12px', minWidth: 0 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Outfit',sans-serif" }}>{theme.theme}</div>
+        <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.78)', lineHeight: 1.3, marginTop: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', flexShrink: 0 }}>
+        <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 100, background: `${badgeColor}22`, border: `1px solid ${badgeColor}50`, color: badgeColor, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Outfit',sans-serif" }}>{theme.budget}</span>
+        <span style={{ fontSize: 12, color: occColor, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>↗</span>
       </div>
     </button>
   );
@@ -691,12 +744,15 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
     transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
   });
 
+  const occBg = OCC_BG[occasion] || ['#1C0A04', '#130600'];
+  const occBgGradient = `linear-gradient(160deg, ${occBg[0]} 0%, ${occBg[1]} 100%)`;
+
   const h2Style = {
     fontFamily: "'Cormorant Garamond', Georgia, serif",
-    fontSize: 'clamp(1.5rem,4vw,2.1rem)', fontWeight: 400,
-    color: '#F5ECD8', margin: '0 0 5px', letterSpacing: '0.01em',
+    fontSize: 'clamp(2rem,4.5vw,2.8rem)', fontWeight: 400,
+    color: '#F5ECD8', margin: '0 0 8px', letterSpacing: '0.01em',
   };
-  const subStyle = { fontSize: 13, color: 'rgba(245,236,216,0.42)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif" };
+  const subStyle = { fontSize: 15, color: 'rgba(245,236,216,0.78)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif" };
 
   return (
     <>
@@ -714,8 +770,8 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
           {/* Panel */}
           <div className="op-panel op-scroll" onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto',
-            background: 'linear-gradient(160deg, #1C0A04 0%, #130600 100%)',
-            border: `1px solid ${occColor}28`,
+            background: occBgGradient,
+            border: `1px solid ${occColor}38`,
             borderRadius: 26,
             fontFamily: "'Outfit',sans-serif",
             boxShadow: `0 32px 100px rgba(0,0,0,0.75), 0 0 0 1px ${occColor}14`,
@@ -781,14 +837,14 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                 <div>
                   <Breadcrumb occasion={occasion} current="Budget" color={occColor} />
                   <h2 style={h2Style}>What's your budget?</h2>
-                  <p style={subStyle}>We'll match themes that fit your spending comfort</p>
+                  <p style={subStyle}>Pick your range</p>
                   <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11 }}>
                     {BUDGET_OPTIONS.map(({ key, label, desc, stars }) => (
                       <button key={key} onClick={() => { setBudget(key); setTimeout(() => goNext(), 260); }}
                         style={optStyle(budget === key)}>
-                        <div style={{ color: occColor, fontSize: 11, letterSpacing: 2, marginBottom: 5 }}>{'★'.repeat(stars)}</div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', marginBottom: 3 }}>{label}</div>
-                        <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.4)' }}>{desc}</div>
+                        <div style={{ color: occColor, fontSize: 13, letterSpacing: 3, marginBottom: 6 }}>{'★'.repeat(stars)}</div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: '#F5ECD8', marginBottom: 4 }}>{label}</div>
+                        <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.82)' }}>{desc}</div>
                       </button>
                     ))}
                   </div>
@@ -801,7 +857,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                 <div>
                   <Breadcrumb occasion={occasion} current="Guests" color={occColor} />
                   <h2 style={h2Style}>How many guests?</h2>
-                  <p style={subStyle}>Approximate headcount helps us find the right scale</p>
+                  <p style={subStyle}>Rough number is fine</p>
                   <div style={{ position: 'relative', marginBottom: 12 }}>
                     <input
                       type="number" min="1" max="1000" placeholder="e.g. 50"
@@ -837,13 +893,12 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                 <div>
                   <Breadcrumb occasion={occasion} current="Venue" color={occColor} />
                   <h2 style={h2Style}>Where is the event?</h2>
-                  <p style={subStyle}>The setting shapes the mood of your celebration</p>
+                  <p style={subStyle}>Pick your venue type</p>
                   <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
-                    {VENUE_OPTIONS.map(({ key, label, desc }) => (
+                    {VENUE_OPTIONS.map(({ key, label }) => (
                       <button key={key} onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
-                        style={optStyle(venue === key)}>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5ECD8', marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.4)' }}>{desc}</div>
+                        style={{ ...optStyle(venue === key), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', textAlign: 'center' }}>{label}</div>
                       </button>
                     ))}
                   </div>
@@ -856,14 +911,14 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                 <div>
                   <Breadcrumb occasion={occasion} current="Time" color={occColor} />
                   <h2 style={h2Style}>When is the celebration?</h2>
-                  <p style={subStyle}>Timing shapes the ambiance and lighting of your theme</p>
+                  <p style={subStyle}>Choose a time slot</p>
                   <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
                     {TIME_OPTIONS.map(({ key, label, desc, icon }) => (
                       <button key={key} onClick={() => { setTimeOfDay(key); setTimeout(() => goNext(5), 260); }}
                         style={optStyle(timeOfDay === key)}>
-                        <div style={{ fontSize: 22, marginBottom: 5 }}>{icon}</div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: '#F5ECD8', marginBottom: 3 }}>{label}</div>
-                        <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.4)' }}>{desc}</div>
+                        <div style={{ fontSize: 26, marginBottom: 6 }}>{icon}</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', marginBottom: 4 }}>{label}</div>
+                        <div style={{ fontSize: 14, color: 'rgba(245,236,216,0.82)', fontWeight: 600 }}>{desc}</div>
                       </button>
                     ))}
                   </div>
@@ -876,7 +931,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                 <div>
                   {/* Header */}
                   <div style={{ marginBottom: 20 }}>
-                    <p style={{ fontSize: 10, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 4px', fontFamily: "'Outfit',sans-serif" }}>
+                    <p style={{ fontSize: 12, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 6px', fontFamily: "'Outfit',sans-serif" }}>
                       {showAll ? `All ${results.length} themes` : `${results.length} theme${results.length !== 1 ? 's' : ''} matched`}
                     </p>
                     <h2 style={{ ...h2Style, margin: '0 0 10px' }}>
@@ -892,9 +947,8 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     )}
                   </div>
 
-                  {/* Theme cards — 4-column on desktop, 2-column on mobile */}
                   {results.length > 0 ? (
-                    <div className="op-theme-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 13 }}>
+                    <div className="op-theme-grid" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                       {results.map(theme => (
                         <ThemeCard key={theme.id} theme={theme} occasion={occasion} occColor={occColor} onExpand={() => setExpandedTheme(theme)} />
                       ))}
