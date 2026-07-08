@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import BIRTHDAY_THEMES from '../data/birthdayThemes';
 import ANNIVERSARY_THEMES from '../data/anniversaryThemes';
@@ -515,15 +516,22 @@ function BookPage3({ theme, color, onClose }) {
         </div>
       )}
 
-      {/* Decor photos */}
+      {/* Decor photos with download */}
       {galleryUrls.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <SectionLabel color={color}>Suggested Decor Photos</SectionLabel>
           <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
             {galleryUrls.slice(0, 6).map((url, i) => (
-              <div key={i} style={{ aspectRatio: '4/3', borderRadius: 11, overflow: 'hidden', background: `${color}0A` }}>
+              <div key={i} style={{ aspectRatio: '4/3', borderRadius: 11, overflow: 'hidden', background: `${color}0A`, position: 'relative' }}
+                onMouseEnter={e => e.currentTarget.querySelector('.dl-btn').style.opacity = '1'}
+                onMouseLeave={e => e.currentTarget.querySelector('.dl-btn').style.opacity = '0'}>
                 <img src={url} alt="" loading="lazy"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <button className="dl-btn"
+                  onClick={() => downloadPhoto(url, i)}
+                  style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: 6, padding: '4px 8px', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: 0, transition: 'opacity 0.18s', fontFamily: "'Outfit',sans-serif", backdropFilter: 'blur(4px)' }}>
+                  ↓ Save
+                </button>
               </div>
             ))}
           </div>
@@ -532,18 +540,18 @@ function BookPage3({ theme, color, onClose }) {
 
       {/* CTAs */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 18, borderTop: `1px solid ${color}18` }}>
-        <button style={{
+        <button onClick={openBaatKaro} style={{
           flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
           background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
           color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer',
           fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
-        }}>Book This Theme</button>
+        }}>💬 Baat Karo</button>
         <button onClick={onClose} style={{
           flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
           background: 'rgba(245,236,216,0.05)', color: 'rgba(245,236,216,0.52)',
           border: '1px solid rgba(245,236,216,0.12)', fontSize: 14, cursor: 'pointer',
           fontFamily: "'Outfit',sans-serif",
-        }}>See Other Themes</button>
+        }}>Browse Themes</button>
       </div>
     </div>
   );
@@ -553,8 +561,28 @@ function BookPage3({ theme, color, onClose }) {
 
 function BookDetail({ theme, occasion, onClose }) {
   const [pg, setPg]         = useState(0);
-  const [animDir, setAnimDir] = useState(null); // null = no anim on first mount
+  const [animDir, setAnimDir] = useState(null);
   const [galleryUrls, setGalleryUrls] = useState([]);
+  const navigate = useNavigate();
+
+  const openBaatKaro = () => {
+    const msg = `Hi! I'm interested in planning a ${occasion} with the "${theme.theme}" theme. Can you help me with the decor, vendor suggestions, and planning? Looking forward to discussing!`;
+    try { sessionStorage.setItem('baat_karo_draft', msg); } catch {}
+    onClose();
+    navigate('/baat-karo');
+  };
+
+  const downloadPhoto = async (url, index) => {
+    try {
+      const res  = await fetch(url);
+      const blob = await res.blob();
+      const a    = document.createElement('a');
+      a.href     = URL.createObjectURL(blob);
+      a.download = `${theme.theme}-decor-${index + 1}.jpg`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch {}
+  };
 
   const color = themeAccentColor(theme.id);
   const photo = useUnsplashPhoto(theme.id, theme.theme, occasion, getThemePhoto(theme, occasion));
