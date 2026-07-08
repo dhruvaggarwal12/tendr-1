@@ -160,7 +160,7 @@ export default function CustomerDashboard() {
   const [showAddEvent, setShowAddEvent]           = useState(false);
   const [addingEvent, setAddingEvent]             = useState(false);
   const [newEvent, setNewEvent]                   = useState({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
-  const [vendorPanelEvent, setVendorPanelEvent]   = useState(null); // planned event whose panel is open
+  const [showPastVendors, setShowPastVendors]     = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -536,27 +536,56 @@ export default function CustomerDashboard() {
               No upcoming events saved yet. Add one to get reminders and vendor suggestions.
             </div>
           ) : (
-            <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
+            <div style={{ display:"flex", flexWrap:"wrap", gap:12 }}>
               {plannedEvents.map(ev => {
-                const days  = daysUntil(ev.date);
-                const past  = days < 0;
+                const days   = daysUntil(ev.date);
+                const past   = days < 0;
                 const urgent = days <= 7 && days >= 0;
+                const pastVendorList = plans
+                  .filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0)
+                  .flatMap(p => Object.entries(p.finalisedVendors).map(([cat, v]) => ({ ...v, category:cat, fromEvent:p.eventType })));
+                const hasPastVendors = pastVendorList.length > 0;
                 return (
-                  <div key={ev._id} onClick={() => !past && setVendorPanelEvent(ev)}
-                    style={{ background: past ? "#f5f0ea" : urgent ? "linear-gradient(135deg,#FFF5E8,#FFF0D8)" : "#FFFDF8",
-                      border: `1.5px solid ${past?"#DDD3C4":urgent?"#C47A2E":"rgba(196,122,46,0.2)"}`,
-                      borderRadius:12, padding:"12px 14px", minWidth:160, flex:"0 0 auto", cursor:past?"default":"pointer",
-                      boxShadow: urgent?"0 2px 8px rgba(196,122,46,0.15)":"none", position:"relative" }}>
-                    <button onClick={e => { e.stopPropagation(); handleDeletePlannedEvent(ev._id); }}
-                      style={{ position:"absolute", top:6, right:8, background:"none", border:"none", color:"#CCC", fontSize:14, cursor:"pointer", padding:0, lineHeight:1 }}>✕</button>
-                    <div style={{ fontSize:11, fontWeight:700, color: urgent?"#C47A2E":"#9B7450", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:3 }}>
+                  <div key={ev._id} style={{
+                    background: past ? "#f5f0ea" : urgent ? "linear-gradient(135deg,#FFF5E8,#FFF0D8)" : "#FFFDF8",
+                    border: `1.5px solid ${past?"#DDD3C4":urgent?"#C47A2E":"rgba(196,122,46,0.2)"}`,
+                    borderRadius:14, padding:"14px 14px 12px", width:"100%", maxWidth:340,
+                    boxShadow: urgent?"0 2px 8px rgba(196,122,46,0.15)":"none", position:"relative",
+                    display:"flex", flexDirection:"column", gap:4,
+                  }}>
+                    <button onClick={() => handleDeletePlannedEvent(ev._id)}
+                      style={{ position:"absolute", top:8, right:10, background:"none", border:"none", color:"#CCC", fontSize:14, cursor:"pointer", padding:0, lineHeight:1 }}>✕</button>
+                    <div style={{ fontSize:11, fontWeight:700, color:urgent?"#C47A2E":"#9B7450", textTransform:"uppercase", letterSpacing:"0.07em" }}>
                       {past ? "Past" : days === 0 ? "Today!" : `${days} day${days>1?"s":""} away`}
                     </div>
-                    <div style={{ fontSize:14, fontWeight:800, color:"#2C1A0E", marginBottom:2 }}>{ev.occasion}</div>
-                    {ev.personName && <div style={{ fontSize:12, color:"#9B7450" }}>for {ev.personName}</div>}
-                    <div style={{ fontSize:11, color:"#B8A090", marginTop:4 }}>{new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
-                    {ev.roughBudget && <div style={{ fontSize:11, color:"#B8A090" }}>{ev.roughBudget}</div>}
-                    {!past && <div style={{ fontSize:11, color:"#C47A2E", marginTop:6, fontWeight:600 }}>Tap for vendors →</div>}
+                    <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>{ev.occasion}</div>
+                    <div style={{ fontSize:12, color:"#B8A090" }}>{new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+
+                    {/* Action buttons — only for future events */}
+                    {!past && (
+                      <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:10 }}>
+                        {/* Past Vendors */}
+                        <button
+                          onClick={() => hasPastVendors ? setShowPastVendors(true) : null}
+                          disabled={!hasPastVendors}
+                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background: hasPastVendors ? "#fff" : "rgba(196,122,46,0.04)", color: hasPastVendors ? "#C47A2E" : "#C4A882", fontFamily:font, fontSize:12, fontWeight:700, cursor: hasPastVendors ? "pointer" : "default", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          <span>🔁 Past Vendors</span>
+                          {!hasPastVendors && <span style={{ fontSize:10, fontWeight:500 }}>No past vendors yet</span>}
+                        </button>
+                        {/* Browse Vendors */}
+                        <button
+                          onClick={() => navigate("/vendors")}
+                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", fontFamily:font, fontSize:12, fontWeight:700, cursor:"pointer", textAlign:"left" }}>
+                          🔍 Browse Vendors
+                        </button>
+                        {/* Plan Full Event */}
+                        <button
+                          onClick={() => navigate("/booking")}
+                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:12, fontWeight:700, cursor:"pointer", textAlign:"left" }}>
+                          🎯 Plan Full Event →
+                        </button>
+                      </div>
+                    )}
                   </div>
                 );
               })}
@@ -564,70 +593,48 @@ export default function CustomerDashboard() {
           )}
         </div>
 
-        {/* Vendor Panel Modal */}
-        {vendorPanelEvent && (
-          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:1000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}
-            onClick={() => setVendorPanelEvent(null)}>
-            <div onClick={e => e.stopPropagation()}
-              style={{ background:"#FFFCF5", borderRadius:"20px 20px 0 0", padding:"24px 20px 40px", width:"100%", maxWidth:640, maxHeight:"80vh", overflowY:"auto" }}>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
-                <div>
-                  <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>{vendorPanelEvent.occasion}{vendorPanelEvent.personName ? ` — ${vendorPanelEvent.personName}` : ""}</div>
-                  <div style={{ fontSize:12, color:"#9B7450", marginTop:2 }}>{daysUntil(vendorPanelEvent.date)} days away · {vendorPanelEvent.roughBudget || "Budget not set"}</div>
-                </div>
-                <button onClick={() => setVendorPanelEvent(null)} style={{ background:"none", border:"none", fontSize:22, color:"#9B7450", cursor:"pointer" }}>✕</button>
-              </div>
-
-              {/* Past vendors from completed plans */}
-              {(() => {
-                const pastVendorEntries = plans
-                  .filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0)
-                  .flatMap(p => Object.entries(p.finalisedVendors).map(([cat, v]) => ({ ...v, category:cat, fromEvent:p.eventType, planId:p._id })));
-                const unique = [...new Map(pastVendorEntries.map(v => [v._id||v, v])).values()];
-                return unique.length > 0 ? (
-                  <div style={{ marginBottom:20 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Vendors you&apos;ve used before</div>
-                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                      {unique.map((v, i) => (
-                        <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#FFF8EE", border:"1px solid rgba(196,122,46,0.2)", borderRadius:10, padding:"10px 14px", gap:10 }}>
-                          <div>
-                            <div style={{ fontSize:13, fontWeight:700, color:"#2C1A0E" }}>{v.name || "Vendor"}</div>
-                            <div style={{ fontSize:11, color:"#9B7450" }}>{v.category} · used for {v.fromEvent}</div>
-                          </div>
-                          <div style={{ display:"flex", gap:8, flexShrink:0 }}>
-                            <button onClick={() => navigate(`/vendors/${v._id}`)}
-                              style={{ fontSize:11, fontWeight:600, padding:"6px 12px", borderRadius:7, border:"1px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", cursor:"pointer", fontFamily:font }}>
-                              View
-                            </button>
-                            <button onClick={() => { setVendorPanelEvent(null); navigate(`/vendors/${v._id}?rebook=1`); }}
-                              style={{ fontSize:11, fontWeight:700, padding:"6px 12px", borderRadius:7, border:"none", background:"#C47A2E", color:"#fff", cursor:"pointer", fontFamily:font }}>
-                              Rebook
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+        {/* Past Vendors Modal — centered, responsive */}
+        {showPastVendors && (() => {
+          const allPastVendors = plans
+            .filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0)
+            .flatMap(p => Object.entries(p.finalisedVendors).map(([cat, v]) => ({ ...v, category:cat, fromEvent:p.eventType, planId:p._id })));
+          const unique = [...new Map(allPastVendors.map(v => [v._id||v.name, v])).values()];
+          return (
+            <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}
+              onClick={() => setShowPastVendors(false)}>
+              <div onClick={e => e.stopPropagation()}
+                style={{ background:"#FFFCF5", borderRadius:20, padding:"24px 20px", width:"100%", maxWidth:500, maxHeight:"85vh", overflowY:"auto", boxShadow:"0 20px 60px rgba(44,26,14,0.25)" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18 }}>
+                  <div>
+                    <div style={{ fontSize:17, fontWeight:800, color:"#2C1A0E" }}>Your Past Vendors</div>
+                    <div style={{ fontSize:12, color:"#9B7450", marginTop:2 }}>Everyone you&apos;ve worked with across all events</div>
                   </div>
-                ) : null;
-              })()}
-
-              {/* Browse new vendors */}
-              <div style={{ fontSize:12, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Explore new vendors</div>
-              <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
-                {["Decorator","Photographer","Caterer","Cake Artist","DJ","Anchor / Emcee"].map(cat => (
-                  <button key={cat} onClick={() => { setVendorPanelEvent(null); navigate(`/vendors?serviceType=${encodeURIComponent(cat)}`); }}
-                    style={{ fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:20, border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#2C1A0E", cursor:"pointer", fontFamily:font }}>
-                    {cat}
-                  </button>
-                ))}
+                  <button onClick={() => setShowPastVendors(false)} style={{ background:"none", border:"none", fontSize:22, color:"#9B7450", cursor:"pointer", flexShrink:0 }}>✕</button>
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+                  {unique.map((v, i) => (
+                    <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#FFF8EE", border:"1px solid rgba(196,122,46,0.2)", borderRadius:12, padding:"12px 14px", gap:12 }}>
+                      <div style={{ flex:1, minWidth:0 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.name || "Vendor"}</div>
+                        <div style={{ fontSize:11, color:"#9B7450", marginTop:2 }}>{v.category} · used for <strong>{v.fromEvent}</strong></div>
+                      </div>
+                      <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+                        <button onClick={() => { setShowPastVendors(false); navigate(`/vendor/${v._id}`); }}
+                          style={{ fontSize:11, fontWeight:600, padding:"7px 14px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}>
+                          View Profile
+                        </button>
+                        <button onClick={() => { setShowPastVendors(false); navigate(`/vendor/${v._id}?rebook=1`); }}
+                          style={{ fontSize:11, fontWeight:700, padding:"7px 14px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}>
+                          Rebook
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <button onClick={() => { setVendorPanelEvent(null); navigate("/booking"); }}
-                style={{ marginTop:16, width:"100%", padding:"12px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:14, fontWeight:800, cursor:"pointer" }}>
-                Start Planning This Event →
-              </button>
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Referral Card — only shown after user completes their first paid booking */}
         {user?._id && plans.some(p => p.paymentStatus === 'paid') && (() => {
