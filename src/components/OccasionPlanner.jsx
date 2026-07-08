@@ -277,7 +277,9 @@ const CSS = `
   .book-bwd { animation: book-bwd 0.38s cubic-bezier(0.25,0.8,0.25,1) forwards; }
 
   .op-scroll::-webkit-scrollbar { display:none; }
-  .op-scroll { scrollbar-width:none; }
+  .op-scroll { scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+
+  .pf-datetime { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
   .op-occ-card:hover  { transform:translateY(-5px) scale(1.03) !important; box-shadow:0 14px 40px rgba(0,0,0,0.5) !important; }
   .op-theme-card:hover{ background:rgba(245,236,216,0.07) !important; }
@@ -290,13 +292,14 @@ const CSS = `
     .op-picker-grid  { gap:7px !important; }
     .op-picker-card  { height:78px !important; }
     .op-2col-form    { grid-template-columns:1fr 1fr !important; }
-    .book-detail-panel{ border-radius:20px 20px 0 0 !important; max-height:95vh !important; margin-top:auto; }
+    .book-detail-panel{ border-radius:20px 20px 0 0 !important; max-height:96vh !important; margin-top:auto; }
     .book-detail-wrap { align-items:flex-end !important; padding:0 !important; }
     .book-detail-col  { grid-template-columns:1fr !important; }
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
     .book-hero-img    { height:190px !important; }
     .book-title       { font-size:1.7rem !important; }
     .op-theme-grid    { grid-template-columns:1fr !important; }
+    .pf-datetime      { grid-template-columns:1fr !important; }
   }
 `;
 
@@ -665,7 +668,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
               position: 'absolute', inset: 0, zIndex: 30,
               background: panelBg,
               display: 'flex', flexDirection: 'column',
-              padding: '22px 24px 32px',
+              padding: '22px 20px 52px',
               overflowY: 'auto',
             }}>
               <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none' }}>Back</button>
@@ -676,7 +679,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
                 {/* Date + Time row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <div className="pf-datetime">
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <span style={labelStyle}>Event Date</span>
                     <input type="date" value={pForm.date} onChange={e => setPForm(f => ({ ...f, date: e.target.value }))} style={inputStyle} />

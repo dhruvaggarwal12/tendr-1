@@ -1247,7 +1247,7 @@ const Home = () => {
           </div>
 
           {/* 4×2 grid — no scroll, no arrows */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "clamp(8px,1.5vw,16px)" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "clamp(14px,2.2vw,28px)" }}>
             {[
               { label: "Birthday",        photoM: "/occasions/birthday-mobile.png",        photoD: "/occasions/birthday-desktop.png" },
               { label: "Anniversary",     photoM: "/occasions/anniversary-mobile.png",     photoD: "/occasions/anniversary-desktop.png" },
@@ -1260,7 +1260,7 @@ const Home = () => {
             ].map(({ label, photoM, photoD }) => (
               <button key={label}
                 onClick={() => setPlannerOccasion(label)}
-                style={{ borderRadius: "clamp(10px,1.5vw,18px)", border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 2px 14px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", aspectRatio: "4/5" }}
+                style={{ borderRadius: "clamp(10px,1.5vw,18px)", border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 2px 14px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", aspectRatio: "1/1" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(0,0,0,0.15)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(0,0,0,0.08)"; }}
               >
