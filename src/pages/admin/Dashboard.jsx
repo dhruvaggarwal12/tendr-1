@@ -589,6 +589,9 @@ const AdminDashboard = () => {
   const [ghSampleFile, setGhSampleFile] = useState(null);
   const [ghSampleUploading, setGhSampleUploading] = useState(false);
   const [ghSampleMsg, setGhSampleMsg]   = useState("");
+  const [ghFindFile, setGhFindFile]     = useState(null);
+  const [ghFindLoading, setGhFindLoading] = useState(false);
+  const [ghFindResult, setGhFindResult] = useState(null); // { match, confidence } | null
   const [vendorStats, setVendorStats] = useState([]);
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [userList, setUserList] = useState([]);
@@ -4301,6 +4304,64 @@ const AdminDashboard = () => {
               <div style={{ marginTop: 32, background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: "20px 22px" }}>
                 <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>🖼️ Sample Gift Hamper Photos</div>
                 <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 18 }}>These photos appear on the Gift Hampers customer page as downloadable reference images.</div>
+
+                {/* ── Find Sample by Photo ── */}
+                <div style={{ marginBottom: 22, padding: "16px 18px", background: "#F0F9FF", borderRadius: 12, border: "1.5px solid rgba(59,130,246,0.25)" }}>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#1e40af", marginBottom: 4 }}>🔍 Find Sample by Photo</div>
+                  <div style={{ fontSize: 11, color: "#3b82f6", marginBottom: 12 }}>Upload a photo the customer sent — we'll match it to the saved sample and show you the vendor.</div>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                    <label style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 9, border: "1.5px solid rgba(59,130,246,0.35)", background: "#fff", cursor: "pointer", fontSize: 12, color: "#1e40af", fontFamily: "'Outfit',sans-serif", flexShrink: 0 }}>
+                      📎 {ghFindFile ? ghFindFile.name.slice(0, 24) + (ghFindFile.name.length > 24 ? "…" : "") : "Choose photo"}
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => { setGhFindFile(e.target.files?.[0] || null); setGhFindResult(null); }} />
+                    </label>
+                    <button
+                      disabled={!ghFindFile || ghFindLoading}
+                      onClick={async () => {
+                        if (!ghFindFile || ghFindLoading) return;
+                        setGhFindLoading(true); setGhFindResult(null);
+                        const fd = new FormData();
+                        fd.append("photo", ghFindFile);
+                        try {
+                          const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/find`, {
+                            method: "POST", headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include", body: fd,
+                          });
+                          const d = await r.json();
+                          setGhFindResult(d);
+                        } catch (e) { setGhFindResult({ error: e.message }); }
+                        finally { setGhFindLoading(false); }
+                      }}
+                      style={{ padding: "8px 18px", borderRadius: 9, border: "none", background: !ghFindFile || ghFindLoading ? "#e5e7eb" : "linear-gradient(135deg,#1e40af,#3b82f6)", color: !ghFindFile || ghFindLoading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: !ghFindFile || ghFindLoading ? "not-allowed" : "pointer", fontFamily: "'Outfit',sans-serif" }}
+                    >{ghFindLoading ? "Searching…" : "Find →"}</button>
+                  </div>
+
+                  {/* Result */}
+                  {ghFindResult && (
+                    <div style={{ marginTop: 14 }}>
+                      {ghFindResult.error ? (
+                        <div style={{ fontSize: 12, color: "#ef4444" }}>Error: {ghFindResult.error}</div>
+                      ) : !ghFindResult.match ? (
+                        <div style={{ fontSize: 12, color: "#6b7280", padding: "10px 14px", background: "#f9fafb", borderRadius: 8 }}>
+                          No confident match found (best distance: {ghFindResult.distance ?? "—"}/64). Photo may be a screenshot or not from our samples.
+                        </div>
+                      ) : (
+                        <div style={{ display: "flex", gap: 14, alignItems: "center", padding: "12px 14px", background: "#fff", borderRadius: 10, border: "1.5px solid rgba(21,128,61,0.3)" }}>
+                          <img src={ghFindResult.match.url} alt={ghFindResult.match.name || "Sample"} style={{ width: 64, height: 64, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
+                          <div>
+                            <div style={{ fontSize: 11, fontWeight: 800, color: "#15803d", marginBottom: 3 }}>
+                              {ghFindResult.confidence === "high" ? "✓ Match found" : "⚠ Possible match"}
+                            </div>
+                            {ghFindResult.match.name && <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{ghFindResult.match.name}</div>}
+                            {ghFindResult.match.vendorName && (
+                              <div style={{ fontSize: 12, color: "#7A5535", marginTop: 2 }}>Vendor: <strong>{ghFindResult.match.vendorName}</strong></div>
+                            )}
+                            <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 4 }}>Similarity: {Math.round((1 - ghFindResult.distance / 64) * 100)}%</div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
 
                 {/* Upload form */}
                 <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 18, padding: "14px 16px", background: "#FFFCF7", borderRadius: 12, border: "1.5px dashed rgba(196,122,46,0.3)" }}>
