@@ -9,6 +9,7 @@ import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { Button, Badge, EmptyState } from "../../components/ui";
 import { resetEventPlanning, setMultipleFormData, setBookingType, setCategoryBudgets } from "../../redux/eventPlanningSlice";
+import { setFinalisedVendor } from "../../redux/listingFiltersSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { useChatOverlay } from "../../context/ChatContext";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
@@ -161,6 +162,8 @@ export default function CustomerDashboard() {
   const [addingEvent, setAddingEvent]             = useState(false);
   const [newEvent, setNewEvent]                   = useState({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
   const [showPastVendors, setShowPastVendors]     = useState(false);
+  const [vendorQuickView, setVendorQuickView]     = useState(null); // full vendor object
+  const [vendorQvLoading, setVendorQvLoading]     = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -200,6 +203,17 @@ export default function CustomerDashboard() {
   const daysUntil = (dateStr) => {
     const diff = new Date(dateStr) - new Date(new Date().toISOString().slice(0,10));
     return Math.round(diff / 86_400_000);
+  };
+
+  const openVendorQV = async (vendorId) => {
+    setShowPastVendors(false);
+    setVendorQvLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/vendors/${vendorId}`, { credentials: 'include' });
+      const data = await res.json();
+      setVendorQuickView(data.vendor || data);
+    } catch {}
+    setVendorQvLoading(false);
   };
 
   const OCCASION_OPTIONS = ['Birthday','Anniversary','Baby Shower','House Party','Housewarming','Get Together','Kitty Party','Naming Ceremony','Farewell','College Fest','Office Party','Diwali','Holi','Raksha Bandhan','Other'];
@@ -618,16 +632,10 @@ export default function CustomerDashboard() {
                         <div style={{ fontSize:14, fontWeight:700, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.name || "Vendor"}</div>
                         <div style={{ fontSize:11, color:"#9B7450", marginTop:2 }}>{v.category} · used for <strong>{v.fromEvent}</strong></div>
                       </div>
-                      <div style={{ display:"flex", gap:8, flexShrink:0 }}>
-                        <button onClick={() => { setShowPastVendors(false); navigate(`/vendor/${v._id}`); }}
-                          style={{ fontSize:11, fontWeight:600, padding:"7px 14px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}>
-                          View Profile
-                        </button>
-                        <button onClick={() => { setShowPastVendors(false); navigate(`/vendor/${v._id}?rebook=1`); }}
-                          style={{ fontSize:11, fontWeight:700, padding:"7px 14px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}>
-                          Rebook
-                        </button>
-                      </div>
+                      <button onClick={() => openVendorQV(v._id)}
+                        style={{ fontSize:11, fontWeight:700, padding:"7px 14px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap", flexShrink:0 }}>
+                        View Profile →
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -635,6 +643,103 @@ export default function CustomerDashboard() {
             </div>
           );
         })()}
+
+        {/* Vendor Quick-View Panel — slides in from right */}
+        {(vendorQuickView || vendorQvLoading) && (
+          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:1100, display:"flex", alignItems:"stretch", justifyContent:"flex-end" }}
+            onClick={() => { setVendorQuickView(null); }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ background:"#FFFCF5", width:"100%", maxWidth:420, height:"100%", overflowY:"auto", boxShadow:"-8px 0 40px rgba(44,26,14,0.2)", display:"flex", flexDirection:"column" }}>
+
+              {vendorQvLoading ? (
+                <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450", fontSize:14 }}>Loading…</div>
+              ) : vendorQuickView && (() => {
+                const v = vendorQuickView;
+                const photo = v.portfolioPhotos?.[0] || v.coverPhoto || null;
+                const price = v.price || v.startingPrice;
+                return (
+                  <>
+                    {/* Header photo */}
+                    <div style={{ position:"relative", height:220, background:"#F0E8DC", flexShrink:0 }}>
+                      {photo
+                        ? <img src={photo} alt={v.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                        : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48 }}>📸</div>
+                      }
+                      <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(12,4,0,0.7) 0%, transparent 60%)", pointerEvents:"none" }} />
+                      <button onClick={() => setVendorQuickView(null)}
+                        style={{ position:"absolute", top:12, right:12, background:"rgba(0,0,0,0.45)", border:"none", borderRadius:"50%", width:34, height:34, color:"#fff", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+                      {v.isVerified && (
+                        <span style={{ position:"absolute", top:12, left:12, background:"rgba(196,122,46,0.9)", color:"#fff", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700 }}>✓ Verified</span>
+                      )}
+                    </div>
+
+                    {/* Vendor info */}
+                    <div style={{ padding:"18px 20px", flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+                      <div>
+                        <div style={{ fontSize:20, fontWeight:800, color:"#2C1A0E", lineHeight:1.2 }}>{v.name}</div>
+                        <div style={{ fontSize:13, color:"#9B7450", marginTop:4 }}>{v.serviceType}</div>
+                      </div>
+
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                        {price && (
+                          <span style={{ fontSize:12, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"4px 12px", border:"1px solid rgba(196,122,46,0.2)" }}>
+                            Starting from ₹{Number(price).toLocaleString("en-IN")}
+                          </span>
+                        )}
+                        {(v.city || v.address?.city || v.locations?.[0]) && (
+                          <span style={{ fontSize:12, color:"#9B7450", background:"rgba(196,122,46,0.05)", borderRadius:100, padding:"4px 12px", border:"1px solid rgba(196,122,46,0.12)" }}>
+                            📍 {v.city || v.address?.city || v.locations?.[0]}
+                          </span>
+                        )}
+                        {v.avgReviewScore > 0 && (
+                          <span style={{ fontSize:12, color:"#9B7450", background:"rgba(196,122,46,0.05)", borderRadius:100, padding:"4px 12px", border:"1px solid rgba(196,122,46,0.12)" }}>
+                            ⭐ {v.avgReviewScore.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+
+                      {v.description && (
+                        <p style={{ fontSize:13, color:"#5a3a1a", lineHeight:1.6, margin:0 }}>{v.description.slice(0,200)}{v.description.length > 200 ? "…" : ""}</p>
+                      )}
+
+                      {/* Portfolio thumbnails */}
+                      {v.portfolioPhotos?.length > 1 && (
+                        <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:4 }}>
+                          {v.portfolioPhotos.slice(0,5).map((p,i) => (
+                            <img key={i} src={p} alt="" style={{ width:72, height:54, objectFit:"cover", borderRadius:8, flexShrink:0 }} />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* CTA buttons */}
+                      <div style={{ marginTop:"auto", display:"flex", flexDirection:"column", gap:8, paddingTop:12 }}>
+                        <button
+                          onClick={() => { setVendorQuickView(null); openVendorChat(v); }}
+                          style={{ width:"100%", padding:"13px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:700, fontFamily:font, cursor:"pointer", boxShadow:"0 4px 14px rgba(196,122,46,0.3)" }}>
+                          💬 Chat with Vendor
+                        </button>
+                        <button
+                          onClick={() => {
+                            dispatch(setFinalisedVendor(v));
+                            setVendorQuickView(null);
+                            navigate("/booking/review");
+                          }}
+                          style={{ width:"100%", padding:"13px", borderRadius:12, border:"1.5px solid rgba(196,122,46,0.35)", background:"#fff", color:"#C47A2E", fontSize:15, fontWeight:700, fontFamily:font, cursor:"pointer" }}>
+                          ✅ Finalise Vendor
+                        </button>
+                        <button
+                          onClick={() => { setVendorQuickView(null); navigate(`/vendor/${v._id}`); }}
+                          style={{ width:"100%", padding:"11px", borderRadius:12, border:"1px solid rgba(196,122,46,0.2)", background:"transparent", color:"#9B7450", fontSize:13, fontWeight:600, fontFamily:font, cursor:"pointer" }}>
+                          View Full Profile →
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
 
         {/* Referral Card — only shown after user completes their first paid booking */}
         {user?._id && plans.some(p => p.paymentStatus === 'paid') && (() => {
