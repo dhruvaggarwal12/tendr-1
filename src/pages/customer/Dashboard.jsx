@@ -155,6 +155,57 @@ export default function CustomerDashboard() {
     }
   };
 
+  // ── Planned Events (My Upcoming Events) ──────────────────────────────────
+  const [plannedEvents, setPlannedEvents]         = useState([]);
+  const [showAddEvent, setShowAddEvent]           = useState(false);
+  const [addingEvent, setAddingEvent]             = useState(false);
+  const [newEvent, setNewEvent]                   = useState({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
+  const [vendorPanelEvent, setVendorPanelEvent]   = useState(null); // planned event whose panel is open
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/planned-events`, { headers:{ Authorization:`Bearer ${token}` }, credentials:'include' })
+      .then(r => r.ok ? r.json() : { events:[] })
+      .then(d => setPlannedEvents(Array.isArray(d.events) ? d.events : []))
+      .catch(() => {});
+  }, [token]);
+
+  const handleAddPlannedEvent = async () => {
+    if (!newEvent.occasion || !newEvent.date) return;
+    setAddingEvent(true);
+    try {
+      const res  = await fetch(`${BASE_URL}/planned-events`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+        credentials: 'include',
+        body: JSON.stringify(newEvent),
+      });
+      const data = await res.json();
+      if (data.event) {
+        setPlannedEvents(prev => [...prev, data.event].sort((a,b) => a.date.localeCompare(b.date)));
+        setNewEvent({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
+        setShowAddEvent(false);
+      }
+    } catch {}
+    setAddingEvent(false);
+  };
+
+  const handleDeletePlannedEvent = async (id) => {
+    setPlannedEvents(prev => prev.filter(e => e._id !== id));
+    await fetch(`${BASE_URL}/planned-events/${id}`, {
+      method:'DELETE', headers:{ Authorization:`Bearer ${token}` }, credentials:'include'
+    }).catch(() => {});
+  };
+
+  const daysUntil = (dateStr) => {
+    const diff = new Date(dateStr) - new Date(new Date().toISOString().slice(0,10));
+    return Math.round(diff / 86_400_000);
+  };
+
+  const OCCASION_OPTIONS = ['Birthday','Anniversary','Baby Shower','House Party','Housewarming','Get Together','Kitty Party','Naming Ceremony','Farewell','College Fest','Office Party','Diwali','Holi','Raksha Bandhan','Other'];
+
+  // ── End Planned Events state ──────────────────────────────────────────────
+
   const [activeTab, setActiveTab] = useState(() => {
     const tab = new URLSearchParams(location.search).get("tab");
     return TABS.includes(tab) ? tab : "All";
@@ -439,6 +490,159 @@ export default function CustomerDashboard() {
             </div>{/* end stats flex */}
           </div>{/* end right column */}
         </div>
+
+        {/* ── My Upcoming Events ─────────────────────────────────────────────── */}
+        <div style={{ background:"#FFFCF5", borderRadius:16, border:"1.5px solid rgba(196,122,46,0.15)", boxShadow:"0 2px 12px rgba(139,69,19,0.07)", padding:"18px 20px", marginBottom:20 }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14, flexWrap:"wrap", gap:8 }}>
+            <div>
+              <div style={{ fontSize:13, fontWeight:800, color:"#2C1A0E", letterSpacing:"-0.01em" }}>My Upcoming Events</div>
+              <div style={{ fontSize:11, color:"#9B7450", marginTop:2 }}>Save events to get vendor suggestions &amp; reminders at 30, 14 and 7 days before</div>
+            </div>
+            <button onClick={() => setShowAddEvent(v => !v)}
+              style={{ fontSize:12, fontWeight:700, color:"#fff", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", border:"none", borderRadius:8, padding:"8px 16px", cursor:"pointer", fontFamily:font }}>
+              {showAddEvent ? "Cancel" : "+ Add Event"}
+            </button>
+          </div>
+
+          {/* Add event form */}
+          {showAddEvent && (
+            <div style={{ background:"rgba(196,122,46,0.05)", borderRadius:10, border:"1px solid rgba(196,122,46,0.15)", padding:"14px 16px", marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:10 }}>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Occasion *</div>
+                  <select value={newEvent.occasion} onChange={e => setNewEvent(p => ({...p, occasion:e.target.value}))}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", background:"#fff", fontFamily:font, fontSize:13, color:"#2C1A0E" }}>
+                    <option value="">Select occasion</option>
+                    {OCCASION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Date *</div>
+                  <input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({...p, date:e.target.value}))}
+                    min={new Date().toISOString().slice(0,10)}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13, color:"#2C1A0E" }} />
+                </div>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>For whom</div>
+                  <input type="text" placeholder="e.g. Mom, Dad, Self" value={newEvent.personName} onChange={e => setNewEvent(p => ({...p, personName:e.target.value}))}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13 }} />
+                </div>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Guests</div>
+                  <input type="text" placeholder="e.g. 30" value={newEvent.guestCount} onChange={e => setNewEvent(p => ({...p, guestCount:e.target.value}))}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13 }} />
+                </div>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Rough Budget</div>
+                  <input type="text" placeholder="e.g. ₹15,000" value={newEvent.roughBudget} onChange={e => setNewEvent(p => ({...p, roughBudget:e.target.value}))}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13 }} />
+                </div>
+              </div>
+              <button onClick={handleAddPlannedEvent} disabled={addingEvent || !newEvent.occasion || !newEvent.date}
+                style={{ marginTop:12, padding:"9px 22px", borderRadius:9, border:"none", background:"#C47A2E", color:"#fff", fontFamily:font, fontSize:13, fontWeight:700, cursor:"pointer", opacity:(!newEvent.occasion||!newEvent.date)?0.5:1 }}>
+                {addingEvent ? "Saving..." : "Save Event"}
+              </button>
+            </div>
+          )}
+
+          {/* Event countdown cards */}
+          {plannedEvents.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"20px 0", color:"#9B7450", fontSize:12 }}>
+              No upcoming events saved yet. Add one to get reminders and vendor suggestions.
+            </div>
+          ) : (
+            <div style={{ display:"flex", flexWrap:"wrap", gap:10 }}>
+              {plannedEvents.map(ev => {
+                const days  = daysUntil(ev.date);
+                const past  = days < 0;
+                const urgent = days <= 7 && days >= 0;
+                return (
+                  <div key={ev._id} onClick={() => !past && setVendorPanelEvent(ev)}
+                    style={{ background: past ? "#f5f0ea" : urgent ? "linear-gradient(135deg,#FFF5E8,#FFF0D8)" : "#FFFDF8",
+                      border: `1.5px solid ${past?"#DDD3C4":urgent?"#C47A2E":"rgba(196,122,46,0.2)"}`,
+                      borderRadius:12, padding:"12px 14px", minWidth:160, flex:"0 0 auto", cursor:past?"default":"pointer",
+                      boxShadow: urgent?"0 2px 8px rgba(196,122,46,0.15)":"none", position:"relative" }}>
+                    <button onClick={e => { e.stopPropagation(); handleDeletePlannedEvent(ev._id); }}
+                      style={{ position:"absolute", top:6, right:8, background:"none", border:"none", color:"#CCC", fontSize:14, cursor:"pointer", padding:0, lineHeight:1 }}>✕</button>
+                    <div style={{ fontSize:11, fontWeight:700, color: urgent?"#C47A2E":"#9B7450", textTransform:"uppercase", letterSpacing:"0.07em", marginBottom:3 }}>
+                      {past ? "Past" : days === 0 ? "Today!" : `${days} day${days>1?"s":""} away`}
+                    </div>
+                    <div style={{ fontSize:14, fontWeight:800, color:"#2C1A0E", marginBottom:2 }}>{ev.occasion}</div>
+                    {ev.personName && <div style={{ fontSize:12, color:"#9B7450" }}>for {ev.personName}</div>}
+                    <div style={{ fontSize:11, color:"#B8A090", marginTop:4 }}>{new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+                    {ev.roughBudget && <div style={{ fontSize:11, color:"#B8A090" }}>{ev.roughBudget}</div>}
+                    {!past && <div style={{ fontSize:11, color:"#C47A2E", marginTop:6, fontWeight:600 }}>Tap for vendors →</div>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Vendor Panel Modal */}
+        {vendorPanelEvent && (
+          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:1000, display:"flex", alignItems:"flex-end", justifyContent:"center" }}
+            onClick={() => setVendorPanelEvent(null)}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ background:"#FFFCF5", borderRadius:"20px 20px 0 0", padding:"24px 20px 40px", width:"100%", maxWidth:640, maxHeight:"80vh", overflowY:"auto" }}>
+              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:16 }}>
+                <div>
+                  <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>{vendorPanelEvent.occasion}{vendorPanelEvent.personName ? ` — ${vendorPanelEvent.personName}` : ""}</div>
+                  <div style={{ fontSize:12, color:"#9B7450", marginTop:2 }}>{daysUntil(vendorPanelEvent.date)} days away · {vendorPanelEvent.roughBudget || "Budget not set"}</div>
+                </div>
+                <button onClick={() => setVendorPanelEvent(null)} style={{ background:"none", border:"none", fontSize:22, color:"#9B7450", cursor:"pointer" }}>✕</button>
+              </div>
+
+              {/* Past vendors from completed plans */}
+              {(() => {
+                const pastVendorEntries = plans
+                  .filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0)
+                  .flatMap(p => Object.entries(p.finalisedVendors).map(([cat, v]) => ({ ...v, category:cat, fromEvent:p.eventType, planId:p._id })));
+                const unique = [...new Map(pastVendorEntries.map(v => [v._id||v, v])).values()];
+                return unique.length > 0 ? (
+                  <div style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Vendors you&apos;ve used before</div>
+                    <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                      {unique.map((v, i) => (
+                        <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#FFF8EE", border:"1px solid rgba(196,122,46,0.2)", borderRadius:10, padding:"10px 14px", gap:10 }}>
+                          <div>
+                            <div style={{ fontSize:13, fontWeight:700, color:"#2C1A0E" }}>{v.name || "Vendor"}</div>
+                            <div style={{ fontSize:11, color:"#9B7450" }}>{v.category} · used for {v.fromEvent}</div>
+                          </div>
+                          <div style={{ display:"flex", gap:8, flexShrink:0 }}>
+                            <button onClick={() => navigate(`/vendors/${v._id}`)}
+                              style={{ fontSize:11, fontWeight:600, padding:"6px 12px", borderRadius:7, border:"1px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", cursor:"pointer", fontFamily:font }}>
+                              View
+                            </button>
+                            <button onClick={() => { setVendorPanelEvent(null); navigate(`/vendors/${v._id}?rebook=1`); }}
+                              style={{ fontSize:11, fontWeight:700, padding:"6px 12px", borderRadius:7, border:"none", background:"#C47A2E", color:"#fff", cursor:"pointer", fontFamily:font }}>
+                              Rebook
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+
+              {/* Browse new vendors */}
+              <div style={{ fontSize:12, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:10 }}>Explore new vendors</div>
+              <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                {["Decorator","Photographer","Caterer","Cake Artist","DJ","Anchor / Emcee"].map(cat => (
+                  <button key={cat} onClick={() => { setVendorPanelEvent(null); navigate(`/vendors?serviceType=${encodeURIComponent(cat)}`); }}
+                    style={{ fontSize:12, fontWeight:600, padding:"8px 14px", borderRadius:20, border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#2C1A0E", cursor:"pointer", fontFamily:font }}>
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => { setVendorPanelEvent(null); navigate("/booking"); }}
+                style={{ marginTop:16, width:"100%", padding:"12px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:14, fontWeight:800, cursor:"pointer" }}>
+                Start Planning This Event →
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Referral Card — only shown after user completes their first paid booking */}
         {user?._id && plans.some(p => p.paymentStatus === 'paid') && (() => {
