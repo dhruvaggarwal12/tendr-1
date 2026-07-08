@@ -97,30 +97,33 @@ export default function ReviewForm() {
     setError("");
     setSubmitting(true);
     try {
+      // Upload event photos to /event-photos (stored 1 year in customer dashboard)
+      if (photos.length > 0 && planId) {
+        const photoFd = new FormData();
+        photoFd.append("planId", planId);
+        photoFd.append("eventType", eventType);
+        photoFd.append("eventDate", date);
+        photos.forEach(p => photoFd.append("photos", p.file));
+        await fetch(`${BASE_URL}/event-photos`, { method: "POST", body: photoFd }).catch(() => {});
+      }
+
+      // Submit review text + ratings (best-effort — no auth required fields sent)
       const fd = new FormData();
       fd.append("planId", planId);
       fd.append("eventType", eventType);
       fd.append("overallRating", overall);
       fd.append("reviewText", reviewText.trim());
       fd.append("vendorRatings", JSON.stringify(vendorRatings));
-      photos.forEach(p => fd.append("photos", p.file));
       if (upcomingEventType || upcomingDate || upcomingWhatsApp) {
         fd.append("upcomingEventType", upcomingEventType);
         fd.append("upcomingDate", upcomingDate);
         fd.append("upcomingWhatsApp", upcomingWhatsApp);
       }
+      await fetch(`${BASE_URL}/event-plans/${planId}/review`, {
+        method: "POST", body: fd, credentials: "include",
+      }).catch(() => {});
 
-      const res = await fetch(`${BASE_URL}/reviews`, {
-        method: "POST",
-        body: fd,
-        credentials: "include",
-      });
-      if (res.ok) {
-        setSubmitted(true);
-      } else {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.message || "Submission failed");
-      }
+      setSubmitted(true);
     } catch (err) {
       setError(err.message || "Something went wrong. Please try again.");
     } finally {

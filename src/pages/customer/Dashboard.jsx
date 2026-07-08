@@ -156,6 +156,18 @@ export default function CustomerDashboard() {
     }
   };
 
+  // ── Past Event Photos ────────────────────────────────────────────────────
+  const [eventPhotoAlbums, setEventPhotoAlbums]   = useState([]);
+  const [photoAlbumOpen, setPhotoAlbumOpen]       = useState(null); // album _id
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/event-photos/mine`, { headers:{ Authorization:`Bearer ${token}` }, credentials:'include' })
+      .then(r => r.ok ? r.json() : { albums:[] })
+      .then(d => setEventPhotoAlbums(Array.isArray(d.albums) ? d.albums : []))
+      .catch(() => {});
+  }, [token]);
+
   // ── Planned Events (My Upcoming Events) ──────────────────────────────────
   const [plannedEvents, setPlannedEvents]         = useState([]);
   const [showAddEvent, setShowAddEvent]           = useState(false);
@@ -1559,6 +1571,49 @@ export default function CustomerDashboard() {
           ))}
         </div>
       </div>
+
+      {/* ── Past Event Photos ── */}
+      {eventPhotoAlbums.length > 0 && (
+        <div style={{ maxWidth:900, margin:"0 auto", padding:"0 16px 32px", fontFamily:font }}>
+          <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E", marginBottom:14 }}>📸 Your Past Event Photos</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+            {eventPhotoAlbums.map(album => {
+              const isOpen = photoAlbumOpen === album._id;
+              const expires = new Date(album.expiresAt);
+              const daysLeft = Math.ceil((expires - Date.now()) / (1000 * 60 * 60 * 24));
+              return (
+                <div key={album._id} style={{ background:"#fff", borderRadius:14, border:"1.5px solid rgba(196,122,46,0.18)", overflow:"hidden" }}>
+                  {/* Album header */}
+                  <div
+                    onClick={() => setPhotoAlbumOpen(isOpen ? null : album._id)}
+                    style={{ padding:"12px 16px", display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer" }}
+                  >
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:800, color:"#2C1A0E" }}>
+                        {album.eventType || "Event"}{album.eventDate ? ` · ${album.eventDate}` : ""}
+                      </div>
+                      <div style={{ fontSize:11, color:"#9B7450", marginTop:2 }}>
+                        {album.photos.length} photo{album.photos.length !== 1 ? "s" : ""} · available for {daysLeft} more day{daysLeft !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+                    <span style={{ fontSize:13, color:"#C47A2E", fontWeight:700 }}>{isOpen ? "▲ Hide" : "▼ View"}</span>
+                  </div>
+                  {/* Photo grid */}
+                  {isOpen && (
+                    <div style={{ padding:"0 14px 14px", display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))", gap:8 }}>
+                      {album.photos.map((p, i) => (
+                        <a key={i} href={p.url} target="_blank" rel="noopener noreferrer" style={{ display:"block" }}>
+                          <img src={p.url} alt={`Event photo ${i+1}`} style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", borderRadius:8, display:"block" }} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>
