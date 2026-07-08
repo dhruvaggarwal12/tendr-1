@@ -359,10 +359,10 @@ function PageDots({ current, total, color }) {
   );
 }
 
-function NavRow({ onBack, onNext, nextLabel = 'Next →', color }) {
+function NavRow({ onBack, onNext, nextLabel = 'Next', color }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
-      <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif" }}>← Back</button>
+      <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
       {onNext && (
         <button onClick={onNext} style={{ padding: '12px 30px', borderRadius: 100, background: color || FALLBACK_COLOR, color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 4px 14px ${color||FALLBACK_COLOR}44` }}>
           {nextLabel}
@@ -490,7 +490,7 @@ function BookPage2({ theme, color }) {
   );
 }
 
-function BookPage3({ theme, color, onClose }) {
+function BookPage3({ theme, color, galleryUrls = [], downloadPhoto, onProceedNow, onBrowseOtherThemes }) {
   return (
     <div style={{ paddingTop: 8 }}>
       <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
@@ -528,7 +528,7 @@ function BookPage3({ theme, color, onClose }) {
                 <img src={url} alt="" loading="lazy"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 <button className="dl-btn"
-                  onClick={() => downloadPhoto(url, i)}
+                  onClick={() => downloadPhoto && downloadPhoto(url, i)}
                   style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: 6, padding: '4px 8px', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: 0, transition: 'opacity 0.18s', fontFamily: "'Outfit',sans-serif", backdropFilter: 'blur(4px)' }}>
                   ↓ Save
                 </button>
@@ -540,18 +540,18 @@ function BookPage3({ theme, color, onClose }) {
 
       {/* CTAs */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 18, borderTop: `1px solid ${color}18` }}>
-        <button onClick={openBaatKaro} style={{
+        <button onClick={onProceedNow} style={{
           flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
           background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
           color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer',
           fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
-        }}>💬 Baat Karo</button>
-        <button onClick={onClose} style={{
+        }}>Proceed Now</button>
+        <button onClick={onBrowseOtherThemes} style={{
           flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
           background: 'rgba(245,236,216,0.05)', color: 'rgba(245,236,216,0.52)',
           border: '1px solid rgba(245,236,216,0.12)', fontSize: 14, cursor: 'pointer',
           fontFamily: "'Outfit',sans-serif",
-        }}>Browse Themes</button>
+        }}>Browse Other Themes</button>
       </div>
     </div>
   );
@@ -559,15 +559,26 @@ function BookPage3({ theme, color, onClose }) {
 
 // ── Book Detail modal (3-page carousel) ──────────────────────────────────
 
-function BookDetail({ theme, occasion, onClose }) {
-  const [pg, setPg]         = useState(0);
-  const [animDir, setAnimDir] = useState(null);
+function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
+  const [pg, setPg]               = useState(0);
+  const [animDir, setAnimDir]     = useState(null);
   const [galleryUrls, setGalleryUrls] = useState([]);
+  const [proceedFormOpen, setProceedFormOpen] = useState(false);
+  const [pForm, setPForm]         = useState({ date: '', guests: '', location: '', notes: '' });
   const navigate = useNavigate();
 
-  const openBaatKaro = () => {
-    const msg = `Hi! I'm interested in planning a ${occasion} with the "${theme.theme}" theme. Can you help me with the decor, vendor suggestions, and planning? Looking forward to discussing!`;
-    try { sessionStorage.setItem('baat_karo_draft', msg); } catch {}
+  const color = themeAccentColor(theme.id);
+
+  const handleProceed = () => {
+    const parts = [
+      `Hi! I'm planning a ${occasion} with the "${theme.theme}" theme.`,
+      pForm.date     ? `📅 Date: ${pForm.date}` : null,
+      pForm.guests   ? `👥 Guests: ${pForm.guests}` : null,
+      pForm.location ? `📍 Location: ${pForm.location}` : null,
+      pForm.notes    ? `📝 Notes: ${pForm.notes}` : null,
+      `\nCan you help with decor, vendor suggestions, and planning?`,
+    ].filter(Boolean).join('\n');
+    try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
     onClose();
     navigate('/baat-karo');
   };
@@ -584,7 +595,6 @@ function BookDetail({ theme, occasion, onClose }) {
     } catch {}
   };
 
-  const color = themeAccentColor(theme.id);
   const photo = useUnsplashPhoto(theme.id, theme.theme, occasion, getThemePhoto(theme, occasion));
 
   useEffect(() => {
@@ -609,6 +619,15 @@ function BookDetail({ theme, occasion, onClose }) {
   };
 
   const pageAnimClass = animDir ? `book-${animDir}` : '';
+  const panelBg = (() => { const b = OCC_BG[occasion] || ['#1C0A04','#130600']; return `linear-gradient(160deg, ${b[0]} 0%, ${b[1]} 100%)`; })();
+  const headerBg = (OCC_BG[occasion] || ['#1C0A04'])[0];
+
+  const inputStyle = {
+    padding: '12px 16px', borderRadius: 12,
+    background: 'rgba(245,236,216,0.05)', border: `1.5px solid ${color}35`,
+    color: '#F5ECD8', fontSize: 15, fontFamily: "'Outfit',sans-serif", outline: 'none', width: '100%', boxSizing: 'border-box',
+  };
+  const labelStyle = { fontSize: 11, fontWeight: 700, color: 'rgba(245,236,216,0.48)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" };
 
   return (
     <div onClick={onClose} style={{
@@ -620,17 +639,60 @@ function BookDetail({ theme, occasion, onClose }) {
       <div className="book-detail-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '100%' }}>
         <div className="book-detail-panel" onClick={e => e.stopPropagation()} style={{
           width: '100%', maxWidth: 680, maxHeight: '92vh',
-          display: 'flex', flexDirection: 'column',
-          background: (() => { const b = OCC_BG[occasion] || ['#1C0A04','#130600']; return `linear-gradient(160deg, ${b[0]} 0%, ${b[1]} 100%)`; })(),
+          display: 'flex', flexDirection: 'column', position: 'relative',
+          background: panelBg,
           border: `1px solid ${color}40`,
           borderRadius: 26, overflow: 'hidden',
           boxShadow: `0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px ${color}18`,
         }}>
 
+          {/* Proceed Now form overlay */}
+          {proceedFormOpen && (
+            <div className="op-scroll" style={{
+              position: 'absolute', inset: 0, zIndex: 30,
+              background: panelBg,
+              display: 'flex', flexDirection: 'column',
+              padding: '22px 24px 32px',
+              overflowY: 'auto',
+            }}>
+              <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none' }}>Back</button>
+              <p style={{ fontSize: 10, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 6px', fontFamily: "'Outfit',sans-serif" }}>Let's Plan</p>
+              <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 6px' }}>{theme.theme}</h2>
+              <p style={{ fontSize: 14, color: 'rgba(245,236,216,0.58)', margin: '0 0 24px', fontFamily: "'Outfit',sans-serif" }}>Share a few details so we can curate the perfect plan for you.</p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={labelStyle}>Event Date</span>
+                  <input type="date" value={pForm.date} onChange={e => setPForm(f => ({ ...f, date: e.target.value }))} style={inputStyle} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={labelStyle}>How Many Guests?</span>
+                  <input type="number" min="1" placeholder="e.g. 50" value={pForm.guests} onChange={e => setPForm(f => ({ ...f, guests: e.target.value }))} style={inputStyle} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={labelStyle}>City / Location</span>
+                  <input type="text" placeholder="e.g. Mumbai" value={pForm.location} onChange={e => setPForm(f => ({ ...f, location: e.target.value }))} style={inputStyle} />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <span style={labelStyle}>Anything Special? <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(optional)</span></span>
+                  <textarea rows={3} placeholder="e.g. outdoor setup, vegan menu, specific colours..." value={pForm.notes} onChange={e => setPForm(f => ({ ...f, notes: e.target.value }))}
+                    style={{ ...inputStyle, resize: 'vertical', minHeight: 76 }} />
+                </label>
+              </div>
+
+              <button onClick={handleProceed} style={{
+                marginTop: 24, padding: '14px 24px', borderRadius: 100,
+                background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
+                color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
+              }}>Send to Baat Karo</button>
+            </div>
+          )}
+
           {/* Header — always visible */}
           <div style={{
             flexShrink: 0, zIndex: 20,
-            background: (OCC_BG[occasion] || ['#1C0A04'])[0],
+            background: headerBg,
             padding: '14px 20px 6px',
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           }}>
@@ -651,7 +713,7 @@ function BookDetail({ theme, occasion, onClose }) {
             <div key={pg} className={pageAnimClass} style={{ padding: '0 24px 8px' }}>
               {pg === 0 && <BookPage1 theme={theme} occasion={occasion} photo={photo} color={color} />}
               {pg === 1 && <BookPage2 theme={theme} color={color} />}
-              {pg === 2 && <BookPage3 theme={theme} color={color} onClose={onClose} />}
+              {pg === 2 && <BookPage3 theme={theme} color={color} galleryUrls={galleryUrls} downloadPhoto={downloadPhoto} onProceedNow={() => setProceedFormOpen(true)} onBrowseOtherThemes={onBrowseOtherThemes} />}
             </div>
           </div>
 
@@ -660,15 +722,16 @@ function BookDetail({ theme, occasion, onClose }) {
             flexShrink: 0,
             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             padding: '10px 24px 26px',
-            background: (OCC_BG[occasion] || ['#1C0A04'])[0],
+            background: headerBg,
             borderTop: `1px solid ${color}14`,
           }}>
             <button onClick={() => goPage(-1)} disabled={pg === 0} style={{
-              background: 'none', border: 'none', cursor: pg === 0 ? 'not-allowed' : 'pointer',
+              background: 'transparent', border: 'none', cursor: pg === 0 ? 'not-allowed' : 'pointer',
               color: pg === 0 ? 'rgba(245,236,216,0.18)' : 'rgba(245,236,216,0.48)',
               fontSize: 13, padding: '8px 0', fontFamily: "'Outfit',sans-serif",
+              WebkitAppearance: 'none', appearance: 'none', outline: 'none',
               display: 'flex', alignItems: 'center', gap: 5,
-            }}>← Previous</button>
+            }}>Previous</button>
 
             <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.28)', fontFamily: "'Outfit',sans-serif" }}>{pg + 1} / 3</span>
 
@@ -678,7 +741,7 @@ function BookDetail({ theme, occasion, onClose }) {
                 background: `linear-gradient(135deg, ${color}, ${darken(color,20)})`,
                 color: '#fff', border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer',
                 fontFamily: "'Outfit',sans-serif",
-              }}>Next →</button>
+              }}>Next</button>
             ) : (
               <span style={{ fontSize: 10, color: `${color}88`, fontFamily: "'Outfit',sans-serif" }}>Last page</span>
             )}
@@ -729,6 +792,7 @@ function ThemeCard({ theme, occasion, onExpand, occColor }) {
 
 export default function OccasionPlanner({ initialOccasion, onClose }) {
   const fromCard = !!initialOccasion;
+  const navigate = useNavigate();
 
   const [step,      setStep]      = useState(fromCard ? 1 : 0);
   const [occasion,  setOccasion]  = useState(initialOccasion || null);
@@ -760,6 +824,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   const goNext = (n) => setStep(s => n !== undefined ? n : s + 1);
   const goBack = () => {
     setShowAll(false);
+    if (step === 0.5) { setStep(0); return; }
     if (step === 1 && fromCard) { onClose(); return; }
     setStep(s => s - 1);
   };
@@ -841,7 +906,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   <p style={subStyle}>Choose your celebration to get started</p>
                   <div className="op-picker-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10 }}>
                     {OCCASIONS_LIST.map(({ label, photo }) => (
-                      <button key={label} className="op-occ-card op-picker-card" onClick={() => { setOccasion(label); goNext(1); }}
+                      <button key={label} className="op-occ-card op-picker-card" onClick={() => { setOccasion(label); goNext(0.5); }}
                         style={{
                           position: 'relative', height: 94, borderRadius: 14,
                           overflow: 'hidden', border: '1.5px solid rgba(245,236,216,0.07)',
@@ -858,6 +923,34 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         </div>
                       </button>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Step 0.5 — Plan with / without theme */}
+              {step === 0.5 && (
+                <div>
+                  <button onClick={() => setStep(0)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
+                  <p style={{ fontSize: 10, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Plan your {occasion}</p>
+                  <h2 style={h2Style}>How would you like to plan?</h2>
+                  <p style={subStyle}>Choose your planning style</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                    <button onClick={() => goNext(1)} style={{
+                      padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+                      border: `1.5px solid ${occColor}55`, background: `${occColor}10`,
+                      transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+                    }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#F5ECD8', marginBottom: 5 }}>🎨 Plan with Theme</div>
+                      <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.72)' }}>Browse curated themes and get tailored vendor suggestions for your event</div>
+                    </button>
+                    <button onClick={() => { onClose(); navigate('/booking'); }} style={{
+                      padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
+                      border: '1.5px solid rgba(245,236,216,0.14)', background: 'rgba(245,236,216,0.04)',
+                      transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+                    }}>
+                      <div style={{ fontSize: 16, fontWeight: 700, color: '#F5ECD8', marginBottom: 5 }}>⚡ Plan without Theme</div>
+                      <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.72)' }}>Jump straight to planning — browse vendors, get quotes, and finalise</div>
+                    </button>
                   </div>
                 </div>
               )}
@@ -914,7 +1007,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       }}>{g}</button>
                     ))}
                   </div>
-                  <NavRow onBack={goBack} onNext={guests ? () => goNext() : null} nextLabel="Continue →" color={occColor} />
+                  <NavRow onBack={goBack} onNext={guests ? () => goNext() : null} nextLabel="Continue" color={occColor} />
                 </div>
               )}
 
@@ -952,7 +1045,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       </button>
                     ))}
                   </div>
-                  <NavRow onBack={goBack} onNext={timeOfDay ? () => goNext(5) : null} nextLabel="See themes →" color={occColor} />
+                  <NavRow onBack={goBack} onNext={timeOfDay ? () => goNext(5) : null} nextLabel="See themes" color={occColor} />
                 </div>
               )}
 
@@ -1027,6 +1120,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
           theme={expandedTheme}
           occasion={occasion}
           onClose={() => setExpandedTheme(null)}
+          onBrowseOtherThemes={() => { setExpandedTheme(null); setShowAll(true); }}
         />
       )}
     </>
