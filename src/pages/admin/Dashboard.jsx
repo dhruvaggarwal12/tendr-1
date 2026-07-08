@@ -588,6 +588,7 @@ const AdminDashboard = () => {
   const [ghSamples, setGhSamples]       = useState([]);
   const [ghSampleName, setGhSampleName] = useState("");
   const [ghSampleVendor, setGhSampleVendor] = useState("");
+  const [ghSamplesVendorFilter, setGhSamplesVendorFilter] = useState("");
   const [ghSampleFile, setGhSampleFile] = useState(null);
   const [ghSampleUploading, setGhSampleUploading] = useState(false);
   const [ghSampleMsg, setGhSampleMsg]   = useState("");
@@ -4437,35 +4438,55 @@ const AdminDashboard = () => {
                 </div>
 
                 {/* Samples grid */}
-                {ghSamples.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", fontSize: 13, background: "#faf7f2", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.2)" }}>
-                    No sample photos uploaded yet. Add some above and they'll appear on the customer page.
-                  </div>
-                ) : (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
-                    {ghSamples.map(s => (
-                      <div key={s._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.18)", background: "#faf5ee" }}>
-                        <img src={s.url} alt={s.name || "Sample"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
-                        {(s.name || s.vendorName) && (
-                          <div style={{ padding: "6px 8px 7px" }}>
-                            {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
-                            {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 2 }}>by {s.vendorName}</div>}
-                          </div>
-                        )}
-                        <button
-                          onClick={async () => {
-                            if (!window.confirm(`Remove "${s.name || "this photo"}"?`)) return;
-                            const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/${s._id}`, {
-                              method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                            });
-                            if (r.ok) setGhSamples(prev => prev.filter(x => x._id !== s._id));
-                          }}
-                          style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                        >✕</button>
+                {(() => {
+                  const vendors = ["All", ...Array.from(new Set(ghSamples.map(s => s.vendorName).filter(Boolean)))];
+                  const vendorFilter = ghSamplesVendorFilter || "All";
+                  const visible = vendorFilter === "All" ? ghSamples : ghSamples.filter(s => s.vendorName === vendorFilter);
+                  return ghSamples.length === 0 ? (
+                    <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", fontSize: 13, background: "#faf7f2", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.2)" }}>
+                      No sample photos uploaded yet. Add some above and they'll appear on the customer page.
+                    </div>
+                  ) : (
+                    <>
+                      {/* Vendor filter chips */}
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                        {vendors.map(v => (
+                          <button
+                            key={v}
+                            onClick={() => setGhSamplesVendorFilter(v === "All" ? "" : v)}
+                            style={{ padding: "4px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, border: `1.5px solid ${vendorFilter === v ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: vendorFilter === v ? "#C47A2E" : "#fff", color: vendorFilter === v ? "#fff" : "#7A5535", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
+                          >
+                            {v}{v !== "All" && <span style={{ opacity: 0.7, marginLeft: 4 }}>({ghSamples.filter(s => s.vendorName === v).length})</span>}
+                          </button>
+                        ))}
+                        <span style={{ fontSize: 11, color: "#9B7450", alignSelf: "center", marginLeft: 4 }}>{visible.length} photo{visible.length !== 1 ? "s" : ""}</span>
                       </div>
-                    ))}
-                  </div>
-                )}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
+                        {visible.map(s => (
+                          <div key={s._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.18)", background: "#faf5ee" }}>
+                            <img src={s.url} alt={s.name || "Sample"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                            {(s.name || s.vendorName) && (
+                              <div style={{ padding: "6px 8px 7px" }}>
+                                {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
+                                {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 2 }}>by {s.vendorName}</div>}
+                              </div>
+                            )}
+                            <button
+                              onClick={async () => {
+                                if (!window.confirm(`Remove "${s.name || "this photo"}"?`)) return;
+                                const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/${s._id}`, {
+                                  method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                                });
+                                if (r.ok) setGhSamples(prev => prev.filter(x => x._id !== s._id));
+                              }}
+                              style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                            >✕</button>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
 
             </div>
