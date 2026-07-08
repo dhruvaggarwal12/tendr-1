@@ -587,6 +587,7 @@ const AdminDashboard = () => {
   const [ghSaving, setGhSaving]         = useState(false);
   const [ghSamples, setGhSamples]       = useState([]);
   const [ghSampleName, setGhSampleName] = useState("");
+  const [ghSampleVendor, setGhSampleVendor] = useState("");
   const [ghSampleFile, setGhSampleFile] = useState(null);
   const [ghSampleUploading, setGhSampleUploading] = useState(false);
   const [ghSampleMsg, setGhSampleMsg]   = useState("");
@@ -4380,7 +4381,7 @@ const AdminDashboard = () => {
 
                 {/* Upload form */}
                 <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 18, padding: "14px 16px", background: "#FFFCF7", borderRadius: 12, border: "1.5px dashed rgba(196,122,46,0.3)" }}>
-                  <div style={{ flex: "1 1 180px" }}>
+                  <div style={{ flex: "1 1 160px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo Name</div>
                     <input
                       type="text"
@@ -4391,6 +4392,16 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div style={{ flex: "1 1 160px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Vendor Name</div>
+                    <input
+                      type="text"
+                      placeholder="e.g. Sharma Gift House"
+                      value={ghSampleVendor}
+                      onChange={e => setGhSampleVendor(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <div style={{ flex: "1 1 140px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo File</div>
                     <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 12, color: "#7A5535", fontFamily: "'Outfit',sans-serif" }}>
                       📷 {ghSampleFile ? ghSampleFile.name.slice(0, 22) + (ghSampleFile.name.length > 22 ? "…" : "") : "Choose image"}
@@ -4405,6 +4416,7 @@ const AdminDashboard = () => {
                       const fd = new FormData();
                       fd.append("photo", ghSampleFile);
                       fd.append("name", ghSampleName.trim());
+                      fd.append("vendorName", ghSampleVendor.trim());
                       try {
                         const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples`, {
                           method: "POST", headers: { Authorization: `Bearer ${token}` },
@@ -4413,7 +4425,7 @@ const AdminDashboard = () => {
                         const d = await r.json();
                         if (d.success) {
                           setGhSamples(prev => [d.sample, ...prev]);
-                          setGhSampleFile(null); setGhSampleName("");
+                          setGhSampleFile(null); setGhSampleName(""); setGhSampleVendor("");
                           setGhSampleMsg("Uploaded!");
                         } else { setGhSampleMsg(d.error || "Upload failed."); }
                       } catch (e) { setGhSampleMsg(e.message); }
@@ -4434,7 +4446,12 @@ const AdminDashboard = () => {
                     {ghSamples.map(s => (
                       <div key={s._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.18)", background: "#faf5ee" }}>
                         <img src={s.url} alt={s.name || "Sample"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
-                        {s.name && <div style={{ padding: "6px 8px", fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
+                        {(s.name || s.vendorName) && (
+                          <div style={{ padding: "6px 8px 7px" }}>
+                            {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
+                            {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 2 }}>by {s.vendorName}</div>}
+                          </div>
+                        )}
                         <button
                           onClick={async () => {
                             if (!window.confirm(`Remove "${s.name || "this photo"}"?`)) return;

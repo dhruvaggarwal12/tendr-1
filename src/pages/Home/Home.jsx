@@ -340,6 +340,7 @@ const Home = () => {
   const [heroFading, setHeroFading] = useState(false);
   const [galleryByCategory, setGalleryByCategory] = useState({});
   const [galleryLoaded, setGalleryLoaded] = useState(false);
+  const [ghSamplePhotos, setGhSamplePhotos] = useState([]);
   const [glimpseCounter, setGlimpseCounter] = useState(0);
   const [featureIdx, setFeatureIdx]   = useState(0);
   const [featureVisible, setFeatureVisible] = useState(true);
@@ -385,10 +386,10 @@ const Home = () => {
     }, 420);
   };
 
-  // Build hero slideshow from gallery photos only — no static fallback
+  // Build hero slideshow from gallery photos + gift hamper samples
   const heroPhotos = (() => {
     const allPhotos = Object.values(galleryByCategory).flat().filter(p => p.imageUrl);
-    return allPhotos.map(p => ({ url: p.imageUrl, label: p.category }));
+    return [...allPhotos.map(p => ({ url: p.imageUrl, label: p.category })), ...ghSamplePhotos];
   })();
 
   const heroNext = () => goToSlide((heroIndex + 1) % heroPhotos.length);
@@ -475,6 +476,13 @@ const Home = () => {
         });
     };
     fetchGallery();
+  }, []);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/admin/gift-hamper-samples`)
+      .then(r => r.ok ? r.json() : { samples: [] })
+      .then(d => { if (d.samples?.length) setGhSamplePhotos(d.samples.map(s => ({ url: s.url, label: s.name || "Gift Hamper" }))); })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
