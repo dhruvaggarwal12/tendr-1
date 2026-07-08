@@ -19,19 +19,6 @@ const GiftHampersCakes = () => {
       .catch(() => setLoading(false));
   }, []);
 
-  const downloadPhoto = async (url, name) => {
-    try {
-      const res = await fetch(url);
-      const blob = await res.blob();
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${name || "gift-hamper"}.jpg`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-    } catch {
-      window.open(url, "_blank");
-    }
-  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
@@ -112,18 +99,13 @@ const GiftHampersCakes = () => {
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 14 }}>
               {samples.map(s => (
-                <div key={s._id} style={{ borderRadius: 14, overflow: "hidden", background: "#fff", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(44,26,14,0.07)", display: "flex", flexDirection: "column" }}>
-                  <img src={s.url} alt={s.name || "Gift Hamper"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
-                  <div style={{ padding: "10px 12px 12px", display: "flex", flexDirection: "column", gap: 6, flex: 1 }}>
-                    {s.name && <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
-                    {s.vendorName && <div style={{ fontSize: 11, color: "#9B7450" }}>by {s.vendorName}</div>}
-                    <button
-                      onClick={() => downloadPhoto(s.url, s.name)}
-                      style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", fontFamily: font, marginTop: "auto", width: "fit-content" }}
-                    >
-                      ⬇ Download
-                    </button>
-                  </div>
+                <div key={s._id} style={{ borderRadius: 14, overflow: "hidden", background: "#fff", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(44,26,14,0.07)" }}>
+                  <img src={s.url} alt="Gift Hamper" style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                  {s.priceRange && (
+                    <div style={{ padding: "8px 12px", fontSize: 13, fontWeight: 700, color: "#C47A2E", fontFamily: font }}>
+                      {s.priceRange}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

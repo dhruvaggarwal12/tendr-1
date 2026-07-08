@@ -589,9 +589,10 @@ const AdminDashboard = () => {
   const [ghSampleName, setGhSampleName] = useState("");
   const [ghSampleVendor, setGhSampleVendor] = useState("");
   const [ghSamplesVendorFilter, setGhSamplesVendorFilter] = useState("");
-  const [ghSampleFile, setGhSampleFile] = useState(null);
+  const [ghSampleFile, setGhSampleFile]       = useState(null);
+  const [ghSamplePriceRange, setGhSamplePriceRange] = useState("");
   const [ghSampleUploading, setGhSampleUploading] = useState(false);
-  const [ghSampleMsg, setGhSampleMsg]   = useState("");
+  const [ghSampleMsg, setGhSampleMsg]         = useState("");
   const [ghFindFile, setGhFindFile]     = useState(null);
   const [ghFindLoading, setGhFindLoading] = useState(false);
   const [ghFindResult, setGhFindResult] = useState(null); // { match, confidence } | null
@@ -4464,6 +4465,16 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div style={{ flex: "1 1 140px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Price Range</div>
+                    <input
+                      type="text"
+                      placeholder="e.g. ₹500 – ₹1,500"
+                      value={ghSamplePriceRange}
+                      onChange={e => setGhSamplePriceRange(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <div style={{ flex: "1 1 140px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo File</div>
                     <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 12, color: "#7A5535", fontFamily: "'Outfit',sans-serif" }}>
                       📷 {ghSampleFile ? ghSampleFile.name.slice(0, 22) + (ghSampleFile.name.length > 22 ? "…" : "") : "Choose image"}
@@ -4479,6 +4490,7 @@ const AdminDashboard = () => {
                       fd.append("photo", ghSampleFile);
                       fd.append("name", ghSampleName.trim());
                       fd.append("vendorName", ghSampleVendor.trim());
+                      fd.append("priceRange", ghSamplePriceRange.trim());
                       try {
                         const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples`, {
                           method: "POST", headers: { Authorization: `Bearer ${token}` },
@@ -4487,7 +4499,7 @@ const AdminDashboard = () => {
                         const d = await r.json();
                         if (d.success) {
                           setGhSamples(prev => [d.sample, ...prev]);
-                          setGhSampleFile(null); setGhSampleName(""); setGhSampleVendor("");
+                          setGhSampleFile(null); setGhSampleName(""); setGhSampleVendor(""); setGhSamplePriceRange("");
                           setGhSampleMsg("Uploaded!");
                         } else { setGhSampleMsg(d.error || "Upload failed."); }
                       } catch (e) { setGhSampleMsg(e.message); }
@@ -4526,10 +4538,11 @@ const AdminDashboard = () => {
                         {visible.map(s => (
                           <div key={s._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.18)", background: "#faf5ee" }}>
                             <img src={s.url} alt={s.name || "Sample"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
-                            {(s.name || s.vendorName) && (
+                            {(s.name || s.vendorName || s.priceRange) && (
                               <div style={{ padding: "6px 8px 7px" }}>
                                 {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
-                                {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 2 }}>by {s.vendorName}</div>}
+                                {s.priceRange && <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
+                                {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 1 }}>by {s.vendorName}</div>}
                               </div>
                             )}
                             <button
