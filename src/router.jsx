@@ -68,6 +68,7 @@ const ChooseBooking       = lazy(() => import("./pages/customer/ChooseBooking"))
 const BaatKaro            = lazy(() => import("./pages/customer/BaatKaro"));
 const GiftHampersCakes    = lazy(() => import('./pages/customer/GiftHampersCakes'));
 const DecorFinder         = lazy(() => import('./pages/tools/DecorFinder.jsx'));
+const FindByStyle         = lazy(() => import('./pages/customer/FindByStyle.jsx'));
 const GuestList           = lazy(() => import('./pages/tools/GuestList.jsx'));
 const PaymentTracker      = lazy(() => import('./pages/tools/PaymentTracker.jsx'));
 const CategoryGallery     = lazy(() => import('./pages/gallery/CategoryGallery.jsx'));
@@ -430,7 +431,8 @@ const router = createBrowserRouter([
   { path: '/stationery/:id', element: <StationeryCustomizer />, errorElement: <ErrorPage /> },
   { path: '/payment-tracker', element: <PaymentTracker />, errorElement: <ErrorPage /> },
   { path: '/guest-list', element: <GuestList />, errorElement: <ErrorPage /> },
-  { path: '/decor-finder', element: <DecorFinder />, errorElement: <ErrorPage /> },
+  { path: '/decor-finder',  element: <DecorFinder />,  errorElement: <ErrorPage /> },
+  { path: '/find-by-style', element: <FindByStyle />, errorElement: <ErrorPage /> },
   { path: '/search', element: <SearchResults />, errorElement: <ErrorPage /> },
   { path: '/gallery/:category', element: <CategoryGallery />, errorElement: <ErrorPage /> },
   { path: '/guides', element: <GuidesStore />, errorElement: <ErrorPage /> },
