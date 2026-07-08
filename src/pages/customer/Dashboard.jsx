@@ -507,8 +507,8 @@ export default function CustomerDashboard() {
           {/* Add event form */}
           {showAddEvent && (
             <div style={{ background:"rgba(196,122,46,0.05)", borderRadius:10, border:"1px solid rgba(196,122,46,0.15)", padding:"14px 16px", marginBottom:14 }}>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))", gap:10 }}>
-                <div>
+              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                <div style={{ flex:"1 1 180px" }}>
                   <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Occasion *</div>
                   <select value={newEvent.occasion} onChange={e => setNewEvent(p => ({...p, occasion:e.target.value}))}
                     style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", background:"#fff", fontFamily:font, fontSize:13, color:"#2C1A0E" }}>
@@ -516,26 +516,11 @@ export default function CustomerDashboard() {
                     {OCCASION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
                   </select>
                 </div>
-                <div>
+                <div style={{ flex:"1 1 160px" }}>
                   <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Date *</div>
                   <input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({...p, date:e.target.value}))}
                     min={new Date().toISOString().slice(0,10)}
                     style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13, color:"#2C1A0E" }} />
-                </div>
-                <div>
-                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>For whom</div>
-                  <input type="text" placeholder="e.g. Mom, Dad, Self" value={newEvent.personName} onChange={e => setNewEvent(p => ({...p, personName:e.target.value}))}
-                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13 }} />
-                </div>
-                <div>
-                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Guests</div>
-                  <input type="text" placeholder="e.g. 30" value={newEvent.guestCount} onChange={e => setNewEvent(p => ({...p, guestCount:e.target.value}))}
-                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13 }} />
-                </div>
-                <div>
-                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Rough Budget</div>
-                  <input type="text" placeholder="e.g. ₹15,000" value={newEvent.roughBudget} onChange={e => setNewEvent(p => ({...p, roughBudget:e.target.value}))}
-                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13 }} />
                 </div>
               </div>
               <button onClick={handleAddPlannedEvent} disabled={addingEvent || !newEvent.occasion || !newEvent.date}

@@ -43,21 +43,30 @@ const VENUES = [
   { id: 'venue-terrace-rooftop',   label: 'Terrace / Rooftop', query: 'indian rooftop terrace party decoration lights night' },
 ];
 
-// ── Build India-specific Unsplash query per theme ─────────────────────────────
-function buildQuery(theme, occasion) {
-  const themeName = theme.theme.toLowerCase();
-  const occ       = occasion.toLowerCase();
-  return `indian ${themeName} ${occ} decoration celebration real photo`;
+// ── Build fallback query list per theme ───────────────────────────────────────
+function buildQueries(theme, occasion) {
+  const name = theme.theme.toLowerCase();
+  const occ  = occasion.toLowerCase();
+  return [
+    `indian ${name} ${occ} decoration celebration`,
+    `${name} ${occ} party decoration`,
+    `${name} party decoration colorful`,
+    `${name} decoration event`,
+  ];
 }
 
-// ── Fetch URLs from Unsplash ──────────────────────────────────────────────────
-async function fetchUnsplashUrls(query, count) {
-  const q   = encodeURIComponent(query);
-  const url = `https://api.unsplash.com/search/photos?query=${q}&per_page=${count}&orientation=landscape&content_filter=high&client_id=${UNSPLASH_KEY}`;
-  const res  = await fetch(url);
-  if (!res.ok) throw new Error(`Unsplash ${res.status}: ${await res.text()}`);
-  const data = await res.json();
-  return (data.results || []).map(r => r.urls.regular).filter(Boolean);
+// ── Fetch URLs from Unsplash (tries each query until ≥4 results) ──────────────
+async function fetchUnsplashUrls(queries, count) {
+  for (const query of queries) {
+    const q   = encodeURIComponent(query);
+    const url = `https://api.unsplash.com/search/photos?query=${q}&per_page=${count}&orientation=landscape&content_filter=high&client_id=${UNSPLASH_KEY}`;
+    const res  = await fetch(url);
+    if (!res.ok) throw new Error(`Unsplash ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    const urls = (data.results || []).map(r => r.urls.regular).filter(Boolean);
+    if (urls.length >= 4) return urls;
+  }
+  return [];
 }
 
 // ── Check if already saved in DB ─────────────────────────────────────────────
@@ -65,7 +74,7 @@ async function alreadySaved(themeId) {
   try {
     const res  = await fetch(`${BASE_URL}/theme-photos/${themeId}`);
     const data = await res.json();
-    return data.urls && data.urls.length >= 2; // consider saved if has at least 2 URLs
+    return data.urls && data.urls.length >= 4; // retry if fewer than 4 photos saved
   } catch {
     return false;
   }
@@ -88,16 +97,16 @@ const sleep = ms => new Promise(r => setTimeout(r, ms));
 async function main() {
   const allItems = [
     ...ALL_THEMES.map(t => ({
-      id:    t.id,
-      label: `[${t.occasion}] ${t.theme}`,
-      query: buildQuery(t, t.occasion),
-      count: PHOTOS_PER_THEME,
+      id:      t.id,
+      label:   `[${t.occasion}] ${t.theme}`,
+      queries: buildQueries(t, t.occasion),
+      count:   PHOTOS_PER_THEME,
     })),
     ...VENUES.map(v => ({
-      id:    v.id,
-      label: `[Venue] ${v.label}`,
-      query: v.query,
-      count: PHOTOS_PER_VENUE,
+      id:      v.id,
+      label:   `[Venue] ${v.label}`,
+      queries: [v.query],
+      count:   PHOTOS_PER_VENUE,
     })),
   ];
 
@@ -118,7 +127,7 @@ async function main() {
     }
 
     try {
-      const urls = await fetchUnsplashUrls(item.query, item.count);
+      const urls = await fetchUnsplashUrls(item.queries, item.count);
       if (!urls.length) {
         console.log('no results');
         failed++;

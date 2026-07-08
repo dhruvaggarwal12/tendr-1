@@ -515,27 +515,20 @@ function BookPage3({ theme, color, onClose }) {
         </div>
       )}
 
-      {/* Decor photos placeholder */}
-      <div style={{ marginBottom: 28 }}>
-        <SectionLabel color={color}>Suggested Decor Photos</SectionLabel>
-        <p style={{ fontSize: 12, color: 'rgba(245,236,216,0.32)', margin: '4px 0 12px', fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>
-          Curated decor photos for this theme — photos coming soon
-        </p>
-        <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} style={{
-              aspectRatio: '4/3', borderRadius: 11,
-              background: `${color}0A`,
-              border: `1.5px dashed ${color}28`,
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center', gap: 5,
-            }}>
-              <span style={{ fontSize: 20, opacity: 0.22 }}>📷</span>
-              <span style={{ fontSize: 8, color: 'rgba(245,236,216,0.2)', fontFamily: "'Outfit',sans-serif" }}>Photo {i}</span>
-            </div>
-          ))}
+      {/* Decor photos */}
+      {galleryUrls.length > 0 && (
+        <div style={{ marginBottom: 28 }}>
+          <SectionLabel color={color}>Suggested Decor Photos</SectionLabel>
+          <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
+            {galleryUrls.slice(0, 6).map((url, i) => (
+              <div key={i} style={{ aspectRatio: '4/3', borderRadius: 11, overflow: 'hidden', background: `${color}0A` }}>
+                <img src={url} alt="" loading="lazy"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* CTAs */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 18, borderTop: `1px solid ${color}18` }}>
@@ -561,9 +554,18 @@ function BookPage3({ theme, color, onClose }) {
 function BookDetail({ theme, occasion, onClose }) {
   const [pg, setPg]         = useState(0);
   const [animDir, setAnimDir] = useState(null); // null = no anim on first mount
+  const [galleryUrls, setGalleryUrls] = useState([]);
 
   const color = themeAccentColor(theme.id);
   const photo = useUnsplashPhoto(theme.id, theme.theme, occasion, getThemePhoto(theme, occasion));
+
+  useEffect(() => {
+    const BASE = import.meta.env.VITE_BASE_URL;
+    fetch(`${BASE}/theme-photos/${theme.id}`)
+      .then(r => r.ok ? r.json() : {})
+      .then(d => { if (Array.isArray(d.urls) && d.urls.length) setGalleryUrls(d.urls); })
+      .catch(() => {});
+  }, [theme.id]);
 
   useEffect(() => {
     const fn = (e) => { if (e.key === 'Escape') onClose(); };
