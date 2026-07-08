@@ -10,16 +10,7 @@ import GET_TOGETHER_THEMES from '../data/getTogetherThemes';
 import KITTY_PARTY_THEMES from '../data/kittyPartyThemes';
 import NAMING_CEREMONY_THEMES from '../data/namingCeremonyThemes';
 
-const INDIAN_CITIES = [
-  'Mumbai','Delhi','Bangalore','Hyderabad','Chennai','Kolkata','Pune','Ahmedabad',
-  'Jaipur','Surat','Lucknow','Kanpur','Nagpur','Indore','Thane','Bhopal',
-  'Visakhapatnam','Patna','Vadodara','Ghaziabad','Ludhiana','Agra','Nashik',
-  'Faridabad','Meerut','Rajkot','Varanasi','Aurangabad','Coimbatore','Jodhpur',
-  'Madurai','Chandigarh','Raipur','Kota','Guwahati','Mysore','Gurgaon','Noida',
-  'Navi Mumbai','Allahabad','Ranchi','Howrah','Vijayawada','Jabalpur','Gwalior',
-  'Thiruvananthapuram','Amritsar','Bhubaneswar','Kochi','Dehradun','Mangalore',
-  'Srinagar','Udaipur','Shimla','Pondicherry','Kolhapur','Jammu','Gandhinagar',
-];
+const INDIAN_CITIES = ['Delhi','Greater Noida','Noida','Ghaziabad'];
 
 // ── Data maps ─────────────────────────────────────────────────────────────
 
@@ -576,32 +567,21 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
   const [galleryUrls, setGalleryUrls] = useState([]);
   const [proceedFormOpen, setProceedFormOpen] = useState(false);
   const [pForm, setPForm] = useState({
-    hostName: '', honoreeName: '', date: '', time: '',
-    venueName: '', city: '', guests: '', dressCode: '', rsvp: '', notes: '',
+    date: '', time: '', address: '', city: '', guests: '', notes: '',
   });
   const navigate = useNavigate();
 
   const color = themeAccentColor(theme.id);
 
-  const honoreeLabel = {
-    Birthday: "Birthday Person's Name", Anniversary: 'Couple Names',
-    'Baby Shower': "Parents / Baby's Name", Housewarming: 'Host Names',
-    'House Party': 'Host Names', Wedding: 'Couple Names',
-  }[occasion] || 'Who is it for?';
-
   const handleProceed = () => {
     const parts = [
       `Hi! I'm planning a ${occasion} with the "${theme.theme}" theme.`,
-      pForm.hostName   ? `👤 Hosted by: ${pForm.hostName}` : null,
-      pForm.honoreeName? `🎉 ${honoreeLabel}: ${pForm.honoreeName}` : null,
-      pForm.date       ? `📅 Date: ${pForm.date}` : null,
-      pForm.time       ? `🕐 Time: ${pForm.time}` : null,
-      pForm.venueName  ? `🏛️ Venue: ${pForm.venueName}` : null,
-      pForm.city       ? `📍 City: ${pForm.city}` : null,
-      pForm.guests     ? `👥 Guests: ${pForm.guests}` : null,
-      pForm.dressCode  ? `👗 Dress Code: ${pForm.dressCode}` : null,
-      pForm.rsvp       ? `📞 RSVP: ${pForm.rsvp}` : null,
-      pForm.notes      ? `📝 Notes: ${pForm.notes}` : null,
+      pForm.date    ? `📅 Date: ${pForm.date}` : null,
+      pForm.time    ? `🕐 Time: ${pForm.time}` : null,
+      pForm.address ? `🏛️ Address: ${pForm.address}` : null,
+      pForm.city    ? `📍 City: ${pForm.city}` : null,
+      pForm.guests  ? `👥 Guests: ${pForm.guests}` : null,
+      pForm.notes   ? `📝 Notes: ${pForm.notes}` : null,
       `\nCan you help with decor, vendor suggestions, and planning?`,
     ].filter(Boolean).join('\n');
     try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
@@ -695,18 +675,6 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-                {/* Host name */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>Hosted / Organised by</span>
-                  <input type="text" placeholder="e.g. Priya & Rahul, Sharma Family" value={pForm.hostName} onChange={e => setPForm(f => ({ ...f, hostName: e.target.value }))} style={inputStyle} />
-                </label>
-
-                {/* Honoree */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>{honoreeLabel}</span>
-                  <input type="text" placeholder="e.g. Arjun, Sneha & Dev, Baby Ahana" value={pForm.honoreeName} onChange={e => setPForm(f => ({ ...f, honoreeName: e.target.value }))} style={inputStyle} />
-                </label>
-
                 {/* Date + Time row */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -719,10 +687,10 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
                   </label>
                 </div>
 
-                {/* Venue name */}
+                {/* Address */}
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>Venue Name{optLabel}</span>
-                  <input type="text" placeholder="e.g. The Grand Ballroom, Our Home" value={pForm.venueName} onChange={e => setPForm(f => ({ ...f, venueName: e.target.value }))} style={inputStyle} />
+                  <span style={labelStyle}>Address{optLabel}</span>
+                  <input type="text" placeholder="e.g. 12 Park Street, Sector 62" value={pForm.address} onChange={e => setPForm(f => ({ ...f, address: e.target.value }))} style={inputStyle} />
                 </label>
 
                 {/* City dropdown */}
@@ -731,35 +699,13 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
                   <select value={pForm.city} onChange={e => setPForm(f => ({ ...f, city: e.target.value }))} style={selectStyle}>
                     <option value="" style={{ background: '#1C0A04' }}>Select your city</option>
                     {INDIAN_CITIES.map(c => <option key={c} value={c} style={{ background: '#1C0A04' }}>{c}</option>)}
-                    <option value="Other" style={{ background: '#1C0A04' }}>Other</option>
                   </select>
                 </label>
 
-                {/* Guests + Dress code row */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span style={labelStyle}>Guests</span>
-                    <input type="number" min="1" placeholder="e.g. 80" value={pForm.guests} onChange={e => setPForm(f => ({ ...f, guests: e.target.value }))} style={inputStyle} />
-                  </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span style={labelStyle}>Dress Code{optLabel}</span>
-                    <select value={pForm.dressCode} onChange={e => setPForm(f => ({ ...f, dressCode: e.target.value }))} style={selectStyle}>
-                      <option value="" style={{ background: '#1C0A04' }}>None / Open</option>
-                      <option value="Formal" style={{ background: '#1C0A04' }}>Formal</option>
-                      <option value="Semi-Formal" style={{ background: '#1C0A04' }}>Semi-Formal</option>
-                      <option value="Casual" style={{ background: '#1C0A04' }}>Casual</option>
-                      <option value="Traditional" style={{ background: '#1C0A04' }}>Traditional</option>
-                      <option value="Ethnic" style={{ background: '#1C0A04' }}>Ethnic</option>
-                      <option value="Cocktail" style={{ background: '#1C0A04' }}>Cocktail</option>
-                      <option value="Theme-based" style={{ background: '#1C0A04' }}>Theme-based</option>
-                    </select>
-                  </label>
-                </div>
-
-                {/* RSVP */}
+                {/* Guests */}
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>RSVP Contact{optLabel}</span>
-                  <input type="tel" placeholder="e.g. +91 98765 43210" value={pForm.rsvp} onChange={e => setPForm(f => ({ ...f, rsvp: e.target.value }))} style={inputStyle} />
+                  <span style={labelStyle}>How Many Guests?</span>
+                  <input type="number" min="1" placeholder="e.g. 80" value={pForm.guests} onChange={e => setPForm(f => ({ ...f, guests: e.target.value }))} style={inputStyle} />
                 </label>
 
                 {/* Notes */}
