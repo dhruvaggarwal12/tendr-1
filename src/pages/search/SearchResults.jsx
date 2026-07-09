@@ -196,7 +196,7 @@ export default function SearchResults() {
               : "Search Results")}
           </h1>
 
-          {/* See Gallery + Decor Finder — Decorator results, desktop only */}
+          {/* See Gallery — Decorator results, desktop only */}
           {activeCat === "Decorator" && window.innerWidth >= 768 && (
             <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
               <button
@@ -212,7 +212,23 @@ export default function SearchResults() {
                 }}
                 style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
               >🖼 See Gallery</button>
-              {/* <button onClick={() => window.open("/decor-finder", "_blank")} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}>🎨 Decor Finder ↗</button> */}
+            </div>
+          )}
+
+          {/* Find by Style banner — Decorator only */}
+          {activeCat === "Decorator" && (
+            <div
+              onClick={() => navigate("/find-by-style")}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 14, padding: "14px 18px", marginBottom: 12, borderRadius: 14, background: "linear-gradient(135deg,#1A0E06 0%,#2C1A0E 100%)", border: "1px solid rgba(204,171,74,0.2)", cursor: "pointer", fontFamily: font }}
+            >
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Find by Style</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#FFF8EC", lineHeight: 1.4 }}>Not sure what style you want?</div>
+                <div style={{ fontSize: 11.5, color: "rgba(255,248,236,0.6)", marginTop: 3, lineHeight: 1.5 }}>Upload a photo — we'll match you with decorators who can create that look.</div>
+              </div>
+              <div style={{ flexShrink: 0, padding: "9px 16px", borderRadius: 10, background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", color: "#CCAB4A", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+                Try it →
+              </div>
             </div>
           )}
 
