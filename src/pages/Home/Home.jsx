@@ -1233,8 +1233,8 @@ const Home = () => {
         `}</style>
       </section>
 
-      {/* ── Plan by Occasion ── */}
-      <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
+      {/* ── Plan by Occasion — disabled, restore by removing {false && ( wrapper ── */}
+      {false && (<section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Plan by Occasion</p>
@@ -1280,7 +1280,7 @@ const Home = () => {
             >See all occasions &#8594;</button>
           </div>
         </div>
-      </section>
+      </section>)}
       {/* ── END Plan by Occasion ── */}
 
             {/* ── 5s Rotating Feature Carousel ── */}
