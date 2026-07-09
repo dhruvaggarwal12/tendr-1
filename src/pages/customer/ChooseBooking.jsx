@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PageTour from "../../components/PageTour";
 import SEO from "../../components/SEO";
 import { useNavigate } from "react-router-dom";
@@ -7,7 +7,6 @@ import { setBookingType, resetEventPlanning } from "../../redux/eventPlanningSli
 import { clearVendorCompare, clearFinalisedVendor } from "../../redux/listingFiltersSlice";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
-import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 
 const font = "'Outfit', sans-serif";
 
@@ -17,8 +16,6 @@ const FLOWS = [
     emoji: "🔍",
     title: "You Do It",
     subtitle: "Browse vendors, compare profiles, book at your own pace",
-    description: "Browse our verified vendors, compare profiles side by side, chat directly with each one, and negotiate your own price — all in one place.",
-    bestFor: "People who know what they want and enjoy the process.",
     steps: [
       "Fill event details (takes 2 minutes)",
       "Browse & compare vendors by category",
@@ -36,8 +33,6 @@ const FLOWS = [
     emoji: "✨",
     title: "Smart Planner",
     subtitle: "Tell us once. We build your complete vendor package.",
-    description: "Tell us your event details once. We suggest a complete package — one vendor per service, within your budget. You confirm, we coordinate everything.",
-    bestFor: "People who want it handled without going back and forth.",
     steps: [
       "Fill event details (takes 2 minutes)",
       "Set your budget per service category",
@@ -55,8 +50,6 @@ const FLOWS = [
     emoji: "💬",
     title: "Baat Karo",
     subtitle: "Bas likh do — Tendr Team yahin app mein reply karegi",
-    description: "Koi form nahi. Apni bhasha mein batao — date, location, guests, budget, kya chahiye. Tendr team aapse seedha app ke chat mein connect karegi.",
-    bestFor: "Jo sirf ek message mein sab batana chahte hain.",
     steps: [
       "Apni requirements likh do",
       "Send tap karo",
@@ -71,16 +64,47 @@ const FLOWS = [
   },
 ];
 
+const FLYER_FIELDS = [
+  { key: "eventName",    label: "Event name",           placeholder: "e.g. Rahul's 30th Birthday", required: true },
+  { key: "hostedBy",    label: "Hosted by",             placeholder: "e.g. Priya & Family", required: true },
+  { key: "date",        label: "Date",                  placeholder: "e.g. 20th July 2026", required: true, type: "text" },
+  { key: "time",        label: "Time",                  placeholder: "e.g. 7:00 PM onwards", required: true },
+  { key: "venue",       label: "Venue / Location",      placeholder: "e.g. The Grand Ballroom, Mumbai", required: true },
+  { key: "rsvp",        label: "RSVP contact",          placeholder: "Phone number or email", required: false },
+  { key: "dressCode",   label: "Dress code (optional)", placeholder: "e.g. Cocktail attire, White theme", required: false },
+  { key: "tagline",     label: "Special message (optional)", placeholder: "e.g. Join us for a night to remember!", required: false },
+];
+
+const emptyFlyer = Object.fromEntries(FLYER_FIELDS.map(f => [f.key, ""]));
+
 export default function ChooseBooking() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [showFlyerModal, setShowFlyerModal] = useState(false);
+  const [flyerData, setFlyerData] = useState(emptyFlyer);
 
   const handleChoose = (type, route) => {
+    if (type === "baat-karo") {
+      setShowFlyerModal(true);
+      return;
+    }
     if (route) { navigate(route); return; }
     dispatch(clearVendorCompare());
     dispatch(setBookingType(type));
     navigate("/plan-event/form?bookingType=" + type);
   };
+
+  const handleFlyerSubmit = () => {
+    try { localStorage.setItem("tendr_flyer_draft", JSON.stringify({ ...flyerData, savedAt: Date.now() })); } catch {}
+    navigate("/baat-karo");
+  };
+
+  const handleFlyerSkip = () => {
+    try { localStorage.removeItem("tendr_flyer_draft"); } catch {}
+    navigate("/baat-karo");
+  };
+
+  const requiredFilled = FLYER_FIELDS.filter(f => f.required).every(f => flyerData[f.key]?.trim());
 
   const CHOOSE_BOOKING_STEPS = [
     {
@@ -141,16 +165,13 @@ export default function ChooseBooking() {
               <h2 className="cbcard-title" style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 2px", letterSpacing: "-0.01em" }}>
                 {flow.title}
               </h2>
-              <p className="cbcard-subtitle" style={{ fontSize: 12, fontWeight: 600, color: flow.accentColor, margin: "0 0 6px" }}>
+              <p className="cbcard-subtitle" style={{ fontSize: 12, fontWeight: 600, color: flow.accentColor, margin: 0 }}>
                 {flow.subtitle}
-              </p>
-              <p className="cbcard-desc" style={{ fontSize: 11.5, color: "#7A5535", margin: 0, lineHeight: 1.5 }}>
-                {flow.description}
               </p>
             </div>
 
             {/* Steps */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16, flex: 1, marginTop: 10 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16, flex: 1, marginTop: 12 }}>
               {flow.steps.map((step, i) => (
                 <div key={step} style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                   <span className="cbcard-step-num" style={{ width: 20, height: 20, borderRadius: "50%", background: flow.bgAccent, border: "2px solid " + flow.borderColor, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: flow.accentColor, flexShrink: 0, marginTop: 1 }}>
@@ -209,13 +230,79 @@ export default function ChooseBooking() {
           .cbcard-icon { width: 42px !important; height: 42px !important; font-size: 20px !important; margin-bottom: 10px !important; }
           .cbcard-title { font-size: 19px !important; margin-bottom: 4px !important; }
           .cbcard-subtitle { font-size: 13.5px !important; margin-bottom: 8px !important; }
-          .cbcard-desc { font-size: 13px !important; line-height: 1.6 !important; }
           .cbcard-step-num { width: 22px !important; height: 22px !important; font-size: 11px !important; }
           .cbcard-step-text { font-size: 13.5px !important; }
           .cbcard-cta { font-size: 15px !important; padding: 13px !important; border-radius: 13px !important; }
         }
       `}</style>
-      </div>{/* inner flex column */}
+      </div>
+
+      {/* Invitation Flyer Modal — shown before Baat Karo */}
+      {showFlyerModal && (
+        <div
+          style={{ position:"fixed", inset:0, background:"rgba(20,10,4,0.6)", zIndex:1200, display:"flex", alignItems:"center", justifyContent:"center", padding:16 }}
+          onClick={() => setShowFlyerModal(false)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ background:"#FFFCF5", borderRadius:22, width:"100%", maxWidth:480, maxHeight:"90vh", overflowY:"auto", boxShadow:"0 24px 64px rgba(20,10,4,0.3)", display:"flex", flexDirection:"column" }}
+          >
+            {/* Modal header */}
+            <div style={{ padding:"22px 22px 0", borderBottom:"1px solid rgba(196,122,46,0.12)", paddingBottom:16 }}>
+              <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", gap:12 }}>
+                <div>
+                  <div style={{ fontSize:11, fontWeight:700, letterSpacing:"0.13em", color:"#C47A2E", textTransform:"uppercase", marginBottom:5 }}>Optional</div>
+                  <div style={{ fontSize:18, fontWeight:700, color:"#2C1A0E", lineHeight:1.25 }}>Invitation Flyer</div>
+                  <div style={{ fontSize:12, color:"#9B7450", marginTop:4 }}>Fill this in and we'll design a flyer for your event</div>
+                </div>
+                <button
+                  onClick={handleFlyerSkip}
+                  style={{ background:"none", border:"1.5px solid rgba(196,122,46,0.3)", borderRadius:8, padding:"5px 12px", fontSize:12, fontWeight:500, color:"#9B7450", cursor:"pointer", flexShrink:0, fontFamily:font, marginTop:2 }}
+                >
+                  Skip →
+                </button>
+              </div>
+            </div>
+
+            {/* Form fields */}
+            <div style={{ padding:"18px 22px", display:"flex", flexDirection:"column", gap:13 }}>
+              {FLYER_FIELDS.map(f => (
+                <div key={f.key}>
+                  <label style={{ fontSize:11, fontWeight:600, color:"#6B4226", display:"block", marginBottom:4 }}>
+                    {f.label}{f.required && <span style={{ color:"#C47A2E" }}> *</span>}
+                  </label>
+                  <input
+                    type={f.type || "text"}
+                    value={flyerData[f.key]}
+                    onChange={e => setFlyerData(prev => ({ ...prev, [f.key]: e.target.value }))}
+                    placeholder={f.placeholder}
+                    style={{ width:"100%", boxSizing:"border-box", padding:"9px 12px", borderRadius:9, border:"1.5px solid rgba(196,122,46,0.25)", background:"#FFF8EE", fontSize:13, fontFamily:font, color:"#2C1A0E", outline:"none" }}
+                    onFocus={e => e.target.style.borderColor = "#C47A2E"}
+                    onBlur={e => e.target.style.borderColor = "rgba(196,122,46,0.25)"}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Footer buttons */}
+            <div style={{ padding:"0 22px 22px", display:"flex", flexDirection:"column", gap:8 }}>
+              <button
+                onClick={handleFlyerSubmit}
+                disabled={!requiredFilled}
+                style={{ width:"100%", padding:"12px", borderRadius:12, border:"none", background: requiredFilled ? "linear-gradient(135deg,#25D366,#128C7E)" : "rgba(196,122,46,0.18)", color: requiredFilled ? "#fff" : "#C4A882", fontSize:14, fontWeight:600, fontFamily:font, cursor: requiredFilled ? "pointer" : "default", transition:"opacity 0.18s" }}
+              >
+                Save & go to Baat Karo →
+              </button>
+              <button
+                onClick={handleFlyerSkip}
+                style={{ width:"100%", padding:"10px", borderRadius:12, border:"1.5px solid rgba(196,122,46,0.25)", background:"transparent", color:"#9B7450", fontSize:13, fontWeight:500, fontFamily:font, cursor:"pointer" }}
+              >
+                Skip — go to Baat Karo without flyer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,6 +9,7 @@ import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { Button, Badge, EmptyState } from "../../components/ui";
 import { resetEventPlanning, setMultipleFormData, setBookingType, setCategoryBudgets } from "../../redux/eventPlanningSlice";
+import { setFinalisedVendor } from "../../redux/listingFiltersSlice";
 import { generateReferralCode, formatCode, DISCOUNT_PERCENT } from "../../utils/referral";
 import { useChatOverlay } from "../../context/ChatContext";
 import { generateInvoicePDF, generateEventDetailsPDF, generateTimelinePDF, generateInvitationPDF } from "../../utils/pdfGenerator";
@@ -154,6 +155,82 @@ export default function CustomerDashboard() {
       setChangeReqState(prev => ({ ...prev, [planId]: { ...prev[planId], submitting: false } }));
     }
   };
+
+  // ── Past Event Photos ────────────────────────────────────────────────────
+  const [eventPhotoAlbums, setEventPhotoAlbums]   = useState([]);
+  const [photoAlbumOpen, setPhotoAlbumOpen]       = useState(null); // album _id
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/event-photos/mine`, { headers:{ Authorization:`Bearer ${token}` }, credentials:'include' })
+      .then(r => r.ok ? r.json() : { albums:[] })
+      .then(d => setEventPhotoAlbums(Array.isArray(d.albums) ? d.albums : []))
+      .catch(() => {});
+  }, [token]);
+
+  // ── Planned Events (My Upcoming Events) ──────────────────────────────────
+  const [plannedEvents, setPlannedEvents]         = useState([]);
+  const [showAddEvent, setShowAddEvent]           = useState(false);
+  const [addingEvent, setAddingEvent]             = useState(false);
+  const [newEvent, setNewEvent]                   = useState({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
+  const [showPastVendors, setShowPastVendors]     = useState(null); // stores the ev object when open
+  const [vendorQuickView, setVendorQuickView]     = useState(null); // full vendor object
+  const [vendorQvLoading, setVendorQvLoading]     = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/planned-events`, { headers:{ Authorization:`Bearer ${token}` }, credentials:'include' })
+      .then(r => r.ok ? r.json() : { events:[] })
+      .then(d => setPlannedEvents(Array.isArray(d.events) ? d.events : []))
+      .catch(() => {});
+  }, [token]);
+
+  const handleAddPlannedEvent = async () => {
+    if (!newEvent.occasion || !newEvent.date) return;
+    setAddingEvent(true);
+    try {
+      const res  = await fetch(`${BASE_URL}/planned-events`, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json', Authorization:`Bearer ${token}` },
+        credentials: 'include',
+        body: JSON.stringify(newEvent),
+      });
+      const data = await res.json();
+      if (data.event) {
+        setPlannedEvents(prev => [...prev, data.event].sort((a,b) => a.date.localeCompare(b.date)));
+        setNewEvent({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
+        setShowAddEvent(false);
+      }
+    } catch {}
+    setAddingEvent(false);
+  };
+
+  const handleDeletePlannedEvent = async (id) => {
+    setPlannedEvents(prev => prev.filter(e => e._id !== id));
+    await fetch(`${BASE_URL}/planned-events/${id}`, {
+      method:'DELETE', headers:{ Authorization:`Bearer ${token}` }, credentials:'include'
+    }).catch(() => {});
+  };
+
+  const daysUntil = (dateStr) => {
+    const diff = new Date(dateStr) - new Date(new Date().toISOString().slice(0,10));
+    return Math.round(diff / 86_400_000);
+  };
+
+  const openVendorQV = async (vendorId) => {
+    setShowPastVendors(false);
+    setVendorQvLoading(true);
+    try {
+      const res = await fetch(`${BASE_URL}/vendors/${vendorId}`, { credentials: 'include' });
+      const data = await res.json();
+      setVendorQuickView(data.vendor || data);
+    } catch {}
+    setVendorQvLoading(false);
+  };
+
+  const OCCASION_OPTIONS = ['Birthday','Anniversary','Baby Shower','House Party','Housewarming','Get Together','Kitty Party','Naming Ceremony','Farewell','College Fest','Office Party','Diwali','Holi','Raksha Bandhan','Other'];
+
+  // ── End Planned Events state ──────────────────────────────────────────────
 
   const [activeTab, setActiveTab] = useState(() => {
     const tab = new URLSearchParams(location.search).get("tab");
@@ -439,6 +516,260 @@ export default function CustomerDashboard() {
             </div>{/* end stats flex */}
           </div>{/* end right column */}
         </div>
+
+        {/* ── My Upcoming Events ─────────────────────────────────────────────── */}
+        <div style={{ background:"#FFFCF5", borderRadius:16, border:"1.5px solid rgba(196,122,46,0.15)", boxShadow:"0 2px 12px rgba(139,69,19,0.07)", padding:"18px 20px", marginBottom:20 }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:14, flexWrap:"wrap", gap:8 }}>
+            <div>
+              <div style={{ fontSize:13, fontWeight:800, color:"#2C1A0E", letterSpacing:"-0.01em" }}>My Upcoming Events</div>
+              <div style={{ fontSize:11, color:"#9B7450", marginTop:2 }}>Save events to get vendor suggestions &amp; reminders at 30, 14 and 7 days before</div>
+            </div>
+            <button onClick={() => setShowAddEvent(v => !v)}
+              style={{ fontSize:12, fontWeight:700, color:"#fff", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", border:"none", borderRadius:8, padding:"8px 16px", cursor:"pointer", fontFamily:font }}>
+              {showAddEvent ? "Cancel" : "+ Add Event"}
+            </button>
+          </div>
+
+          {/* Add event form */}
+          {showAddEvent && (
+            <div style={{ background:"rgba(196,122,46,0.05)", borderRadius:10, border:"1px solid rgba(196,122,46,0.15)", padding:"14px 16px", marginBottom:14 }}>
+              <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                <div style={{ flex:"1 1 180px" }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Occasion *</div>
+                  <select value={newEvent.occasion} onChange={e => setNewEvent(p => ({...p, occasion:e.target.value}))}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", background:"#fff", fontFamily:font, fontSize:13, color:"#2C1A0E" }}>
+                    <option value="">Select occasion</option>
+                    {OCCASION_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                  </select>
+                </div>
+                <div style={{ flex:"1 1 160px" }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:"#9B7450", marginBottom:4 }}>Date *</div>
+                  <input type="date" value={newEvent.date} onChange={e => setNewEvent(p => ({...p, date:e.target.value}))}
+                    min={new Date().toISOString().slice(0,10)}
+                    style={{ width:"100%", padding:"8px 10px", borderRadius:8, border:"1px solid rgba(196,122,46,0.3)", fontFamily:font, fontSize:13, color:"#2C1A0E" }} />
+                </div>
+              </div>
+              <button onClick={handleAddPlannedEvent} disabled={addingEvent || !newEvent.occasion || !newEvent.date}
+                style={{ marginTop:12, padding:"9px 22px", borderRadius:9, border:"none", background:"#C47A2E", color:"#fff", fontFamily:font, fontSize:13, fontWeight:700, cursor:"pointer", opacity:(!newEvent.occasion||!newEvent.date)?0.5:1 }}>
+                {addingEvent ? "Saving..." : "Save Event"}
+              </button>
+            </div>
+          )}
+
+          {/* Event countdown cards */}
+          {plannedEvents.length === 0 ? (
+            <div style={{ textAlign:"center", padding:"20px 0", color:"#9B7450", fontSize:12 }}>
+              No upcoming events saved yet. Add one to get reminders and vendor suggestions.
+            </div>
+          ) : (
+            <div style={{ display:"flex", flexWrap:"wrap", gap:12 }}>
+              {plannedEvents.map(ev => {
+                const days   = daysUntil(ev.date);
+                const past   = days < 0;
+                const urgent = days <= 7 && days >= 0;
+                const pastVendorList = plans
+                  .filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0)
+                  .flatMap(p => Object.entries(p.finalisedVendors).map(([cat, v]) => ({ ...v, category:cat, fromEvent:p.eventType })));
+                const hasPastVendors = pastVendorList.length > 0;
+                return (
+                  <div key={ev._id} style={{
+                    background: past ? "#f5f0ea" : urgent ? "linear-gradient(135deg,#FFF5E8,#FFF0D8)" : "#FFFDF8",
+                    border: `1.5px solid ${past?"#DDD3C4":urgent?"#C47A2E":"rgba(196,122,46,0.2)"}`,
+                    borderRadius:14, padding:"14px 14px 12px", width:"100%", maxWidth:340,
+                    boxShadow: urgent?"0 2px 8px rgba(196,122,46,0.15)":"none", position:"relative",
+                    display:"flex", flexDirection:"column", gap:4,
+                  }}>
+                    <button onClick={() => handleDeletePlannedEvent(ev._id)}
+                      style={{ position:"absolute", top:8, right:10, background:"none", border:"none", color:"#CCC", fontSize:14, cursor:"pointer", padding:0, lineHeight:1 }}>✕</button>
+                    <div style={{ fontSize:11, fontWeight:700, color:urgent?"#C47A2E":"#9B7450", textTransform:"uppercase", letterSpacing:"0.07em" }}>
+                      {past ? "Past" : days === 0 ? "Today!" : `${days} day${days>1?"s":""} away`}
+                    </div>
+                    <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>{ev.occasion}</div>
+                    <div style={{ fontSize:12, color:"#B8A090" }}>{new Date(ev.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>
+
+                    {/* Action buttons — only for future events */}
+                    {!past && (
+                      <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:10 }}>
+                        {/* Past Vendors */}
+                        <button
+                          onClick={() => hasPastVendors ? setShowPastVendors(ev) : null}
+                          disabled={!hasPastVendors}
+                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background: hasPastVendors ? "#fff" : "rgba(196,122,46,0.04)", color: hasPastVendors ? "#C47A2E" : "#C4A882", fontFamily:font, fontSize:12, fontWeight:700, cursor: hasPastVendors ? "pointer" : "default", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                          <span>🔁 Past Vendors</span>
+                          {!hasPastVendors && <span style={{ fontSize:10, fontWeight:500 }}>No past vendors yet</span>}
+                        </button>
+                        {/* Browse Vendors */}
+                        <button
+                          onClick={() => navigate("/vendors")}
+                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", fontFamily:font, fontSize:12, fontWeight:700, cursor:"pointer", textAlign:"left" }}>
+                          🔍 Browse Vendors
+                        </button>
+                        {/* Plan Full Event */}
+                        <button
+                          onClick={() => navigate("/?occasion=" + encodeURIComponent(ev.occasion))}
+                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:12, fontWeight:600, cursor:"pointer", textAlign:"left" }}>
+                          🎯 Plan Full Event →
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Past Vendors Modal — filtered by occasion, grouped by plan */}
+        {showPastVendors && (() => {
+          const occasion = showPastVendors.occasion;
+          const completedPlans = plans.filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0);
+          const matchingPlans = completedPlans.filter(p => p.eventType === occasion);
+          const plansToShow = matchingPlans.length > 0 ? matchingPlans : completedPlans;
+          return (
+            <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}
+              onClick={() => setShowPastVendors(null)}>
+              <div onClick={e => e.stopPropagation()}
+                style={{ background:"#FFFCF5", borderRadius:20, padding:"24px 20px", width:"100%", maxWidth:500, maxHeight:"85vh", overflowY:"auto", boxShadow:"0 20px 60px rgba(44,26,14,0.25)" }}>
+                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18 }}>
+                  <div>
+                    <div style={{ fontSize:17, fontWeight:700, color:"#2C1A0E" }}>Past {occasion} Vendors</div>
+                    <div style={{ fontSize:12, color:"#9B7450", marginTop:2 }}>From your previous {occasion.toLowerCase()} events</div>
+                  </div>
+                  <button onClick={() => setShowPastVendors(null)} style={{ background:"none", border:"none", fontSize:22, color:"#9B7450", cursor:"pointer", flexShrink:0 }}>✕</button>
+                </div>
+                <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+                  {plansToShow.map((p, pi) => {
+                    const vendors = Object.entries(p.finalisedVendors);
+                    return (
+                      <div key={p._id || pi} style={{ background:"#FFF8EE", border:"1px solid rgba(196,122,46,0.18)", borderRadius:14, padding:"14px 16px" }}>
+                        {/* Event context chips — only show fields that exist */}
+                        {(p.guests || p.location || p.theme) && (
+                          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
+                            {p.guests   && <span style={{ fontSize:11, fontWeight:500, color:"#7A5535", background:"rgba(196,122,46,0.1)", padding:"3px 8px", borderRadius:20 }}>👥 {p.guests} guests</span>}
+                            {p.location && <span style={{ fontSize:11, fontWeight:500, color:"#7A5535", background:"rgba(196,122,46,0.1)", padding:"3px 8px", borderRadius:20 }}>📍 {p.location}</span>}
+                            {p.theme    && <span style={{ fontSize:11, fontWeight:500, color:"#7A5535", background:"rgba(196,122,46,0.1)", padding:"3px 8px", borderRadius:20 }}>🎨 {p.theme}</span>}
+                          </div>
+                        )}
+                        {/* Vendor rows */}
+                        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                          {vendors.map(([cat, v], vi) => (
+                            <div key={vi} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ fontSize:13, fontWeight:600, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.name || "Vendor"}</div>
+                                <div style={{ fontSize:11, color:"#9B7450" }}>{cat}</div>
+                              </div>
+                              <button onClick={() => { setShowPastVendors(null); openVendorQV(v._id); }}
+                                style={{ fontSize:11, fontWeight:600, padding:"6px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap", flexShrink:0 }}>
+                                View →
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Vendor Quick-View Panel — slides in from right */}
+        {(vendorQuickView || vendorQvLoading) && (
+          <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.45)", zIndex:1100, display:"flex", alignItems:"stretch", justifyContent:"flex-end" }}
+            onClick={() => { setVendorQuickView(null); }}>
+            <div onClick={e => e.stopPropagation()}
+              style={{ background:"#FFFCF5", width:"100%", maxWidth:420, height:"100%", overflowY:"auto", boxShadow:"-8px 0 40px rgba(44,26,14,0.2)", display:"flex", flexDirection:"column" }}>
+
+              {vendorQvLoading ? (
+                <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:"#9B7450", fontSize:14 }}>Loading…</div>
+              ) : vendorQuickView && (() => {
+                const v = vendorQuickView;
+                const photo = v.portfolioPhotos?.[0] || v.coverPhoto || null;
+                const price = v.price || v.startingPrice;
+                return (
+                  <>
+                    {/* Header photo */}
+                    <div style={{ position:"relative", height:220, background:"#F0E8DC", flexShrink:0 }}>
+                      {photo
+                        ? <img src={photo} alt={v.name} style={{ width:"100%", height:"100%", objectFit:"cover" }} />
+                        : <div style={{ width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", fontSize:48 }}>📸</div>
+                      }
+                      <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(12,4,0,0.7) 0%, transparent 60%)", pointerEvents:"none" }} />
+                      <button onClick={() => setVendorQuickView(null)}
+                        style={{ position:"absolute", top:12, right:12, background:"rgba(0,0,0,0.45)", border:"none", borderRadius:"50%", width:34, height:34, color:"#fff", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+                      {v.isVerified && (
+                        <span style={{ position:"absolute", top:12, left:12, background:"rgba(196,122,46,0.9)", color:"#fff", borderRadius:100, padding:"3px 10px", fontSize:11, fontWeight:700 }}>✓ Verified</span>
+                      )}
+                    </div>
+
+                    {/* Vendor info */}
+                    <div style={{ padding:"18px 20px", flex:1, display:"flex", flexDirection:"column", gap:10 }}>
+                      <div>
+                        <div style={{ fontSize:20, fontWeight:800, color:"#2C1A0E", lineHeight:1.2 }}>{v.name}</div>
+                        <div style={{ fontSize:13, color:"#9B7450", marginTop:4 }}>{v.serviceType}</div>
+                      </div>
+
+                      <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                        {price && (
+                          <span style={{ fontSize:12, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"4px 12px", border:"1px solid rgba(196,122,46,0.2)" }}>
+                            Starting from ₹{Number(price).toLocaleString("en-IN")}
+                          </span>
+                        )}
+                        {(v.city || v.address?.city || v.locations?.[0]) && (
+                          <span style={{ fontSize:12, color:"#9B7450", background:"rgba(196,122,46,0.05)", borderRadius:100, padding:"4px 12px", border:"1px solid rgba(196,122,46,0.12)" }}>
+                            📍 {v.city || v.address?.city || v.locations?.[0]}
+                          </span>
+                        )}
+                        {v.avgReviewScore > 0 && (
+                          <span style={{ fontSize:12, color:"#9B7450", background:"rgba(196,122,46,0.05)", borderRadius:100, padding:"4px 12px", border:"1px solid rgba(196,122,46,0.12)" }}>
+                            ⭐ {v.avgReviewScore.toFixed(1)}
+                          </span>
+                        )}
+                      </div>
+
+                      {v.description && (
+                        <p style={{ fontSize:13, color:"#5a3a1a", lineHeight:1.6, margin:0 }}>{v.description.slice(0,200)}{v.description.length > 200 ? "…" : ""}</p>
+                      )}
+
+                      {/* Portfolio thumbnails */}
+                      {v.portfolioPhotos?.length > 1 && (
+                        <div style={{ display:"flex", gap:6, overflowX:"auto", paddingBottom:4 }}>
+                          {v.portfolioPhotos.slice(0,5).map((p,i) => (
+                            <img key={i} src={p} alt="" style={{ width:72, height:54, objectFit:"cover", borderRadius:8, flexShrink:0 }} />
+                          ))}
+                        </div>
+                      )}
+
+                      {/* CTA buttons */}
+                      <div style={{ marginTop:"auto", display:"flex", flexDirection:"column", gap:8, paddingTop:12 }}>
+                        <button
+                          onClick={() => { setVendorQuickView(null); openVendorChat(v); }}
+                          style={{ width:"100%", padding:"13px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:700, fontFamily:font, cursor:"pointer", boxShadow:"0 4px 14px rgba(196,122,46,0.3)" }}>
+                          💬 Chat with Vendor
+                        </button>
+                        <button
+                          onClick={() => {
+                            dispatch(setFinalisedVendor(v));
+                            setVendorQuickView(null);
+                            navigate("/booking/review");
+                          }}
+                          style={{ width:"100%", padding:"13px", borderRadius:12, border:"1.5px solid rgba(196,122,46,0.35)", background:"#fff", color:"#C47A2E", fontSize:15, fontWeight:700, fontFamily:font, cursor:"pointer" }}>
+                          ✅ Finalise Vendor
+                        </button>
+                        <button
+                          onClick={() => { setVendorQuickView(null); navigate(`/vendor/${v._id}`); }}
+                          style={{ width:"100%", padding:"11px", borderRadius:12, border:"1px solid rgba(196,122,46,0.2)", background:"transparent", color:"#9B7450", fontSize:13, fontWeight:600, fontFamily:font, cursor:"pointer" }}>
+                          View Full Profile →
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        )}
 
         {/* Referral Card — only shown after user completes their first paid booking */}
         {user?._id && plans.some(p => p.paymentStatus === 'paid') && (() => {
@@ -1258,6 +1589,49 @@ export default function CustomerDashboard() {
           ))}
         </div>
       </div>
+
+      {/* ── Past Event Photos ── */}
+      {eventPhotoAlbums.length > 0 && (
+        <div style={{ maxWidth:900, margin:"0 auto", padding:"0 16px 32px", fontFamily:font }}>
+          <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E", marginBottom:14 }}>📸 Your Past Event Photos</div>
+          <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+            {eventPhotoAlbums.map(album => {
+              const isOpen = photoAlbumOpen === album._id;
+              const expires = new Date(album.expiresAt);
+              const daysLeft = Math.ceil((expires - Date.now()) / (1000 * 60 * 60 * 24));
+              return (
+                <div key={album._id} style={{ background:"#fff", borderRadius:14, border:"1.5px solid rgba(196,122,46,0.18)", overflow:"hidden" }}>
+                  {/* Album header */}
+                  <div
+                    onClick={() => setPhotoAlbumOpen(isOpen ? null : album._id)}
+                    style={{ padding:"12px 16px", display:"flex", alignItems:"center", justifyContent:"space-between", cursor:"pointer" }}
+                  >
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:800, color:"#2C1A0E" }}>
+                        {album.eventType || "Event"}{album.eventDate ? ` · ${album.eventDate}` : ""}
+                      </div>
+                      <div style={{ fontSize:11, color:"#9B7450", marginTop:2 }}>
+                        {album.photos.length} photo{album.photos.length !== 1 ? "s" : ""} · available for {daysLeft} more day{daysLeft !== 1 ? "s" : ""}
+                      </div>
+                    </div>
+                    <span style={{ fontSize:13, color:"#C47A2E", fontWeight:700 }}>{isOpen ? "▲ Hide" : "▼ View"}</span>
+                  </div>
+                  {/* Photo grid */}
+                  {isOpen && (
+                    <div style={{ padding:"0 14px 14px", display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))", gap:8 }}>
+                      {album.photos.map((p, i) => (
+                        <a key={i} href={p.url} target="_blank" rel="noopener noreferrer" style={{ display:"block" }}>
+                          <img src={p.url} alt={`Event photo ${i+1}`} style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", borderRadius:8, display:"block" }} />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       <Footer />
     </div>

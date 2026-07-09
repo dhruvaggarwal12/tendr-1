@@ -572,6 +572,9 @@ const AdminDashboard = () => {
   const [currentConversation, setCurrentConversation] = useState([]);
   const [adminMsgInput, setAdminMsgInput] = useState("");
   const adminSocketRef = useRef(null);
+  const [remindersDue, setRemindersDue]       = useState([]);
+  const [markingSent, setMarkingSent]         = useState({}); // { [eventId]: bool }
+  const [copiedMsg, setCopiedMsg]             = useState({}); // { [eventId]: bool }
   const [liveStats, setLiveStats] = useState(null);
   const [vendorApplications, setVendorApplications] = useState([]);
   const [eventPlans, setEventPlans] = useState([]);
@@ -803,6 +806,15 @@ const AdminDashboard = () => {
     }
   }, [recentChats, pendingConciergeId]);
 
+
+  // Fetch WhatsApp reminders due today
+  useEffect(() => {
+    if (!token || !isAdminToken) return;
+    adminFetch(`${BASE_URL}/planned-events/reminders-due`)
+      .then(r => r.json())
+      .then(d => setRemindersDue(d.due || []))
+      .catch(() => {});
+  }, [token]);
 
   // Fetch real stats from backend
   useEffect(() => {
@@ -1607,6 +1619,72 @@ const AdminDashboard = () => {
                 ))}
               </div>
             </div>
+
+            {/* WhatsApp Reminders Due Today */}
+            {remindersDue.length > 0 && (
+              <div style={{ background: "#fff", border: "2px solid #CCAB4A", borderRadius: 16, padding: "18px 22px", marginBottom: 24, marginTop: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <span style={{ fontSize: 22 }}>📲</span>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>WhatsApp Reminders Due Today</div>
+                    <div style={{ fontSize: 12, color: "#9B7450" }}>{remindersDue.length} customer{remindersDue.length > 1 ? "s" : ""} to message today</div>
+                  </div>
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {remindersDue.map(r => (
+                    <div key={r.eventId} style={{ background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "14px 16px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8, marginBottom: 10 }}>
+                        <div>
+                          <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E" }}>{r.name}</div>
+                          <div style={{ fontSize: 12, color: "#9B7450" }}>
+                            📞 {r.phone} &nbsp;·&nbsp; {r.occasion} on {new Date(r.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                          </div>
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 100,
+                          background: r.daysAway <= 7 ? "#fef2f2" : "#fffbeb",
+                          color: r.daysAway <= 7 ? "#dc2626" : "#b45309",
+                          border: `1px solid ${r.daysAway <= 7 ? "#fca5a5" : "#fde68a"}` }}>
+                          {r.reminderDay}-day reminder · {r.daysAway} days away
+                        </span>
+                      </div>
+                      <div style={{ background: "rgba(196,122,46,0.05)", border: "1px solid rgba(196,122,46,0.15)", borderRadius: 8, padding: "10px 12px", fontSize: 12.5, color: "#2C1A0E", lineHeight: 1.6, marginBottom: 10 }}>
+                        {r.message}
+                      </div>
+                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(r.message);
+                            setCopiedMsg(prev => ({ ...prev, [r.eventId]: true }));
+                            setTimeout(() => setCopiedMsg(prev => ({ ...prev, [r.eventId]: false })), 2000);
+                          }}
+                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                          {copiedMsg[r.eventId] ? "✓ Copied!" : "📋 Copy Message"}
+                        </button>
+                        <a href={`https://wa.me/91${r.phone?.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                          style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "none" }}>
+                          Open WhatsApp
+                        </a>
+                        <button
+                          disabled={markingSent[r.eventId]}
+                          onClick={async () => {
+                            setMarkingSent(prev => ({ ...prev, [r.eventId]: true }));
+                            await adminFetch(`${BASE_URL}/planned-events/${r.eventId}/mark-sent`, {
+                              method: "PATCH",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ reminderDay: r.reminderDay }),
+                            }).catch(() => {});
+                            setRemindersDue(prev => prev.filter(x => x.eventId !== r.eventId));
+                            setMarkingSent(prev => ({ ...prev, [r.eventId]: false }));
+                          }}
+                          style={{ padding: "7px 16px", borderRadius: 8, border: "1.5px solid #bbf7d0", background: "#f0fdf4", color: "#15803d", fontSize: 12, fontWeight: 700, cursor: "pointer", opacity: markingSent[r.eventId] ? 0.6 : 1 }}>
+                          {markingSent[r.eventId] ? "Saving…" : "✓ Mark Sent"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Info Cards Lower */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-10 mt-4 sm:mt-8">
