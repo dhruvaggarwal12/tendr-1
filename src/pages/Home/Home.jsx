@@ -1303,14 +1303,16 @@ const Home = () => {
 
           {/* Tier 2 — Also on Tendr */}
           <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>Also on Tendr</p>
-          <div className="offer-tier2-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
+          <div className="offer-tier2-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
             {[
               { icon: "💒", label: "Wedding Stationeries", desc: "Invitations, itineraries, thank you cards — personalised.", href: "/stationery" },
               { icon: "⏱️", label: "Event Timeline",       desc: "Build a day-by-day countdown for your event.", href: "/timeline-picker" },
               { icon: "💰", label: "Budget Allocator",     desc: "Set budget per category and track every rupee.", href: "/budget-picker" },
               { icon: "🎁", label: "Gift Hampers & Cakes", desc: "Curated gifts and cakes — delivered for your event.", href: "/gift-hampers-cakes" },
+              { icon: "🎭", label: "Fun Activities",       desc: "Magic shows, games, dhol players and live entertainment.", href: "/fun-activities" },
+              { icon: "🔍", label: "Find by Style",        desc: "Upload a photo and find vendors who match your vibe.", href: "/find-by-style" },
               { icon: "📅", label: "Upcoming Events",      desc: "See what's coming up — sign in to register interest.", href: "/occasions" },
-              { icon: "📚", label: "Tips by Tendr",       desc: "Free guides, community ideas and planning tips.", href: "/guides" },
+              { icon: "📚", label: "Tips by Tendr",        desc: "Free guides, community ideas and planning tips.", href: "/guides" },
             ].map(({ icon, label, desc, href }) => (
               <div key={label} onClick={() => navigate(href)}
                 style={{ background: "#F9F6F2", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "background 0.15s, box-shadow 0.15s" }}
@@ -1333,9 +1335,9 @@ const Home = () => {
               .offer-tier1-grid { grid-template-columns: 1fr !important; }
               .offer-tier2-grid { grid-template-columns: repeat(2,1fr) !important; }
             }
-            @media (min-width: 641px) and (max-width: 860px) {
+            @media (min-width: 641px) and (max-width: 960px) {
               .offer-tier1-grid { grid-template-columns: repeat(3,1fr) !important; }
-              .offer-tier2-grid { grid-template-columns: repeat(2,1fr) !important; }
+              .offer-tier2-grid { grid-template-columns: repeat(4,1fr) !important; }
             }
           `}</style>
         </div>

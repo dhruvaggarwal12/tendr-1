@@ -339,9 +339,6 @@ const VendorList_ListingPage = ({
                               <span style={{ fontSize: 11, color: "rgba(255,255,255,0.7)" }}>📍 {vendor.city || vendor.locations?.[0]}</span>
                             </>
                           )}
-                          {rating > 0 && (
-                            <span style={{ marginLeft: "auto", fontSize: 11, color: "#FFCC55", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}{vendor.reviewCount > 0 ? ` (${vendor.reviewCount})` : ""}</span>
-                          )}
                         </div>
                       </div>
                     </div>
@@ -369,14 +366,8 @@ const VendorList_ListingPage = ({
                             {vendor.locations?.length > 3 && ` +${vendor.locations.length - 3}`}
                           </div>
                         )}
-                        {/* Rating + review count */}
+                        {/* Price */}
                         <div style={{ display: "flex", gap: 10, fontSize: 11.5, color: "#9B7450", flexWrap: "wrap", alignItems: "center" }}>
-                          {rating > 0 && (
-                            <span style={{ color: "#C47A2E", fontWeight: 700 }}>
-                              ★ {Number(rating).toFixed(1)}
-                              {vendor.reviewCount > 0 && <span style={{ fontWeight: 500, color: "#9B7450" }}> · {vendor.reviewCount} review{vendor.reviewCount !== 1 ? "s" : ""}</span>}
-                            </span>
-                          )}
                           <span style={{ color: "#5a3a1a", fontWeight: 700 }}>
                             {(vendor.price > 0 || vendor.startingPrice > 0) ? `Starting from ₹${Number(vendor.price || vendor.startingPrice).toLocaleString("en-IN")}` : "Starting price : Price based on request"}
                           </span>
@@ -963,7 +954,6 @@ const VendorList_ListingPage = ({
                           <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700, marginBottom: 5 }}>{v.serviceType}</div>
                           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                             {(v.city || v.locations?.[0]) && <span style={{ fontSize: 11, color: "#9B7450" }}>📍 {v.city || v.locations?.[0]}</span>}
-                            {rating > 0 && <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>★ {Number(rating).toFixed(1)}</span>}
                             <span style={{ fontSize: 11, color: "#5a3a1a", fontWeight: 600 }}>{(v.price || v.startingPrice) > 0 ? `Starting from ₹${Number(v.price || v.startingPrice).toLocaleString("en-IN")}` : "Starting price : Price based on request"}</span>
                           </div>
                         </div>
