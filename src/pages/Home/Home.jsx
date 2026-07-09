@@ -1180,91 +1180,81 @@ const Home = () => {
       </section>
       {/* ── END Plan by Occasion ── */}
 
-      {/* How Tendr Works */}
-      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      {/* ── Which path is for you ── */}
+      <section style={{ background: "#F8F4EF", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
 
-          {/* Heading */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.55 }}
-            style={{ textAlign: "center", marginBottom: 56 }}
-          >
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Your Journey</p>
+          <div style={{ textAlign: "center", marginBottom: 44 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 12px" }}>Find Your Way</p>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.01em" }}>
-              How Tendr Works
+              Which one is for you?
             </h2>
-            <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 400, margin: "0 auto" }}>
-              From idea to celebration in five steps.
+            <p style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", maxWidth: 380, margin: "0 auto", lineHeight: 1.65 }}>
+              Three ways to use Tendr — pick the one that matches how you like to plan.
             </p>
-          </motion.div>
+          </div>
 
-          {/* Steps */}
-          {(() => {
-            const HTW_STEPS = [
-              { n: "01", icon: "📋", title: "Tell Us About Your Event",  desc: "Event type, date, budget, guests — 2 minutes.",          time: "2 min"    },
-              { n: "02", icon: "🔍", title: "Browse & Shortlist",        desc: "Find verified caterers, decorators, photographers, DJs.", time: "5–10 min" },
-              { n: "03", icon: "💬", title: "Chat & Get a Price",        desc: "Direct chat. Real quote. No surprises.",                 time: "24–48 hrs" },
-              { n: "04", icon: "✅", title: "Review & Confirm",          desc: "One summary page. All vendors. All prices.",              time: "5 min"    },
-              { n: "05", icon: "🎉", title: "Pay & Celebrate",           desc: "Instant invoice, event docs and vendor contacts — all downloaded in one tap.", time: "Instant"  },
-            ];
-            const StepCard = ({ n, icon, title, desc, time, i, showConnector }) => (
-              <div style={{ background: "#2C1A0E", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 20, padding: "28px 22px 26px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", boxShadow: "0 6px 24px rgba(44,26,14,0.14)", flex: 1 }}>
-                <span style={{ position: "absolute", top: -8, right: 14, fontSize: 72, fontWeight: 900, color: "rgba(204,171,74,0.08)", lineHeight: 1, fontFamily: "'Outfit',sans-serif", pointerEvents: "none", userSelect: "none" }}>{n}</span>
-                <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Step {n} · {time}</span>
-                <h3 style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
-                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
-                {showConnector && <span style={{ position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)", zIndex: 10, fontSize: 18, color: "rgba(196,122,46,0.4)" }}>›</span>}
+          <div className="path-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+            {[
+              {
+                icon: "🔍",
+                eyebrow: "Browse & Search",
+                title: "You know what you want",
+                desc: "You have a vendor type in mind — a decorator, photographer, caterer. Search directly, compare profiles, and chat to lock in your price.",
+                accent: "#C47A2E",
+              },
+              {
+                icon: "✨",
+                eyebrow: "Start Planning",
+                title: "You want help figuring it out",
+                desc: "Tell us your event, budget and guest count. We match you with the right vendors — or our team can coordinate everything for you.",
+                accent: "#7A4A1E",
+              },
+              {
+                icon: "🎉",
+                eyebrow: "Plan by Occasion",
+                title: "You're starting from a celebration",
+                desc: "Pick your occasion — birthday, anniversary, house party. We suggest themes, decor ideas and vendor types tailored to it.",
+                accent: "#D4922E",
+              },
+            ].map(({ icon, eyebrow, title, desc, accent }) => (
+              <div key={eyebrow} style={{
+                background: "#FFFCF7",
+                border: "1px solid rgba(196,122,46,0.13)",
+                borderRadius: 20,
+                padding: "28px 24px 26px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                boxShadow: "0 2px 12px rgba(44,26,14,0.05)",
+              }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{icon}</div>
+                <p style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0 }}>{eyebrow}</p>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.2rem,1.8vw,1.45rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, lineHeight: 1.25, letterSpacing: "0.01em" }}>{title}</h3>
+                <p style={{ fontSize: 13.5, fontWeight: 400, color: "#6B4226", margin: 0, lineHeight: 1.7 }}>{desc}</p>
               </div>
-            );
-            if (isMobile) return (
-              <div style={{ position: "relative" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <button onClick={() => setHtwStep(s => Math.max(0, s - 1))} style={{ width: 38, height: 38, borderRadius: "50%", background: htwStep === 0 ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.9)", border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: htwStep === 0 ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
-                  <StepCard {...HTW_STEPS[htwStep]} i={htwStep} showConnector={false} />
-                  <button onClick={() => setHtwStep(s => Math.min(HTW_STEPS.length - 1, s + 1))} style={{ width: 38, height: 38, borderRadius: "50%", background: htwStep === HTW_STEPS.length - 1 ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.9)", border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: htwStep === HTW_STEPS.length - 1 ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
-                </div>
-                <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
-                  {HTW_STEPS.map((_, i) => (
-                    <button key={i} onClick={() => setHtwStep(i)} style={{ width: i === htwStep ? 20 : 7, height: 7, borderRadius: 100, background: i === htwStep ? "#C47A2E" : "rgba(196,122,46,0.25)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.25s" }} />
-                  ))}
-                </div>
-              </div>
-            );
-            return (
-              <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
-                {HTW_STEPS.map(({ n, icon, title, desc, time }, i) => (
-                  <motion.div key={n} initial={{ opacity: 0, y: 50, scale: 0.94 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1, type: "spring", stiffness: 120, damping: 14 }} whileHover={{ y: -6, transition: { duration: 0.2 } }} style={{ flex: 1 }}>
-                    <StepCard n={n} icon={icon} title={title} desc={desc} time={time} i={i} showConnector={i < 4} />
-                  </motion.div>
-                ))}
-              </div>
-            );
-          })()}
+            ))}
+          </div>
 
-          {/* Callout — button removed, hero CTA is the primary action */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            style={{ textAlign: "center", marginTop: 52 }}
-          >
-            <p style={{ fontSize: 13.5, color: "#6B4226", maxWidth: 520, margin: "0 auto" }}>
-              Three ways to plan — <strong style={{ color: "#C47A2E" }}>browse & book yourself</strong>, <strong style={{ color: "#C47A2E" }}>get a ready package</strong>, or <strong style={{ color: "#C47A2E" }}>just chat with our team</strong>.
-            </p>
-          </motion.div>
-
+          <style>{`
+            @media (max-width: 640px) {
+              .path-cards-grid {
+                display: flex !important;
+                overflow-x: auto !important;
+                gap: 12px !important;
+                padding-bottom: 8px !important;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+              }
+              .path-cards-grid::-webkit-scrollbar { display: none; }
+              .path-cards-grid > div {
+                min-width: 248px !important;
+                max-width: 248px !important;
+                flex-shrink: 0 !important;
+              }
+            }
+          `}</style>
         </div>
-
-        <style>{`
-          @media (max-width: 860px) and (min-width: 541px) {
-            .htw-desktop-row { flex-wrap: wrap !important; }
-            .htw-desktop-row > div { flex: 0 0 calc(33% - 10px) !important; }
-          }
-        `}</style>
       </section>
 
       {/* ── Everything for your celebration — static 2-tier grid ── */}
