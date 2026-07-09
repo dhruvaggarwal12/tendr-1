@@ -57,7 +57,7 @@ const TIME_OPTIONS = [
   { key: 'Night',     label: 'Night',     desc: '8 pm onwards', icon: '🌙' },
 ];
 
-const PAGE_NAMES = ['Overview', 'The Details', 'Checklist & Decor'];
+const PAGE_NAMES = ['Overview', 'Customise', 'Plan & Decor'];
 
 // ── Colour system (warm, Tendr-resonant) ──────────────────────────────────
 
@@ -286,6 +286,11 @@ const CSS = `
 
   .op-opt:hover { opacity:0.95; }
 
+  button { user-select:none; -webkit-user-select:none; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  input[type=number] { -moz-appearance:textfield; }
+
   @media (max-width:600px) {
     .op-panel        { border-radius:22px 22px 0 0 !important; max-height:93vh !important; margin-top:auto; }
     .op-overlay-wrap { align-items:flex-end !important; padding:0 !important; }
@@ -308,7 +313,7 @@ const CSS = `
 function SectionLabel({ color, children }) {
   return (
     <h4 style={{
-      fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em',
+      fontSize: 10, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.16em',
       margin: '0 0 10px', color: color || FALLBACK_COLOR,
       fontFamily: "'Outfit', sans-serif",
     }}>{children}</h4>
@@ -318,11 +323,11 @@ function SectionLabel({ color, children }) {
 function StatTile({ label, value, color }) {
   return (
     <div style={{
-      padding: '12px 10px', borderRadius: 12, textAlign: 'center',
-      background: `${color}12`, border: `1px solid ${color}28`,
+      padding: '16px 10px', borderRadius: 14, textAlign: 'center',
+      background: `${color}0A`, border: `1px solid ${color}1E`,
     }}>
-      <div style={{ fontSize: 11, color: `${color}CC`, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 5, fontFamily: "'Outfit',sans-serif" }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.3, fontFamily: "'Outfit',sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 14, fontWeight: 400, color: '#F5ECD8', lineHeight: 1.35, marginBottom: 6, fontFamily: "'Cormorant Garamond',serif" }}>{value}</div>
+      <div style={{ fontSize: 9, color: `${color}99`, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{label}</div>
     </div>
   );
 }
@@ -336,7 +341,7 @@ function BulletList({ items, color, max = 5 }) {
       {shown.map((item, i) => (
         <li key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'flex-start' }}>
           <span style={{ color, fontSize: 7, marginTop: 5, flexShrink: 0 }}>◆</span>
-          <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.88)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
+          <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.97)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
         </li>
       ))}
       {!expanded && items.length > max && (
@@ -367,7 +372,7 @@ function PageDots({ current, total, color }) {
 function NavRow({ onBack, onNext, nextLabel = 'Next', color }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
-      <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
+      <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.75)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
       {onNext && (
         <button onClick={onNext} style={{ padding: '12px 30px', borderRadius: 100, background: color || FALLBACK_COLOR, color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 4px 14px ${color||FALLBACK_COLOR}44` }}>
           {nextLabel}
@@ -381,8 +386,8 @@ function Breadcrumb({ occasion, current, color }) {
   if (!occasion) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-      <span style={{ fontSize: 12, color: 'rgba(245,236,216,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
-      <span style={{ color: 'rgba(245,236,216,0.3)', fontSize: 14 }}>›</span>
+      <span style={{ fontSize: 12, color: 'rgba(245,236,216,0.75)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
+      <span style={{ color: 'rgba(245,236,216,0.46)', fontSize: 14 }}>›</span>
       <span style={{ fontSize: 12, color, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>{current}</span>
     </div>
   );
@@ -397,6 +402,29 @@ function OptButton({ selected, color, onClick, children, className = 'op-opt' })
       transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
     }}>
       {children}
+    </button>
+  );
+}
+
+// ── Copy chip (tap to copy text, shows ✓ Copied briefly) ─────────────────
+
+function CopyChip({ text, color }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  };
+  return (
+    <button onClick={copy} style={{
+      fontSize: 12, padding: '7px 14px', borderRadius: 100,
+      background: copied ? `${color}28` : `${color}0A`,
+      border: `1.5px solid ${copied ? color : `${color}22`}`,
+      color: copied ? '#F5ECD8' : 'rgba(245,236,216,0.85)',
+      fontFamily: "'Outfit',sans-serif", fontWeight: copied ? 600 : 400,
+      cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.15s', whiteSpace: 'nowrap',
+    }}>
+      {copied ? '✓ Copied' : text}
     </button>
   );
 }
@@ -422,80 +450,140 @@ function BookPage1({ theme, occasion, photo, color }) {
             fontSize: 'clamp(1.9rem,5vw,2.8rem)', fontWeight: 400, letterSpacing: '-0.01em',
             color: '#F5ECD8', margin: '0 0 5px', lineHeight: 1.1,
           }}>{theme.theme}</h2>
-          <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.82)', margin: 0, fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>{theme.oneLineDesc}</p>
+          <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.95)', margin: 0, fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>{theme.oneLineDesc}</p>
         </div>
       </div>
 
       <div style={{ paddingTop: 22 }}>
         {/* Overview */}
         {theme.overview && (
-          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, color: 'rgba(245,236,216,0.82)', lineHeight: 1.85, margin: '0 0 22px', borderLeft: `3px solid ${color}40`, paddingLeft: 14 }}>{theme.overview}</p>
+          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 400, color: 'rgba(245,236,216,0.92)', lineHeight: 1.9, margin: '0 0 24px', borderLeft: `2px solid ${color}35`, paddingLeft: 16 }}>{theme.overview}</p>
         )}
 
-        {/* Colour palette */}
-        {theme.colourPalette?.length > 0 && (
-          <div style={{ marginBottom: 22 }}>
-            <SectionLabel color={color}>Colour Palette</SectionLabel>
-            <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 4 }}>
-              {theme.colourPalette.map(c => (
-                <span key={c} style={{ padding: '5px 14px', borderRadius: 100, fontSize: 12, background: `${color}14`, border: `1px solid ${color}35`, color: 'rgba(245,236,216,0.8)', fontFamily: "'Outfit',sans-serif" }}>{c}</span>
+        {/* Stats row — 2×2 when age group present, 3-col otherwise */}
+        <div style={{ display: 'grid', gridTemplateColumns: theme.bestAgeGroup ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 10 }}>
+          <StatTile label="Guests" value={theme.recommendedGuests} color={color} />
+          <StatTile label="Budget" value={theme.budget} color={color} />
+          <StatTile label="Best Time" value={(theme.bestTime||[]).join(' · ')} color={color} />
+          {theme.bestAgeGroup && <StatTile label="Age Group" value={theme.bestAgeGroup} color={color} />}
+        </div>
+
+        {/* Best Venue chips */}
+        {theme.bestVenue?.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif", marginBottom: 8 }}>Best Venue</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {theme.bestVenue.map((v, i) => (
+                <span key={i} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 12, background: `${color}0A`, border: `1px solid ${color}22`, color: 'rgba(245,236,216,0.90)', fontFamily: "'Outfit',sans-serif" }}>{v}</span>
               ))}
             </div>
           </div>
         )}
-
-        {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
-          <StatTile label="Guests" value={theme.recommendedGuests} color={color} />
-          <StatTile label="Budget" value={theme.budget} color={color} />
-          <StatTile label="Best Time" value={(theme.bestTime||[]).join(' · ')} color={color} />
-        </div>
       </div>
     </div>
   );
 }
 
-function BookPage2({ theme, color }) {
-  const food = theme.foodSuggestions || theme.foodIdeas || [];
-  const col1 = [
-    { title: 'Decoration Ideas',  items: theme.decorationIdeas },
-    { title: 'Food & Drinks',     items: food },
-    { title: 'Entertainment',     items: theme.entertainment },
-  ];
-  const col2 = [
-    { title: 'Games & Activities', items: theme.gamesActivities },
-    { title: 'Cake Ideas',         items: theme.cakeIdeas || theme.returnGiftIdeas },
-    { title: 'Photography Tips',   items: theme.photographyIdeas },
-  ];
+function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
+  const sections = [
+    { key: 'colourPalette', icon: '🎨', title: 'Colour Palette',  items: theme.colourPalette || [] },
+    { key: 'decoration',    icon: '✨', title: 'Decoration',        items: theme.decorationIdeas || [] },
+    { key: 'food',          icon: '🍽️', title: 'Food & Snacks',    items: (theme.foodSuggestions || theme.foodIdeas || []) },
+    { key: 'entertainment', icon: '🎭', title: 'Entertainment',     items: theme.entertainment || [] },
+    { key: 'gifts',         icon: '🎁', title: 'Gifts',             items: theme.returnGiftIdeas || [] },
+    { key: 'photography',   icon: '📸', title: 'Photography Style', items: theme.photographyIdeas || [] },
+  ].filter(s => s.items.length > 0);
 
   return (
     <div style={{ paddingTop: 8 }}>
-      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
-        What's Included
-      </h3>
-      <div className="book-detail-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-        <div>
-          {col1.map(({ title, items }) => items?.length > 0 && (
-            <div key={title} style={{ marginBottom: 22 }}>
-              <SectionLabel color={color}>{title}</SectionLabel>
-              <BulletList items={items} color={color} max={5} />
-            </div>
-          ))}
-        </div>
-        <div>
-          {col2.map(({ title, items }) => items?.length > 0 && (
-            <div key={title} style={{ marginBottom: 22 }}>
-              <SectionLabel color={color}>{title}</SectionLabel>
-              <BulletList items={items} color={color} max={5} />
-            </div>
-          ))}
-        </div>
+      <div style={{ marginBottom: 22, paddingBottom: 14, borderBottom: `1px solid ${color}18` }}>
+        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,3.5vw,2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 4px', letterSpacing: '0.01em' }}>
+          Customise Your Vision
+        </h3>
+        <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.60)', margin: 0, letterSpacing: '0.02em' }}>Select what you'd like — pick as many as you want</p>
       </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+        {sections.map(({ key, icon, title, items }) => {
+          const sec = selections?.[key] || { picked: [], custom: '' };
+          return (
+            <div key={key}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+                <span style={{ fontSize: 12, lineHeight: 1 }}>{icon}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{title}</span>
+                {sec.picked.length > 0 && (
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: `${color}22`, color, fontFamily: "'Outfit',sans-serif" }}>{sec.picked.length} selected</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 }}>
+                {items.map((item, i) => {
+                  const isSel = sec.picked.includes(item);
+                  return (
+                    <button key={i} onClick={() => onToggle(key, item)} style={{
+                      fontSize: 12, padding: '7px 14px', borderRadius: 100,
+                      background: isSel ? `${color}28` : `${color}0A`,
+                      border: `1.5px solid ${isSel ? color : `${color}22`}`,
+                      color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.85)',
+                      fontFamily: "'Outfit',sans-serif", fontWeight: isSel ? 600 : 400,
+                      cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.15s',
+                    }}>
+                      {isSel && <span style={{ marginRight: 5, fontSize: 10 }}>✓</span>}
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
+              <input
+                type="text"
+                placeholder={`Add your own ${title.toLowerCase()}…`}
+                value={sec.custom}
+                onChange={e => onCustomChange(key, e.target.value)}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: '9px 14px', borderRadius: 10,
+                  background: 'rgba(245,236,216,0.04)',
+                  border: `1px solid ${sec.custom ? color : 'rgba(245,236,216,0.1)'}`,
+                  color: '#F5ECD8', fontSize: 12,
+                  fontFamily: "'Outfit',sans-serif", outline: 'none',
+                  transition: 'border-color 0.15s',
+                }}
+                onFocus={e => e.target.style.borderColor = color}
+                onBlur={e => e.target.style.borderColor = sec.custom ? color : 'rgba(245,236,216,0.1)'}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* More Ideas — copyable, not selectable */}
+      {(theme.cakeIdeas?.length > 0 || theme.gamesActivities?.length > 0) && (
+        <div style={{ marginTop: 10, paddingTop: 24, borderTop: `1px solid ${color}18` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>More Ideas</span>
+            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.46)', fontFamily: "'Outfit',sans-serif" }}>· tap to copy</span>
+          </div>
+          {theme.cakeIdeas?.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎂 Cake Ideas</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {theme.cakeIdeas.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
+              </div>
+            </div>
+          )}
+          {theme.gamesActivities?.length > 0 && (
+            <div>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎮 Games & Activities</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {theme.gamesActivities.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
-function BookPage3({ theme, color, galleryUrls = [], downloadPhoto, onProceedNow, onBrowseOtherThemes }) {
+function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogglePhoto, onProceedNow, onBrowseOtherThemes }) {
   return (
     <div style={{ paddingTop: 8 }}>
       <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
@@ -505,41 +593,61 @@ function BookPage3({ theme, color, galleryUrls = [], downloadPhoto, onProceedNow
       {/* Planning checklist */}
       {theme.planningChecklist?.length > 0 && (
         <div style={{ marginBottom: 28 }}>
-          <SectionLabel color={color}>Planning Checklist</SectionLabel>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Planning Checklist</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             {theme.planningChecklist.map((item, i) => (
-              <span key={i} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                padding: '5px 12px', borderRadius: 100, fontSize: 11,
-                background: `${color}12`, border: `1px solid ${color}2E`,
-                color: 'rgba(245,236,216,0.72)', fontFamily: "'Outfit',sans-serif",
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 12,
+                padding: '11px 14px', borderRadius: 12,
+                background: `${color}07`, border: `1px solid ${color}18`,
               }}>
-                <span style={{ color, fontSize: 8 }}>✓</span>{item}
-              </span>
+                <div style={{ width: 16, height: 16, borderRadius: 5, border: `1px solid ${color}45`, background: `${color}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
+                  <span style={{ color, fontSize: 8, fontWeight: 600 }}>✓</span>
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.92)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.55 }}>{item}</span>
+              </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Decor photos with download */}
+      {/* Decor photos — selectable */}
       {galleryUrls.length > 0 && (
         <div style={{ marginBottom: 28 }}>
-          <SectionLabel color={color}>Suggested Decor Photos</SectionLabel>
-          <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
-            {galleryUrls.slice(0, 6).map((url, i) => (
-              <div key={i} style={{ aspectRatio: '4/3', borderRadius: 11, overflow: 'hidden', background: `${color}0A`, position: 'relative' }}
-                onMouseEnter={e => e.currentTarget.querySelector('.dl-btn').style.opacity = '1'}
-                onMouseLeave={e => e.currentTarget.querySelector('.dl-btn').style.opacity = '0'}>
-                <img src={url} alt="" loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <button className="dl-btn"
-                  onClick={() => downloadPhoto && downloadPhoto(url, i)}
-                  style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: 6, padding: '4px 8px', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: 0, transition: 'opacity 0.18s', fontFamily: "'Outfit',sans-serif", backdropFilter: 'blur(4px)' }}>
-                  ↓ Save
-                </button>
-              </div>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Decor Photos</span>
+            {selectedPhotos.length > 0 && (
+              <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: `${color}22`, color, fontFamily: "'Outfit',sans-serif" }}>{selectedPhotos.length} selected</span>
+            )}
           </div>
+          <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
+            {galleryUrls.slice(0, 6).map((url, i) => {
+              const isSel = selectedPhotos.includes(url);
+              return (
+                <div key={i}
+                  onClick={() => onTogglePhoto && onTogglePhoto(url)}
+                  style={{
+                    aspectRatio: '4/3', borderRadius: 11, overflow: 'hidden',
+                    background: `${color}0A`, position: 'relative', cursor: 'pointer',
+                    border: `2px solid ${isSel ? color : 'transparent'}`,
+                    transition: 'border-color 0.15s',
+                  }}>
+                  <img src={url} alt="" loading="lazy"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  {isSel && (
+                    <div style={{ position: 'absolute', inset: 0, background: `${color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, lineHeight: 1 }}>✓</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ fontSize: 11, color: 'rgba(245,236,216,0.46)', margin: '8px 0 0', fontFamily: "'Outfit',sans-serif" }}>Tap photos to select your favourites</p>
         </div>
       )}
 
@@ -548,13 +656,13 @@ function BookPage3({ theme, color, galleryUrls = [], downloadPhoto, onProceedNow
         <button onClick={onProceedNow} style={{
           flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
           background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
-          color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer',
-          fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
+          color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+          fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}42`, letterSpacing: '0.02em',
         }}>Proceed Now</button>
         <button onClick={onBrowseOtherThemes} style={{
           flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
-          background: 'rgba(245,236,216,0.05)', color: 'rgba(245,236,216,0.52)',
-          border: '1px solid rgba(245,236,216,0.12)', fontSize: 14, cursor: 'pointer',
+          background: 'rgba(245,236,216,0.04)', color: 'rgba(245,236,216,0.65)',
+          border: '1px solid rgba(245,236,216,0.1)', fontSize: 13, fontWeight: 400, cursor: 'pointer',
           fontFamily: "'Outfit',sans-serif",
         }}>Browse Other Themes</button>
       </div>
@@ -572,21 +680,74 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
   const [pForm, setPForm] = useState({
     date: '', time: '', address: '', city: '', guests: '', notes: '',
   });
+  const [selections, setSelections] = useState({
+    colourPalette: { picked: [], custom: '' },
+    decoration:    { picked: [], custom: '' },
+    food:          { picked: [], custom: '' },
+    entertainment: { picked: [], custom: '' },
+    gifts:         { picked: [], custom: '' },
+    photography:   { picked: [], custom: '' },
+    photos:        [],
+  });
   const navigate = useNavigate();
 
   const color = themeAccentColor(theme.id);
 
+  const handleToggle = (key, item) => {
+    setSelections(prev => {
+      const sec = prev[key];
+      const picked = sec.picked.includes(item)
+        ? sec.picked.filter(p => p !== item)
+        : [...sec.picked, item];
+      return { ...prev, [key]: { ...sec, picked } };
+    });
+  };
+
+  const handleCustomChange = (key, val) => {
+    setSelections(prev => ({ ...prev, [key]: { ...prev[key], custom: val } }));
+  };
+
+  const handleTogglePhoto = (url) => {
+    setSelections(prev => ({
+      ...prev,
+      photos: prev.photos.includes(url)
+        ? prev.photos.filter(u => u !== url)
+        : [...prev.photos, url],
+    }));
+  };
+
+  const SEL_META = [
+    { key: 'colourPalette', icon: '🎨', label: 'Colour Palette' },
+    { key: 'decoration',    icon: '✨', label: 'Decoration' },
+    { key: 'food',          icon: '🍽️', label: 'Food & Snacks' },
+    { key: 'entertainment', icon: '🎭', label: 'Entertainment' },
+    { key: 'gifts',         icon: '🎁', label: 'Gifts' },
+    { key: 'photography',   icon: '📸', label: 'Photography' },
+  ];
+
   const handleProceed = () => {
+    const selLines = SEL_META.map(({ key, icon, label }) => {
+      const { picked, custom } = selections[key];
+      const all = [...picked, ...(custom.trim() ? [custom.trim()] : [])];
+      return all.length ? `${icon} ${label}: ${all.join(', ')}` : null;
+    }).filter(Boolean);
+
     const parts = [
       `Hi! I'm planning a ${occasion} with the "${theme.theme}" theme.`,
+      '',
+      '📋 Event Details:',
       pForm.date    ? `📅 Date: ${pForm.date}` : null,
       pForm.time    ? `🕐 Time: ${pForm.time}` : null,
       pForm.address ? `🏛️ Address: ${pForm.address}` : null,
       pForm.city    ? `📍 City: ${pForm.city}` : null,
       pForm.guests  ? `👥 Guests: ${pForm.guests}` : null,
-      pForm.notes   ? `📝 Notes: ${pForm.notes}` : null,
-      `\nCan you help with decor, vendor suggestions, and planning?`,
-    ].filter(Boolean).join('\n');
+      pForm.notes   ? `📝 Special Requests: ${pForm.notes}` : null,
+      ...(selLines.length ? ['', '🎯 My Preferences:'] : []),
+      ...selLines,
+      ...(selections.photos.length ? [`🖼️ Sample decor photos: ${selections.photos.length} selected`] : []),
+      '',
+      'Can you help with planning, vendor booking, and coordination?',
+    ].filter(l => l !== null).join('\n');
     try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
     onClose();
     navigate('/baat-karo');
@@ -633,8 +794,8 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
 
   const inputStyle = {
     padding: '12px 16px', borderRadius: 12,
-    background: 'rgba(245,236,216,0.05)', border: `1.5px solid ${color}35`,
-    color: '#F5ECD8', fontSize: 15, fontFamily: "'Outfit',sans-serif", outline: 'none', width: '100%', boxSizing: 'border-box',
+    background: 'rgba(245,236,216,0.04)', border: `1px solid ${color}30`,
+    color: '#F5ECD8', fontSize: 14, fontFamily: "'Outfit',sans-serif", fontWeight: 400, outline: 'none', width: '100%', boxSizing: 'border-box',
   };
   const selectStyle = {
     ...inputStyle,
@@ -642,7 +803,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(245%2C236%2C216%2C0.4)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
     backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', paddingRight: 40,
   };
-  const labelStyle = { fontSize: 11, fontWeight: 700, color: 'rgba(245,236,216,0.48)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" };
+  const labelStyle = { fontSize: 10.5, fontWeight: 500, color: 'rgba(245,236,216,0.65)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "'Outfit',sans-serif" };
   const optLabel = <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 10 }}> (optional)</span>;
 
   return (
@@ -664,67 +825,75 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
 
           {/* Proceed Now form overlay */}
           {proceedFormOpen && (
-            <div className="op-scroll" style={{
+            <div style={{
               position: 'absolute', inset: 0, zIndex: 30,
               background: panelBg,
               display: 'flex', flexDirection: 'column',
-              padding: '22px 20px 52px',
-              overflowY: 'auto',
             }}>
-              <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none' }}>Back</button>
-              <p style={{ fontSize: 10, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 6px', fontFamily: "'Outfit',sans-serif" }}>Let's Plan</p>
-              <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 6px' }}>{theme.theme}</h2>
-              <p style={{ fontSize: 14, color: 'rgba(245,236,216,0.58)', margin: '0 0 24px', fontFamily: "'Outfit',sans-serif" }}>Share a few details so we can curate the perfect plan for you.</p>
+              {/* Scrollable form area */}
+              <div className="op-scroll" style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 8px' }}>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                {/* Form header */}
+                <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', padding: '0 0 20px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none', letterSpacing: '0.02em' }}>← Back</button>
 
-                {/* Date + Time row */}
-                <div className="pf-datetime">
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span style={labelStyle}>Event Date</span>
-                    <input type="date" value={pForm.date} onChange={e => setPForm(f => ({ ...f, date: e.target.value }))} style={inputStyle} />
+                <p style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.2em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Let's Plan</p>
+                <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.4rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 8px', lineHeight: 1.1, letterSpacing: '0.01em' }}>{theme.theme}</h2>
+                <p style={{ fontSize: 13.5, fontWeight: 400, color: 'rgba(245,236,216,0.70)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif", lineHeight: 1.65 }}>Share a few details so we can put together the perfect plan for you.</p>
+
+                <div style={{ height: 1, background: `${color}20`, marginBottom: 22 }} />
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {/* Date + Time row */}
+                  <div className="pf-datetime">
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                      <span style={labelStyle}>Event Date</span>
+                      <input type="date" value={pForm.date} onChange={e => setPForm(f => ({ ...f, date: e.target.value }))} style={inputStyle} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                      <span style={labelStyle}>Time</span>
+                      <input type="time" value={pForm.time} onChange={e => setPForm(f => ({ ...f, time: e.target.value }))} style={inputStyle} />
+                    </label>
+                  </div>
+
+                  {/* Address */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <span style={labelStyle}>Address{optLabel}</span>
+                    <input type="text" placeholder="e.g. 12 Park Street, Sector 62" value={pForm.address} onChange={e => setPForm(f => ({ ...f, address: e.target.value }))} style={inputStyle} />
                   </label>
-                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span style={labelStyle}>Time</span>
-                    <input type="time" value={pForm.time} onChange={e => setPForm(f => ({ ...f, time: e.target.value }))} style={inputStyle} />
+
+                  {/* City dropdown */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <span style={labelStyle}>City</span>
+                    <select value={pForm.city} onChange={e => setPForm(f => ({ ...f, city: e.target.value }))} style={selectStyle}>
+                      <option value="" style={{ background: '#1C0A04' }}>Select your city</option>
+                      {INDIAN_CITIES.map(c => <option key={c} value={c} style={{ background: '#1C0A04' }}>{c}</option>)}
+                    </select>
+                  </label>
+
+                  {/* Guests */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <span style={labelStyle}>How Many Guests?</span>
+                    <input type="number" min="1" placeholder="e.g. 80" value={pForm.guests} onChange={e => setPForm(f => ({ ...f, guests: e.target.value }))} style={inputStyle} />
+                  </label>
+
+                  {/* Notes */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <span style={labelStyle}>Special Requests{optLabel}</span>
+                    <textarea rows={3} placeholder="e.g. outdoor setup, vegan menu, specific colour palette..." value={pForm.notes} onChange={e => setPForm(f => ({ ...f, notes: e.target.value }))}
+                      style={{ ...inputStyle, resize: 'vertical', minHeight: 84 }} />
                   </label>
                 </div>
-
-                {/* Address */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>Address{optLabel}</span>
-                  <input type="text" placeholder="e.g. 12 Park Street, Sector 62" value={pForm.address} onChange={e => setPForm(f => ({ ...f, address: e.target.value }))} style={inputStyle} />
-                </label>
-
-                {/* City dropdown */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>City</span>
-                  <select value={pForm.city} onChange={e => setPForm(f => ({ ...f, city: e.target.value }))} style={selectStyle}>
-                    <option value="" style={{ background: '#1C0A04' }}>Select your city</option>
-                    {INDIAN_CITIES.map(c => <option key={c} value={c} style={{ background: '#1C0A04' }}>{c}</option>)}
-                  </select>
-                </label>
-
-                {/* Guests */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>How Many Guests?</span>
-                  <input type="number" min="1" placeholder="e.g. 80" value={pForm.guests} onChange={e => setPForm(f => ({ ...f, guests: e.target.value }))} style={inputStyle} />
-                </label>
-
-                {/* Notes */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>Special Requests{optLabel}</span>
-                  <textarea rows={3} placeholder="e.g. outdoor setup, vegan menu, specific colour palette..." value={pForm.notes} onChange={e => setPForm(f => ({ ...f, notes: e.target.value }))}
-                    style={{ ...inputStyle, resize: 'vertical', minHeight: 76 }} />
-                </label>
               </div>
 
-              <button onClick={handleProceed} style={{
-                marginTop: 22, padding: '14px 24px', borderRadius: 100,
-                background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
-                color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-                fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
-              }}>Send to Baat Karo</button>
+              {/* Sticky button — always visible at the bottom */}
+              <div style={{ flexShrink: 0, padding: '14px 24px calc(18px + env(safe-area-inset-bottom, 0px))', background: panelBg, borderTop: `1px solid ${color}18` }}>
+                <button onClick={handleProceed} style={{
+                  width: '100%', padding: '15px 24px', borderRadius: 100,
+                  background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
+                  color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                  fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 20px ${color}42`, letterSpacing: '0.02em',
+                }}>Send to Baat Karo</button>
+              </div>
             </div>
           )}
 
@@ -737,12 +906,12 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <PageDots current={pg} total={3} color={color} />
-              <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.35)', textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{PAGE_NAMES[pg]}</span>
+              <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.52)', textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{PAGE_NAMES[pg]}</span>
             </div>
             <button onClick={onClose} style={{
               width: 32, height: 32, borderRadius: '50%',
               background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.12)',
-              color: 'rgba(245,236,216,0.65)', fontSize: 15, cursor: 'pointer',
+              color: 'rgba(245,236,216,0.85)', fontSize: 15, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>✕</button>
           </div>
@@ -751,8 +920,8 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
           <div className="op-scroll" style={{ flex: 1, overflowY: 'auto' }}>
             <div key={pg} className={pageAnimClass} style={{ padding: '0 24px 8px' }}>
               {pg === 0 && <BookPage1 theme={theme} occasion={occasion} photo={photo} color={color} />}
-              {pg === 1 && <BookPage2 theme={theme} color={color} />}
-              {pg === 2 && <BookPage3 theme={theme} color={color} galleryUrls={galleryUrls} downloadPhoto={downloadPhoto} onProceedNow={() => setProceedFormOpen(true)} onBrowseOtherThemes={onBrowseOtherThemes} />}
+              {pg === 1 && <BookPage2 theme={theme} color={color} selections={selections} onToggle={handleToggle} onCustomChange={handleCustomChange} />}
+              {pg === 2 && <BookPage3 theme={theme} color={color} galleryUrls={galleryUrls} selectedPhotos={selections.photos} onTogglePhoto={handleTogglePhoto} onProceedNow={() => setProceedFormOpen(true)} onBrowseOtherThemes={onBrowseOtherThemes} />}
             </div>
           </div>
 
@@ -766,13 +935,13 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
           }}>
             <button onClick={() => goPage(-1)} disabled={pg === 0} style={{
               background: 'transparent', border: 'none', cursor: pg === 0 ? 'not-allowed' : 'pointer',
-              color: pg === 0 ? 'rgba(245,236,216,0.18)' : 'rgba(245,236,216,0.48)',
+              color: pg === 0 ? 'rgba(245,236,216,0.18)' : 'rgba(245,236,216,0.65)',
               fontSize: 13, padding: '8px 0', fontFamily: "'Outfit',sans-serif",
               WebkitAppearance: 'none', appearance: 'none', outline: 'none',
               display: 'flex', alignItems: 'center', gap: 5,
             }}>Previous</button>
 
-            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.28)', fontFamily: "'Outfit',sans-serif" }}>{pg + 1} / 3</span>
+            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.44)', fontFamily: "'Outfit',sans-serif" }}>{pg + 1} / 3</span>
 
             {pg < 2 ? (
               <button onClick={() => goPage(1)} style={{
@@ -816,8 +985,8 @@ function ThemeCard({ theme, occasion, onExpand, occColor }) {
           onError={e => { e.target.src = occFallback(occasion); }} />
       </div>
       <div style={{ flex: 1, padding: '0 12px', minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Outfit',sans-serif" }}>{theme.theme}</div>
-        <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.78)', lineHeight: 1.3, marginTop: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
+        <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Cormorant Garamond',serif" }}>{theme.theme}</div>
+        <div style={{ fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.75)', lineHeight: 1.3, marginTop: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', flexShrink: 0 }}>
         <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 100, background: `${badgeColor}22`, border: `1px solid ${badgeColor}50`, color: badgeColor, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Outfit',sans-serif" }}>{theme.budget}</span>
@@ -886,7 +1055,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
     fontSize: 'clamp(2rem,4.5vw,2.8rem)', fontWeight: 400,
     color: '#F5ECD8', margin: '0 0 8px', letterSpacing: '0.01em',
   };
-  const subStyle = { fontSize: 15, color: 'rgba(245,236,216,0.78)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif" };
+  const subStyle = { fontSize: 15, color: 'rgba(245,236,216,0.92)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif" };
 
   return (
     <>
@@ -917,7 +1086,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               position: 'absolute', top: 16, right: 16, zIndex: 20,
               width: 34, height: 34, borderRadius: '50%',
               background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.12)',
-              color: 'rgba(245,236,216,0.62)', fontSize: 15, cursor: 'pointer',
+              color: 'rgba(245,236,216,0.82)', fontSize: 15, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>✕</button>
 
@@ -969,26 +1138,26 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               {/* Step 0.5 — Plan with / without theme */}
               {step === 0.5 && (
                 <div>
-                  <button onClick={() => setStep(0)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
+                  <button onClick={() => setStep(0)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.75)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
                   <p style={{ fontSize: 10, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Plan your {occasion}</p>
                   <h2 style={h2Style}>How would you like to plan?</h2>
                   <p style={subStyle}>Choose your planning style</p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                     <button onClick={() => goNext(1)} style={{
                       padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-                      border: `1.5px solid ${occColor}55`, background: `${occColor}10`,
+                      border: `1px solid ${occColor}45`, background: `${occColor}0D`,
                       transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                     }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#F5ECD8', marginBottom: 5 }}>🎨 Plan with Theme</div>
-                      <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.72)' }}>Browse curated themes and get tailored vendor suggestions for your event</div>
+                      <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan with Theme</div>
+                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Browse curated themes and get tailored vendor suggestions for your event</div>
                     </button>
                     <button onClick={() => { onClose(); navigate('/booking'); }} style={{
                       padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-                      border: '1.5px solid rgba(245,236,216,0.14)', background: 'rgba(245,236,216,0.04)',
+                      border: '1px solid rgba(245,236,216,0.1)', background: 'rgba(245,236,216,0.03)',
                       transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                     }}>
-                      <div style={{ fontSize: 16, fontWeight: 700, color: '#F5ECD8', marginBottom: 5 }}>⚡ Plan without Theme</div>
-                      <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.72)' }}>Jump straight to planning — browse vendors, get quotes, and finalise</div>
+                      <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan without Theme</div>
+                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Jump straight to planning — browse vendors, get quotes, and finalise</div>
                     </button>
                   </div>
                 </div>
@@ -1004,9 +1173,9 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     {BUDGET_OPTIONS.map(({ key, label, desc, stars }) => (
                       <button key={key} onClick={() => { setBudget(key); setTimeout(() => goNext(), 260); }}
                         style={optStyle(budget === key)}>
-                        <div style={{ color: occColor, fontSize: 13, letterSpacing: 3, marginBottom: 6 }}>{'★'.repeat(stars)}</div>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: '#F5ECD8', marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: 13, color: 'rgba(245,236,216,0.82)' }}>{desc}</div>
+                        <div style={{ color: occColor, fontSize: 11, letterSpacing: 4, marginBottom: 8, opacity: 0.85 }}>{'★'.repeat(stars)}</div>
+                        <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)', lineHeight: 1.5 }}>{desc}</div>
                       </button>
                     ))}
                   </div>
@@ -1033,7 +1202,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         borderRadius: 14, color: '#F5ECD8', outline: 'none', fontFamily: "'Outfit',sans-serif",
                       }}
                     />
-                    <span style={{ position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(245,236,216,0.28)', pointerEvents: 'none', fontFamily: "'Outfit',sans-serif" }}>guests</span>
+                    <span style={{ position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(245,236,216,0.44)', pointerEvents: 'none', fontFamily: "'Outfit',sans-serif" }}>guests</span>
                   </div>
                   <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 22 }}>
                     {['10','25','50','100','150','250'].map(g => (
@@ -1041,7 +1210,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         padding: '7px 13px', borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                         background: guests === g ? `${occColor}20` : 'rgba(245,236,216,0.05)',
                         border: `1px solid ${guests === g ? occColor : 'rgba(245,236,216,0.12)'}`,
-                        color: guests === g ? occColor : 'rgba(245,236,216,0.48)',
+                        color: guests === g ? occColor : 'rgba(245,236,216,0.65)',
                         transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                       }}>{g}</button>
                     ))}
@@ -1060,7 +1229,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     {VENUE_OPTIONS.map(({ key, label }) => (
                       <button key={key} onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
                         style={{ ...optStyle(venue === key), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', textAlign: 'center' }}>{label}</div>
+                        <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', textAlign: 'center', fontFamily: "'Cormorant Garamond',serif" }}>{label}</div>
                       </button>
                     ))}
                   </div>
@@ -1078,9 +1247,9 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     {TIME_OPTIONS.map(({ key, label, desc, icon }) => (
                       <button key={key} onClick={() => { setTimeOfDay(key); setTimeout(() => goNext(5), 260); }}
                         style={optStyle(timeOfDay === key)}>
-                        <div style={{ fontSize: 26, marginBottom: 6 }}>{icon}</div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: '#F5ECD8', marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontSize: 14, color: 'rgba(245,236,216,0.82)', fontWeight: 600 }}>{desc}</div>
+                        <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
+                        <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)' }}>{desc}</div>
                       </button>
                     ))}
                   </div>
@@ -1102,9 +1271,9 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     {!showAll && (
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {budget    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: `${occColor}14`, border: `1px solid ${occColor}38`, color: occColor, fontFamily: "'Outfit',sans-serif" }}>{BUDGET_OPTIONS.find(b => b.key === budget)?.label}</span>}
-                        {guests    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
-                        {venue     && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
-                        {timeOfDay && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
+                        {guests    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
+                        {venue     && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
+                        {timeOfDay && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
                       </div>
                     )}
                   </div>
@@ -1118,7 +1287,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   ) : (
                     <div style={{ textAlign: 'center', padding: '40px 16px' }}>
                       <div style={{ fontSize: 36, opacity: 0.25, marginBottom: 10 }}>✦</div>
-                      <p style={{ color: 'rgba(245,236,216,0.38)', fontSize: 14, fontFamily: "'Outfit',sans-serif" }}>No themes matched — try adjusting your filters</p>
+                      <p style={{ color: 'rgba(245,236,216,0.56)', fontSize: 14, fontFamily: "'Outfit',sans-serif" }}>No themes matched — try adjusting your filters</p>
                     </div>
                   )}
 
@@ -1136,11 +1305,11 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       </button>
                     )}
                     <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                      <button onClick={adjustFilters} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.42)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                      <button onClick={adjustFilters} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
                         Adjust filters
                       </button>
                       <span style={{ color: 'rgba(245,236,216,0.18)' }}>·</span>
-                      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.42)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
                         Continue without theme
                       </button>
                     </div>
