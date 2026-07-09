@@ -220,7 +220,7 @@ function FaqSection() {
                   <span style={{ fontSize: 12, fontWeight: 500, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 8, padding: "3px 8px", flexShrink: 0, marginTop: 2, letterSpacing: "0.04em" }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
+                  <span style={{ fontSize: 15, fontWeight: 500, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
                 </div>
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
@@ -884,7 +884,7 @@ const Home = () => {
             {/* Trust chips */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
               {["✓ Verified vendors", "✓ Free to browse", "✓ Price locked before you pay", "✓ 100+ vendors"].map(chip => (
-                <span key={chip} style={{ fontSize: 12, fontWeight: 600, color: "#7A5535", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 12px", whiteSpace: "nowrap" }}>
+                <span key={chip} style={{ fontSize: 12, fontWeight: 500, color: "#7A5535", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 12px", whiteSpace: "nowrap" }}>
                   {chip}
                 </span>
               ))}
@@ -1171,7 +1171,7 @@ const Home = () => {
               <div style={{ background: "#2C1A0E", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 20, padding: "28px 22px 26px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", boxShadow: "0 6px 24px rgba(44,26,14,0.14)", flex: 1 }}>
                 <span style={{ position: "absolute", top: -8, right: 14, fontSize: 72, fontWeight: 900, color: "rgba(204,171,74,0.08)", lineHeight: 1, fontFamily: "'Outfit',sans-serif", pointerEvents: "none", userSelect: "none" }}>{n}</span>
                 <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Step {n} · {time}</span>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
+                <h3 style={{ fontSize: 15, fontWeight: 600, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
                 <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
                 {showConnector && <span style={{ position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)", zIndex: 10, fontSize: 18, color: "rgba(196,122,46,0.4)" }}>›</span>}
               </div>
@@ -1317,12 +1317,12 @@ const Home = () => {
           <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>Also on Tendr</p>
           <div className="offer-tier2-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 10 }}>
             {[
-              { icon: "🎭", label: "Fun Activities",       desc: "Magic shows, game zones, live counters — fixed prices.", href: "/fun-activities" },
               { icon: "💒", label: "Wedding Stationeries", desc: "Invitations, itineraries, thank you cards — personalised.", href: "/stationery" },
               { icon: "⏱️", label: "Event Timeline",       desc: "Build a day-by-day countdown for your event.", href: "/timeline-picker" },
               { icon: "💰", label: "Budget Allocator",     desc: "Set budget per category and track every rupee.", href: "/budget-picker" },
               { icon: "🎁", label: "Gift Hampers & Cakes", desc: "Curated gifts and cakes — delivered for your event.", href: "/gift-hampers-cakes" },
-              { icon: "📷", label: "Find by Style",        desc: "Upload a photo — we find vendors with matching work.", href: "/find-by-style" },
+              { icon: "💬", label: "Community Wall",       desc: "Real event photos and ideas shared by customers.", href: "/community" },
+              { icon: "📚", label: "Guide Store",          desc: "Free planning guides — budgeting, decor, timelines.", href: "/guides" },
             ].map(({ icon, label, desc, href }) => (
               <div key={label} onClick={() => navigate(href)}
                 style={{ background: "#F9F6F2", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "background 0.15s, box-shadow 0.15s" }}
@@ -1352,6 +1352,83 @@ const Home = () => {
           `}</style>
         </div>
       </section>
+
+      {/* ── Upcoming Events ── */}
+      {(() => {
+        const UPCOMING = [
+          { title: "Birthday Bash at Home",      date: "Jul 19, 2026", location: "Noida",    type: "Birthday",     img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&q=75", spots: 4 },
+          { title: "Anniversary Dinner Night",   date: "Jul 24, 2026", location: "Delhi",    type: "Anniversary",  img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=75", spots: 6 },
+          { title: "House Party — Monsoon Vibe", date: "Aug 2, 2026",  location: "Gurgaon",  type: "House Party",  img: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&q=75", spots: 8 },
+        ];
+        return (
+          <section style={{ background: "#FFFCF5", padding: "64px 24px 68px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+            <div style={{ maxWidth: 960, margin: "0 auto" }}>
+              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
+                <div>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Coming Up</p>
+                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, letterSpacing: "0.01em" }}>Upcoming Events</h2>
+                </div>
+                {user && (
+                  <button onClick={() => navigate("/occasions")}
+                    style={{ padding: "9px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                    See All →
+                  </button>
+                )}
+              </div>
+
+              {/* Cards */}
+              <div className="upcoming-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, position: "relative" }}>
+                {UPCOMING.map((ev, i) => (
+                  <div key={i} style={{ borderRadius: 18, overflow: "hidden", border: "1px solid rgba(196,122,46,0.12)", background: "#fff", boxShadow: "0 2px 14px rgba(196,122,46,0.07)", transition: "transform 0.18s, box-shadow 0.18s", filter: !user ? "blur(3px)" : "none", pointerEvents: !user ? "none" : "auto" }}
+                    onMouseEnter={e => { if (user) { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(196,122,46,0.15)"; } }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(196,122,46,0.07)"; }}>
+                    <div style={{ position: "relative", height: 160 }}>
+                      <img src={ev.img} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.55) 0%, transparent 60%)" }} />
+                      <span style={{ position: "absolute", top: 10, left: 12, fontSize: 10, fontWeight: 600, background: "rgba(196,122,46,0.9)", color: "#fff", borderRadius: 100, padding: "3px 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>{ev.type}</span>
+                    </div>
+                    <div style={{ padding: "14px 16px 16px" }}>
+                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E", marginBottom: 6, lineHeight: 1.35 }}>{ev.title}</div>
+                      <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
+                        <span style={{ fontSize: 11.5, color: "#9B7450" }}>📅 {ev.date}</span>
+                        <span style={{ fontSize: 11.5, color: "#9B7450" }}>📍 {ev.location}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600 }}>{ev.spots} spots left</span>
+                        <button onClick={() => navigate("/booking")}
+                          style={{ fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                          Interested →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Sign-in gate overlay */}
+                {!user && (
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, zIndex: 2 }}>
+                    <div style={{ background: "#fff", borderRadius: 20, padding: "28px 32px", boxShadow: "0 16px 56px rgba(44,26,14,0.18)", textAlign: "center", border: "1.5px solid rgba(196,122,46,0.15)", maxWidth: 320 }}>
+                      <div style={{ fontSize: 32, marginBottom: 10 }}>🔒</div>
+                      <div style={{ fontSize: 16, fontWeight: 600, color: "#2C1A0E", marginBottom: 6 }}>Sign in to see upcoming events</div>
+                      <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 20, lineHeight: 1.55 }}>Register interest, get reminders and plan your celebration — free to join.</div>
+                      <button onClick={() => navigate("/login")}
+                        style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
+                        Sign In →
+                      </button>
+                      <button onClick={() => navigate("/signup")}
+                        style={{ width: "100%", marginTop: 8, padding: "10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+                        Create Account
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+            </div>
+            <style>{`@media(max-width:640px){.upcoming-grid{grid-template-columns:1fr!important;}}`}</style>
+          </section>
+        );
+      })()}
 
       {/* ── Live Entertainment Add-ons ── */}
       <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
@@ -1464,7 +1541,7 @@ const Home = () => {
             <div key={stat} style={{ display: "flex", alignItems: "center", gap: 0, flex: "1 1 220px", minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 28px", flex: 1 }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.3 }}>{stat}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.3 }}>{stat}</div>
                   <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4, marginTop: 2 }}>{sub}</div>
                 </div>
               </div>
@@ -1847,7 +1924,7 @@ const Home = () => {
               <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "24px 24px", display: "flex", gap: 20, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 28, fontWeight: 900, color: "#CCAB4A", lineHeight: 1, flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>{step.num}</span>
                 <div>
-                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#fff", margin: "0 0 6px" }}>{step.title}</h4>
+                  <h4 style={{ fontSize: 16, fontWeight: 600, color: "#fff", margin: "0 0 6px" }}>{step.title}</h4>
                   <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.55 }}>{step.desc}</p>
                 </div>
               </div>
