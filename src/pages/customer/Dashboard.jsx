@@ -598,12 +598,6 @@ export default function CustomerDashboard() {
                           <span>🔁 Past Vendors</span>
                           {!hasPastVendors && <span style={{ fontSize:10, fontWeight:500 }}>No past vendors yet</span>}
                         </button>
-                        {/* Browse Vendors */}
-                        <button
-                          onClick={() => navigate("/vendors")}
-                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background:"#fff", color:"#C47A2E", fontFamily:font, fontSize:12, fontWeight:700, cursor:"pointer", textAlign:"left" }}>
-                          🔍 Browse Vendors
-                        </button>
                         {/* Plan Full Event */}
                         <button
                           onClick={() => navigate("/?occasion=" + encodeURIComponent(ev.occasion))}
@@ -1062,14 +1056,8 @@ export default function CustomerDashboard() {
                       </div>
                     </div>
 
-                    {/* Re-order + Review & Pay actions */}
+                    {/* Review & Pay actions */}
                     <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)", display: "flex", gap: 10, flexWrap: "wrap" }}>
-                      <button
-                        onClick={() => handleRebook(plan)}
-                        style={{ padding: "8px 18px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}
-                      >
-                        🔄 Re-order
-                      </button>
                       {plan.status !== "completed" && (
                         finalisedCount > 0 ? (
                           <button
@@ -1404,15 +1392,6 @@ export default function CustomerDashboard() {
                       <div style={{ fontSize: 11, color: "#bbb", whiteSpace: "nowrap" }}>
                         {new Date(plan.createdAt).toLocaleDateString("en-IN")}
                       </div>
-                      <button
-                        onClick={() => handleRebook(plan)}
-                        title="Copy this event's details into a new booking"
-                        style={{ fontSize: 12, fontWeight: 700, padding: "5px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", transition: "background 0.15s" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.14)")}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
-                      >
-                        ↩ Re-book
-                      </button>
                       <button
                         onClick={() => handleRemovePlan(plan._id)}
                         disabled={removingPlan === plan._id}
