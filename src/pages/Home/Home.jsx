@@ -220,7 +220,7 @@ function FaqSection() {
                   <span style={{ fontSize: 12, fontWeight: 500, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 8, padding: "3px 8px", flexShrink: 0, marginTop: 2, letterSpacing: "0.04em" }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
+                  <span style={{ fontSize: 15, fontWeight: 500, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
                 </div>
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
@@ -877,14 +877,14 @@ const Home = () => {
               </h1>
 
               <p className="home-hero-para" style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", lineHeight: 1.65, maxWidth: 420, margin: 0 }}>
-                Vendors, budget planning, invitations, gift hampers and more — for every celebration in Delhi NCR.
+                Birthdays, anniversaries, house parties and more — find vendors, plan the details, and book everything in Delhi NCR.
               </p>
             </div>
 
             {/* Trust chips */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
               {["✓ Verified vendors", "✓ Free to browse", "✓ Price locked before you pay", "✓ 100+ vendors"].map(chip => (
-                <span key={chip} style={{ fontSize: 12, fontWeight: 600, color: "#7A5535", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 12px", whiteSpace: "nowrap" }}>
+                <span key={chip} style={{ fontSize: 12, fontWeight: 500, color: "#7A5535", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 12px", whiteSpace: "nowrap" }}>
                   {chip}
                 </span>
               ))}
@@ -1137,259 +1137,196 @@ const Home = () => {
         }
       `}</style>
 
-      {/* How Tendr Works */}
-      <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      {/* ── Which path is for you ── */}
+      <section style={{ background: "#F8F4EF", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
 
-          {/* Heading */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.55 }}
-            style={{ textAlign: "center", marginBottom: 56 }}
-          >
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Your Journey</p>
+          <div style={{ textAlign: "center", marginBottom: 44 }}>
+            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 12px" }}>Find Your Way</p>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.01em" }}>
-              How Tendr Works
+              Which one is for you?
             </h2>
-            <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 400, margin: "0 auto" }}>
-              From idea to celebration in five steps.
+            <p style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", maxWidth: 380, margin: "0 auto", lineHeight: 1.65 }}>
+              Three ways to use Tendr — pick the one that matches how you like to plan.
             </p>
-          </motion.div>
-
-          {/* Steps */}
-          {(() => {
-            const HTW_STEPS = [
-              { n: "01", icon: "📋", title: "Tell Us About Your Event",  desc: "Event type, date, budget, guests — 2 minutes.",          time: "2 min"    },
-              { n: "02", icon: "🔍", title: "Browse & Shortlist",        desc: "Find verified caterers, decorators, photographers, DJs.", time: "5–10 min" },
-              { n: "03", icon: "💬", title: "Chat & Get a Price",        desc: "Direct chat. Real quote. No surprises.",                 time: "24–48 hrs" },
-              { n: "04", icon: "✅", title: "Review & Confirm",          desc: "One summary page. All vendors. All prices.",              time: "5 min"    },
-              { n: "05", icon: "🎉", title: "Pay & Celebrate",           desc: "Instant invoice, event docs and vendor contacts — all downloaded in one tap.", time: "Instant"  },
-            ];
-            const StepCard = ({ n, icon, title, desc, time, i, showConnector }) => (
-              <div style={{ background: "#2C1A0E", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 20, padding: "28px 22px 26px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", boxShadow: "0 6px 24px rgba(44,26,14,0.14)", flex: 1 }}>
-                <span style={{ position: "absolute", top: -8, right: 14, fontSize: 72, fontWeight: 900, color: "rgba(204,171,74,0.08)", lineHeight: 1, fontFamily: "'Outfit',sans-serif", pointerEvents: "none", userSelect: "none" }}>{n}</span>
-                <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Step {n} · {time}</span>
-                <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
-                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
-                {showConnector && <span style={{ position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)", zIndex: 10, fontSize: 18, color: "rgba(196,122,46,0.4)" }}>›</span>}
-              </div>
-            );
-            if (isMobile) return (
-              <div style={{ position: "relative" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <button onClick={() => setHtwStep(s => Math.max(0, s - 1))} style={{ width: 38, height: 38, borderRadius: "50%", background: htwStep === 0 ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.9)", border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: htwStep === 0 ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>
-                  <StepCard {...HTW_STEPS[htwStep]} i={htwStep} showConnector={false} />
-                  <button onClick={() => setHtwStep(s => Math.min(HTW_STEPS.length - 1, s + 1))} style={{ width: 38, height: 38, borderRadius: "50%", background: htwStep === HTW_STEPS.length - 1 ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.9)", border: "none", color: "#fff", fontSize: 22, fontWeight: 700, cursor: htwStep === HTW_STEPS.length - 1 ? "default" : "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>
-                </div>
-                <div style={{ display: "flex", justifyContent: "center", gap: 6, marginTop: 16 }}>
-                  {HTW_STEPS.map((_, i) => (
-                    <button key={i} onClick={() => setHtwStep(i)} style={{ width: i === htwStep ? 20 : 7, height: 7, borderRadius: 100, background: i === htwStep ? "#C47A2E" : "rgba(196,122,46,0.25)", border: "none", cursor: "pointer", padding: 0, transition: "all 0.25s" }} />
-                  ))}
-                </div>
-              </div>
-            );
-            return (
-              <div style={{ display: "flex", gap: 16, alignItems: "stretch" }}>
-                {HTW_STEPS.map(({ n, icon, title, desc, time }, i) => (
-                  <motion.div key={n} initial={{ opacity: 0, y: 50, scale: 0.94 }} whileInView={{ opacity: 1, y: 0, scale: 1 }} viewport={{ once: true }} transition={{ duration: 0.5, delay: i * 0.1, type: "spring", stiffness: 120, damping: 14 }} whileHover={{ y: -6, transition: { duration: 0.2 } }} style={{ flex: 1 }}>
-                    <StepCard n={n} icon={icon} title={title} desc={desc} time={time} i={i} showConnector={i < 4} />
-                  </motion.div>
-                ))}
-              </div>
-            );
-          })()}
-
-          {/* Callout + CTA */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.6 }}
-            style={{ textAlign: "center", marginTop: 52 }}
-          >
-            <p style={{ fontSize: 13.5, color: "#6B4226", marginBottom: 24, maxWidth: 520, margin: "0 auto 28px" }}>
-              Three ways to plan — <strong style={{ color: "#C47A2E" }}>browse & book yourself</strong>, <strong style={{ color: "#C47A2E" }}>get a ready package</strong>, or <strong style={{ color: "#C47A2E" }}>just chat with our team</strong>.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.04, boxShadow: "0 12px 36px rgba(196,122,46,0.4)" }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate("/booking")}
-              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 600, padding: "15px 48px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.3)", letterSpacing: "0.02em" }}
-            >
-              Plan Your Event →
-            </motion.button>
-            <p style={{ fontSize: 12, color: "#C0A070", marginTop: 12 }}>Free to browse · No commitment until you pay</p>
-          </motion.div>
-
-        </div>
-
-        <style>{`
-          @media (max-width: 860px) and (min-width: 541px) {
-            .htw-desktop-row { flex-wrap: wrap !important; }
-            .htw-desktop-row > div { flex: 0 0 calc(33% - 10px) !important; }
-          }
-        `}</style>
-      </section>
-
-      {/* ── Plan by Occasion — disabled, restore by removing {false && ( wrapper ── */}
-      {false && (<section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Plan by Occasion</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
-            <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
           </div>
 
-          {/* Single horizontal scrollable row */}
-          <div style={{ display: "flex", gap: "clamp(12px,1.8vw,22px)", overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}>
+          <div className="path-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
             {[
-              { label: "Birthday",        photoM: "/occasions/birthday-mobile.png",        photoD: "/occasions/birthday-desktop.png" },
-              { label: "Anniversary",     photoM: "/occasions/anniversary-mobile.png",     photoD: "/occasions/anniversary-desktop.png" },
-              { label: "Baby Shower",     photoM: "/occasions/baby-shower-mobile.png",     photoD: "/occasions/baby-shower-desktop.png" },
-              { label: "House Party",     photoM: "/occasions/house-party-mobile.png",     photoD: "/occasions/house-party-desktop.png" },
-              { label: "Housewarming",    photoM: "/occasions/housewarming-mobile.png",    photoD: "/occasions/housewarming-desktop.png" },
-              { label: "Get Together",    photoM: "/occasions/get-together-mobile.png",    photoD: "/occasions/get-together-desktop.png" },
-              { label: "Kitty Party",     photoM: "/occasions/kitty-party-mobile.png",     photoD: "/occasions/kitty-party-desktop.png" },
-              { label: "Naming Ceremony", photoM: "/occasions/naming-ceremony-mobile.png", photoD: "/occasions/naming-ceremony-desktop.png" },
-            ].map(({ label, photoM, photoD }) => (
-              <button key={label}
-                onClick={() => setPlannerOccasion(label)}
-                style={{ flex: "0 0 clamp(140px,15vw,182px)", borderRadius: "clamp(10px,1.5vw,16px)", border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 2px 14px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", aspectRatio: "1/1" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(0,0,0,0.15)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(0,0,0,0.08)"; }}
-              >
-                <div style={{ padding: "clamp(6px,1.2vw,10px) clamp(6px,1.2vw,10px) 4px", background: "#fff", flexShrink: 0 }}>
-                  <span style={{ fontSize: "clamp(9px,1.1vw,12px)", fontWeight: 500, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
-                </div>
-                <div style={{ flex: 1, overflow: "hidden" }}>
-                  <img src={isMobile ? photoM : photoD} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                </div>
-              </button>
+              {
+                icon: "🔍",
+                eyebrow: "Browse & Search",
+                title: "You know what you want",
+                desc: "You have a vendor type in mind — a decorator, photographer, caterer. Search directly, compare profiles, and chat to lock in your price.",
+                accent: "#C47A2E",
+              },
+              {
+                icon: "✨",
+                eyebrow: "Start Planning",
+                title: "You want help figuring it out",
+                desc: "Tell us your event, budget and guest count. We match you with the right vendors — or our team can coordinate everything for you.",
+                accent: "#7A4A1E",
+              },
+              {
+                icon: "🎉",
+                eyebrow: "Plan by Occasion",
+                title: "You're starting from a celebration",
+                desc: "Pick your occasion — birthday, anniversary, house party. We suggest themes, decor ideas and vendor types tailored to it.",
+                accent: "#D4922E",
+              },
+            ].map(({ icon, eyebrow, title, desc, accent }) => (
+              <div key={eyebrow} style={{
+                background: "#FFFCF7",
+                border: "1px solid rgba(196,122,46,0.13)",
+                borderRadius: 20,
+                padding: "28px 24px 26px",
+                display: "flex",
+                flexDirection: "column",
+                gap: 12,
+                boxShadow: "0 2px 12px rgba(44,26,14,0.05)",
+              }}>
+                <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{icon}</div>
+                <p style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0 }}>{eyebrow}</p>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.2rem,1.8vw,1.45rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, lineHeight: 1.25, letterSpacing: "0.01em" }}>{title}</h3>
+                <p style={{ fontSize: 13.5, fontWeight: 400, color: "#6B4226", margin: 0, lineHeight: 1.7 }}>{desc}</p>
+              </div>
             ))}
           </div>
-          <style>{`.occ-row::-webkit-scrollbar{display:none}`}</style>
 
-          <div style={{ textAlign: "center", marginTop: 28 }}>
-            <button
-              onClick={() => setPlannerOccasion("")}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)", transition: "all 0.18s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}
-            >See all occasions &#8594;</button>
-          </div>
+          <style>{`
+            @media (max-width: 640px) {
+              .path-cards-grid {
+                display: flex !important;
+                overflow-x: auto !important;
+                gap: 12px !important;
+                padding-bottom: 8px !important;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+              }
+              .path-cards-grid::-webkit-scrollbar { display: none; }
+              .path-cards-grid > div {
+                min-width: 248px !important;
+                max-width: 248px !important;
+                flex-shrink: 0 !important;
+              }
+            }
+          `}</style>
         </div>
-      </section>)}
-      {/* ── END Plan by Occasion ── */}
+      </section>
 
-            {/* ── 5s Rotating Feature Carousel ── */}
-      <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif", overflow: "hidden", position: "relative" }}>
-        {/* Decorative background blobs — no photos, warm light tones */}
-        <div style={{ position: "absolute", top: -60, right: -60, width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.07) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -40, left: -40, width: 260, height: 260, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
+      {/* ── Everything for your celebration — static 2-tier grid ── */}
+      <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 960, margin: "0 auto" }}>
 
-        <div style={{ maxWidth: 920, margin: "0 auto", position: "relative", zIndex: 1 }}>
-          {/* Section heading */}
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.01em" }}>What We Offer</h2>
-            <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Everything you need for a perfect event — in one place</p>
+          {/* Heading */}
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "0.01em" }}>Everything for your celebration</h2>
+            <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick what you need — vendors, planning tools, entertainment, stationery and more.</p>
           </div>
 
-          {(() => {
-            const slide = FEATURE_SLIDES[slideIdx];
-            const goSlide = (dir) => {
-              setSlideVisible(false);
-              setTimeout(() => { setSlideIdx(i => (i + dir + FEATURE_SLIDES.length) % FEATURE_SLIDES.length); setSlideVisible(true); }, 400);
-            };
-
-            return (
-              <div>
-                {/* Main slide card */}
-                <div className="offer-slide-card" style={{
-                  transition: "opacity 0.4s ease, transform 0.4s ease",
-                  opacity: slideVisible ? 1 : 0,
-                  transform: slideVisible ? "translateY(0) scale(1)" : "translateY(16px) scale(0.98)",
-                  background: "#fff",
-                  borderRadius: 24,
-                  border: `1.5px solid ${slide.accent}22`,
-                  boxShadow: `0 8px 40px ${slide.accent}14, 0 2px 12px rgba(0,0,0,0.04)`,
-                  overflow: "hidden",
-                  display: "flex",
-                  minHeight: 220,
-                }}>
-                  {/* Left accent strip */}
-                  <div style={{ width: 5, background: `linear-gradient(180deg,${slide.accent},${slide.accent}44)`, flexShrink: 0 }} />
-
-                  {/* Icon column */}
-                  <div className="offer-slide-icon-col" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: "32px 28px", background: `${slide.accent}08`, flexShrink: 0, minWidth: 130 }}>
-                    <div style={{
-                      width: 80, height: 80, borderRadius: 22,
-                      background: slide.iconBg,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 38,
-                      boxShadow: `0 8px 24px ${slide.accent}30`,
-                      flexShrink: 0,
-                    }}>
-                      {slide.icon}
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div style={{ flex: 1, padding: "28px 28px 28px 20px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: slide.accent, marginBottom: 8, display: "block" }}>{slide.tag}</span>
-                    <h3 style={{ fontSize: "clamp(1.2rem,2.5vw,1.7rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em", lineHeight: 1.25 }}>{slide.headline}</h3>
-                    <p style={{ fontSize: 14.5, color: "#6B4226", lineHeight: 1.65, margin: "0 0 18px", maxWidth: 520 }}>{slide.desc}</p>
-                    {slide.isKit ? (
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                        {["Balloons", "Fairy Lights", "Games", "Confetti"].map(t => (
-                          <span key={t} style={{ fontSize: 11, color: slide.accent, background: `${slide.accent}0f`, border: `1px solid ${slide.accent}30`, borderRadius: 100, padding: "3px 10px", fontWeight: 600 }}>{t}</span>
-                        ))}
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "#fff", background: slide.iconBg, borderRadius: 100, padding: "4px 14px", boxShadow: `0 3px 10px ${slide.accent}30` }}>Under ₹1,499</span>
-                      </div>
-                    ) : slide.href ? (
-                      <button
-                        onClick={() => {
-                          if ((slide.id === "browse-vendors" || slide.id === "smart-planner") && !hasEventDetails) {
-                            navigate("/booking");
-                          } else {
-                            navigate(slide.href);
-                          }
-                        }}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: "#fff", border: "none", background: slide.iconBg, padding: "9px 18px", borderRadius: 10, boxShadow: `0 4px 14px ${slide.accent}30`, alignSelf: "flex-start", transition: "opacity 0.2s", cursor: "pointer" }}
-                        onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
-                        onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
-                        Explore {slide.tag} →
-                      </button>
-                    ) : null}
-                  </div>
+          {/* Tier 1 — How do you want to plan? */}
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>How do you want to plan?</p>
+          <div className="offer-tier1-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 28 }}>
+            {[
+              { icon: "✨", label: "Smart Planner",  desc: "Tell us once — we build your complete vendor package within budget.", accent: "#C47A2E", bg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", href: "/booking" },
+              { icon: "🔍", label: "Browse Vendors", desc: "Compare verified vendors, chat directly, and lock in your price.", accent: "#7A4A1E", bg: "linear-gradient(135deg,#7A4A1E,#C47A2E)", href: "/listings" },
+              { icon: "💬", label: "Baat Karo",       desc: "Write in Hindi or English — our team replies in 2 hours.", accent: "#128C7E", bg: "linear-gradient(135deg,#25D366,#128C7E)", href: "/baat-karo" },
+            ].map(({ icon, label, desc, accent, bg, href }) => (
+              <div key={label} onClick={() => navigate(href)}
+                style={{ background: "#FFFCF5", border: `1.5px solid ${accent}28`, borderRadius: 16, padding: "18px 20px", cursor: "pointer", transition: "transform 0.18s, box-shadow 0.18s", display: "flex", flexDirection: "column", gap: 10 }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 10px 28px ${accent}18`; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{icon}</div>
+                  <span style={{ fontSize: 16, color: `${accent}88` }}>→</span>
                 </div>
-
-                {/* Controls row */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginTop: 24 }}>
-                  <button onClick={() => goSlide(-1)}
-                    style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>‹</button>
-
-                  <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                    {FEATURE_SLIDES.map((fs, i) => (
-                      <button key={i} onClick={() => { setSlideVisible(false); setTimeout(() => { setSlideIdx(i); setSlideVisible(true); }, 400); }}
-                        style={{ width: i === slideIdx ? 24 : 8, height: 8, borderRadius: 100, border: "none", background: i === slideIdx ? (FEATURE_SLIDES[i].accent || "#C47A2E") : "rgba(139,69,19,0.15)", cursor: "pointer", padding: 0, transition: "all 0.3s ease" }} />
-                    ))}
-                  </div>
-
-                  <button onClick={() => goSlide(1)}
-                    style={{ width: 38, height: 38, borderRadius: "50%", border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(196,122,46,0.1)", transition: "all 0.2s" }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>›</button>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>{label}</div>
+                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>{desc}</div>
                 </div>
-
               </div>
-            );
-          })()}
+            ))}
+          </div>
+
+          {/* Tier 2 — Also on Tendr */}
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>Also on Tendr</p>
+          <div className="offer-tier2-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
+            {[
+              { icon: "💒", label: "Wedding Stationeries", desc: "Invitations, itineraries, thank you cards — personalised.", href: "/stationery" },
+              { icon: "⏱️", label: "Event Timeline",       desc: "Build a day-by-day countdown for your event.", href: "/timeline-picker" },
+              { icon: "💰", label: "Budget Allocator",     desc: "Set budget per category and track every rupee.", href: "/budget-picker" },
+              { icon: "🎁", label: "Gift Hampers & Cakes", desc: "Curated gifts and cakes — delivered for your event.", href: "/gift-hampers-cakes" },
+              { icon: "🎭", label: "Fun Activities",       desc: "Magic shows, games, dhol players and live entertainment.", href: "/fun-activities" },
+              { icon: "🔍", label: "Find by Style",        desc: "Upload a photo and find vendors who match your vibe.", href: "/find-by-style" },
+              { icon: "📚", label: "Tips by Tendr",        desc: "Free guides, community ideas and planning tips.", href: "/guides" },
+            ].map(({ icon, label, desc, href }) => (
+              <div key={label} className="offer-tier2-item" onClick={() => navigate(href)}
+                style={{ background: "#F9F6F2", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "background 0.15s, box-shadow 0.15s" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "#FFF8EE"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "#F9F6F2"; e.currentTarget.style.boxShadow = "none"; }}>
+                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+                <div className="offer-tier2-inner" style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>{label}</span>
+                    <span className="offer-tier2-arrow" style={{ fontSize: 13, color: "rgba(196,122,46,0.5)", flexShrink: 0 }}>→</span>
+                  </div>
+                  <div className="offer-tier2-desc" style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.5, marginTop: 3 }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <style>{`
+            @media (max-width: 640px) {
+              /* Tier 1 — horizontal scroll row */
+              .offer-tier1-grid {
+                display: flex !important;
+                overflow-x: auto !important;
+                gap: 10px !important;
+                padding-bottom: 8px !important;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 24px !important;
+              }
+              .offer-tier1-grid::-webkit-scrollbar { display: none; }
+              .offer-tier1-grid > div {
+                min-width: 196px !important;
+                max-width: 196px !important;
+                flex-shrink: 0 !important;
+              }
+
+              /* Tier 2 — compact pill scroll row */
+              .offer-tier2-grid {
+                display: flex !important;
+                overflow-x: auto !important;
+                gap: 8px !important;
+                padding-bottom: 8px !important;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+              }
+              .offer-tier2-grid::-webkit-scrollbar { display: none; }
+              .offer-tier2-item {
+                min-width: 96px !important;
+                max-width: 96px !important;
+                flex-shrink: 0 !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                padding: 14px 8px 12px !important;
+                gap: 6px !important;
+              }
+              .offer-tier2-item > span { margin-top: 0 !important; }
+              .offer-tier2-inner { flex: unset !important; min-width: unset !important; width: 100%; }
+              .offer-tier2-inner > div:first-child { justify-content: center !important; }
+              .offer-tier2-arrow { display: none !important; }
+              .offer-tier2-desc  { display: none !important; }
+            }
+            @media (min-width: 641px) and (max-width: 960px) {
+              .offer-tier1-grid { grid-template-columns: repeat(3,1fr) !important; }
+              .offer-tier2-grid { grid-template-columns: repeat(4,1fr) !important; }
+            }
+          `}</style>
         </div>
-        <style>{`@keyframes kit-pulse { 0%,100%{opacity:1}50%{opacity:0.4} }`}</style>
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
@@ -1415,7 +1352,7 @@ const Home = () => {
                 onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
                 onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.color="#C47A2E";}}>›</button>
               <button onClick={() => navigate("/fun-activities")}
-                style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
+                style={{ padding:"10px 22px", borderRadius:12, border:"1.5px solid rgba(196,122,46,0.35)", background:"transparent", color:"#C47A2E", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Outfit',sans-serif", whiteSpace:"nowrap" }}>
                 See All →
               </button>
             </div>
@@ -1475,26 +1412,20 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Gift Hampers & Cakes — Coming Soon ── */}
-      <section style={{ background: "#FFFDF7", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Gift Hampers & Cakes</p>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em", lineHeight: 1.15 }}>
+      {/* ── Gift Hampers & Cakes ── */}
+      <section style={{ background: "#FFFDF7", padding: "36px 24px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
+        <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: 0 }}>Gift Hampers & Cakes</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,2.8vw,2rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, letterSpacing: "0.01em", lineHeight: 1.2 }}>
             The Perfect Gift,&nbsp;<span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
           </h2>
-          <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 600, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>
-            Coming Soon
-          </div>
-          <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 420, lineHeight: 1.65, margin: "0 0 24px" }}>
-            Full gifting flow coming soon. Until then, our team can still help — just tell us your occasion and budget.
-          </p>
+          <p style={{ fontSize: 14, color: "#6B4226", margin: 0 }}>Our team can help with gifting for any occasion.</p>
           <button
             onClick={() => navigate("/baat-karo")}
-            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 600, padding: "13px 32px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}
+            style={{ background: "transparent", color: "#C47A2E", border: "1.5px solid rgba(196,122,46,0.4)", fontSize: 14, fontWeight: 600, padding: "10px 28px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit',sans-serif", marginTop: 4 }}
           >
             Chat with Our Team →
           </button>
-          <p style={{ fontSize: 12, color: "#C0A070", marginTop: 10 }}>In-app chat · Replies within 2 hours</p>
         </div>
       </section>
 
@@ -1509,7 +1440,7 @@ const Home = () => {
             <div key={stat} style={{ display: "flex", alignItems: "center", gap: 0, flex: "1 1 220px", minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 28px", flex: 1 }}>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", lineHeight: 1.3 }}>{stat}</div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.3 }}>{stat}</div>
                   <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4, marginTop: 2 }}>{sub}</div>
                 </div>
               </div>
@@ -1521,7 +1452,7 @@ const Home = () => {
         </div>
       </section>
 
-      <JourneyFlow />
+      {false && <JourneyFlow />}
 
 
       {/* ── Book a Party Place — admin preview only ── */}
@@ -1892,7 +1823,7 @@ const Home = () => {
               <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "24px 24px", display: "flex", gap: 20, alignItems: "flex-start" }}>
                 <span style={{ fontSize: 28, fontWeight: 900, color: "#CCAB4A", lineHeight: 1, flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>{step.num}</span>
                 <div>
-                  <h4 style={{ fontSize: 16, fontWeight: 700, color: "#fff", margin: "0 0 6px" }}>{step.title}</h4>
+                  <h4 style={{ fontSize: 16, fontWeight: 600, color: "#fff", margin: "0 0 6px" }}>{step.title}</h4>
                   <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.55 }}>{step.desc}</p>
                 </div>
               </div>

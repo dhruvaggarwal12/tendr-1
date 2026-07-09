@@ -33,11 +33,15 @@ export default function FindByStyle() {
       const fd = new FormData();
       fd.append('photo', file);
       const res = await fetch(`${BASE}/vendors/find-by-photo`, { method: 'POST', body: fd });
+      const contentType = res.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        throw new Error('coming-soon');
+      }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Search failed');
       setResults(data.results || []);
     } catch (e) {
-      setError(e.message);
+      setError(e.message === 'coming-soon' ? 'coming-soon' : e.message);
     } finally {
       setLoading(false);
     }
@@ -136,9 +140,28 @@ export default function FindByStyle() {
         )}
 
         {/* Error */}
-        {error && (
+        {error && error !== 'coming-soon' && (
           <div style={{ background: '#fff0f0', border: '1px solid #fcc', borderRadius: 10, padding: '12px 16px', color: '#c00', fontSize: 13, marginBottom: 20 }}>
             {error}
+          </div>
+        )}
+
+        {/* Coming soon state */}
+        {error === 'coming-soon' && (
+          <div style={{ textAlign: 'center', padding: '40px 24px', background: '#FFFCF5', border: '1px solid rgba(196,122,46,0.15)', borderRadius: 16, marginBottom: 20 }}>
+            <div style={{ fontSize: 36, marginBottom: 14 }}>🔧</div>
+            <div style={{ fontSize: 16, fontWeight: 600, color: '#2C1A0E', marginBottom: 8, fontFamily: "'Cormorant Garamond', serif" }}>
+              This feature is being set up
+            </div>
+            <div style={{ fontSize: 13, color: '#9B7450', lineHeight: 1.6, maxWidth: 320, margin: '0 auto 20px' }}>
+              Photo-based vendor matching is coming soon. In the meantime, browse our decorators directly.
+            </div>
+            <button
+              onClick={() => window.location.href = '/search?categories=Decorator'}
+              style={{ padding: '11px 24px', borderRadius: 100, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: font }}
+            >
+              Browse Decorators →
+            </button>
           </div>
         )}
 
@@ -180,11 +203,6 @@ export default function FindByStyle() {
                     <div style={{ fontSize: 11, color: '#9B7450' }}>
                       {r.vendor.serviceType}{r.vendor.city ? ` · ${r.vendor.city}` : ''}
                     </div>
-                    {r.vendor.avgReviewScore > 0 && (
-                      <div style={{ fontSize: 11, color: '#C47A2E', fontWeight: 600, marginTop: 4 }}>
-                        ★ {r.vendor.avgReviewScore.toFixed(1)}
-                      </div>
-                    )}
                     <button style={{
                       marginTop: 8, width: '100%', padding: '7px', borderRadius: 8,
                       border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)',
