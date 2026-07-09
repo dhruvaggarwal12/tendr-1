@@ -318,11 +318,11 @@ function SectionLabel({ color, children }) {
 function StatTile({ label, value, color }) {
   return (
     <div style={{
-      padding: '12px 10px', borderRadius: 12, textAlign: 'center',
-      background: `${color}12`, border: `1px solid ${color}28`,
+      padding: '14px 10px', borderRadius: 14, textAlign: 'center',
+      background: `${color}0E`, border: `1px solid ${color}22`,
     }}>
-      <div style={{ fontSize: 11, color: `${color}CC`, textTransform: 'uppercase', letterSpacing: '0.10em', marginBottom: 5, fontFamily: "'Outfit',sans-serif" }}>{label}</div>
-      <div style={{ fontSize: 14, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.3, fontFamily: "'Outfit',sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 13, fontWeight: 600, color: '#F5ECD8', lineHeight: 1.3, marginBottom: 5, fontFamily: "'Outfit',sans-serif" }}>{value}</div>
+      <div style={{ fontSize: 9.5, color: `${color}AA`, textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "'Outfit',sans-serif" }}>{label}</div>
     </div>
   );
 }
@@ -434,11 +434,14 @@ function BookPage1({ theme, occasion, photo, color }) {
 
         {/* Colour palette */}
         {theme.colourPalette?.length > 0 && (
-          <div style={{ marginBottom: 22 }}>
-            <SectionLabel color={color}>Colour Palette</SectionLabel>
-            <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginTop: 4 }}>
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 9 }}>
+              <span style={{ fontSize: 14 }}>🎨</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>Colour Palette</span>
+            </div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {theme.colourPalette.map(c => (
-                <span key={c} style={{ padding: '5px 14px', borderRadius: 100, fontSize: 12, background: `${color}14`, border: `1px solid ${color}35`, color: 'rgba(245,236,216,0.8)', fontFamily: "'Outfit',sans-serif" }}>{c}</span>
+                <span key={c} style={{ padding: '5px 13px', borderRadius: 100, fontSize: 11.5, background: `${color}10`, border: `1px solid ${color}30`, color: 'rgba(245,236,216,0.85)', fontFamily: "'Outfit',sans-serif", letterSpacing: '0.02em' }}>{c}</span>
               ))}
             </div>
           </div>
@@ -457,39 +460,42 @@ function BookPage1({ theme, occasion, photo, color }) {
 
 function BookPage2({ theme, color }) {
   const food = theme.foodSuggestions || theme.foodIdeas || [];
-  const col1 = [
-    { title: 'Decoration Ideas',  items: theme.decorationIdeas },
-    { title: 'Food & Drinks',     items: food },
-    { title: 'Entertainment',     items: theme.entertainment },
-  ];
-  const col2 = [
-    { title: 'Games & Activities', items: theme.gamesActivities },
-    { title: 'Cake Ideas',         items: theme.cakeIdeas || theme.returnGiftIdeas },
-    { title: 'Photography Tips',   items: theme.photographyIdeas },
-  ];
+  const sections = [
+    { icon: '🎨', title: 'Decoration',    items: theme.decorationIdeas },
+    { icon: '🍽️', title: 'Food & Drinks', items: food },
+    { icon: '🎭', title: 'Entertainment', items: theme.entertainment },
+    { icon: '🎮', title: 'Games',         items: theme.gamesActivities },
+    { icon: '🎂', title: 'Cake & Gifts',  items: theme.cakeIdeas || theme.returnGiftIdeas },
+    { icon: '📸', title: 'Photography',   items: theme.photographyIdeas },
+  ].filter(s => s.items?.length);
 
   return (
     <div style={{ paddingTop: 8 }}>
-      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
-        What's Included
-      </h3>
-      <div className="book-detail-col" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px' }}>
-        <div>
-          {col1.map(({ title, items }) => items?.length > 0 && (
-            <div key={title} style={{ marginBottom: 22 }}>
-              <SectionLabel color={color}>{title}</SectionLabel>
-              <BulletList items={items} color={color} max={5} />
+      <div style={{ marginBottom: 18, paddingBottom: 14, borderBottom: `1px solid ${color}18` }}>
+        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,3.5vw,2rem)', fontWeight: 400, color: '#F5ECD8', margin: 0, letterSpacing: '0.01em' }}>
+          What's Included
+        </h3>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        {sections.map(({ icon, title, items }) => (
+          <div key={title}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 9 }}>
+              <span style={{ fontSize: 14, lineHeight: 1 }}>{icon}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{title}</span>
             </div>
-          ))}
-        </div>
-        <div>
-          {col2.map(({ title, items }) => items?.length > 0 && (
-            <div key={title} style={{ marginBottom: 22 }}>
-              <SectionLabel color={color}>{title}</SectionLabel>
-              <BulletList items={items} color={color} max={5} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5 }}>
+              {items.slice(0, 6).map((item, i) => (
+                <span key={i} style={{
+                  fontSize: 11.5, padding: '5px 12px', borderRadius: 100,
+                  background: `${color}0D`, border: `1px solid ${color}28`,
+                  color: 'rgba(245,236,216,0.82)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.4,
+                }}>
+                  {item}
+                </span>
+              ))}
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -505,17 +511,22 @@ function BookPage3({ theme, color, galleryUrls = [], downloadPhoto, onProceedNow
       {/* Planning checklist */}
       {theme.planningChecklist?.length > 0 && (
         <div style={{ marginBottom: 28 }}>
-          <SectionLabel color={color}>Planning Checklist</SectionLabel>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginTop: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+            <span style={{ fontSize: 14 }}>✅</span>
+            <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>Planning Checklist</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {theme.planningChecklist.map((item, i) => (
-              <span key={i} style={{
-                display: 'inline-flex', alignItems: 'center', gap: 5,
-                padding: '5px 12px', borderRadius: 100, fontSize: 11,
-                background: `${color}12`, border: `1px solid ${color}2E`,
-                color: 'rgba(245,236,216,0.72)', fontFamily: "'Outfit',sans-serif",
+              <div key={i} style={{
+                display: 'flex', alignItems: 'flex-start', gap: 10,
+                padding: '10px 14px', borderRadius: 12,
+                background: `${color}08`, border: `1px solid ${color}1E`,
               }}>
-                <span style={{ color, fontSize: 8 }}>✓</span>{item}
-              </span>
+                <div style={{ width: 18, height: 18, borderRadius: 6, border: `1.5px solid ${color}55`, background: `${color}10`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                  <span style={{ color, fontSize: 9, fontWeight: 700 }}>✓</span>
+                </div>
+                <span style={{ fontSize: 12.5, color: 'rgba(245,236,216,0.82)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.5 }}>{item}</span>
+              </div>
             ))}
           </div>
         </div>

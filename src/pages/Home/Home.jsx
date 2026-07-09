@@ -1225,16 +1225,14 @@ const Home = () => {
       </section>
 
       {/* ── Plan by Occasion — dark editorial portrait grid ── */}
-      <section style={{ background: "#1A0E06", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#1A0E06", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Plan by Occasion</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
-            <p style={{ fontSize: 15, color: "rgba(255,248,236,0.5)", margin: 0 }}>Pick your celebration — we'll match vendors, ideas and a full plan</p>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Plan by Occasion</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, letterSpacing: "0.01em" }}>What's the occasion?</h2>
           </div>
 
-          {/* 4-column portrait grid — all occasions visible at once */}
-          <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
+          <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 10 }}>
             {[
               { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
               { label: "Anniversary",     photo: "/occasions/anniversary-mobile.png" },
@@ -1247,33 +1245,23 @@ const Home = () => {
             ].map(({ label, photo }) => (
               <button key={label}
                 onClick={() => setPlannerOccasion(label)}
-                style={{ position: "relative", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(204,171,74,0.15)", background: "#2C1A0E", cursor: "pointer", padding: 0, aspectRatio: "2/3", display: "block", width: "100%", transition: "transform 0.2s, box-shadow 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-5px)"; e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,0.55)"; }}
+                style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(204,171,74,0.12)", background: "#2C1A0E", cursor: "pointer", padding: 0, aspectRatio: "3/4", display: "block", width: "100%", transition: "transform 0.2s, box-shadow 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 16px 36px rgba(0,0,0,0.5)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
               >
                 <img src={photo} alt={label} loading="lazy"
                   style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,0,0.82) 0%, rgba(10,4,0,0.25) 50%, transparent 100%)" }} />
-                <div style={{ position: "absolute", bottom: 14, left: 14, right: 14, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", letterSpacing: "0.01em", textShadow: "0 1px 6px rgba(0,0,0,0.6)", lineHeight: 1.3 }}>{label}</span>
-                  <span style={{ fontSize: 14, color: "rgba(204,171,74,0.8)" }}>→</span>
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,0,0.85) 0%, rgba(10,4,0,0.2) 55%, transparent 100%)" }} />
+                <div style={{ position: "absolute", bottom: 10, left: 10, right: 10 }}>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: "#fff", letterSpacing: "0.01em", textShadow: "0 1px 4px rgba(0,0,0,0.7)", lineHeight: 1.3, display: "block" }}>{label}</span>
                 </div>
               </button>
             ))}
           </div>
 
-          <div style={{ textAlign: "center", marginTop: 28 }}>
-            <button
-              onClick={() => setPlannerOccasion("")}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 26px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.3)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.18s" }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(204,171,74,0.7)"; e.currentTarget.style.color = "#FFF8EC"; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(204,171,74,0.3)"; e.currentTarget.style.color = "#CCAB4A"; }}
-            >See all occasions →</button>
-          </div>
-
           <style>{`
-            @media (max-width: 540px) { .occ-portrait-grid { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; } }
-            @media (min-width: 541px) and (max-width: 800px) { .occ-portrait-grid { grid-template-columns: repeat(3,1fr) !important; } }
+            @media (max-width: 480px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; gap: 7px !important; } }
+            @media (min-width: 481px) and (max-width: 720px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; } }
           `}</style>
         </div>
       </section>
@@ -1321,8 +1309,8 @@ const Home = () => {
               { icon: "⏱️", label: "Event Timeline",       desc: "Build a day-by-day countdown for your event.", href: "/timeline-picker" },
               { icon: "💰", label: "Budget Allocator",     desc: "Set budget per category and track every rupee.", href: "/budget-picker" },
               { icon: "🎁", label: "Gift Hampers & Cakes", desc: "Curated gifts and cakes — delivered for your event.", href: "/gift-hampers-cakes" },
-              { icon: "💬", label: "Community Wall",       desc: "Real event photos and ideas shared by customers.", href: "/community" },
-              { icon: "📚", label: "Guide Store",          desc: "Free planning guides — budgeting, decor, timelines.", href: "/guides" },
+              { icon: "📅", label: "Upcoming Events",      desc: "See what's coming up — sign in to register interest.", href: "/occasions" },
+              { icon: "📚", label: "Tips by Tendr",       desc: "Free guides, community ideas and planning tips.", href: "/guides" },
             ].map(({ icon, label, desc, href }) => (
               <div key={label} onClick={() => navigate(href)}
                 style={{ background: "#F9F6F2", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "background 0.15s, box-shadow 0.15s" }}
@@ -1352,83 +1340,6 @@ const Home = () => {
           `}</style>
         </div>
       </section>
-
-      {/* ── Upcoming Events ── */}
-      {(() => {
-        const UPCOMING = [
-          { title: "Birthday Bash at Home",      date: "Jul 19, 2026", location: "Noida",    type: "Birthday",     img: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=500&q=75", spots: 4 },
-          { title: "Anniversary Dinner Night",   date: "Jul 24, 2026", location: "Delhi",    type: "Anniversary",  img: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=500&q=75", spots: 6 },
-          { title: "House Party — Monsoon Vibe", date: "Aug 2, 2026",  location: "Gurgaon",  type: "House Party",  img: "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&q=75", spots: 8 },
-        ];
-        return (
-          <section style={{ background: "#FFFCF5", padding: "64px 24px 68px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
-            <div style={{ maxWidth: 960, margin: "0 auto" }}>
-              <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 32, flexWrap: "wrap", gap: 12 }}>
-                <div>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Coming Up</p>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, letterSpacing: "0.01em" }}>Upcoming Events</h2>
-                </div>
-                {user && (
-                  <button onClick={() => navigate("/occasions")}
-                    style={{ padding: "9px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
-                    See All →
-                  </button>
-                )}
-              </div>
-
-              {/* Cards */}
-              <div className="upcoming-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, position: "relative" }}>
-                {UPCOMING.map((ev, i) => (
-                  <div key={i} style={{ borderRadius: 18, overflow: "hidden", border: "1px solid rgba(196,122,46,0.12)", background: "#fff", boxShadow: "0 2px 14px rgba(196,122,46,0.07)", transition: "transform 0.18s, box-shadow 0.18s", filter: !user ? "blur(3px)" : "none", pointerEvents: !user ? "none" : "auto" }}
-                    onMouseEnter={e => { if (user) { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(196,122,46,0.15)"; } }}
-                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(196,122,46,0.07)"; }}>
-                    <div style={{ position: "relative", height: 160 }}>
-                      <img src={ev.img} alt={ev.title} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.55) 0%, transparent 60%)" }} />
-                      <span style={{ position: "absolute", top: 10, left: 12, fontSize: 10, fontWeight: 600, background: "rgba(196,122,46,0.9)", color: "#fff", borderRadius: 100, padding: "3px 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>{ev.type}</span>
-                    </div>
-                    <div style={{ padding: "14px 16px 16px" }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E", marginBottom: 6, lineHeight: 1.35 }}>{ev.title}</div>
-                      <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                        <span style={{ fontSize: 11.5, color: "#9B7450" }}>📅 {ev.date}</span>
-                        <span style={{ fontSize: 11.5, color: "#9B7450" }}>📍 {ev.location}</span>
-                      </div>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600 }}>{ev.spots} spots left</span>
-                        <button onClick={() => navigate("/booking")}
-                          style={{ fontSize: 12, fontWeight: 600, padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
-                          Interested →
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Sign-in gate overlay */}
-                {!user && (
-                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 14, zIndex: 2 }}>
-                    <div style={{ background: "#fff", borderRadius: 20, padding: "28px 32px", boxShadow: "0 16px 56px rgba(44,26,14,0.18)", textAlign: "center", border: "1.5px solid rgba(196,122,46,0.15)", maxWidth: 320 }}>
-                      <div style={{ fontSize: 32, marginBottom: 10 }}>🔒</div>
-                      <div style={{ fontSize: 16, fontWeight: 600, color: "#2C1A0E", marginBottom: 6 }}>Sign in to see upcoming events</div>
-                      <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 20, lineHeight: 1.55 }}>Register interest, get reminders and plan your celebration — free to join.</div>
-                      <button onClick={() => navigate("/login")}
-                        style={{ width: "100%", padding: "11px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.35)" }}>
-                        Sign In →
-                      </button>
-                      <button onClick={() => navigate("/signup")}
-                        style={{ width: "100%", marginTop: 8, padding: "10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "transparent", color: "#C47A2E", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
-                        Create Account
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </div>
-            <style>{`@media(max-width:640px){.upcoming-grid{grid-template-columns:1fr!important;}}`}</style>
-          </section>
-        );
-      })()}
 
       {/* ── Live Entertainment Add-ons ── */}
       <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
