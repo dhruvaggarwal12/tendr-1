@@ -38,7 +38,6 @@ import Home             from "./pages/Home/Home";
 import Auth             from "./pages/customer/Auth";
 import VendorList       from './pages/customer/VendorList';
 import VendorDetails    from './pages/customer/VendorDetails';
-import TopRatedVendors  from "./pages/customer/TopRatedVendors";
 import SearchResults    from './pages/search/SearchResults.jsx';
 import NotFound         from "./pages/shared/NotFound";
 import ErrorPage        from "./components/ErrorPage";
@@ -241,13 +240,7 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
 
-  {
-    path: "/top-rated/:category",
-    element: <TopRatedVendors />,
-    errorElement: <ErrorPage />,
-  },
-
-  // Auth
+// Auth
   { 
     path: "/login", 
     element: <Auth />, errorElement: <ErrorPage /> 

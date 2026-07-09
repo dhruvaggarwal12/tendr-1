@@ -199,7 +199,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const browseDisabled = false;
 
   // Pages where the user is deep in the vendor flow — always send to listings
-  const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/top-rated", "/search"];
+  const vendorFlowPaths = ["/listings", "/vendor/", "/booking/review", "/booking/payment", "/chat", "/chats", "/dashboard", "/search"];
   const isOnVendorFlow = vendorFlowPaths.some(p => location.pathname.startsWith(p));
   const isHomePage = location.pathname === "/";
 
@@ -220,7 +220,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const NAV_SECTIONS = [
     { label: "Vendors", hideOnMobile: true, items: [
       { label: "Browse Vendors",     href: "/listings", onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
-      { label: "Top Rated Vendors",  href: "/top-rated/Photographer", activePaths: ["/top-rated/"] },
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [

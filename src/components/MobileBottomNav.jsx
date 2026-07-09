@@ -140,7 +140,7 @@ function BottomNavInner() {
 
   const items = [
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
-    ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/top-rated","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
+    ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
     { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan",     paths: ["/booking","/plan-event","/baat-karo"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
@@ -195,14 +195,6 @@ function BottomNavInner() {
 
             {/* Secondary links row */}
             <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
-              <button
-                onClick={() => { navigate("/top-rated/Photographer"); setBrowseOpen(false); }}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 700, color: "#7A4A1E" }}
-                onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.1)"}
-                onTouchEnd={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
-              >
-                <span>⭐</span> Top Rated
-              </button>
               <button
                 onClick={() => { navigate("/vendor/register"); setBrowseOpen(false); }}
                 style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 700, color: "#7A4A1E" }}

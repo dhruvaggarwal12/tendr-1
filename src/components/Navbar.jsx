@@ -284,7 +284,6 @@ const Navbar = ({
         { id: "DJ",           emoji: "🎵", label: "DJ",           href: "/search?categories=DJ" },
       ],
       sideItems: [
-        { label: "⭐ Top Rated Vendors",  href: "/top-rated/Photographer" },
         { label: "🤝 Register as Vendor", href: "/vendor/register" },
       ],
     },

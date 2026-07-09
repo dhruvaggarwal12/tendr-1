@@ -1237,6 +1237,53 @@ const Home = () => {
         `}</style>
       </section>
 
+      {/* ── Explore Vendors ── */}
+      <section style={{ background: "#fff", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.16em", margin: "0 0 10px" }}>Vendors</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.8vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>
+              Explore by Category
+            </h2>
+            <p style={{ fontSize: 14, color: "#6B4226", margin: 0 }}>Browse verified vendors across every service — tap a category to see all</p>
+          </div>
+
+          <div style={{ display: "flex", gap: 14, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}>
+            {[
+              { emoji: "🎀", label: "Decoration",   sub: "Decor & setup",        path: "/listings/Decorator"    },
+              { emoji: "📸", label: "Photography",  sub: "Photos & videos",      path: "/listings/Photographer" },
+              { emoji: "🍽", label: "Catering",     sub: "Food & service",       path: "/listings/Caterer"      },
+              { emoji: "🎵", label: "DJ & Music",   sub: "Sound & entertainment",path: "/listings/DJ"           },
+              { emoji: "🎂", label: "Cakes",        sub: "Custom cakes",         path: "/listings/Cake"         },
+              { emoji: "🎁", label: "Gift Hampers", sub: "Personalised gifts",   path: "/listings/GiftHamper"   },
+            ].map(({ emoji, label, sub, path }) => (
+              <div
+                key={label}
+                onClick={() => navigate(path)}
+                style={{
+                  flex: "0 0 clamp(130px, 16vw, 168px)",
+                  background: "#FFFCF5",
+                  border: "1.5px solid rgba(196,122,46,0.18)",
+                  borderRadius: 18,
+                  padding: "24px 16px 20px",
+                  textAlign: "center",
+                  cursor: "pointer",
+                  transition: "all 0.18s",
+                  boxShadow: "0 2px 12px rgba(196,122,46,0.06)",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.18)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 2px 12px rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; }}
+              >
+                <div style={{ fontSize: 42, lineHeight: 1, marginBottom: 12 }}>{emoji}</div>
+                <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>{label}</div>
+                <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>{sub}</div>
+              </div>
+            ))}
+          </div>
+          <style>{`.explore-vendors-row::-webkit-scrollbar{display:none}`}</style>
+        </div>
+      </section>
+
       {/* ── Plan by Occasion ── */}
       <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
