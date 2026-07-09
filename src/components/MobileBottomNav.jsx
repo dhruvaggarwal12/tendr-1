@@ -231,9 +231,10 @@ function BottomNavInner() {
                 { emoji: "🔍", title: "You Do It", desc: "Browse vendors, compare & book yourself", path: "/booking", active: location.pathname === "/booking" || location.pathname.startsWith("/plan-event") },
                 { emoji: "✨", title: "Smart Planner", desc: "Tell us once, we build your full package", path: "/booking", active: false },
                 { emoji: "💬", title: "Baat Karo", desc: "Likh do apni requirements — Tendr Team yahin reply karegi", path: "/baat-karo", active: location.pathname === "/baat-karo", green: true },
-              ].map(({ emoji, title, desc, path, active, green }) => (
+                { emoji: "🎉", title: "Plan by Occasion", desc: "Birthday, Anniversary, House Party & more", path: null, active: false, action: () => { setPlanOpen(false); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
+              ].map(({ emoji, title, desc, path, active, green, action }) => (
                 <button key={title}
-                  onClick={() => { navigate(path); setPlanOpen(false); }}
+                  onClick={() => { if (action) { action(); } else { navigate(path); setPlanOpen(false); } }}
                   style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${active ? (green ? "rgba(37,211,102,0.5)" : "rgba(196,122,46,0.5)") : "rgba(196,122,46,0.15)"}`, background: active ? (green ? "rgba(37,211,102,0.06)" : "rgba(196,122,46,0.06)") : "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
                   onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
                   onTouchEnd={e => e.currentTarget.style.background = active ? (green ? "rgba(37,211,102,0.06)" : "rgba(196,122,46,0.06)") : "#fff"}>
