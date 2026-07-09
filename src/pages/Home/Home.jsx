@@ -1137,6 +1137,49 @@ const Home = () => {
         }
       `}</style>
 
+      {/* ── Plan by Occasion — dark editorial portrait grid ── */}
+      <section style={{ background: "#1A0E06", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Plan by Occasion</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, letterSpacing: "0.01em" }}>What's the occasion?</h2>
+          </div>
+
+          <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 10 }}>
+            {[
+              { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
+              { label: "Anniversary",     photo: "/occasions/anniversary-mobile.png" },
+              { label: "Baby Shower",     photo: "/occasions/baby-shower-mobile.png" },
+              { label: "House Party",     photo: "/occasions/house-party-mobile.png" },
+              { label: "Housewarming",    photo: "/occasions/housewarming-mobile.png" },
+              { label: "Get Together",    photo: "/occasions/get-together-mobile.png" },
+              { label: "Kitty Party",     photo: "/occasions/kitty-party-mobile.png" },
+              { label: "Naming Ceremony", photo: "/occasions/naming-ceremony-mobile.png" },
+            ].map(({ label, photo }) => (
+              <button key={label}
+                onClick={() => setPlannerOccasion(label)}
+                style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(204,171,74,0.12)", background: "#2C1A0E", cursor: "pointer", padding: 0, aspectRatio: "3/4", display: "block", width: "100%", transition: "transform 0.2s, box-shadow 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 16px 36px rgba(0,0,0,0.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
+              >
+                <img src={photo} alt={label} loading="lazy"
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,0,0.85) 0%, rgba(10,4,0,0.2) 55%, transparent 100%)" }} />
+                <div style={{ position: "absolute", bottom: 10, left: 10, right: 10 }}>
+                  <span style={{ fontSize: 11, fontWeight: 500, color: "#fff", letterSpacing: "0.01em", textShadow: "0 1px 4px rgba(0,0,0,0.7)", lineHeight: 1.3, display: "block" }}>{label}</span>
+                </div>
+              </button>
+            ))}
+          </div>
+
+          <style>{`
+            @media (max-width: 480px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; gap: 7px !important; } }
+            @media (min-width: 481px) and (max-width: 720px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; } }
+          `}</style>
+        </div>
+      </section>
+      {/* ── END Plan by Occasion ── */}
+
       {/* How Tendr Works */}
       <section style={{ background: "#F8F4EF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
@@ -1223,49 +1266,6 @@ const Home = () => {
           }
         `}</style>
       </section>
-
-      {/* ── Plan by Occasion — dark editorial portrait grid ── */}
-      <section style={{ background: "#1A0E06", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Plan by Occasion</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, letterSpacing: "0.01em" }}>What's the occasion?</h2>
-          </div>
-
-          <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 10 }}>
-            {[
-              { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
-              { label: "Anniversary",     photo: "/occasions/anniversary-mobile.png" },
-              { label: "Baby Shower",     photo: "/occasions/baby-shower-mobile.png" },
-              { label: "House Party",     photo: "/occasions/house-party-mobile.png" },
-              { label: "Housewarming",    photo: "/occasions/housewarming-mobile.png" },
-              { label: "Get Together",    photo: "/occasions/get-together-mobile.png" },
-              { label: "Kitty Party",     photo: "/occasions/kitty-party-mobile.png" },
-              { label: "Naming Ceremony", photo: "/occasions/naming-ceremony-mobile.png" },
-            ].map(({ label, photo }) => (
-              <button key={label}
-                onClick={() => setPlannerOccasion(label)}
-                style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(204,171,74,0.12)", background: "#2C1A0E", cursor: "pointer", padding: 0, aspectRatio: "3/4", display: "block", width: "100%", transition: "transform 0.2s, box-shadow 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 16px 36px rgba(0,0,0,0.5)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-              >
-                <img src={photo} alt={label} loading="lazy"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,0,0.85) 0%, rgba(10,4,0,0.2) 55%, transparent 100%)" }} />
-                <div style={{ position: "absolute", bottom: 10, left: 10, right: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: "#fff", letterSpacing: "0.01em", textShadow: "0 1px 4px rgba(0,0,0,0.7)", lineHeight: 1.3, display: "block" }}>{label}</span>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <style>{`
-            @media (max-width: 480px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; gap: 7px !important; } }
-            @media (min-width: 481px) and (max-width: 720px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; } }
-          `}</style>
-        </div>
-      </section>
-      {/* ── END Plan by Occasion ── */}
 
       {/* ── Everything for your celebration — static 2-tier grid ── */}
       <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif" }}>
