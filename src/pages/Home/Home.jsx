@@ -1138,7 +1138,7 @@ const Home = () => {
       `}</style>
 
       {/* ── Plan by Occasion — dark editorial portrait grid ── */}
-      <section style={{ background: "#1A0E06", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
+      <section id="plan-by-occasion" style={{ background: "#1A0E06", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 28 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Plan by Occasion</p>
@@ -1189,12 +1189,12 @@ const Home = () => {
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.01em" }}>
               Which one is for you?
             </h2>
-            <p style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", maxWidth: 360, margin: "0 auto", lineHeight: 1.65 }}>
-              Two ways to use Tendr — pick whichever fits how you think.
+            <p style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", maxWidth: 400, margin: "0 auto", lineHeight: 1.65 }}>
+              Three ways to use Tendr — pick whichever fits how you think.
             </p>
           </div>
 
-          <div className="path-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, maxWidth: 720, margin: "0 auto" }}>
+          <div className="path-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, maxWidth: 960, margin: "0 auto" }}>
             {[
               {
                 icon: "🔍",
@@ -1203,6 +1203,7 @@ const Home = () => {
                 desc: "Search for a vendor type, compare profiles, and chat to confirm price.",
                 startFrom: "Use the search bar or Browse in the menu",
                 accent: "#C47A2E",
+                onClick: null,
               },
               {
                 icon: "✨",
@@ -1211,18 +1212,35 @@ const Home = () => {
                 desc: "Tell us your event once — we match you with the right vendors.",
                 startFrom: "Click 'Start Planning' above",
                 accent: "#7A4A1E",
+                onClick: null,
               },
-            ].map(({ icon, eyebrow, title, desc, startFrom, accent }) => (
-              <div key={eyebrow} style={{
-                background: "#FFFCF7",
-                border: "1px solid rgba(196,122,46,0.13)",
-                borderRadius: 20,
-                padding: "28px 24px 22px",
-                display: "flex",
-                flexDirection: "column",
-                gap: 10,
-                boxShadow: "0 2px 12px rgba(44,26,14,0.05)",
-              }}>
+              {
+                icon: "🎉",
+                eyebrow: "Plan by Occasion",
+                title: "You already know the occasion",
+                desc: "Pick your celebration — Birthday, Anniversary, House Party and more — and explore curated themes and ideas.",
+                startFrom: "Scroll to 'What's the occasion?' below",
+                accent: "#C47A2E",
+                onClick: () => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }),
+              },
+            ].map(({ icon, eyebrow, title, desc, startFrom, accent, onClick }) => (
+              <div key={eyebrow}
+                onClick={onClick || undefined}
+                style={{
+                  background: "#FFFCF7",
+                  border: "1px solid rgba(196,122,46,0.13)",
+                  borderRadius: 20,
+                  padding: "28px 24px 22px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                  boxShadow: "0 2px 12px rgba(44,26,14,0.05)",
+                  cursor: onClick ? "pointer" : "default",
+                  transition: onClick ? "box-shadow 0.2s, transform 0.2s" : undefined,
+                }}
+                onMouseEnter={onClick ? e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(44,26,14,0.12)"; e.currentTarget.style.transform = "translateY(-3px)"; } : undefined}
+                onMouseLeave={onClick ? e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(44,26,14,0.05)"; e.currentTarget.style.transform = "translateY(0)"; } : undefined}
+              >
                 <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{icon}</div>
                 <p style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0 }}>{eyebrow}</p>
                 <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.2rem,1.8vw,1.45rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, lineHeight: 1.25, letterSpacing: "0.01em" }}>{title}</h3>
@@ -1235,10 +1253,15 @@ const Home = () => {
           </div>
 
           <style>{`
-            @media (max-width: 540px) {
+            @media (max-width: 700px) {
               .path-cards-grid {
                 grid-template-columns: 1fr !important;
                 max-width: 100% !important;
+              }
+            }
+            @media (min-width: 701px) and (max-width: 900px) {
+              .path-cards-grid {
+                grid-template-columns: repeat(2,1fr) !important;
               }
             }
           `}</style>
