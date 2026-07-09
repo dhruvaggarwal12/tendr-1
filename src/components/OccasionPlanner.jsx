@@ -341,7 +341,7 @@ function BulletList({ items, color, max = 5 }) {
       {shown.map((item, i) => (
         <li key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'flex-start' }}>
           <span style={{ color, fontSize: 7, marginTop: 5, flexShrink: 0 }}>◆</span>
-          <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.88)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
+          <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.97)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
         </li>
       ))}
       {!expanded && items.length > max && (
@@ -372,7 +372,7 @@ function PageDots({ current, total, color }) {
 function NavRow({ onBack, onNext, nextLabel = 'Next', color }) {
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
-      <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
+      <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.75)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
       {onNext && (
         <button onClick={onNext} style={{ padding: '12px 30px', borderRadius: 100, background: color || FALLBACK_COLOR, color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 4px 14px ${color||FALLBACK_COLOR}44` }}>
           {nextLabel}
@@ -386,8 +386,8 @@ function Breadcrumb({ occasion, current, color }) {
   if (!occasion) return null;
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-      <span style={{ fontSize: 12, color: 'rgba(245,236,216,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
-      <span style={{ color: 'rgba(245,236,216,0.3)', fontSize: 14 }}>›</span>
+      <span style={{ fontSize: 12, color: 'rgba(245,236,216,0.75)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
+      <span style={{ color: 'rgba(245,236,216,0.46)', fontSize: 14 }}>›</span>
       <span style={{ fontSize: 12, color, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>{current}</span>
     </div>
   );
@@ -420,7 +420,7 @@ function CopyChip({ text, color }) {
       fontSize: 12, padding: '7px 14px', borderRadius: 100,
       background: copied ? `${color}28` : `${color}0A`,
       border: `1.5px solid ${copied ? color : `${color}22`}`,
-      color: copied ? '#F5ECD8' : 'rgba(245,236,216,0.65)',
+      color: copied ? '#F5ECD8' : 'rgba(245,236,216,0.85)',
       fontFamily: "'Outfit',sans-serif", fontWeight: copied ? 600 : 400,
       cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.15s', whiteSpace: 'nowrap',
     }}>
@@ -450,14 +450,14 @@ function BookPage1({ theme, occasion, photo, color }) {
             fontSize: 'clamp(1.9rem,5vw,2.8rem)', fontWeight: 400, letterSpacing: '-0.01em',
             color: '#F5ECD8', margin: '0 0 5px', lineHeight: 1.1,
           }}>{theme.theme}</h2>
-          <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.82)', margin: 0, fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>{theme.oneLineDesc}</p>
+          <p style={{ fontSize: 13, color: 'rgba(245,236,216,0.95)', margin: 0, fontStyle: 'italic', fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.02em' }}>{theme.oneLineDesc}</p>
         </div>
       </div>
 
       <div style={{ paddingTop: 22 }}>
         {/* Overview */}
         {theme.overview && (
-          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 400, color: 'rgba(245,236,216,0.75)', lineHeight: 1.9, margin: '0 0 24px', borderLeft: `2px solid ${color}35`, paddingLeft: 16 }}>{theme.overview}</p>
+          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 400, color: 'rgba(245,236,216,0.92)', lineHeight: 1.9, margin: '0 0 24px', borderLeft: `2px solid ${color}35`, paddingLeft: 16 }}>{theme.overview}</p>
         )}
 
         {/* Stats row — 2×2 when age group present, 3-col otherwise */}
@@ -474,7 +474,7 @@ function BookPage1({ theme, occasion, photo, color }) {
             <div style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif", marginBottom: 8 }}>Best Venue</div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {theme.bestVenue.map((v, i) => (
-                <span key={i} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 12, background: `${color}0A`, border: `1px solid ${color}22`, color: 'rgba(245,236,216,0.72)', fontFamily: "'Outfit',sans-serif" }}>{v}</span>
+                <span key={i} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 12, background: `${color}0A`, border: `1px solid ${color}22`, color: 'rgba(245,236,216,0.90)', fontFamily: "'Outfit',sans-serif" }}>{v}</span>
               ))}
             </div>
           </div>
@@ -500,7 +500,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
         <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,3.5vw,2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 4px', letterSpacing: '0.01em' }}>
           Customise Your Vision
         </h3>
-        <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.4)', margin: 0, letterSpacing: '0.02em' }}>Select what you'd like — pick as many as you want</p>
+        <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.60)', margin: 0, letterSpacing: '0.02em' }}>Select what you'd like — pick as many as you want</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
         {sections.map(({ key, icon, title, items }) => {
@@ -522,7 +522,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
                       fontSize: 12, padding: '7px 14px', borderRadius: 100,
                       background: isSel ? `${color}28` : `${color}0A`,
                       border: `1.5px solid ${isSel ? color : `${color}22`}`,
-                      color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.65)',
+                      color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.85)',
                       fontFamily: "'Outfit',sans-serif", fontWeight: isSel ? 600 : 400,
                       cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.15s',
                     }}>
@@ -559,11 +559,11 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
         <div style={{ marginTop: 10, paddingTop: 24, borderTop: `1px solid ${color}18` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
             <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>More Ideas</span>
-            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.3)', fontFamily: "'Outfit',sans-serif" }}>· tap to copy</span>
+            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.46)', fontFamily: "'Outfit',sans-serif" }}>· tap to copy</span>
           </div>
           {theme.cakeIdeas?.length > 0 && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.4)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎂 Cake Ideas</div>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎂 Cake Ideas</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {theme.cakeIdeas.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
               </div>
@@ -571,7 +571,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
           )}
           {theme.gamesActivities?.length > 0 && (
             <div>
-              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.4)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎮 Games & Activities</div>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎮 Games & Activities</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {theme.gamesActivities.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
               </div>
@@ -606,7 +606,7 @@ function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogg
                 <div style={{ width: 16, height: 16, borderRadius: 5, border: `1px solid ${color}45`, background: `${color}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
                   <span style={{ color, fontSize: 8, fontWeight: 600 }}>✓</span>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.78)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.55 }}>{item}</span>
+                <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.92)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.55 }}>{item}</span>
               </div>
             ))}
           </div>
@@ -647,7 +647,7 @@ function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogg
               );
             })}
           </div>
-          <p style={{ fontSize: 11, color: 'rgba(245,236,216,0.3)', margin: '8px 0 0', fontFamily: "'Outfit',sans-serif" }}>Tap photos to select your favourites</p>
+          <p style={{ fontSize: 11, color: 'rgba(245,236,216,0.46)', margin: '8px 0 0', fontFamily: "'Outfit',sans-serif" }}>Tap photos to select your favourites</p>
         </div>
       )}
 
@@ -661,7 +661,7 @@ function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogg
         }}>Proceed Now</button>
         <button onClick={onBrowseOtherThemes} style={{
           flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
-          background: 'rgba(245,236,216,0.04)', color: 'rgba(245,236,216,0.45)',
+          background: 'rgba(245,236,216,0.04)', color: 'rgba(245,236,216,0.65)',
           border: '1px solid rgba(245,236,216,0.1)', fontSize: 13, fontWeight: 400, cursor: 'pointer',
           fontFamily: "'Outfit',sans-serif",
         }}>Browse Other Themes</button>
@@ -803,7 +803,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='rgba(245%2C236%2C216%2C0.4)' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E")`,
     backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center', paddingRight: 40,
   };
-  const labelStyle = { fontSize: 10.5, fontWeight: 500, color: 'rgba(245,236,216,0.45)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "'Outfit',sans-serif" };
+  const labelStyle = { fontSize: 10.5, fontWeight: 500, color: 'rgba(245,236,216,0.65)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "'Outfit',sans-serif" };
   const optLabel = <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, fontSize: 10 }}> (optional)</span>;
 
   return (
@@ -834,11 +834,11 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
               <div className="op-scroll" style={{ flex: 1, overflowY: 'auto', padding: '20px 24px 8px' }}>
 
                 {/* Form header */}
-                <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.42)', fontSize: 13, cursor: 'pointer', padding: '0 0 20px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none', letterSpacing: '0.02em' }}>← Back</button>
+                <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', padding: '0 0 20px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none', letterSpacing: '0.02em' }}>← Back</button>
 
                 <p style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.2em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Let's Plan</p>
                 <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.4rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 8px', lineHeight: 1.1, letterSpacing: '0.01em' }}>{theme.theme}</h2>
-                <p style={{ fontSize: 13.5, fontWeight: 400, color: 'rgba(245,236,216,0.52)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif", lineHeight: 1.65 }}>Share a few details so we can put together the perfect plan for you.</p>
+                <p style={{ fontSize: 13.5, fontWeight: 400, color: 'rgba(245,236,216,0.70)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif", lineHeight: 1.65 }}>Share a few details so we can put together the perfect plan for you.</p>
 
                 <div style={{ height: 1, background: `${color}20`, marginBottom: 22 }} />
 
@@ -906,12 +906,12 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               <PageDots current={pg} total={3} color={color} />
-              <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.35)', textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{PAGE_NAMES[pg]}</span>
+              <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.52)', textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{PAGE_NAMES[pg]}</span>
             </div>
             <button onClick={onClose} style={{
               width: 32, height: 32, borderRadius: '50%',
               background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.12)',
-              color: 'rgba(245,236,216,0.65)', fontSize: 15, cursor: 'pointer',
+              color: 'rgba(245,236,216,0.85)', fontSize: 15, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>✕</button>
           </div>
@@ -935,13 +935,13 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
           }}>
             <button onClick={() => goPage(-1)} disabled={pg === 0} style={{
               background: 'transparent', border: 'none', cursor: pg === 0 ? 'not-allowed' : 'pointer',
-              color: pg === 0 ? 'rgba(245,236,216,0.18)' : 'rgba(245,236,216,0.48)',
+              color: pg === 0 ? 'rgba(245,236,216,0.18)' : 'rgba(245,236,216,0.65)',
               fontSize: 13, padding: '8px 0', fontFamily: "'Outfit',sans-serif",
               WebkitAppearance: 'none', appearance: 'none', outline: 'none',
               display: 'flex', alignItems: 'center', gap: 5,
             }}>Previous</button>
 
-            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.28)', fontFamily: "'Outfit',sans-serif" }}>{pg + 1} / 3</span>
+            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.44)', fontFamily: "'Outfit',sans-serif" }}>{pg + 1} / 3</span>
 
             {pg < 2 ? (
               <button onClick={() => goPage(1)} style={{
@@ -986,7 +986,7 @@ function ThemeCard({ theme, occasion, onExpand, occColor }) {
       </div>
       <div style={{ flex: 1, padding: '0 12px', minWidth: 0 }}>
         <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Cormorant Garamond',serif" }}>{theme.theme}</div>
-        <div style={{ fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.55)', lineHeight: 1.3, marginTop: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
+        <div style={{ fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.75)', lineHeight: 1.3, marginTop: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', flexShrink: 0 }}>
         <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 100, background: `${badgeColor}22`, border: `1px solid ${badgeColor}50`, color: badgeColor, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Outfit',sans-serif" }}>{theme.budget}</span>
@@ -1055,7 +1055,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
     fontSize: 'clamp(2rem,4.5vw,2.8rem)', fontWeight: 400,
     color: '#F5ECD8', margin: '0 0 8px', letterSpacing: '0.01em',
   };
-  const subStyle = { fontSize: 15, color: 'rgba(245,236,216,0.78)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif" };
+  const subStyle = { fontSize: 15, color: 'rgba(245,236,216,0.92)', margin: '0 0 22px', fontFamily: "'Outfit',sans-serif" };
 
   return (
     <>
@@ -1086,7 +1086,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               position: 'absolute', top: 16, right: 16, zIndex: 20,
               width: 34, height: 34, borderRadius: '50%',
               background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.12)',
-              color: 'rgba(245,236,216,0.62)', fontSize: 15, cursor: 'pointer',
+              color: 'rgba(245,236,216,0.82)', fontSize: 15, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
             }}>✕</button>
 
@@ -1138,7 +1138,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               {/* Step 0.5 — Plan with / without theme */}
               {step === 0.5 && (
                 <div>
-                  <button onClick={() => setStep(0)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
+                  <button onClick={() => setStep(0)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.75)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
                   <p style={{ fontSize: 10, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Plan your {occasion}</p>
                   <h2 style={h2Style}>How would you like to plan?</h2>
                   <p style={subStyle}>Choose your planning style</p>
@@ -1149,7 +1149,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                     }}>
                       <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan with Theme</div>
-                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.65)', lineHeight: 1.55 }}>Browse curated themes and get tailored vendor suggestions for your event</div>
+                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Browse curated themes and get tailored vendor suggestions for your event</div>
                     </button>
                     <button onClick={() => { onClose(); navigate('/booking'); }} style={{
                       padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
@@ -1157,7 +1157,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                     }}>
                       <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan without Theme</div>
-                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.65)', lineHeight: 1.55 }}>Jump straight to planning — browse vendors, get quotes, and finalise</div>
+                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Jump straight to planning — browse vendors, get quotes, and finalise</div>
                     </button>
                   </div>
                 </div>
@@ -1175,7 +1175,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         style={optStyle(budget === key)}>
                         <div style={{ color: occColor, fontSize: 11, letterSpacing: 4, marginBottom: 8, opacity: 0.85 }}>{'★'.repeat(stars)}</div>
                         <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
-                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.62)', lineHeight: 1.5 }}>{desc}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)', lineHeight: 1.5 }}>{desc}</div>
                       </button>
                     ))}
                   </div>
@@ -1202,7 +1202,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         borderRadius: 14, color: '#F5ECD8', outline: 'none', fontFamily: "'Outfit',sans-serif",
                       }}
                     />
-                    <span style={{ position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(245,236,216,0.28)', pointerEvents: 'none', fontFamily: "'Outfit',sans-serif" }}>guests</span>
+                    <span style={{ position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(245,236,216,0.44)', pointerEvents: 'none', fontFamily: "'Outfit',sans-serif" }}>guests</span>
                   </div>
                   <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 22 }}>
                     {['10','25','50','100','150','250'].map(g => (
@@ -1210,7 +1210,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         padding: '7px 13px', borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                         background: guests === g ? `${occColor}20` : 'rgba(245,236,216,0.05)',
                         border: `1px solid ${guests === g ? occColor : 'rgba(245,236,216,0.12)'}`,
-                        color: guests === g ? occColor : 'rgba(245,236,216,0.48)',
+                        color: guests === g ? occColor : 'rgba(245,236,216,0.65)',
                         transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                       }}>{g}</button>
                     ))}
@@ -1249,7 +1249,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                         style={optStyle(timeOfDay === key)}>
                         <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
                         <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
-                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.62)' }}>{desc}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)' }}>{desc}</div>
                       </button>
                     ))}
                   </div>
@@ -1271,9 +1271,9 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     {!showAll && (
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                         {budget    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: `${occColor}14`, border: `1px solid ${occColor}38`, color: occColor, fontFamily: "'Outfit',sans-serif" }}>{BUDGET_OPTIONS.find(b => b.key === budget)?.label}</span>}
-                        {guests    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
-                        {venue     && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
-                        {timeOfDay && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.55)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
+                        {guests    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
+                        {venue     && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
+                        {timeOfDay && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
                       </div>
                     )}
                   </div>
@@ -1287,7 +1287,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   ) : (
                     <div style={{ textAlign: 'center', padding: '40px 16px' }}>
                       <div style={{ fontSize: 36, opacity: 0.25, marginBottom: 10 }}>✦</div>
-                      <p style={{ color: 'rgba(245,236,216,0.38)', fontSize: 14, fontFamily: "'Outfit',sans-serif" }}>No themes matched — try adjusting your filters</p>
+                      <p style={{ color: 'rgba(245,236,216,0.56)', fontSize: 14, fontFamily: "'Outfit',sans-serif" }}>No themes matched — try adjusting your filters</p>
                     </div>
                   )}
 
@@ -1305,11 +1305,11 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       </button>
                     )}
                     <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-                      <button onClick={adjustFilters} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.42)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                      <button onClick={adjustFilters} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
                         Adjust filters
                       </button>
                       <span style={{ color: 'rgba(245,236,216,0.18)' }}>·</span>
-                      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.42)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                      <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'rgba(245,236,216,0.62)', fontSize: 13, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", textDecoration: 'underline', textUnderlineOffset: 3 }}>
                         Continue without theme
                       </button>
                     </div>
