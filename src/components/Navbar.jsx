@@ -278,44 +278,44 @@ const Navbar = ({
       label: "Browse",
       megaMenu: true,
       items: [
-        { id: "Decorator",    emoji: "🎨", label: "Decorator",    href: "/search?categories=Decorator" },
-        { id: "Caterer",      emoji: "🍽️", label: "Caterer",      href: "/search?categories=Caterer" },
-        { id: "Photographer", emoji: "📸", label: "Photographer", href: "/search?categories=Photographer" },
-        { id: "DJ",           emoji: "🎵", label: "DJ",           href: "/search?categories=DJ" },
+        { id: "Decorator",    label: "Decorator",    href: "/search?categories=Decorator" },
+        { id: "Caterer",      label: "Caterer",      href: "/search?categories=Caterer" },
+        { id: "Photographer", label: "Photographer", href: "/search?categories=Photographer" },
+        { id: "DJ",           label: "DJ",           href: "/search?categories=DJ" },
       ],
       sideItems: [
-        { label: "🤝 Register as Vendor", href: "/vendor/register" },
+        { label: "Register as Vendor", href: "/vendor/register" },
       ],
     },
     {
       label: "Our Products",
       items: [
-        { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
-        { label: "💒 Wedding Stationeries", href: "/stationery" },
-        { label: "🎭 Fun Activities",       href: "/fun-activities" },
+        { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+        { label: "Wedding Stationeries", href: "/stationery" },
+        { label: "Fun Activities",       href: "/fun-activities" },
       ],
     },
     {
       label: "Tools",
       items: [
-        { label: "⏱️ Timeline",         href: "/timeline-picker" },
-        { label: "💰 Budget Allocator", href: "/budget-picker" },
-        // { label: "🎨 Decor Finder", href: "/decor-finder" }, // disabled
+        { label: "Timeline",         href: "/timeline-picker" },
+        { label: "Budget Allocator", href: "/budget-picker" },
+        // { label: "Decor Finder", href: "/decor-finder" }, // disabled
       ],
     },
     {
       label: "Tips by Tendr",
       items: [
-        { label: "💬 Community", href: "/community" },
-        { label: "📚 Guide Store", href: "/guides" },
+        { label: "Community",   href: "/community" },
+        { label: "Guide Store", href: "/guides" },
       ],
     },
     {
       label: "Booking",
       items: [
-        { label: "🔍 You Do It", href: "/booking" },
-        { label: "✨ Smart Planner", href: "/booking" },
-        { label: "💬 Baat Karo", href: "/baat-karo" },
+        { label: "You Do It",     href: "/booking" },
+        { label: "Smart Planner", href: "/booking" },
+        { label: "Baat Karo",     href: "/baat-karo" },
       ],
     },
     {
@@ -569,7 +569,6 @@ const Navbar = ({
                               onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
                               onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; }}
                             >
-                              <span style={{ fontSize: 22 }}>{item.emoji}</span>
                               <span style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{item.label}</span>
                             </a>
                           ))}
