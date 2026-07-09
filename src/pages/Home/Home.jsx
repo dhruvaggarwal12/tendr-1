@@ -1224,54 +1224,59 @@ const Home = () => {
         `}</style>
       </section>
 
-      {/* ── Plan by Occasion — disabled, restore by removing {false && ( wrapper ── */}
-      {false && (<section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
-          <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Plan by Occasion</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
-            <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
+      {/* ── Plan by Occasion — dark editorial portrait grid ── */}
+      <section style={{ background: "#1A0E06", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 40 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Plan by Occasion</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
+            <p style={{ fontSize: 15, color: "rgba(255,248,236,0.5)", margin: 0 }}>Pick your celebration — we'll match vendors, ideas and a full plan</p>
           </div>
 
-          {/* Single horizontal scrollable row */}
-          <div style={{ display: "flex", gap: "clamp(12px,1.8vw,22px)", overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}>
+          {/* 4-column portrait grid — all occasions visible at once */}
+          <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
             {[
-              { label: "Birthday",        photoM: "/occasions/birthday-mobile.png",        photoD: "/occasions/birthday-desktop.png" },
-              { label: "Anniversary",     photoM: "/occasions/anniversary-mobile.png",     photoD: "/occasions/anniversary-desktop.png" },
-              { label: "Baby Shower",     photoM: "/occasions/baby-shower-mobile.png",     photoD: "/occasions/baby-shower-desktop.png" },
-              { label: "House Party",     photoM: "/occasions/house-party-mobile.png",     photoD: "/occasions/house-party-desktop.png" },
-              { label: "Housewarming",    photoM: "/occasions/housewarming-mobile.png",    photoD: "/occasions/housewarming-desktop.png" },
-              { label: "Get Together",    photoM: "/occasions/get-together-mobile.png",    photoD: "/occasions/get-together-desktop.png" },
-              { label: "Kitty Party",     photoM: "/occasions/kitty-party-mobile.png",     photoD: "/occasions/kitty-party-desktop.png" },
-              { label: "Naming Ceremony", photoM: "/occasions/naming-ceremony-mobile.png", photoD: "/occasions/naming-ceremony-desktop.png" },
-            ].map(({ label, photoM, photoD }) => (
+              { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
+              { label: "Anniversary",     photo: "/occasions/anniversary-mobile.png" },
+              { label: "Baby Shower",     photo: "/occasions/baby-shower-mobile.png" },
+              { label: "House Party",     photo: "/occasions/house-party-mobile.png" },
+              { label: "Housewarming",    photo: "/occasions/housewarming-mobile.png" },
+              { label: "Get Together",    photo: "/occasions/get-together-mobile.png" },
+              { label: "Kitty Party",     photo: "/occasions/kitty-party-mobile.png" },
+              { label: "Naming Ceremony", photo: "/occasions/naming-ceremony-mobile.png" },
+            ].map(({ label, photo }) => (
               <button key={label}
                 onClick={() => setPlannerOccasion(label)}
-                style={{ flex: "0 0 clamp(140px,15vw,182px)", borderRadius: "clamp(10px,1.5vw,16px)", border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 2px 14px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", aspectRatio: "1/1" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(0,0,0,0.15)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(0,0,0,0.08)"; }}
+                style={{ position: "relative", borderRadius: 16, overflow: "hidden", border: "1px solid rgba(204,171,74,0.15)", background: "#2C1A0E", cursor: "pointer", padding: 0, aspectRatio: "2/3", display: "block", width: "100%", transition: "transform 0.2s, box-shadow 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-5px)"; e.currentTarget.style.boxShadow = "0 20px 48px rgba(0,0,0,0.55)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
               >
-                <div style={{ padding: "clamp(6px,1.2vw,10px) clamp(6px,1.2vw,10px) 4px", background: "#fff", flexShrink: 0 }}>
-                  <span style={{ fontSize: "clamp(9px,1.1vw,12px)", fontWeight: 500, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
-                </div>
-                <div style={{ flex: 1, overflow: "hidden" }}>
-                  <img src={isMobile ? photoM : photoD} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={photo} alt={label} loading="lazy"
+                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,0,0.82) 0%, rgba(10,4,0,0.25) 50%, transparent 100%)" }} />
+                <div style={{ position: "absolute", bottom: 14, left: 14, right: 14, display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", letterSpacing: "0.01em", textShadow: "0 1px 6px rgba(0,0,0,0.6)", lineHeight: 1.3 }}>{label}</span>
+                  <span style={{ fontSize: 14, color: "rgba(204,171,74,0.8)" }}>→</span>
                 </div>
               </button>
             ))}
           </div>
-          <style>{`.occ-row::-webkit-scrollbar{display:none}`}</style>
 
           <div style={{ textAlign: "center", marginTop: 28 }}>
             <button
               onClick={() => setPlannerOccasion("")}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)", transition: "all 0.18s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}
-            >See all occasions &#8594;</button>
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "10px 26px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.3)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.18s" }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(204,171,74,0.7)"; e.currentTarget.style.color = "#FFF8EC"; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(204,171,74,0.3)"; e.currentTarget.style.color = "#CCAB4A"; }}
+            >See all occasions →</button>
           </div>
+
+          <style>{`
+            @media (max-width: 540px) { .occ-portrait-grid { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; } }
+            @media (min-width: 541px) and (max-width: 800px) { .occ-portrait-grid { grid-template-columns: repeat(3,1fr) !important; } }
+          `}</style>
         </div>
-      </section>)}
+      </section>
       {/* ── END Plan by Occasion ── */}
 
       {/* ── Everything for your celebration — static 2-tier grid ── */}
@@ -1316,7 +1321,7 @@ const Home = () => {
               { icon: "💒", label: "Wedding Stationeries", desc: "Invitations, itineraries, thank you cards — personalised.", href: "/stationery" },
               { icon: "⏱️", label: "Event Timeline",       desc: "Build a day-by-day countdown for your event.", href: "/timeline-picker" },
               { icon: "💰", label: "Budget Allocator",     desc: "Set budget per category and track every rupee.", href: "/budget-picker" },
-              { icon: "🎁", label: "Gift Hampers & Cakes", desc: "Curated gifts and cakes — chat with our team.", href: "/baat-karo" },
+              { icon: "🎁", label: "Gift Hampers & Cakes", desc: "Curated gifts and cakes — delivered for your event.", href: "/gift-hampers-cakes" },
               { icon: "📷", label: "Find by Style",        desc: "Upload a photo — we find vendors with matching work.", href: "/find-by-style" },
             ].map(({ icon, label, desc, href }) => (
               <div key={label} onClick={() => navigate(href)}
