@@ -1314,17 +1314,17 @@ const Home = () => {
               { icon: "📅", label: "Upcoming Events",      desc: "See what's coming up — sign in to register interest.", href: "/occasions" },
               { icon: "📚", label: "Tips by Tendr",        desc: "Free guides, community ideas and planning tips.", href: "/guides" },
             ].map(({ icon, label, desc, href }) => (
-              <div key={label} onClick={() => navigate(href)}
+              <div key={label} className="offer-tier2-item" onClick={() => navigate(href)}
                 style={{ background: "#F9F6F2", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "background 0.15s, box-shadow 0.15s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "#FFF8EE"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "#F9F6F2"; e.currentTarget.style.boxShadow = "none"; }}>
                 <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{icon}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="offer-tier2-inner" style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
                     <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>{label}</span>
-                    <span style={{ fontSize: 13, color: "rgba(196,122,46,0.5)", flexShrink: 0 }}>→</span>
+                    <span className="offer-tier2-arrow" style={{ fontSize: 13, color: "rgba(196,122,46,0.5)", flexShrink: 0 }}>→</span>
                   </div>
-                  <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.5, marginTop: 3 }}>{desc}</div>
+                  <div className="offer-tier2-desc" style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.5, marginTop: 3 }}>{desc}</div>
                 </div>
               </div>
             ))}
@@ -1332,8 +1332,48 @@ const Home = () => {
 
           <style>{`
             @media (max-width: 640px) {
-              .offer-tier1-grid { grid-template-columns: 1fr !important; }
-              .offer-tier2-grid { grid-template-columns: repeat(2,1fr) !important; }
+              /* Tier 1 — horizontal scroll row */
+              .offer-tier1-grid {
+                display: flex !important;
+                overflow-x: auto !important;
+                gap: 10px !important;
+                padding-bottom: 8px !important;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+                margin-bottom: 24px !important;
+              }
+              .offer-tier1-grid::-webkit-scrollbar { display: none; }
+              .offer-tier1-grid > div {
+                min-width: 196px !important;
+                max-width: 196px !important;
+                flex-shrink: 0 !important;
+              }
+
+              /* Tier 2 — compact pill scroll row */
+              .offer-tier2-grid {
+                display: flex !important;
+                overflow-x: auto !important;
+                gap: 8px !important;
+                padding-bottom: 8px !important;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+              }
+              .offer-tier2-grid::-webkit-scrollbar { display: none; }
+              .offer-tier2-item {
+                min-width: 96px !important;
+                max-width: 96px !important;
+                flex-shrink: 0 !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                text-align: center !important;
+                padding: 14px 8px 12px !important;
+                gap: 6px !important;
+              }
+              .offer-tier2-item > span { margin-top: 0 !important; }
+              .offer-tier2-inner { flex: unset !important; min-width: unset !important; width: 100%; }
+              .offer-tier2-inner > div:first-child { justify-content: center !important; }
+              .offer-tier2-arrow { display: none !important; }
+              .offer-tier2-desc  { display: none !important; }
             }
             @media (min-width: 641px) and (max-width: 960px) {
               .offer-tier1-grid { grid-template-columns: repeat(3,1fr) !important; }
