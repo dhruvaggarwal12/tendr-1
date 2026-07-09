@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import BIRTHDAY_THEMES from '../data/birthdayThemes';
@@ -781,11 +781,14 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
     return () => window.removeEventListener('keydown', fn);
   }, [onClose]);
 
+  const scrollRef = useRef(null);
+
   const goPage = (dir) => {
     const next = pg + dir;
     if (next < 0 || next > 2) return;
     setAnimDir(dir > 0 ? 'fwd' : 'bwd');
     setPg(next);
+    if (scrollRef.current) scrollRef.current.scrollTop = 0;
   };
 
   const pageAnimClass = animDir ? `book-${animDir}` : '';
@@ -917,7 +920,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
           </div>
 
           {/* Scrollable page content */}
-          <div className="op-scroll" style={{ flex: 1, overflowY: 'auto' }}>
+          <div ref={scrollRef} className="op-scroll" style={{ flex: 1, overflowY: 'auto' }}>
             <div key={pg} className={pageAnimClass} style={{ padding: '0 24px 8px' }}>
               {pg === 0 && <BookPage1 theme={theme} occasion={occasion} photo={photo} color={color} />}
               {pg === 1 && <BookPage2 theme={theme} color={color} selections={selections} onToggle={handleToggle} onCustomChange={handleCustomChange} />}
