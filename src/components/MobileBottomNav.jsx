@@ -135,7 +135,7 @@ function BottomNavInner() {
   const PRODUCTS = [
     { emoji: "⏱️", label: "Timeline",         href: "/timeline-picker" },
     { emoji: "💰", label: "Budget Allocator", href: "/budget-picker" },
-    { emoji: "🎨", label: "Decor Finder",     href: "/decor-finder" },
+    // { emoji: "🎨", label: "Decor Finder", href: "/decor-finder" }, // disabled
   ];
 
   const items = [

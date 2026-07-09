@@ -1184,7 +1184,7 @@ const EventPlanning = () => {
                 <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Want decor inspiration?</div>
                 <div style={{ fontSize: 11.5, color: "#7A5535" }}>Browse real photos — Floral, Balloon, Minimalist &amp; more</div>
               </div>
-              <button onClick={() => navigate("/decor-finder")} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Decor Finder →</button>
+              {/* <button onClick={() => navigate("/decor-finder")} style={{ padding: "8px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Decor Finder →</button> */}
             </div>
           )}
 

@@ -90,7 +90,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
-  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", "decor finder": "/decor-finder", timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
 
   const handleNavSearch = (q) => {
     const query = q || searchQuery;
@@ -237,7 +237,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_timeline_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.phases?.length > 0 ? "/prebuilt-timeline" : "/timeline-picker"); } catch { navigate("/timeline-picker"); } } },
       { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
-      { label: "Decor Finder",     href: "/decor-finder" },
+      // { label: "Decor Finder", href: "/decor-finder" }, // disabled
     ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
       { label: "Memories (Preview)", href: "/memories" },

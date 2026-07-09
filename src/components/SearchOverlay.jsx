@@ -38,7 +38,7 @@ const PAGE_KW = {
   budget: "/budget-picker",
   "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes",
   hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes",
-  "decor finder": "/decor-finder",
+  // "decor finder": "/decor-finder", // disabled
   timeline: "/timeline-picker",
   invitation: "/invitation", flyer: "/invitation", invite: "/invitation",
   stationery: "/stationery", "wedding card": "/stationery",

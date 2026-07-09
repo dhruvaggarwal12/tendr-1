@@ -74,14 +74,7 @@ const HERO_FEATURES = [
     href: "/stationery",
     emoji: "💍",
   },
-  {
-    tag: "Decor Finder",
-    headline: "Discover your perfect decoration theme",
-    desc: "Not sure what decor you want? Our quiz matches your personality and budget to the ideal decoration style.",
-    where: "Planning Tools → 🎨 Decor Finder",
-    href: "/decor-finder",
-    emoji: "🎨",
-  },
+  // { tag: "Decor Finder", headline: "Discover your perfect decoration theme", href: "/decor-finder", emoji: "🎨" }, // disabled
   {
     tag: "For Vendors",
     headline: "Register your business & get booked on Tendr",
@@ -369,7 +362,7 @@ const Home = () => {
     { id: "smart-planner",  tag: "Smart Planner",        icon: "✨", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", headline: "Your complete vendor package, built in seconds",          desc: "Tell us your event once. We match caterers, decorators, photographers and DJs within your budget. You confirm, we coordinate everything.", where: "Booking → Tendr Plans It For Me", href: "/booking",          accent: "#C47A2E" },
     { id: "browse-vendors", tag: "Browse Vendors",        icon: "🔍", iconBg: "linear-gradient(135deg,#7A4A1E,#C47A2E)",  headline: "Find the right vendor. Compare. Chat. Book.",              desc: "Browse top-rated vendors in Delhi NCR. Compare profiles side by side, chat directly, and lock in your price — all in one place.", where: "Vendors → Browse Vendors", href: "/listings",          accent: "#7A4A1E" },
     { id: "timeline",       tag: "Event Timeline",        icon: "⏱️", iconBg: "linear-gradient(135deg,#2C1A0E,#7A4A1E)",  headline: "Every milestone, perfectly timed",                        desc: "Build a day-by-day countdown. Download a timeline slip you can share with every vendor on your list.", where: "Our Products → Timeline", href: "/timeline-picker",  accent: "#2C1A0E" },
-    { id: "decor-finder",   tag: "Decor Finder",          icon: "🎨", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Discover your decoration style before you book",          desc: "Take a short quiz → get your perfect theme. Browse real vendor photos by style and go straight from inspiration to booking.", where: "Our Products → Decor Finder", href: "/decor-finder",    accent: "#C47A2E" },
+    // { id: "decor-finder", tag: "Decor Finder", icon: "🎨", href: "/decor-finder", accent: "#C47A2E" }, // disabled
     { id: "budget",         tag: "Budget Allocator",      icon: "💰", iconBg: "linear-gradient(135deg,#7A4A1E,#CCAB4A)",  headline: "Know exactly what you can afford — before you start",     desc: "Set your budget per service. We filter and sort vendors so every option you see is within reach.", where: "Our Products → Budget Allocator", href: "/budget-picker",    accent: "#7A4A1E" },
     { id: "gift-hampers",   tag: "Gift Hampers & Cakes",  icon: "🎁", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)",  headline: "The perfect gift, delivered to the door",                 desc: "Curated hampers and custom cakes for birthdays, anniversaries and corporate celebrations.", where: "Gift & Hampers", href: "/gift-hampers-cakes",  accent: "#C47A2E" },
     { id: "fun-activities",  tag: "Fun Activities",        icon: "🎭", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Add magic, games & live entertainment to any event",     desc: "Magic shows, game coordinators, dhol players, live teddy, stone art and more — fixed prices, confirmed in 2 hours.", where: "Fun Activities", href: "/fun-activities", accent: "#C47A2E" },
