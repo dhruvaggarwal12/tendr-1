@@ -1,6 +1,6 @@
 ﻿// src/pages/Home/Home.jsx
 import React, { useEffect, useState, useRef } from "react";
-import { useNavigate as useNav } from "react-router-dom";
+import { useNavigate as useNav, useSearchParams } from "react-router-dom";
 import PageTour from "../../components/PageTour";
 import { GUIDES } from "../guides/guideData";
 import SEO from "../../components/SEO";
@@ -352,6 +352,11 @@ const Home = () => {
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
+  const [searchParams] = useSearchParams();
+  useEffect(() => {
+    const occ = searchParams.get("occasion");
+    if (occ) setPlannerOccasion(occ);
+  }, []);
   const scrollFaCarousel = (dir) => {
     const el = faCarouselRef.current;
     if (!el) return;

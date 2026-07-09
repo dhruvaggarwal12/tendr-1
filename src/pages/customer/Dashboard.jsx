@@ -173,7 +173,7 @@ export default function CustomerDashboard() {
   const [showAddEvent, setShowAddEvent]           = useState(false);
   const [addingEvent, setAddingEvent]             = useState(false);
   const [newEvent, setNewEvent]                   = useState({ occasion:'', personName:'', date:'', guestCount:'', roughBudget:'' });
-  const [showPastVendors, setShowPastVendors]     = useState(false);
+  const [showPastVendors, setShowPastVendors]     = useState(null); // stores the ev object when open
   const [vendorQuickView, setVendorQuickView]     = useState(null); // full vendor object
   const [vendorQvLoading, setVendorQvLoading]     = useState(false);
 
@@ -592,7 +592,7 @@ export default function CustomerDashboard() {
                       <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:10 }}>
                         {/* Past Vendors */}
                         <button
-                          onClick={() => hasPastVendors ? setShowPastVendors(true) : null}
+                          onClick={() => hasPastVendors ? setShowPastVendors(ev) : null}
                           disabled={!hasPastVendors}
                           style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"1.5px solid rgba(196,122,46,0.3)", background: hasPastVendors ? "#fff" : "rgba(196,122,46,0.04)", color: hasPastVendors ? "#C47A2E" : "#C4A882", fontFamily:font, fontSize:12, fontWeight:700, cursor: hasPastVendors ? "pointer" : "default", textAlign:"left", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                           <span>🔁 Past Vendors</span>
@@ -606,8 +606,8 @@ export default function CustomerDashboard() {
                         </button>
                         {/* Plan Full Event */}
                         <button
-                          onClick={() => navigate("/booking")}
-                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:12, fontWeight:700, cursor:"pointer", textAlign:"left" }}>
+                          onClick={() => navigate("/?occasion=" + encodeURIComponent(ev.occasion))}
+                          style={{ width:"100%", padding:"8px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontFamily:font, fontSize:12, fontWeight:600, cursor:"pointer", textAlign:"left" }}>
                           🎯 Plan Full Event →
                         </button>
                       </div>
@@ -619,37 +619,55 @@ export default function CustomerDashboard() {
           )}
         </div>
 
-        {/* Past Vendors Modal — centered, responsive */}
+        {/* Past Vendors Modal — filtered by occasion, grouped by plan */}
         {showPastVendors && (() => {
-          const allPastVendors = plans
-            .filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0)
-            .flatMap(p => Object.entries(p.finalisedVendors).map(([cat, v]) => ({ ...v, category:cat, fromEvent:p.eventType, planId:p._id })));
-          const unique = [...new Map(allPastVendors.map(v => [v._id||v.name, v])).values()];
+          const occasion = showPastVendors.occasion;
+          const completedPlans = plans.filter(p => p.status === "completed" && p.finalisedVendors && Object.keys(p.finalisedVendors).length > 0);
+          const matchingPlans = completedPlans.filter(p => p.eventType === occasion);
+          const plansToShow = matchingPlans.length > 0 ? matchingPlans : completedPlans;
           return (
             <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.5)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"16px" }}
-              onClick={() => setShowPastVendors(false)}>
+              onClick={() => setShowPastVendors(null)}>
               <div onClick={e => e.stopPropagation()}
                 style={{ background:"#FFFCF5", borderRadius:20, padding:"24px 20px", width:"100%", maxWidth:500, maxHeight:"85vh", overflowY:"auto", boxShadow:"0 20px 60px rgba(44,26,14,0.25)" }}>
                 <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:18 }}>
                   <div>
-                    <div style={{ fontSize:17, fontWeight:800, color:"#2C1A0E" }}>Your Past Vendors</div>
-                    <div style={{ fontSize:12, color:"#9B7450", marginTop:2 }}>Everyone you&apos;ve worked with across all events</div>
+                    <div style={{ fontSize:17, fontWeight:700, color:"#2C1A0E" }}>Past {occasion} Vendors</div>
+                    <div style={{ fontSize:12, color:"#9B7450", marginTop:2 }}>From your previous {occasion.toLowerCase()} events</div>
                   </div>
-                  <button onClick={() => setShowPastVendors(false)} style={{ background:"none", border:"none", fontSize:22, color:"#9B7450", cursor:"pointer", flexShrink:0 }}>✕</button>
+                  <button onClick={() => setShowPastVendors(null)} style={{ background:"none", border:"none", fontSize:22, color:"#9B7450", cursor:"pointer", flexShrink:0 }}>✕</button>
                 </div>
-                <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                  {unique.map((v, i) => (
-                    <div key={i} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", background:"#FFF8EE", border:"1px solid rgba(196,122,46,0.2)", borderRadius:12, padding:"12px 14px", gap:12 }}>
-                      <div style={{ flex:1, minWidth:0 }}>
-                        <div style={{ fontSize:14, fontWeight:700, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.name || "Vendor"}</div>
-                        <div style={{ fontSize:11, color:"#9B7450", marginTop:2 }}>{v.category} · used for <strong>{v.fromEvent}</strong></div>
+                <div style={{ display:"flex", flexDirection:"column", gap:16 }}>
+                  {plansToShow.map((p, pi) => {
+                    const vendors = Object.entries(p.finalisedVendors);
+                    return (
+                      <div key={p._id || pi} style={{ background:"#FFF8EE", border:"1px solid rgba(196,122,46,0.18)", borderRadius:14, padding:"14px 16px" }}>
+                        {/* Event context chips — only show fields that exist */}
+                        {(p.guests || p.location || p.theme) && (
+                          <div style={{ display:"flex", flexWrap:"wrap", gap:6, marginBottom:12 }}>
+                            {p.guests   && <span style={{ fontSize:11, fontWeight:500, color:"#7A5535", background:"rgba(196,122,46,0.1)", padding:"3px 8px", borderRadius:20 }}>👥 {p.guests} guests</span>}
+                            {p.location && <span style={{ fontSize:11, fontWeight:500, color:"#7A5535", background:"rgba(196,122,46,0.1)", padding:"3px 8px", borderRadius:20 }}>📍 {p.location}</span>}
+                            {p.theme    && <span style={{ fontSize:11, fontWeight:500, color:"#7A5535", background:"rgba(196,122,46,0.1)", padding:"3px 8px", borderRadius:20 }}>🎨 {p.theme}</span>}
+                          </div>
+                        )}
+                        {/* Vendor rows */}
+                        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+                          {vendors.map(([cat, v], vi) => (
+                            <div key={vi} style={{ display:"flex", alignItems:"center", justifyContent:"space-between", gap:10 }}>
+                              <div style={{ flex:1, minWidth:0 }}>
+                                <div style={{ fontSize:13, fontWeight:600, color:"#2C1A0E", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{v.name || "Vendor"}</div>
+                                <div style={{ fontSize:11, color:"#9B7450" }}>{cat}</div>
+                              </div>
+                              <button onClick={() => { setShowPastVendors(null); openVendorQV(v._id); }}
+                                style={{ fontSize:11, fontWeight:600, padding:"6px 12px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap", flexShrink:0 }}>
+                                View →
+                              </button>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <button onClick={() => openVendorQV(v._id)}
-                        style={{ fontSize:11, fontWeight:700, padding:"7px 14px", borderRadius:8, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", cursor:"pointer", fontFamily:font, whiteSpace:"nowrap", flexShrink:0 }}>
-                        View Profile →
-                      </button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
