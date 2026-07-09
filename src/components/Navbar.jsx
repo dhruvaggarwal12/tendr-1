@@ -300,6 +300,7 @@ const Navbar = ({
       items: [
         { label: "Timeline",         href: "/timeline-picker" },
         { label: "Budget Allocator", href: "/budget-picker" },
+        { label: "Find by Style",    href: "/find-by-style" },
         // { label: "Decor Finder", href: "/decor-finder" }, // disabled
       ],
     },

@@ -1466,7 +1466,7 @@ const Home = () => {
         </div>
       </section>
 
-      <JourneyFlow />
+      {false && <JourneyFlow />}
 
 
       {/* ── Book a Party Place — admin preview only ── */}
