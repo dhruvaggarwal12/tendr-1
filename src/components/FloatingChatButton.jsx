@@ -403,6 +403,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       {(funCartOpen || ghCartOpen || anyDrawerOpen) ? null : <>
 
       {/* Decor Finder chip — above View Chats on Decorator listings */}
+      {/* Decor Finder chip disabled
       {showDecorChip && (
         <div style={{
           position: "fixed", bottom: 84, right: 20, zIndex: 900,
@@ -428,6 +429,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
           </button>
         </div>
       )}
+      */}
 
       {/* ── Backdrop: closes launcher + saved/compare popups on outside tap ── */}
       {(savedOpen || compareOpen || launcherOpen) && (

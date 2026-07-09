@@ -69,12 +69,14 @@ export default function CategoryGallery() {
               <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.4rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "-0.02em" }}>{category}</h1>
               <p style={{ fontSize: 14, color: "#9B7450", margin: 0, maxWidth: 480 }}>{meta.desc}</p>
             </div>
+            {/* Decor Finder button disabled
             {category === "Decoration" && (
               <button onClick={() => navigate("/decor-finder")}
                 style={{ marginLeft: "auto", padding: "10px 22px", borderRadius: 12, border: "none", background: `linear-gradient(135deg,#C47A2E,#CCAB4A)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.28)", whiteSpace: "nowrap" }}>
                 ✨ Open Decor Finder
               </button>
             )}
+            */}
           </div>
         </div>
       </div>
