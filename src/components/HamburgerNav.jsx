@@ -229,9 +229,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
     ]},
     { label: "Booking", hideOnMobile: true, items: [
-      { label: "🔍 You Do It",    href: "/booking", activePaths: ["/plan-event"], activeBookingType: "you-do-it" },
-      { label: "✨ Smart Planner", href: "/booking", activePaths: ["/plan-event"], activeBookingType: "let-us-do-it" },
-      { label: "💬 Baat Karo",    href: "/baat-karo", activePaths: ["/baat-karo"] },
+      { label: "🔍 You Do It",       href: "/booking", activePaths: ["/plan-event"], activeBookingType: "you-do-it" },
+      { label: "✨ Smart Planner",    href: "/booking", activePaths: ["/plan-event"], activeBookingType: "let-us-do-it" },
+      { label: "💬 Baat Karo",       href: "/baat-karo", activePaths: ["/baat-karo"] },
+      { label: "🎉 Plan by Occasion", href: "/", onClickOverride: () => { close(); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
     ]},
     { label: "Tools", hideOnMobile: true, items: [
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],

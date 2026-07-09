@@ -314,9 +314,10 @@ const Navbar = ({
     {
       label: "Booking",
       items: [
-        { label: "You Do It",     href: "/booking" },
-        { label: "Smart Planner", href: "/booking" },
-        { label: "Baat Karo",     href: "/baat-karo" },
+        { label: "You Do It",          href: "/booking" },
+        { label: "Smart Planner",      href: "/booking" },
+        { label: "Baat Karo",          href: "/baat-karo" },
+        { label: "🎉 Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
       ],
     },
     {
