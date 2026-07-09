@@ -138,7 +138,7 @@ function TipsByTendrSection() {
           </div>
           <button
             onClick={() => navigate("/guides")}
-            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(79,142,247,0.3)", background: "transparent", color: "#4F8EF7", fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(79,142,247,0.3)", background: "transparent", color: "#4F8EF7", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
           >
             View All Guides →
           </button>
@@ -156,12 +156,12 @@ function TipsByTendrSection() {
             >
               <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: guide.theme.accent, opacity: 0.7 }} />
               <div style={{ fontSize: 32, marginBottom: 12, lineHeight: 1 }}>{guide.coverEmoji}</div>
-              <div style={{ fontSize: 10, fontWeight: 700, color: guide.theme.accent, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{guide.tags[0]}</div>
-              <h3 style={{ fontSize: 16.5, fontWeight: 800, color: "#FFFFFF", margin: "0 0 6px", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{guide.title}</h3>
+              <div style={{ fontSize: 10, fontWeight: 500, color: guide.theme.accent, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{guide.tags[0]}</div>
+              <h3 style={{ fontSize: 16.5, fontWeight: 700, color: "#FFFFFF", margin: "0 0 6px", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{guide.title}</h3>
               <p style={{ fontSize: 12.5, color: "#7A8BA8", margin: "0 0 16px", lineHeight: 1.6 }}>{guide.subtitle}</p>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <span style={{ fontSize: 11.5, color: "#4A5E7A" }}>{guide.readTime} · {guide.pages}pp</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: guide.theme.accent }}>Free →</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: guide.theme.accent }}>Free →</span>
               </div>
             </div>
           ))}
@@ -177,7 +177,7 @@ function TipsByTendrSection() {
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
             <span style={{ fontSize: 28 }}>💬</span>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#FFFFFF" }}>Community Wall</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#FFFFFF" }}>Community Wall</div>
               <div style={{ fontSize: 12.5, color: "#7A8BA8", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
             </div>
           </div>
@@ -224,10 +224,10 @@ function FaqSection() {
                 style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", background: open === i ? "rgba(196,122,46,0.03)" : "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 16 }}
               >
                 <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 8, padding: "3px 8px", flexShrink: 0, marginTop: 2, letterSpacing: "0.04em" }}>
+                  <span style={{ fontSize: 12, fontWeight: 500, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 8, padding: "3px 8px", flexShrink: 0, marginTop: 2, letterSpacing: "0.04em" }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
+                  <span style={{ fontSize: 15, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
                 </div>
                 <div style={{
                   width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
@@ -249,15 +249,15 @@ function FaqSection() {
 
         {/* Still have questions CTA */}
         <div style={{ textAlign: "center", marginTop: 44, padding: "28px 24px", background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.06)" }}>
-          <p style={{ fontSize: 16, fontWeight: 700, color: "#2C1A0E", margin: "0 0 6px" }}>Still have questions?</p>
+          <p style={{ fontSize: 16, fontWeight: 600, color: "#2C1A0E", margin: "0 0 6px" }}>Still have questions?</p>
           <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 18px" }}>Our team is happy to help you plan your perfect event.</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
-              style={{ padding: "10px 24px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 14, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
+              style={{ padding: "10px 24px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
               💬 WhatsApp Us
             </a>
             <button onClick={() => navigate("/contact-us")}
-              style={{ padding: "10px 24px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+              style={{ padding: "10px 24px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
               Contact Us →
             </button>
           </div>
@@ -868,7 +868,7 @@ const Home = () => {
             <div style={{ marginBottom: 36 }}>
               <div className="home-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
                 <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#C47A2E", display: "inline-block" }} />
-                <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E" }}>Delhi NCR's Celebration Platform</span>
+                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E" }}>Delhi NCR's Celebration Platform</span>
               </div>
 
               <h1 className="home-hero-h1" style={{ fontSize: "clamp(2.2rem, 4vw, 3.4rem)", lineHeight: 1.12, color: "#2C1A0E", marginBottom: 18, letterSpacing: "-0.03em" }}>
@@ -897,7 +897,7 @@ const Home = () => {
               <button
                 onClick={() => navigate("/booking")}
                 className="home-hero-cta"
-                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 17, fontWeight: 800, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(196,122,46,0.45)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", alignSelf: "flex-start" }}
+                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 17, fontWeight: 600, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(196,122,46,0.45)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", alignSelf: "flex-start" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.55)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(196,122,46,0.45)"; }}
               >
@@ -1090,7 +1090,7 @@ const Home = () => {
                     <span style={{ fontSize: 14, marginRight: 8 }}>{group.icon}</span>
                     {group.items.map((item, ii) => (
                       <React.Fragment key={ii}>
-                        <span style={{ color: group.color, fontSize: 11.5, fontWeight: 700, letterSpacing: "0.08em", whiteSpace: "nowrap", textTransform: "uppercase" }}>
+                        <span style={{ color: group.color, fontSize: 11.5, fontWeight: 500, letterSpacing: "0.08em", whiteSpace: "nowrap", textTransform: "uppercase" }}>
                           {item}
                         </span>
                         {ii < group.items.length - 1 && (
@@ -1172,7 +1172,7 @@ const Home = () => {
             const StepCard = ({ n, icon, title, desc, time, i, showConnector }) => (
               <div style={{ background: "#2C1A0E", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 20, padding: "28px 22px 26px", display: "flex", flexDirection: "column", gap: 14, position: "relative", overflow: "hidden", boxShadow: "0 6px 24px rgba(44,26,14,0.14)", flex: 1 }}>
                 <span style={{ position: "absolute", top: -8, right: 14, fontSize: 72, fontWeight: 900, color: "rgba(204,171,74,0.08)", lineHeight: 1, fontFamily: "'Outfit',sans-serif", pointerEvents: "none", userSelect: "none" }}>{n}</span>
-                <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Step {n} · {time}</span>
+                <span style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Step {n} · {time}</span>
                 <h3 style={{ fontSize: 15, fontWeight: 700, color: "#fff", margin: 0, lineHeight: 1.35 }}>{title}</h3>
                 <p style={{ fontSize: 13, color: "rgba(255,255,255,0.78)", margin: 0, lineHeight: 1.6 }}>{desc}</p>
                 {showConnector && <span style={{ position: "absolute", right: -16, top: "50%", transform: "translateY(-50%)", zIndex: 10, fontSize: 18, color: "rgba(196,122,46,0.4)" }}>›</span>}
@@ -1218,7 +1218,7 @@ const Home = () => {
               whileHover={{ scale: 1.04, boxShadow: "0 12px 36px rgba(196,122,46,0.4)" }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate("/booking")}
-              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 700, padding: "15px 48px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.3)", letterSpacing: "0.02em" }}
+              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 16, fontWeight: 600, padding: "15px 48px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.3)", letterSpacing: "0.02em" }}
             >
               Plan Your Event →
             </motion.button>
@@ -1258,12 +1258,12 @@ const Home = () => {
             ].map(({ label, photoM, photoD }) => (
               <button key={label}
                 onClick={() => setPlannerOccasion(label)}
-                style={{ flex: "0 0 clamp(110px,12vw,150px)", borderRadius: "clamp(10px,1.5vw,16px)", border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 2px 14px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", aspectRatio: "1/1" }}
+                style={{ flex: "0 0 clamp(140px,15vw,182px)", borderRadius: "clamp(10px,1.5vw,16px)", border: "1px solid rgba(0,0,0,0.07)", background: "#fff", cursor: "pointer", padding: 0, display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 2px 14px rgba(0,0,0,0.08)", transition: "transform 0.18s, box-shadow 0.18s", fontFamily: "'Outfit', sans-serif", textAlign: "left", aspectRatio: "1/1" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(0,0,0,0.15)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(0,0,0,0.08)"; }}
               >
                 <div style={{ padding: "clamp(6px,1.2vw,10px) clamp(6px,1.2vw,10px) 4px", background: "#fff", flexShrink: 0 }}>
-                  <span style={{ fontSize: "clamp(9px,1.1vw,12px)", fontWeight: 900, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
+                  <span style={{ fontSize: "clamp(9px,1.1vw,12px)", fontWeight: 500, color: "#C47A2E", lineHeight: 1.25, display: "block" }}>{label}</span>
                 </div>
                 <div style={{ flex: 1, overflow: "hidden" }}>
                   <img src={isMobile ? photoM : photoD} alt={label} loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
@@ -1276,7 +1276,7 @@ const Home = () => {
           <div style={{ textAlign: "center", marginTop: 28 }}>
             <button
               onClick={() => setPlannerOccasion("")}
-              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)", transition: "all 0.18s" }}
+              style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 28px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.35)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 12px rgba(196,122,46,0.12)", transition: "all 0.18s" }}
               onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}
             >See all occasions &#8594;</button>
@@ -1347,7 +1347,7 @@ const Home = () => {
                         {["Balloons", "Fairy Lights", "Games", "Confetti"].map(t => (
                           <span key={t} style={{ fontSize: 11, color: slide.accent, background: `${slide.accent}0f`, border: `1px solid ${slide.accent}30`, borderRadius: 100, padding: "3px 10px", fontWeight: 600 }}>{t}</span>
                         ))}
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#fff", background: slide.iconBg, borderRadius: 100, padding: "4px 14px", boxShadow: `0 3px 10px ${slide.accent}30` }}>Under ₹1,499</span>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: "#fff", background: slide.iconBg, borderRadius: 100, padding: "4px 14px", boxShadow: `0 3px 10px ${slide.accent}30` }}>Under ₹1,499</span>
                       </div>
                     ) : slide.href ? (
                       <button
@@ -1358,7 +1358,7 @@ const Home = () => {
                             navigate(slide.href);
                           }
                         }}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 700, color: "#fff", border: "none", background: slide.iconBg, padding: "9px 18px", borderRadius: 10, boxShadow: `0 4px 14px ${slide.accent}30`, alignSelf: "flex-start", transition: "opacity 0.2s", cursor: "pointer" }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 7, fontSize: 13, fontWeight: 600, color: "#fff", border: "none", background: slide.iconBg, padding: "9px 18px", borderRadius: 10, boxShadow: `0 4px 14px ${slide.accent}30`, alignSelf: "flex-start", transition: "opacity 0.2s", cursor: "pointer" }}
                         onMouseEnter={e => (e.currentTarget.style.opacity = "0.88")}
                         onMouseLeave={e => (e.currentTarget.style.opacity = "1")}>
                         Explore {slide.tag} →
@@ -1417,7 +1417,7 @@ const Home = () => {
                 onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
                 onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.color="#C47A2E";}}>›</button>
               <button onClick={() => navigate("/fun-activities")}
-                style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:800, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
+                style={{ padding:"11px 24px", borderRadius:12, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Outfit',sans-serif", boxShadow:"0 4px 14px rgba(196,122,46,0.3)", whiteSpace:"nowrap" }}>
                 See All →
               </button>
             </div>
@@ -1450,15 +1450,15 @@ const Home = () => {
                 <div className="fa-card-img" style={{ position:"relative", height:130, flexShrink:0 }}>
                   <img src={act.image} alt={act.name} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
                   <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", pointerEvents:"none" }} />
-                  <div style={{ position:"absolute", top:8, right:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:10, fontWeight:900, padding:"3px 9px", borderRadius:"100px 100px 100px 4px", fontFamily:"'Outfit',sans-serif" }}>
+                  <div style={{ position:"absolute", top:8, right:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:10, fontWeight:600, padding:"3px 9px", borderRadius:"100px 100px 100px 4px", fontFamily:"'Outfit',sans-serif" }}>
                     ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:8, fontWeight:500 }}> /{act.unitLabel}</span> : ""}
                   </div>
                 </div>
                 {/* Text body */}
                 <div className="fa-card-body" style={{ padding:"12px 14px 14px", display:"flex", flexDirection:"column", gap:6, flex:1 }}>
-                  <h4 className="fa-card-name" style={{ fontSize:13, fontWeight:800, color:"#2C1A0E", margin:0, lineHeight:1.3 }}>{act.name}</h4>
+                  <h4 className="fa-card-name" style={{ fontSize:13, fontWeight:600, color:"#2C1A0E", margin:0, lineHeight:1.3 }}>{act.name}</h4>
                   <p className="fa-card-desc" style={{ fontSize:11, color:"#9B7450", margin:0, lineHeight:1.5, display:"-webkit-box", WebkitLineClamp:2, WebkitBoxOrient:"vertical", overflow:"hidden", flex:1 }}>{act.desc}</p>
-                  <span className="fa-card-cta" style={{ fontSize:11, fontWeight:700, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", textAlign:"center" }}>View Details →</span>
+                  <span className="fa-card-cta" style={{ fontSize:11, fontWeight:500, color:"#C47A2E", background:"rgba(196,122,46,0.08)", borderRadius:100, padding:"3px 10px", textAlign:"center" }}>View Details →</span>
                 </div>
               </div>
             ))}
@@ -1484,7 +1484,7 @@ const Home = () => {
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em", lineHeight: 1.15 }}>
             The Perfect Gift,&nbsp;<span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
           </h2>
-          <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>
+          <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 600, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>
             Coming Soon
           </div>
           <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 420, lineHeight: 1.65, margin: "0 0 24px" }}>
@@ -1492,7 +1492,7 @@ const Home = () => {
           </p>
           <button
             onClick={() => navigate("/baat-karo")}
-            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, padding: "13px 32px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}
+            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 600, padding: "13px 32px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.35)" }}
           >
             Chat with Our Team →
           </button>
@@ -1571,7 +1571,7 @@ const Home = () => {
               </div>
               <div className="pp-home-ctas" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button onClick={() => window.open("/party-places", "_blank")}
-                  style={{ padding: "12px 24px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", transition: "opacity 0.2s" }}
+                  style={{ padding: "12px 24px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", transition: "opacity 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
                   Browse All Places ↗
@@ -1606,7 +1606,7 @@ const Home = () => {
                 style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(10px)", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textAlign: "left" }}>
                 <span style={{ fontSize: 28 }}>{icon}</span>
                 <div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>{label}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>{label}</div>
                   <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.55)", marginTop: 2 }}>{sub}</div>
                 </div>
               </button>
@@ -1682,7 +1682,7 @@ const Home = () => {
                   <span style={{ color: "#CCAB4A", fontSize: 11, letterSpacing: "0.15em" }}>✦ ✦ ✦</span>
                   <div style={{ flex: 1, maxWidth: 80, height: 1, background: "linear-gradient(90deg,rgba(204,171,74,0.4),transparent)" }} />
                 </div>
-                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#CCAB4A", margin: "0 0 14px" }}>Crafted with Love</p>
+                <p style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.22em", textTransform: "uppercase", color: "#CCAB4A", margin: "0 0 14px" }}>Crafted with Love</p>
                 <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.4rem,5vw,3.8rem)", fontWeight: 300, color: "#FFF8EC", margin: "0 0 14px", letterSpacing: "0.04em", fontStyle: "italic", lineHeight: 1.08 }}>
                   Wedding Stationeries
                 </h2>
@@ -1691,7 +1691,7 @@ const Home = () => {
                 </p>
                 <button
                   onClick={() => navigate("/stationery")}
-                  style={{ display: "inline-block", padding: "12px 32px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.35)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.05em", transition: "all 0.22s" }}
+                  style={{ display: "inline-block", padding: "12px 32px", borderRadius: 100, border: "1.5px solid rgba(204,171,74,0.35)", background: "transparent", color: "#CCAB4A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.05em", transition: "all 0.22s" }}
                   onMouseEnter={e => { e.currentTarget.style.background = "linear-gradient(135deg,#C47A2E,#CCAB4A)"; e.currentTarget.style.color = "#fff"; e.currentTarget.style.border = "1.5px solid transparent"; }}
                   onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#CCAB4A"; e.currentTarget.style.border = "1.5px solid rgba(204,171,74,0.35)"; }}
                 >
@@ -1727,12 +1727,12 @@ const Home = () => {
 
                     {/* Content bottom */}
                     <div style={{ position: "relative", zIndex: 2, padding: "0 20px 22px" }}>
-                      <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 5 }}>{cat.sub}</div>
-                      <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 23, fontWeight: 700, color: "#fff", lineHeight: 1.15, marginBottom: 7 }}>{cat.label}</div>
+                      <div style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 5 }}>{cat.sub}</div>
+                      <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 23, fontWeight: 400, color: "#fff", lineHeight: 1.15, marginBottom: 7 }}>{cat.label}</div>
                       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: 12 }}>{cat.desc}</div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A" }}>{cat.from}</div>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.55)", letterSpacing: "0.06em" }}>EXPLORE →</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: "#CCAB4A" }}>{cat.from}</div>
+                        <div style={{ fontSize: 10, fontWeight: 500, color: "rgba(255,255,255,0.55)", letterSpacing: "0.06em" }}>EXPLORE →</div>
                       </div>
                     </div>
                   </motion.div>
@@ -1876,7 +1876,7 @@ const Home = () => {
             </div>
             <button
               onClick={() => navigate("/vendor/register")}
-              style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 4px 18px rgba(196,122,46,0.45)", transition: "opacity 0.2s" }}
+              style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 16, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 4px 18px rgba(196,122,46,0.45)", transition: "opacity 0.2s" }}
               onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
               onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
             >
