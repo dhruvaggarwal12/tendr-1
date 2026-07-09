@@ -675,67 +675,70 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
 
           {/* Proceed Now form overlay */}
           {proceedFormOpen && (
-            <div className="op-scroll" style={{
+            <div style={{
               position: 'absolute', inset: 0, zIndex: 30,
               background: panelBg,
               display: 'flex', flexDirection: 'column',
-              padding: '22px 20px 52px',
-              overflowY: 'auto',
             }}>
-              <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none' }}>Back</button>
-              <p style={{ fontSize: 10, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 6px', fontFamily: "'Outfit',sans-serif" }}>Let's Plan</p>
-              <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 6px' }}>{theme.theme}</h2>
-              <p style={{ fontSize: 14, color: 'rgba(245,236,216,0.58)', margin: '0 0 24px', fontFamily: "'Outfit',sans-serif" }}>Share a few details so we can curate the perfect plan for you.</p>
+              {/* Scrollable form area */}
+              <div className="op-scroll" style={{ flex: 1, overflowY: 'auto', padding: '22px 20px 8px' }}>
+                <button onClick={() => setProceedFormOpen(false)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.55)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', textAlign: 'left', outline: 'none' }}>Back</button>
+                <p style={{ fontSize: 10, fontWeight: 800, color, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 6px', fontFamily: "'Outfit',sans-serif" }}>Let's Plan</p>
+                <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 6px' }}>{theme.theme}</h2>
+                <p style={{ fontSize: 14, color: 'rgba(245,236,216,0.58)', margin: '0 0 24px', fontFamily: "'Outfit',sans-serif" }}>Share a few details so we can curate the perfect plan for you.</p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                  {/* Date + Time row */}
+                  <div className="pf-datetime">
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <span style={labelStyle}>Event Date</span>
+                      <input type="date" value={pForm.date} onChange={e => setPForm(f => ({ ...f, date: e.target.value }))} style={inputStyle} />
+                    </label>
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                      <span style={labelStyle}>Time</span>
+                      <input type="time" value={pForm.time} onChange={e => setPForm(f => ({ ...f, time: e.target.value }))} style={inputStyle} />
+                    </label>
+                  </div>
 
-                {/* Date + Time row */}
-                <div className="pf-datetime">
+                  {/* Address */}
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span style={labelStyle}>Event Date</span>
-                    <input type="date" value={pForm.date} onChange={e => setPForm(f => ({ ...f, date: e.target.value }))} style={inputStyle} />
+                    <span style={labelStyle}>Address{optLabel}</span>
+                    <input type="text" placeholder="e.g. 12 Park Street, Sector 62" value={pForm.address} onChange={e => setPForm(f => ({ ...f, address: e.target.value }))} style={inputStyle} />
                   </label>
+
+                  {/* City dropdown */}
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <span style={labelStyle}>Time</span>
-                    <input type="time" value={pForm.time} onChange={e => setPForm(f => ({ ...f, time: e.target.value }))} style={inputStyle} />
+                    <span style={labelStyle}>City</span>
+                    <select value={pForm.city} onChange={e => setPForm(f => ({ ...f, city: e.target.value }))} style={selectStyle}>
+                      <option value="" style={{ background: '#1C0A04' }}>Select your city</option>
+                      {INDIAN_CITIES.map(c => <option key={c} value={c} style={{ background: '#1C0A04' }}>{c}</option>)}
+                    </select>
+                  </label>
+
+                  {/* Guests */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={labelStyle}>How Many Guests?</span>
+                    <input type="number" min="1" placeholder="e.g. 80" value={pForm.guests} onChange={e => setPForm(f => ({ ...f, guests: e.target.value }))} style={inputStyle} />
+                  </label>
+
+                  {/* Notes */}
+                  <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <span style={labelStyle}>Special Requests{optLabel}</span>
+                    <textarea rows={3} placeholder="e.g. outdoor setup, vegan menu, specific colour palette..." value={pForm.notes} onChange={e => setPForm(f => ({ ...f, notes: e.target.value }))}
+                      style={{ ...inputStyle, resize: 'vertical', minHeight: 76 }} />
                   </label>
                 </div>
-
-                {/* Address */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>Address{optLabel}</span>
-                  <input type="text" placeholder="e.g. 12 Park Street, Sector 62" value={pForm.address} onChange={e => setPForm(f => ({ ...f, address: e.target.value }))} style={inputStyle} />
-                </label>
-
-                {/* City dropdown */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>City</span>
-                  <select value={pForm.city} onChange={e => setPForm(f => ({ ...f, city: e.target.value }))} style={selectStyle}>
-                    <option value="" style={{ background: '#1C0A04' }}>Select your city</option>
-                    {INDIAN_CITIES.map(c => <option key={c} value={c} style={{ background: '#1C0A04' }}>{c}</option>)}
-                  </select>
-                </label>
-
-                {/* Guests */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>How Many Guests?</span>
-                  <input type="number" min="1" placeholder="e.g. 80" value={pForm.guests} onChange={e => setPForm(f => ({ ...f, guests: e.target.value }))} style={inputStyle} />
-                </label>
-
-                {/* Notes */}
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <span style={labelStyle}>Special Requests{optLabel}</span>
-                  <textarea rows={3} placeholder="e.g. outdoor setup, vegan menu, specific colour palette..." value={pForm.notes} onChange={e => setPForm(f => ({ ...f, notes: e.target.value }))}
-                    style={{ ...inputStyle, resize: 'vertical', minHeight: 76 }} />
-                </label>
               </div>
 
-              <button onClick={handleProceed} style={{
-                marginTop: 22, padding: '14px 24px', borderRadius: 100,
-                background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
-                color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer',
-                fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
-              }}>Send to Baat Karo</button>
+              {/* Sticky button — always visible at the bottom */}
+              <div style={{ flexShrink: 0, padding: '12px 20px calc(16px + env(safe-area-inset-bottom, 0px))', background: panelBg, borderTop: `1px solid ${color}18` }}>
+                <button onClick={handleProceed} style={{
+                  width: '100%', padding: '14px 24px', borderRadius: 100,
+                  background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
+                  color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                  fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}45`,
+                }}>Send to Baat Karo</button>
+              </div>
             </div>
           )}
 
