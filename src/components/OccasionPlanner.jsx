@@ -57,7 +57,7 @@ const TIME_OPTIONS = [
   { key: 'Night',     label: 'Night',     desc: '8 pm onwards', icon: '🌙' },
 ];
 
-const PAGE_NAMES = ['Overview', 'The Details', 'Checklist & Decor'];
+const PAGE_NAMES = ['Overview', 'Customise', 'Plan & Decor'];
 
 // ── Colour system (warm, Tendr-resonant) ──────────────────────────────────
 
@@ -286,6 +286,11 @@ const CSS = `
 
   .op-opt:hover { opacity:0.95; }
 
+  button { user-select:none; -webkit-user-select:none; }
+  input[type=number]::-webkit-inner-spin-button,
+  input[type=number]::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  input[type=number] { -moz-appearance:textfield; }
+
   @media (max-width:600px) {
     .op-panel        { border-radius:22px 22px 0 0 !important; max-height:93vh !important; margin-top:auto; }
     .op-overlay-wrap { align-items:flex-end !important; padding:0 !important; }
@@ -432,20 +437,6 @@ function BookPage1({ theme, occasion, photo, color }) {
           <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 400, color: 'rgba(245,236,216,0.75)', lineHeight: 1.9, margin: '0 0 24px', borderLeft: `2px solid ${color}35`, paddingLeft: 16 }}>{theme.overview}</p>
         )}
 
-        {/* Colour palette */}
-        {theme.colourPalette?.length > 0 && (
-          <div style={{ marginBottom: 22 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-              <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Colour Palette</span>
-            </div>
-            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {theme.colourPalette.map(c => (
-                <span key={c} style={{ padding: '5px 14px', borderRadius: 100, fontSize: 12, fontWeight: 400, background: `${color}0C`, border: `1px solid ${color}28`, color: 'rgba(245,236,216,0.78)', fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em' }}>{c}</span>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Stats row */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
           <StatTile label="Guests" value={theme.recommendedGuests} color={color} />
@@ -457,51 +448,80 @@ function BookPage1({ theme, occasion, photo, color }) {
   );
 }
 
-function BookPage2({ theme, color }) {
-  const food = theme.foodSuggestions || theme.foodIdeas || [];
+function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
   const sections = [
-    { icon: '🎨', title: 'Decoration',    items: theme.decorationIdeas },
-    { icon: '🍽️', title: 'Food & Drinks', items: food },
-    { icon: '🎭', title: 'Entertainment', items: theme.entertainment },
-    { icon: '🎮', title: 'Games',         items: theme.gamesActivities },
-    { icon: '🎂', title: 'Cake & Gifts',  items: theme.cakeIdeas || theme.returnGiftIdeas },
-    { icon: '📸', title: 'Photography',   items: theme.photographyIdeas },
-  ].filter(s => s.items?.length);
+    { key: 'colourPalette', icon: '🎨', title: 'Colour Palette',  items: theme.colourPalette || [] },
+    { key: 'decoration',    icon: '✨', title: 'Decoration',        items: theme.decorationIdeas || [] },
+    { key: 'food',          icon: '🍽️', title: 'Food & Snacks',    items: (theme.foodSuggestions || theme.foodIdeas || []) },
+    { key: 'entertainment', icon: '🎭', title: 'Entertainment',     items: theme.entertainment || [] },
+    { key: 'gifts',         icon: '🎁', title: 'Gifts',             items: (theme.returnGiftIdeas || theme.cakeIdeas || []) },
+    { key: 'photography',   icon: '📸', title: 'Photography Style', items: theme.photographyIdeas || [] },
+  ].filter(s => s.items.length > 0);
 
   return (
     <div style={{ paddingTop: 8 }}>
       <div style={{ marginBottom: 22, paddingBottom: 14, borderBottom: `1px solid ${color}18` }}>
         <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,3.5vw,2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 4px', letterSpacing: '0.01em' }}>
-          What's Included
+          Customise Your Vision
         </h3>
-        <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.4)', margin: 0, letterSpacing: '0.02em' }}>Ideas for every aspect of your celebration</p>
+        <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.4)', margin: 0, letterSpacing: '0.02em' }}>Select what you'd like — pick as many as you want</p>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-        {sections.map(({ icon, title, items }) => (
-          <div key={title}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10 }}>
-              <span style={{ fontSize: 12, lineHeight: 1 }}>{icon}</span>
-              <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{title}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
+        {sections.map(({ key, icon, title, items }) => {
+          const sec = selections?.[key] || { picked: [], custom: '' };
+          return (
+            <div key={key}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+                <span style={{ fontSize: 12, lineHeight: 1 }}>{icon}</span>
+                <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{title}</span>
+                {sec.picked.length > 0 && (
+                  <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: `${color}22`, color, fontFamily: "'Outfit',sans-serif" }}>{sec.picked.length} selected</span>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 }}>
+                {items.map((item, i) => {
+                  const isSel = sec.picked.includes(item);
+                  return (
+                    <button key={i} onClick={() => onToggle(key, item)} style={{
+                      fontSize: 12, padding: '7px 14px', borderRadius: 100,
+                      background: isSel ? `${color}28` : `${color}0A`,
+                      border: `1.5px solid ${isSel ? color : `${color}22`}`,
+                      color: isSel ? '#F5ECD8' : 'rgba(245,236,216,0.65)',
+                      fontFamily: "'Outfit',sans-serif", fontWeight: isSel ? 600 : 400,
+                      cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.15s',
+                    }}>
+                      {isSel && <span style={{ marginRight: 5, fontSize: 10 }}>✓</span>}
+                      {item}
+                    </button>
+                  );
+                })}
+              </div>
+              <input
+                type="text"
+                placeholder={`Add your own ${title.toLowerCase()}…`}
+                value={sec.custom}
+                onChange={e => onCustomChange(key, e.target.value)}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: '9px 14px', borderRadius: 10,
+                  background: 'rgba(245,236,216,0.04)',
+                  border: `1px solid ${sec.custom ? color : 'rgba(245,236,216,0.1)'}`,
+                  color: '#F5ECD8', fontSize: 12,
+                  fontFamily: "'Outfit',sans-serif", outline: 'none',
+                  transition: 'border-color 0.15s',
+                }}
+                onFocus={e => e.target.style.borderColor = color}
+                onBlur={e => e.target.style.borderColor = sec.custom ? color : 'rgba(245,236,216,0.1)'}
+              />
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {items.slice(0, 6).map((item, i) => (
-                <span key={i} style={{
-                  fontSize: 12, padding: '6px 14px', borderRadius: 100,
-                  background: `${color}0A`, border: `1px solid ${color}22`,
-                  color: 'rgba(245,236,216,0.78)', fontFamily: "'Outfit',sans-serif", fontWeight: 400, lineHeight: 1.4,
-                }}>
-                  {item}
-                </span>
-              ))}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function BookPage3({ theme, color, galleryUrls = [], downloadPhoto, onProceedNow, onBrowseOtherThemes }) {
+function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogglePhoto, onProceedNow, onBrowseOtherThemes }) {
   return (
     <div style={{ paddingTop: 8 }}>
       <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
@@ -531,25 +551,41 @@ function BookPage3({ theme, color, galleryUrls = [], downloadPhoto, onProceedNow
         </div>
       )}
 
-      {/* Decor photos with download */}
+      {/* Decor photos — selectable */}
       {galleryUrls.length > 0 && (
         <div style={{ marginBottom: 28 }}>
-          <SectionLabel color={color}>Suggested Decor Photos</SectionLabel>
-          <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
-            {galleryUrls.slice(0, 6).map((url, i) => (
-              <div key={i} style={{ aspectRatio: '4/3', borderRadius: 11, overflow: 'hidden', background: `${color}0A`, position: 'relative' }}
-                onMouseEnter={e => e.currentTarget.querySelector('.dl-btn').style.opacity = '1'}
-                onMouseLeave={e => e.currentTarget.querySelector('.dl-btn').style.opacity = '0'}>
-                <img src={url} alt="" loading="lazy"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <button className="dl-btn"
-                  onClick={() => downloadPhoto && downloadPhoto(url, i)}
-                  style={{ position: 'absolute', bottom: 6, right: 6, background: 'rgba(0,0,0,0.55)', border: 'none', borderRadius: 6, padding: '4px 8px', color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer', opacity: 0, transition: 'opacity 0.18s', fontFamily: "'Outfit',sans-serif", backdropFilter: 'blur(4px)' }}>
-                  ↓ Save
-                </button>
-              </div>
-            ))}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Decor Photos</span>
+            {selectedPhotos.length > 0 && (
+              <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: `${color}22`, color, fontFamily: "'Outfit',sans-serif" }}>{selectedPhotos.length} selected</span>
+            )}
           </div>
+          <div className="book-photo-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 9 }}>
+            {galleryUrls.slice(0, 6).map((url, i) => {
+              const isSel = selectedPhotos.includes(url);
+              return (
+                <div key={i}
+                  onClick={() => onTogglePhoto && onTogglePhoto(url)}
+                  style={{
+                    aspectRatio: '4/3', borderRadius: 11, overflow: 'hidden',
+                    background: `${color}0A`, position: 'relative', cursor: 'pointer',
+                    border: `2px solid ${isSel ? color : 'transparent'}`,
+                    transition: 'border-color 0.15s',
+                  }}>
+                  <img src={url} alt="" loading="lazy"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  {isSel && (
+                    <div style={{ position: 'absolute', inset: 0, background: `${color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 26, height: 26, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ color: '#fff', fontSize: 13, fontWeight: 700, lineHeight: 1 }}>✓</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ fontSize: 11, color: 'rgba(245,236,216,0.3)', margin: '8px 0 0', fontFamily: "'Outfit',sans-serif" }}>Tap photos to select your favourites</p>
         </div>
       )}
 
@@ -582,21 +618,74 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
   const [pForm, setPForm] = useState({
     date: '', time: '', address: '', city: '', guests: '', notes: '',
   });
+  const [selections, setSelections] = useState({
+    colourPalette: { picked: [], custom: '' },
+    decoration:    { picked: [], custom: '' },
+    food:          { picked: [], custom: '' },
+    entertainment: { picked: [], custom: '' },
+    gifts:         { picked: [], custom: '' },
+    photography:   { picked: [], custom: '' },
+    photos:        [],
+  });
   const navigate = useNavigate();
 
   const color = themeAccentColor(theme.id);
 
+  const handleToggle = (key, item) => {
+    setSelections(prev => {
+      const sec = prev[key];
+      const picked = sec.picked.includes(item)
+        ? sec.picked.filter(p => p !== item)
+        : [...sec.picked, item];
+      return { ...prev, [key]: { ...sec, picked } };
+    });
+  };
+
+  const handleCustomChange = (key, val) => {
+    setSelections(prev => ({ ...prev, [key]: { ...prev[key], custom: val } }));
+  };
+
+  const handleTogglePhoto = (url) => {
+    setSelections(prev => ({
+      ...prev,
+      photos: prev.photos.includes(url)
+        ? prev.photos.filter(u => u !== url)
+        : [...prev.photos, url],
+    }));
+  };
+
+  const SEL_META = [
+    { key: 'colourPalette', icon: '🎨', label: 'Colour Palette' },
+    { key: 'decoration',    icon: '✨', label: 'Decoration' },
+    { key: 'food',          icon: '🍽️', label: 'Food & Snacks' },
+    { key: 'entertainment', icon: '🎭', label: 'Entertainment' },
+    { key: 'gifts',         icon: '🎁', label: 'Gifts' },
+    { key: 'photography',   icon: '📸', label: 'Photography' },
+  ];
+
   const handleProceed = () => {
+    const selLines = SEL_META.map(({ key, icon, label }) => {
+      const { picked, custom } = selections[key];
+      const all = [...picked, ...(custom.trim() ? [custom.trim()] : [])];
+      return all.length ? `${icon} ${label}: ${all.join(', ')}` : null;
+    }).filter(Boolean);
+
     const parts = [
       `Hi! I'm planning a ${occasion} with the "${theme.theme}" theme.`,
+      '',
+      '📋 Event Details:',
       pForm.date    ? `📅 Date: ${pForm.date}` : null,
       pForm.time    ? `🕐 Time: ${pForm.time}` : null,
       pForm.address ? `🏛️ Address: ${pForm.address}` : null,
       pForm.city    ? `📍 City: ${pForm.city}` : null,
       pForm.guests  ? `👥 Guests: ${pForm.guests}` : null,
-      pForm.notes   ? `📝 Notes: ${pForm.notes}` : null,
-      `\nCan you help with decor, vendor suggestions, and planning?`,
-    ].filter(Boolean).join('\n');
+      pForm.notes   ? `📝 Special Requests: ${pForm.notes}` : null,
+      ...(selLines.length ? ['', '🎯 My Preferences:'] : []),
+      ...selLines,
+      ...(selections.photos.length ? [`🖼️ Sample decor photos: ${selections.photos.length} selected`] : []),
+      '',
+      'Can you help with planning, vendor booking, and coordination?',
+    ].filter(l => l !== null).join('\n');
     try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
     onClose();
     navigate('/baat-karo');
@@ -769,8 +858,8 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
           <div className="op-scroll" style={{ flex: 1, overflowY: 'auto' }}>
             <div key={pg} className={pageAnimClass} style={{ padding: '0 24px 8px' }}>
               {pg === 0 && <BookPage1 theme={theme} occasion={occasion} photo={photo} color={color} />}
-              {pg === 1 && <BookPage2 theme={theme} color={color} />}
-              {pg === 2 && <BookPage3 theme={theme} color={color} galleryUrls={galleryUrls} downloadPhoto={downloadPhoto} onProceedNow={() => setProceedFormOpen(true)} onBrowseOtherThemes={onBrowseOtherThemes} />}
+              {pg === 1 && <BookPage2 theme={theme} color={color} selections={selections} onToggle={handleToggle} onCustomChange={handleCustomChange} />}
+              {pg === 2 && <BookPage3 theme={theme} color={color} galleryUrls={galleryUrls} selectedPhotos={selections.photos} onTogglePhoto={handleTogglePhoto} onProceedNow={() => setProceedFormOpen(true)} onBrowseOtherThemes={onBrowseOtherThemes} />}
             </div>
           </div>
 
