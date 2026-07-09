@@ -1146,68 +1146,56 @@ const Home = () => {
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.01em" }}>
               Which one is for you?
             </h2>
-            <p style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", maxWidth: 380, margin: "0 auto", lineHeight: 1.65 }}>
-              Three ways to use Tendr — pick the one that matches how you like to plan.
+            <p style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", maxWidth: 360, margin: "0 auto", lineHeight: 1.65 }}>
+              Two ways to use Tendr — pick whichever fits how you think.
             </p>
           </div>
 
-          <div className="path-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
+          <div className="path-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16, maxWidth: 720, margin: "0 auto" }}>
             {[
               {
                 icon: "🔍",
                 eyebrow: "Browse & Search",
                 title: "You know what you want",
-                desc: "You have a vendor type in mind — a decorator, photographer, caterer. Search directly, compare profiles, and chat to lock in your price.",
+                desc: "Search for a vendor type, compare profiles, and chat to confirm price.",
+                startFrom: "Use the search bar or Browse in the menu",
                 accent: "#C47A2E",
               },
               {
                 icon: "✨",
                 eyebrow: "Start Planning",
                 title: "You want help figuring it out",
-                desc: "Tell us your event, budget and guest count. We match you with the right vendors — or our team can coordinate everything for you.",
+                desc: "Tell us your event once — we match you with the right vendors.",
+                startFrom: "Click 'Start Planning' above",
                 accent: "#7A4A1E",
               },
-              {
-                icon: "🎉",
-                eyebrow: "Plan by Occasion",
-                title: "You're starting from a celebration",
-                desc: "Pick your occasion — birthday, anniversary, house party. We suggest themes, decor ideas and vendor types tailored to it.",
-                accent: "#D4922E",
-              },
-            ].map(({ icon, eyebrow, title, desc, accent }) => (
+            ].map(({ icon, eyebrow, title, desc, startFrom, accent }) => (
               <div key={eyebrow} style={{
                 background: "#FFFCF7",
                 border: "1px solid rgba(196,122,46,0.13)",
                 borderRadius: 20,
-                padding: "28px 24px 26px",
+                padding: "28px 24px 22px",
                 display: "flex",
                 flexDirection: "column",
-                gap: 12,
+                gap: 10,
                 boxShadow: "0 2px 12px rgba(44,26,14,0.05)",
               }}>
                 <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{icon}</div>
                 <p style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0 }}>{eyebrow}</p>
                 <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.2rem,1.8vw,1.45rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, lineHeight: 1.25, letterSpacing: "0.01em" }}>{title}</h3>
-                <p style={{ fontSize: 13.5, fontWeight: 400, color: "#6B4226", margin: 0, lineHeight: 1.7 }}>{desc}</p>
+                <p style={{ fontSize: 13, fontWeight: 400, color: "#6B4226", margin: 0, lineHeight: 1.65 }}>{desc}</p>
+                <div style={{ marginTop: 6, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)", fontSize: 11, color: "#B08A6A", fontWeight: 500 }}>
+                  ↳ {startFrom}
+                </div>
               </div>
             ))}
           </div>
 
           <style>{`
-            @media (max-width: 640px) {
+            @media (max-width: 540px) {
               .path-cards-grid {
-                display: flex !important;
-                overflow-x: auto !important;
-                gap: 12px !important;
-                padding-bottom: 8px !important;
-                scrollbar-width: none;
-                -webkit-overflow-scrolling: touch;
-              }
-              .path-cards-grid::-webkit-scrollbar { display: none; }
-              .path-cards-grid > div {
-                min-width: 248px !important;
-                max-width: 248px !important;
-                flex-shrink: 0 !important;
+                grid-template-columns: 1fr !important;
+                max-width: 100% !important;
               }
             }
           `}</style>
