@@ -127,12 +127,12 @@ function TipsByTendrSection() {
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(79,142,247,0.1)", border: "1px solid rgba(79,142,247,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
             </div>
-            <h2 style={{ fontSize: "clamp(1.6rem, 3.5vw, 2.4rem)", fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.025em", lineHeight: 1.15, margin: "0 0 8px" }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFFFFF", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
               Free Event Planning Guides
             </h2>
-            <p style={{ fontSize: 15, color: "#7A8BA8", margin: 0, lineHeight: 1.6, maxWidth: 480 }}>
+            <p style={{ fontSize: 15, color: "#7A8BA8", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
               Practical guides for budgeting, decorating, and planning any event. Unlock with a WhatsApp number.
             </p>
           </div>
@@ -197,13 +197,11 @@ function FaqSection() {
 
         {/* Heading */}
         <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <span style={{ display: "inline-block", background: "rgba(196,122,46,0.1)", color: "#C47A2E", fontSize: 12, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", padding: "5px 16px", borderRadius: 100, marginBottom: 16 }}>
-            Got Questions?
-          </span>
-          <h2 style={{ fontSize: "clamp(1.8rem,3.5vw,2.6rem)", color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px", lineHeight: 1.15 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>Got Questions?</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "0.01em", margin: "0 0 12px", lineHeight: 1.15 }}>
             Frequently Asked Questions
           </h2>
-          <p style={{ fontSize: 16, color: "#9B7450", maxWidth: 460, margin: "0 auto" }}>
+          <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 460, margin: "0 auto" }}>
             Everything you need to know before you start planning your celebration.
           </p>
         </div>
@@ -242,7 +240,7 @@ function FaqSection() {
               </button>
               <div style={{ maxHeight: open === i ? 400 : 0, overflow: "hidden", transition: "max-height 0.38s cubic-bezier(0.4,0,0.2,1)" }}>
                 <div style={{ borderLeft: "3px solid #C47A2E", margin: "0 24px 20px 58px", paddingLeft: 16 }}>
-                  <p style={{ margin: 0, fontSize: 14.5, color: "#7A5535", lineHeight: 1.75 }}>{a}</p>
+                  <p style={{ margin: 0, fontSize: 14.5, color: "#6B4226", lineHeight: 1.75 }}>{a}</p>
                 </div>
               </div>
             </div>
@@ -1153,8 +1151,8 @@ const Home = () => {
             transition={{ duration: 0.55 }}
             style={{ textAlign: "center", marginBottom: 56 }}
           >
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Your Journey</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.02em" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Your Journey</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.01em" }}>
               How Tendr Works
             </h2>
             <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 400, margin: "0 auto" }}>
@@ -1241,8 +1239,8 @@ const Home = () => {
       <section style={{ background: "#FFFCF5", padding: "72px 0 80px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 24px" }}>
           <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.16em", margin: "0 0 10px" }}>Plan by Occasion</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
+            <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Plan by Occasion</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em" }}>What's the occasion?</h2>
             <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick your celebration and we'll match vendors, ideas and a plan for you</p>
           </div>
 
@@ -1296,7 +1294,7 @@ const Home = () => {
         <div style={{ maxWidth: 920, margin: "0 auto", position: "relative", zIndex: 1 }}>
           {/* Section heading */}
           <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.01em" }}>What We Offer</h2>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px", letterSpacing: "0.01em" }}>What We Offer</h2>
             <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Everything you need for a perfect event — in one place</p>
           </div>
 
@@ -1341,9 +1339,9 @@ const Home = () => {
 
                   {/* Content */}
                   <div style={{ flex: 1, padding: "28px 28px 28px 20px", display: "flex", flexDirection: "column", justifyContent: "center" }}>
-                    <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", textTransform: "uppercase", color: slide.accent, marginBottom: 8, display: "block" }}>{slide.tag}</span>
-                    <h3 style={{ fontSize: "clamp(1.2rem,2.5vw,1.7rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em", lineHeight: 1.25 }}>{slide.headline}</h3>
-                    <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.65, margin: "0 0 18px", maxWidth: 520 }}>{slide.desc}</p>
+                    <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: slide.accent, marginBottom: 8, display: "block" }}>{slide.tag}</span>
+                    <h3 style={{ fontSize: "clamp(1.2rem,2.5vw,1.7rem)", fontWeight: 700, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.01em", lineHeight: 1.25 }}>{slide.headline}</h3>
+                    <p style={{ fontSize: 14.5, color: "#6B4226", lineHeight: 1.65, margin: "0 0 18px", maxWidth: 520 }}>{slide.desc}</p>
                     {slide.isKit ? (
                       <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                         {["Balloons", "Fairy Lights", "Games", "Confetti"].map(t => (
@@ -1401,11 +1399,11 @@ const Home = () => {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
             <div>
-              <p style={{ fontSize:11, fontWeight:800, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>🎭 Live Entertainment Add-ons</p>
-              <h2 style={{ fontSize:"clamp(1.6rem,3.5vw,2.4rem)", color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"-0.02em" }}>
-                Add Some Magic<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
+              <p style={{ fontSize:11, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>Live Entertainment</p>
+              <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.8rem,3.5vw,2.6rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"0.01em" }}>
+                Add Some Magic —<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
               </h2>
-              <p style={{ fontSize:14, color:"#9B7450", margin:0, maxWidth:480, lineHeight:1.65 }}>
+              <p style={{ fontSize:15, color:"#6B4226", margin:0, maxWidth:480, lineHeight:1.65 }}>
                 Fixed-price entertainment add-ons — magic shows, game zones, live counters and more. Confirmed within 2 hours.
               </p>
             </div>
@@ -1482,14 +1480,14 @@ const Home = () => {
       {/* ── Gift Hampers & Cakes — Coming Soon ── */}
       <section style={{ background: "#FFFDF7", padding: "56px 24px 60px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
         <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>🎁 Gift Hampers & Cakes</p>
-          <h2 style={{ fontSize: "clamp(1.5rem,3vw,2.1rem)", color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>Gift Hampers & Cakes</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "0.01em", lineHeight: 1.15 }}>
             The Perfect Gift,&nbsp;<span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
           </h2>
           <div style={{ display: "inline-block", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", borderRadius: 100, padding: "7px 22px", fontWeight: 800, fontSize: 13, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>
             Coming Soon
           </div>
-          <p style={{ fontSize: 14, color: "#9B7450", maxWidth: 420, lineHeight: 1.7, margin: "0 0 24px" }}>
+          <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 420, lineHeight: 1.65, margin: "0 0 24px" }}>
             Full gifting flow coming soon. Until then, our team can still help — just tell us your occasion and budget.
           </p>
           <button
@@ -1770,9 +1768,9 @@ const Home = () => {
       <section style={{ background: "#FFFFFF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Vendor Portfolio</p>
-            <h2 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 14px" }}>What Our Vendors Can Do</h2>
-            <p style={{ fontSize: 16, color: "#6B4226", maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>We're just getting started — but the vendors on Tendr aren't. These are real photos from their portfolios, showing exactly what they're capable of delivering for your event.</p>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Vendor Portfolio</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "0.01em", margin: "0 0 14px" }}>What Our Vendors Can Do</h2>
+            <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>Real photos from vendor portfolios — showing exactly what they can deliver for your event.</p>
             <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
           </div>
 
@@ -1851,16 +1849,16 @@ const Home = () => {
 
           {/* Left: text */}
           <div>
-            <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 16 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 16 }}>
               For Vendors
             </p>
-            <h2 style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.02em", lineHeight: 1.15, margin: "0 0 20px" }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#fff", letterSpacing: "0.01em", lineHeight: 1.2, margin: "0 0 20px" }}>
               Grow your business<br />
               <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 with Tendr
               </span>
             </h2>
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.75, margin: "0 0 32px", maxWidth: 420 }}>
+            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", lineHeight: 1.65, margin: "0 0 32px", maxWidth: 420 }}>
               Join Delhi NCR's most trusted event services marketplace. Get discovered by customers actively looking for photographers, caterers, decorators, and DJs.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 36 }}>
