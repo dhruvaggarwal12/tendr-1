@@ -1219,7 +1219,7 @@ const Home = () => {
                 eyebrow: "Plan by Occasion",
                 title: "You already know the occasion",
                 desc: "Pick your celebration — Birthday, Anniversary, House Party and more — and explore curated themes and ideas.",
-                startFrom: "Scroll to 'What's the occasion?' below",
+                startFrom: "Scroll to 'What's the occasion?' above",
                 accent: "#C47A2E",
                 onClick: () => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }),
               },
