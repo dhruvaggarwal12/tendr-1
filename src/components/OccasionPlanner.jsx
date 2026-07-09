@@ -406,6 +406,29 @@ function OptButton({ selected, color, onClick, children, className = 'op-opt' })
   );
 }
 
+// ── Copy chip (tap to copy text, shows ✓ Copied briefly) ─────────────────
+
+function CopyChip({ text, color }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(text).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1600);
+  };
+  return (
+    <button onClick={copy} style={{
+      fontSize: 12, padding: '7px 14px', borderRadius: 100,
+      background: copied ? `${color}28` : `${color}0A`,
+      border: `1.5px solid ${copied ? color : `${color}22`}`,
+      color: copied ? '#F5ECD8' : 'rgba(245,236,216,0.65)',
+      fontFamily: "'Outfit',sans-serif", fontWeight: copied ? 600 : 400,
+      cursor: 'pointer', lineHeight: 1.4, transition: 'all 0.15s', whiteSpace: 'nowrap',
+    }}>
+      {copied ? '✓ Copied' : text}
+    </button>
+  );
+}
+
 // ── Book carousel pages ───────────────────────────────────────────────────
 
 function BookPage1({ theme, occasion, photo, color }) {
@@ -437,12 +460,25 @@ function BookPage1({ theme, occasion, photo, color }) {
           <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 400, color: 'rgba(245,236,216,0.75)', lineHeight: 1.9, margin: '0 0 24px', borderLeft: `2px solid ${color}35`, paddingLeft: 16 }}>{theme.overview}</p>
         )}
 
-        {/* Stats row */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10 }}>
+        {/* Stats row — 2×2 when age group present, 3-col otherwise */}
+        <div style={{ display: 'grid', gridTemplateColumns: theme.bestAgeGroup ? 'repeat(2,1fr)' : 'repeat(3,1fr)', gap: 10 }}>
           <StatTile label="Guests" value={theme.recommendedGuests} color={color} />
           <StatTile label="Budget" value={theme.budget} color={color} />
           <StatTile label="Best Time" value={(theme.bestTime||[]).join(' · ')} color={color} />
+          {theme.bestAgeGroup && <StatTile label="Age Group" value={theme.bestAgeGroup} color={color} />}
         </div>
+
+        {/* Best Venue chips */}
+        {theme.bestVenue?.length > 0 && (
+          <div style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif", marginBottom: 8 }}>Best Venue</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {theme.bestVenue.map((v, i) => (
+                <span key={i} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 12, background: `${color}0A`, border: `1px solid ${color}22`, color: 'rgba(245,236,216,0.72)', fontFamily: "'Outfit',sans-serif" }}>{v}</span>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -454,7 +490,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
     { key: 'decoration',    icon: '✨', title: 'Decoration',        items: theme.decorationIdeas || [] },
     { key: 'food',          icon: '🍽️', title: 'Food & Snacks',    items: (theme.foodSuggestions || theme.foodIdeas || []) },
     { key: 'entertainment', icon: '🎭', title: 'Entertainment',     items: theme.entertainment || [] },
-    { key: 'gifts',         icon: '🎁', title: 'Gifts',             items: (theme.returnGiftIdeas || theme.cakeIdeas || []) },
+    { key: 'gifts',         icon: '🎁', title: 'Gifts',             items: theme.returnGiftIdeas || [] },
     { key: 'photography',   icon: '📸', title: 'Photography Style', items: theme.photographyIdeas || [] },
   ].filter(s => s.items.length > 0);
 
@@ -517,6 +553,32 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
           );
         })}
       </div>
+
+      {/* More Ideas — copyable, not selectable */}
+      {(theme.cakeIdeas?.length > 0 || theme.gamesActivities?.length > 0) && (
+        <div style={{ marginTop: 10, paddingTop: 24, borderTop: `1px solid ${color}18` }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>More Ideas</span>
+            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.3)', fontFamily: "'Outfit',sans-serif" }}>· tap to copy</span>
+          </div>
+          {theme.cakeIdeas?.length > 0 && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.4)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎂 Cake Ideas</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {theme.cakeIdeas.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
+              </div>
+            </div>
+          )}
+          {theme.gamesActivities?.length > 0 && (
+            <div>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.4)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎮 Games & Activities</div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
+                {theme.gamesActivities.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
