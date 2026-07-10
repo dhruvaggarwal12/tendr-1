@@ -302,35 +302,36 @@ export default function FindByStyle() {
               }}
             >✕</button>
 
-            {/* Side-by-side comparison in panel — aspect ratio scales with panel width */}
-            <div style={{ display: 'flex', aspectRatio: '16/9', flexShrink: 0, background: '#f0ebe3' }}>
-              <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRight: '2px solid #fff' }}>
+            {/* Your photo */}
+            <div style={{ flexShrink: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '14px 16px 6px' }}>Your photo</div>
+              <div style={{ margin: '0 16px', borderRadius: 10, overflow: 'hidden', aspectRatio: '4/3', background: '#f0ebe3' }}>
                 <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <span style={{ position: 'absolute', bottom: 6, left: 8, fontSize: 10, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 7px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your photo</span>
-              </div>
-              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-                {quickViewVendor.photoUrl && (
-                  <img src={quickViewVendor.photoUrl} alt="matched work" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                )}
-                <span style={{ position: 'absolute', bottom: 6, left: 8, fontSize: 10, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 7px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Their work</span>
               </div>
             </div>
 
-            {/* Details */}
-            <div style={{ padding: '20px 20px 32px', display: 'flex', flexDirection: 'column', gap: 6, flexGrow: 1 }}>
+            {/* Matched vendor photo */}
+            <div style={{ flexShrink: 0 }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: '#C47A2E', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '14px 16px 6px' }}>Closest match</div>
+              <div style={{ margin: '0 16px', borderRadius: 10, overflow: 'hidden', aspectRatio: '4/3', background: '#f0ebe3' }}>
+                {quickViewVendor.photoUrl && (
+                  <img src={quickViewVendor.photoUrl} alt="matched work" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                )}
+              </div>
+            </div>
+
+            {/* Vendor details */}
+            <div style={{ padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', gap: 4 }}>
               <p style={{ margin: 0, fontSize: 10, fontWeight: 800, color: '#C47A2E', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
                 {quickViewVendor.serviceType}
               </p>
-              <h2 style={{ margin: '2px 0 0', fontSize: 22, fontWeight: 700, color: '#2C1A0E', fontFamily: "'Cormorant Garamond', Georgia, serif", lineHeight: 1.2 }}>
+              <h2 style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 700, color: '#2C1A0E', fontFamily: "'Cormorant Garamond', Georgia, serif", lineHeight: 1.2 }}>
                 {quickViewVendor.name}
               </h2>
               {quickViewVendor.city && (
-                <p style={{ margin: 0, fontSize: 13, color: '#9B7450' }}>
-                  {quickViewVendor.city}
-                </p>
+                <p style={{ margin: 0, fontSize: 13, color: '#9B7450' }}>{quickViewVendor.city}</p>
               )}
-
-              <div style={{ marginTop: 'auto', paddingTop: 24, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <button
                   onClick={() => window.open(`/vendors/${quickViewVendor._id}`, '_blank')}
                   style={{
@@ -347,10 +348,8 @@ export default function FindByStyle() {
                   onClick={() => handleChatClick(quickViewVendor)}
                   style={{
                     width: '100%', padding: '12px', borderRadius: 10,
-                    background: '#fff',
-                    color: '#C47A2E', border: '1.5px solid #C47A2E',
-                    fontSize: 14, fontWeight: 700,
-                    cursor: 'pointer', fontFamily: font,
+                    background: '#fff', color: '#C47A2E', border: '1.5px solid #C47A2E',
+                    fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font,
                   }}
                 >
                   {token ? 'Chat with Vendor' : 'Sign In to Chat'}
