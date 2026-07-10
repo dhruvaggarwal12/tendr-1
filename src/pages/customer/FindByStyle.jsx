@@ -244,19 +244,8 @@ export default function FindByStyle() {
                   display: 'flex', flexDirection: 'column',
                   minWidth: 0,
                 }}>
-                  {/* Matched vendor photo — full 4:3 so nothing crops */}
-                  <div style={{ aspectRatio: '4/3', overflow: 'hidden', background: '#f5f0ea', flexShrink: 0, position: 'relative' }}>
-                    <img src={r.photoUrl} alt="matched work" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    {/* Small "Your photo" reference thumbnail in corner */}
-                    <div style={{
-                      position: 'absolute', bottom: 8, left: 8,
-                      width: 52, height: 52, borderRadius: 8,
-                      overflow: 'hidden', border: '2px solid #fff',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                    }}>
-                      <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    </div>
-                    <span style={{ position: 'absolute', bottom: 8, left: 68, fontSize: 9, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 6px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Your photo</span>
+                  <div style={{ aspectRatio: '4/3', overflow: 'hidden', background: '#f5f0ea', flexShrink: 0 }}>
+                    <img src={r.photoUrl} alt={r.vendor.name} loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
                   <div style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#2C1A0E', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -376,14 +365,6 @@ export default function FindByStyle() {
                     </div>
                   </div>
                 )}
-
-                {/* Your reference photo */}
-                <div style={{ marginBottom: 20 }}>
-                  <p style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Your reference photo</p>
-                  <div style={{ borderRadius: 12, overflow: 'hidden', aspectRatio: '16/9', background: '#f0ebe3' }}>
-                    <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  </div>
-                </div>
 
                 <div style={{ height: 1, background: 'rgba(196,122,46,0.1)', margin: '4px 0 20px' }} />
 
