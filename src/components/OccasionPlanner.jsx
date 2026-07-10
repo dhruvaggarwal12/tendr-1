@@ -300,6 +300,7 @@ const CSS = `
     .book-detail-panel{ border-radius:20px !important; max-height:80vh !important; margin:auto !important; }
     .book-detail-wrap { align-items:center !important; padding:16px !important; }
     .book-detail-col  { grid-template-columns:1fr !important; }
+    .op-sel-chip      { font-size:10px !important; padding:5px 10px !important; }
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
     .book-hero-img    { height:190px !important; }
     .book-title       { font-size:1.7rem !important; }
@@ -518,7 +519,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
                 {items.map((item, i) => {
                   const isSel = sec.picked.includes(item);
                   return (
-                    <button key={i} onClick={() => onToggle(key, item)} style={{
+                    <button key={i} onClick={() => onToggle(key, item)} className="op-sel-chip" style={{
                       fontSize: 12, padding: '7px 14px', borderRadius: 100,
                       background: isSel ? `${color}28` : `${color}0A`,
                       border: `1.5px solid ${isSel ? color : `${color}22`}`,
