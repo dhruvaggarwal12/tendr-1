@@ -15,7 +15,6 @@ import { easeIn, motion } from "framer-motion";
 import { FaFacebookF, FaInstagram, FaLinkedinIn } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import corpo from "../../assets/ui/corpo.jpg";
-import celebrationKit from "../../assets/ui/celebration-kit.jpeg";
 import heroCorporate from "../../assets/ui/hero-corporate.png";
 import heroHouseParty from "../../assets/ui/hero-house-party.png";
 import heroAnniversary from "../../assets/ui/hero-anniversary.png";
@@ -49,14 +48,6 @@ const HERO_FEATURES = [
     where: "Gift Hampers & Cakes",
     href: "/gift-hampers-cakes",
     emoji: "🎁",
-  },
-  {
-    tag: "Tendr Celebration Kit",
-    headline: "Everything you need — packed in one kit",
-    desc: "Curated decoration kits delivered to your doorstep so you can set the vibe in minutes, no vendor needed.",
-    where: "Home → Tendr Celebration Kit",
-    href: "/",
-    emoji: "🎊",
   },
   {
     tag: "Wedding Stationery",
@@ -368,7 +359,6 @@ const Home = () => {
     { id: "fun-activities",  tag: "Fun Activities",        icon: "🎭", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Add magic, games & live entertainment to any event",     desc: "Magic shows, game coordinators, dhol players, live teddy, stone art and more — fixed prices, confirmed in 2 hours.", where: "Fun Activities", href: "/fun-activities", accent: "#C47A2E" },
     { id: "stationery",      tag: "Wedding Stationeries",  icon: "💒", iconBg: "linear-gradient(135deg,#7A3A1E,#C47A2E)",  headline: "Your wedding, beautifully told — no templates, ever",    desc: "Itineraries, invitations, money envelopes, hashtag packages, coffee table booklets and more — each piece crafted exclusively for you.", where: "Wedding Stationeries", href: "/stationery", accent: "#7A3A1E" },
     { id: "baat-karo",      tag: "Baat Karo",             icon: "💬", iconBg: "linear-gradient(135deg,#25D366,#128C7E)",  headline: "Just tell us — Tendr team will handle the rest",          desc: "Write your requirements in Hindi, English or Hinglish. Our team replies on WhatsApp with vendor options, pricing and availability — no forms, no hassle.", where: "Booking → Baat Karo", href: "/baat-karo", accent: "#128C7E" },
-    { id: "celebration-kit",tag: "Tendr Celebration Kit", icon: "🎉", iconBg: "linear-gradient(135deg,#2C1A0E,#C47A2E)",  headline: "Everything for a home celebration — under ₹1,499",        desc: "Balloons, fairy lights, games, decor disposals and a letter from Tendr. Unbox and celebrate.", where: "Coming Soon", href: null, accent: "#2C1A0E", isKit: true },
   ];
 
   const goToSlide = (idx) => {

@@ -129,6 +129,7 @@ export default function CustomerDashboard() {
 
   const [changeReqState, setChangeReqState] = useState({}); // { [planId]: { open, message, submitting, done } }
   const [cancelState, setCancelState] = useState({}); // { [planId]: { open, reason, submitting, done } }
+  const [expandedPinned, setExpandedPinned] = useState({}); // { [planId]: bool }
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
   const [referralCopied, setReferralCopied] = useState(false);
@@ -1407,6 +1408,44 @@ export default function CustomerDashboard() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Pinned messages — completed events */}
+                  {plan.status === "completed" && (() => {
+                    const planConvos = conversations.filter(c =>
+                      c.customerId?._id?.toString() === plan.customerId?.toString() ||
+                      c.customerId?.toString() === plan.customerId?.toString()
+                    );
+                    const allPinned = planConvos
+                      .flatMap(c => (c.pinnedMessages || []).map(m => ({
+                        text: typeof m === "string" ? m : m.content || m.text,
+                        vendor: c.vendorName || c.vendorId?.name || "Vendor",
+                      })))
+                      .filter(m => m.text);
+                    if (!allPinned.length) return null;
+                    const open = !!expandedPinned[plan._id];
+                    return (
+                      <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 12 }}>
+                        <button
+                          onClick={() => setExpandedPinned(prev => ({ ...prev, [plan._id]: !prev[plan._id] }))}
+                          style={{ display: "flex", alignItems: "center", gap: 8, background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: font }}
+                        >
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>📌 Pinned Messages ({allPinned.length})</span>
+                          <span style={{ fontSize: 11, color: "#9B7450" }}>{open ? "▲ hide" : "▼ show"}</span>
+                        </button>
+                        {open && (
+                          <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
+                            {allPinned.map((m, i) => (
+                              <div key={i} style={{ background: "rgba(196,122,46,0.04)", borderRadius: 9, padding: "8px 12px", fontSize: 12.5, color: "#5a3a1a", border: "1px solid rgba(196,122,46,0.15)", display: "flex", gap: 8, alignItems: "flex-start" }}>
+                                <span style={{ color: "#C47A2E", flexShrink: 0, marginTop: 1 }}>📌</span>
+                                <span style={{ flex: 1, lineHeight: 1.5 }}>{m.text}</span>
+                                <span style={{ fontSize: 11, color: "#bbb", flexShrink: 0, marginTop: 2 }}>({m.vendor})</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* 4 download buttons — shown for Upcoming (in_progress) plans */}
                   {plan.status === "in_progress" && (() => {
