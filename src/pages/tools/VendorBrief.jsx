@@ -1,179 +1,214 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useSelector } from 'react-redux';
 import HamburgerNav from '../../components/HamburgerNav';
 
 const font = "'Outfit', sans-serif";
 const gold = "#C47A2E";
 
-const OCCASIONS = ["Birthday","Anniversary","Wedding","Engagement","Baby Shower","Corporate Event","Festival/Puja","Get-together","Other"];
 const VENDOR_TYPES = ["Decorator","Photographer","Caterer","DJ / Music","Venue","Gift Hampers","Cake","Makeup Artist","Other"];
-const BUDGETS = ["Under ₹10,000","₹10,000 – ₹25,000","₹25,000 – ₹50,000","₹50,000 – ₹1,00,000","₹1,00,000+","Not decided yet"];
 const VIBES = ["Traditional / Classic","Modern / Minimalist","Luxurious / Grand","Fun & Colourful","Intimate & Personal","Outdoor / Garden","Bollywood / Themed"];
 
-function Step({ n, title, children }) {
-  return (
-    <div style={{ marginBottom: 28 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-        <div style={{ width: 28, height: 28, borderRadius: '50%', background: `linear-gradient(135deg,${gold},#CCAB4A)`, color: '#fff', fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{n}</div>
-        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: '#2C1A0E' }}>{title}</h3>
-      </div>
-      {children}
-    </div>
-  );
+/* Read saved event data from redux first, fall back to localStorage */
+function useSavedEvent() {
+  const redux = useSelector(s => s.eventPlanning?.formData || {});
+  return useMemo(() => {
+    if (redux.eventType) return redux;
+    try {
+      const raw = localStorage.getItem('tendr_ep_session');
+      return raw ? (JSON.parse(raw).formData || {}) : {};
+    } catch { return {}; }
+  }, [redux]);
 }
 
 function Chip({ label, selected, onClick }) {
   return (
-    <button onClick={onClick} style={{ padding: '7px 14px', borderRadius: 100, border: `1.5px solid ${selected ? gold : 'rgba(196,122,46,0.3)'}`, background: selected ? 'rgba(196,122,46,0.1)' : '#fff', color: selected ? gold : '#6B4226', fontSize: 13, fontWeight: selected ? 700 : 500, cursor: 'pointer', fontFamily: font, transition: 'all 0.15s' }}>
+    <button onClick={onClick}
+      style={{ padding:'7px 14px', borderRadius:100, border:`1.5px solid ${selected ? gold : 'rgba(196,122,46,0.25)'}`, background: selected ? 'rgba(196,122,46,0.1)' : '#fff', color: selected ? gold : '#6B4226', fontSize:13, fontWeight: selected ? 700 : 500, cursor:'pointer', fontFamily:font, transition:'all 0.15s' }}>
       {label}
     </button>
   );
 }
 
-function Field({ label, value, onChange, placeholder, type = 'text' }) {
+function Field({ label, value, onChange, placeholder, type='text', readOnly }) {
   return (
-    <div style={{ marginBottom: 14 }}>
-      <label style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 5 }}>{label}</label>
-      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-        style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', fontSize: 14, fontFamily: font, outline: 'none', boxSizing: 'border-box', color: '#2C1A0E' }}/>
+    <div style={{ display:'flex', flexDirection:'column', gap:4 }}>
+      <label style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em' }}>{label}</label>
+      <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} readOnly={readOnly}
+        style={{ padding:'9px 12px', borderRadius:10, border:`1.5px solid ${readOnly ? 'rgba(196,122,46,0.12)' : 'rgba(196,122,46,0.25)'}`, fontSize:13, fontFamily:font, outline:'none', color:'#2C1A0E', background: readOnly ? 'rgba(196,122,46,0.04)' : '#fff', boxSizing:'border-box', width:'100%' }}
+      />
     </div>
   );
 }
 
-function BriefPreview({ f }) {
-  const lines = [
-    `Hi! I'm ${f.name}${f.phone ? ` (+91 ${f.phone.replace(/^(\+91|0)/, '')})` : ''} and I'm planning a${f.occasion ? ' ' + f.occasion : 'n event'}.`,
+export default function VendorBrief() {
+  const saved = useSavedEvent();
+
+  const [f, setF] = useState({
+    name:       '',
+    phone:      '',
+    eventType:  saved.eventType  || '',
+    date:       saved.date       || '',
+    city:       saved.location   || '',
+    venue:      '',
+    guests:     saved.guestCount ? String(saved.guestCount) : (saved.guests || ''),
+    budget:     saved.budget     || '',
+    vendorType: '',
+    vibe:       '',
+    notes:      '',
+  });
+
+  const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+  const toggle = (k, v) => set(k, f[k] === v ? '' : v);
+
+  const hasEvent = !!(saved.eventType || saved.location || saved.date);
+
+  /* Live brief text */
+  const briefLines = [
+    `Hi! I'm ${f.name || 'a customer'}${f.phone ? ` (+91 ${f.phone.replace(/^(\+91|0)/,'')})` : ''} and I'm planning a${f.eventType ? ' ' + f.eventType : 'n event'}.`,
     '',
     `📅 Event Date: ${f.date || 'TBD'}`,
     `📍 City / Venue: ${f.city || 'TBD'}${f.venue ? ' — ' + f.venue : ''}`,
     `👥 Guest Count: ${f.guests || 'TBD'}`,
-    '',
-    `I'm looking for: ${f.vendorType || 'a vendor'}`,
     `💰 Budget: ${f.budget || 'To be discussed'}`,
     f.vibe ? `🎨 Style / Vibe: ${f.vibe}` : '',
+    '',
+    `I'm looking for: ${f.vendorType || 'a vendor'}`,
     f.notes ? `📝 Additional details: ${f.notes}` : '',
     '',
     'Please share your availability, portfolio, and package details.',
     'Looking forward to hearing from you!',
   ].filter(l => l !== null);
 
-  const text = lines.join('\n');
+  const briefText = briefLines.join('\n');
+  const canShare = !!(f.vendorType);
+
+  const copyBrief = async () => {
+    await navigator.clipboard?.writeText(briefText);
+    alert('Brief copied!');
+  };
+
+  const shareWhatsApp = () => window.open(`https://wa.me/?text=${encodeURIComponent(briefText)}`, '_blank');
 
   return (
-    <div style={{ background: '#FFFCF5', borderRadius: 16, border: '1.5px solid rgba(196,122,46,0.25)', padding: '24px', fontFamily: font }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-        <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: '#2C1A0E' }}>Your Vendor Brief</h3>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={() => { navigator.clipboard?.writeText(text); alert('Brief copied to clipboard!'); }}
-            style={{ padding: '6px 14px', borderRadius: 8, border: `1.5px solid rgba(196,122,46,0.3)`, background: '#fff', color: gold, fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
-            Copy Text
-          </button>
-          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank')}
-            style={{ padding: '6px 14px', borderRadius: 8, border: 'none', background: '#25D366', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
-            📲 WhatsApp
-          </button>
-        </div>
-      </div>
-      {/* Brief card */}
-      <div style={{ background: 'linear-gradient(135deg,#2C1A0E,#4A2810)', borderRadius: 12, padding: '20px 24px', marginBottom: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-          <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(196,122,46,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📋</div>
-          <div>
-            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{f.name || 'Your Name'}</div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)' }}>{f.occasion || 'Event'} · {f.city || 'City'}</div>
-          </div>
-        </div>
-        {lines.map((line, i) =>
-          line === '' ? <div key={i} style={{ height: 8 }}/> : (
-            <div key={i} style={{ fontSize: 13, color: line.startsWith('Hi') ? 'rgba(255,255,255,0.9)' : line.match(/^[📅📍👥💰🎨📝]/) ? '#CCAB4A' : 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 2 }}>
-              {line}
-            </div>
-          )
-        )}
-      </div>
-      <p style={{ fontSize: 11, color: '#9B7450', margin: 0 }}>Share this brief directly with vendors on WhatsApp or copy the text to paste anywhere.</p>
-    </div>
-  );
-}
-
-export default function VendorBrief() {
-  const [f, setF] = useState({ name:'', phone:'', occasion:'', date:'', city:'', venue:'', guests:'', vendorType:'', budget:'', vibe:'', notes:'' });
-  const [showPreview, setShowPreview] = useState(false);
-  const set = (k, v) => setF(p => ({ ...p, [k]: v }));
-  const toggle = (k, v) => set(k, f[k] === v ? '' : v);
-
-  const canPreview = f.occasion || f.vendorType || f.city;
-
-  return (
-    <div style={{ minHeight: '100vh', background: '#FFFCF5', fontFamily: font }}>
+    <div style={{ minHeight:'100vh', background:'#FFFCF5', fontFamily:font }}>
       <HamburgerNav/>
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '28px 20px 80px' }}>
-        <div style={{ marginBottom: 28 }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: gold, textTransform: 'uppercase', letterSpacing: '0.16em', margin: '0 0 6px' }}>Vendor Brief</p>
-          <h1 style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: 'clamp(1.8rem,5vw,2.6rem)', fontWeight: 400, color: '#2C1A0E', margin: '0 0 8px' }}>
-            Tell vendors what you need
+
+      <div style={{ maxWidth:860, margin:'0 auto', padding:'28px 20px 80px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom:24 }}>
+          <p style={{ fontSize:11, fontWeight:800, color:gold, textTransform:'uppercase', letterSpacing:'0.16em', margin:'0 0 6px' }}>Vendor Brief</p>
+          <h1 style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:'clamp(1.8rem,5vw,2.4rem)', fontWeight:400, color:'#2C1A0E', margin:'0 0 6px' }}>
+            Share your requirements instantly
           </h1>
-          <p style={{ fontSize: 14, color: '#6B4226', margin: 0, lineHeight: 1.6 }}>
-            Fill in your event details and get a ready-to-share brief you can send to any vendor on WhatsApp.
+          <p style={{ fontSize:13, color:'#9B7450', margin:0, lineHeight:1.6 }}>
+            {hasEvent
+              ? 'We\'ve pre-filled your event details from your planning form. Edit anything, pick a vendor type, and share.'
+              : 'Fill in your event details and get a ready-to-send brief for any vendor.'}
           </p>
         </div>
 
-        <div style={{ background: '#fff', borderRadius: 20, border: '1.5px solid rgba(196,122,46,0.15)', padding: '28px 24px', marginBottom: 20 }}>
+        {/* Pre-fill notice */}
+        {hasEvent && (
+          <div style={{ display:'flex', alignItems:'center', gap:10, background:'rgba(34,197,94,0.07)', border:'1.5px solid rgba(34,197,94,0.2)', borderRadius:12, padding:'10px 16px', marginBottom:20 }}>
+            <span style={{ fontSize:18 }}>✓</span>
+            <span style={{ fontSize:13, color:'#166534', fontWeight:600 }}>Event details loaded from your planning form. All fields are editable.</span>
+          </div>
+        )}
 
-          <Step n={1} title="Your Event">
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
-              {OCCASIONS.map(o => <Chip key={o} label={o} selected={f.occasion===o} onClick={()=>toggle('occasion',o)}/>)}
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-              <Field label="Event Date" value={f.date} onChange={v=>set('date',v)} placeholder="e.g. 15 June 2025" type="text"/>
-              <div style={{ paddingLeft: 14 }}>
-                <Field label="No. of Guests" value={f.guests} onChange={v=>set('guests',v)} placeholder="e.g. 80"/>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:20, alignItems:'start' }} className="brief-grid">
+
+          {/* ── Left: form ───────────────────────────────────────── */}
+          <div style={{ display:'flex', flexDirection:'column', gap:20 }}>
+
+            {/* Event details */}
+            <div style={{ background:'#fff', borderRadius:16, border:'1.5px solid rgba(196,122,46,0.15)', padding:'20px' }}>
+              <h3 style={{ fontSize:13, fontWeight:800, color:'#2C1A0E', margin:'0 0 14px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Event Details</h3>
+              <div style={{ display:'flex', flexDirection:'column', gap:12 }}>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  <Field label="Event Type" value={f.eventType} onChange={v=>set('eventType',v)} placeholder="Birthday, Wedding…"/>
+                  <Field label="Event Date" value={f.date} onChange={v=>set('date',v)} placeholder="15 June 2025"/>
+                </div>
+                <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                  <Field label="City" value={f.city} onChange={v=>set('city',v)} placeholder="Delhi, Noida…"/>
+                  <Field label="No. of Guests" value={f.guests} onChange={v=>set('guests',v)} placeholder="e.g. 80" type="number"/>
+                </div>
+                <Field label="Venue (optional)" value={f.venue} onChange={v=>set('venue',v)} placeholder="If you already have one"/>
+                <Field label="Budget" value={f.budget} onChange={v=>set('budget',v)} placeholder="e.g. ₹50,000 or 'flexible'"/>
               </div>
             </div>
-            <Field label="City" value={f.city} onChange={v=>set('city',v)} placeholder="e.g. Delhi, Noida, Gurugram"/>
-            <Field label="Venue (optional)" value={f.venue} onChange={v=>set('venue',v)} placeholder="If you already have one"/>
-          </Step>
 
-          <div style={{ height: 1, background: 'rgba(196,122,46,0.1)', margin: '4px 0 24px' }}/>
+            {/* Vendor + vibe */}
+            <div style={{ background:'#fff', borderRadius:16, border:'1.5px solid rgba(196,122,46,0.15)', padding:'20px' }}>
+              <h3 style={{ fontSize:13, fontWeight:800, color:'#2C1A0E', margin:'0 0 12px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Who are you sending this to?</h3>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:16 }}>
+                {VENDOR_TYPES.map(v => <Chip key={v} label={v} selected={f.vendorType===v} onClick={()=>toggle('vendorType',v)}/>)}
+              </div>
+              <p style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', margin:'0 0 8px' }}>Style / Vibe (optional)</p>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:8, marginBottom:14 }}>
+                {VIBES.map(v => <Chip key={v} label={v} selected={f.vibe===v} onClick={()=>toggle('vibe',v)}/>)}
+              </div>
+              <label style={{ fontSize:11, fontWeight:700, color:'#9B7450', textTransform:'uppercase', letterSpacing:'0.08em', display:'block', marginBottom:5 }}>Specific requirements (optional)</label>
+              <textarea value={f.notes} onChange={e=>set('notes',e.target.value)} rows={3}
+                placeholder="e.g. I want a jungle theme, need a 20-ft stage, veg food only…"
+                style={{ width:'100%', padding:'9px 12px', borderRadius:10, border:'1.5px solid rgba(196,122,46,0.25)', fontSize:13, fontFamily:font, outline:'none', resize:'vertical', color:'#2C1A0E', boxSizing:'border-box' }}/>
+            </div>
 
-          <Step n={2} title="What You're Looking For">
-            <p style={{ fontSize: 12, color: '#9B7450', margin: '0 0 10px' }}>Vendor type</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-              {VENDOR_TYPES.map(v => <Chip key={v} label={v} selected={f.vendorType===v} onClick={()=>toggle('vendorType',v)}/>)}
-            </div>
-            <p style={{ fontSize: 12, color: '#9B7450', margin: '0 0 10px' }}>Budget</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-              {BUDGETS.map(b => <Chip key={b} label={b} selected={f.budget===b} onClick={()=>toggle('budget',b)}/>)}
-            </div>
-            <p style={{ fontSize: 12, color: '#9B7450', margin: '0 0 10px' }}>Style / Vibe</p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 16 }}>
-              {VIBES.map(v => <Chip key={v} label={v} selected={f.vibe===v} onClick={()=>toggle('vibe',v)}/>)}
-            </div>
-            <div>
-              <label style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: 5 }}>Any specific requirements (optional)</label>
-              <textarea value={f.notes} onChange={e=>set('notes',e.target.value)} placeholder="e.g. I want a jungle theme, need a 20-ft stage, veg food only..."
-                rows={3} style={{ width: '100%', padding: '10px 12px', borderRadius: 10, border: '1.5px solid rgba(196,122,46,0.25)', fontSize: 13, fontFamily: font, outline: 'none', boxSizing: 'border-box', resize: 'vertical', color: '#2C1A0E' }}/>
-            </div>
-          </Step>
-
-          <div style={{ height: 1, background: 'rgba(196,122,46,0.1)', margin: '4px 0 24px' }}/>
-
-          <Step n={3} title="Your Contact">
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
-              <Field label="Your Name" value={f.name} onChange={v=>set('name',v)} placeholder="First name"/>
-              <div style={{ paddingLeft: 14 }}>
-                <Field label="Phone Number" value={f.phone} onChange={v=>set('phone',v)} placeholder="9XXXXXXXXX" type="tel"/>
+            {/* Your contact */}
+            <div style={{ background:'#fff', borderRadius:16, border:'1.5px solid rgba(196,122,46,0.15)', padding:'20px' }}>
+              <h3 style={{ fontSize:13, fontWeight:800, color:'#2C1A0E', margin:'0 0 14px', textTransform:'uppercase', letterSpacing:'0.06em' }}>Your Contact</h3>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+                <Field label="Name" value={f.name} onChange={v=>set('name',v)} placeholder="Your name"/>
+                <Field label="Phone" value={f.phone} onChange={v=>set('phone',v)} placeholder="9XXXXXXXXX" type="tel"/>
               </div>
             </div>
-          </Step>
+          </div>
 
-          <button onClick={() => setShowPreview(true)} disabled={!canPreview}
-            style={{ width: '100%', padding: '14px', borderRadius: 100, border: 'none', background: canPreview ? `linear-gradient(135deg,${gold},#CCAB4A)` : '#e5e7eb', color: canPreview ? '#fff' : '#9ca3af', fontSize: 16, fontWeight: 700, cursor: canPreview ? 'pointer' : 'not-allowed', fontFamily: font, boxShadow: canPreview ? '0 4px 18px rgba(196,122,46,0.35)' : 'none', transition: 'all 0.2s' }}>
-            Generate My Brief →
-          </button>
+          {/* ── Right: live preview ───────────────────────────────── */}
+          <div style={{ position:'sticky', top:80 }}>
+            <div style={{ background:'linear-gradient(135deg,#2C1A0E,#4A2810)', borderRadius:16, padding:'22px', marginBottom:14 }}>
+              {/* Preview header */}
+              <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
+                <div style={{ width:38, height:38, borderRadius:'50%', background:'rgba(196,122,46,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>📋</div>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:800, color:'#fff' }}>{f.name || 'Your Name'}</div>
+                  <div style={{ fontSize:11, color:'rgba(255,255,255,0.5)' }}>{f.eventType || 'Event'}{f.city ? ` · ${f.city}` : ''}</div>
+                </div>
+              </div>
+              {/* Brief lines */}
+              <div style={{ display:'flex', flexDirection:'column', gap:2 }}>
+                {briefLines.map((line, i) =>
+                  line === '' ? <div key={i} style={{ height:6 }}/> : (
+                    <div key={i} style={{ fontSize:12.5, lineHeight:1.65, color: line.startsWith('Hi') ? 'rgba(255,255,255,0.9)' : line.match(/^[📅📍👥💰🎨📝]/) ? '#CCAB4A' : 'rgba(255,255,255,0.72)' }}>
+                      {line}
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+              {!canShare && (
+                <p style={{ fontSize:12, color:'#9B7450', textAlign:'center', margin:'0 0 4px' }}>Select a vendor type above to enable sharing</p>
+              )}
+              <button onClick={shareWhatsApp} disabled={!canShare}
+                style={{ width:'100%', padding:'13px', borderRadius:100, border:'none', background: canShare ? '#25D366' : '#e5e7eb', color: canShare ? '#fff' : '#9ca3af', fontSize:15, fontWeight:700, cursor: canShare ? 'pointer' : 'not-allowed', fontFamily:font }}>
+                📲 Send on WhatsApp
+              </button>
+              <button onClick={copyBrief} disabled={!canShare}
+                style={{ width:'100%', padding:'12px', borderRadius:100, border:`1.5px solid ${canShare ? 'rgba(196,122,46,0.35)' : 'rgba(0,0,0,0.08)'}`, background:'#fff', color: canShare ? gold : '#9ca3af', fontSize:14, fontWeight:700, cursor: canShare ? 'pointer' : 'not-allowed', fontFamily:font }}>
+                Copy Text
+              </button>
+            </div>
+            <p style={{ fontSize:11, color:'#9B7450', textAlign:'center', marginTop:12 }}>Paste this brief directly into any WhatsApp chat or DM with a vendor.</p>
+          </div>
         </div>
-
-        {showPreview && <BriefPreview f={f}/>}
       </div>
+
+      <style>{`
+        @media (max-width: 680px) { .brief-grid { grid-template-columns: 1fr !important; } }
+      `}</style>
     </div>
   );
 }
