@@ -1905,58 +1905,28 @@ const EventPlanning = () => {
             )}
 
             {isYouDoIt ? (
-              <>
-                <button
-                  disabled={selectedVendors.length === 0}
-                  onClick={() => {
-                    if (selectedVendors.length === 0) return;
-                    const init = {};
-                    selectedVendors.forEach(c => { init[c] = savedCategoryBudgets[c] || CAT_BUDGET_RANGES[c]?.default || 10000; });
-                    dispatch(setCategoryBudgets(init));
-                    dispatch(setFilters({ serviceType: selectedVendors[0], eventType: formData?.eventType || "", locationType: formData?.location || "", date: formData?.date || "", guestCount: Number(formData?.guests) || 0 }));
-                    navigate("/listings?fromPlan=1", { state: { selectedCategories: selectedVendors } });
-                  }}
-                  style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
-                  onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
-                >
-                  Browse Vendors →
-                </button>
-                {selectedVendors.length > 0 && (
-                  <button
-                    onClick={() => { const init = {}; selectedVendors.forEach(c => { init[c] = savedCategoryBudgets[c] || CAT_BUDGET_RANGES[c]?.default || 10000; }); dispatch(setCategoryBudgets(init)); setShowYouDoItBudget(true); }}
-                    style={{ background: "transparent", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "2px 0", fontFamily: "'Outfit', sans-serif", textDecoration: "underline" }}
-                  >
-                    Set budget first (optional)
-                  </button>
-                )}
-              </>
+              <button
+                disabled={selectedVendors.length === 0}
+                onClick={() => { if (selectedVendors.length > 0) { const init = {}; selectedVendors.forEach(c => { init[c] = savedCategoryBudgets[c] || CAT_BUDGET_RANGES[c]?.default || 10000; }); dispatch(setCategoryBudgets(init)); setShowYouDoItBudget(true); } }}
+                style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
+                onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
+              >
+                Set Budget & Browse →
+              </button>
             ) : (
-              <>
-                <button
-                  disabled={selectedVendors.length === 0 || planLoading}
-                  onClick={() => {
-                    if (selectedVendors.length === 0) return;
-                    const init = {};
-                    selectedVendors.forEach(c => { if (!savedCategoryBudgets[c]) init[c] = CAT_BUDGET_RANGES[c]?.default || 10000; });
-                    if (Object.keys(init).length) dispatch(setCategoryBudgets({ ...savedCategoryBudgets, ...init }));
-                    fetchSmartPlan();
-                  }}
-                  style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 && !planLoading ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
-                  onMouseEnter={(e) => { if (selectedVendors.length > 0 && !planLoading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
-                >
-                  {planLoading ? "Building your plan…" : "Get My Plan →"}
-                </button>
-                {selectedVendors.length > 0 && (
-                  <button
-                    onClick={() => openBudgetModal(() => fetchSmartPlan())}
-                    style={{ background: "transparent", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "2px 0", fontFamily: "'Outfit', sans-serif", textDecoration: "underline" }}
-                  >
-                    Set budget first (optional)
-                  </button>
-                )}
-              </>
+              <button
+                disabled={selectedVendors.length === 0 || planLoading}
+                onClick={() => {
+                  if (selectedVendors.length === 0) return;
+                  openBudgetModal(() => fetchSmartPlan());
+                }}
+                style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 && !planLoading ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
+                onMouseEnter={(e) => { if (selectedVendors.length > 0 && !planLoading) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
+                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
+              >
+                {planLoading ? "Building your plan…" : "Get My Plan →"}
+              </button>
             )}
 
             <button
