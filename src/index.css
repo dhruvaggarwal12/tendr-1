@@ -504,6 +504,10 @@ h2:not([data-ui-heading]) {
     padding-bottom: 4px;
   }
   .cust-tab-row::-webkit-scrollbar { display: none; }
+  .cust-tab-row button {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
   /* Plan cards — stack action buttons */
   .plan-card-actions {
     flex-direction: column !important;
