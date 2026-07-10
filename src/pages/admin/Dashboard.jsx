@@ -2397,7 +2397,7 @@ const AdminDashboard = () => {
                   if (!window.confirm("Index all Decorator portfolio photos for Find by Style? This may take a few minutes.")) return;
                   setReindexing(true); setReindexResult(null);
                   try {
-                    const r = await fetch(`${BASE_URL}/admin/index-decorator-photos`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                    const r = await fetch(`${BASE_URL}/vendors/index-decorator-photos`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
                     const ct = r.headers.get('content-type') || '';
                     if (!ct.includes('application/json')) {
                       throw new Error(`Route not found (${r.status}) — backend may still be deploying. Wait 1–2 min and retry.`);
