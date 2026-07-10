@@ -13,6 +13,7 @@ const GiftHampersCakes = () => {
   const [loading, setLoading] = useState(true);
   const [preview, setPreview] = useState(null); // { url, name, priceRange, vendorName }
   const [downloading, setDownloading] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState([]);
 
   useEffect(() => {
     fetch(`${BASE_URL}/admin/gift-hamper-samples`)
@@ -48,6 +49,24 @@ const GiftHampersCakes = () => {
     } finally {
       setDownloading(false);
     }
+  };
+
+  const toggleSelect = (sample) => {
+    setSelectedPhotos(prev =>
+      prev.some(p => p._id === sample._id)
+        ? prev.filter(p => p._id !== sample._id)
+        : [...prev, sample]
+    );
+  };
+
+  const goToChat = () => {
+    try {
+      sessionStorage.setItem("gh_chat_photos", JSON.stringify(
+        selectedPhotos.map(({ url, name, priceRange, vendorName }) => ({ url, name, priceRange, vendorName }))
+      ));
+      sessionStorage.removeItem("baat_karo_draft");
+    } catch {}
+    navigate("/baat-karo");
   };
 
   return (
@@ -129,29 +148,34 @@ const GiftHampersCakes = () => {
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 14 }}>
-              {samples.map(s => (
-                <div
-                  key={s._id}
-                  className="gh-card"
-                  onClick={() => setPreview(s)}
-                  style={{ borderRadius: 14, overflow: "hidden", background: "#fff", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 14px rgba(44,26,14,0.07)", cursor: "pointer", position: "relative" }}
-                >
-                  <div style={{ overflow: "hidden" }}>
-                    <img src={s.url} alt={s.name || "Gift Hamper"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block", transition: "transform 0.3s" }} />
-                  </div>
-                  {/* Hover overlay */}
-                  <div className="gh-overlay" style={{ position: "absolute", inset: 0, background: "rgba(44,26,14,0.42)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s", borderRadius: 14 }}>
-                    <span style={{ color: "#fff", fontSize: 13, fontWeight: 700, background: "rgba(0,0,0,0.45)", borderRadius: 100, padding: "7px 18px" }}>👁 Preview</span>
-                  </div>
-                  {(s.priceRange || s.name) && (
-                    <div style={{ padding: "8px 12px 10px" }}>
-                      {s.name && <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{s.name}</div>}
-                      {s.priceRange && <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
-                      {s.vendorName && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>by {s.vendorName}</div>}
+              {samples.map(s => {
+                const isSelected = selectedPhotos.some(p => p._id === s._id);
+                return (
+                  <div
+                    key={s._id}
+                    className="gh-card"
+                    onClick={() => setPreview(s)}
+                    style={{ borderRadius: 14, overflow: "hidden", background: "#fff", border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, boxShadow: isSelected ? "0 0 0 2px rgba(196,122,46,0.35), 0 3px 14px rgba(44,26,14,0.07)" : "0 3px 14px rgba(44,26,14,0.07)", cursor: "pointer", position: "relative" }}
+                  >
+                    {isSelected && (
+                      <div style={{ position: "absolute", top: 8, right: 8, zIndex: 2, width: 22, height: 22, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff", fontWeight: 800 }}>✓</div>
+                    )}
+                    <div style={{ overflow: "hidden" }}>
+                      <img src={s.url} alt={s.name || "Gift Hamper"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block", transition: "transform 0.3s" }} />
                     </div>
-                  )}
-                </div>
-              ))}
+                    <div className="gh-overlay" style={{ position: "absolute", inset: 0, background: "rgba(44,26,14,0.42)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s", borderRadius: 14 }}>
+                      <span style={{ color: "#fff", fontSize: 13, fontWeight: 700, background: "rgba(0,0,0,0.45)", borderRadius: 100, padding: "7px 18px" }}>👁 Preview</span>
+                    </div>
+                    {(s.priceRange || s.name) && (
+                      <div style={{ padding: "8px 12px 10px" }}>
+                        {s.name && <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{s.name}</div>}
+                        {s.priceRange && <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
+                        {s.vendorName && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>by {s.vendorName}</div>}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -189,16 +213,39 @@ const GiftHampersCakes = () => {
                   {downloading ? "Downloading…" : "⬇ Download Photo"}
                 </button>
                 <button
-                  onClick={() => {
-                    try { sessionStorage.setItem("baat_karo_draft", `Hi! I liked this hamper${preview.name ? ` — "${preview.name}"` : ""}${preview.priceRange ? ` (${preview.priceRange})` : ""}. Can you help me with something similar?`); } catch {}
-                    navigate("/baat-karo");
-                  }}
-                  style={{ flex: "1 1 140px", padding: "11px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                  onClick={() => { toggleSelect(preview); closePreview(); }}
+                  style={{ flex: "1 1 140px", padding: "11px 20px", borderRadius: 10, border: `1.5px solid ${selectedPhotos.some(p => p._id === preview._id) ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: selectedPhotos.some(p => p._id === preview._id) ? "rgba(196,122,46,0.1)" : "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
                 >
-                  💬 Order Similar
+                  {selectedPhotos.some(p => p._id === preview._id) ? "✓ Added to Chat" : "➕ Add to Chat"}
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Floating selection bar ── */}
+      {selectedPhotos.length > 0 && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1000, padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))", background: "rgba(44,26,14,0.97)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 -4px 24px rgba(0,0,0,0.28)" }}>
+          <div style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1 }}>
+            {selectedPhotos.map(p => (
+              <div key={p._id} style={{ position: "relative", flexShrink: 0 }}>
+                <img src={p.url} alt={p.name || ""} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.5)", display: "block" }} />
+                <button
+                  onClick={() => toggleSelect(p)}
+                  style={{ position: "absolute", top: -5, right: -5, width: 16, height: 16, borderRadius: "50%", background: "#C47A2E", border: "none", color: "#fff", fontSize: 9, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}
+                >✕</button>
+              </div>
+            ))}
+          </div>
+          <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
+            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, whiteSpace: "nowrap" }}>{selectedPhotos.length} selected</span>
+            <button
+              onClick={goToChat}
+              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+            >
+              💬 Talk to Our Team →
+            </button>
           </div>
         </div>
       )}

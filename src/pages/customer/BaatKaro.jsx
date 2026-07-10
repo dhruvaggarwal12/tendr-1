@@ -15,6 +15,10 @@ export default function BaatKaro() {
   const [text, setText] = useState(() => {
     try { return sessionStorage.getItem("baat_karo_draft") || ""; } catch { return ""; }
   });
+  // Reference photos from Gift Hampers — empty array when coming from anywhere else
+  const [refPhotos, setRefPhotos] = useState(() => {
+    try { return JSON.parse(sessionStorage.getItem("gh_chat_photos") || "[]"); } catch { return []; }
+  });
   const [charCount, setCharCount] = useState(0);
   const [showAuth, setShowAuth] = useState(false);
   const [sending, setSending] = useState(false);
@@ -37,6 +41,27 @@ export default function BaatKaro() {
       const data = await res.json();
       if (res.ok && data.conversationId) {
         try { sessionStorage.removeItem("baat_karo_draft"); } catch {}
+
+        // If the customer attached reference photos, send them as follow-up messages
+        // so admin sees them inside the chat conversation
+        if (refPhotos.length > 0) {
+          for (const photo of refPhotos) {
+            const label = [photo.name, photo.priceRange].filter(Boolean).join(" · ");
+            const content = label
+              ? `📎 Reference photo — ${label}\n${photo.url}`
+              : `📎 Reference photo\n${photo.url}`;
+            try {
+              await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ sender: "user", content }),
+              });
+            } catch {}
+          }
+          try { sessionStorage.removeItem("gh_chat_photos"); } catch {}
+          setRefPhotos([]);
+        }
+
         setText("");
         openExistingChat(data.conversationId, {
           _id: null,
@@ -101,6 +126,41 @@ export default function BaatKaro() {
               </p>
             </div>
           </div>
+
+          {/* Reference photos strip — only shown when coming from Gift Hampers */}
+          {refPhotos.length > 0 && (
+            <div style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 12, background: "rgba(196,122,46,0.07)", border: "1px dashed rgba(196,122,46,0.35)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                  📎 {refPhotos.length} reference photo{refPhotos.length > 1 ? "s" : ""} attached
+                </span>
+                <button
+                  onClick={() => { setRefPhotos([]); try { sessionStorage.removeItem("gh_chat_photos"); } catch {} }}
+                  style={{ fontSize: 11, color: "#9B7450", background: "none", border: "none", cursor: "pointer", padding: "0 2px" }}
+                >
+                  Clear all
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {refPhotos.map((p, i) => (
+                  <div key={i} style={{ position: "relative" }}>
+                    <img
+                      src={p.url}
+                      alt={p.name || "reference"}
+                      style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", display: "block" }}
+                    />
+                    <button
+                      onClick={() => setRefPhotos(prev => prev.filter((_, idx) => idx !== i))}
+                      style={{ position: "absolute", top: -5, right: -5, width: 16, height: 16, borderRadius: "50%", background: "#9B7450", border: "none", color: "#fff", fontSize: 9, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}
+                    >✕</button>
+                    {p.name && (
+                      <div style={{ fontSize: 9, color: "#7A5535", marginTop: 3, maxWidth: 52, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", textAlign: "center" }}>{p.name}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* User input */}
           <div style={{ position: "relative" }}>
