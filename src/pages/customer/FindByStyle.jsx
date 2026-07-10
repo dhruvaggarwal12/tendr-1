@@ -21,8 +21,25 @@ export default function FindByStyle() {
   const [error,    setError]    = useState('');
   const [dragging, setDragging] = useState(false);
   const [quickViewVendor, setQuickViewVendor] = useState(null);
+  const [qvLoading, setQvLoading]             = useState(false);
+  const [activePhotoIdx, setActivePhotoIdx]   = useState(0);
   const [authModalOpen, setAuthModalOpen]     = useState(false);
   const [pendingChatVendor, setPendingChatVendor] = useState(null);
+
+  const openQuickView = async (partialVendor, matchedPhotoUrl) => {
+    // Show panel immediately with what we have, then enrich with full data
+    setQuickViewVendor({ ...partialVendor, photoUrl: matchedPhotoUrl });
+    setActivePhotoIdx(0);
+    setQvLoading(true);
+    try {
+      const res = await fetch(`${BASE}/vendors/${partialVendor._id}`);
+      if (res.ok) {
+        const full = await res.json();
+        setQuickViewVendor({ ...full, photoUrl: matchedPhotoUrl });
+      }
+    } catch {}
+    setQvLoading(false);
+  };
 
   const handleFile = (f) => {
     if (!f || !f.type.startsWith('image/')) return;
@@ -249,7 +266,7 @@ export default function FindByStyle() {
                       {r.vendor.serviceType}{r.vendor.city ? ` · ${r.vendor.city}` : ''}
                     </div>
                     <button
-                      onClick={() => setQuickViewVendor({ ...r.vendor, photoUrl: r.photoUrl })}
+                      onClick={() => openQuickView(r.vendor, r.photoUrl)}
                       style={{
                         width: '100%', padding: '7px 4px', borderRadius: 8,
                         border: '1.5px solid #C47A2E',
@@ -269,81 +286,123 @@ export default function FindByStyle() {
         )}
       </div>
 
-      {/* Quick View Side Panel — matches VendorList_ListingPage style */}
-      {quickViewVendor && (
-        <>
-          <div onClick={() => setQuickViewVendor(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 99994, animation: 'qv-fade 0.2s ease' }} />
+      {/* Quick View Side Panel */}
+      {quickViewVendor && (() => {
+        const v = quickViewVendor;
+        const allPhotos = [v.photoUrl, ...(v.portfolioPhotos || []).filter(u => u && u !== v.photoUrl)].filter(Boolean);
+        const safeIdx = Math.min(activePhotoIdx, allPhotos.length - 1);
+        const city = v.city || v.address?.city || v.locations?.[0];
+        return (
+          <>
+            <div onClick={() => setQuickViewVendor(null)}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 99994, animation: 'qv-fade 0.2s ease' }} />
 
-          <div style={window.innerWidth < 768 ? {
-            position: 'fixed', left: 0, right: 0, bottom: 0, top: 0, width: '100vw', height: '100%',
-            background: '#FFFCF5', zIndex: 99995, overflowY: 'auto', fontFamily: font,
-            animation: 'qv-up 0.32s cubic-bezier(0.4,0,0.2,1)',
-          } : {
-            position: 'fixed', right: 0, top: 0, height: '100dvh', width: 420, maxWidth: '92vw',
-            background: '#FFFCF5', zIndex: 99995,
-            boxShadow: '-8px 0 48px rgba(139,69,19,0.18)',
-            overflowY: 'auto', fontFamily: font,
-            animation: 'qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)',
-          }}>
-            {/* Cover photo — matched vendor photo */}
-            <div style={{ position: 'relative', height: 230, flexShrink: 0, background: '#f0ebe3' }}>
-              {quickViewVendor.photoUrl && (
-                <img src={quickViewVendor.photoUrl} alt={quickViewVendor.name}
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              )}
-              <button onClick={() => setQuickViewVendor(null)}
-                style={{ position: 'absolute', top: 12, right: 12, width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.55)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
-            </div>
-
-            {/* Content */}
-            <div style={{ padding: '22px 24px 32px' }}>
-              {/* Name + type badge */}
-              <div style={{ marginBottom: 14 }}>
-                <h2 style={{ fontSize: 21, fontWeight: 800, color: '#2C1A0E', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
-                  {quickViewVendor.name}
-                </h2>
-                <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 12px', borderRadius: 100, background: 'rgba(196,122,46,0.12)', color: '#C47A2E' }}>
-                  {quickViewVendor.serviceType}
-                </span>
+            <div style={window.innerWidth < 768 ? {
+              position: 'fixed', left: 0, right: 0, bottom: 0, top: 0, width: '100vw', height: '100%',
+              background: '#FFFCF5', zIndex: 99995, overflowY: 'auto', fontFamily: font,
+              animation: 'qv-up 0.32s cubic-bezier(0.4,0,0.2,1)',
+            } : {
+              position: 'fixed', right: 0, top: 0, height: '100dvh', width: 420, maxWidth: '92vw',
+              background: '#FFFCF5', zIndex: 99995,
+              boxShadow: '-8px 0 48px rgba(139,69,19,0.18)',
+              overflowY: 'auto', fontFamily: font,
+              animation: 'qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)',
+            }}>
+              {/* Cover photo */}
+              <div style={{ position: 'relative', height: 230, flexShrink: 0, background: '#f0ebe3' }}>
+                {allPhotos[safeIdx] && (
+                  <img src={allPhotos[safeIdx]} alt={v.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+                <button onClick={() => setQuickViewVendor(null)}
+                  style={{ position: 'absolute', top: 12, right: 12, width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.55)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+                {allPhotos.length > 1 && (
+                  <>
+                    <button onClick={() => setActivePhotoIdx(i => (i - 1 + allPhotos.length) % allPhotos.length)}
+                      style={{ position: 'absolute', left: 8, top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>‹</button>
+                    <button onClick={() => setActivePhotoIdx(i => (i + 1) % allPhotos.length)}
+                      style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, borderRadius: '50%', background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>›</button>
+                    <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 4 }}>
+                      {allPhotos.slice(0, 6).map((_, i) => (
+                        <div key={i} onClick={() => setActivePhotoIdx(i)}
+                          style={{ width: i === safeIdx ? 14 : 5, height: 5, borderRadius: 100, background: i === safeIdx ? '#fff' : 'rgba(255,255,255,0.5)', cursor: 'pointer', transition: 'all 0.2s' }} />
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
-              {/* Stats pills */}
-              {quickViewVendor.city && (
+              {/* Content */}
+              <div style={{ padding: '22px 24px 32px' }}>
+                {/* Name + type */}
+                <div style={{ marginBottom: 14 }}>
+                  <h2 style={{ fontSize: 21, fontWeight: 800, color: '#2C1A0E', margin: '0 0 6px', letterSpacing: '-0.01em' }}>{v.name}</h2>
+                  <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 12px', borderRadius: 100, background: 'rgba(196,122,46,0.12)', color: '#C47A2E' }}>{v.serviceType}</span>
+                </div>
+
+                {/* Starting price */}
+                {(v.price || v.startingPrice) && (
+                  <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4, marginBottom: 14, background: 'linear-gradient(135deg,#2C1A0E,#4A2810)', borderRadius: 10, padding: '8px 16px' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Starting price</span>
+                    <span style={{ fontSize: 18, fontWeight: 900, color: '#fff' }}>₹{Number(v.price || v.startingPrice).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
+
+                {/* Stats pills */}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}>
-                    <span>📍</span> {quickViewVendor.city}
+                  {city && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><span>📍</span>{city}</div>}
+                  {v.yearsOfExperience > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><span>⏱</span>{v.yearsOfExperience}y experience</div>}
+                  {v.teamSize > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><span>👥</span>Team of {v.teamSize}</div>}
+                </div>
+
+                {/* About */}
+                {[
+                  v.totalEventsCompleted > 0 && { label: 'Events completed', value: v.totalEventsCompleted },
+                  v.yearsOfExperience > 0    && { label: 'Experience',        value: `${v.yearsOfExperience} years` },
+                  v.locations?.length > 0    && { label: 'Serves',            value: v.locations.join(', ') },
+                ].filter(Boolean).length > 0 && (
+                  <div style={{ marginBottom: 20 }}>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>About</p>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                      {[
+                        v.totalEventsCompleted > 0 && { label: 'Events completed', value: v.totalEventsCompleted },
+                        v.yearsOfExperience > 0    && { label: 'Experience',        value: `${v.yearsOfExperience} years` },
+                        v.locations?.length > 0    && { label: 'Serves',            value: v.locations.join(', ') },
+                      ].filter(Boolean).map(({ label, value }) => (
+                        <div key={label} style={{ background: 'rgba(196,122,46,0.05)', borderRadius: 10, padding: '8px 12px', border: '1px solid rgba(196,122,46,0.1)' }}>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 3 }}>{label}</div>
+                          <div style={{ fontSize: 13, fontWeight: 600, color: '#2C1A0E' }}>{value}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Your reference photo */}
+                <div style={{ marginBottom: 20 }}>
+                  <p style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Your reference photo</p>
+                  <div style={{ borderRadius: 12, overflow: 'hidden', aspectRatio: '16/9', background: '#f0ebe3' }}>
+                    <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </div>
                 </div>
-              )}
 
-              {/* Your reference photo */}
-              <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Your reference photo</p>
-                <div style={{ borderRadius: 12, overflow: 'hidden', aspectRatio: '16/9', background: '#f0ebe3' }}>
-                  <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <div style={{ height: 1, background: 'rgba(196,122,46,0.1)', margin: '4px 0 20px' }} />
+
+                {/* CTAs */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  <button
+                    onClick={() => window.open(`/vendor/${v._id}`, '_blank')}
+                    style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: font, cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
+                  >View Full Profile →</button>
+                  <button
+                    onClick={() => handleChatClick(v)}
+                    style={{ width: '100%', padding: '12px', borderRadius: 12, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', color: '#C47A2E', fontSize: 14, fontWeight: 700, fontFamily: font, cursor: 'pointer' }}
+                  >{token ? '💬 Chat with Vendor' : 'Sign In to Chat'}</button>
                 </div>
               </div>
-
-              <div style={{ height: 1, background: 'rgba(196,122,46,0.1)', margin: '4px 0 20px' }} />
-
-              {/* CTAs */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <button
-                  onClick={() => window.open(`/vendors/${quickViewVendor._id}`, '_blank')}
-                  style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: font, cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
-                >View Full Profile →</button>
-                <button
-                  onClick={() => handleChatClick(quickViewVendor)}
-                  style={{ width: '100%', padding: '12px', borderRadius: 12, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', color: '#C47A2E', fontSize: 14, fontWeight: 700, fontFamily: font, cursor: 'pointer' }}
-                >
-                  {token ? '💬 Chat with Vendor' : 'Sign In to Chat'}
-                </button>
-              </div>
             </div>
-          </div>
-        </>
-      )}
+          </>
+        );
+      })()}
 
       {/* Auth modal */}
       <AuthModal
