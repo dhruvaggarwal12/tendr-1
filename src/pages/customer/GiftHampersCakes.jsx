@@ -11,7 +11,7 @@ const GiftHampersCakes = () => {
   const navigate = useNavigate();
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [preview, setPreview] = useState(null); // { url, name, priceRange, vendorName }
+  const [preview, setPreview] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
 
@@ -24,7 +24,6 @@ const GiftHampersCakes = () => {
 
   const closePreview = useCallback(() => setPreview(null), []);
 
-  // Close on Escape key
   useEffect(() => {
     if (!preview) return;
     const handler = e => { if (e.key === "Escape") closePreview(); };
@@ -61,10 +60,14 @@ const GiftHampersCakes = () => {
 
   const goToChat = () => {
     try {
-      sessionStorage.setItem("gh_chat_photos", JSON.stringify(
-        selectedPhotos.map(({ url, name, priceRange, vendorName }) => ({ url, name, priceRange, vendorName }))
-      ));
-      sessionStorage.removeItem("baat_karo_draft");
+      if (selectedPhotos.length > 0) {
+        sessionStorage.setItem("gh_chat_photos", JSON.stringify(
+          selectedPhotos.map(({ url, name, priceRange, vendorName }) => ({ url, name, priceRange, vendorName }))
+        ));
+        sessionStorage.removeItem("baat_karo_draft");
+      } else {
+        try { sessionStorage.setItem("baat_karo_draft", "Hi! I'm looking for a custom gift hamper. Can you help me with options, pricing and delivery?"); } catch {}
+      }
     } catch {}
     navigate("/baat-karo");
   };
@@ -111,13 +114,10 @@ const GiftHampersCakes = () => {
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <button
               className="gh-cta-btn"
-              onClick={() => {
-                try { sessionStorage.setItem("baat_karo_draft", "Hi! I'm looking for a custom gift hamper. Can you help me with options, pricing and delivery?"); } catch {}
-                navigate("/baat-karo");
-              }}
+              onClick={goToChat}
               style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, padding: "13px 32px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.45)", letterSpacing: "0.01em" }}
             >
-              💬 Talk to Our Team
+              💬 Talk to Our Team{selectedPhotos.length > 0 ? ` · ${selectedPhotos.length} photo${selectedPhotos.length > 1 ? "s" : ""} added` : ""}
             </button>
           </div>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 12 }}>Replies within 2 hours · Custom orders welcome</p>
@@ -130,7 +130,7 @@ const GiftHampersCakes = () => {
           <div style={{ textAlign: "center", marginBottom: 32 }}>
             <p style={{ fontSize: 11, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>For reference</p>
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3.5vw,2.2rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 6px" }}>Sample Gift Hamper Photos</h2>
-            <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Tap any photo to preview · download to share with our team as a reference</p>
+            <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>Tap any photo to preview · add to chat as reference</p>
             <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "14px auto 0" }} />
           </div>
 
@@ -158,7 +158,7 @@ const GiftHampersCakes = () => {
                     style={{ borderRadius: 14, overflow: "hidden", background: "#fff", border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, boxShadow: isSelected ? "0 0 0 2px rgba(196,122,46,0.35), 0 3px 14px rgba(44,26,14,0.07)" : "0 3px 14px rgba(44,26,14,0.07)", cursor: "pointer", position: "relative" }}
                   >
                     {isSelected && (
-                      <div style={{ position: "absolute", top: 8, right: 8, zIndex: 2, width: 22, height: 22, borderRadius: "50%", background: "#C47A2E", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#fff", fontWeight: 800 }}>✓</div>
+                      <div style={{ position: "absolute", top: 8, right: 8, zIndex: 2, background: "#C47A2E", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 20, padding: "3px 8px", letterSpacing: "0.02em" }}>Added to Chat</div>
                     )}
                     <div style={{ overflow: "hidden" }}>
                       <img src={s.url} alt={s.name || "Gift Hamper"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block", transition: "transform 0.3s" }} />
@@ -191,7 +191,6 @@ const GiftHampersCakes = () => {
             onClick={e => e.stopPropagation()}
             style={{ background: "#fff", borderRadius: 20, overflow: "hidden", maxWidth: 560, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.55)", position: "relative" }}
           >
-            {/* Close */}
             <button
               onClick={closePreview}
               style={{ position: "absolute", top: 12, right: 12, zIndex: 2, width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
@@ -220,32 +219,6 @@ const GiftHampersCakes = () => {
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Floating selection bar ── */}
-      {selectedPhotos.length > 0 && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1000, padding: "12px 16px calc(12px + env(safe-area-inset-bottom, 0px))", background: "rgba(44,26,14,0.97)", backdropFilter: "blur(12px)", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 -4px 24px rgba(0,0,0,0.28)" }}>
-          <div style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1 }}>
-            {selectedPhotos.map(p => (
-              <div key={p._id} style={{ position: "relative", flexShrink: 0 }}>
-                <img src={p.url} alt={p.name || ""} style={{ width: 40, height: 40, objectFit: "cover", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.5)", display: "block" }} />
-                <button
-                  onClick={() => toggleSelect(p)}
-                  style={{ position: "absolute", top: -5, right: -5, width: 16, height: 16, borderRadius: "50%", background: "#C47A2E", border: "none", color: "#fff", fontSize: 9, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1, padding: 0 }}
-                >✕</button>
-              </div>
-            ))}
-          </div>
-          <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 12, whiteSpace: "nowrap" }}>{selectedPhotos.length} selected</span>
-            <button
-              onClick={goToChat}
-              style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
-            >
-              💬 Talk to Our Team →
-            </button>
           </div>
         </div>
       )}
