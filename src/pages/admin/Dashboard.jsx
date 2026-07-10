@@ -5445,14 +5445,60 @@ const AdminDashboard = () => {
         {/* ── REMINDERS TAB ── */}
         {activeDropdown === "reminders" && (() => {
           const font = "'Outfit', sans-serif";
-          const TRIGGER_DAYS = [30, 14, 7];
 
-          const dueTodayEvents = allReminders.filter(e => e.reminders.some(r => r.dueToday));
-          const upcomingEvents = allReminders.filter(e => !e.isPast && e.reminders.some(r => r.upcoming) && !e.reminders.some(r => r.dueToday));
-          const pastOrDoneEvents = allReminders.filter(e => e.isPast || e.reminders.every(r => r.sent || (!r.upcoming && !r.dueToday)));
+          // Buckets
+          const bookedEvents    = allReminders.filter(e => e.hasBooking && !e.isPast);
+          const tooCloseEvents  = allReminders.filter(e => !e.hasBooking && e.tooClose);
+          const dueTodayEvents  = allReminders.filter(e => !e.hasBooking && !e.tooClose && e.reminders.some(r => r.dueToday));
+          const upcomingEvents  = allReminders.filter(e => !e.hasBooking && !e.tooClose && !e.isPast && e.reminders.some(r => r.upcoming) && !e.reminders.some(r => r.dueToday));
+          const pastDoneEvents  = allReminders.filter(e => !e.hasBooking && (e.isPast || (!e.tooClose && e.reminders.length > 0 && e.reminders.every(r => r.sent))));
 
-          const ReminderCard = ({ ev, highlight }) => {
-            const dueTodayReminders = ev.reminders.filter(r => r.dueToday);
+          const ActionRow = ({ ev, msgKey, label }) => (
+            <div style={{ marginTop: 10 }}>
+              {label && <div style={{ fontSize: 11, fontWeight: 700, color: "#b45309", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>}
+              <div style={{ background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 8, padding: "9px 12px", fontSize: 12.5, color: "#2C1A0E", lineHeight: 1.6, marginBottom: 8 }}>
+                {ev.messages[msgKey]}
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(ev.messages[msgKey]);
+                    setCopiedMsg(prev => ({ ...prev, [`${ev.eventId}-${msgKey}`]: true }));
+                    setTimeout(() => setCopiedMsg(prev => ({ ...prev, [`${ev.eventId}-${msgKey}`]: false })), 2000);
+                  }}
+                  style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  {copiedMsg[`${ev.eventId}-${msgKey}`] ? "✓ Copied!" : "📋 Copy"}
+                </button>
+                <a href={`https://wa.me/91${ev.phone?.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
+                  style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "none", fontFamily: font }}>
+                  Open WhatsApp
+                </a>
+                {msgKey !== "tooClose" && (
+                  <button
+                    disabled={markingSent[`${ev.eventId}-${msgKey}`]}
+                    onClick={async () => {
+                      setMarkingSent(prev => ({ ...prev, [`${ev.eventId}-${msgKey}`]: true }));
+                      await adminFetch(`${BASE_URL}/planned-events/${ev.eventId}/mark-sent`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ reminderDay: msgKey }),
+                      }).catch(() => {});
+                      setAllReminders(prev => prev.map(e =>
+                        e.eventId !== ev.eventId ? e :
+                        { ...e, reminders: e.reminders.map(r => r.day === msgKey ? { ...r, dueToday: false, sent: true } : r) }
+                      ));
+                      setMarkingSent(prev => ({ ...prev, [`${ev.eventId}-${msgKey}`]: false }));
+                    }}
+                    style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #bbf7d0", background: "#f0fdf4", color: "#15803d", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, opacity: markingSent[`${ev.eventId}-${msgKey}`] ? 0.6 : 1 }}>
+                    {markingSent[`${ev.eventId}-${msgKey}`] ? "Saving…" : "✓ Mark Sent"}
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+
+          const ReminderCard = ({ ev, highlight, tooClose: isTooClose }) => {
+            const dueReminder = ev.reminders?.find(r => r.dueToday);
             return (
               <div style={{
                 background: highlight ? "#fffbeb" : "#fff",
@@ -5460,91 +5506,69 @@ const AdminDashboard = () => {
                 borderRadius: 14, padding: "16px 18px", marginBottom: 12,
                 boxShadow: highlight ? "0 2px 16px rgba(196,122,46,0.13)" : "none",
               }}>
-                {/* Header */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap", marginBottom: 10 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, flexWrap: "wrap" }}>
                   <div>
                     <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", fontFamily: font }}>{ev.name}</div>
                     <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>
-                      📞 {ev.phone} &nbsp;·&nbsp; {ev.occasion}{ev.personName ? ` for ${ev.personName}` : ""}
+                      📞 {ev.phone}&nbsp;·&nbsp;{ev.occasion}{ev.personName ? ` for ${ev.personName}` : ""}
                     </div>
                     <div style={{ fontSize: 12, color: "#9B7450" }}>
                       📅 {new Date(ev.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                       &nbsp;·&nbsp;
                       <span style={{ fontWeight: 700, color: ev.isPast ? "#9B7450" : ev.daysAway <= 7 ? "#dc2626" : ev.daysAway <= 14 ? "#b45309" : "#15803d" }}>
-                        {ev.isPast ? `${Math.abs(ev.daysAway)} days ago` : `${ev.daysAway} days away`}
+                        {ev.isPast ? `${Math.abs(ev.daysAway)}d ago` : `${ev.daysAway}d away`}
                       </span>
                     </div>
                   </div>
-                  {/* Reminder status pills */}
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {ev.reminders.map(r => (
-                      <span key={r.day} style={{
-                        fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100,
-                        background: r.sent ? "#f0fdf4" : r.dueToday ? "#fef9c3" : r.skipped ? "#fef2f2" : "#f5f5f5",
-                        color: r.sent ? "#15803d" : r.dueToday ? "#92400e" : r.skipped ? "#9B7450" : "#9B7450",
-                        border: `1px solid ${r.sent ? "#bbf7d0" : r.dueToday ? "#fde68a" : r.skipped ? "#fca5a5" : "#e5e7eb"}`,
-                        textDecoration: r.skipped ? "line-through" : "none",
-                      }}>
-                        {r.sent ? "✓" : r.dueToday ? "⚡" : r.skipped ? "✗" : "○"} {r.day}d
-                      </span>
-                    ))}
-                  </div>
+                  {/* Pills — only for non-too-close events */}
+                  {!isTooClose && ev.reminders?.length > 0 && (
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {ev.reminders.map(r => (
+                        <span key={r.day} style={{
+                          fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100,
+                          background: r.sent ? "#f0fdf4" : r.dueToday ? "#fef9c3" : r.skipped ? "#fef2f2" : "#f5f5f5",
+                          color:      r.sent ? "#15803d" : r.dueToday ? "#92400e" : "#9B7450",
+                          border:     `1px solid ${r.sent ? "#bbf7d0" : r.dueToday ? "#fde68a" : r.skipped ? "#fca5a5" : "#e5e7eb"}`,
+                          textDecoration: r.skipped ? "line-through" : "none",
+                        }}>
+                          {r.sent ? "✓" : r.dueToday ? "⚡" : r.skipped ? "✗" : "○"} {r.day}d
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {isTooClose && (
+                    <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 12px", borderRadius: 100, background: "#fef2f2", color: "#dc2626", border: "1px solid #fca5a5" }}>
+                      🔴 Too Close
+                    </span>
+                  )}
                 </div>
 
-                {/* Due today actions */}
-                {dueTodayReminders.map(r => (
-                  <div key={r.day} style={{ marginTop: 8 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#b45309", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                      ⚡ {r.day}-day reminder due today
-                    </div>
-                    <div style={{ background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 8, padding: "9px 12px", fontSize: 12.5, color: "#2C1A0E", lineHeight: 1.6, marginBottom: 8 }}>
-                      {ev.messages[r.day]}
-                    </div>
-                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(ev.messages[r.day]);
-                          setCopiedMsg(prev => ({ ...prev, [`${ev.eventId}-${r.day}`]: true }));
-                          setTimeout(() => setCopiedMsg(prev => ({ ...prev, [`${ev.eventId}-${r.day}`]: false })), 2000);
-                        }}
-                        style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                        {copiedMsg[`${ev.eventId}-${r.day}`] ? "✓ Copied!" : "📋 Copy"}
-                      </button>
-                      <a href={`https://wa.me/91${ev.phone?.replace(/\D/g, "")}`} target="_blank" rel="noreferrer"
-                        style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", textDecoration: "none", fontFamily: font }}>
-                        Open WhatsApp
-                      </a>
-                      <button
-                        disabled={markingSent[`${ev.eventId}-${r.day}`]}
-                        onClick={async () => {
-                          setMarkingSent(prev => ({ ...prev, [`${ev.eventId}-${r.day}`]: true }));
-                          await adminFetch(`${BASE_URL}/planned-events/${ev.eventId}/mark-sent`, {
-                            method: "PATCH",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({ reminderDay: r.day }),
-                          }).catch(() => {});
-                          setAllReminders(prev => prev.map(e =>
-                            e.eventId !== ev.eventId ? e :
-                            { ...e, reminders: e.reminders.map(rem => rem.day === r.day ? { ...rem, dueToday: false, sent: true } : rem) }
-                          ));
-                          setMarkingSent(prev => ({ ...prev, [`${ev.eventId}-${r.day}`]: false }));
-                        }}
-                        style={{ padding: "6px 14px", borderRadius: 8, border: "1.5px solid #bbf7d0", background: "#f0fdf4", color: "#15803d", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, opacity: markingSent[`${ev.eventId}-${r.day}`] ? 0.6 : 1 }}>
-                        {markingSent[`${ev.eventId}-${r.day}`] ? "Saving…" : "✓ Mark Sent"}
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                {/* Action row for due-today */}
+                {!isTooClose && dueReminder && (
+                  <ActionRow ev={ev} msgKey={dueReminder.day} label={`⚡ ${dueReminder.day}-day reminder`} />
+                )}
+                {/* Action row for too-close */}
+                {isTooClose && (
+                  <ActionRow ev={ev} msgKey="tooClose" label={null} />
+                )}
               </div>
             );
           };
+
+          const SectionHeader = ({ label, count, urgent }) => (
+            <div style={{ fontSize: 13, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
+              {urgent
+                ? <span style={{ background: "#fef9c3", border: "1px solid #fde68a", borderRadius: 100, padding: "2px 14px", color: "#b45309" }}>⚡ {label} ({count})</span>
+                : <span style={{ color: "#9B7450" }}>{label} ({count})</span>}
+            </div>
+          );
 
           return (
             <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#FDFAF0] border-l-2 border-[#CCAB4A] px-4 sm:px-6 md:px-8 lg:px-10 py-6 overflow-y-auto" style={{ fontFamily: font }}>
               <div style={{ maxWidth: 720 }}>
                 <div style={{ marginBottom: 24 }}>
                   <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>WhatsApp Reminders</h2>
-                  <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>All planned events · ⚡ = due today · ✓ = sent · ○ = upcoming</p>
+                  <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>⚡ send today · ○ upcoming · ✓ sent · ✗ window missed · 🔴 too close</p>
                 </div>
 
                 {remindersLoading ? (
@@ -5553,33 +5577,39 @@ const AdminDashboard = () => {
                   <div style={{ color: "#9B7450", fontSize: 14, padding: "32px 0" }}>No planned events found.</div>
                 ) : (
                   <>
-                    {/* Due today */}
-                    {dueTodayEvents.length > 0 && (
+                    {(dueTodayEvents.length > 0 || tooCloseEvents.length > 0) && (
                       <div style={{ marginBottom: 28 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#b45309", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                          <span style={{ background: "#fef9c3", border: "1px solid #fde68a", borderRadius: 100, padding: "2px 12px" }}>⚡ Send Today ({dueTodayEvents.length})</span>
-                        </div>
+                        <SectionHeader label="Send Today" count={dueTodayEvents.length + tooCloseEvents.length} urgent />
                         {dueTodayEvents.map(ev => <ReminderCard key={ev.eventId} ev={ev} highlight />)}
+                        {tooCloseEvents.map(ev => <ReminderCard key={ev.eventId} ev={ev} highlight tooClose />)}
                       </div>
                     )}
 
-                    {/* Upcoming */}
                     {upcomingEvents.length > 0 && (
                       <div style={{ marginBottom: 28 }}>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
-                          Upcoming ({upcomingEvents.length})
-                        </div>
-                        {upcomingEvents.map(ev => <ReminderCard key={ev.eventId} ev={ev} highlight={false} />)}
+                        <SectionHeader label="Upcoming" count={upcomingEvents.length} />
+                        {upcomingEvents.map(ev => <ReminderCard key={ev.eventId} ev={ev} />)}
                       </div>
                     )}
 
-                    {/* Past / all sent */}
-                    {pastOrDoneEvents.length > 0 && (
+                    {bookedEvents.length > 0 && (
+                      <div style={{ marginBottom: 28 }}>
+                        <SectionHeader label="Already Booked — No Reminder Needed" count={bookedEvents.length} />
+                        {bookedEvents.map(ev => (
+                          <div key={ev.eventId} style={{ background: "#f0fdf4", border: "1.5px solid #bbf7d0", borderRadius: 14, padding: "14px 18px", marginBottom: 10 }}>
+                            <div style={{ fontSize: 14, fontWeight: 800, color: "#15803d" }}>{ev.name}</div>
+                            <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>
+                              {ev.occasion}{ev.personName ? ` for ${ev.personName}` : ""} · 📅 {new Date(ev.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · ✅ Vendors confirmed
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {pastDoneEvents.length > 0 && (
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>
-                          Past / Completed ({pastOrDoneEvents.length})
-                        </div>
-                        {pastOrDoneEvents.map(ev => <ReminderCard key={ev.eventId} ev={ev} highlight={false} />)}
+                        <SectionHeader label="Past / All Sent" count={pastDoneEvents.length} />
+                        {pastDoneEvents.map(ev => <ReminderCard key={ev.eventId} ev={ev} />)}
                       </div>
                     )}
                   </>
