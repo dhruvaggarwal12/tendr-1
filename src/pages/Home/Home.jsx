@@ -1278,8 +1278,6 @@ const Home = () => {
             <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick what you need — vendors, planning tools, entertainment, stationery and more.</p>
           </div>
 
-          {/* Tier 2 — Also on Tendr */}
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>Also on Tendr</p>
           <div className="offer-tier2-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
             {[
               { icon: "💒", label: "Wedding Stationeries", desc: "Invitations, itineraries, thank you cards — personalised.", href: "/stationery" },
