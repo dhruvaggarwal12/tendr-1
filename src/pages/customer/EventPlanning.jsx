@@ -331,9 +331,10 @@ const EventPlanning = () => {
     {
       id: "guests",
       title: formData.eventType === "Corporate Event" ? "How many employees will attend?" : "How many guests will attend?",
-      subtitle: "An approximate number is fine",
+      subtitle: "An approximate number is fine — you can skip this",
       type: "number",
       placeholder: "e.g., 50",
+      optional: true,
       icon: <Users className="w-8 h-8" />,
     },
     ...(authUser?.isAdmin && formData.eventType === "Corporate Event" ? [{
@@ -479,7 +480,7 @@ const EventPlanning = () => {
    */
   const nextStep = (valueOverride) => {
     if (animating) return;
-    if (valueOverride === undefined && !formData[currentQuestion.id]) return;
+    if (valueOverride === undefined && !formData[currentQuestion.id] && !currentQuestion.optional) return;
     advance();
   };
 
