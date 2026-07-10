@@ -297,7 +297,7 @@ const CSS = `
     .op-picker-grid  { gap:7px !important; }
     .op-picker-card  { height:78px !important; }
     .op-2col-form    { grid-template-columns:1fr 1fr !important; }
-    .book-detail-panel{ border-radius:20px !important; max-height:84vh !important; margin:auto !important; }
+    .book-detail-panel{ border-radius:20px !important; max-height:80vh !important; margin:auto !important; }
     .book-detail-wrap { align-items:center !important; padding:16px !important; }
     .book-detail-col  { grid-template-columns:1fr !important; }
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
@@ -497,7 +497,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
   return (
     <div style={{ paddingTop: 8 }}>
       <div style={{ marginBottom: 22, paddingBottom: 14, borderBottom: `1px solid ${color}18` }}>
-        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.6rem,3.5vw,2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 4px', letterSpacing: '0.01em' }}>
+        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.2rem,3.5vw,1.8rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 4px', letterSpacing: '0.01em' }}>
           Customise Your Vision
         </h3>
         <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.60)', margin: 0, letterSpacing: '0.02em' }}>Select what you'd like — pick as many as you want</p>
@@ -988,11 +988,10 @@ function ThemeCard({ theme, occasion, onExpand, occColor }) {
           onError={e => { e.target.src = occFallback(occasion); }} />
       </div>
       <div style={{ flex: 1, padding: '0 12px', minWidth: 0 }}>
-        <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Cormorant Garamond',serif" }}>{theme.theme}</div>
-        <div style={{ fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.75)', lineHeight: 1.3, marginTop: 3, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', fontFamily: "'Outfit',sans-serif" }}>{theme.oneLineDesc}</div>
+        <div style={{ fontSize: 17, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Cormorant Garamond',serif" }}>{theme.theme}</div>
+        <div style={{ fontSize: 10, fontWeight: 600, color: badgeColor, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Outfit',sans-serif" }}>{theme.budget}</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 14px', flexShrink: 0 }}>
-        <span style={{ fontSize: 9, fontWeight: 800, padding: '2px 8px', borderRadius: 100, background: `${badgeColor}22`, border: `1px solid ${badgeColor}50`, color: badgeColor, textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: "'Outfit',sans-serif" }}>{theme.budget}</span>
+      <div style={{ padding: '0 14px', flexShrink: 0 }}>
         <span style={{ fontSize: 12, color: occColor, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>↗</span>
       </div>
     </button>
