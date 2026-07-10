@@ -596,6 +596,8 @@ const AdminDashboard = () => {
   const [ghSamplePriceRange, setGhSamplePriceRange] = useState("");
   const [ghSampleUploading, setGhSampleUploading] = useState(false);
   const [ghSampleMsg, setGhSampleMsg]         = useState("");
+  const [ghEditingId, setGhEditingId]         = useState(null);
+  const [ghEditData, setGhEditData]           = useState({});
   const [ghFindFile, setGhFindFile]     = useState(null);
   const [ghFindLoading, setGhFindLoading] = useState(false);
   const [ghFindResult, setGhFindResult] = useState(null); // { match, confidence } | null
@@ -4590,29 +4592,83 @@ const AdminDashboard = () => {
                         ))}
                         <span style={{ fontSize: 11, color: "#9B7450", alignSelf: "center", marginLeft: 4 }}>{visible.length} photo{visible.length !== 1 ? "s" : ""}</span>
                       </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10 }}>
-                        {visible.map(s => (
-                          <div key={s._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1.5px solid rgba(196,122,46,0.18)", background: "#faf5ee" }}>
-                            <img src={s.url} alt={s.name || "Sample"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
-                            {(s.name || s.vendorName || s.priceRange) && (
-                              <div style={{ padding: "6px 8px 7px" }}>
-                                {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
-                                {s.priceRange && <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
-                                {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 1 }}>by {s.vendorName}</div>}
-                              </div>
-                            )}
-                            <button
-                              onClick={async () => {
-                                if (!window.confirm(`Remove "${s.name || "this photo"}"?`)) return;
-                                const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/${s._id}`, {
-                                  method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
-                                });
-                                if (r.ok) setGhSamples(prev => prev.filter(x => x._id !== s._id));
-                              }}
-                              style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                            >✕</button>
-                          </div>
-                        ))}
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+                        {visible.map(s => {
+                          const isEditing = ghEditingId === s._id;
+                          return (
+                            <div key={s._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: `1.5px solid ${isEditing ? "#C47A2E" : "rgba(196,122,46,0.18)"}`, background: "#faf5ee" }}>
+                              <img src={s.url} alt={s.name || "Sample"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+
+                              {/* Info / edit toggle */}
+                              {isEditing ? (
+                                <div style={{ padding: "8px 8px 10px", background: "#fffbeb" }}>
+                                  {[["Name", "name"], ["Vendor", "vendorName"], ["Price Range", "priceRange"]].map(([label, field]) => (
+                                    <div key={field} style={{ marginBottom: 5 }}>
+                                      <div style={{ fontSize: 9, fontWeight: 700, color: "#7A5535", marginBottom: 2 }}>{label}</div>
+                                      <input
+                                        value={ghEditData[field] ?? ""}
+                                        onChange={e => setGhEditData(p => ({ ...p, [field]: e.target.value }))}
+                                        style={{ width: "100%", padding: "4px 7px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.35)", fontSize: 11, fontFamily: "'Outfit',sans-serif", boxSizing: "border-box" }}
+                                      />
+                                    </div>
+                                  ))}
+                                  <div style={{ display: "flex", gap: 5, marginTop: 6 }}>
+                                    <button
+                                      onClick={async () => {
+                                        const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/${s._id}`, {
+                                          method: "PATCH",
+                                          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                                          credentials: "include",
+                                          body: JSON.stringify(ghEditData),
+                                        });
+                                        const d = await r.json();
+                                        if (d.success) {
+                                          setGhSamples(prev => prev.map(x => x._id === s._id ? d.sample : x));
+                                          setGhEditingId(null);
+                                        }
+                                      }}
+                                      style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                                      Save
+                                    </button>
+                                    <button
+                                      onClick={() => setGhEditingId(null)}
+                                      style={{ flex: 1, padding: "5px 0", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "#fff", color: "#7A5535", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                                      Cancel
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ padding: "6px 8px 7px" }}>
+                                  {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
+                                  {s.priceRange && <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
+                                  {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 1 }}>by {s.vendorName}</div>}
+                                  {!s.name && !s.priceRange && !s.vendorName && <div style={{ fontSize: 10, color: "#9B7450" }}>No info yet</div>}
+                                </div>
+                              )}
+
+                              {/* Delete button */}
+                              <button
+                                onClick={async () => {
+                                  if (!window.confirm(`Remove "${s.name || "this photo"}"?`)) return;
+                                  const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/${s._id}`, {
+                                    method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include",
+                                  });
+                                  if (r.ok) setGhSamples(prev => prev.filter(x => x._id !== s._id));
+                                }}
+                                style={{ position: "absolute", top: 5, right: 5, width: 22, height: 22, borderRadius: "50%", background: "rgba(239,68,68,0.85)", border: "none", color: "#fff", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                              >✕</button>
+
+                              {/* Edit button */}
+                              {!isEditing && (
+                                <button
+                                  onClick={() => { setGhEditingId(s._id); setGhEditData({ name: s.name || "", vendorName: s.vendorName || "", priceRange: s.priceRange || "" }); }}
+                                  style={{ position: "absolute", top: 5, right: 32, width: 22, height: 22, borderRadius: "50%", background: "rgba(196,122,46,0.85)", border: "none", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                  title="Edit info"
+                                >✎</button>
+                              )}
+                            </div>
+                          );
+                        })}
                       </div>
                     </>
                   );
