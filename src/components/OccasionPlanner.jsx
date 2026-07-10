@@ -292,13 +292,13 @@ const CSS = `
   input[type=number] { -moz-appearance:textfield; }
 
   @media (max-width:600px) {
-    .op-panel        { border-radius:22px 22px 0 0 !important; max-height:93vh !important; margin-top:auto; }
-    .op-overlay-wrap { align-items:flex-end !important; padding:0 !important; }
+    .op-panel        { border-radius:20px !important; max-height:82vh !important; margin:auto !important; }
+    .op-overlay-wrap { align-items:center !important; padding:16px !important; }
     .op-picker-grid  { gap:7px !important; }
     .op-picker-card  { height:78px !important; }
     .op-2col-form    { grid-template-columns:1fr 1fr !important; }
-    .book-detail-panel{ border-radius:20px 20px 0 0 !important; max-height:96vh !important; margin-top:auto; }
-    .book-detail-wrap { align-items:flex-end !important; padding:0 !important; }
+    .book-detail-panel{ border-radius:20px !important; max-height:84vh !important; margin:auto !important; }
+    .book-detail-wrap { align-items:center !important; padding:16px !important; }
     .book-detail-col  { grid-template-columns:1fr !important; }
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
     .book-hero-img    { height:190px !important; }
