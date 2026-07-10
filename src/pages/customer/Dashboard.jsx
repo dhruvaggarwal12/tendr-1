@@ -130,6 +130,41 @@ export default function CustomerDashboard() {
   const [changeReqState, setChangeReqState] = useState({}); // { [planId]: { open, message, submitting, done } }
   const [cancelState, setCancelState] = useState({}); // { [planId]: { open, reason, submitting, done } }
   const [expandedPinned, setExpandedPinned] = useState({}); // { [planId]: bool }
+  const [planChecklists, setPlanChecklists] = useState(() => { try { return JSON.parse(localStorage.getItem("tendr_event_checklists") || "{}"); } catch { return {}; } });
+
+  const toggleChecklistItem = (planId, item) => {
+    setPlanChecklists(prev => {
+      const updated = { ...prev, [planId]: { ...(prev[planId] || {}), [item]: !(prev[planId]?.[item]) } };
+      try { localStorage.setItem("tendr_event_checklists", JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  };
+
+  const EVENT_CHECKLISTS = {
+    "Birthday":       ["Send invites to guests", "Order the cake", "Arrange return gifts", "Plan your outfit", "Confirm guest count", "Charge phone for photos", "Prepare cash for vendors"],
+    "1st Birthday":   ["Send invites", "Order the cake", "Plan decor theme", "Arrange return gifts for kids", "Confirm guest count", "Charge phone for photos"],
+    "Anniversary":    ["Plan a surprise element", "Order flowers or gifts", "Send invites", "Plan your outfit", "Book a special table/venue", "Charge phone for photos"],
+    "Wedding":        ["Send invites", "Finalise menu with caterer", "Confirm venue layout", "Prepare vendor payments", "Arrange guest accommodation", "Plan bridal outfit & accessories", "Charge phone for photos"],
+    "Engagement":     ["Send invites", "Plan outfit & jewellery", "Confirm ring arrangement", "Charge phone for photos"],
+    "Baby Shower":    ["Send invites", "Plan games & activities", "Arrange return gifts", "Confirm guest count", "Charge phone for photos"],
+    "Housewarming":   ["Send invites", "Plan pooja arrangements", "Confirm guest count", "Arrange return gifts", "Charge phone for photos"],
+    "Festival":       ["Send invites", "Arrange festive decor", "Plan traditional outfit", "Confirm guest count", "Charge phone for photos"],
+    "Get-together":   ["Send invites", "Plan food & drinks", "Confirm guest count", "Charge phone for photos"],
+    "Graduation":     ["Send invites", "Order a cake", "Arrange flowers or gifts", "Plan outfit", "Charge phone for photos"],
+    "Office Party":   ["Send team invites", "Plan activities/games", "Confirm headcount", "Arrange awards/tokens"],
+    "Corporate Event":["Send invites to attendees", "Confirm AV & setup", "Finalise agenda", "Confirm catering headcount", "Prepare name badges"],
+  };
+  const SERVICE_CHECKLIST_EXTRAS = {
+    "Caterer":      ["Finalise menu with caterer", "Confirm headcount with caterer 2 days before"],
+    "Photographer": ["Share shot list with photographer", "Confirm photographer arrival time"],
+    "Decorator":    ["Confirm setup time with decorator", "Share theme references with decorator"],
+    "DJ":           ["Share music playlist with DJ", "Confirm DJ setup time"],
+  };
+  const getChecklist = (plan) => {
+    const base = EVENT_CHECKLISTS[plan.eventType] || ["Confirm guest count", "Send invites", "Prepare vendor payments", "Plan your outfit", "Charge phone for photos"];
+    const extras = (plan.selectedServices || []).flatMap(s => SERVICE_CHECKLIST_EXTRAS[s] || []);
+    return [...new Set([...base, ...extras])];
+  };
   const [pdfGenerating, setPdfGenerating] = useState(false);
   const [showInstallBanner, setShowInstallBanner] = useState(() => !sessionStorage.getItem("tendr_install_dismissed"));
   const [referralCopied, setReferralCopied] = useState(false);
@@ -1408,6 +1443,39 @@ export default function CustomerDashboard() {
                       </button>
                     </div>
                   </div>
+
+                  {/* Pre-event checklist — upcoming events */}
+                  {plan.status === "in_progress" && (() => {
+                    const items = getChecklist(plan);
+                    const checked = planChecklists[plan._id] || {};
+                    const doneCount = items.filter(i => checked[i]).length;
+                    return (
+                      <div style={{ marginTop: 14, borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 12 }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em" }}>✅ Pre-event Checklist</span>
+                          <span style={{ fontSize: 11, color: "#9B7450", fontWeight: 600 }}>{doneCount}/{items.length} done</span>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, overflowX: "auto", paddingBottom: 6, msOverflowStyle: "none", scrollbarWidth: "none" }}>
+                          {items.map(item => {
+                            const done = !!checked[item];
+                            return (
+                              <button
+                                key={item}
+                                onClick={() => toggleChecklistItem(plan._id, item)}
+                                style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0, padding: "7px 13px", borderRadius: 100, border: `1.5px solid ${done ? "#C47A2E" : "rgba(196,122,46,0.22)"}`, background: done ? "rgba(196,122,46,0.1)" : "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                              >
+                                <span style={{ width: 16, height: 16, borderRadius: "50%", border: `2px solid ${done ? "#C47A2E" : "rgba(196,122,46,0.35)"}`, background: done ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                                  {done && <span style={{ color: "#fff", fontSize: 9, fontWeight: 900, lineHeight: 1 }}>✓</span>}
+                                </span>
+                                <span style={{ fontSize: 12, fontWeight: done ? 700 : 500, color: done ? "#C47A2E" : "#5a3a1a", textDecoration: done ? "line-through" : "none", whiteSpace: "nowrap" }}>{item}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <style>{`.checklist-scroll::-webkit-scrollbar{display:none}`}</style>
+                      </div>
+                    );
+                  })()}
 
                   {/* Pinned messages — completed events */}
                   {plan.status === "completed" && (() => {
