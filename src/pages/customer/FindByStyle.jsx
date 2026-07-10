@@ -227,13 +227,16 @@ export default function FindByStyle() {
                   display: 'flex', flexDirection: 'column',
                   minWidth: 0,
                 }}>
-                  <div style={{ aspectRatio: '4/3', overflow: 'hidden', background: '#f5f0ea', flexShrink: 0 }}>
-                    <img
-                      src={r.photoUrl}
-                      alt=""
-                      loading="lazy"
-                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                    />
+                  {/* Side-by-side: your photo vs matched vendor photo */}
+                  <div style={{ display: 'flex', height: 140, flexShrink: 0, background: '#f5f0ea' }}>
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRight: '1.5px solid #fff' }}>
+                      <img src={preview} alt="your photo" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      <span style={{ position: 'absolute', bottom: 4, left: 6, fontSize: 9, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.45)', borderRadius: 4, padding: '2px 5px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Your photo</span>
+                    </div>
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                      <img src={r.photoUrl} alt="matched work" loading="lazy" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      <span style={{ position: 'absolute', bottom: 4, left: 6, fontSize: 9, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.45)', borderRadius: 4, padding: '2px 5px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>Their work</span>
+                    </div>
                   </div>
                   <div style={{ padding: '10px 12px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: '#2C1A0E', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -296,15 +299,18 @@ export default function FindByStyle() {
               }}
             >✕</button>
 
-            {/* Photo */}
-            <div style={{ width: '100%', aspectRatio: '16/9', background: '#f0ebe3', flexShrink: 0 }}>
-              {quickViewVendor.photoUrl && (
-                <img
-                  src={quickViewVendor.photoUrl}
-                  alt=""
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              )}
+            {/* Side-by-side comparison in panel */}
+            <div style={{ display: 'flex', height: 200, flexShrink: 0, background: '#f0ebe3' }}>
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden', borderRight: '2px solid #fff' }}>
+                <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <span style={{ position: 'absolute', bottom: 6, left: 8, fontSize: 10, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 7px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Your photo</span>
+              </div>
+              <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                {quickViewVendor.photoUrl && (
+                  <img src={quickViewVendor.photoUrl} alt="matched work" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                )}
+                <span style={{ position: 'absolute', bottom: 6, left: 8, fontSize: 10, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.5)', borderRadius: 4, padding: '2px 7px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Their work</span>
+              </div>
             </div>
 
             {/* Details */}
