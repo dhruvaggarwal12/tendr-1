@@ -269,90 +269,75 @@ export default function FindByStyle() {
         )}
       </div>
 
-      {/* Quick View Side Panel */}
+      {/* Quick View Side Panel — matches VendorList_ListingPage style */}
       {quickViewVendor && (
         <>
-          {/* Backdrop */}
-          <div
-            onClick={() => setQuickViewVendor(null)}
-            style={{
-              position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.38)',
-              zIndex: 1000, cursor: 'pointer',
-            }}
-          />
-          {/* Panel */}
-          <div style={{
-            position: 'fixed', top: 0, right: 0, bottom: 0,
-            width: 'min(380px, 100vw)',
-            background: '#FFFCF5', zIndex: 1001,
-            display: 'flex', flexDirection: 'column',
-            boxShadow: '-4px 0 32px rgba(0,0,0,0.14)',
-            overflowY: 'auto',
+          <div onClick={() => setQuickViewVendor(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', zIndex: 99994, animation: 'qv-fade 0.2s ease' }} />
+
+          <div style={window.innerWidth < 768 ? {
+            position: 'fixed', left: 0, right: 0, bottom: 0, top: 0, width: '100vw', height: '100%',
+            background: '#FFFCF5', zIndex: 99995, overflowY: 'auto', fontFamily: font,
+            animation: 'qv-up 0.32s cubic-bezier(0.4,0,0.2,1)',
+          } : {
+            position: 'fixed', right: 0, top: 0, height: '100dvh', width: 420, maxWidth: '92vw',
+            background: '#FFFCF5', zIndex: 99995,
+            boxShadow: '-8px 0 48px rgba(139,69,19,0.18)',
+            overflowY: 'auto', fontFamily: font,
+            animation: 'qv-slide 0.32s cubic-bezier(0.4,0,0.2,1)',
           }}>
-            {/* Close */}
-            <button
-              onClick={() => setQuickViewVendor(null)}
-              style={{
-                position: 'absolute', top: 14, right: 14,
-                width: 32, height: 32, borderRadius: '50%',
-                background: 'rgba(0,0,0,0.12)', border: 'none',
-                color: '#2C1A0E', fontSize: 16, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 1,
-              }}
-            >✕</button>
-
-            {/* Your photo */}
-            <div style={{ flexShrink: 0 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '14px 16px 6px' }}>Your photo</div>
-              <div style={{ margin: '0 16px', borderRadius: 10, overflow: 'hidden', aspectRatio: '4/3', background: '#f0ebe3' }}>
-                <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              </div>
-            </div>
-
-            {/* Matched vendor photo */}
-            <div style={{ flexShrink: 0 }}>
-              <div style={{ fontSize: 10, fontWeight: 700, color: '#C47A2E', textTransform: 'uppercase', letterSpacing: '0.1em', padding: '14px 16px 6px' }}>Closest match</div>
-              <div style={{ margin: '0 16px', borderRadius: 10, overflow: 'hidden', aspectRatio: '4/3', background: '#f0ebe3' }}>
-                {quickViewVendor.photoUrl && (
-                  <img src={quickViewVendor.photoUrl} alt="matched work" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                )}
-              </div>
-            </div>
-
-            {/* Vendor details */}
-            <div style={{ padding: '16px 16px 32px', display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <p style={{ margin: 0, fontSize: 10, fontWeight: 800, color: '#C47A2E', textTransform: 'uppercase', letterSpacing: '0.14em' }}>
-                {quickViewVendor.serviceType}
-              </p>
-              <h2 style={{ margin: '2px 0 0', fontSize: 20, fontWeight: 700, color: '#2C1A0E', fontFamily: "'Cormorant Garamond', Georgia, serif", lineHeight: 1.2 }}>
-                {quickViewVendor.name}
-              </h2>
-              {quickViewVendor.city && (
-                <p style={{ margin: 0, fontSize: 13, color: '#9B7450' }}>{quickViewVendor.city}</p>
+            {/* Cover photo — matched vendor photo */}
+            <div style={{ position: 'relative', height: 230, flexShrink: 0, background: '#f0ebe3' }}>
+              {quickViewVendor.photoUrl && (
+                <img src={quickViewVendor.photoUrl} alt={quickViewVendor.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               )}
-              <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button onClick={() => setQuickViewVendor(null)}
+                style={{ position: 'absolute', top: 12, right: 12, width: 34, height: 34, borderRadius: '50%', background: 'rgba(0,0,0,0.55)', border: 'none', color: '#fff', fontSize: 16, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            </div>
+
+            {/* Content */}
+            <div style={{ padding: '22px 24px 32px' }}>
+              {/* Name + type badge */}
+              <div style={{ marginBottom: 14 }}>
+                <h2 style={{ fontSize: 21, fontWeight: 800, color: '#2C1A0E', margin: '0 0 6px', letterSpacing: '-0.01em' }}>
+                  {quickViewVendor.name}
+                </h2>
+                <span style={{ fontSize: 12, fontWeight: 700, padding: '3px 12px', borderRadius: 100, background: 'rgba(196,122,46,0.12)', color: '#C47A2E' }}>
+                  {quickViewVendor.serviceType}
+                </span>
+              </div>
+
+              {/* Stats pills */}
+              {quickViewVendor.city && (
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}>
+                    <span>📍</span> {quickViewVendor.city}
+                  </div>
+                </div>
+              )}
+
+              {/* Your reference photo */}
+              <div style={{ marginBottom: 20 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: '#9B7450', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 10px' }}>Your reference photo</p>
+                <div style={{ borderRadius: 12, overflow: 'hidden', aspectRatio: '16/9', background: '#f0ebe3' }}>
+                  <img src={preview} alt="your photo" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </div>
+              </div>
+
+              <div style={{ height: 1, background: 'rgba(196,122,46,0.1)', margin: '4px 0 20px' }} />
+
+              {/* CTAs */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 <button
                   onClick={() => window.open(`/vendors/${quickViewVendor._id}`, '_blank')}
-                  style={{
-                    width: '100%', padding: '12px', borderRadius: 10,
-                    background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)',
-                    color: '#fff', border: 'none', fontSize: 14, fontWeight: 700,
-                    cursor: 'pointer', fontFamily: font,
-                    boxShadow: '0 4px 14px rgba(196,122,46,0.3)',
-                  }}
-                >
-                  View Full Profile ↗
-                </button>
+                  style={{ width: '100%', padding: '13px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 15, fontWeight: 700, fontFamily: font, cursor: 'pointer', boxShadow: '0 4px 14px rgba(196,122,46,0.3)' }}
+                >View Full Profile →</button>
                 <button
                   onClick={() => handleChatClick(quickViewVendor)}
-                  style={{
-                    width: '100%', padding: '12px', borderRadius: 10,
-                    background: '#fff', color: '#C47A2E', border: '1.5px solid #C47A2E',
-                    fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font,
-                  }}
+                  style={{ width: '100%', padding: '12px', borderRadius: 12, border: '1.5px solid rgba(196,122,46,0.25)', background: '#fff', color: '#C47A2E', fontSize: 14, fontWeight: 700, fontFamily: font, cursor: 'pointer' }}
                 >
-                  {token ? 'Chat with Vendor' : 'Sign In to Chat'}
+                  {token ? '💬 Chat with Vendor' : 'Sign In to Chat'}
                 </button>
               </div>
             </div>
@@ -374,17 +359,12 @@ export default function FindByStyle() {
       />
 
       <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.45} }
-        .fbs-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 14px;
-        }
-        @media (max-width: 480px) {
-          .fbs-grid {
-            grid-template-columns: 1fr;
-          }
-        }
+        @keyframes pulse    { 0%,100%{opacity:1} 50%{opacity:0.45} }
+        @keyframes qv-fade  { from{opacity:0} to{opacity:1} }
+        @keyframes qv-slide { from{transform:translateX(100%)} to{transform:translateX(0)} }
+        @keyframes qv-up    { from{transform:translateY(100%)} to{transform:translateY(0)} }
+        .fbs-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; }
+        @media (max-width:480px) { .fbs-grid { grid-template-columns:1fr; } }
       `}</style>
     </div>
   );
