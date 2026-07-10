@@ -611,6 +611,8 @@ const AdminDashboard = () => {
   const [importing, setImporting] = useState(false);
   const [seeding, setSeeding] = useState(false);
   const [seedResult, setSeedResult] = useState(null);
+  const [reindexing, setReindexing] = useState(false);
+  const [reindexResult, setReindexResult] = useState(null);
   const [showAddVendor, setShowAddVendor] = useState(false);
   const [addedVendorCount, setAddedVendorCount] = useState(0);
   const [deletingVendorId, setDeletingVendorId] = useState(null);
@@ -2391,6 +2393,24 @@ const AdminDashboard = () => {
                   style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: seeding ? "#e5e7eb" : "linear-gradient(135deg,#7c3aed,#a855f7)", color: seeding ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: seeding ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
                   {seeding ? "Creating..." : "🎪 Add Nehaeventz"}
                 </button>
+                <button onClick={async () => {
+                  if (!window.confirm("Index all Decorator portfolio photos for Find by Style? This may take a few minutes.")) return;
+                  setReindexing(true); setReindexResult(null);
+                  try {
+                    const r = await fetch(`${BASE_URL}/admin/vendors/index-photos`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                    const d = await r.json();
+                    setReindexResult(d);
+                  } catch (e) { setReindexResult({ error: e.message }); }
+                  finally { setReindexing(false); }
+                }} disabled={reindexing}
+                  style={{ padding: "8px 16px", borderRadius: 8, border: "none", background: reindexing ? "#e5e7eb" : "linear-gradient(135deg,#0369a1,#0ea5e9)", color: reindexing ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 600, cursor: reindexing ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                  {reindexing ? "Indexing..." : "🔍 Index Decorator Photos"}
+                </button>
+                {reindexResult && (
+                  <div style={{ width: "100%", marginTop: 4, padding: "8px 12px", borderRadius: 8, background: reindexResult.error ? "#fff5f5" : "#f0fdf4", border: `1px solid ${reindexResult.error ? "#fca5a5" : "#bbf7d0"}`, fontSize: 12, fontFamily: "'Outfit', sans-serif", color: reindexResult.error ? "#c0392b" : "#15803d" }}>
+                    {reindexResult.error ? `❌ ${reindexResult.error}` : `✅ ${reindexResult.vendorsProcessed} vendors processed — ${reindexResult.indexed} photos indexed, ${reindexResult.skipped} skipped`}
+                  </div>
+                )}
                 <a href={`${BASE_URL}/admin/import/template`} download
                   style={{ padding: "8px 16px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 600, textDecoration: "none", fontFamily: "'Outfit', sans-serif" }}>
                   ⬇ Download CSV Template

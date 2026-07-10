@@ -39,7 +39,7 @@ export default function FindByStyle() {
       }
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Search failed');
-      setResults(data.results || []);
+      setResults({ items: data.results || [], fallback: !!data.fallbackReason });
     } catch (e) {
       setError(e.message === 'coming-soon' ? 'coming-soon' : e.message);
     } finally {
@@ -178,12 +178,14 @@ export default function FindByStyle() {
         {results && !loading && (
           <>
             <p style={{ fontSize: 13, color: '#9B7450', marginBottom: 16, fontWeight: 600 }}>
-              {results.length === 0
+              {results.items.length === 0
                 ? 'No matches found yet — vendors need to upload portfolio photos first.'
-                : `${results.length} closest match${results.length > 1 ? 'es' : ''} from our vendor network`}
+                : results.fallback
+                  ? 'Photo matching is being set up — showing top-rated decorators in the meantime'
+                  : `${results.items.length} closest match${results.items.length > 1 ? 'es' : ''} from our vendor network`}
             </p>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 14 }}>
-              {results.map((r, i) => (
+              {results.items.map((r, i) => (
                 <div key={i} style={{
                   borderRadius: 14, overflow: 'hidden',
                   border: '1.5px solid rgba(196,122,46,0.18)',
