@@ -5446,12 +5446,12 @@ const AdminDashboard = () => {
         {activeDropdown === "reminders" && (() => {
           const font = "'Outfit', sans-serif";
 
-          // Buckets
+          // Buckets — tooClose now applies to ALL categories when they reach 1-6 days
           const bookedEvents    = allReminders.filter(e => e.hasBooking && !e.isPast);
-          const tooCloseEvents  = allReminders.filter(e => !e.hasBooking && e.tooClose);
-          const dueTodayEvents  = allReminders.filter(e => !e.hasBooking && !e.tooClose && e.reminders.some(r => r.dueToday));
-          const upcomingEvents  = allReminders.filter(e => !e.hasBooking && !e.tooClose && !e.isPast && e.reminders.some(r => r.upcoming) && !e.reminders.some(r => r.dueToday));
-          const pastDoneEvents  = allReminders.filter(e => !e.hasBooking && (e.isPast || (!e.tooClose && e.reminders.length > 0 && e.reminders.every(r => r.sent))));
+          const tooCloseEvents  = allReminders.filter(e => !e.hasBooking && e.tooCloseDue);
+          const dueTodayEvents  = allReminders.filter(e => !e.hasBooking && !e.tooCloseDue && e.reminders.some(r => r.dueToday));
+          const upcomingEvents  = allReminders.filter(e => !e.hasBooking && !e.tooCloseDue && !e.isPast && e.reminders.some(r => r.upcoming) && !e.reminders.some(r => r.dueToday));
+          const pastDoneEvents  = allReminders.filter(e => !e.hasBooking && !e.tooCloseDue && (e.isPast || (e.reminders.length > 0 && e.reminders.every(r => r.sent))));
 
           const ActionRow = ({ ev, msgKey, label }) => (
             <div style={{ marginTop: 10 }}>
@@ -5526,12 +5526,11 @@ const AdminDashboard = () => {
                       {ev.reminders.map(r => (
                         <span key={r.day} style={{
                           fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100,
-                          background: r.sent ? "#f0fdf4" : r.dueToday ? "#fef9c3" : r.skipped ? "#fef2f2" : "#f5f5f5",
+                          background: r.sent ? "#f0fdf4" : r.dueToday ? "#fef9c3" : "#f5f5f5",
                           color:      r.sent ? "#15803d" : r.dueToday ? "#92400e" : "#9B7450",
-                          border:     `1px solid ${r.sent ? "#bbf7d0" : r.dueToday ? "#fde68a" : r.skipped ? "#fca5a5" : "#e5e7eb"}`,
-                          textDecoration: r.skipped ? "line-through" : "none",
+                          border:     `1px solid ${r.sent ? "#bbf7d0" : r.dueToday ? "#fde68a" : "#e5e7eb"}`,
                         }}>
-                          {r.sent ? "✓" : r.dueToday ? "⚡" : r.skipped ? "✗" : "○"} {r.day}d
+                          {r.sent ? "✓" : r.dueToday ? "⚡" : "○"} {r.day}d
                         </span>
                       ))}
                     </div>
@@ -5568,7 +5567,7 @@ const AdminDashboard = () => {
               <div style={{ maxWidth: 720 }}>
                 <div style={{ marginBottom: 24 }}>
                   <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>WhatsApp Reminders</h2>
-                  <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>⚡ send today · ○ upcoming · ✓ sent · ✗ window missed · 🔴 too close</p>
+                  <p style={{ fontSize: 13, color: "#9B7450", margin: 0 }}>⚡ send today · ○ upcoming · ✓ sent · 🔴 too close (1–6 days)</p>
                 </div>
 
                 {remindersLoading ? (
