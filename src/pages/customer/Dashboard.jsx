@@ -372,6 +372,9 @@ export default function CustomerDashboard() {
   // An in_progress plan whose event date has already passed moves to Completed view
   const isDatePassed = (p) => !!(p.date && p.date < todayStr);
 
+  // submitted/draft plans whose date has passed — vendor was never booked, treat as cancelled
+  const isPastUnbooked = (p) => isDatePassed(p) && ["submitted", "draft"].includes(p.status);
+
   const filtered = activeTab === "All"
     ? plans
     : activeTab === "Ongoing"
@@ -380,7 +383,9 @@ export default function CustomerDashboard() {
         ? plans.filter(p => p.status === "in_progress" && !isDatePassed(p))
         : activeTab === "Completed"
           ? plans.filter(p => p.status === "completed" || (p.status === "in_progress" && isDatePassed(p)))
-          : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
+          : activeTab === "Cancelled"
+            ? plans.filter(p => p.status === "cancelled" || isPastUnbooked(p))
+            : plans.filter((p) => statusMap[activeTab]?.includes(p.status));
 
   // Vendor chats expire 24hrs after the customer's last message
   const TWENTY_FOUR_HRS = 24 * 60 * 60 * 1000;
@@ -432,7 +437,7 @@ export default function CustomerDashboard() {
     Upcoming:  plans.filter(p => p.status === "in_progress" && !isDatePassed(p)).length,
     Ongoing:   plans.filter(isOngoing).length + ongoingVendorChats.length + (showPlanningCard ? 1 : 0),
     Completed: plans.filter(p => p.status === "completed" || (p.status === "in_progress" && isDatePassed(p))).length,
-    Cancelled: plans.filter((p) => p.status === "cancelled").length,
+    Cancelled: plans.filter(p => p.status === "cancelled" || isPastUnbooked(p)).length,
     Chats:     visibleChats.length,
     "Gift Hampers": ghOrders.length,
   };
