@@ -578,6 +578,7 @@ const AdminDashboard = () => {
   const [copiedMsg, setCopiedMsg]             = useState({}); // { [eventId]: bool }
   const [allReminders, setAllReminders]       = useState([]);
   const [remindersLoading, setRemindersLoading] = useState(false);
+  const [remindersError, setRemindersError]   = useState(null);
   const [liveStats, setLiveStats] = useState(null);
   const [vendorApplications, setVendorApplications] = useState([]);
   const [eventPlans, setEventPlans] = useState([]);
@@ -1021,10 +1022,14 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (activeDropdown !== 'reminders' || !token || !isAdminToken) return;
     setRemindersLoading(true);
+    setRemindersError(null);
     adminFetch(`${BASE_URL}/planned-events/all-admin`)
       .then(r => r.json())
-      .then(data => setAllReminders(data.events || []))
-      .catch(() => {})
+      .then(data => {
+        if (data.error) { setRemindersError(data.error); setAllReminders([]); }
+        else setAllReminders(data.events || []);
+      })
+      .catch(e => { if (e?.message !== '401') setRemindersError(e?.message || 'Failed to load'); })
       .finally(() => setRemindersLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDropdown, token]);
@@ -5644,6 +5649,10 @@ const AdminDashboard = () => {
 
                 {remindersLoading ? (
                   <div style={{ color: "#9B7450", fontSize: 14, padding: "32px 0" }}>Loading…</div>
+                ) : remindersError ? (
+                  <div style={{ color: "#dc2626", fontSize: 13, padding: "24px 0", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 10, padding: "14px 18px" }}>
+                    <strong>Error loading reminders:</strong> {remindersError}
+                  </div>
                 ) : allReminders.length === 0 ? (
                   <div style={{ color: "#9B7450", fontSize: 14, padding: "32px 0" }}>No planned events found.</div>
                 ) : (
