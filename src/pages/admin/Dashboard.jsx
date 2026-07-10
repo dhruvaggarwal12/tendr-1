@@ -4518,7 +4518,23 @@ const AdminDashboard = () => {
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo File</div>
                     <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 12, color: "#7A5535", fontFamily: "'Outfit',sans-serif" }}>
                       📷 {ghSampleFile ? ghSampleFile.name.slice(0, 22) + (ghSampleFile.name.length > 22 ? "…" : "") : "Choose image"}
-                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={e => setGhSampleFile(e.target.files?.[0] || null)} />
+                      <input type="file" accept="image/*" style={{ display: "none" }} onChange={async e => {
+                        const raw = e.target.files?.[0];
+                        if (!raw) return setGhSampleFile(null);
+                        // Compress via canvas so large AI-generated images don't hit nginx body limit
+                        try {
+                          const bmp = await createImageBitmap(raw);
+                          const MAX = 1200;
+                          const scale = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+                          const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+                          const canvas = document.createElement('canvas');
+                          canvas.width = w; canvas.height = h;
+                          canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
+                          canvas.toBlob(blob => {
+                            setGhSampleFile(new File([blob], raw.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' }));
+                          }, 'image/jpeg', 0.85);
+                        } catch { setGhSampleFile(raw); }
+                      }} />
                     </label>
                   </div>
                   <button
