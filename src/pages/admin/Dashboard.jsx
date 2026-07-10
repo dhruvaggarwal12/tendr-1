@@ -818,7 +818,7 @@ const AdminDashboard = () => {
   // Fetch WhatsApp reminders due today
   useEffect(() => {
     if (!token || !isAdminToken) return;
-    adminFetch(`${BASE_URL}/admin/planned-events-due`)
+    adminFetch(`${BASE_URL}/admin/reminders-due`)
       .then(r => r.json())
       .then(d => setRemindersDue(d.due || []))
       .catch(() => {});
@@ -1023,7 +1023,7 @@ const AdminDashboard = () => {
     if (activeDropdown !== 'reminders' || !token || !isAdminToken) return;
     setRemindersLoading(true);
     setRemindersError(null);
-    adminFetch(`${BASE_URL}/admin/planned-events`)
+    adminFetch(`${BASE_URL}/admin/reminders`)
       .then(r => r.json())
       .then(data => {
         if (data.error) { setRemindersError(data.error); setAllReminders([]); }
@@ -1692,7 +1692,7 @@ const AdminDashboard = () => {
                           disabled={markingSent[r.eventId]}
                           onClick={async () => {
                             setMarkingSent(prev => ({ ...prev, [r.eventId]: true }));
-                            await adminFetch(`${BASE_URL}/admin/planned-events/${r.eventId}/mark-sent`, {
+                            await adminFetch(`${BASE_URL}/admin/reminders/${r.eventId}/mark-sent`, {
                               method: "PATCH",
                               headers: { "Content-Type": "application/json" },
                               body: JSON.stringify({ reminderDay: r.reminderDay }),
@@ -5555,7 +5555,7 @@ const AdminDashboard = () => {
                     disabled={markingSent[`${ev.eventId}-${msgKey}`]}
                     onClick={async () => {
                       setMarkingSent(prev => ({ ...prev, [`${ev.eventId}-${msgKey}`]: true }));
-                      await adminFetch(`${BASE_URL}/admin/planned-events/${ev.eventId}/mark-sent`, {
+                      await adminFetch(`${BASE_URL}/admin/reminders/${ev.eventId}/mark-sent`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ reminderDay: msgKey }),
