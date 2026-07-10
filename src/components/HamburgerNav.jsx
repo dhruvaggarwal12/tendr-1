@@ -238,6 +238,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_timeline_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.phases?.length > 0 ? "/prebuilt-timeline" : "/timeline-picker"); } catch { navigate("/timeline-picker"); } } },
       { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
+      { label: "🎊 Invitation Flyer", href: "/invitation/customize", activePaths: ["/invitation"] },
+      { label: "📋 Vendor Brief",    href: "/vendor-brief",          activePaths: ["/vendor-brief"] },
+      { label: "🎁 Gift Advisor",    href: "/gift-advisor",          activePaths: ["/gift-advisor"] },
       // { label: "Decor Finder", href: "/decor-finder" }, // disabled
     ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
