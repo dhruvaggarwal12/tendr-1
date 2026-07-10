@@ -5480,11 +5480,12 @@ const AdminDashboard = () => {
                     {ev.reminders.map(r => (
                       <span key={r.day} style={{
                         fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100,
-                        background: r.sent ? "#f0fdf4" : r.dueToday ? "#fef9c3" : "#f5f5f5",
-                        color: r.sent ? "#15803d" : r.dueToday ? "#92400e" : "#9B7450",
-                        border: `1px solid ${r.sent ? "#bbf7d0" : r.dueToday ? "#fde68a" : "#e5e7eb"}`,
+                        background: r.sent ? "#f0fdf4" : r.dueToday ? "#fef9c3" : r.skipped ? "#fef2f2" : "#f5f5f5",
+                        color: r.sent ? "#15803d" : r.dueToday ? "#92400e" : r.skipped ? "#9B7450" : "#9B7450",
+                        border: `1px solid ${r.sent ? "#bbf7d0" : r.dueToday ? "#fde68a" : r.skipped ? "#fca5a5" : "#e5e7eb"}`,
+                        textDecoration: r.skipped ? "line-through" : "none",
                       }}>
-                        {r.sent ? "✓" : r.dueToday ? "⚡" : "○"} {r.day}d
+                        {r.sent ? "✓" : r.dueToday ? "⚡" : r.skipped ? "✗" : "○"} {r.day}d
                       </span>
                     ))}
                   </div>
