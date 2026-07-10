@@ -372,8 +372,8 @@ function FullMenuCard({ payload, onSend }) {
   );
 }
 
-function BotTextInput({ onSubmit, placeholder = "Type your answer…" }) {
-  const [val, setVal] = useState("");
+function BotTextInput({ onSubmit, placeholder = "Type your answer…", defaultValue = "" }) {
+  const [val, setVal] = useState(defaultValue);
   return (
     <div style={{ display: "flex", gap: 8 }}>
       <input
@@ -390,6 +390,30 @@ function BotTextInput({ onSubmit, placeholder = "Type your answer…" }) {
       </button>
     </div>
   );
+}
+
+// ── Wizard answer persistence ─────────────────────────────────────────────────
+function saveWizardAnswers(serviceType, answers, eventDate) {
+  if (!serviceType || serviceType === 'concierge' || serviceType === 'support') return;
+  const { selectedPackage, ...rest } = answers;
+  try {
+    localStorage.setItem(`tendr_wizard_${serviceType}`, JSON.stringify({ answers: rest, eventDate: eventDate || null }));
+  } catch {}
+}
+
+function loadWizardAnswers(serviceType, eventDate) {
+  if (!serviceType || serviceType === 'concierge' || serviceType === 'support') return null;
+  try {
+    const raw = localStorage.getItem(`tendr_wizard_${serviceType}`);
+    if (!raw) return null;
+    const { answers, eventDate: savedDate } = JSON.parse(raw);
+    const expiry = eventDate || savedDate;
+    if (expiry && Date.now() > new Date(expiry).getTime() + 86400000) {
+      localStorage.removeItem(`tendr_wizard_${serviceType}`);
+      return null;
+    }
+    return answers || null;
+  } catch { return null; }
 }
 
 export default function VendorChatModal() {
@@ -432,6 +456,7 @@ export default function VendorChatModal() {
   const botAnswersRef = useRef({});
   const botDoneRef = useRef(isExistingChat || botFlow.length === 0);
   const summarySentRef = useRef(false);
+  const [wizardPrefilled, setWizardPrefilled] = useState(false);
   // Package step — shown after last bot question, before chat opens (vendor chats only)
   const PACKAGE_SERVICES = ['Caterer', 'Photographer', 'Decorator', 'DJ'];
   const shouldShowPkgStep = !isConcierge && PACKAGE_SERVICES.includes(vendor?.serviceType) && !isExistingChat;
@@ -510,10 +535,21 @@ export default function VendorChatModal() {
 
     const existing = !!chatState.isExisting;
     setBotStep(0);
-    setBotAnswers({});
     botAnswersRef.current = {};
     const flow = existing ? [] : getBotFlow(chatState.vendor?.serviceType, undefined, reduxFormData);
     const done = existing || flow.length === 0;
+    // Load saved wizard answers for this category (valid until event date)
+    const svcType = chatState.vendor?.serviceType;
+    const eventDate = reduxFormData?.date || (() => { try { return JSON.parse(localStorage.getItem('tendr_ep_session') || '{}')?.formData?.date; } catch { return null; } })();
+    const savedAnswers = !existing && !done && svcType ? loadWizardAnswers(svcType, eventDate) : null;
+    if (savedAnswers && Object.keys(savedAnswers).length > 0) {
+      setBotAnswers(savedAnswers);
+      botAnswersRef.current = savedAnswers;
+      setWizardPrefilled(true);
+    } else {
+      setBotAnswers({});
+      setWizardPrefilled(false);
+    }
     setBotDone(done);
     botDoneRef.current = done;
     summarySentRef.current = false;
@@ -728,6 +764,9 @@ export default function VendorChatModal() {
 
   const openConversation = useCallback((answers) => {
     if (!socketRef.current) return;
+    // Persist wizard answers so next vendor of same category is pre-filled
+    const eventDate = reduxFormData?.date || (() => { try { return JSON.parse(localStorage.getItem('tendr_ep_session') || '{}')?.formData?.date; } catch { return null; } })();
+    saveWizardAnswers(vendor?.serviceType, answers, eventDate);
     const doEmit = () => {
       if (isConcierge) {
         socketRef.current?.emit("open_conversation", { chatType: "concierge" });
@@ -1203,7 +1242,10 @@ export default function VendorChatModal() {
             <>
               {botStep === 0 && (
                 <div style={{ alignSelf: "flex-start", maxWidth: "82%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.55 }}>
-                  👋 A few quick questions before connecting you with <strong>{vendor?.name}</strong>.
+                  {wizardPrefilled
+                    ? <>✓ We've pre-filled your answers from last time — just confirm or change each one to connect with <strong>{vendor?.name}</strong>.</>
+                    : <>👋 A few quick questions before connecting you with <strong>{vendor?.name}</strong>.</>
+                  }
                 </div>
               )}
               {botFlow.slice(0, botStep).map((step, i) => (
@@ -1221,16 +1263,20 @@ export default function VendorChatModal() {
                       ? <BotTextInput
                           onSubmit={(val) => { setBotOtherMode(false); handleBotAnswer(val); }}
                           placeholder={botOtherMode ? "Describe what you need…" : "Type your answer…"}
+                          defaultValue={wizardPrefilled && !botOtherMode ? (botAnswers[cur.key] || "") : ""}
                         />
                       : (
                         <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                          {cur.options.map(opt => (
-                            <button key={opt} onClick={() => handleBotAnswer(opt)}
-                              style={{ padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${opt === OTHER_OPTION ? "rgba(139,69,19,0.25)" : "rgba(196,122,46,0.4)"}`, background: opt === OTHER_OPTION ? "#f9f9f9" : "#fff", color: opt === OTHER_OPTION ? "#9B7450" : "#C47A2E", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
-                              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.background = opt === OTHER_OPTION ? "#f9f9f9" : "#fff"; }}
-                            >{opt}</button>
-                          ))}
+                          {cur.options.map(opt => {
+                            const isSaved = wizardPrefilled && opt === botAnswers[cur.key];
+                            return (
+                              <button key={opt} onClick={() => handleBotAnswer(opt)}
+                                style={{ padding: "8px 16px", borderRadius: 100, border: `1.5px solid ${isSaved ? "#C47A2E" : opt === OTHER_OPTION ? "rgba(139,69,19,0.25)" : "rgba(196,122,46,0.4)"}`, background: isSaved ? "rgba(196,122,46,0.14)" : opt === OTHER_OPTION ? "#f9f9f9" : "#fff", color: isSaved ? "#7A4010" : opt === OTHER_OPTION ? "#9B7450" : "#C47A2E", fontSize: 13, fontWeight: isSaved ? 700 : 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}
+                                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
+                                onMouseLeave={e => { e.currentTarget.style.background = isSaved ? "rgba(196,122,46,0.14)" : opt === OTHER_OPTION ? "#f9f9f9" : "#fff"; }}
+                              >{isSaved ? `✓ ${opt}` : opt}</button>
+                            );
+                          })}
                         </div>
                       )}
                   </div>
