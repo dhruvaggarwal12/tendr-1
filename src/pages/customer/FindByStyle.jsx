@@ -24,14 +24,29 @@ export default function FindByStyle() {
     setError('');
   };
 
+  const compressImage = (f, maxPx = 900, quality = 0.82) =>
+    new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+        const canvas = document.createElement('canvas');
+        canvas.width  = Math.round(img.width  * scale);
+        canvas.height = Math.round(img.height * scale);
+        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+        canvas.toBlob(resolve, 'image/jpeg', quality);
+      };
+      img.src = URL.createObjectURL(f);
+    });
+
   const handleSearch = async () => {
     if (!file) return;
     setLoading(true);
     setError('');
     setResults(null);
     try {
+      const compressed = await compressImage(file);
       const fd = new FormData();
-      fd.append('photo', file);
+      fd.append('photo', compressed, 'photo.jpg');
       const res = await fetch(`${BASE}/vendors/find-by-photo`, { method: 'POST', body: fd });
       const contentType = res.headers.get('content-type') || '';
       if (!contentType.includes('application/json')) {
