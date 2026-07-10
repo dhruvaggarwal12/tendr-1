@@ -1278,30 +1278,6 @@ const Home = () => {
             <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick what you need — vendors, planning tools, entertainment, stationery and more.</p>
           </div>
 
-          {/* Tier 1 — How do you want to plan? */}
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>How do you want to plan?</p>
-          <div className="offer-tier1-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 28 }}>
-            {[
-              { icon: "✨", label: "Smart Planner",  desc: "Tell us once — we build your complete vendor package within budget.", accent: "#C47A2E", bg: "linear-gradient(135deg,#C47A2E,#CCAB4A)", href: "/booking" },
-              { icon: "🔍", label: "Browse Vendors", desc: "Compare verified vendors, chat directly, and lock in your price.", accent: "#7A4A1E", bg: "linear-gradient(135deg,#7A4A1E,#C47A2E)", href: "/listings" },
-              { icon: "💬", label: "Baat Karo",       desc: "Write in Hindi or English — our team replies in 2 hours.", accent: "#128C7E", bg: "linear-gradient(135deg,#25D366,#128C7E)", href: "/baat-karo" },
-            ].map(({ icon, label, desc, accent, bg, href }) => (
-              <div key={label} onClick={() => navigate(href)}
-                style={{ background: "#FFFCF5", border: `1.5px solid ${accent}28`, borderRadius: 16, padding: "18px 20px", cursor: "pointer", transition: "transform 0.18s, box-shadow 0.18s", display: "flex", flexDirection: "column", gap: 10 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = `0 10px 28px ${accent}18`; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ width: 44, height: 44, borderRadius: 12, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{icon}</div>
-                  <span style={{ fontSize: 16, color: `${accent}88` }}>→</span>
-                </div>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>{label}</div>
-                  <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>{desc}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-
           {/* Tier 2 — Also on Tendr */}
           <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>Also on Tendr</p>
           <div className="offer-tier2-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
