@@ -2398,7 +2398,12 @@ const AdminDashboard = () => {
                   setReindexing(true); setReindexResult(null);
                   try {
                     const r = await fetch(`${BASE_URL}/admin/vendors/index-photos`, { method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include' });
+                    const ct = r.headers.get('content-type') || '';
+                    if (!ct.includes('application/json')) {
+                      throw new Error(`Route not found (${r.status}) — backend may still be deploying. Wait 1–2 min and retry.`);
+                    }
                     const d = await r.json();
+                    if (!r.ok) throw new Error(d.error || `Server error ${r.status}`);
                     setReindexResult(d);
                   } catch (e) { setReindexResult({ error: e.message }); }
                   finally { setReindexing(false); }
