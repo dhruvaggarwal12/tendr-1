@@ -669,7 +669,38 @@ export default function Timeline() {
           .tl-progress-pct { font-size: 12px !important; }
         }
       `}</style>
-      <SEO title="Event Timeline — Tendr" description="Step-by-step countdown plan for your event." path="/prebuilt-timeline" />
+      <SEO
+        title="Personalized Event Timeline — Step-by-Step Countdown Plan"
+        description="Your personalized event planning timeline with phase-wise tasks for venue, catering, decoration and photography. Free countdown plan for birthdays, weddings and corporate events in Delhi NCR."
+        path="/prebuilt-timeline"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Event Timeline", path: "/timeline-picker" }, { name: "Your Timeline", path: "/prebuilt-timeline" }]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "What should I do 30 days before a birthday party?",
+              "acceptedAnswer": { "@type": "Answer", "text": "30 days before a birthday: confirm your venue in writing, finalise your decorator and share theme references, confirm your photographer's availability, lock in catering headcount, order the cake with design brief, and send invites. At this stage all vendors should be booked — 30 days is too late to start searching for new ones in Delhi NCR." }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I make sure vendors arrive on time on event day?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Send all vendors a reminder message the evening before with their expected arrival time and venue address. On the morning of the event, send a second reminder at 7–8 AM. Share a day-of contact sheet with everyone's number so the decorator can coordinate with the caterer on when to start setup. Build in 30 extra minutes of buffer before guest arrival time." }
+            },
+            {
+              "@type": "Question",
+              "name": "What tasks are typically in a 90-day event planning timeline?",
+              "acceptedAnswer": { "@type": "Answer", "text": "A 90-day timeline covers: Phase 1 (90–60 days) — venue search and booking, shortlisting photographers and decorators; Phase 2 (60–30 days) — finalising all vendors, signing agreements, catering menu selection; Phase 3 (30–7 days) — confirmation calls, guest list finalization, invites, logistics; Phase 4 (7–1 days) — vendor briefings, day-of schedule, payments; Event day — vendor arrival coordination, setup oversight, payments and tips." }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I edit tasks in my event timeline?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every task in your Tendr timeline is editable — you can rename a task, add a note, mark it done, or delete it. You can also add custom tasks to any phase. The timeline saves to your device automatically so your progress is preserved between sessions." }
+            }
+          ]
+        }}
+      />
       <BasicSpeedDial />
       <div style={{ flexShrink: 0 }}><HamburgerNav active="Browse" /></div>
 
@@ -846,6 +877,27 @@ export default function Timeline() {
             ← Change Event Type
           </button>
         </div>
+
+        {/* Static content for SEO */}
+        <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="tl-seo-grid">
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Why phase-wise planning works</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Event planning fails when everything is left to the last few weeks. Phase-wise planning breaks the work into manageable time blocks — 90 days for venue and anchor vendors, 30 days for confirmations and logistics, 7 days for briefings, and event day for coordination. Each phase has a clear focus so nothing competes for attention at once.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Booking timelines in Delhi NCR</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Delhi NCR venues book out fastest — popular banquet halls in South Delhi and Gurugram often have weekends taken 6–8 weeks in advance. Photographers and decorators follow, typically needing 4–6 weeks. Caterers are more flexible unless you need live counters, which need 3–4 weeks notice. Weekday events have more availability across all categories.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>The 7-day final checklist</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>In the final week: confirm all vendors via call (don't rely on old messages), share a written day-of schedule with arrival times and setup windows, do a venue walkthrough if possible, finalize the guest list one last time, prepare tip envelopes for day-of vendor payments, and build a backup contact for each vendor in case of emergencies on the day.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>What most people forget to plan</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>The most overlooked planning items are: parking logistics for guests, a point-of-contact on-site who handles vendor issues so the host doesn't have to, a music playlist backup in case the DJ is late, food allergy or dietary notes for the caterer, and a rain contingency if any part of the event is outdoor. Adding these to your timeline prevents scrambling on the day.</p>
+          </div>
+        </div>
+        <style>{`@media(max-width:600px){.tl-seo-grid{grid-template-columns:1fr !important;}}`}</style>
 
       </div>
       </div>
