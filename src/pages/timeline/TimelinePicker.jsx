@@ -135,7 +135,38 @@ export default function TimelinePicker() {
 
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
-      <SEO title="Event Timeline — Personalized Planning Schedule" description="Get a personalized event timeline based on your event type, date, and services." path="/timeline-picker" />
+      <SEO
+        title="Event Timeline — Personalized Planning Schedule"
+        description="Get a personalized event timeline based on your event type, date, and services. Free event planning countdown for birthdays, weddings, anniversaries and corporate events in Delhi NCR."
+        path="/timeline-picker"
+        breadcrumbs={[{ name: "Home", path: "/" }, { name: "Event Timeline", path: "/timeline-picker" }]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How early should I start planning a birthday party?",
+              "acceptedAnswer": { "@type": "Answer", "text": "For a birthday party with 50–100 guests, start planning 6–8 weeks before the date. Venue availability and decorators in Delhi NCR book out 4–6 weeks in advance, especially for weekends. If you have under 30 days, focus on securing the venue and caterer first — those have the longest lead times." }
+            },
+            {
+              "@type": "Question",
+              "name": "What is the ideal timeline for planning a wedding in Delhi?",
+              "acceptedAnswer": { "@type": "Answer", "text": "A Delhi wedding ideally needs 6–12 months of planning. The first 3 months focus on venue, catering, and photographer — all of which book 4–6 months in advance. Decoration, mehendi, makeup, and entertainment can be finalised 6–8 weeks before. Invite cards, favours, and logistics are typically handled in the last 4 weeks." }
+            },
+            {
+              "@type": "Question",
+              "name": "What tasks should I complete 30 days before an event?",
+              "acceptedAnswer": { "@type": "Answer", "text": "In the 30 days before your event: confirm all vendors with written agreements, share the schedule with each vendor, finalise guest list and send invites if not already done, do a venue walkthrough, confirm catering menu and headcount, and set up a day-of contact sheet with all vendor phone numbers." }
+            },
+            {
+              "@type": "Question",
+              "name": "How does the Tendr timeline tool work?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Tendr's event timeline tool creates a personalised countdown plan based on your event type, date, and services. You select what you're planning — catering, decoration, photography, DJ — and the tool generates a phase-wise schedule showing what to do 90 days out, 30 days out, 1 week out, and on the event day itself. Already booked some vendors? Mark them and those tasks are pre-checked." }
+            }
+          ]
+        }}
+      />
       <ToolNav title="Event Timeline" />
 
       {/* Progress bar */}
@@ -258,6 +289,63 @@ export default function TimelinePicker() {
             </button>
           )}
         </div>
+
+        {/* Sample timeline preview */}
+        <div style={{ marginTop: 56, background: "#FFFCF5", borderRadius: 20, padding: "28px 24px", border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.07)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 18 }}>
+            <div>
+              <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 4px" }}>Sample Output</p>
+              <p style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: 0 }}>Birthday · 45 days away</p>
+            </div>
+            <span style={{ fontSize: 11, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "4px 12px", borderRadius: 20 }}>30-Day Plan</span>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {[
+              { phase: "30–21 days out", color: "#C47A2E", tasks: ["Confirm venue and get written agreement", "Finalise decorator and share theme brief", "Book photographer / confirm availability"] },
+              { phase: "21–7 days out", color: "#3B82F6", tasks: ["Share event timeline with all vendors", "Confirm guest count with caterer", "Order cake and send order confirmation"] },
+              { phase: "1–3 days before", color: "#8B5CF6", tasks: ["Do a venue walkthrough", "Confirm all vendor arrival times", "Prepare day-of contact sheet"] },
+              { phase: "Event day", color: "#10B981", tasks: ["Send vendor arrival reminders at 7 AM", "Ensure decorator starts 3 hours early", "Keep 10% budget reserve for last-minute needs"] },
+            ].map(({ phase, color, tasks }) => (
+              <div key={phase} style={{ display: "flex", gap: 14 }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", background: color, marginTop: 3 }} />
+                  <div style={{ width: 1.5, flex: 1, background: `${color}30`, marginTop: 4 }} />
+                </div>
+                <div style={{ paddingBottom: 6 }}>
+                  <p style={{ fontSize: 11, fontWeight: 800, color, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 6px" }}>{phase}</p>
+                  {tasks.map(t => (
+                    <div key={t} style={{ display: "flex", gap: 8, marginBottom: 4 }}>
+                      <span style={{ color: "#C47A2E", fontSize: 12, marginTop: 1, flexShrink: 0 }}>○</span>
+                      <span style={{ fontSize: 13, color: "#5a3a1a" }}>{t}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: 12, color: "#9B7450", margin: "14px 0 0" }}>Fill in the 4 steps above and get your personalised version →</p>
+        </div>
+
+        {/* Static content for SEO */}
+        <div style={{ marginTop: 32, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }} className="timeline-seo-grid">
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>90-day, 30-day or 7-day plan?</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>The planning window is set by your event date. If you have 90+ days, the tool builds a full milestone plan. 30–60 days gets a condensed critical-path plan. Under 30 days focuses only on must-do tasks. The timeline adjusts automatically based on what's still possible given your timeline.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Why do services matter for the timeline?</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Different services have different lead times. Photography requires sharing a shot list 1–2 weeks before. Mehendi needs a separate appointment. DJ needs a music brief and sound-check slot. If you don't select a service, its tasks won't appear — keeping your timeline focused and relevant.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>When should you book vendors in Delhi?</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Venues and photographers in Delhi NCR typically get booked 4–8 weeks in advance for weekends. November to February (wedding season) requires 3–6 months lead time. If your event is on a weekday, you often have more flexibility — but popular decorators and caterers still fill up 3–4 weeks ahead.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>What happens on the event day itself?</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>The event day phase in the timeline includes: sending vendor arrival reminders in the morning, a venue-open checklist, coordinating vendor setup order so decoration doesn't clash with catering setup, and a final payments + tips list. The day-of section is often the most overlooked part of event planning.</p>
+          </div>
+        </div>
+        <style>{`.timeline-seo-grid { } @media(max-width:600px){.timeline-seo-grid{grid-template-columns:1fr !important;}}`}</style>
       </div>
     </div>
   );

@@ -297,7 +297,7 @@ export default function BudgetAllocator() {
   const conversations = useSelector(s => s.chat?.conversations || []);
 
   const [eventKey, setEventKey] = useState("birthday");
-  const [totalBudget, setTotalBudget] = useState(50000);
+  const [totalBudget, setTotalBudget] = useState(100000);
   const [guestCount, setGuestCount] = useState(() => parseInt(planFormData.guests) || 0);
   const [categories, setCategories] = useState([]);
   const [loaded, setLoaded] = useState(false);
@@ -348,7 +348,7 @@ export default function BudgetAllocator() {
       })), guests);
       const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
       setEventKey(key);
-      setTotalBudget(prefillBudget > 0 ? prefillBudget : 50000);
+      setTotalBudget(prefillBudget > 0 ? prefillBudget : 100000);
       setGuestCount(guests);
       setCategories(cats);
       setLoaded(true);
@@ -364,7 +364,7 @@ export default function BudgetAllocator() {
     } else {
       const key = routeEventType && EVENT_TYPES[routeEventType] ? routeEventType : "birthday";
       setEventKey(key);
-      setTotalBudget(prefillBudget > 0 ? prefillBudget : 50000);
+      setTotalBudget(prefillBudget > 0 ? prefillBudget : 100000);
       setGuestCount(guests);
       setCategories(initCategories(key, guests));
     }
@@ -467,6 +467,32 @@ export default function BudgetAllocator() {
         description="See the ideal budget split for your birthday, anniversary, corporate event or party across decoration, catering, photography and entertainment. Free budget planning tool by Tendr for Delhi NCR celebrations."
         path="/budget-allocator"
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Budget Planner", path: "/budget-picker" }, { name: "Budget Allocator", path: "/budget-allocator" }]}
+        schema={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How much should I allocate for decoration in a birthday party?",
+              "acceptedAnswer": { "@type": "Answer", "text": "For a birthday party, decoration typically takes 15–20% of your total budget. On a ₹1,00,000 birthday budget, that's ₹15,000–₹20,000. This covers balloon setups, flower arrangements, theme props, and stage backdrop. Premium floral or LED decor setups in Delhi NCR typically start at ₹15,000." }
+            },
+            {
+              "@type": "Question",
+              "name": "What is a good catering budget for 100 guests?",
+              "acceptedAnswer": { "@type": "Answer", "text": "For 100 guests, a good catering budget is ₹20,000–₹40,000 depending on menu and service style. A North Indian buffet with 10–12 dishes costs roughly ₹200–₹350 per plate in Delhi NCR. Live counters and dessert stations add ₹50–₹150 per person. Our budget allocator suggests 25% of your total for catering." }
+            },
+            {
+              "@type": "Question",
+              "name": "How do I split a ₹1,00,000 event budget?",
+              "acceptedAnswer": { "@type": "Answer", "text": "A balanced ₹1,00,000 birthday budget in Delhi NCR typically looks like: Venue & Setup ₹28,000 (28%), Food & Catering ₹25,000 (25%), Decoration ₹18,000 (18%), Photography ₹12,000 (12%), Entertainment ₹10,000 (10%), Cake & Desserts ₹4,000 (4%), Miscellaneous ₹3,000 (3%). Our tool lets you adjust each category based on your priorities." }
+            },
+            {
+              "@type": "Question",
+              "name": "Does guest count change the budget split?",
+              "acceptedAnswer": { "@type": "Answer", "text": "Yes. For intimate events under 30 guests, photography and decoration get a higher share since per-person catering drops. For large events above 150 guests, catering dominates and takes 30–35% because food costs scale with headcount. Our tool automatically adjusts category weights when you enter your guest count." }
+            }
+          ]
+        }}
       />
       <BasicSpeedDial />
       <HamburgerNav title="Budget Allocator" />
@@ -682,10 +708,31 @@ export default function BudgetAllocator() {
             </div>
           </div>
         </div>
+
+        {/* Static content for SEO */}
+        <div style={{ marginTop: 48, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }} className="budget-seo-grid">
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>How does the budget split work?</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Each category gets a percentage of your total. The percentages are based on typical event spending patterns in Delhi NCR. For example, birthdays put more toward decoration and entertainment; corporate events put more toward venue AV and branding. You can adjust any category to match your priorities.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Track what you actually spend</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>The "Spent" column lets you log actual vendor quotes as you collect them. Green means you're on track; amber means nearly at the limit; red means you've gone over for that category. This gives you a live picture of where you stand vs your plan before any money is paid.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Finding vendors within your category budget</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>Each category row has a "See vendors within budget" button for service categories like decoration, catering, and photography. Clicking it filters Tendr's vendor listings to show only vendors priced at or below your allocated amount, so you never browse vendors you can't afford.</p>
+          </div>
+          <div style={{ background: "#FFFCF5", borderRadius: 16, padding: "22px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+            <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Why is venue typically the largest cost?</h2>
+            <p style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.7, margin: 0 }}>In Delhi NCR, venue costs include space rental, basic furniture, parking, and in many cases security. Banquet halls in South Delhi and Gurugram typically charge ₹25,000–₹80,000+ for a 4–6 hour slot. Home events reduce venue cost to near zero, freeing up budget for decor and entertainment.</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <style>{`
+      @media (max-width: 600px) { .budget-seo-grid { grid-template-columns: 1fr !important; } }
       @media (max-width: 639px) {
         .budget-table-hdr { display: none !important; }
         .budget-cat-row { padding: 10px 12px !important; }

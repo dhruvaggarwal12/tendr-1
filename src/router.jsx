@@ -107,6 +107,7 @@ const HomeWeddingPlanner  = lazy(() => import("./pages/home-wedding/HomeWeddingP
 const InvitationCustomizer= lazy(() => import("./pages/invitation/InvitationCustomizer.jsx"));
 const VendorBrief         = lazy(() => import("./pages/tools/VendorBrief.jsx"));
 const GiftAdvisor         = lazy(() => import("./pages/tools/GiftAdvisor.jsx"));
+const VendorLanding       = lazy(() => import("./pages/vendor/VendorLanding.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -437,6 +438,9 @@ const router = createBrowserRouter([
   { path: '/guides', element: <GuidesStore />, errorElement: <ErrorPage /> },
   { path: '/guides/:slug', element: <GuidePreview />, errorElement: <ErrorPage /> },
   { path: '/guides/:slug/read', element: <GuideReader />, errorElement: <ErrorPage /> },
+
+  // ── Programmatic vendor SEO landing pages (/decorator-in-delhi, etc.) ───
+  { path: '/:slug', element: <VendorLanding />, errorElement: <ErrorPage /> },
 
   // ── Wedding Stationery Sub-App (/wedding/*) ──────────────────────────────
   // Remove this route to disable the sub-app completely

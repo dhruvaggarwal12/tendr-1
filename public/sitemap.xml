@@ -109,4 +109,195 @@
     <priority>0.4</priority>
   </url>
 
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+  <!-- Programmatic SEO — Vendor landing pages (140 URLs)                     -->
+  <!-- Format: /{service}-in-{city} and /{service}-in-{city}-under-{budget}  -->
+  <!-- Services: decorator, caterer, photographer, dj,                        -->
+  <!--           gift-hamper, fun-activities, wedding-stationery              -->
+  <!-- Cities:   delhi, noida, greater-noida, gurgaon, ghaziabad             -->
+  <!-- Budgets:  under-20000, under-50000, under-1-lakh                      -->
+  <!-- ═══════════════════════════════════════════════════════════════════════ -->
+
+  <!-- DECORATORS ─────────────────────────────────────────── -->
+  <url><loc>https://tendr.co.in/decorator-in-delhi</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-delhi-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-delhi-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-delhi-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/decorator-in-noida</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/decorator-in-greater-noida</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-greater-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <url><loc>https://tendr.co.in/decorator-in-gurgaon</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-gurgaon-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-gurgaon-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-gurgaon-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/decorator-in-ghaziabad</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-ghaziabad-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-ghaziabad-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/decorator-in-ghaziabad-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- CATERERS ────────────────────────────────────────────── -->
+  <url><loc>https://tendr.co.in/caterer-in-delhi</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-delhi-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-delhi-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-delhi-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/caterer-in-noida</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/caterer-in-greater-noida</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-greater-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <url><loc>https://tendr.co.in/caterer-in-gurgaon</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-gurgaon-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-gurgaon-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-gurgaon-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/caterer-in-ghaziabad</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-ghaziabad-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-ghaziabad-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/caterer-in-ghaziabad-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- PHOTOGRAPHERS ──────────────────────────────────────── -->
+  <url><loc>https://tendr.co.in/photographer-in-delhi</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-delhi-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-delhi-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-delhi-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/photographer-in-noida</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/photographer-in-greater-noida</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-greater-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <url><loc>https://tendr.co.in/photographer-in-gurgaon</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-gurgaon-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-gurgaon-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-gurgaon-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/photographer-in-ghaziabad</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-ghaziabad-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-ghaziabad-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/photographer-in-ghaziabad-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- DJs ─────────────────────────────────────────────────── -->
+  <url><loc>https://tendr.co.in/dj-in-delhi</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-delhi-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-delhi-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-delhi-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/dj-in-noida</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/dj-in-greater-noida</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-greater-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <url><loc>https://tendr.co.in/dj-in-gurgaon</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-gurgaon-under-20000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-gurgaon-under-50000</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-gurgaon-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+
+  <url><loc>https://tendr.co.in/dj-in-ghaziabad</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-ghaziabad-under-20000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-ghaziabad-under-50000</loc><changefreq>weekly</changefreq><priority>0.85</priority></url>
+  <url><loc>https://tendr.co.in/dj-in-ghaziabad-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+
+  <!-- GIFT HAMPERS ────────────────────────────────────────── -->
+  <url><loc>https://tendr.co.in/gift-hamper-in-delhi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-delhi-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-delhi-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-delhi-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/gift-hamper-in-noida</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/gift-hamper-in-greater-noida</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-greater-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://tendr.co.in/gift-hamper-in-gurgaon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-gurgaon-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-gurgaon-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-gurgaon-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/gift-hamper-in-ghaziabad</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-ghaziabad-under-20000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-ghaziabad-under-50000</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://tendr.co.in/gift-hamper-in-ghaziabad-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- FUN ACTIVITIES ──────────────────────────────────────── -->
+  <url><loc>https://tendr.co.in/fun-activities-in-delhi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-delhi-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-delhi-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-delhi-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/fun-activities-in-noida</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/fun-activities-in-greater-noida</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-greater-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://tendr.co.in/fun-activities-in-gurgaon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-gurgaon-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-gurgaon-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-gurgaon-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/fun-activities-in-ghaziabad</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-ghaziabad-under-20000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-ghaziabad-under-50000</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://tendr.co.in/fun-activities-in-ghaziabad-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <!-- WEDDING STATIONERY ──────────────────────────────────── -->
+  <url><loc>https://tendr.co.in/wedding-stationery-in-delhi</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-delhi-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-delhi-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-delhi-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/wedding-stationery-in-noida</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/wedding-stationery-in-greater-noida</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-greater-noida-under-20000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-greater-noida-under-50000</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-greater-noida-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://tendr.co.in/wedding-stationery-in-gurgaon</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-gurgaon-under-20000</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-gurgaon-under-50000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-gurgaon-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+
+  <url><loc>https://tendr.co.in/wedding-stationery-in-ghaziabad</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-ghaziabad-under-20000</loc><changefreq>weekly</changefreq><priority>0.75</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-ghaziabad-under-50000</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://tendr.co.in/wedding-stationery-in-ghaziabad-under-1-lakh</loc><changefreq>weekly</changefreq><priority>0.7</priority></url>
+
 </urlset>
