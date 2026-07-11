@@ -30,20 +30,22 @@ export default function SignInPromptController() {
 
   // App-load trigger — only fires if the home tour has already been seen.
   // First-time visitors: tour runs and fires tendr:show-signin on completion.
-  // Returning visitors: no tour, so we prompt after a short delay.
+  // Returning visitors (tour already seen, not logged in): 3-minute delay from page load.
   useEffect(() => {
     const homeTourSeen = () => { try { return !!localStorage.getItem("tendr_tour_home"); } catch { return false; } };
     if (!homeTourSeen()) return;
-    const t = setTimeout(maybeShow, 2500);
+    const t = setTimeout(maybeShow, 3 * 60 * 1000);
     return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Tour-done trigger — fired by PageTour via Home.jsx
+  // Tour-done trigger — fired by PageTour via Home.jsx on completion or skip.
+  // 3-minute delay starts from the moment the tour finishes.
   useEffect(() => {
-    const handler = () => maybeShow();
+    let t;
+    const handler = () => { t = setTimeout(maybeShow, 3 * 60 * 1000); };
     window.addEventListener("tendr:show-signin", handler);
-    return () => window.removeEventListener("tendr:show-signin", handler);
+    return () => { window.removeEventListener("tendr:show-signin", handler); clearTimeout(t); };
   }, [maybeShow]);
 
   // Auto-close if user signs in
