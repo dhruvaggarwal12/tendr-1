@@ -116,7 +116,7 @@ const PaymentSuccessPage = () => {
       deliveryDate.setDate(deliveryDate.getDate() + 5);
       const fmt = d => d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
       preEventNotes.push({
-        title:    "Gift Hampers & Cakes",
+        title:    "Gift Hampers",
         subtitle: `Ordered: ${fmt(orderDate)}  ·  Expected delivery by ${fmt(deliveryDate)}`,
       });
     }

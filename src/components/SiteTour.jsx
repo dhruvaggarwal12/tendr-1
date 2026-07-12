@@ -69,9 +69,9 @@ const STEPS = [
     target: "body",
     placement: "center",
     disableBeacon: true,
-    title: "Gift Hampers & Cakes 🎁",
+    title: "Gift Hampers 🎁",
     content:
-      "Order personalised wedding gift hampers and custom celebration cakes directly through Tendr — perfect for guest favours, welcome kits, and corporate gifting.",
+      "Order personalised gift hampers directly through Tendr — perfect for guest favours, welcome kits, and corporate gifting.",
   },
   {
     target: "body",

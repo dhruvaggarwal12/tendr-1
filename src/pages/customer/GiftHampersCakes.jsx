@@ -64,9 +64,17 @@ const GiftHampersCakes = () => {
         sessionStorage.setItem("gh_chat_photos", JSON.stringify(
           selectedPhotos.map(({ url, name, priceRange, vendorName }) => ({ url, name, priceRange, vendorName }))
         ));
-        sessionStorage.removeItem("baat_karo_draft");
+        const itemLines = selectedPhotos
+          .map((p, i) => `${i + 1}. ${p.name || "Gift Hamper"}${p.priceRange ? ` (${p.priceRange})` : ""}`)
+          .join("\n");
+        sessionStorage.setItem("baat_karo_draft",
+          `Hi! I'm interested in ordering a gift hamper from Tendr. I've shortlisted ${selectedPhotos.length === 1 ? "this option" : "these options"}:\n\n${itemLines}\n\nCan you help me with customisation, availability and delivery across Delhi NCR?`
+        );
       } else {
-        try { sessionStorage.setItem("baat_karo_draft", "Hi! I'm looking for a custom gift hamper. Can you help me with options, pricing and delivery?"); } catch {}
+        sessionStorage.removeItem("gh_chat_photos");
+        sessionStorage.setItem("baat_karo_draft",
+          `Hi! I'd like to order a custom gift hamper from Tendr.\n\nCould you share options based on my occasion and budget? I'm open to personalised packaging and hamper curation. Looking forward to your suggestions!`
+        );
       }
     } catch {}
     navigate("/baat-karo");
@@ -106,10 +114,10 @@ const GiftHampersCakes = () => {
             Curated for every occasion
           </span>
           <h1 className="gh-hero" style={{ fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 900, color: "#fff", margin: "0 0 14px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
-            Gift Hampers &amp; Cakes
+            Gift Hampers
           </h1>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.72)", margin: "0 0 32px", lineHeight: 1.7, maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>
-            Tell us your occasion, budget and preferences — our team will put together the perfect hamper or cake and handle delivery across Delhi NCR.
+            Tell us your occasion, budget and preferences — our team will curate the perfect hamper and handle delivery across Delhi NCR.
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <button

@@ -79,7 +79,7 @@ export default function Footer() {
             { label: "Catering", href: "/listings" },
             { label: "Decoration", href: "/listings" },
             { label: "DJ & Entertainment", href: "/listings" },
-            { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+            { label: "Gift Hampers", href: "/gift-hampers-cakes" },
             { label: "Wedding Stationery", href: "/stationery" },
           ]} />
 
