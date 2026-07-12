@@ -325,7 +325,13 @@ function IndependenceDayPhotosSection({ BASE_URL, token }) {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: fd,
     });
-    if (!res.ok) throw new Error((await res.json()).error || "Upload failed");
+    if (!res.ok) {
+      const ct = res.headers.get("content-type") || "";
+      const msg = ct.includes("json")
+        ? (await res.json()).error
+        : `Server error ${res.status} — route may not be deployed`;
+      throw new Error(msg || "Upload failed");
+    }
   };
 
   const handleUpload = async (e) => {
