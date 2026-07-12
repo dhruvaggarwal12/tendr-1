@@ -1143,28 +1143,28 @@ const Home = () => {
               display: "flex", alignItems: "center", justifyContent: "space-between",
               width: "100%", marginBottom: 18,
               background: "linear-gradient(90deg, #FF9933 0%, #e67e00 30%, #138808 100%)",
-              borderRadius: 14, padding: "14px 20px",
+              borderRadius: 14, padding: "12px 14px",
               overflow: "hidden", position: "relative",
               boxShadow: "0 4px 20px rgba(255,153,51,0.35)",
-              boxSizing: "border-box",
+              boxSizing: "border-box", gap: 10,
             }}
           >
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.18)" }} />
-            <div style={{ position: "relative", textAlign: "left" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
-                <span style={{ fontSize: 22 }}>🇮🇳</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.85)", textTransform: "uppercase", letterSpacing: "0.14em" }}>
-                  Featured · Independence Day
+            <div style={{ position: "relative", textAlign: "left", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>🇮🇳</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.85)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
+                  Independence Day
                 </span>
               </div>
-              <div style={{ fontSize: "clamp(0.95rem,2.5vw,1.15rem)", fontWeight: 700, color: "#FFFFFF" }}>
-                Plan your Independence Day celebration
+              <div style={{ fontSize: "clamp(0.88rem,3.5vw,1.05rem)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.3 }}>
+                Plan your celebration
               </div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.8)", marginTop: 3 }}>
-                Decorator · Caterer · DJ · Photographer · Fun Activities
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                Decorator · Caterer · DJ · Photographer
               </div>
             </div>
-            <div style={{ position: "relative", background: "rgba(255,255,255,0.2)", borderRadius: 20, padding: "5px 14px", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0, marginLeft: 12 }}>
+            <div style={{ position: "relative", background: "rgba(255,255,255,0.22)", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap" }}>
               Coming Soon
             </div>
           </div>
