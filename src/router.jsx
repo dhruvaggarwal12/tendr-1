@@ -104,9 +104,6 @@ const CommunityWall       = lazy(() => import("./pages/community/CommunityWall.j
 const CelebrationHub      = lazy(() => import("./pages/celebration-hub/CelebrationHub.jsx"));
 const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivitiesPage.jsx"));
 const HomeWeddingPlanner  = lazy(() => import("./pages/home-wedding/HomeWeddingPlanner.jsx"));
-const InvitationCustomizer= lazy(() => import("./pages/invitation/InvitationCustomizer.jsx"));
-const VendorBrief         = lazy(() => import("./pages/tools/VendorBrief.jsx"));
-const GiftAdvisor         = lazy(() => import("./pages/tools/GiftAdvisor.jsx"));
 const VendorLanding       = lazy(() => import("./pages/vendor/VendorLanding.jsx"));
 
 
@@ -430,9 +427,6 @@ const router = createBrowserRouter([
   { path: '/guest-list', element: <GuestList />, errorElement: <ErrorPage /> },
   // { path: '/decor-finder', element: <DecorFinder />, errorElement: <ErrorPage /> }, // disabled
   { path: '/find-by-style', element: <FindByStyle />, errorElement: <ErrorPage /> },
-  { path: '/invitation/customize', element: <InvitationCustomizer />, errorElement: <ErrorPage /> },
-  { path: '/vendor-brief', element: <VendorBrief />, errorElement: <ErrorPage /> },
-  { path: '/gift-advisor', element: <GiftAdvisor />, errorElement: <ErrorPage /> },
   { path: '/search', element: <SearchResults />, errorElement: <ErrorPage /> },
   { path: '/gallery/:category', element: <CategoryGallery />, errorElement: <ErrorPage /> },
   { path: '/guides', element: <GuidesStore />, errorElement: <ErrorPage /> },
