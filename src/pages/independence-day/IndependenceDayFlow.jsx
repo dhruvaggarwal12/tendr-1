@@ -181,25 +181,25 @@ const VENUE_TIPS = {
 const overlay = {
   position: "fixed", inset: 0, zIndex: 9999,
   background: "rgba(0,0,0,0.72)",
-  display: "flex", alignItems: "center", justifyContent: "center",
-  padding: "16px",
+  display: "flex", alignItems: "flex-end", justifyContent: "center",
+  padding: "0",
   fontFamily: "'Outfit', sans-serif",
 };
 
 const modal = {
   background: "#FFFCF5",
-  borderRadius: 20,
+  borderRadius: "20px 20px 0 0",
   width: "100%", maxWidth: 520,
-  maxHeight: "92vh",
+  maxHeight: "92dvh",
   overflowY: "auto",
-  boxShadow: "0 24px 80px rgba(0,0,0,0.4)",
+  boxShadow: "0 -8px 40px rgba(0,0,0,0.3)",
   position: "relative",
 };
 
 const hdr = {
   background: "linear-gradient(135deg, #FF9933 0%, #e67e00 40%, #138808 100%)",
   borderRadius: "20px 20px 0 0",
-  padding: "20px 24px 16px",
+  padding: "18px 20px 14px",
   color: white,
   position: "relative",
 };
@@ -212,7 +212,7 @@ const closeBtn = {
   display: "flex", alignItems: "center", justifyContent: "center",
 };
 
-const body = { padding: "22px 22px 28px" };
+const body = { padding: "20px 18px calc(28px + env(safe-area-inset-bottom, 0px))" };
 
 const chip = (active) => ({
   display: "flex", alignItems: "center", gap: 8,
@@ -225,7 +225,7 @@ const chip = (active) => ({
 });
 
 const inp = {
-  width: "100%", padding: "10px 14px", borderRadius: 10,
+  width: "100%", minWidth: 0, padding: "10px 12px", borderRadius: 10,
   border: `1.5px solid ${border}`, fontSize: 14, color: dark,
   background: white, boxSizing: "border-box", outline: "none",
 };
@@ -417,15 +417,15 @@ function PlanIdeas({ orgType, venueType, onBookServices }) {
 
       {/* Ideas */}
       {tab === "ideas" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
           {content.ideas.map((idea, i) => (
             <div key={i} style={{
-              background: "#FFF8EC", borderRadius: 12, padding: "14px 12px",
+              background: "#FFF8EC", borderRadius: 12, padding: "12px 10px",
               border: `1px solid ${border}`,
             }}>
-              <div style={{ fontSize: 24, marginBottom: 6 }}>{idea.icon}</div>
-              <div style={{ fontSize: 13, fontWeight: 700, color: dark, marginBottom: 4 }}>{idea.title}</div>
-              <div style={{ fontSize: 12, color: muted, lineHeight: 1.4 }}>{idea.desc}</div>
+              <div style={{ fontSize: 22, marginBottom: 5 }}>{idea.icon}</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: dark, marginBottom: 3 }}>{idea.title}</div>
+              <div style={{ fontSize: 11, color: muted, lineHeight: 1.4 }}>{idea.desc}</div>
             </div>
           ))}
         </div>
@@ -750,7 +750,7 @@ export default function IndependenceDayFlow({ onClose }) {
             </label>
             <input style={inp} placeholder="Full address" value={address} onChange={(e) => setAddress(e.target.value)} />
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
             <div>
               <label style={{ fontSize: 12, fontWeight: 600, color: "#7A4B1E", display: "block", marginBottom: 4 }}>
                 {orgType === "hr" ? "Employees *" : "Guests *"}
@@ -759,7 +759,7 @@ export default function IndependenceDayFlow({ onClose }) {
             </div>
             <div>
               <label style={{ fontSize: 12, fontWeight: 600, color: "#7A4B1E", display: "block", marginBottom: 4 }}>Date & Time *</label>
-              <input style={inp} type="datetime-local" value={datetime} onChange={(e) => setDatetime(e.target.value)} />
+              <input style={{ ...inp, fontSize: 13 }} type="datetime-local" value={datetime} onChange={(e) => setDatetime(e.target.value)} />
             </div>
           </div>
           <div>
