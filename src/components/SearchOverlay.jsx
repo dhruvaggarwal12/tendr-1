@@ -26,7 +26,7 @@ const POPULAR_SEARCHES = [
   { text: "DJ in Gurgaon" },
   { text: "Wedding Stationeries",              type: "page", href: "/stationery" },
   { text: "Fun Activities for birthday party", type: "page", href: "/fun-activities" },
-  { text: "Gift Hampers & Cakes",              type: "page", href: "/gift-hampers-cakes" },
+  { text: "Gift Hampers",                       type: "page", href: "/gift-hampers-cakes" },
   { text: "Budget Allocator",                  type: "page", href: "/budget-picker" },
   { text: "Decorators under ₹30,000" },
   { text: "Photographer and caterer in Noida" },

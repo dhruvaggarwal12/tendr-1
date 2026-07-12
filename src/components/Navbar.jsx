@@ -14,7 +14,7 @@ const SEARCH_SUGGESTIONS = [
   { text: "Caterers in Noida" },
   { text: "DJ in Gurgaon" },
   { text: "Wedding Stationeries",               type: "page", href: "/stationery" },
-  { text: "Gift Hampers & Cakes",               type: "page", href: "/gift-hampers-cakes" },
+  { text: "Gift Hampers",               type: "page", href: "/gift-hampers-cakes" },
   { text: "Budget Allocator",                   type: "page", href: "/budget-picker" },
   // { text: "Decor Finder", type: "page", href: "/decor-finder" }, // disabled
   { text: "Decorators under ₹30,000" },
@@ -290,7 +290,7 @@ const Navbar = ({
     {
       label: "Our Products",
       items: [
-        { label: "Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+        { label: "Gift Hampers", href: "/gift-hampers-cakes" },
         { label: "Wedding Stationeries", href: "/stationery" },
         { label: "Fun Activities",       href: "/fun-activities" },
       ],

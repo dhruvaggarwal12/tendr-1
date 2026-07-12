@@ -223,7 +223,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
-      { label: "🎁 Gift Hampers & Cakes", href: "/gift-hampers-cakes" },
+      { label: "🎁 Gift Hampers", href: "/gift-hampers-cakes" },
       { label: "💒 Wedding Stationeries", href: "/stationery" },
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),

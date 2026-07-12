@@ -43,10 +43,10 @@ const HERO_FEATURES = [
     emoji: "💰",
   },
   {
-    tag: "Gift Hampers & Cakes",
+    tag: "Gift Hampers",
     headline: "Custom gift hampers delivered to your door",
-    desc: "Order personalised gift hampers, celebration cakes and curated kits for birthdays, anniversaries and every occasion.",
-    where: "Gift Hampers & Cakes",
+    desc: "Order personalised gift hampers and curated kits for birthdays, anniversaries and every occasion.",
+    where: "Gift Hampers",
     href: "/gift-hampers-cakes",
     emoji: "🎁",
   },
@@ -357,7 +357,7 @@ const Home = () => {
     { id: "timeline",       tag: "Event Timeline",        icon: "⏱️", iconBg: "linear-gradient(135deg,#2C1A0E,#7A4A1E)",  headline: "Every milestone, perfectly timed",                        desc: "Build a day-by-day countdown. Download a timeline slip you can share with every vendor on your list.", where: "Our Products → Timeline", href: "/timeline-picker",  accent: "#2C1A0E" },
     // { id: "decor-finder", tag: "Decor Finder", icon: "🎨", href: "/decor-finder", accent: "#C47A2E" }, // disabled
     { id: "budget",         tag: "Budget Allocator",      icon: "💰", iconBg: "linear-gradient(135deg,#7A4A1E,#CCAB4A)",  headline: "Know exactly what you can afford — before you start",     desc: "Set your budget per service. We filter and sort vendors so every option you see is within reach.", where: "Our Products → Budget Allocator", href: "/budget-picker",    accent: "#7A4A1E" },
-    { id: "gift-hampers",   tag: "Gift Hampers & Cakes",  icon: "🎁", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)",  headline: "The perfect gift, delivered to the door",                 desc: "Curated hampers and custom cakes for birthdays, anniversaries and corporate celebrations.", where: "Gift & Hampers", href: "/gift-hampers-cakes",  accent: "#C47A2E" },
+    { id: "gift-hampers",   tag: "Gift Hampers",           icon: "🎁", iconBg: "linear-gradient(135deg,#C47A2E,#CCAB4A)",  headline: "The perfect gift, delivered to the door",                 desc: "Curated hampers for birthdays, anniversaries and corporate celebrations.", where: "Gift Hampers", href: "/gift-hampers-cakes",  accent: "#C47A2E" },
     { id: "fun-activities",  tag: "Fun Activities",        icon: "🎭", iconBg: "linear-gradient(135deg,#C47A2E,#E8A84A)",  headline: "Add magic, games & live entertainment to any event",     desc: "Magic shows, game coordinators, dhol players, live teddy, stone art and more — fixed prices, confirmed in 2 hours.", where: "Fun Activities", href: "/fun-activities", accent: "#C47A2E" },
     { id: "stationery",      tag: "Wedding Stationeries",  icon: "💒", iconBg: "linear-gradient(135deg,#7A3A1E,#C47A2E)",  headline: "Your wedding, beautifully told — no templates, ever",    desc: "Itineraries, invitations, money envelopes, hashtag packages, coffee table booklets and more — each piece crafted exclusively for you.", where: "Wedding Stationeries", href: "/stationery", accent: "#7A3A1E" },
     { id: "baat-karo",      tag: "Baat Karo",             icon: "💬", iconBg: "linear-gradient(135deg,#25D366,#128C7E)",  headline: "Just tell us — Tendr team will handle the rest",          desc: "Write your requirements in Hindi, English or Hinglish. Our team replies on WhatsApp with vendor options, pricing and availability — no forms, no hassle.", where: "Booking → Baat Karo", href: "/baat-karo", accent: "#128C7E" },
@@ -724,7 +724,7 @@ const Home = () => {
       target: '[data-tour="nav-products"]',
       placement: "bottom",
       title: "Our Products",
-      content: "Gift Hampers & Cakes, Wedding Stationeries, and Fun Activities like magic shows, live bands and photo booths — all curated for your event.",
+      content: "Gift Hampers, Wedding Stationeries, and Fun Activities like magic shows, live bands and photo booths — all curated for your event.",
     },
     {
       target: '[data-tour="nav-booking"]',
@@ -1308,7 +1308,7 @@ const Home = () => {
               { icon: "💒", label: "Wedding Stationeries", desc: "Invitations, itineraries, thank you cards — personalised.", href: "/stationery" },
               { icon: "⏱️", label: "Event Timeline",       desc: "Build a day-by-day countdown for your event.", href: "/timeline-picker" },
               { icon: "💰", label: "Budget Allocator",     desc: "Set budget per category and track every rupee.", href: "/budget-picker" },
-              { icon: "🎁", label: "Gift Hampers & Cakes", desc: "Curated gifts and cakes — delivered for your event.", href: "/gift-hampers-cakes" },
+              { icon: "🎁", label: "Gift Hampers", desc: "Curated gift hampers — delivered for your event.", href: "/gift-hampers-cakes" },
               { icon: "🎭", label: "Fun Activities",       desc: "Magic shows, games, dhol players and live entertainment.", href: "/fun-activities" },
               { icon: "🔍", label: "Find by Style",        desc: "Upload a photo and find vendors who match your vibe.", href: "/find-by-style" },
               { icon: "📅", label: "Upcoming Events",      desc: "See what's coming up — sign in to register interest.", href: "/occasions" },
@@ -1466,10 +1466,10 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Gift Hampers & Cakes ── */}
+      {/* ── Gift Hampers ── */}
       <section style={{ background: "#FFFDF7", padding: "36px 24px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
         <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: 0 }}>Gift Hampers & Cakes</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: 0 }}>Gift Hampers</p>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,2.8vw,2rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, letterSpacing: "0.01em", lineHeight: 1.2 }}>
             The Perfect Gift,&nbsp;<span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
           </h2>

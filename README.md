@@ -1,3 +1,6 @@
+
+
+
 # Tendr — We Curate, You Celebrate
 
 > Event planning in India is fragmented, stressful, and full of unreliable vendors. **Tendr** fixes that. It's a curated event planning marketplace for Delhi NCR that connects people with verified photographers, caterers, decorators, DJs, and more — all in one place.
