@@ -1137,15 +1137,14 @@ const Home = () => {
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, letterSpacing: "0.01em" }}>What's the occasion?</h2>
           </div>
 
-          {/* ── Independence Day featured strip ── */}
-          <button
-            onClick={() => setShowIndepDay(true)}
+          {/* ── Independence Day featured strip — Coming Soon ── */}
+          <div
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               width: "100%", marginBottom: 18,
               background: "linear-gradient(90deg, #FF9933 0%, #e67e00 30%, #138808 100%)",
-              border: "none", borderRadius: 14, padding: "14px 20px",
-              cursor: "pointer", overflow: "hidden", position: "relative",
+              borderRadius: 14, padding: "14px 20px",
+              overflow: "hidden", position: "relative",
               boxShadow: "0 4px 20px rgba(255,153,51,0.35)",
               boxSizing: "border-box",
             }}
@@ -1165,8 +1164,10 @@ const Home = () => {
                 Decorator · Caterer · DJ · Photographer · Fun Activities
               </div>
             </div>
-            <div style={{ position: "relative", fontSize: 28, flexShrink: 0, marginLeft: 12 }}>→</div>
-          </button>
+            <div style={{ position: "relative", background: "rgba(255,255,255,0.2)", borderRadius: 20, padding: "5px 14px", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0, marginLeft: 12 }}>
+              Coming Soon
+            </div>
+          </div>
           {/* ── END Independence Day strip ── */}
 
           <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 10 }}>
