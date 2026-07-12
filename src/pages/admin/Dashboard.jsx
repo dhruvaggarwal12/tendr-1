@@ -4876,10 +4876,18 @@ const AdminDashboard = () => {
                                 </div>
                               ) : (
                                 <div style={{ padding: "6px 8px 7px" }}>
-                                  {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
-                                  {s.priceRange && <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
-                                  {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 1 }}>by {s.vendorName}</div>}
-                                  {!s.name && !s.priceRange && !s.vendorName && <div style={{ fontSize: 10, color: "#9B7450" }}>No info yet</div>}
+                                  {(s.name || s.priceRange || s.vendorName) ? (
+                                    <>
+                                      {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
+                                      {s.priceRange && <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
+                                      {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 1 }}>by {s.vendorName}</div>}
+                                    </>
+                                  ) : (
+                                    <button
+                                      onClick={() => { setGhEditingId(s._id); setGhEditData({ name: "", vendorName: "", priceRange: "" }); }}
+                                      style={{ width: "100%", padding: "5px 0", borderRadius: 7, border: "1.5px dashed rgba(196,122,46,0.5)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
+                                    >+ Add Details</button>
+                                  )}
                                 </div>
                               )}
 
