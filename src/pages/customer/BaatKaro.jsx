@@ -42,19 +42,26 @@ export default function BaatKaro() {
       if (res.ok && data.conversationId) {
         try { sessionStorage.removeItem("baat_karo_draft"); } catch {}
 
-        // If the customer attached reference photos, send them as follow-up messages
-        // so admin sees them inside the chat conversation
+        // Send each attached photo as an [img:URL] message so the chat renders it as an image.
+        // Venue photos are compressed base64 JEPGs; reference photos are public URLs — both work.
         if (refPhotos.length > 0) {
           for (const photo of refPhotos) {
-            const label = [photo.name, photo.priceRange].filter(Boolean).join(" · ");
-            const content = label
-              ? `📎 Reference photo — ${label}\n${photo.url}`
-              : `📎 Reference photo\n${photo.url}`;
+            // Caption message so admin knows what they're looking at
+            if (photo.name) {
+              try {
+                await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }),
+                });
+              } catch {}
+            }
+            // Image message
             try {
               await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ sender: "user", content }),
+                body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }),
               });
             } catch {}
           }
@@ -127,12 +134,12 @@ export default function BaatKaro() {
             </div>
           </div>
 
-          {/* Reference photos strip — only shown when coming from Gift Hampers */}
+          {/* Attached photos strip — venue photo + reference style photos */}
           {refPhotos.length > 0 && (
             <div style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 12, background: "rgba(196,122,46,0.07)", border: "1px dashed rgba(196,122,46,0.35)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  📎 {refPhotos.length} reference photo{refPhotos.length > 1 ? "s" : ""} attached
+                  📎 {refPhotos.length} photo{refPhotos.length > 1 ? "s" : ""} attached
                 </span>
                 <button
                   onClick={() => { setRefPhotos([]); try { sessionStorage.removeItem("gh_chat_photos"); } catch {} }}
@@ -147,7 +154,7 @@ export default function BaatKaro() {
                     <img
                       src={p.url}
                       alt={p.name || "reference"}
-                      style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", display: "block" }}
+                      style={{ width: 52, height: 52, objectFit: "cover", borderRadius: 8, display: "block", border: "1.5px solid rgba(196,122,46,0.3)" }}
                     />
                     <button
                       onClick={() => setRefPhotos(prev => prev.filter((_, idx) => idx !== i))}
