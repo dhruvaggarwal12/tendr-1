@@ -277,13 +277,16 @@ async function extractPdfPages(file) {
   const blobs = [];
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
-    const scale = 1.5;
+    const scale = 2.5;
     const viewport = page.getViewport({ scale });
     const canvas = document.createElement("canvas");
     canvas.width = viewport.width;
     canvas.height = viewport.height;
-    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
-    const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.85));
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    await page.render({ canvasContext: ctx, viewport }).promise;
+    const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.92));
     blobs.push(blob);
   }
   return blobs;
