@@ -266,11 +266,35 @@ const VENUE_TYPES_IND = [
   { id: "roadside", label: "Roadside",      icon: "🚦" },
 ];
 
+async function extractPdfPages(file) {
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.mjs",
+    import.meta.url
+  ).href;
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const blobs = [];
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const scale = 1.5;
+    const viewport = page.getViewport({ scale });
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+    await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+    const blob = await new Promise((res) => canvas.toBlob(res, "image/jpeg", 0.85));
+    blobs.push(blob);
+  }
+  return blobs;
+}
+
 function IndependenceDayPhotosSection({ BASE_URL, token }) {
   const [photos, setPhotos]       = React.useState([]);
   const [loading, setLoading]     = React.useState(true);
   const [activeVenue, setActiveVenue] = React.useState("hall");
   const [uploading, setUploading] = React.useState(false);
+  const [uploadProgress, setUploadProgress] = React.useState("");
   const [title, setTitle]         = React.useState("");
   const [deleting, setDeleting]   = React.useState(null);
   const fileRef = React.useRef();
@@ -291,25 +315,52 @@ function IndependenceDayPhotosSection({ BASE_URL, token }) {
 
   const venuePhotos = photos.filter((p) => p.venueType === activeVenue);
 
+  const uploadBlob = async (blob, pageTitle, index) => {
+    const fd = new FormData();
+    fd.append("photo", blob, `page-${index + 1}.jpg`);
+    fd.append("venueType", activeVenue);
+    fd.append("title", pageTitle);
+    const res = await fetch(`${BASE_URL}/independence-day-photos`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: fd,
+    });
+    if (!res.ok) throw new Error((await res.json()).error || "Upload failed");
+  };
+
   const handleUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setUploading(true);
-    const fd = new FormData();
-    fd.append("photo", file);
-    fd.append("venueType", activeVenue);
-    fd.append("title", title.trim() || VENUE_TYPES_IND.find(v => v.id === activeVenue)?.label || activeVenue);
-    try {
-      const res = await fetch(`${BASE_URL}/independence-day-photos`, {
-        method: "POST",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: fd,
-      });
-      if (res.ok) { setTitle(""); await load(); }
-      else { const d = await res.json(); alert(d.error || "Upload failed"); }
-    } catch { alert("Upload failed"); }
-    setUploading(false);
     e.target.value = "";
+    setUploading(true);
+    const venueName = VENUE_TYPES_IND.find(v => v.id === activeVenue)?.label || activeVenue;
+
+    if (file.type === "application/pdf") {
+      try {
+        setUploadProgress("Reading PDF…");
+        const blobs = await extractPdfPages(file);
+        for (let i = 0; i < blobs.length; i++) {
+          setUploadProgress(`Uploading page ${i + 1} / ${blobs.length}…`);
+          await uploadBlob(blobs[i], `${title.trim() || venueName} — pg ${i + 1}`, i);
+        }
+        setTitle("");
+        await load();
+      } catch (err) {
+        alert("PDF upload failed: " + err.message);
+      }
+    } else {
+      setUploadProgress("Uploading…");
+      try {
+        await uploadBlob(file, title.trim() || venueName, 0);
+        setTitle("");
+        await load();
+      } catch (err) {
+        alert("Upload failed: " + err.message);
+      }
+    }
+
+    setUploading(false);
+    setUploadProgress("");
   };
 
   const handleDelete = async (id) => {
@@ -372,9 +423,9 @@ function IndependenceDayPhotosSection({ BASE_URL, token }) {
           disabled={uploading}
           style={{ padding: "10px 20px", borderRadius: 10, background: uploading ? "#3A2A1A" : "linear-gradient(90deg,#FF9933,#e67e00)", color: "#fff", border: "none", cursor: uploading ? "not-allowed" : "pointer", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap" }}
         >
-          {uploading ? "Uploading…" : `+ Upload to ${VENUE_TYPES_IND.find(v => v.id === activeVenue)?.label}`}
+          {uploading ? (uploadProgress || "Uploading…") : `+ Upload image / PDF to ${VENUE_TYPES_IND.find(v => v.id === activeVenue)?.label}`}
         </button>
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleUpload} />
+        <input ref={fileRef} type="file" accept="image/*,.pdf,application/pdf" style={{ display: "none" }} onChange={handleUpload} />
       </div>
 
       {/* Photo grid */}
