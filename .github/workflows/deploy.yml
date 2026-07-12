@@ -38,5 +38,11 @@ jobs:
       - name: Sync dist to S3
         run: aws s3 sync dist/ s3://tendr-frontend-prod --delete
 
+      - name: Fix sitemap content-type
+        run: aws s3 cp dist/sitemap.xml s3://tendr-frontend-prod/sitemap.xml --content-type "application/xml" --metadata-directive REPLACE
+
+      - name: Fix robots.txt content-type
+        run: aws s3 cp dist/robots.txt s3://tendr-frontend-prod/robots.txt --content-type "text/plain" --metadata-directive REPLACE
+
       - name: Invalidate CloudFront cache
         run: aws cloudfront create-invalidation --distribution-id E1612L1W8TAB0V --paths "/*"
