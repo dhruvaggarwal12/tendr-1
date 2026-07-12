@@ -184,31 +184,79 @@ function ProgressBar({ current, total }) {
   );
 }
 
+// ── Lightbox ───────────────────────────────────────────────────────────────
+function PhotoLightbox({ photo, onClose }) {
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+  return (
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.88)", display: "flex",
+      alignItems: "center", justifyContent: "center", padding: 16,
+    }}>
+      <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", maxWidth: 640, width: "100%" }}>
+        <img src={photo.url} alt={photo.title}
+          style={{ width: "100%", borderRadius: 14, display: "block", maxHeight: "80vh", objectFit: "contain" }} />
+        {photo.title && (
+          <div style={{ marginTop: 10, textAlign: "center", color: "#fff", fontSize: 13, fontWeight: 600, opacity: 0.9 }}>
+            {photo.title}
+          </div>
+        )}
+        <button onClick={onClose} style={{
+          position: "absolute", top: -12, right: -12,
+          width: 32, height: 32, borderRadius: "50%",
+          background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)",
+          color: "#fff", fontSize: 16, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>✕</button>
+      </div>
+    </div>
+  );
+}
+
 // ── Photo card ─────────────────────────────────────────────────────────────
 function PhotoCard({ photo, selected, onToggle }) {
+  const [preview, setPreview] = useState(null);
   return (
-    <div onClick={() => onToggle(photo)} style={{
-      borderRadius: 12, overflow: "hidden", cursor: "pointer",
+    <>
+    {preview && <PhotoLightbox photo={preview} onClose={() => setPreview(null)} />}
+    <div style={{
+      borderRadius: 12, overflow: "hidden",
       border: selected ? `2.5px solid ${saffron}` : "2px solid transparent",
       boxShadow: selected ? `0 0 0 2px rgba(255,153,51,0.25)` : "0 2px 8px rgba(0,0,0,0.09)",
       position: "relative", transition: "all 0.15s",
     }}>
-      <img src={photo.url} alt={photo.title}
-        style={{ width: "100%", aspectRatio: "3/2", objectFit: "cover", display: "block" }}
-        loading="lazy" />
-      {selected && (
-        <div style={{
-          position: "absolute", top: 7, right: 7,
-          background: saffron, color: white, borderRadius: "50%",
-          width: 22, height: 22, display: "flex", alignItems: "center",
-          justifyContent: "center", fontSize: 12, fontWeight: 700,
-        }}>✓</div>
-      )}
+      <div style={{ position: "relative", cursor: "pointer" }} onClick={() => onToggle(photo)}>
+        <img src={photo.url} alt={photo.title}
+          style={{ width: "100%", aspectRatio: "3/2", objectFit: "cover", display: "block" }}
+          loading="lazy" />
+        {selected && (
+          <div style={{
+            position: "absolute", top: 7, right: 7,
+            background: saffron, color: white, borderRadius: "50%",
+            width: 22, height: 22, display: "flex", alignItems: "center",
+            justifyContent: "center", fontSize: 12, fontWeight: 700,
+          }}>✓</div>
+        )}
+        <button
+          onClick={(e) => { e.stopPropagation(); setPreview(photo); }}
+          style={{
+            position: "absolute", bottom: 6, right: 6,
+            background: "rgba(0,0,0,0.55)", border: "none", borderRadius: 6,
+            color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 8px",
+            cursor: "pointer",
+          }}
+        >⤢ View</button>
+      </div>
       <div style={{ padding: "7px 9px", background: white }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: dark }}>{photo.title}</div>
         <div style={{ fontSize: 10, color: muted, marginTop: 1, lineHeight: 1.4 }}>{photo.description}</div>
       </div>
     </div>
+    </>
   );
 }
 

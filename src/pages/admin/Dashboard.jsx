@@ -297,6 +297,7 @@ function IndependenceDayPhotosSection({ BASE_URL, token }) {
   const [uploadProgress, setUploadProgress] = React.useState("");
   const [title, setTitle]         = React.useState("");
   const [deleting, setDeleting]   = React.useState(null);
+  const [lightbox, setLightbox]   = React.useState(null);
   const fileRef = React.useRef();
 
   const load = async () => {
@@ -384,6 +385,15 @@ function IndependenceDayPhotosSection({ BASE_URL, token }) {
 
   return (
     <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#0d0d0d] border-l-2 border-[#CCAB4A] overflow-y-auto p-6" style={{ fontFamily: "'Outfit', sans-serif" }}>
+      {lightbox && (
+        <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+          <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", maxWidth: 720, width: "100%" }}>
+            <img src={lightbox.url} alt={lightbox.title} style={{ width: "100%", borderRadius: 14, display: "block", maxHeight: "85vh", objectFit: "contain" }} />
+            {lightbox.title && <div style={{ marginTop: 10, textAlign: "center", color: "#fff", fontSize: 14, fontWeight: 600 }}>{lightbox.title}</div>}
+            <button onClick={() => setLightbox(null)} style={{ position: "absolute", top: -14, right: -14, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          </div>
+        </div>
+      )}
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 22, fontWeight: 800, color: "#FFF8EC", marginBottom: 4 }}>🇮🇳 Independence Day Photos</div>
         <div style={{ fontSize: 13, color: "#9B7450" }}>Upload decoration reference photos grouped by venue type. Customers see photos matching their chosen venue.</div>
@@ -445,10 +455,19 @@ function IndependenceDayPhotosSection({ BASE_URL, token }) {
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
           {venuePhotos.map((p) => (
             <div key={p._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "#1A0E06", border: "1px solid #3A2A1A" }}>
-              <img src={p.url} alt={p.title} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} loading="lazy" />
+              <img
+                src={p.url} alt={p.title}
+                onClick={() => setLightbox(p)}
+                style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block", cursor: "zoom-in" }}
+                loading="lazy"
+              />
               {p.title && (
                 <div style={{ padding: "6px 8px", fontSize: 11, fontWeight: 600, color: "#FFF8EC", background: "rgba(0,0,0,0.6)" }}>{p.title}</div>
               )}
+              <button
+                onClick={() => setLightbox(p)}
+                style={{ position: "absolute", bottom: p.title ? 32 : 6, right: 6, background: "rgba(0,0,0,0.6)", border: "none", borderRadius: 6, color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 7px", cursor: "pointer" }}
+              >⤢ View</button>
               <button
                 onClick={() => handleDelete(p._id)}
                 disabled={deleting === p._id}
