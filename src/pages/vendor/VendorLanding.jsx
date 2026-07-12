@@ -29,9 +29,9 @@ const CITY_MAP = {
 };
 
 const BUDGET_MAP = {
-  "under-20000":  { max: 20000,  label: "under ₹20,000",  display: "₹20,000" },
-  "under-50000":  { max: 50000,  label: "under ₹50,000",  display: "₹50,000" },
-  "under-1-lakh": { max: 100000, label: "under ₹1 Lakh",  display: "₹1 Lakh" },
+  "under-20000":  { max: 20000,  label: "under ₹20,000",  display: "Under ₹20k" },
+  "under-50000":  { max: 50000,  label: "under ₹50,000",  display: "Under ₹50k" },
+  "under-1-lakh": { max: 100000, label: "under ₹1 Lakh",  display: "Under ₹1L" },
 };
 
 function parseSlug(slug) {
@@ -185,16 +185,16 @@ const formatINR = (n) => "₹" + Number(n).toLocaleString("en-IN");
 function FAQItem({ q, a }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{ background: "#FFFCF5", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden" }}>
+    <div style={{ background: "#fff", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden" }}>
       <button
         onClick={() => setOpen(o => !o)}
-        style={{ width: "100%", padding: "16px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", cursor: "pointer", fontFamily: font, textAlign: "left", gap: 12 }}
+        style={{ width: "100%", padding: "15px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "none", border: "none", cursor: "pointer", fontFamily: font, textAlign: "left", gap: 12 }}
       >
         <span style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", flex: 1 }}>{q}</span>
-        <span style={{ fontSize: 14, color: "#C47A2E", flexShrink: 0, transition: "transform 0.2s", display: "inline-block", transform: open ? "rotate(180deg)" : "none" }}>↓</span>
+        <span style={{ fontSize: 12, color: "#C47A2E", flexShrink: 0, transition: "transform 0.2s", display: "inline-block", transform: open ? "rotate(180deg)" : "none" }}>⌄</span>
       </button>
       {open && (
-        <div style={{ padding: "0 20px 16px", fontSize: 14, color: "#9B7450", lineHeight: 1.75 }}>{a}</div>
+        <div style={{ padding: "0 18px 15px", fontSize: 14, color: "#6b4c2a", lineHeight: 1.75 }}>{a}</div>
       )}
     </div>
   );
@@ -203,32 +203,50 @@ function FAQItem({ q, a }) {
 function VendorCard({ vendor, onClick }) {
   const photo = vendor.image || vendor.portfolioPhotos?.[0] || null;
   const price = vendor.price || vendor.startingPrice || null;
+  const rating = vendor.rating || vendor.averageRating || null;
+  const isVerified = vendor.isVerified || vendor.verified || false;
+
   return (
     <div
       onClick={onClick}
-      style={{ background: "#FFFCF5", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 3px 16px rgba(139,69,19,0.07)", overflow: "hidden", cursor: "pointer", fontFamily: font, transition: "all 0.2s" }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.15)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
-      onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 3px 16px rgba(139,69,19,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
+      className="vl-card"
+      style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 2px 10px rgba(139,69,19,0.06)", overflow: "hidden", cursor: "pointer", fontFamily: font, transition: "all 0.2s" }}
     >
-      <div style={{ height: 160, background: "#f0e8d8", overflow: "hidden" }}>
+      {/* Image */}
+      <div style={{ height: 180, background: "#f5ede0", overflow: "hidden", position: "relative" }}>
         {photo
           ? <img src={photo} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
-          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 36, color: "#C47A2E", opacity: 0.4 }}>📷</div>
+          : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, color: "#C47A2E", opacity: 0.25 }}>📷</div>
         }
+        {isVerified && (
+          <div style={{ position: "absolute", top: 10, left: 10, background: "#C47A2E", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 100, letterSpacing: "0.04em" }}>
+            ✓ Verified
+          </div>
+        )}
+        {rating && (
+          <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>
+            ⭐ {Number(rating).toFixed(1)}
+          </div>
+        )}
       </div>
-      <div style={{ padding: "14px 16px" }}>
-        <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{vendor.name}</div>
+
+      {/* Info */}
+      <div style={{ padding: "13px 14px 14px" }}>
+        <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{vendor.name}</div>
         <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 10 }}>
           {vendor.serviceType || ""}{(vendor.address?.city || vendor.city) ? ` · ${vendor.address?.city || vendor.city}` : ""}
         </div>
-        <div style={{ marginBottom: 12 }}>
-          {price
-            ? <span style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E" }}>Starting {formatINR(price)}</span>
-            : <span style={{ fontSize: 12, color: "#9B7450" }}>Price on request</span>
-          }
-        </div>
-        <div style={{ padding: "8px", borderRadius: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, textAlign: "center" }}>
-          View Profile →
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <div>
+            {price
+              ? <span style={{ fontSize: 14, fontWeight: 800, color: "#C47A2E" }}>Starting {formatINR(price)}</span>
+              : <span style={{ fontSize: 12, color: "#9B7450" }}>Price on request</span>
+            }
+          </div>
+          <div style={{ padding: "6px 14px", borderRadius: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, whiteSpace: "nowrap" }}>
+            View Profile →
+          </div>
         </div>
       </div>
     </div>
@@ -237,15 +255,32 @@ function VendorCard({ vendor, onClick }) {
 
 function SkeletonCard() {
   return (
-    <div style={{ background: "#FFFCF5", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.1)", overflow: "hidden" }}>
-      <div style={{ height: 160, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-      <div style={{ padding: "14px 16px" }}>
-        {[80, 55, 40, "100%"].map((w, i) => (
-          <div key={i} style={{ height: i === 3 ? 34 : 12, width: w, background: "#f0ebe3", borderRadius: i === 3 ? 10 : 8, marginBottom: i < 3 ? 10 : 0, animation: "shimmer 1.4s infinite" }} />
+    <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.08)", overflow: "hidden" }}>
+      <div style={{ height: 180, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+      <div style={{ padding: "13px 14px" }}>
+        {[70, 50, 90].map((w, i) => (
+          <div key={i} style={{ height: 12, width: `${w}%`, background: "#f0ebe3", borderRadius: 6, marginBottom: 10, animation: "shimmer 1.4s infinite" }} />
         ))}
+        <div style={{ height: 32, background: "#f0ebe3", borderRadius: 8, animation: "shimmer 1.4s infinite" }} />
       </div>
     </div>
   );
+}
+
+// ── Pill / chip component ──────────────────────────────────────────────────────
+
+function Pill({ label, active, to, onClick }) {
+  const style = {
+    display: "inline-flex", alignItems: "center",
+    padding: "5px 14px", borderRadius: 100, fontSize: 12, fontWeight: active ? 700 : 500,
+    border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.22)"}`,
+    background: active ? "rgba(196,122,46,0.1)" : "#fff",
+    color: active ? "#C47A2E" : "#6b4c2a",
+    textDecoration: "none", cursor: "pointer", whiteSpace: "nowrap", fontFamily: font,
+    transition: "all 0.15s",
+  };
+  if (to) return <Link to={to} style={style}>{label}</Link>;
+  return <button onClick={onClick} style={{ ...style, border: style.border }}>{label}</button>;
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
@@ -257,6 +292,9 @@ export default function VendorLanding() {
 
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [sortBy, setSortBy] = useState("rankingScore");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [showHint, setShowHint] = useState(true);
 
   useEffect(() => {
     if (!parsed || parsed.service.redirect) return;
@@ -265,15 +303,15 @@ export default function VendorLanding() {
       location: parsed.city,
       serviceTypes: [parsed.service.type],
       ...(parsed.budget && { maxPrice: parsed.budget.max }),
-      sortBy: "rankingScore",
-      sortOrder: "desc",
+      sortBy,
+      sortOrder,
       page: 1,
-      limit: 12,
+      limit: 16,
     })
       .then(data => setVendors(data.vendors || []))
       .catch(() => setVendors([]))
       .finally(() => setLoading(false));
-  }, [slug]); // eslint-disable-line
+  }, [slug, sortBy, sortOrder]); // eslint-disable-line
 
   if (!parsed) return <NotFound />;
 
@@ -298,7 +336,7 @@ export default function VendorLanding() {
   const otherCities = Object.entries(CITY_MAP).filter(([, c]) => c !== city);
   const budgetVariants = Object.entries(BUDGET_MAP);
 
-  // ── Non-vendor service page (Gift Hampers / Fun Activities / Wedding Stationery) ──
+  // ── Non-vendor service page ────────────────────────────────────────────────
   if (service.redirect) {
     return (
       <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
@@ -309,41 +347,47 @@ export default function VendorLanding() {
           breadcrumbs={[{ name: "Home", path: "/" }, { name: service.label, path: service.redirect }]}
         />
         <BasicSpeedDial />
-        <HamburgerNav />
+        <HamburgerNav active="Browse" showBack />
 
-        <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "clamp(28px,5vw,56px) 24px" }}>
-          <div style={{ maxWidth: 760, margin: "0 auto", textAlign: "center" }}>
-            <span style={{ fontSize: 52 }}>{service.icon}</span>
-            <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.8rem)", fontWeight: 900, color: "#fff", margin: "14px 0 10px", letterSpacing: "-0.02em" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", padding: "28px 20px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
+          {/* Breadcrumb */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#9B7450", marginBottom: 20 }}>
+            <Link to="/" style={{ color: "#9B7450", textDecoration: "none" }}>Home</Link>
+            <span>›</span>
+            <span style={{ color: "#C47A2E", fontWeight: 600 }}>{service.label}</span>
+          </div>
+
+          {/* Header */}
+          <div style={{ marginBottom: 24 }}>
+            <span style={{ fontSize: 28, marginRight: 10 }}>{service.icon}</span>
+            <h1 style={{ display: "inline", fontSize: "clamp(1.5rem,3.5vw,2rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em" }}>
               {service.label} in {city}
             </h1>
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", maxWidth: 520, margin: "0 auto 28px" }}>
+            <p style={{ fontSize: 14, color: "#6b4c2a", lineHeight: 1.65, marginTop: 10, maxWidth: 600 }}>
               {nonVendorDetails?.about(city)}
             </p>
-            <button
-              onClick={() => navigate(service.redirect)}
-              style={{ padding: "14px 36px", borderRadius: 14, border: "none", background: "#fff", color: "#C47A2E", fontSize: 16, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 6px 20px rgba(0,0,0,0.15)" }}
-            >
-              Browse {service.label} →
-            </button>
           </div>
-        </div>
 
-        <div style={{ maxWidth: 760, margin: "0 auto", padding: "32px 20px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
+          {/* CTA */}
+          <button
+            onClick={() => navigate(service.redirect)}
+            style={{ padding: "13px 32px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 16px rgba(196,122,46,0.3)", marginBottom: 32 }}
+          >
+            Browse {service.label} →
+          </button>
+
           {nonVendorDetails?.tip && (
-            <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.07),rgba(204,171,74,0.05))", borderRadius: 18, padding: "22px 24px", border: "1.5px solid rgba(196,122,46,0.2)", marginBottom: 32 }}>
-              <p style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 6px" }}>Pro tip</p>
+            <div style={{ background: "rgba(196,122,46,0.06)", borderRadius: 14, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.18)", marginBottom: 28 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 6px" }}>Pro tip</p>
               <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.75, margin: 0 }}>{nonVendorDetails.tip}</p>
             </div>
           )}
-          <div style={{ marginBottom: 24 }}>
-            <h3 style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 10 }}>{service.label} in other cities</h3>
+
+          <div>
+            <h3 style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 10 }}>{service.label} in other cities</h3>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {otherCities.map(([cs, cn]) => (
-                <Link key={cs} to={`/${serviceSlug}-in-${cs}`}
-                  style={{ padding: "6px 16px", borderRadius: 100, background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 13, fontWeight: 600, color: "#C47A2E", textDecoration: "none" }}>
-                  {service.label} in {cn}
-                </Link>
+                <Pill key={cs} label={`${service.label} in ${cn}`} to={`/${serviceSlug}-in-${cs}`} />
               ))}
             </div>
           </div>
@@ -352,7 +396,7 @@ export default function VendorLanding() {
     );
   }
 
-  // ── Vendor service page (Decorator / Caterer / Photographer / DJ) ──
+  // ── Vendor service page ────────────────────────────────────────────────────
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO
@@ -367,101 +411,188 @@ export default function VendorLanding() {
         schema={faqSchema}
       />
       <BasicSpeedDial />
-      <HamburgerNav />
+      <HamburgerNav active="Browse" showBack />
 
-      {/* Hero */}
-      <div style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", padding: "clamp(24px,5vw,48px) 24px clamp(28px,5vw,52px)" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.7)", textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 8 }}>
-            {city} · {service.label}
-          </p>
-          <h1 style={{ fontSize: "clamp(1.6rem,4vw,2.8rem)", fontWeight: 900, color: "#fff", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
-            {service.label} in {city}{budgetStr}
-          </h1>
-          <p style={{ fontSize: 15, color: "rgba(255,255,255,0.85)", maxWidth: 580, margin: "0 0 20px", lineHeight: 1.6 }}>
-            {details?.about(city, budget)}
-          </p>
-          {budget && (
-            <div style={{ display: "inline-flex", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(255,255,255,0.2)", fontSize: 13, fontWeight: 700, color: "#fff" }}>
-                Budget {budget.label}
-              </span>
-              <span style={{ padding: "5px 14px", borderRadius: 100, background: "rgba(255,255,255,0.2)", fontSize: 13, fontWeight: 700, color: "#fff" }}>
-                📍 {city}
-              </span>
-            </div>
-          )}
+      <div style={{ maxWidth: 1080, margin: "0 auto", padding: "16px 16px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
+
+        {/* Breadcrumb */}
+        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#9B7450", marginBottom: 12 }}>
+          <Link to="/" style={{ color: "#9B7450", textDecoration: "none" }}>Home</Link>
+          <span style={{ opacity: 0.5 }}>›</span>
+          <Link to={`/listings?serviceType=${service.type}`} style={{ color: "#9B7450", textDecoration: "none" }}>{service.label}</Link>
+          <span style={{ opacity: 0.5 }}>›</span>
+          <span style={{ color: "#C47A2E", fontWeight: 600 }}>{city}{budget ? ` · ${budget.display}` : ""}</span>
         </div>
-      </div>
 
-      <div style={{ maxWidth: 900, margin: "0 auto", padding: "32px 20px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
+        {/* H1 */}
+        <h1 style={{ fontFamily: font, fontWeight: 800, fontSize: "clamp(1.4rem,3vw,1.9rem)", color: "#1a1a1a", margin: "0 0 4px", lineHeight: 1.2, textDecoration: "underline", textDecorationColor: "rgba(196,122,46,0.4)", textUnderlineOffset: 6 }}>
+          {service.label} in {city}{budget ? ` · ${budget.display}` : ""}
+        </h1>
+        <p style={{ fontSize: 13, color: "#7a5535", lineHeight: 1.55, margin: "0 0 16px", maxWidth: 620 }}>
+          {details?.about(city, budget)}
+        </p>
 
-        {/* Vendor grid */}
-        <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", marginBottom: 16 }}>
+        {/* Filter toolbar card */}
+        <div style={{ background: "#fff", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.13)", padding: "14px 16px", marginBottom: 14, boxShadow: "0 1px 6px rgba(139,69,19,0.06)" }}>
+
+          {/* City row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", flexShrink: 0 }}>City</span>
+            <div className="vl-pill-row" style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1 }}>
+              <Pill label="All" active={false} to={`/listings?serviceType=${service.type}`} />
+              {Object.entries(CITY_MAP).map(([cs, cn]) => (
+                <Pill key={cs} label={cn} active={cn === city}
+                  to={`/${serviceSlug}-in-${cs}${budget ? `-${budget.slug}` : ""}`} />
+              ))}
+            </div>
+          </div>
+
+          {/* Budget row */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", flexShrink: 0 }}>Budget</span>
+            <div className="vl-pill-row" style={{ display: "flex", gap: 6, overflowX: "auto", flex: 1 }}>
+              <Pill label="Any" active={!budget} to={`/${serviceSlug}-in-${citySlug}`} />
+              {budgetVariants.map(([bs, bv]) => (
+                <Pill key={bs} label={bv.display} active={budget?.slug === bs}
+                  to={`/${serviceSlug}-in-${citySlug}-${bs}`} />
+              ))}
+            </div>
+          </div>
+
+          {/* Sort + CTA row */}
+          <div className="vl-sort-row" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)}
+              style={{ fontFamily: font, fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.35)", background: "#F8F4EF", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+              <option value="rankingScore">Best Match</option>
+              <option value="rating">Rating</option>
+              <option value="price">Price</option>
+            </select>
+            <select value={sortOrder} onChange={e => setSortOrder(e.target.value)}
+              style={{ fontFamily: font, fontSize: 12, padding: "4px 10px", borderRadius: 100, border: "1px solid rgba(196,122,46,0.35)", background: "#F8F4EF", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+              <option value="desc">High to Low</option>
+              <option value="asc">Low to High</option>
+            </select>
+            <div style={{ marginLeft: "auto", display: "flex", gap: 8, flexShrink: 0 }}>
+              <button
+                onClick={() => navigate(`/listings?serviceType=${service.type}&location=${city}`)}
+                style={{ padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "#F8F4EF", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+              >
+                All {service.plural} in {city} →
+              </button>
+              <button
+                onClick={() => navigate("/booking")}
+                style={{ padding: "6px 16px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}
+              >
+                Plan my event →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* How to book strip */}
+        {showHint && (
+          <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.04))", border: "1.5px solid rgba(196,122,46,0.18)", borderRadius: 10, padding: "9px 14px", marginBottom: 14 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 5 }}>
+              <span style={{ fontSize: 11.5, color: "#7A4A1A", fontWeight: 700 }}>💡 How to book:</span>
+              <button onClick={() => setShowHint(false)} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0 }}>✕</button>
+            </div>
+            <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none", alignItems: "center" }}>
+              {[
+                { label: "1. Quick View" }, { sep: true },
+                { label: "2. Request to Chat" }, { sep: true },
+                { label: "3. Finalise Vendor" }, { sep: true },
+                { label: "4. Review & Pay" }
+              ].map((item, i) =>
+                item.sep ? (
+                  <span key={i} style={{ color: "rgba(196,122,46,0.35)", fontSize: 10, flexShrink: 0 }}>›</span>
+                ) : (
+                  <span key={i} style={{ background: "rgba(196,122,46,0.12)", color: "#7A4020", fontWeight: 700, fontSize: 11, padding: "3px 10px", borderRadius: 100, whiteSpace: "nowrap", flexShrink: 0, border: "1px solid rgba(196,122,46,0.18)" }}>
+                    {item.label}
+                  </span>
+                )
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Vendor count label */}
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 14 }}>
           {loading
             ? `Finding ${service.plural} in ${city}…`
             : vendors.length > 0
               ? `${vendors.length} ${service.plural} found in ${city}${budgetStr}`
               : `${service.label} in ${city}`
           }
-        </h2>
+        </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16, marginBottom: 32 }} className="vl-grid">
+        {/* Vendor grid */}
+        <div className="vl-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(230px,1fr))", gap: 14, marginBottom: 28 }}>
           {loading
-            ? Array.from({ length: 6 }, (_, i) => <SkeletonCard key={i} />)
+            ? Array.from({ length: 8 }, (_, i) => <SkeletonCard key={i} />)
             : vendors.length > 0
               ? vendors.map(v => <VendorCard key={v._id} vendor={v} onClick={() => navigate(`/vendor/${v._id}`)} />)
               : (
                 <div style={{ gridColumn: "1/-1", textAlign: "center", padding: "48px 20px" }}>
-                  <div style={{ fontSize: 40, marginBottom: 12 }}>🔍</div>
+                  <div style={{ fontSize: 36, marginBottom: 12 }}>🔍</div>
                   <p style={{ fontSize: 14, color: "#9B7450", marginBottom: 16 }}>
-                    No vendors listed in this category yet. Browse all {service.plural} or try a different city.
+                    No vendors listed here yet. Browse all {service.plural} or try a nearby city.
                   </p>
-                  <button onClick={() => navigate("/listings")}
+                  <button onClick={() => navigate(`/listings?serviceType=${service.type}`)}
                     style={{ padding: "10px 24px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    Browse All Vendors →
+                    Browse All {service.label} →
                   </button>
                 </div>
               )
           }
         </div>
 
+        {/* CTA row below grid */}
         {vendors.length > 0 && (
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
+          <div style={{ display: "flex", gap: 12, marginBottom: 36, flexWrap: "wrap" }}>
             <button
-              onClick={() => navigate(`/listings?serviceType=${service.type}`)}
-              style={{ padding: "12px 32px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+              onClick={() => navigate(`/listings?serviceType=${service.type}&location=${city}`)}
+              style={{ padding: "11px 28px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
             >
-              See all {service.plural} →
+              See all {service.plural} in {city} →
+            </button>
+            <button
+              onClick={() => navigate("/booking")}
+              style={{ padding: "11px 28px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}
+            >
+              Plan your event →
             </button>
           </div>
         )}
 
-        {/* Pricing guide */}
-        {details?.pricing && (
-          <div style={{ background: "#FFFCF5", borderRadius: 18, padding: "24px", border: "1.5px solid rgba(196,122,46,0.15)", marginBottom: 16, boxShadow: "0 2px 12px rgba(139,69,19,0.06)" }}>
-            <h2 style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>
-              Pricing guide: {service.label} in {city}
-            </h2>
-            <p style={{ fontSize: 14, color: "#9B7450", lineHeight: 1.75, margin: 0 }}>{details.pricing(city)}</p>
-          </div>
-        )}
+        {/* Divider */}
+        <div style={{ borderTop: "1.5px solid rgba(196,122,46,0.1)", marginBottom: 28 }} />
 
-        {/* Pro tip */}
-        {details?.tip && (
-          <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.07),rgba(204,171,74,0.05))", borderRadius: 18, padding: "22px 24px", border: "1.5px solid rgba(196,122,46,0.2)", marginBottom: 32 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 6px" }}>Pro tip</p>
-            <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.75, margin: 0 }}>{details.tip}</p>
-          </div>
-        )}
+        {/* Pricing guide + Pro tip — side by side on desktop */}
+        <div className="vl-info-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 28 }}>
+          {details?.pricing && (
+            <div style={{ background: "#fff", borderRadius: 14, padding: "20px", border: "1.5px solid rgba(196,122,46,0.12)" }}>
+              <h2 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: "0 0 10px" }}>
+                💰 Pricing guide — {service.label} in {city}
+              </h2>
+              <p style={{ fontSize: 13, color: "#6b4c2a", lineHeight: 1.7, margin: 0 }}>{details.pricing(city)}</p>
+            </div>
+          )}
+          {details?.tip && (
+            <div style={{ background: "rgba(196,122,46,0.05)", borderRadius: 14, padding: "20px", border: "1.5px solid rgba(196,122,46,0.15)" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>Pro tip</p>
+              <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.7, margin: 0 }}>{details.tip}</p>
+            </div>
+          )}
+        </div>
 
         {/* FAQs */}
         {details?.faqs && (
-          <div style={{ marginBottom: 40 }}>
-            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", marginBottom: 14 }}>
+          <div style={{ marginBottom: 36 }}>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E", marginBottom: 12 }}>
               Frequently asked questions
             </h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {details.faqs(city, budget).map((faq, i) => (
                 <FAQItem key={i} q={faq.q} a={faq.a} />
               ))}
@@ -469,46 +600,55 @@ export default function VendorLanding() {
           </div>
         )}
 
-        {/* Cross-links: other cities */}
-        <div style={{ marginBottom: 24 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 10 }}>
-            {service.label} in other cities
-          </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {otherCities.map(([cs, cn]) => (
-              <Link key={cs} to={`/${serviceSlug}-in-${cs}${budget ? `-${budget.slug}` : ""}`}
-                style={{ padding: "6px 16px", borderRadius: 100, background: "#FFFCF5", border: "1.5px solid rgba(196,122,46,0.2)", fontSize: 13, fontWeight: 600, color: "#C47A2E", textDecoration: "none" }}>
-                {service.label} in {cn}
-              </Link>
-            ))}
-          </div>
-        </div>
+        <div style={{ borderTop: "1.5px solid rgba(196,122,46,0.1)", marginBottom: 20 }} />
 
-        {/* Cross-links: budget variants */}
-        <div style={{ marginBottom: 32 }}>
-          <h3 style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 10 }}>
-            Browse {service.label} by budget in {city}
+        {/* Combined cross-links: all city × budget combinations in one scrollable row */}
+        <div style={{ marginBottom: 16 }}>
+          <h3 style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 10 }}>
+            Also browse {service.label}
           </h3>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            <Link to={`/${serviceSlug}-in-${citySlug}`}
-              style={{ padding: "6px 16px", borderRadius: 100, background: !budget ? "rgba(196,122,46,0.12)" : "#FFFCF5", border: `1.5px solid ${!budget ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, fontSize: 13, fontWeight: 600, color: "#C47A2E", textDecoration: "none" }}>
-              All budgets
-            </Link>
-            {budgetVariants.map(([bs, bv]) => (
-              <Link key={bs} to={`/${serviceSlug}-in-${citySlug}-${bs}`}
-                style={{ padding: "6px 16px", borderRadius: 100, background: budget?.slug === bs ? "rgba(196,122,46,0.12)" : "#FFFCF5", border: `1.5px solid ${budget?.slug === bs ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, fontSize: 13, fontWeight: 600, color: "#C47A2E", textDecoration: "none" }}>
-                {bv.label}
-              </Link>
-            ))}
+          <div className="vl-crosslinks" style={{ display: "flex", gap: 8, overflowX: "auto", flexWrap: "wrap" }}>
+            {Object.entries(CITY_MAP).map(([cs, cn]) => {
+              const isCurrentCity = cn === city;
+              return [
+                // City with no budget
+                <Pill
+                  key={`${cs}-all`}
+                  label={`${cn}`}
+                  active={isCurrentCity && !budget}
+                  to={`/${serviceSlug}-in-${cs}`}
+                />,
+                // City + each budget
+                ...budgetVariants.map(([bs, bv]) => (
+                  <Pill
+                    key={`${cs}-${bs}`}
+                    label={`${cn} · ${bv.display}`}
+                    active={isCurrentCity && budget?.slug === bs}
+                    to={`/${serviceSlug}-in-${cs}-${bs}`}
+                  />
+                )),
+              ];
+            })}
           </div>
         </div>
 
       </div>
 
       <style>{`
-        @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-        @media(max-width:480px) { .vl-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; } }
-        @media(max-width:360px) { .vl-grid { grid-template-columns: 1fr !important; } }
+        @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+        .vl-card:hover { box-shadow: 0 6px 22px rgba(196,122,46,0.14) !important; transform: translateY(-2px) !important; }
+        .vl-pill-row, .vl-crosslinks { scrollbar-width: none; }
+        .vl-pill-row::-webkit-scrollbar, .vl-crosslinks::-webkit-scrollbar { display: none; }
+        @media(max-width:640px) {
+          .vl-grid { grid-template-columns: repeat(2,1fr) !important; gap: 10px !important; }
+          .vl-info-grid { grid-template-columns: 1fr !important; }
+          .vl-sort-row { flex-wrap: wrap !important; }
+          .vl-sort-row > div[style*="margin-left"] { margin-left: 0 !important; width: 100%; }
+          .vl-sort-row > div[style*="margin-left"] button { flex: 1; }
+        }
+        @media(max-width:360px) {
+          .vl-grid { grid-template-columns: 1fr !important; }
+        }
       `}</style>
     </div>
   );
