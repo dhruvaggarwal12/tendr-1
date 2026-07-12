@@ -102,6 +102,81 @@ const PLAN_CONTENT = {
   },
 };
 
+// ── Venue-specific tips (layered on top of org-type content) ───────────────
+const VENUE_TIPS = {
+  room: {
+    checklist: [
+      "Rearrange furniture to open up floor space",
+      "Check ventilation / AC capacity for guest count",
+      "Drape tricolor fabric or bunting on walls",
+    ],
+    ideas: [
+      { icon: "✨", title: "Fairy Light Backdrop", desc: "String saffron-white-green fairy lights behind a feature wall for photos" },
+      { icon: "🌸", title: "Floral Table Centrepiece", desc: "Marigold (saffron), tuberose (white) & leaves (green) in a small vase" },
+    ],
+  },
+  hall: {
+    checklist: [
+      "Book the hall at least 2 weeks in advance",
+      "Plan stage / podium placement and flag hoisting spot",
+      "Arrange entry gate arch decoration",
+      "Confirm parking & crowd flow with venue management",
+    ],
+    ideas: [
+      { icon: "🎪", title: "Grand Entry Arch", desc: "Tricolor balloon or marigold arch at the main entrance" },
+      { icon: "🎭", title: "Cultural Stage Show", desc: "Patriotic skits, dance performances, or a live band on the main stage" },
+    ],
+  },
+  terrace: {
+    checklist: [
+      "Check weather forecast 3 days before — have a rain backup",
+      "Arrange shade canopy or umbrellas for afternoon sun",
+      "Plan power extension cord for lights & PA",
+      "Secure loose decorations against wind",
+    ],
+    ideas: [
+      { icon: "🌅", title: "Sunrise Flag Hoisting", desc: "Hoist the flag at sunrise for a dramatic rooftop sky backdrop" },
+      { icon: "🪁", title: "Kite Flying Session", desc: "Classic terrace activity — tricolor kites after the ceremony" },
+    ],
+  },
+  garden: {
+    checklist: [
+      "Get park / society / RWA permission in writing",
+      "Arrange outdoor seating — durries, plastic chairs or bean bags",
+      "Keep a weather backup plan (marquee or nearby indoor space)",
+      "Plan waste disposal — keep the garden clean post-event",
+    ],
+    ideas: [
+      { icon: "🌿", title: "Nature Tricolor Decor", desc: "Marigold (saffron), tuberose (white) and leaves (green) — no plastic" },
+      { icon: "🏃", title: "Outdoor Games", desc: "Sack race, tug-of-war or relay run for kids & families in the open space" },
+    ],
+  },
+  office: {
+    checklist: [
+      "Clear a common area, lobby or cafeteria for the event",
+      "Coordinate with FM/admin team for space & PA clearance",
+      "Plan within office hours or ensure OT approvals for late events",
+      "Get approval from HR head or management for budget spend",
+    ],
+    ideas: [
+      { icon: "🖥️", title: "Digital Patriotic Wall", desc: "Slideshow of freedom fighters on office screens during the event" },
+      { icon: "🎙️", title: "Employee Storytelling", desc: "3-minute slots for employees to share stories of inspiration from India" },
+    ],
+  },
+  roadside: {
+    checklist: [
+      "Get written permission from local authority / municipality",
+      "Arrange traffic management if road is partially blocked",
+      "Organise power supply — generator if grid isn't accessible",
+      "Coordinate with police or security if crowd is large",
+    ],
+    ideas: [
+      { icon: "📢", title: "Community March / Parade", desc: "Short march past with tricolor flags through the neighbourhood" },
+      { icon: "🎺", title: "Band or Dhol Performance", desc: "Live dhol or brass band adds energy and draws the community together" },
+    ],
+  },
+};
+
 // ── Styles ─────────────────────────────────────────────────────────────────
 const overlay = {
   position: "fixed", inset: 0, zIndex: 9999,
@@ -261,10 +336,17 @@ function PhotoCard({ photo, selected, onToggle }) {
 }
 
 // ── Plan & Ideas content panel ─────────────────────────────────────────────
-function PlanIdeas({ orgType, onBookServices }) {
+function PlanIdeas({ orgType, venueType, onBookServices }) {
   const [tab, setTab] = useState("timeline");
-  const content = PLAN_CONTENT[orgType] || PLAN_CONTENT.community;
+  const base = PLAN_CONTENT[orgType] || PLAN_CONTENT.community;
+  const venueTips = VENUE_TIPS[venueType] || {};
+  const content = {
+    timeline: base.timeline,
+    checklist: [...base.checklist, ...(venueTips.checklist || [])],
+    ideas:     [...base.ideas,     ...(venueTips.ideas     || [])],
+  };
   const label = orgType === "hr" ? "Corporate" : "Community";
+  const venueName = { room: "Room", hall: "Hall", terrace: "Terrace", garden: "Garden/Park", office: "Office", roadside: "Roadside" }[venueType];
 
   const tabStyle = (active) => ({
     flex: 1, padding: "9px 4px", border: "none", cursor: "pointer",
@@ -280,7 +362,9 @@ function PlanIdeas({ orgType, onBookServices }) {
       <div style={{ textAlign: "center", marginBottom: 16 }}>
         <div style={{ fontSize: 22, marginBottom: 4 }}>🇮🇳</div>
         <div style={{ fontSize: 16, fontWeight: 700, color: dark }}>Independence Day Planning Guide</div>
-        <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{label} event</div>
+        <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>
+          {label} event{venueName ? ` · ${venueName}` : ""}
+        </div>
       </div>
 
       {/* Tabs */}
@@ -493,7 +577,7 @@ export default function IndependenceDayFlow({ onClose }) {
             <div style={{ fontSize: "1.2rem", fontWeight: 700, margin: 0 }}>Independence Day Guide</div>
           </div>
           <div style={body}>
-            <PlanIdeas orgType={orgType} onBookServices={sendToBaatKaro} />
+            <PlanIdeas orgType={orgType} venueType={venueType} onBookServices={sendToBaatKaro} />
           </div>
         </div>
       </div>
