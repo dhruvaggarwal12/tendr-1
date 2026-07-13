@@ -1170,6 +1170,40 @@ const Home = () => {
           </div>
           {/* ── END Independence Day strip ── */}
 
+          {/* ── House Party Hub strip ── */}
+          <div
+            onClick={() => navigate("/house-party")}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              width: "100%", marginBottom: 18,
+              background: "linear-gradient(90deg, #1a0533 0%, #2d1b69 50%, #0f2027 100%)",
+              borderRadius: 14, padding: "12px 14px",
+              overflow: "hidden", position: "relative",
+              boxShadow: "0 4px 20px rgba(124,58,237,0.3)",
+              boxSizing: "border-box", gap: 10, cursor: "pointer",
+              border: "1.5px solid rgba(124,58,237,0.3)",
+            }}
+          >
+            <div style={{ position: "relative", textAlign: "left", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>🎉</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,180,255,0.85)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
+                  House Party Hub
+                </span>
+              </div>
+              <div style={{ fontSize: "clamp(0.88rem,3.5vw,1.05rem)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.3 }}>
+                Games · Photo Wall · Bill Split · More
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>
+                The app everyone opens during the party
+              </div>
+            </div>
+            <div style={{ position: "relative", background: "rgba(124,58,237,0.5)", borderRadius: 20, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap", border: "1px solid rgba(124,58,237,0.6)" }}>
+              Open →
+            </div>
+          </div>
+          {/* ── END House Party Hub strip ── */}
+
           <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 10 }}>
             {[
               { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },

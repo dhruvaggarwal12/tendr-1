@@ -105,6 +105,10 @@ const CelebrationHub      = lazy(() => import("./pages/celebration-hub/Celebrati
 const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivitiesPage.jsx"));
 const HomeWeddingPlanner  = lazy(() => import("./pages/home-wedding/HomeWeddingPlanner.jsx"));
 const VendorLanding       = lazy(() => import("./pages/vendor/VendorLanding.jsx"));
+const HousePartyHub       = lazy(() => import("./pages/house-party/HousePartyHub.jsx"));
+const PotluckJoin         = lazy(() => import("./pages/house-party/PotluckJoin.jsx"));
+const InviteRSVP          = lazy(() => import("./pages/house-party/InviteRSVP.jsx"));
+const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -432,6 +436,12 @@ const router = createBrowserRouter([
   { path: '/guides', element: <GuidesStore />, errorElement: <ErrorPage /> },
   { path: '/guides/:slug', element: <GuidePreview />, errorElement: <ErrorPage /> },
   { path: '/guides/:slug/read', element: <GuideReader />, errorElement: <ErrorPage /> },
+
+  // ── House Party Hub ─────────────────────────────────────────────────────
+  { path: '/house-party', element: <HousePartyHub />, errorElement: <ErrorPage /> },
+  { path: '/house-party/potluck/:roomId', element: <PotluckJoin />, errorElement: <ErrorPage /> },
+  { path: '/house-party/invite/:inviteId', element: <InviteRSVP />, errorElement: <ErrorPage /> },
+  { path: '/house-party/photo-wall/:wallId', element: <PhotoWallPage />, errorElement: <ErrorPage /> },
 
   // ── Programmatic vendor SEO landing pages (/decorator-in-delhi, etc.) ───
   { path: '/:slug', element: <VendorLanding />, errorElement: <ErrorPage /> },
