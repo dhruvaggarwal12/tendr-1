@@ -218,16 +218,9 @@ function VendorCard({ vendor, onClick }) {
           ? <img src={photo} alt={vendor.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
           : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 40, color: "#C47A2E", opacity: 0.25 }}>📷</div>
         }
-        {isVerified && (
-          <div style={{ position: "absolute", top: 10, left: 10, background: "#C47A2E", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 100, letterSpacing: "0.04em" }}>
-            ✓ Verified
-          </div>
-        )}
-        {rating && (
-          <div style={{ position: "absolute", top: 10, right: 10, background: "rgba(0,0,0,0.55)", color: "#fff", fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 100 }}>
-            ⭐ {Number(rating).toFixed(1)}
-          </div>
-        )}
+        <div style={{ position: "absolute", top: 10, left: 10, background: "#C47A2E", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 8px", borderRadius: 100, letterSpacing: "0.04em" }}>
+          ✓ Verified
+        </div>
       </div>
 
       {/* Info */}
