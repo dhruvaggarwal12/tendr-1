@@ -268,10 +268,10 @@ const EventPlanning = () => {
   const SPLIT_PCT = { Caterer: 40, Decorator: 25, Photographer: 20, DJ: 15 };
 
   const CAT_BUDGET_RANGES = {
-    Caterer:      { min: 5000,  max: 500000, step: 5000,  default: 25000,  emoji: "🍽️" },
-    Decorator:    { min: 3000,  max: 300000, step: 3000,  default: 15000,  emoji: "🎨" },
-    Photographer: { min: 3000,  max: 200000, step: 3000,  default: 15000,  emoji: "📸" },
-    DJ:           { min: 2000,  max: 100000, step: 2000,  default: 10000,  emoji: "🎵" },
+    Caterer:      { min: 0, max: 5000,   step: 50,    default: 500,   emoji: "🍽️", perPerson: true },
+    Decorator:    { min: 0, max: 1000000, step: 5000,  default: 15000, emoji: "🎨" },
+    Photographer: { min: 0, max: 1000000, step: 5000,  default: 15000, emoji: "📸" },
+    DJ:           { min: 0, max: 1000000, step: 5000,  default: 10000, emoji: "🎵" },
   };
 
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -1785,19 +1785,20 @@ const EventPlanning = () => {
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
                         {selectedVendors.map(cat => {
-                          const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 10000, emoji: "🏷️" };
+                          const range = CAT_BUDGET_RANGES[cat] || { min: 0, max: 1000000, step: 5000, default: 15000, emoji: "🏷️" };
                           const val = draftBudgets[cat] || range.default;
+                          const pp = range.perPerson;
                           return (
                             <div key={cat}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 3 }}>
-                                <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{cat}</span>
-                                <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{cat}{pp && <span style={{ fontSize: 10, color: "#9B7450", fontWeight: 500, marginLeft: 4 }}>(per person)</span>}</span>
+                                <span style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E" }}>Up to {fmtBudget(val)}{pp && <span style={{ fontSize: 10, fontWeight: 600 }}> pp</span>}</span>
                               </div>
                               <input type="range" min={range.min} max={range.max} step={range.step} value={val}
                                 onChange={e => setDraftBudgets(p => ({ ...p, [cat]: Number(e.target.value) }))}
                                 style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer" }} />
                               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#bbb", marginTop: 1 }}>
-                                <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
+                                <span>{fmtBudget(range.min)}{pp && " pp"}</span><span>{fmtBudget(range.max)}{pp && " pp"}</span>
                               </div>
                             </div>
                           );
@@ -1873,19 +1874,20 @@ const EventPlanning = () => {
                   {/* Per-category sliders */}
                   <div style={{ padding: "14px 18px 18px", display: "flex", flexDirection: "column", gap: 14, maxHeight: "60vh", overflowY: "auto" }}>
                     {selectedVendors.map(cat => {
-                      const range = CAT_BUDGET_RANGES[cat] || { min: 2000, max: 200000, step: 2000, default: 15000 };
+                      const range = CAT_BUDGET_RANGES[cat] || { min: 0, max: 1000000, step: 5000, default: 15000 };
                       const val = savedCategoryBudgets[cat] || range.default;
+                      const pp = range.perPerson;
                       return (
                         <div key={cat}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji || "🏷"} {cat}</span>
-                            <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji || "🏷"} {cat}{pp && <span style={{ fontSize: 10, color: "#9B7450", fontWeight: 500, marginLeft: 4 }}>(per person)</span>}</span>
+                            <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}{pp && <span style={{ fontSize: 10, fontWeight: 600 }}> pp</span>}</span>
                           </div>
                           <input type="range" min={range.min} max={range.max} step={range.step} value={val}
                             onChange={e => dispatch(setCategoryBudgets({ ...savedCategoryBudgets, [cat]: Number(e.target.value) }))}
                             style={{ width: "100%", accentColor: "#C47A2E", cursor: "pointer", height: 5 }} />
                           <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#bbb", marginTop: 1 }}>
-                            <span>{fmtBudget(range.min)}</span><span>{fmtBudget(range.max)}</span>
+                            <span>{fmtBudget(range.min)}{pp && " pp"}</span><span>{fmtBudget(range.max)}{pp && " pp"}</span>
                           </div>
                         </div>
                       );
