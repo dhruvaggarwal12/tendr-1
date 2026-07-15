@@ -84,6 +84,12 @@ const VendorList = () => {
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoading, setGalleryLoading] = useState(false);
   const [vendorList, setVendorList] = useState([]);
+  const sortByPhoto = (list) =>
+    [...list].sort((a, b) => {
+      const hasA = (a.portfolioPhotos?.length > 0 || !!a.image) ? 0 : 1;
+      const hasB = (b.portfolioPhotos?.length > 0 || !!b.image) ? 0 : 1;
+      return hasA - hasB;
+    });
   const [paginationInfo, setPaginationInfo] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
@@ -233,7 +239,7 @@ const VendorList = () => {
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
     return getVendors(payload)
-      .then((data) => { setVendorList(data.vendors || []); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
+      .then((data) => { setVendorList(sortByPhoto(data.vendors || [])); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
       .catch((err) => console.error("Error fetching vendors:", err))
       .finally(() => setIsLoading(false));
   }, [sortBy, sortOrder, secondaryFilters, locationType, serviceType, currentCatBudget]);
@@ -250,7 +256,7 @@ const VendorList = () => {
       sortBy, sortOrder, page: 1, limit: 20, serviceFilters: secondaryFilters,
     };
     getVendors(payload)
-      .then((data) => { setVendorList(data.vendors || []); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
+      .then((data) => { setVendorList(sortByPhoto(data.vendors || [])); setPaginationInfo(data.pagination || {}); setCurrentPage(1); })
       .catch((err) => console.error("Error fetching vendors:", err))
       .finally(() => setIsLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -272,9 +278,9 @@ const VendorList = () => {
     getVendors(payload)
       .then((data) => {
         if (pageNum === 1) {
-          setVendorList(data.vendors || []);
+          setVendorList(sortByPhoto(data.vendors || []));
         } else {
-          setVendorList((prev) => [...prev, ...(data.vendors || [])]);
+          setVendorList((prev) => sortByPhoto([...prev, ...(data.vendors || [])]));
         }
         setPaginationInfo(data.pagination || {});
         setCurrentPage(pageNum);
@@ -302,7 +308,7 @@ const VendorList = () => {
 
     getVendors(payload)
       .then((data) => {
-        setVendorList(data.vendors || []);
+        setVendorList(sortByPhoto(data.vendors || []));
         setPaginationInfo(data.pagination || {});
         setCurrentPage(1);
       })
