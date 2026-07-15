@@ -226,7 +226,6 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "🎁 Gift Hampers", href: "/gifting" },
       { label: "💒 Wedding Stationeries", href: "/stationery" },
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
-      { label: "🎉 House Party Hub",      href: "/house-party" },
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
     ]},
     { label: "Booking", hideOnMobile: true, items: [
