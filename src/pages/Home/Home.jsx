@@ -883,15 +883,23 @@ const Home = () => {
             </div>
 
             {/* CTA */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
               <button
                 onClick={() => navigate("/booking")}
                 className="home-hero-cta"
-                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 17, fontWeight: 600, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(196,122,46,0.45)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", alignSelf: "flex-start" }}
+                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 17, fontWeight: 600, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(196,122,46,0.45)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.55)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(196,122,46,0.45)"; }}
               >
                 Start Planning →
+              </button>
+              <button
+                onClick={() => setShowIndepDay(true)}
+                style={{ background: "linear-gradient(90deg, #FF9933 0%, #e67e00 50%, #138808 100%)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(255,153,51,0.35)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(255,153,51,0.45)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(255,153,51,0.35)"; }}
+              >
+                🇮🇳 Plan Independence Day
               </button>
             </div>
 
