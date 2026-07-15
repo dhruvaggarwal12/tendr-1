@@ -594,7 +594,7 @@ export default function VendorChatModal() {
     } else {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages, botStep, botDone, confirmedPkg, approved]);
+  }, [messages, botStep, botDone, confirmedPkg, approved, selectedRefPhotos]);
 
   // Keep ref in sync so socket reconnect handlers can always read the latest conversationId
   useEffect(() => { conversationIdRef.current = conversationId; }, [conversationId]);
@@ -1812,15 +1812,15 @@ export default function VendorChatModal() {
           {/* Backdrop */}
           <div
             onClick={() => setRejQvVendor(null)}
-            style={{ position: 'fixed', inset: 0, zIndex: 1400, background: 'rgba(0,0,0,0.45)' }}
+            style={{ position: 'fixed', inset: 0, zIndex: 100010, background: 'rgba(0,0,0,0.45)' }}
           />
           {/* Panel */}
           <div style={isMobile ? {
-            position: 'fixed', inset: 0, zIndex: 1401,
+            position: 'fixed', inset: 0, zIndex: 100011,
             background: '#FFFCF5', display: 'flex', flexDirection: 'column',
             fontFamily: font,
           } : {
-            position: 'fixed', top: 0, right: 0, zIndex: 1401,
+            position: 'fixed', top: 0, right: 0, zIndex: 100011,
             width: 400, height: '100dvh',
             background: '#FFFCF5', display: 'flex', flexDirection: 'column',
             boxShadow: '-8px 0 40px rgba(44,26,14,0.18)',
@@ -1922,19 +1922,19 @@ export default function VendorChatModal() {
         <>
           {!isMobile && (
             <div onClick={() => setGalleryOpen(false)}
-              style={{ position: "fixed", inset: 0, zIndex: 1300, background: "rgba(0,0,0,0.45)" }} />
+              style={{ position: "fixed", inset: 0, zIndex: 100010, background: "rgba(0,0,0,0.45)" }} />
           )}
           <div style={isMobile ? {
             position: "fixed", left: 0, right: 0,
             bottom: "calc(60px + env(safe-area-inset-bottom, 0px))",
-            zIndex: 1301, background: "#FFFCF5",
+            zIndex: 100011, background: "#FFFCF5",
             borderRadius: "20px 20px 0 0", maxHeight: "70vh",
             display: "flex", flexDirection: "column",
             boxShadow: "0 -8px 40px rgba(0,0,0,0.18)",
           } : {
             position: "fixed", top: "50%", left: "50%",
             transform: "translate(-50%,-50%)",
-            zIndex: 1301, background: "#FFFCF5",
+            zIndex: 100011, background: "#FFFCF5",
             borderRadius: 20, width: "min(94vw, 640px)",
             maxHeight: "80vh", display: "flex", flexDirection: "column",
             boxShadow: "0 32px 80px rgba(44,26,14,0.22)",
