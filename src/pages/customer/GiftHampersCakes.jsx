@@ -14,14 +14,21 @@ const GiftHampersCakes = () => {
   const [preview, setPreview] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
-  const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedCategories, setSelectedCategories] = useState([]);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
-  const CATEGORIES = ["All", "Drinkware", "Dry Fruits & Nuts", "Chocolates & Sweets", "Spiritual & Pooja", "Decorative Boxes", "Tokri & Hampers"];
-  const CAT_EMOJI  = { "All": "✦", "Drinkware": "🥤", "Dry Fruits & Nuts": "🌰", "Chocolates & Sweets": "🍫", "Spiritual & Pooja": "🙏", "Decorative Boxes": "🎁", "Tokri & Hampers": "🧺" };
+  const CATEGORIES = ["Drinkware", "Dry Fruits & Nuts", "Chocolates & Sweets", "Spiritual & Pooja", "Decorative Boxes", "Tokri & Hampers"];
 
-  const filteredSamples = activeCategory === "All"
+  const filteredSamples = selectedCategories.length === 0
     ? samples
-    : samples.filter(s => s.category === activeCategory);
+    : samples.filter(s => selectedCategories.includes(s.category));
+
+  const toggleCategory = (cat) =>
+    setSelectedCategories(prev =>
+      prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
+    );
+
+  const clearAll = () => setSelectedCategories([]);
 
   useEffect(() => {
     fetch(`${BASE_URL}/admin/gift-hamper-samples`)
@@ -150,34 +157,87 @@ const GiftHampersCakes = () => {
             <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "14px auto 0" }} />
           </div>
 
-          {/* ── Category filter chips ── */}
-          <div style={{ overflowX: "auto", display: "flex", gap: 8, paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none" }}>
-            <style>{`.gh-chips::-webkit-scrollbar{display:none}`}</style>
-            <div className="gh-chips" style={{ display: "flex", gap: 8, flexWrap: "nowrap" }}>
-              {CATEGORIES.map(cat => (
-                <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  style={{
-                    flexShrink: 0,
-                    padding: "8px 16px",
-                    borderRadius: 50,
-                    border: `1.5px solid ${activeCategory === cat ? "#C47A2E" : "rgba(196,122,46,0.25)"}`,
-                    background: activeCategory === cat ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff",
-                    color: activeCategory === cat ? "#fff" : "#5A3A1A",
-                    fontSize: 13,
-                    fontWeight: activeCategory === cat ? 700 : 500,
-                    cursor: "pointer",
-                    fontFamily: font,
-                    whiteSpace: "nowrap",
-                    transition: "all 0.15s",
-                  }}
-                >
-                  {CAT_EMOJI[cat]} {cat}
-                </button>
-              ))}
-            </div>
+          {/* ── Filters ── */}
+          <style>{`
+            .gh-chips-row { display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; margin-bottom:24px; }
+            .gh-chips-row::-webkit-scrollbar { display:none; }
+            .gh-filter-mobile-btn { display:none; }
+            @media(max-width:640px){
+              .gh-chips-row { display:none !important; }
+              .gh-filter-mobile-btn { display:flex !important; margin-bottom:20px; }
+            }
+          `}</style>
+
+          {/* Desktop — scrollable multi-select chips */}
+          <div className="gh-chips-row">
+            <button
+              onClick={clearAll}
+              style={{ flexShrink:0, padding:"8px 18px", borderRadius:50, border:`1.5px solid ${selectedCategories.length===0?"#C47A2E":"rgba(196,122,46,0.25)"}`, background:selectedCategories.length===0?"linear-gradient(135deg,#C47A2E,#CCAB4A)":"#fff", color:selectedCategories.length===0?"#fff":"#5A3A1A", fontSize:13, fontWeight:selectedCategories.length===0?700:500, cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}
+            >All</button>
+            {CATEGORIES.map(cat => {
+              const active = selectedCategories.includes(cat);
+              return (
+                <button key={cat} onClick={() => toggleCategory(cat)}
+                  style={{ flexShrink:0, padding:"8px 18px", borderRadius:50, border:`1.5px solid ${active?"#C47A2E":"rgba(196,122,46,0.25)"}`, background:active?"linear-gradient(135deg,#C47A2E,#CCAB4A)":"#fff", color:active?"#fff":"#5A3A1A", fontSize:13, fontWeight:active?700:500, cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}
+                >{cat}</button>
+              );
+            })}
           </div>
+
+          {/* Mobile — filter button */}
+          <div className="gh-filter-mobile-btn" style={{ alignItems:"center", gap:10 }}>
+            <button onClick={() => setFilterSheetOpen(true)}
+              style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 20px", borderRadius:50, border:`1.5px solid ${selectedCategories.length>0?"#C47A2E":"rgba(196,122,46,0.3)"}`, background:selectedCategories.length>0?"rgba(196,122,46,0.08)":"#fff", color:"#5A3A1A", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}>
+              <span>Filters</span>
+              {selectedCategories.length > 0 && <span style={{ background:"#C47A2E", color:"#fff", fontSize:11, fontWeight:800, borderRadius:50, padding:"2px 8px" }}>{selectedCategories.length}</span>}
+              <span style={{ fontSize:11, color:"#9B7450" }}>▼</span>
+            </button>
+            {selectedCategories.length > 0 && (
+              <button onClick={clearAll} style={{ fontSize:12, color:"#C47A2E", fontWeight:700, background:"none", border:"none", cursor:"pointer", fontFamily:font, padding:0 }}>
+                Clear all
+              </button>
+            )}
+          </div>
+
+          {/* Mobile filter bottom sheet */}
+          {filterSheetOpen && (
+            <div onClick={() => setFilterSheetOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(20,10,4,0.55)", zIndex:9998, display:"flex", alignItems:"flex-end" }}>
+              <div onClick={e => e.stopPropagation()} style={{ width:"100%", background:"#fff", borderRadius:"20px 20px 0 0", padding:"24px 20px 32px", fontFamily:font, boxShadow:"0 -8px 40px rgba(44,26,14,0.18)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+                  <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>All Filters</div>
+                  <button onClick={clearAll} style={{ fontSize:12, color:"#C47A2E", fontWeight:700, background:"none", border:"none", cursor:"pointer", fontFamily:font }}>Clear all</button>
+                </div>
+
+                <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
+                  {/* All option */}
+                  <label style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 0", borderBottom:"1px solid rgba(196,122,46,0.1)", cursor:"pointer" }}>
+                    <input type="checkbox" checked={selectedCategories.length===0} onChange={clearAll}
+                      style={{ width:18, height:18, accentColor:"#C47A2E", cursor:"pointer" }} />
+                    <span style={{ fontSize:14, fontWeight:selectedCategories.length===0?700:500, color:"#2C1A0E" }}>All</span>
+                    <span style={{ marginLeft:"auto", fontSize:12, color:"#9B7450" }}>{samples.length} items</span>
+                  </label>
+
+                  {CATEGORIES.map(cat => {
+                    const active = selectedCategories.includes(cat);
+                    const count = samples.filter(s => s.category === cat).length;
+                    return (
+                      <label key={cat} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 0", borderBottom:"1px solid rgba(196,122,46,0.1)", cursor:"pointer" }}>
+                        <input type="checkbox" checked={active} onChange={() => toggleCategory(cat)}
+                          style={{ width:18, height:18, accentColor:"#C47A2E", cursor:"pointer" }} />
+                        <span style={{ fontSize:14, fontWeight:active?700:500, color:active?"#C47A2E":"#2C1A0E" }}>{cat}</span>
+                        {count > 0 && <span style={{ marginLeft:"auto", fontSize:12, color:"#9B7450" }}>{count} items</span>}
+                      </label>
+                    );
+                  })}
+                </div>
+
+                <button onClick={() => setFilterSheetOpen(false)}
+                  style={{ width:"100%", marginTop:24, padding:"14px", borderRadius:14, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", fontFamily:font }}>
+                  {selectedCategories.length === 0 ? "Show All" : `Show ${filteredSamples.length} Result${filteredSamples.length !== 1 ? "s" : ""}`}
+                </button>
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 14 }}>
