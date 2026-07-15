@@ -403,7 +403,22 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                         <div style={{ fontSize: 12, color: convo.chatRejected ? "#dc2626" : "#9B7450" }}>{convo.chatRejected ? "Vendor not available — see alternatives →" : (convo.serviceType || (convo.chatType === "concierge" ? "Concierge" : "Chat"))}</div>
                       </div>
                       {convo.chatRejected ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", background: "rgba(220,38,38,0.1)", border: "1px solid rgba(220,38,38,0.25)", borderRadius: 20, padding: "2px 8px", flexShrink: 0 }}>Rejected</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", background: "rgba(220,38,38,0.1)", border: "1px solid rgba(220,38,38,0.25)", borderRadius: 20, padding: "2px 8px" }}>Rejected</span>
+                          <button
+                            onClick={e => {
+                              e.stopPropagation();
+                              fetch(`${BASE_URL}/conversations/${convo._id}/close`, {
+                                method: "PATCH",
+                                headers: { Authorization: `Bearer ${token}` },
+                                credentials: "include",
+                              }).catch(() => {});
+                              setVendorChats(prev => prev.filter(c => c._id !== convo._id));
+                            }}
+                            title="Remove this chat"
+                            style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(220,38,38,0.12)", border: "1px solid rgba(220,38,38,0.3)", color: "#dc2626", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                          >✕</button>
+                        </div>
                       ) : convo.chatApproved ? (
                         <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", flexShrink: 0 }}>Active →</span>
                       ) : (

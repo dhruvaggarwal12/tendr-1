@@ -1080,7 +1080,7 @@ const AdminDashboard = () => {
       .then((data) => {
         const all = data.conversations || [];
         // Show ALL vendor chat requests — admin must see every request regardless of event date
-        setChatRequests(all.filter(c => !c.chatRejected));
+        setChatRequests(all);
       })
       .catch((e) => { if (e?.message !== '401') console.error('chat-requests fetch:', e); });
 
@@ -1232,7 +1232,7 @@ const AdminDashboard = () => {
     const poll = () => {
       fetch(`${BASE_URL}/admin/chat-requests`, { headers: { Authorization: `Bearer ${token}` }, credentials: 'include' })
         .then(r => r.ok ? r.json() : null)
-        .then(data => { if (!data) return; const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); })
+        .then(data => { if (!data) return; const all = data.conversations || []; setChatRequests(all); })
         .catch(() => {});
     };
     poll(); // fire immediately on mount — don't wait 30s for first data
@@ -1245,7 +1245,7 @@ const AdminDashboard = () => {
     if (activeDropdown !== 'chatrequests' || !token || !isAdminToken) return;
     adminFetch(`${BASE_URL}/admin/chat-requests`)
       .then(r => r.json())
-      .then(data => { const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); })
+      .then(data => { const all = data.conversations || []; setChatRequests(all); })
       .catch(e => { if (e?.message !== '401') console.error('chat-requests tab fetch:', e); });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDropdown, token]);
@@ -1326,7 +1326,7 @@ const AdminDashboard = () => {
         .then(data => {
           if (!data) return; // don't wipe list on auth/server error
           const all = data.conversations || [];
-          setChatRequests(all.filter(c => !c.chatRejected));
+          setChatRequests(all);
         })
         .catch(() => {});
     });
@@ -1677,7 +1677,7 @@ const AdminDashboard = () => {
                 Chat Requests
               </div>
               <button
-                onClick={() => adminFetch(`${BASE_URL}/admin/chat-requests`).then(r => r.json()).then(data => { const all = data.conversations || []; setChatRequests(all.filter(c => !c.chatRejected)); }).catch(() => {})}
+                onClick={() => adminFetch(`${BASE_URL}/admin/chat-requests`).then(r => r.json()).then(data => { const all = data.conversations || []; setChatRequests(all); }).catch(() => {})}
                 style={{ background: '#CCAB4A', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 18px', fontWeight: 600, cursor: 'pointer', fontSize: 14 }}
               >
                 Refresh
