@@ -14,6 +14,14 @@ const GiftHampersCakes = () => {
   const [preview, setPreview] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [activeCategory, setActiveCategory] = useState("All");
+
+  const CATEGORIES = ["All", "Drinkware", "Dry Fruits & Nuts", "Chocolates & Sweets", "Spiritual & Pooja", "Decorative Boxes", "Tokri & Hampers"];
+  const CAT_EMOJI  = { "All": "✦", "Drinkware": "🥤", "Dry Fruits & Nuts": "🌰", "Chocolates & Sweets": "🍫", "Spiritual & Pooja": "🙏", "Decorative Boxes": "🎁", "Tokri & Hampers": "🧺" };
+
+  const filteredSamples = activeCategory === "All"
+    ? samples
+    : samples.filter(s => s.category === activeCategory);
 
   useEffect(() => {
     fetch(`${BASE_URL}/admin/gift-hamper-samples`)
@@ -142,6 +150,35 @@ const GiftHampersCakes = () => {
             <div style={{ width: 40, height: 2, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "14px auto 0" }} />
           </div>
 
+          {/* ── Category filter chips ── */}
+          <div style={{ overflowX: "auto", display: "flex", gap: 8, paddingBottom: 4, marginBottom: 24, scrollbarWidth: "none" }}>
+            <style>{`.gh-chips::-webkit-scrollbar{display:none}`}</style>
+            <div className="gh-chips" style={{ display: "flex", gap: 8, flexWrap: "nowrap" }}>
+              {CATEGORIES.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  style={{
+                    flexShrink: 0,
+                    padding: "8px 16px",
+                    borderRadius: 50,
+                    border: `1.5px solid ${activeCategory === cat ? "#C47A2E" : "rgba(196,122,46,0.25)"}`,
+                    background: activeCategory === cat ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff",
+                    color: activeCategory === cat ? "#fff" : "#5A3A1A",
+                    fontSize: 13,
+                    fontWeight: activeCategory === cat ? 700 : 500,
+                    cursor: "pointer",
+                    fontFamily: font,
+                    whiteSpace: "nowrap",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {CAT_EMOJI[cat]} {cat}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {loading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 14 }}>
               {[0,1,2,3,4,5].map(i => (
@@ -149,14 +186,16 @@ const GiftHampersCakes = () => {
               ))}
               <style>{`@keyframes ghShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
             </div>
-          ) : samples.length === 0 ? (
+          ) : filteredSamples.length === 0 ? (
             <div style={{ textAlign: "center", padding: "48px 24px", color: "#9B7450" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
-              <p style={{ fontSize: 14, margin: 0 }}>Sample photos coming soon. Talk to our team for options.</p>
+              <p style={{ fontSize: 14, margin: 0 }}>
+                {activeCategory === "All" ? "Sample photos coming soon. Talk to our team for options." : `No ${activeCategory} samples yet. Try a different category!`}
+              </p>
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 14 }}>
-              {samples.map(s => {
+              {filteredSamples.map(s => {
                 const isSelected = selectedPhotos.some(p => p._id === s._id);
                 return (
                   <div
