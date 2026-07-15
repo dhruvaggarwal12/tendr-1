@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -545,143 +545,583 @@ function BulkCard({ col, onGet }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
-// BUILDER VIEW — Build From Scratch
+// BUILDER VIEW — Build From Scratch (visual drag-and-drop box builder)
 // ════════════════════════════════════════════════════════════════════════════
-function BuilderView({ setView, navigate }) {
-  const [activeCat, setActiveCat] = useState("chocolate");
-  const [box, setBox] = useState([]); // [{...item, qty}]
 
-  const catItems = CATALOG_ITEMS.filter(i => i.cat === activeCat);
+const GH_CATS = ["Drinkware","Dry Fruits & Nuts","Chocolates & Sweets","Spiritual & Pooja","Decorative Boxes","Tokri & Hampers"];
 
-  const addItem = (item) => {
-    setBox(b => {
-      const existing = b.find(x => x.id === item.id);
-      if (existing) return b.map(x => x.id === item.id ? { ...x, qty: x.qty + 1 } : x);
-      return [...b, { ...item, qty: 1 }];
-    });
-  };
+const BUILDER_PRODUCTS = {
+  "Drinkware": [
+    { id:"dr1", name:"Copper Mug Set",      price:[599,999],   emoji:"🫖", photo:"1544947950-fa07a98d237f" },
+    { id:"dr2", name:"Premium Thermos",     price:[799,1499],  emoji:"🧴", photo:"1571677208888-a6d4dfba5d01" },
+    { id:"dr3", name:"Glass Tea Set",       price:[699,1200],  emoji:"🍵", photo:"1510017803434-a899851a20d5" },
+    { id:"dr4", name:"Ceramic Coffee Mug",  price:[299,599],   emoji:"☕", photo:"1478144592103-25e218a04891" },
+  ],
+  "Dry Fruits & Nuts": [
+    { id:"dn1", name:"Mixed Dry Fruits",    price:[499,899],   emoji:"🥜", photo:"1508061253366-f7da158b6d46" },
+    { id:"dn2", name:"Premium Almonds",     price:[349,699],   emoji:"🫘", photo:"1586201375761-83865001e31d" },
+    { id:"dn3", name:"Cashew Collection",   price:[449,799],   emoji:"🌰", photo:"1543158266-0066d7741fd8" },
+    { id:"dn4", name:"Date & Fig Pack",     price:[299,599],   emoji:"🍇", photo:"1519996529931-28324d5a630e" },
+  ],
+  "Chocolates & Sweets": [
+    { id:"cs1", name:"Truffle Box",         price:[599,1099],  emoji:"🍫", photo:"1548907040-4baa42d10919" },
+    { id:"cs2", name:"Assorted Chocolates", price:[449,899],   emoji:"🍬", photo:"1511381939415-e44676cae293" },
+    { id:"cs3", name:"Mithai Box",          price:[399,799],   emoji:"🧁", photo:"1606914469633-bd55b883c7c8" },
+    { id:"cs4", name:"Ferrero Rocher",      price:[599,999],   emoji:"🍩", photo:"1549007953-aef665bff10e" },
+  ],
+  "Spiritual & Pooja": [
+    { id:"sp1", name:"Diya Set",            price:[299,599],   emoji:"🪔", photo:"1609619385002-f40f1df9b7c5" },
+    { id:"sp2", name:"Incense & Agarbatti", price:[199,399],   emoji:"🕯️", photo:"1558618666-fcd25c85cd64" },
+    { id:"sp3", name:"Brass Puja Item",     price:[499,899],   emoji:"⛩️", photo:"1583847268964-b28dc8f51f92" },
+    { id:"sp4", name:"Sandalwood Set",      price:[399,799],   emoji:"🌿", photo:"1515377905703-c4788e51af15" },
+  ],
+  "Decorative Boxes": [
+    { id:"db1", name:"Wooden Keepsake Box", price:[499,999],   emoji:"📦", photo:"1513201099705-a9746e1e201f" },
+    { id:"db2", name:"Silk Gift Box",       price:[349,699],   emoji:"🎁", photo:"1512909006721-3d6018887383" },
+    { id:"db3", name:"Jewellery Box",       price:[599,1099],  emoji:"💍", photo:"1596462502278-27bfdc403348" },
+  ],
+  "Tokri & Hampers": [
+    { id:"tk1", name:"Wicker Tokri",        price:[299,599],   emoji:"🧺", photo:"1607082348824-0a96f2a4b9da" },
+    { id:"tk2", name:"Gift Hamper Set",     price:[1499,2999], emoji:"🎀", photo:"1513519245088-0e12902e35ca" },
+    { id:"tk3", name:"Jute Gift Bag",       price:[199,399],   emoji:"👜", photo:"1553062407-98eeb64c6a62" },
+  ],
+};
 
-  const removeItem = (id) => {
-    setBox(b => {
-      const existing = b.find(x => x.id === id);
-      if (!existing || existing.qty <= 1) return b.filter(x => x.id !== id);
-      return b.map(x => x.id === id ? { ...x, qty: x.qty - 1 } : x);
-    });
-  };
+const BUILDER_OCCASIONS = [
+  { id:"birthday",     label:"🎂 Birthday" },
+  { id:"anniversary",  label:"💑 Anniversary" },
+  { id:"diwali",       label:"🪔 Diwali" },
+  { id:"corporate",    label:"💼 Corporate" },
+  { id:"wedding",      label:"💍 Wedding" },
+  { id:"thankyou",     label:"🙏 Thank You" },
+  { id:"babyshower",   label:"👶 Baby Shower" },
+  { id:"housewarming", label:"🏠 Housewarming" },
+];
 
-  const totalMin = box.reduce((sum, x) => sum + x.price[0] * x.qty, 0);
-  const totalMax = box.reduce((sum, x) => sum + x.price[1] * x.qty, 0);
+const BUILDER_RECIPIENTS = [
+  { id:"friend",    label:"👫 Friend" },
+  { id:"family",    label:"👨‍👩‍👧 Family" },
+  { id:"partner",   label:"❤️ Partner" },
+  { id:"colleague", label:"💼 Colleague" },
+  { id:"parent",    label:"👴 Parent" },
+  { id:"child",     label:"🧒 Child" },
+  { id:"boss",      label:"🤝 Boss" },
+  { id:"client",    label:"🏢 Client" },
+];
 
-  const handleQuote = () => {
-    if (!box.length) return;
-    const itemLines = box.map(x => `• ${x.name}${x.qty > 1 ? ` (×${x.qty})` : ""}`).join("\n");
-    openBaatKaro(navigate, `Hi! I'd like a custom gift hamper with the following items:\n\n${itemLines}\n\nEstimated budget: ${fmt(totalMin)} – ${fmt(totalMax)}\n\nCan you confirm the price and packaging options?`);
-  };
+const BUILDER_BUDGETS = [
+  { id:"u500",  label:"Under ₹500" },
+  { id:"5k1k",  label:"₹500 – ₹1,000" },
+  { id:"1k2k",  label:"₹1K – ₹2K" },
+  { id:"2k5k",  label:"₹2K – ₹5K" },
+  { id:"5kp",   label:"₹5,000+" },
+];
 
-  const getQtyInBox = (id) => box.find(x => x.id === id)?.qty || 0;
+// ── Small icon button inside box toolbar ────────────────────────────────────
+function ToolBtn({ onClick, children, red }) {
+  return (
+    <button onClick={onClick} style={{
+      width:26, height:26, borderRadius:6, border:"none",
+      background: red ? "rgba(220,38,38,0.85)" : "rgba(255,255,255,0.18)",
+      color:"#fff", fontSize:13, cursor:"pointer", fontFamily:font,
+      display:"flex", alignItems:"center", justifyContent:"center",
+      flexShrink:0,
+    }}>{children}</button>
+  );
+}
+
+// ── Single item placed inside the hamper box ────────────────────────────────
+function BoxItem({ item, selected, onPointerDown, onResize, onRotate, onFlip, onRemove }) {
+  const [imgErr, setImgErr] = useState(false);
+  const transform = `rotate(${item.rot}deg) scaleX(${item.flipH ? -1 : 1})`;
 
   return (
-    <div style={{ padding: "0 0 120px" }}>
-      <div style={{ padding: "0 16px", maxWidth: 560, margin: "0 auto 12px" }}>
-        <BackBtn onClick={() => setView("home")} />
-        <div style={{ fontSize: 20, fontWeight: 900, color: DARK, fontFamily: font, marginTop: 10 }}>🎨 Build Your Hamper</div>
-        <div style={{ fontSize: 13, color: "#9B7450", fontFamily: font, marginTop: 4 }}>Pick items, we box them beautifully</div>
-      </div>
+    <div
+      onPointerDown={onPointerDown}
+      style={{
+        position:"absolute", left:item.x, top:item.y, width:item.w, height:item.h,
+        cursor:"grab", userSelect:"none", touchAction:"none",
+        transform, transformOrigin:"center",
+        zIndex: selected ? 20 : 5,
+        borderRadius:8,
+        outline: selected ? `2px solid ${GOLD}` : "2px solid transparent",
+        boxShadow: selected ? `0 0 0 4px rgba(196,122,46,0.18)` : "0 2px 8px rgba(0,0,0,0.15)",
+        transition:"outline 0.1s, box-shadow 0.1s",
+      }}
+    >
+      {!imgErr ? (
+        <img
+          src={`https://images.unsplash.com/photo-${item.product.photo}?w=160&h=160&fit=crop&auto=format&q=70`}
+          alt={item.product.name}
+          onError={() => setImgErr(true)}
+          draggable={false}
+          style={{ width:"100%", height:"100%", objectFit:"cover", borderRadius:6, display:"block", pointerEvents:"none" }}
+        />
+      ) : (
+        <div style={{
+          width:"100%", height:"100%", display:"flex", alignItems:"center", justifyContent:"center",
+          background:"linear-gradient(135deg,rgba(196,122,46,0.12),rgba(196,122,46,0.05))",
+          borderRadius:6, fontSize:Math.min(item.w, item.h) * 0.48, pointerEvents:"none",
+        }}>{item.product.emoji}</div>
+      )}
 
-      {/* Category tabs */}
-      <div style={{ overflowX: "auto", padding: "4px 16px 14px", display: "flex", gap: 8, scrollbarWidth: "none" }}>
-        {CATALOG_CATS.map(c => (
-          <Chip key={c.id} label={c.label} active={activeCat === c.id} onClick={() => setActiveCat(c.id)} style={{ flexShrink: 0 }} />
+      {selected && (
+        <>
+          {/* Name label */}
+          <div style={{
+            position:"absolute", bottom:"calc(100% + 5px)", left:"50%", transform:"translateX(-50%)",
+            background:"rgba(44,26,14,0.88)", color:"#fff",
+            fontSize:9, fontWeight:600, padding:"2px 8px", borderRadius:8,
+            whiteSpace:"nowrap", fontFamily:font, pointerEvents:"none",
+          }}>{item.product.name}</div>
+
+          {/* Corner resize handles */}
+          {[["nw",-5,-5,"nw-resize"],["ne",null,-5,"ne-resize"],["sw",-5,null,"sw-resize"],["se",null,null,"se-resize"]].map(([c,t,l,cur]) => (
+            <div
+              key={c}
+              onPointerDown={(e) => onResize(e, c)}
+              style={{
+                position:"absolute",
+                top: t !== null ? t : undefined, bottom: t === null ? -5 : undefined,
+                left: l !== null ? l : undefined, right: l === null ? -5 : undefined,
+                width:12, height:12, borderRadius:3,
+                background:GOLD, border:"2px solid #fff",
+                cursor:cur, zIndex:30, touchAction:"none",
+              }}
+            />
+          ))}
+
+          {/* Toolbar */}
+          <div style={{
+            position:"absolute", top:"calc(100% + 6px)", left:"50%", transform:"translateX(-50%)",
+            display:"flex", gap:4,
+            background:"rgba(44,26,14,0.92)", borderRadius:9, padding:"5px 7px",
+            zIndex:30, boxShadow:"0 2px 10px rgba(0,0,0,0.3)",
+          }}>
+            <ToolBtn onClick={(e) => { e.stopPropagation(); onRotate(-15); }}>↺</ToolBtn>
+            <ToolBtn onClick={(e) => { e.stopPropagation(); onRotate(15); }}>↻</ToolBtn>
+            <ToolBtn onClick={(e) => { e.stopPropagation(); onFlip(); }}>⇄</ToolBtn>
+            <ToolBtn onClick={(e) => { e.stopPropagation(); onRemove(); }} red>✕</ToolBtn>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Product card in the products panel ──────────────────────────────────────
+function BuilderProductCard({ product, inBox, onClick }) {
+  const [imgErr, setImgErr] = useState(false);
+  return (
+    <div onClick={onClick} style={{
+      background:"#fff", borderRadius:12, overflow:"hidden", cursor:"pointer",
+      border:`1.5px solid ${inBox ? GOLD : "rgba(196,122,46,0.15)"}`,
+      boxShadow: inBox ? `0 0 0 2px rgba(196,122,46,0.18)` : "0 1px 6px rgba(44,26,14,0.06)",
+      transition:"all 0.15s", position:"relative",
+    }}>
+      <div style={{ height:80, background:"#F5E8D0", position:"relative", overflow:"hidden" }}>
+        {!imgErr ? (
+          <img
+            src={`https://images.unsplash.com/photo-${product.photo}?w=160&h=160&fit=crop&auto=format&q=70`}
+            alt={product.name}
+            onError={() => setImgErr(true)}
+            style={{ width:"100%", height:"100%", objectFit:"cover" }}
+          />
+        ) : (
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100%", fontSize:32 }}>
+            {product.emoji}
+          </div>
+        )}
+        {inBox && (
+          <div style={{
+            position:"absolute", top:4, right:4,
+            width:18, height:18, borderRadius:"50%",
+            background:GOLD, display:"flex", alignItems:"center", justifyContent:"center",
+            fontSize:10, color:"#fff", fontWeight:700,
+          }}>✓</div>
+        )}
+      </div>
+      <div style={{ padding:"6px 8px" }}>
+        <div style={{ fontSize:10.5, fontWeight:700, color:DARK, fontFamily:font, lineHeight:1.3 }}>{product.name}</div>
+        <div style={{ fontSize:9.5, color:GOLD, fontFamily:font, fontWeight:600, marginTop:2 }}>
+          {fmt(product.price[0])} – {fmt(product.price[1])}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Questions phase ──────────────────────────────────────────────────────────
+function BuilderQuestions({ onDone, onBack }) {
+  const [step, setStep] = useState(0);
+  const [occasion, setOccasion]   = useState("");
+  const [recipient, setRecipient] = useState("");
+  const [budget, setBudget]       = useState("");
+  const [selCats, setSelCats]     = useState([]);
+
+  const toggleCat = (cat) =>
+    setSelCats(p => p.includes(cat) ? p.filter(c => c !== cat) : [...p, cat]);
+
+  const steps = [
+    {
+      title: "What's the occasion?",
+      sub: "We'll tailor suggestions for you",
+      content: (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:9 }}>
+          {BUILDER_OCCASIONS.map(o => (
+            <button key={o.id} onClick={() => { setOccasion(o.id); setStep(1); }} style={{
+              padding:"13px 10px", borderRadius:12, cursor:"pointer", textAlign:"center",
+              border:`1.5px solid ${occasion===o.id ? GOLD : "rgba(196,122,46,0.2)"}`,
+              background: occasion===o.id ? "rgba(196,122,46,0.09)" : "#fff",
+              fontSize:13.5, fontWeight: occasion===o.id ? 700 : 500, color:DARK, fontFamily:font,
+            }}>{o.label}</button>
+          ))}
+        </div>
+      ),
+      canSkip: true,
+    },
+    {
+      title: "Who is it for?",
+      sub: "Helps us pick the right products",
+      content: (
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:9 }}>
+          {BUILDER_RECIPIENTS.map(r => (
+            <button key={r.id} onClick={() => { setRecipient(r.id); setStep(2); }} style={{
+              padding:"13px 10px", borderRadius:12, cursor:"pointer", textAlign:"center",
+              border:`1.5px solid ${recipient===r.id ? GOLD : "rgba(196,122,46,0.2)"}`,
+              background: recipient===r.id ? "rgba(196,122,46,0.09)" : "#fff",
+              fontSize:13.5, fontWeight: recipient===r.id ? 700 : 500, color:DARK, fontFamily:font,
+            }}>{r.label}</button>
+          ))}
+        </div>
+      ),
+      canSkip: true,
+    },
+    {
+      title: "What's your budget?",
+      sub: "We'll show you realistic options",
+      content: (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {BUILDER_BUDGETS.map(b => (
+            <button key={b.id} onClick={() => { setBudget(b.id); setStep(3); }} style={{
+              padding:"13px 16px", borderRadius:12, cursor:"pointer",
+              border:`1.5px solid ${budget===b.id ? GOLD : "rgba(196,122,46,0.2)"}`,
+              background: budget===b.id ? "rgba(196,122,46,0.09)" : "#fff",
+              fontSize:14, fontWeight: budget===b.id ? 700 : 500, color:DARK, fontFamily:font,
+              display:"flex", justifyContent:"space-between", alignItems:"center",
+            }}>
+              <span>{b.label}</span>
+              {budget===b.id && <span style={{ color:GOLD }}>✓</span>}
+            </button>
+          ))}
+        </div>
+      ),
+      canSkip: true,
+    },
+    {
+      title: "Choose categories",
+      sub: "Pick one or more — products from all will appear",
+      content: (
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {GH_CATS.map(cat => {
+            const active = selCats.includes(cat);
+            return (
+              <button key={cat} onClick={() => toggleCat(cat)} style={{
+                padding:"12px 16px", borderRadius:12, cursor:"pointer",
+                border:`1.5px solid ${active ? GOLD : "rgba(196,122,46,0.2)"}`,
+                background: active ? "rgba(196,122,46,0.09)" : "#fff",
+                fontSize:14, fontWeight: active ? 700 : 500, color: active ? DARK : "#7A5535",
+                fontFamily:font, display:"flex", justifyContent:"space-between", alignItems:"center",
+              }}>
+                <span>{cat}</span>
+                <span style={{
+                  width:20, height:20, borderRadius:5, flexShrink:0,
+                  border:`2px solid ${active ? GOLD : "rgba(196,122,46,0.3)"}`,
+                  background: active ? GOLD : "transparent",
+                  display:"flex", alignItems:"center", justifyContent:"center",
+                  fontSize:11, color:"#fff",
+                }}>{active ? "✓" : ""}</span>
+              </button>
+            );
+          })}
+        </div>
+      ),
+      canSkip: false,
+    },
+  ];
+
+  const cur = steps[step];
+
+  return (
+    <div style={{ maxWidth:520, margin:"0 auto", padding:"20px 16px 48px" }}>
+      <BackBtn onClick={step===0 ? onBack : () => setStep(s => s-1)} />
+
+      {/* Progress bar */}
+      <div style={{ display:"flex", gap:5, margin:"14px 0 20px" }}>
+        {steps.map((_,i) => (
+          <div key={i} style={{
+            flex:1, height:3, borderRadius:2,
+            background: i<=step ? GOLD : "rgba(196,122,46,0.18)", transition:"background 0.3s",
+          }} />
         ))}
       </div>
 
-      {/* Item grid */}
-      <div style={{ padding: "0 16px", maxWidth: 560, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-        {catItems.map(item => {
-          const qty = getQtyInBox(item.id);
-          return (
-            <div key={item.id} style={{
-              background: "#fff", borderRadius: 14, padding: "14px 12px",
-              boxShadow: "0 2px 12px rgba(44,26,14,0.07)", border: `1.5px solid ${qty > 0 ? GOLD : "rgba(196,122,46,0.12)"}`,
-              display: "flex", flexDirection: "column", gap: 6,
-            }}>
-              <div style={{ fontSize: 26 }}>{item.emoji}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: DARK, fontFamily: font, lineHeight: 1.3 }}>{item.name}</div>
-              <div style={{ fontSize: 11, color: GOLD, fontFamily: font, fontWeight: 700 }}>
-                {fmt(item.price[0])} – {fmt(item.price[1])}
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-                {qty > 0 ? (
-                  <>
-                    <button onClick={() => removeItem(item.id)} style={{
-                      width: 28, height: 28, borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.35)",
-                      background: "#fff", color: GOLD, fontSize: 16, cursor: "pointer", fontFamily: font, fontWeight: 800,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>−</button>
-                    <span style={{ fontSize: 14, fontWeight: 800, color: DARK, fontFamily: font, minWidth: 16, textAlign: "center" }}>{qty}</span>
-                    <button onClick={() => addItem(item)} style={{
-                      width: 28, height: 28, borderRadius: 8, border: "none",
-                      background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff",
-                      fontSize: 16, cursor: "pointer", fontFamily: font, fontWeight: 800,
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                    }}>+</button>
-                  </>
-                ) : (
-                  <button onClick={() => addItem(item)} style={{
-                    width: "100%", padding: "7px 0", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.35)",
-                    background: "#fff", color: GOLD, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font,
-                  }}>+ Add</button>
-                )}
-              </div>
-            </div>
-          );
-        })}
+      <div style={{ fontSize:11, fontWeight:800, color:GOLD, textTransform:"uppercase", letterSpacing:"0.1em", fontFamily:font, marginBottom:5 }}>
+        Step {step+1} of {steps.length}
       </div>
+      <h2 style={{ fontSize:22, fontWeight:900, color:DARK, margin:"0 0 4px", fontFamily:font }}>{cur.title}</h2>
+      <p style={{ fontSize:13.5, color:"#9B7450", margin:"0 0 20px", fontFamily:font, lineHeight:1.5 }}>{cur.sub}</p>
 
-      {/* Sticky box summary */}
-      {box.length > 0 && (
-        <div style={{
-          position: "fixed", bottom: 0, left: 0, right: 0, background: "#fff",
-          borderTop: "1.5px solid rgba(196,122,46,0.2)", padding: "14px 20px",
-          boxShadow: "0 -4px 24px rgba(44,26,14,0.12)", zIndex: 100,
-        }}>
-          <div style={{ maxWidth: 560, margin: "0 auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-              <div>
-                <div style={{ fontSize: 12, color: "#9B7450", fontFamily: font }}>
-                  {box.reduce((s, x) => s + x.qty, 0)} item{box.reduce((s, x) => s + x.qty, 0) !== 1 ? "s" : ""} in your box
-                </div>
-                <div style={{ fontSize: 16, fontWeight: 900, color: DARK, fontFamily: font }}>
-                  {fmt(totalMin)} – {fmt(totalMax)}
-                </div>
-              </div>
-              <button onClick={() => setBox([])} style={{
-                fontSize: 11, color: "#9B7450", background: "none", border: "1px solid rgba(155,116,80,0.3)",
-                padding: "5px 10px", borderRadius: 8, cursor: "pointer", fontFamily: font,
-              }}>Clear</button>
-            </div>
+      {cur.content}
 
-            {/* Box preview scrollable */}
-            <div style={{ overflowX: "auto", display: "flex", gap: 6, marginBottom: 12, scrollbarWidth: "none" }}>
-              {box.map(x => (
-                <div key={x.id} style={{
-                  flexShrink: 0, background: "rgba(196,122,46,0.08)", borderRadius: 8,
-                  padding: "4px 10px", fontSize: 11, color: "#7A5020", fontFamily: font, fontWeight: 600,
-                }}>
-                  {x.emoji} {x.name.split("(")[0].trim().slice(0, 20)}{x.qty > 1 ? ` ×${x.qty}` : ""}
-                </div>
-              ))}
-            </div>
+      {/* Last step: confirm button */}
+      {step === steps.length - 1 && (
+        <button
+          onClick={() => onDone({ occasion, recipient, budget, selCats })}
+          disabled={selCats.length === 0}
+          style={{
+            width:"100%", padding:"14px", marginTop:18, borderRadius:14, border:"none",
+            background: selCats.length ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#E8D8C4",
+            color: selCats.length ? "#fff" : "#9B7450",
+            fontSize:15, fontWeight:800, cursor: selCats.length ? "pointer" : "default",
+            fontFamily:font, boxShadow: selCats.length ? "0 4px 18px rgba(196,122,46,0.35)" : "none",
+          }}
+        >Build My Hamper →</button>
+      )}
 
-            <button onClick={handleQuote} style={{
-              width: "100%", padding: "14px", borderRadius: 14, border: "none",
-              background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff",
-              fontSize: 15, fontWeight: 800, cursor: "pointer", fontFamily: font,
-              boxShadow: "0 4px 18px rgba(196,122,46,0.35)",
-            }}>Request Quote for This Box →</button>
+      {/* Skip link for steps 0–2 */}
+      {step < steps.length - 1 && cur.canSkip && (
+        <button onClick={() => setStep(s => s+1)} style={{
+          width:"100%", marginTop:14, padding:"10px", background:"transparent", border:"none",
+          fontSize:13, color:"#9B7450", cursor:"pointer", fontFamily:font,
+        }}>Skip this →</button>
+      )}
+    </div>
+  );
+}
+
+// ── Main builder view ─────────────────────────────────────────────────────
+function BuilderView({ setView, navigate }) {
+  const [phase, setPhase]       = useState("questions"); // "questions" | "builder"
+  const [answers, setAnswers]   = useState(null);
+  const [boxItems, setBoxItems] = useState([]); // { uid, product, x, y, w, h, rot, flipH }
+  const [selItem, setSelItem]   = useState(null);
+  const boxRef = useRef();
+
+  const BOX_W = Math.min(320, (typeof window !== "undefined" ? window.innerWidth : 400) - 32);
+  const BOX_H = Math.round(BOX_W * 0.78);
+
+  const products = answers
+    ? (answers.selCats || []).flatMap(cat => BUILDER_PRODUCTS[cat] || [])
+    : [];
+
+  function addToBox(product) {
+    const uid = `${product.id}_${Date.now()}`;
+    const w = Math.round(BOX_W * 0.28);
+    const h = w;
+    const x = 10 + Math.random() * (BOX_W - w - 20);
+    const y = 10 + Math.random() * (BOX_H - h - 20);
+    setBoxItems(prev => [...prev, { uid, product, x, y, w, h, rot:0, flipH:false }]);
+    setSelItem(uid);
+  }
+
+  function removeFromBox(uid) {
+    setBoxItems(prev => prev.filter(i => i.uid !== uid));
+    if (selItem === uid) setSelItem(null);
+  }
+
+  function handleItemPointerDown(e, uid) {
+    e.stopPropagation(); e.preventDefault();
+    setSelItem(uid);
+    const box = boxRef.current?.getBoundingClientRect();
+    if (!box) return;
+    const item = boxItems.find(i => i.uid === uid);
+    if (!item) return;
+    const startX = e.clientX, startY = e.clientY;
+    const origX = item.x, origY = item.y;
+    const onMove = (me) => setBoxItems(prev => prev.map(i =>
+      i.uid !== uid ? i : {
+        ...i,
+        x: Math.max(0, Math.min(BOX_W - i.w, origX + me.clientX - startX)),
+        y: Math.max(0, Math.min(BOX_H - i.h, origY + me.clientY - startY)),
+      }
+    ));
+    const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+  }
+
+  function handleResizePointerDown(e, uid, corner) {
+    e.stopPropagation(); e.preventDefault();
+    const item = boxItems.find(i => i.uid === uid);
+    if (!item) return;
+    const startX = e.clientX, startY = e.clientY;
+    const { w: oW, h: oH, x: oX, y: oY } = item;
+    const onMove = (me) => {
+      const dx = me.clientX - startX, dy = me.clientY - startY;
+      let nW=oW, nH=oH, nX=oX, nY=oY;
+      if (corner==="se") { nW=Math.max(40,Math.min(BOX_W-oX,oW+dx)); nH=Math.max(40,Math.min(BOX_H-oY,oH+dy)); }
+      if (corner==="sw") { nW=Math.max(40,oW-dx); nX=Math.max(0,oX+dx); nH=Math.max(40,Math.min(BOX_H-oY,oH+dy)); }
+      if (corner==="ne") { nW=Math.max(40,Math.min(BOX_W-oX,oW+dx)); nH=Math.max(40,oH-dy); nY=Math.max(0,oY+dy); }
+      if (corner==="nw") { nW=Math.max(40,oW-dx); nX=Math.max(0,oX+dx); nH=Math.max(40,oH-dy); nY=Math.max(0,oY+dy); }
+      setBoxItems(prev => prev.map(i => i.uid===uid ? {...i,w:nW,h:nH,x:nX,y:nY} : i));
+    };
+    const onUp = () => { document.removeEventListener("pointermove", onMove); document.removeEventListener("pointerup", onUp); };
+    document.addEventListener("pointermove", onMove);
+    document.addEventListener("pointerup", onUp);
+  }
+
+  function handleQuote() {
+    if (!boxItems.length) return;
+    const itemNames = [...new Set(boxItems.map(i => i.product.name))].join(", ");
+    const totalMin = boxItems.reduce((s,i) => s+i.product.price[0], 0);
+    const totalMax = boxItems.reduce((s,i) => s+i.product.price[1], 0);
+    const occasionLabel = BUILDER_OCCASIONS.find(o => o.id===answers?.occasion)?.label || "";
+    const recipientLabel = BUILDER_RECIPIENTS.find(r => r.id===answers?.recipient)?.label || "";
+    const budgetLabel = BUILDER_BUDGETS.find(b => b.id===answers?.budget)?.label || "";
+    openBaatKaro(navigate,
+      `🎁 Custom Gift Hamper Request\n\n` +
+      (occasionLabel ? `Occasion: ${occasionLabel}\n` : "") +
+      (recipientLabel ? `For: ${recipientLabel}\n` : "") +
+      (budgetLabel ? `Budget: ${budgetLabel}\n` : "") +
+      `Categories: ${(answers?.selCats||[]).join(", ")}\n\n` +
+      `Items in my box:\n${itemNames}\n\n` +
+      `Estimated range: ${fmt(totalMin)} – ${fmt(totalMax)}\n\n` +
+      `Please help me finalise and pack this hamper!`
+    );
+  }
+
+  // Questions phase
+  if (phase === "questions") {
+    return (
+      <BuilderQuestions
+        onDone={(ans) => { setAnswers(ans); setPhase("builder"); }}
+        onBack={() => setView("home")}
+      />
+    );
+  }
+
+  // Builder phase
+  return (
+    <div style={{ display:"flex", flexDirection:"column", height:"calc(100dvh - 56px)", overflow:"hidden" }}>
+      {/* Header */}
+      <div style={{
+        padding:"10px 14px", background:"#fff", borderBottom:"1px solid rgba(196,122,46,0.15)",
+        display:"flex", alignItems:"center", gap:10, flexShrink:0,
+      }}>
+        <button onClick={() => setPhase("questions")} style={{
+          background:"none", border:"none", color:GOLD, fontSize:13, fontWeight:700,
+          cursor:"pointer", fontFamily:font, padding:0,
+        }}>← Edit</button>
+        <div style={{ flex:1, minWidth:0 }}>
+          <div style={{ fontSize:14, fontWeight:800, color:DARK, fontFamily:font }}>Your Hamper Box</div>
+          <div style={{ fontSize:10.5, color:"#9B7450", fontFamily:font, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
+            {(answers?.selCats||[]).join(" · ")}
           </div>
         </div>
+        <button
+          onClick={handleQuote}
+          disabled={!boxItems.length}
+          style={{
+            padding:"8px 14px", borderRadius:10, border:"none", flexShrink:0,
+            background: boxItems.length ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#E8D8C4",
+            color: boxItems.length ? "#fff" : "#9B7450",
+            fontSize:12, fontWeight:700, cursor: boxItems.length ? "pointer" : "default", fontFamily:font,
+          }}
+        >Get Quote →</button>
+      </div>
+
+      {/* Box canvas */}
+      <div style={{ flexShrink:0, padding:"12px 16px 6px", display:"flex", justifyContent:"center" }}>
+        <div style={{ position:"relative" }}>
+          <div
+            ref={boxRef}
+            onClick={() => setSelItem(null)}
+            style={{
+              width:BOX_W, height:BOX_H,
+              background:"linear-gradient(160deg,#FDF8F0,#F5E8D0)",
+              border:"2px solid rgba(196,122,46,0.3)", borderRadius:16,
+              position:"relative", overflow:"visible",
+              boxShadow:"inset 0 2px 14px rgba(196,122,46,0.07), 0 4px 20px rgba(44,26,14,0.1)",
+            }}
+          >
+            {/* Ribbon decoration */}
+            <div style={{
+              position:"absolute", top:-1, left:"50%", transform:"translateX(-50%)",
+              width:"55%", height:4,
+              background:"linear-gradient(90deg,#C47A2E,#CCAB4A,#C47A2E)",
+              borderRadius:"0 0 6px 6px",
+            }} />
+
+            {/* Empty state */}
+            {boxItems.length===0 && (
+              <div style={{
+                position:"absolute", inset:0, display:"flex", flexDirection:"column",
+                alignItems:"center", justifyContent:"center", gap:8, pointerEvents:"none",
+              }}>
+                <div style={{ fontSize:40, opacity:0.25 }}>🎁</div>
+                <div style={{ fontSize:12, color:"rgba(44,26,14,0.3)", fontFamily:font, textAlign:"center", lineHeight:1.5 }}>
+                  Tap products below<br/>to place them here
+                </div>
+              </div>
+            )}
+
+            {/* Items */}
+            {boxItems.map(item => (
+              <BoxItem
+                key={item.uid}
+                item={item}
+                selected={selItem===item.uid}
+                onPointerDown={(e) => handleItemPointerDown(e, item.uid)}
+                onResize={(e,corner) => handleResizePointerDown(e, item.uid, corner)}
+                onRotate={(deg) => setBoxItems(prev => prev.map(i => i.uid===item.uid ? {...i,rot:(i.rot+deg)%360} : i))}
+                onFlip={() => setBoxItems(prev => prev.map(i => i.uid===item.uid ? {...i,flipH:!i.flipH} : i))}
+                onRemove={() => removeFromBox(item.uid)}
+              />
+            ))}
+          </div>
+          {/* Bottom shadow */}
+          <div style={{
+            position:"absolute", bottom:-5, left:10, right:10, height:10,
+            background:"rgba(44,26,14,0.1)", filter:"blur(4px)", borderRadius:"0 0 16px 16px", zIndex:-1,
+          }} />
+        </div>
+      </div>
+
+      {/* Hint */}
+      <div style={{ textAlign:"center", fontSize:10.5, color:"#9B7450", fontFamily:font, padding:"0 0 6px" }}>
+        {selItem ? "Drag to move · Corner handles to resize · Use ↺ ↻ ⇄ ✕ controls" : "Tap a product to add it · Tap item in box to select"}
+      </div>
+
+      {/* Items count */}
+      {boxItems.length > 0 && (
+        <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 16px 4px" }}>
+          <div style={{ fontSize:11, color:GOLD, fontWeight:700, fontFamily:font }}>
+            {boxItems.length} item{boxItems.length!==1?"s":""} in box
+            {" · "}
+            {fmt(boxItems.reduce((s,i)=>s+i.product.price[0],0))} – {fmt(boxItems.reduce((s,i)=>s+i.product.price[1],0))}
+          </div>
+          <button onClick={() => { setBoxItems([]); setSelItem(null); }} style={{
+            fontSize:10.5, color:"#9B7450", background:"none",
+            border:"1px solid rgba(155,116,80,0.3)", padding:"3px 9px", borderRadius:6,
+            cursor:"pointer", fontFamily:font,
+          }}>Clear</button>
+        </div>
       )}
+
+      {/* Products grid */}
+      <div style={{ flex:1, overflowY:"auto", padding:"4px 12px 24px" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(96px,1fr))", gap:8 }}>
+          {products.map(product => (
+            <BuilderProductCard
+              key={product.id}
+              product={product}
+              inBox={boxItems.some(i => i.product.id===product.id)}
+              onClick={() => addToBox(product)}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
