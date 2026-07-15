@@ -18,34 +18,80 @@ function copyLink(text) {
 }
 
 // ── shared modal shell ────────────────────────────────────────────────────────
-function Modal({ onClose, title, emoji, children, wide }) {
+function Modal({ onClose, title, emoji, children, wide, accentColor }) {
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
+  const accent = accentColor || "#7C3AED";
+
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 0 }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#1a1a2e", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: wide ? 700 : 480, maxHeight: "92dvh", overflowY: "auto", padding: "24px 20px calc(32px + env(safe-area-inset-bottom, 0px))", fontFamily: font, boxShadow: "0 -8px 40px rgba(0,0,0,0.5)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+    <div onClick={onClose} style={{
+      position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000,
+      display: "flex", alignItems: "center", justifyContent: "center", padding: "16px",
+    }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: "#12101e",
+        border: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 20, width: "100%",
+        maxWidth: wide ? 580 : 440,
+        maxHeight: "88dvh", overflowY: "auto",
+        fontFamily: font,
+        boxShadow: `0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)`,
+      }}>
+        {/* Modal header with accent strip */}
+        <div style={{
+          background: `linear-gradient(135deg, ${accent}22, ${accent}10)`,
+          borderBottom: `1px solid ${accent}30`,
+          borderRadius: "20px 20px 0 0",
+          padding: "18px 20px",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 28 }}>{emoji}</span>
-            <span style={{ fontSize: 18, fontWeight: 800, color: "#fff" }}>{title}</span>
+            <div style={{
+              width: 40, height: 40, borderRadius: 11,
+              background: `${accent}25`, border: `1px solid ${accent}40`,
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+            }}>{emoji}</div>
+            <span style={{ fontSize: 17, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>{title}</span>
           </div>
-          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+          <button onClick={onClose} style={{
+            background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)",
+            color: "rgba(255,255,255,0.7)", width: 32, height: 32, borderRadius: "50%",
+            cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center",
+          }}>✕</button>
         </div>
-        {children}
+        <div style={{ padding: "20px 20px calc(24px + env(safe-area-inset-bottom,0px))" }}>
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 
 // ── styled inputs ─────────────────────────────────────────────────────────────
-const inp = { width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.07)", color: "#fff", fontSize: 14, fontFamily: font, boxSizing: "border-box", outline: "none", minWidth: 0 };
-const btn = (color = "#7C3AED") => ({ padding: "12px 20px", borderRadius: 12, border: "none", background: color, color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, width: "100%" });
-const label = { fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.55)", marginBottom: 5, display: "block", textTransform: "uppercase", letterSpacing: "0.06em" };
-const card = { background: "rgba(255,255,255,0.06)", borderRadius: 14, padding: "14px 16px", marginBottom: 10, color: "#fff", fontSize: 14 };
+const inp = {
+  width: "100%", padding: "11px 13px", borderRadius: 10,
+  border: "1.5px solid rgba(255,255,255,0.12)",
+  background: "rgba(255,255,255,0.06)", color: "#fff",
+  fontSize: 14, fontFamily: font, boxSizing: "border-box", outline: "none", minWidth: 0,
+};
+const btn = (color = "#7C3AED") => ({
+  padding: "12px 20px", borderRadius: 12, border: "none",
+  background: color, color: "#fff", fontSize: 14, fontWeight: 700,
+  cursor: "pointer", fontFamily: font, width: "100%",
+});
+const label = {
+  fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.5)",
+  marginBottom: 6, display: "block",
+  textTransform: "uppercase", letterSpacing: "0.08em",
+};
+const card = {
+  background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: 12, padding: "13px 15px", marginBottom: 8, color: "#fff", fontSize: 14,
+};
 
 // ════════════════════════════════════════════════════════════════════════════
 // GAME MODALS
@@ -681,82 +727,133 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
 // ════════════════════════════════════════════════════════════════════════════
 
 const TOOLS = [
-  // Manage
-  { id: "potluck", section: "manage", emoji: "🥘", title: "Potluck Planner", desc: "Shareable link · claim items · no duplicates", color: "#059669" },
-  { id: "invite", section: "manage", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP · live count", color: "#2563EB" },
-  { id: "checklist", section: "manage", emoji: "📋", title: "Party Checklist", desc: "Enter guest count → auto buy list", color: "#D97706" },
-  { id: "bills", section: "manage", emoji: "💸", title: "Bill Splitter", desc: "Enter spends → who owes whom", color: "#DC2626" },
-  // Fun
-  { id: "theme", section: "fun", emoji: "🎨", title: "Theme Picker", desc: "Vote as a group on party theme", color: "#7C3AED" },
-  { id: "photowall", section: "fun", emoji: "📸", title: "Photo Wall", desc: "Shared album · everyone uploads", color: "#DB2777" },
-  { id: "countdown", section: "fun", emoji: "⏱️", title: "Countdown Timer", desc: "Visual countdown to party time", color: "#0891B2" },
-  { id: "playlist", section: "fun", emoji: "🎵", title: "Playlist Builder", desc: "Everyone adds 2 songs", color: "#059669" },
-  // Games
-  { id: "truthordare", section: "games", emoji: "🎯", title: "Truth or Dare", desc: "Indian youth decks — 25 truths + 25 dares", color: "#DC2626" },
-  { id: "neverhavei", section: "games", emoji: "🙅", title: "Never Have I Ever", desc: "30 statements · score tracker", color: "#059669" },
-  { id: "wouldyou", section: "games", emoji: "🤷", title: "Would You Rather", desc: "20 spicy choices — defend your answer", color: "#7C3AED" },
-  { id: "hottakes", section: "games", emoji: "🌶️", title: "Hot Takes", desc: "25 hot takes · agree or disagree", color: "#DC2626" },
-  { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB" },
-  { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706" },
-  { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
-  // Other
-  { id: "reportcard", section: "other", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade + verdict", color: "#FBBF24" },
+  { id:"invite",      section:"plan",   emoji:"📨", title:"Invite & RSVP",        desc:"Send one link · guests RSVP · see live count",          color:"#3B82F6" },
+  { id:"potluck",     section:"plan",   emoji:"🥘", title:"Potluck Planner",       desc:"Everyone claims what they'll bring · no duplicates",    color:"#10B981" },
+  { id:"checklist",   section:"plan",   emoji:"📋", title:"Party Checklist",       desc:"Enter guest count · get an auto buy-list",              color:"#F59E0B" },
+  { id:"bills",       section:"plan",   emoji:"💸", title:"Bill Splitter",         desc:"Enter spends · see exactly who owes whom",              color:"#EF4444" },
+  { id:"truthordare", section:"games",  emoji:"🎯", title:"Truth or Dare",         desc:"Indian youth decks · 25 truths + 25 dares",             color:"#EF4444" },
+  { id:"neverhavei",  section:"games",  emoji:"🙅", title:"Never Have I Ever",     desc:"30 statements · track scores per player",               color:"#10B981" },
+  { id:"wouldyou",    section:"games",  emoji:"🤷", title:"Would You Rather",      desc:"20 spicy choices · everyone defends their pick",        color:"#8B5CF6" },
+  { id:"hottakes",    section:"games",  emoji:"🌶️", title:"Hot Takes",             desc:"25 opinions · agree or disagree as a group",            color:"#F97316" },
+  { id:"spin",        section:"games",  emoji:"🍾", title:"Spin the Bottle",       desc:"Add names · spin for a random pick",                    color:"#3B82F6" },
+  { id:"charades",    section:"games",  emoji:"🎭", title:"Dumb Charades",         desc:"Bollywood · Web Shows · Celebs · Memes",                color:"#F59E0B" },
+  { id:"bingo",       section:"games",  emoji:"🎱", title:"Party Bingo",           desc:"5×5 bingo cards with real party scenarios",             color:"#06B6D4" },
+  { id:"theme",       section:"vibes",  emoji:"🎨", title:"Theme Picker",          desc:"Everyone votes · group picks the party theme",          color:"#8B5CF6" },
+  { id:"photowall",   section:"vibes",  emoji:"📸", title:"Shared Photo Wall",     desc:"One link · everyone uploads their shots",               color:"#EC4899" },
+  { id:"countdown",   section:"vibes",  emoji:"⏱️", title:"Countdown Timer",       desc:"Live timer counting down to party time",                color:"#06B6D4" },
+  { id:"playlist",    section:"vibes",  emoji:"🎵", title:"Playlist Builder",      desc:"Everyone adds 2 songs · copy the full list",            color:"#10B981" },
+  { id:"reportcard",  section:"after",  emoji:"🏆", title:"Party Report Card",     desc:"Rate the night · get a grade + savage verdict",         color:"#FBBF24" },
 ];
 
 const SECTIONS = [
-  { id: "manage", label: "⚙️ Manage", subtitle: "Plan · track · split" },
-  { id: "games", label: "🎮 Games", subtitle: "Biggest reason to come back" },
-  { id: "fun", label: "✨ Fun", subtitle: "Theme · music · photos · countdown" },
-  { id: "other", label: "🏆 Other", subtitle: "Post-party vibes" },
+  {
+    id: "plan", label: "Before the party", icon: "📌",
+    sub: "Set up invite, potluck, checklist — do this first",
+    highlight: true,
+  },
+  {
+    id: "games", label: "Games", icon: "🎮",
+    sub: "Open any game · pass the phone around",
+  },
+  {
+    id: "vibes", label: "Set the vibe", icon: "✨",
+    sub: "Theme · music · photos · countdown",
+  },
+  {
+    id: "after", label: "After the party", icon: "🌙",
+    sub: "Rate the night",
+  },
 ];
+
+// ── Tool card ─────────────────────────────────────────────────────────────────
+function ToolCard({ tool, onClick }) {
+  const [pressed, setPressed] = useState(false);
+  return (
+    <div
+      onClick={onClick}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
+      style={{
+        background: pressed ? `${tool.color}18` : "rgba(255,255,255,0.04)",
+        border: `1.5px solid ${pressed ? tool.color + "60" : "rgba(255,255,255,0.09)"}`,
+        borderRadius: 16, padding: "15px 13px",
+        cursor: "pointer", transition: "all 0.12s",
+        transform: pressed ? "scale(0.96)" : "scale(1)",
+        display: "flex", flexDirection: "column", gap: 0,
+        position: "relative", overflow: "hidden",
+      }}
+    >
+      {/* Accent left border */}
+      <div style={{
+        position: "absolute", top: 0, left: 0, bottom: 0, width: 3,
+        background: tool.color, borderRadius: "16px 0 0 16px",
+        opacity: pressed ? 1 : 0.6,
+      }} />
+      <div style={{ fontSize: 26, marginBottom: 9, marginLeft: 4 }}>{tool.emoji}</div>
+      <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", marginBottom: 4, lineHeight: 1.3, letterSpacing: "-0.01em", marginLeft: 4 }}>
+        {tool.title}
+      </div>
+      <div style={{ fontSize: 11.5, color: "rgba(255,255,255,0.62)", lineHeight: 1.45, marginLeft: 4 }}>
+        {tool.desc}
+      </div>
+    </div>
+  );
+}
 
 export default function HousePartyHub() {
   const [open, setOpen] = useState(null);
   const navigate = useNavigate();
 
+  const openTool = (id) => setOpen(id);
+  const closeTool = () => setOpen(null);
+
   const renderModal = () => {
     switch (open) {
-      case "truthordare": return <TruthOrDare onClose={() => setOpen(null)} />;
-      case "neverhavei": return <NeverHaveI onClose={() => setOpen(null)} />;
-      case "wouldyou": return <WouldYouRather onClose={() => setOpen(null)} />;
-      case "hottakes": return <HotTakes onClose={() => setOpen(null)} />;
-      case "spin": return <SpinBottle onClose={() => setOpen(null)} />;
-      case "charades": return <Charades onClose={() => setOpen(null)} />;
-      case "bingo": return <Bingo onClose={() => setOpen(null)} />;
-      case "checklist": return <Checklist onClose={() => setOpen(null)} />;
-      case "bills": return <BillSplitter onClose={() => setOpen(null)} />;
-      case "theme": return <ThemePicker onClose={() => setOpen(null)} />;
-      case "countdown": return <Countdown onClose={() => setOpen(null)} />;
-      case "playlist": return <PlaylistBuilder onClose={() => setOpen(null)} />;
-      case "reportcard": return <PartyReportCard onClose={() => setOpen(null)} />;
+      case "truthordare": return <TruthOrDare onClose={closeTool} />;
+      case "neverhavei":  return <NeverHaveI  onClose={closeTool} />;
+      case "wouldyou":    return <WouldYouRather onClose={closeTool} />;
+      case "hottakes":    return <HotTakes    onClose={closeTool} />;
+      case "spin":        return <SpinBottle  onClose={closeTool} />;
+      case "charades":    return <Charades    onClose={closeTool} />;
+      case "bingo":       return <Bingo       onClose={closeTool} />;
+      case "checklist":   return <Checklist   onClose={closeTool} />;
+      case "bills":       return <BillSplitter onClose={closeTool} />;
+      case "theme":       return <ThemePicker onClose={closeTool} />;
+      case "countdown":   return <Countdown   onClose={closeTool} />;
+      case "playlist":    return <PlaylistBuilder onClose={closeTool} />;
+      case "reportcard":  return <PartyReportCard onClose={closeTool} />;
       case "potluck": return (
-        <ShareableTool onClose={() => setOpen(null)} emoji="🥘" title="Potluck Planner" description="Create a potluck room. Share the link — friends claim what they'll bring."
+        <ShareableTool onClose={closeTool} emoji="🥘" title="Potluck Planner"
+          description="Create a potluck room. Share the link — friends claim what they'll bring."
           path="/house-party/potluck"
           fields={[
-            { key: "partyName", label: "Party Name", placeholder: "Aman's Birthday Bash", required: true },
-            { key: "hostName", label: "Your Name", placeholder: "Aman", required: true },
-            { key: "items", label: "Items (comma-separated)", placeholder: "Chips, Coke, Beer, Cake, Plates", required: true },
+            { key:"partyName", label:"Party Name",             placeholder:"Aman's Birthday Bash",                required:true },
+            { key:"hostName",  label:"Your Name",              placeholder:"Aman",                                required:true },
+            { key:"items",     label:"Items (comma-separated)",placeholder:"Chips, Coke, Beer, Cake, Plates",     required:true },
           ]}
         />
       );
       case "invite": return (
-        <ShareableTool onClose={() => setOpen(null)} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly."
+        <ShareableTool onClose={closeTool} emoji="📨" title="Digital Invite & RSVP"
+          description="Create an invite. Share the link — guests RSVP instantly."
           path="/house-party/invite"
           fields={[
-            { key: "partyName", label: "Party Name", placeholder: "Saturday Night Out", required: true },
-            { key: "hostName", label: "Host Name", placeholder: "Rohit", required: true },
-            { key: "date", label: "Date", placeholder: "19 July 2026" },
-            { key: "time", label: "Time", placeholder: "8:00 PM" },
-            { key: "location", label: "Location", placeholder: "Aman's place, Sector 18, Noida" },
-            { key: "note", label: "Note (optional)", placeholder: "Dress code: neon!" },
+            { key:"partyName", label:"Party Name", placeholder:"Saturday Night Out",          required:true },
+            { key:"hostName",  label:"Host Name",  placeholder:"Rohit",                       required:true },
+            { key:"date",      label:"Date",        placeholder:"19 July 2026" },
+            { key:"time",      label:"Time",        placeholder:"8:00 PM" },
+            { key:"location",  label:"Location",    placeholder:"Aman's place, Sector 18" },
+            { key:"note",      label:"Note (optional)", placeholder:"Dress code: neon!" },
           ]}
         />
       );
       case "photowall": return (
-        <ShareableTool onClose={() => setOpen(null)} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos."
+        <ShareableTool onClose={closeTool} emoji="📸" title="Shared Photo Wall"
+          description="Create a photo wall. Share the link — everyone uploads their shots."
           path="/house-party/photo-wall"
           fields={[
-            { key: "partyName", label: "Party Name", placeholder: "Saturday Night 🎉", required: true },
+            { key:"partyName", label:"Party Name", placeholder:"Saturday Night 🎉", required:true },
           ]}
         />
       );
@@ -765,39 +862,94 @@ export default function HousePartyHub() {
   };
 
   return (
-    <div style={{ minHeight: "100dvh", background: "linear-gradient(135deg, #0f0c29, #1a1a2e, #16213e)", fontFamily: font, paddingBottom: 40 }}>
-      {/* Header */}
-      <div style={{ padding: "20px 18px 0" }}>
-        <button onClick={() => navigate(-1)} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", padding: "8px 14px", borderRadius: 20, cursor: "pointer", fontSize: 13, fontFamily: font, marginBottom: 20 }}>← Back</button>
-        <div style={{ textAlign: "center", paddingBottom: 24 }}>
-          <div style={{ fontSize: 52 }}>🎉</div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", margin: "8px 0 4px", letterSpacing: "-0.02em" }}>House Party Hub</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>The app everyone opens during the party</p>
+    <div style={{ minHeight:"100dvh", background:"#0d0b1a", fontFamily:font, paddingBottom:48 }}>
+
+      {/* ── Header ── */}
+      <div style={{
+        background:"linear-gradient(160deg,#1a0f3a 0%,#0d0b1a 100%)",
+        borderBottom:"1px solid rgba(255,255,255,0.06)",
+        padding:"16px 18px 24px",
+      }}>
+        <button onClick={() => navigate(-1)} style={{
+          background:"rgba(255,255,255,0.08)", border:"1px solid rgba(255,255,255,0.1)",
+          color:"rgba(255,255,255,0.8)", padding:"7px 14px", borderRadius:20,
+          cursor:"pointer", fontSize:13, fontFamily:font, marginBottom:20,
+        }}>← Back</button>
+
+        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+          <div style={{
+            width:54, height:54, borderRadius:16,
+            background:"linear-gradient(135deg,#7C3AED,#a855f7)",
+            display:"flex", alignItems:"center", justifyContent:"center", fontSize:28,
+            boxShadow:"0 4px 20px rgba(124,58,237,0.45)", flexShrink:0,
+          }}>🎉</div>
+          <div>
+            <h1 style={{ fontSize:22, fontWeight:900, color:"#fff", margin:0, letterSpacing:"-0.02em" }}>
+              House Party Hub
+            </h1>
+            <p style={{ fontSize:13, color:"rgba(255,255,255,0.55)", margin:"3px 0 0", lineHeight:1.4 }}>
+              Games · organise · vibe — all in one place
+            </p>
+          </div>
+        </div>
+
+        {/* Quick-start hint */}
+        <div style={{
+          marginTop:18,
+          background:"rgba(124,58,237,0.12)",
+          border:"1px solid rgba(124,58,237,0.25)",
+          borderRadius:12, padding:"10px 14px",
+          display:"flex", alignItems:"center", gap:10,
+        }}>
+          <span style={{ fontSize:16 }}>👆</span>
+          <span style={{ fontSize:12.5, color:"rgba(255,255,255,0.75)", lineHeight:1.4 }}>
+            <strong style={{ color:"#a78bfa" }}>Hosting tonight?</strong> Start with Invite & RSVP — then come back for games when the party starts.
+          </span>
         </div>
       </div>
 
-      {/* Sections */}
-      {SECTIONS.map(sec => {
-        const tools = TOOLS.filter(t => t.section === sec.id);
-        return (
-          <div key={sec.id} style={{ padding: "0 16px", marginBottom: 28 }}>
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{sec.label}</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{sec.subtitle}</div>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
-              {tools.map(t => (
-                <div key={t.id} onClick={() => setOpen(t.id)} style={{ background: "rgba(255,255,255,0.05)", border: "1.5px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "16px 14px", cursor: "pointer", transition: "all 0.15s", active: { transform: "scale(0.97)" } }}>
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>{t.emoji}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4, lineHeight: 1.3 }}>{t.title}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>{t.desc}</div>
-                  <div style={{ width: 24, height: 3, background: t.color, borderRadius: 4, marginTop: 10 }} />
+      {/* ── Sections ── */}
+      <div style={{ padding:"0 14px" }}>
+        {SECTIONS.map(sec => {
+          const tools = TOOLS.filter(t => t.section === sec.id);
+          return (
+            <div key={sec.id} style={{ marginTop:28 }}>
+              {/* Section header */}
+              <div style={{
+                display:"flex", alignItems:"center", gap:10, marginBottom:14,
+                paddingBottom:10, borderBottom:"1px solid rgba(255,255,255,0.07)",
+              }}>
+                <div style={{
+                  width:32, height:32, borderRadius:9,
+                  background: sec.highlight ? "rgba(124,58,237,0.2)" : "rgba(255,255,255,0.07)",
+                  border: sec.highlight ? "1px solid rgba(124,58,237,0.35)" : "1px solid rgba(255,255,255,0.1)",
+                  display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, flexShrink:0,
+                }}>{sec.icon}</div>
+                <div>
+                  <div style={{ fontSize:15, fontWeight:800, color:"#fff", letterSpacing:"-0.01em" }}>
+                    {sec.label}
+                    {sec.highlight && (
+                      <span style={{
+                        marginLeft:8, fontSize:9, fontWeight:800, background:"#7C3AED",
+                        color:"#fff", padding:"2px 7px", borderRadius:20,
+                        textTransform:"uppercase", letterSpacing:"0.08em", verticalAlign:"middle",
+                      }}>Start here</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.45)", marginTop:1 }}>{sec.sub}</div>
                 </div>
-              ))}
+              </div>
+
+              {/* Tool cards grid */}
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(148px,1fr))", gap:9 }}>
+                {tools.map(t => (
+                  <ToolCard key={t.id} tool={t} onClick={() => openTool(t.id)} />
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {renderModal()}
     </div>
