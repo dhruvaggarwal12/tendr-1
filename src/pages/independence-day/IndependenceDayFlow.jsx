@@ -181,18 +181,18 @@ const VENUE_TIPS = {
 const overlay = {
   position: "fixed", inset: 0, zIndex: 9999,
   background: "rgba(0,0,0,0.72)",
-  display: "flex", alignItems: "flex-end", justifyContent: "center",
-  padding: "0",
+  display: "flex", alignItems: "center", justifyContent: "center",
+  padding: "16px",
   fontFamily: "'Outfit', sans-serif",
 };
 
 const modal = {
   background: "#FFFCF5",
-  borderRadius: "20px 20px 0 0",
+  borderRadius: "20px",
   width: "100%", maxWidth: 520,
-  maxHeight: "92dvh",
+  maxHeight: "90dvh",
   overflowY: "auto",
-  boxShadow: "0 -8px 40px rgba(0,0,0,0.3)",
+  boxShadow: "0 8px 40px rgba(0,0,0,0.35)",
   position: "relative",
 };
 
