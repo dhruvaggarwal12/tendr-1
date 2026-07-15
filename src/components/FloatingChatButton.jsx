@@ -64,6 +64,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [showActiveChats, setShowActiveChats] = useState(false);
   const [vendorChats, setVendorChats] = useState([]);
+  const [rejectedPanel, setRejectedPanel] = useState(null); // { convo, vendors, serviceType, eventDetails } | null
+  const [rejectedPanelLoading, setRejectedPanelLoading] = useState(false);
+  const [rejectedQv, setRejectedQv] = useState(null); // vendor for quick-view side panel
   const [savedVendors, setSavedVendors] = useState(() => getSavedVendors());
   const [newlyAdded, setNewlyAdded] = useState(null); // 'compare' | 'fun' | 'st' — drives fly-in animation
   const prevCompareLen = useRef(compareSelected.length);
@@ -83,7 +86,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     });
   };
 
-  const unseenCount = vendorChats.filter(c => !seenIds.has(c._id)).length;
+  const unseenCount = vendorChats.filter(c => !c.chatRejected && !seenIds.has(c._id)).length;
   const [path, setPath]     = useState(() => router.state.location.pathname);
   const [search, setSearch] = useState(() => router.state.location.search || "");
   const [decorDismissed, setDecorDismissed] = useState(() => {
@@ -147,7 +150,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       .then((data) => {
         // Show vendor + concierge chats only — exclude support (MiniChatWidget creates support conversations)
         const active = (data.conversations || []).filter(
-          (c) => !c.chatRejected && c.chatType !== "support"
+          (c) => c.chatType !== "support"
         );
         // Deduplicate Tendr Team (null vendorId) entries — keep the most recently updated one
         const seen = new Set();
@@ -308,7 +311,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       {/* ── Active Chats panel — same size as VendorChatModal ── */}
       {showActiveChats && (
         <>
-          <div onClick={() => setShowActiveChats(false)} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.38)", backdropFilter: "blur(2px)" }} />
+          <div onClick={() => { setShowActiveChats(false); setRejectedPanel(null); setRejectedPanelLoading(false); setRejectedQv(null); }} style={{ position: "fixed", inset: 0, zIndex: 100000, background: "rgba(0,0,0,0.38)", backdropFilter: "blur(2px)" }} />
           <div
             onClick={e => e.stopPropagation()}
             className="active-chats-modal"
@@ -324,7 +327,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             {/* Header */}
             <div style={{ background: "linear-gradient(135deg,#2C1A0E,#4A2810)", padding: "14px 18px", display: "flex", alignItems: "center", gap: 12 }}>
               <div style={{ flex: 1, fontSize: 15, fontWeight: 800, color: "#fff" }}>💬 Active Chats</div>
-              <button onClick={() => setShowActiveChats(false)} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+              <button onClick={() => { setShowActiveChats(false); setRejectedPanel(null); setRejectedPanelLoading(false); setRejectedQv(null); }} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
 
             {/* Chat list */}
@@ -350,18 +353,33 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {displayChats.map(convo => (
                     <div
-                                      key={convo._id}
+                      key={convo._id}
                       onClick={() => {
+                        if (convo.chatRejected) {
+                          setRejectedPanel(null);
+                          setRejectedPanelLoading(true);
+                          fetch(`${BASE_URL}/conversations/${convo._id}/alternatives`, {
+                            headers: { Authorization: `Bearer ${token}` },
+                            credentials: "include",
+                          })
+                            .then(r => r.ok ? r.json() : { vendors: [], serviceType: convo.serviceType || '', eventDetails: {} })
+                            .then(data => {
+                              setRejectedPanel({ convo, vendors: data.vendors || [], serviceType: data.serviceType || convo.serviceType || '', eventDetails: data.eventDetails || {} });
+                              setRejectedPanelLoading(false);
+                            })
+                            .catch(() => {
+                              setRejectedPanel({ convo, vendors: [], serviceType: convo.serviceType || '', eventDetails: {} });
+                              setRejectedPanelLoading(false);
+                            });
+                          return;
+                        }
                         setShowActiveChats(false);
                         if (convo.chatType === "concierge" || convo.chatType === "support") {
-                          // Open concierge chat with back-to-chats flag
                           openConciergeChat(convo._id);
-                          // Dispatch custom event so back button works
                           setTimeout(() => {
                             document.dispatchEvent(new CustomEvent("tendr:set-from-active-chats"));
                           }, 50);
                         } else if (convo._synthetic && String(convo._id).startsWith('syn-')) {
-                          // Conversation still being created — just expand the minimized chat
                           expandChat();
                         } else {
                           openExistingChat(convo._id, {
@@ -373,18 +391,20 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                           });
                         }
                       }}
-                      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", transition: "background 0.15s" }}
-                      onMouseEnter={e => (e.currentTarget.style.background = "rgba(196,122,46,0.04)")}
-                      onMouseLeave={e => (e.currentTarget.style.background = "#fff")}
+                      style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: convo.chatRejected ? "1.5px solid rgba(220,38,38,0.25)" : "1.5px solid rgba(196,122,46,0.15)", background: convo.chatRejected ? "rgba(254,242,242,0.7)" : "#fff", cursor: "pointer", transition: "background 0.15s" }}
+                      onMouseEnter={e => (e.currentTarget.style.background = convo.chatRejected ? "rgba(254,226,226,0.9)" : "rgba(196,122,46,0.04)")}
+                      onMouseLeave={e => (e.currentTarget.style.background = convo.chatRejected ? "rgba(254,242,242,0.7)" : "#fff")}
                     >
-                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 17, fontWeight: 800, flexShrink: 0 }}>
+                      <div style={{ width: 44, height: 44, borderRadius: "50%", background: convo.chatRejected ? "linear-gradient(135deg,#dc2626,#ef4444)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 17, fontWeight: 800, flexShrink: 0 }}>
                         {(convo.vendorName || "V")[0].toUpperCase()}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || (convo.chatType === "support" ? "Support" : convo.chatType === "concierge" ? "Tendr Concierge" : "Vendor")}</div>
-                        <div style={{ fontSize: 12, color: "#9B7450" }}>{convo.serviceType || (convo.chatType === "support" ? "Support Chat" : convo.chatType === "concierge" ? "Concierge" : "Chat")}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || (convo.chatType === "concierge" ? "Tendr Concierge" : "Vendor")}</div>
+                        <div style={{ fontSize: 12, color: convo.chatRejected ? "#dc2626" : "#9B7450" }}>{convo.chatRejected ? "Vendor not available — see alternatives →" : (convo.serviceType || (convo.chatType === "concierge" ? "Concierge" : "Chat"))}</div>
                       </div>
-                      {convo.chatApproved ? (
+                      {convo.chatRejected ? (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#dc2626", background: "rgba(220,38,38,0.1)", border: "1px solid rgba(220,38,38,0.25)", borderRadius: 20, padding: "2px 8px", flexShrink: 0 }}>Rejected</span>
+                      ) : convo.chatApproved ? (
                         <span style={{ fontSize: 11, fontWeight: 600, color: "#22c55e", flexShrink: 0 }}>Active →</span>
                       ) : (
                         <span style={{ fontSize: 10, fontWeight: 700, color: "#b45309", background: "rgba(180,83,9,0.08)", border: "1px solid rgba(180,83,9,0.2)", borderRadius: 20, padding: "2px 8px", flexShrink: 0 }}>Pending</span>
@@ -394,6 +414,184 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                 </div>
                 );
               })()}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Rejected-chat alternatives panel ── */}
+      {(rejectedPanel || rejectedPanelLoading) && (
+        <>
+          <div onClick={() => { setRejectedPanel(null); setRejectedPanelLoading(false); setRejectedQv(null); }} style={{ position: "fixed", inset: 0, zIndex: 100002, background: "rgba(0,0,0,0.42)", backdropFilter: "blur(2px)" }} />
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+              zIndex: 100003, width: "min(94vw,600px)", maxHeight: "min(88vh,680px)",
+              background: "#FFFCF5", borderRadius: 24,
+              boxShadow: "0 32px 80px rgba(44,26,14,0.24)",
+              border: "1.5px solid rgba(220,38,38,0.2)",
+              display: "flex", flexDirection: "column", fontFamily: font, overflow: "hidden",
+            }}
+          >
+            {/* Header */}
+            <div style={{ background: "linear-gradient(135deg,#7f1d1d,#b91c1c)", padding: "16px 20px", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ fontSize: 22 }}>😔</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>Your vendor is busy</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 2 }}>{rejectedPanel?.convo?.vendorName} is not available for your date</div>
+              </div>
+              <button onClick={() => { setRejectedPanel(null); setRejectedPanelLoading(false); setRejectedQv(null); }} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            </div>
+
+            {/* Body */}
+            <div style={{ flex: 1, overflowY: "auto", padding: "20px" }}>
+              {rejectedPanelLoading ? (
+                <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>⏳</div>
+                  <div style={{ fontSize: 14, color: "#9B7450" }}>Finding perfect alternatives for you...</div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>Below are perfect options for you</div>
+                  <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 18 }}>
+                    These {rejectedPanel?.serviceType} vendors are available and match your needs.
+                  </div>
+
+                  {(!rejectedPanel?.vendors || rejectedPanel.vendors.length === 0) ? (
+                    <div style={{ textAlign: "center", padding: "32px 20px", background: "rgba(196,122,46,0.06)", borderRadius: 16 }}>
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>🔍</div>
+                      <div style={{ fontSize: 14, color: "#2C1A0E", fontWeight: 600, marginBottom: 4 }}>No alternatives found right now</div>
+                      <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 16 }}>Browse all vendors on the listings page</div>
+                      <button
+                        onClick={() => { setRejectedPanel(null); setRejectedPanelLoading(false); router.navigate(`/listings${rejectedPanel?.serviceType ? `?serviceType=${encodeURIComponent(rejectedPanel.serviceType)}` : ''}`); }}
+                        style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: font }}
+                      >See all vendors →</button>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+                        {rejectedPanel.vendors.map(v => {
+                          const photo = (v.portfolioPhotos && v.portfolioPhotos[0]) || v.image || null;
+                          const location = (v.locations && v.locations[0]) || v.city || '';
+                          return (
+                            <div
+                              key={v._id}
+                              style={{ display: "flex", gap: 14, padding: "14px", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer", transition: "box-shadow 0.15s" }}
+                              onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.18)")}
+                              onMouseLeave={e => (e.currentTarget.style.boxShadow = "0 2px 10px rgba(44,26,14,0.06)")}
+                              onClick={() => setRejectedQv(v)}
+                            >
+                              {photo ? (
+                                <img src={photo} alt={v.name} style={{ width: 72, height: 72, objectFit: "cover", borderRadius: 12, flexShrink: 0 }} />
+                              ) : (
+                                <div style={{ width: 72, height: 72, borderRadius: 12, background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.1))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, flexShrink: 0 }}>🎪</div>
+                              )}
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                                  <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E" }}>{v.name}</div>
+                                  {v.isTopRated && <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 8, padding: "1px 6px" }}>⭐ Top Rated</span>}
+                                </div>
+                                <div style={{ fontSize: 12, color: "#C47A2E", fontWeight: 600, marginBottom: 3 }}>{v.serviceType}</div>
+                                {location && <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 3 }}>📍 {location}</div>}
+                                {v.startingPrice > 0 && <div style={{ fontSize: 12, color: "#5a3a1a" }}>From ₹{v.startingPrice.toLocaleString("en-IN")}</div>}
+                              </div>
+                              <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 6 }}>
+                                <button
+                                  onClick={e => { e.stopPropagation(); setRejectedQv(v); }}
+                                  style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+                                >View →</button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      <button
+                        onClick={() => { setRejectedPanel(null); setRejectedPanelLoading(false); router.navigate(`/listings${rejectedPanel?.serviceType ? `?serviceType=${encodeURIComponent(rejectedPanel.serviceType)}` : ''}`); }}
+                        style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: font }}
+                      >See all {rejectedPanel?.serviceType} vendors →</button>
+                    </>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* ── Rejected vendor quick-view side panel ── */}
+      {rejectedQv && (
+        <>
+          <div onClick={() => setRejectedQv(null)} style={{ position: "fixed", inset: 0, zIndex: 100004, background: "rgba(0,0,0,0.35)" }} />
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              position: "fixed", top: 0, right: 0, bottom: 0, zIndex: 100005,
+              width: "min(92vw,420px)", background: "#FFFCF5",
+              boxShadow: "-12px 0 48px rgba(44,26,14,0.2)",
+              display: "flex", flexDirection: "column", fontFamily: font, overflowY: "auto",
+            }}
+          >
+            {/* Vendor photo */}
+            {(() => {
+              const photo = (rejectedQv.portfolioPhotos && rejectedQv.portfolioPhotos[0]) || rejectedQv.image || null;
+              return photo ? (
+                <img src={photo} alt={rejectedQv.name} style={{ width: "100%", height: 200, objectFit: "cover", flexShrink: 0 }} />
+              ) : (
+                <div style={{ width: "100%", height: 200, background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.1))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 52, flexShrink: 0 }}>🎪</div>
+              );
+            })()}
+
+            <button onClick={() => setRejectedQv(null)} style={{ position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.5)", border: "none", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+
+            <div style={{ padding: "20px 20px 28px" }}>
+              <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 6 }}>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>{rejectedQv.name}</div>
+                  <div style={{ fontSize: 13, color: "#C47A2E", fontWeight: 600 }}>{rejectedQv.serviceType}</div>
+                </div>
+                {rejectedQv.isTopRated && (
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 10, padding: "3px 9px" }}>⭐ Top Rated</span>
+                )}
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginTop: 14, marginBottom: 20 }}>
+                {((rejectedQv.locations && rejectedQv.locations[0]) || rejectedQv.city) && (
+                  <div style={{ fontSize: 13, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 8, padding: "5px 10px" }}>📍 {(rejectedQv.locations && rejectedQv.locations[0]) || rejectedQv.city}</div>
+                )}
+                {rejectedQv.startingPrice > 0 && (
+                  <div style={{ fontSize: 13, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 8, padding: "5px 10px" }}>💰 From ₹{rejectedQv.startingPrice.toLocaleString("en-IN")}</div>
+                )}
+                {rejectedQv.yearsOfExperience > 0 && (
+                  <div style={{ fontSize: 13, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 8, padding: "5px 10px" }}>🏆 {rejectedQv.yearsOfExperience}+ yrs exp</div>
+                )}
+                {rejectedQv.avgReviewScore > 0 && (
+                  <div style={{ fontSize: 13, color: "#5a3a1a", background: "rgba(196,122,46,0.08)", borderRadius: 8, padding: "5px 10px" }}>⭐ {rejectedQv.avgReviewScore.toFixed(1)} rating</div>
+                )}
+              </div>
+
+              <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 20, lineHeight: 1.6 }}>
+                ⚡ Responds in ~3 hours · Free consultation available
+              </div>
+
+              <button
+                onClick={() => {
+                  setRejectedQv(null);
+                  setRejectedPanel(null);
+                  setRejectedPanelLoading(false);
+                  setShowActiveChats(false);
+                  // Navigate to vendor profile
+                  router.navigate(`/vendor/${rejectedQv._id}`);
+                }}
+                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 800, fontSize: 15, cursor: "pointer", fontFamily: font, marginBottom: 10 }}
+              >
+                Send Chat Request →
+              </button>
+              <button
+                onClick={() => setRejectedQv(null)}
+                style={{ width: "100%", padding: "11px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "transparent", color: "#C47A2E", fontWeight: 600, fontSize: 14, cursor: "pointer", fontFamily: font }}
+              >← Back to alternatives</button>
             </div>
           </div>
         </>
