@@ -1137,8 +1137,9 @@ const Home = () => {
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, letterSpacing: "0.01em" }}>What's the occasion?</h2>
           </div>
 
-          {/* ── Independence Day featured strip — Coming Soon ── */}
+          {/* ── Independence Day featured strip ── */}
           <div
+            onClick={() => setShowIndepDay(true)}
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               width: "100%", marginBottom: 18,
@@ -1146,7 +1147,7 @@ const Home = () => {
               borderRadius: 14, padding: "12px 14px",
               overflow: "hidden", position: "relative",
               boxShadow: "0 4px 20px rgba(255,153,51,0.35)",
-              boxSizing: "border-box", gap: 10,
+              boxSizing: "border-box", gap: 10, cursor: "pointer",
             }}
           >
             <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.18)" }} />
@@ -1165,13 +1166,13 @@ const Home = () => {
               </div>
             </div>
             <div style={{ position: "relative", background: "rgba(255,255,255,0.22)", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap" }}>
-              Coming Soon
+              Plan Now →
             </div>
           </div>
           {/* ── END Independence Day strip ── */}
 
-          {/* ── House Party Hub strip ── */}
-          <div
+          {/* ── House Party Hub strip — hidden on main ── */}
+          {/* <div
             onClick={() => navigate("/house-party")}
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -1201,7 +1202,7 @@ const Home = () => {
             <div style={{ position: "relative", background: "rgba(124,58,237,0.5)", borderRadius: 20, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap", border: "1px solid rgba(124,58,237,0.6)" }}>
               Open →
             </div>
-          </div>
+          </div> */}
           {/* ── END House Party Hub strip ── */}
 
           <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 10 }}>
