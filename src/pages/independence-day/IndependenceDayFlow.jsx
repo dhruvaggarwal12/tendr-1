@@ -513,11 +513,13 @@ export default function IndependenceDayFlow({ onClose }) {
   const [budget, setBudget]       = useState("");
 
   const [decorMode, setDecorMode]           = useState(null);
-  const [uploadPreview, setUploadPreview]   = useState(null);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [venuePhotos, setVenuePhotos]       = useState([]);
   const [photosLoading, setPhotosLoading]   = useState(false);
-  const fileRef = useRef();
+
+  // Optional venue photo upload (Step 3 form)
+  const [venuePhotoPreview, setVenuePhotoPreview] = useState(null);
+  const venuePhotoRef = useRef();
 
   const [finalScreen, setFinalScreen] = useState(null);
 
@@ -589,7 +591,7 @@ export default function IndependenceDayFlow({ onClose }) {
       (budget    ? `Budget: ₹${budget}\n`         : "") +
       `\nPlease help us plan this Independence Day celebration!`;
 
-    if (uploadPreview) {
+    if (venuePhotoPreview) {
       msg += `\n\n📸 Venue photo attached — customer has uploaded a photo of their space for reference.`;
     }
     if (selectedPhotos.length > 0) {
@@ -603,7 +605,7 @@ export default function IndependenceDayFlow({ onClose }) {
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
 
     const chatPhotos = [];
-    if (uploadPreview) chatPhotos.push({ url: uploadPreview, name: "Your venue", priceRange: "" });
+    if (venuePhotoPreview) chatPhotos.push({ url: venuePhotoPreview, name: "Your venue", priceRange: "" });
     selectedPhotos.forEach((p) => chatPhotos.push({ url: p.url, name: p.title, priceRange: p.description }));
 
     if (chatPhotos.length > 0) {
@@ -616,12 +618,11 @@ export default function IndependenceDayFlow({ onClose }) {
     navigate("/baat-karo");
   }
 
-  async function handleFileChange(e) {
+  async function handleVenuePhotoChange(e) {
     const file = e.target.files?.[0];
     if (!file) return;
     const compressed = await compressImage(file);
-    setUploadPreview(compressed);
-    setDecorMode("upload_done");
+    setVenuePhotoPreview(compressed);
   }
 
   function restoreDraft(draft) {
@@ -946,6 +947,30 @@ export default function IndependenceDayFlow({ onClose }) {
               onChange={(e) => setBudget(e.target.value)}
             />
           </div>
+          {/* Optional venue photo */}
+          <div>
+            <span style={label(true)}>Your venue photo (optional)</span>
+            <p style={{ fontSize: 11.5, color: muted, margin: "2px 0 8px", lineHeight: 1.5 }}>
+              Helps us suggest decoration styles that suit your space
+            </p>
+            <input ref={venuePhotoRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleVenuePhotoChange} />
+            {venuePhotoPreview ? (
+              <div style={{ position: "relative" }}>
+                <img src={venuePhotoPreview} alt="Venue preview" style={{ width: "100%", borderRadius: 10, maxHeight: 130, objectFit: "cover", display: "block" }} />
+                <button
+                  onClick={() => { setVenuePhotoPreview(null); venuePhotoRef.current.value = ""; }}
+                  style={{ position: "absolute", top: 6, right: 6, background: "rgba(0,0,0,0.55)", border: "none", borderRadius: "50%", width: 22, height: 22, color: "#fff", cursor: "pointer", fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", fontFamily: font }}
+                >✕</button>
+              </div>
+            ) : (
+              <button
+                onClick={() => venuePhotoRef.current?.click()}
+                style={{ width: "100%", padding: "11px 14px", borderRadius: 10, border: `1.5px dashed ${saffron}`, background: "rgba(255,153,51,0.04)", cursor: "pointer", fontSize: 13, color: saffron, fontWeight: 600, fontFamily: font, textAlign: "center" }}
+              >
+                📷 Upload from device
+              </button>
+            )}
+          </div>
         </div>
         <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
           <button style={outlineBtn} onClick={() => setStep(2)}>← Back</button>
@@ -965,65 +990,25 @@ export default function IndependenceDayFlow({ onClose }) {
       if (!decorMode) return (
         <div>
           <p style={{ fontSize: 13.5, color: muted, margin: "0 0 6px", lineHeight: 1.6 }}>
-            Let's find the perfect decoration for your <strong>{VENUE_TYPES.find((v) => v.id === venueType)?.label}</strong>.
+            Pick decoration ideas for your <strong>{VENUE_TYPES.find((v) => v.id === venueType)?.label}</strong>.
           </p>
           <p style={{ fontSize: 12, color: muted, margin: "0 0 20px" }}>
-            We'll match styles that work best for your space.
+            Browse curated Independence Day styles and tap any that inspire you.
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <button
-              onClick={() => { setDecorMode("upload"); fileRef.current?.click(); }}
-              style={{ padding: "18px 20px", borderRadius: 14, border: `2px dashed ${saffron}`, background: "rgba(255,153,51,0.05)", cursor: "pointer", textAlign: "left", fontFamily: font }}
-            >
-              <div style={{ fontSize: 22, marginBottom: 6 }}>📷</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>Upload a photo</div>
-              <div style={{ fontSize: 12, color: muted, marginTop: 3 }}>Upload your venue photo — we'll suggest the best styles</div>
-            </button>
-
-            <button
-              onClick={() => setDecorMode("browse")}
-              style={{ padding: "18px 20px", borderRadius: 14, border: `1.5px solid ${border}`, background: white, cursor: "pointer", textAlign: "left", fontFamily: font }}
-            >
-              <div style={{ fontSize: 22, marginBottom: 6 }}>🖼️</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>See all reference images</div>
-              <div style={{ fontSize: 12, color: muted, marginTop: 3 }}>Browse curated Independence Day decoration styles</div>
-            </button>
-          </div>
+          <button
+            onClick={() => setDecorMode("browse")}
+            style={{ width: "100%", padding: "18px 20px", borderRadius: 14, border: `1.5px solid ${border}`, background: white, cursor: "pointer", textAlign: "left", fontFamily: font }}
+          >
+            <div style={{ fontSize: 22, marginBottom: 6 }}>🖼️</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>See all reference images</div>
+            <div style={{ fontSize: 12, color: muted, marginTop: 3 }}>Browse curated Independence Day decoration styles</div>
+          </button>
           <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
             <button style={outlineBtn} onClick={() => setStep(3)}>← Back</button>
             <button style={{ ...primaryBtn, marginTop: 0, flex: 2, background: "#E8D8C4", color: muted, fontFamily: font }} onClick={() => setFinalScreen("choice")}>
               Skip & continue
             </button>
           </div>
-        </div>
-      );
-
-      if (decorMode === "upload" || decorMode === "upload_done") return (
-        <div>
-          {uploadPreview ? (
-            <>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#7A4B1E", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.08em" }}>📷 Your venue:</div>
-              <img src={uploadPreview} alt="Uploaded venue" style={{ width: "100%", borderRadius: 10, maxHeight: 160, objectFit: "cover", marginBottom: 14 }} />
-              <div style={{ fontSize: 13, fontWeight: 700, color: dark, marginBottom: 10 }}>
-                ✨ Best styles for your {VENUE_TYPES.find((v) => v.id === venueType)?.label}:
-              </div>
-              {photosLoading ? (
-                <div style={{ color: muted, fontSize: 13, padding: "12px 0" }}>Loading styles…</div>
-              ) : venuePhotos.length === 0 ? (
-                <div style={{ color: muted, fontSize: 13, padding: "12px 0" }}>No styles uploaded yet for this venue.</div>
-              ) : (
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
-                  {venuePhotos.map((photo) => (
-                    <PhotoCard key={photo._id} photo={photo} selected={!!selectedPhotos.find((p) => p._id === photo._id)} onToggle={togglePhoto} />
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div style={{ textAlign: "center", padding: "24px 0", color: muted }}>
-              <button style={{ ...primaryBtn, marginTop: 0 }} onClick={() => fileRef.current?.click()}>Choose Photo</button>
-            </div>
-          )}
         </div>
       );
 
@@ -1046,13 +1031,11 @@ export default function IndependenceDayFlow({ onClose }) {
     }
   }
 
-  const showPhotoFooter = decorMode === "browse" || (decorMode === "upload_done" && !!uploadPreview);
+  const showPhotoFooter = decorMode === "browse";
 
   return (
     <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={modal}>
-        {/* Single hoisted file input — always in DOM so fileRef works from any mode */}
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
         <div style={hdr}>
           <button style={closeBtn} onClick={onClose}>✕</button>
           <div style={{ fontSize: 26, marginBottom: 4 }}>🇮🇳</div>
@@ -1077,19 +1060,8 @@ export default function IndependenceDayFlow({ onClose }) {
                 ✓ {selectedPhotos.length} style{selectedPhotos.length > 1 ? "s" : ""} selected — will go with your request
               </div>
             )}
-            {decorMode === "browse" && (
-              <button
-                onClick={() => { setDecorMode("upload"); fileRef.current?.click(); }}
-                style={{ width: "100%", marginBottom: 8, padding: "9px 14px", borderRadius: 10, border: `1.5px dashed ${saffron}`, background: "rgba(255,153,51,0.04)", cursor: "pointer", fontSize: 12.5, color: saffron, fontWeight: 600, fontFamily: font }}
-              >
-                📷 Upload your venue photo instead
-              </button>
-            )}
             <div style={{ display: "flex", gap: 10 }}>
-              <button style={outlineBtn} onClick={() => {
-                if (decorMode === "browse") { setDecorMode(null); setSelectedPhotos([]); }
-                else { setDecorMode(null); setUploadPreview(null); setSelectedPhotos([]); }
-              }}>← Back</button>
+              <button style={outlineBtn} onClick={() => { setDecorMode(null); setSelectedPhotos([]); }}>← Back</button>
               <button style={{ ...primaryBtn, marginTop: 0, flex: 2 }} onClick={() => setFinalScreen("choice")}>Continue →</button>
             </div>
           </div>
