@@ -258,7 +258,10 @@ const VendorList_ListingPage = ({
                   </div>
                 </div>
               )}
-              {vendors.map((vendor, index) => {
+              {[...vendors].sort((a, b) => {
+                const hasPhoto = (v) => !![v.image, ...(v.portfolioPhotos || [])].find(u => u && typeof u === "string" && u.startsWith("http"));
+                return hasPhoto(b) - hasPhoto(a);
+              }).map((vendor, index) => {
                 const isSelected = compareSelected.some((v) => v._id === vendor._id);
                 const rating = vendor.avgReviewScore ?? vendor.rating;
 
