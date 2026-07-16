@@ -191,7 +191,9 @@ const modal = {
   borderRadius: "20px",
   width: "100%", maxWidth: 520,
   maxHeight: "90dvh",
-  overflowY: "auto",
+  display: "flex",
+  flexDirection: "column",
+  overflow: "hidden",
   boxShadow: "0 8px 40px rgba(0,0,0,0.35)",
   position: "relative",
 };
@@ -212,7 +214,7 @@ const closeBtn = {
   display: "flex", alignItems: "center", justifyContent: "center",
 };
 
-const body = { padding: "20px 18px calc(28px + env(safe-area-inset-bottom, 0px))", fontFamily: font };
+const body = { padding: "20px 18px 16px", fontFamily: font, flex: 1, overflowY: "auto", minHeight: 0 };
 
 const chip = (active) => ({
   display: "flex", alignItems: "center", gap: 8,
@@ -977,7 +979,6 @@ export default function IndependenceDayFlow({ onClose }) {
               <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>Upload a photo</div>
               <div style={{ fontSize: 12, color: muted, marginTop: 3 }}>Upload your venue photo — we'll suggest the best styles</div>
             </button>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
 
             <button
               onClick={() => setDecorMode("browse")}
@@ -1017,22 +1018,12 @@ export default function IndependenceDayFlow({ onClose }) {
                   ))}
                 </div>
               )}
-              {selectedPhotos.length > 0 && (
-                <div style={{ background: "rgba(255,153,51,0.08)", borderRadius: 10, padding: "9px 13px", marginBottom: 12, fontSize: 13, color: saffron, fontWeight: 600 }}>
-                  {selectedPhotos.length} style{selectedPhotos.length > 1 ? "s" : ""} selected
-                </div>
-              )}
             </>
           ) : (
             <div style={{ textAlign: "center", padding: "24px 0", color: muted }}>
               <button style={{ ...primaryBtn, marginTop: 0 }} onClick={() => fileRef.current?.click()}>Choose Photo</button>
-              <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
             </div>
           )}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button style={outlineBtn} onClick={() => { setDecorMode(null); setUploadPreview(null); setSelectedPhotos([]); }}>← Back</button>
-            <button style={{ ...primaryBtn, marginTop: 0, flex: 2 }} onClick={() => setFinalScreen("choice")}>Continue →</button>
-          </div>
         </div>
       );
 
@@ -1044,29 +1035,24 @@ export default function IndependenceDayFlow({ onClose }) {
           {photosLoading ? (
             <div style={{ color: muted, fontSize: 13, padding: "12px 0" }}>Loading styles…</div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {venuePhotos.map((photo) => (
                 <PhotoCard key={photo._id} photo={photo} selected={!!selectedPhotos.find((p) => p._id === photo._id)} onToggle={togglePhoto} />
               ))}
             </div>
           )}
-          {selectedPhotos.length > 0 && (
-            <div style={{ background: "rgba(255,153,51,0.08)", borderRadius: 10, padding: "9px 13px", marginBottom: 12, fontSize: 13, color: saffron, fontWeight: 600 }}>
-              {selectedPhotos.length} style{selectedPhotos.length > 1 ? "s" : ""} selected — will go with your request
-            </div>
-          )}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button style={outlineBtn} onClick={() => { setDecorMode(null); setSelectedPhotos([]); }}>← Back</button>
-            <button style={{ ...primaryBtn, marginTop: 0, flex: 2 }} onClick={() => setFinalScreen("choice")}>Continue →</button>
-          </div>
         </div>
       );
     }
   }
 
+  const showPhotoFooter = decorMode === "browse" || (decorMode === "upload_done" && !!uploadPreview);
+
   return (
     <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={modal}>
+        {/* Single hoisted file input — always in DOM so fileRef works from any mode */}
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: "none" }} onChange={handleFileChange} />
         <div style={hdr}>
           <button style={closeBtn} onClick={onClose}>✕</button>
           <div style={{ fontSize: 26, marginBottom: 4 }}>🇮🇳</div>
@@ -1078,6 +1064,36 @@ export default function IndependenceDayFlow({ onClose }) {
           <ProgressBar current={step} total={totalSteps} />
         </div>
         <div style={body}>{renderStep()}</div>
+        {showPhotoFooter && (
+          <div style={{
+            flexShrink: 0,
+            borderTop: "1.5px solid rgba(232,216,196,0.6)",
+            background: "#FFFCF5",
+            padding: "10px 18px",
+            paddingBottom: "calc(10px + env(safe-area-inset-bottom, 0px))",
+          }}>
+            {selectedPhotos.length > 0 && (
+              <div style={{ background: "rgba(255,153,51,0.08)", borderRadius: 10, padding: "8px 13px", marginBottom: 10, fontSize: 13, color: saffron, fontWeight: 600, fontFamily: font }}>
+                ✓ {selectedPhotos.length} style{selectedPhotos.length > 1 ? "s" : ""} selected — will go with your request
+              </div>
+            )}
+            {decorMode === "browse" && (
+              <button
+                onClick={() => { setDecorMode("upload"); fileRef.current?.click(); }}
+                style={{ width: "100%", marginBottom: 8, padding: "9px 14px", borderRadius: 10, border: `1.5px dashed ${saffron}`, background: "rgba(255,153,51,0.04)", cursor: "pointer", fontSize: 12.5, color: saffron, fontWeight: 600, fontFamily: font }}
+              >
+                📷 Upload your venue photo instead
+              </button>
+            )}
+            <div style={{ display: "flex", gap: 10 }}>
+              <button style={outlineBtn} onClick={() => {
+                if (decorMode === "browse") { setDecorMode(null); setSelectedPhotos([]); }
+                else { setDecorMode(null); setUploadPreview(null); setSelectedPhotos([]); }
+              }}>← Back</button>
+              <button style={{ ...primaryBtn, marginTop: 0, flex: 2 }} onClick={() => setFinalScreen("choice")}>Continue →</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
