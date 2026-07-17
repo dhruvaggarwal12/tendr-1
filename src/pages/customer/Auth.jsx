@@ -59,7 +59,8 @@ const Auth = () => {
   const [isSignup, setIsSignup] = useState(isSignupPath);
   const [localLoading, setLocalLoading] = useState(false);
   const [localError, setLocalError] = useState("");
-  const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", password: "", phoneNumber: "", location: "", companyName: "" });
+  const [accountType, setAccountType] = useState("personal");
   const [passwordError, setPasswordError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [focused, setFocused] = useState("");
@@ -93,6 +94,9 @@ const Auth = () => {
       setLocalError("Enter a valid 10-digit phone number"); return;
     }
     if (formData.password.length < 8) { setPasswordError("Minimum 8 characters"); return; }
+    if (accountType === "company" && !formData.companyName.trim()) {
+      setLocalError("Company name is required"); return;
+    }
     setLocalLoading(true);
     setLocalError("");
     try {
@@ -106,6 +110,8 @@ const Auth = () => {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          accountType,
+          companyName: accountType === "company" ? formData.companyName.trim() : "",
         }),
         credentials: "include",
       });
@@ -358,6 +364,57 @@ const Auth = () => {
 
           {isSignup ? (
             <form onSubmit={handleSignupSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+              {/* Account type toggle */}
+              <div>
+                <label style={labelStyle}>Account Type</label>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                  {[
+                    { value: "personal", icon: "👤", label: "Personal" },
+                    { value: "company", icon: "🏢", label: "For Company" },
+                  ].map(({ value, icon, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setAccountType(value)}
+                      disabled={isBusy}
+                      style={{
+                        padding: "10px 12px",
+                        borderRadius: 12,
+                        border: accountType === value ? "2px solid #C47A2E" : "1.5px solid rgba(139,69,19,0.22)",
+                        background: accountType === value ? "rgba(196,122,46,0.08)" : "#fff",
+                        color: accountType === value ? "#C47A2E" : "#7A5535",
+                        fontFamily: font,
+                        fontSize: 13,
+                        fontWeight: accountType === value ? 700 : 500,
+                        cursor: isBusy ? "not-allowed" : "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        transition: "all 0.15s",
+                      }}
+                    >
+                      <span style={{ fontSize: 16 }}>{icon}</span>
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Company name — only shown when company is selected */}
+              {accountType === "company" && (
+                <div>
+                  <label style={labelStyle}>Company / Organisation Name <span style={{ color: "#C0392B" }}>*</span></label>
+                  <input
+                    type="text" name="companyName" value={formData.companyName} onChange={handleChange}
+                    onFocus={() => setFocused("companyName")} onBlur={() => setFocused("")}
+                    style={{ ...inputStyle, borderColor: focused === "companyName" ? "#C47A2E" : "rgba(139,69,19,0.22)" }}
+                    placeholder="Enter your company name" disabled={isBusy} required
+                  />
+                </div>
+              )}
+
               <div>
                 <label style={labelStyle}>Full Name</label>
                 <input

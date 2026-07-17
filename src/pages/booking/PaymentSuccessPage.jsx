@@ -23,6 +23,7 @@ const PaymentSuccessPage = () => {
   const { bookingDetails, orderId, paymentId, amount } = state || {};
   const [booking, setBooking] = useState(null);
   const user = useSelector((s) => s.auth.user);
+  const pdfUserName = user?.accountType === 'company' && user?.companyName ? `${user.name} — ${user.companyName}` : user?.name;
   const referralCode = user?._id ? formatCode(generateReferralCode(user._id)) : null;
   const [referralCopied, setReferralCopied] = useState(false);
   const [pinnedMessages, setPinnedMessages] = useState({}); // { vendorId: [msg, ...] }
@@ -370,7 +371,7 @@ const PaymentSuccessPage = () => {
               onClick={() => {
                 setPdfGenerating(true);
                 try {
-                  generateInvoicePDF({ eventSummary, confirmedVendors, amount, orderId: state?.orderId, paymentId: state?.paymentId, userName: user?.name });
+                  generateInvoicePDF({ eventSummary, confirmedVendors, amount, orderId: state?.orderId, paymentId: state?.paymentId, userName: pdfUserName });
                 } finally { setPdfGenerating(false); }
               }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s", minHeight: 80 }}
@@ -389,7 +390,7 @@ const PaymentSuccessPage = () => {
                   pinnedByKey[key] = pinnedMessages[v._id] || pinnedMessages[v.name] || [];
                 });
                 try {
-                  await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: pinnedByKey, userName: user?.name, orderId: state?.orderId });
+                  await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: pinnedByKey, userName: pdfUserName, orderId: state?.orderId });
                 } finally { setPdfGenerating(false); }
               }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s", minHeight: 80 }}
@@ -404,7 +405,7 @@ const PaymentSuccessPage = () => {
                 setPdfGenerating(true);
                 try {
                   const slots = dayofSlots.length > 0 ? dayofSlots : JSON.parse(localStorage.getItem("tendr_dayof") || '{}').slots || [];
-                  await generateTimelinePDF({ slots, eventSummary, userName: user?.name, preEventNotes: pdfPreEventNotes });
+                  await generateTimelinePDF({ slots, eventSummary, userName: pdfUserName, preEventNotes: pdfPreEventNotes });
                 } finally { setPdfGenerating(false); }
               }}
               style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "16px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: pdfGenerating ? "#f5f0e8" : "#FFFCF7", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font, transition: "all 0.18s", minHeight: 80 }}
@@ -421,7 +422,7 @@ const PaymentSuccessPage = () => {
                   await generateInvitationPDF({
                     eventSummary,
                     confirmedVendors,
-                    userName: user?.name,
+                    userName: pdfUserName,
                     eventTime: eventSummary.eventTime,
                     personName: eventSummary.personName,
                     venueAddress: eventSummary.venueAddress,

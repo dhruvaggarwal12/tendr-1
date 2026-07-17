@@ -3727,6 +3727,9 @@ const AdminDashboard = () => {
                           <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E", fontFamily: "'Outfit', sans-serif" }}>
                             {u.name}
                             {u.isAdmin && <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 100, background: "#f5f3ff", color: "#7c3aed", border: "1px solid #ddd6fe" }}>Admin</span>}
+                            {u.accountType === 'company' && u.companyName && (
+                              <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 100, background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}>🏢 {u.companyName}</span>
+                            )}
                           </div>
                           <div style={{ display: "flex", gap: 14, fontSize: 12, color: "#9B7450", marginTop: 2 }}>
                             {u.phoneNumber && <span>📞 {u.phoneNumber}</span>}
