@@ -7,6 +7,7 @@ import {
 } from "@hello-pangea/dnd";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
+import SEO from "../../components/SEO";
 
 const BASE_URL = "https://tendr-backend-dhruv.onrender.com";
 
@@ -207,6 +208,7 @@ export default function CheckBox() {
 
   return (
     <div className="min-h-screen bg-white w-full p-4 sm:p-8 md:p-12">
+      <SEO title="Event Checklist — Tendr" description="Your personalised event checklist." path="/prebuilt-checklist" noIndex />
       <BasicSpeedDial />
       <HamburgerNav title="Event Checklist" />
 

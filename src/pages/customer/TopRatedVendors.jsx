@@ -206,6 +206,7 @@ export default function TopRatedVendors() {
         title={categoryTitle(category)}
         description={categoryDescription(category)}
         path={`/top-rated/${category || ""}`}
+        noIndex
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Browse Vendors", path: "/listings" }, { name: category || "Vendors", path: `/top-rated/${category || ""}` }]}
         schema={{
           "@context": "https://schema.org",

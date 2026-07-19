@@ -21,28 +21,6 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- Top Rated — by category -->
-  <url>
-    <loc>https://tendr.co.in/top-rated/Photographer</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://tendr.co.in/top-rated/Caterer</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://tendr.co.in/top-rated/DJ</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-  <url>
-    <loc>https://tendr.co.in/top-rated/Decorator</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.85</priority>
-  </url>
-
   <!-- Vendor registration -->
   <url>
     <loc>https://tendr.co.in/vendor/register</loc>
@@ -51,11 +29,6 @@
   </url>
 
   <!-- Planning Tools -->
-  <url>
-    <loc>https://tendr.co.in/checklist-picker</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
   <url>
     <loc>https://tendr.co.in/timeline-picker</loc>
     <changefreq>monthly</changefreq>
@@ -67,11 +40,6 @@
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://tendr.co.in/checklist</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.55</priority>
-  </url>
-  <url>
     <loc>https://tendr.co.in/prebuilt-timeline</loc>
     <changefreq>monthly</changefreq>
     <priority>0.55</priority>
@@ -80,11 +48,6 @@
     <loc>https://tendr.co.in/budget-allocator</loc>
     <changefreq>monthly</changefreq>
     <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://tendr.co.in/prebuilt-checklist</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
   </url>
 
   <!-- Info pages -->

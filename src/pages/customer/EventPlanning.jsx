@@ -905,6 +905,15 @@ const EventPlanning = () => {
                       <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{s.text}</span>
                     </div>
                   ))}
+                  <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.12)" }}>
+                    <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 8 }}>While you wait, get a head start:</div>
+                    <button
+                      onClick={() => window.open('/invitation-builder', '_blank')}
+                      style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.04))", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 8 }}
+                    >
+                      💌 Build Your Invitation →
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1907,15 +1916,33 @@ const EventPlanning = () => {
             )}
 
             {isYouDoIt ? (
-              <button
-                disabled={selectedVendors.length === 0}
-                onClick={() => { if (selectedVendors.length > 0) { const init = {}; selectedVendors.forEach(c => { init[c] = savedCategoryBudgets[c] || CAT_BUDGET_RANGES[c]?.default || 10000; }); dispatch(setCategoryBudgets(init)); setShowYouDoItBudget(true); } }}
-                style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
-                onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
-              >
-                Set Budget & Browse →
-              </button>
+              <>
+                {selectedVendors.length > 0 && (
+                  <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap", justifyContent: "center" }}>
+                    <button
+                      onClick={() => window.open('/timeline-picker', '_blank')}
+                      style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#2C1A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+                    >
+                      📅 Plan Timeline
+                    </button>
+                    <button
+                      onClick={() => window.open('/equipment-list', '_blank')}
+                      style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", background: "#FFFCF5", color: "#2C1A0E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 2px 8px rgba(196,122,46,0.08)" }}
+                    >
+                      🔧 Equipment List
+                    </button>
+                  </div>
+                )}
+                <button
+                  disabled={selectedVendors.length === 0}
+                  onClick={() => { if (selectedVendors.length > 0) { const init = {}; selectedVendors.forEach(c => { init[c] = savedCategoryBudgets[c] || CAT_BUDGET_RANGES[c]?.default || 10000; }); dispatch(setCategoryBudgets(init)); setShowYouDoItBudget(true); } }}
+                  style={{ background: selectedVendors.length > 0 ? "linear-gradient(135deg, #C47A2E, #CCAB4A)" : "#e5e7eb", color: selectedVendors.length > 0 ? "#fff" : "#9ca3af", fontSize: 16, fontWeight: 700, padding: "14px 52px", borderRadius: 14, border: "none", cursor: selectedVendors.length > 0 ? "pointer" : "not-allowed", boxShadow: selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none", transition: "all 0.2s", letterSpacing: "0.02em", fontFamily: "'Outfit', sans-serif" }}
+                  onMouseEnter={(e) => { if (selectedVendors.length > 0) { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.45)"; } }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = selectedVendors.length > 0 ? "0 4px 20px rgba(196,122,46,0.35)" : "none"; }}
+                >
+                  Set Budget & Browse →
+                </button>
+              </>
             ) : (
               <button
                 disabled={selectedVendors.length === 0 || planLoading}

@@ -701,6 +701,7 @@ export default function GiftingHub() {
       <SEO
         title="Gift Hampers — Tendr"
         description="Curated gift hampers for every occasion. AI-powered suggestions, browse collections, or build your own. Local vendors, real products."
+        path="/gifting"
       />
       <HamburgerNav />
 

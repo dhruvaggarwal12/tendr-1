@@ -7,13 +7,18 @@ import ToolIntroWrapper from "../../components/ToolIntroWrapper";
 const font = "'Outfit', sans-serif";
 
 const EVENT_TYPES = [
-  { id: "birthday",    label: "Birthday Party",       icon: "🎂" },
-  { id: "wedding",     label: "Wedding",              icon: "💒" },
-  { id: "anniversary", label: "Anniversary",          icon: "💕" },
-  { id: "prewedding",  label: "Pre-Wedding Function", icon: "💍" },
-  { id: "party",       label: "Party / Get-together", icon: "🎉" },
-  { id: "corporate",   label: "Corporate Event",       icon: "🏢" },
-  { id: "custom",      label: "Other / Custom",        icon: "✨" },
+  { id: "birthday",       label: "Birthday Party",       icon: "🎂" },
+  { id: "wedding",        label: "Wedding",              icon: "💒" },
+  { id: "anniversary",    label: "Anniversary",          icon: "💕" },
+  { id: "prewedding",     label: "Pre-Wedding Function", icon: "💍" },
+  { id: "party",          label: "Party / Get-together", icon: "🎉" },
+  { id: "houseparty",     label: "House Party",          icon: "🏠" },
+  { id: "housewarming",   label: "Housewarming",         icon: "🏡" },
+  { id: "babyshower",     label: "Baby Shower",          icon: "🍼" },
+  { id: "kittyparty",     label: "Kitty Party",          icon: "🎰" },
+  { id: "namingceremony", label: "Naming Ceremony",      icon: "👶" },
+  { id: "corporate",      label: "Corporate Event",      icon: "🏢" },
+  { id: "custom",         label: "Other / Custom",       icon: "✨" },
 ];
 
 const VENUE_TYPES = [
@@ -156,7 +161,7 @@ export default function CheckboxPicker() {
   // ── Steps 1–5 ─────────────────────────────────────────────────────────────
   const content = (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
-      <SEO title="Event Checklist — Personalize Your Plan" description="Create a personalized event checklist based on your event type, date, and services." path="/checklist-picker" />
+      <SEO title="Event Checklist — Personalize Your Plan" description="Create a personalized event checklist based on your event type, date, and services." path="/checklist-picker" noIndex />
       <ToolNav title="Event Checklist" />
 
       {/* Progress bar */}
@@ -239,7 +244,10 @@ export default function CheckboxPicker() {
         {step === 5 && (
           <StepWrapper label="Step 5 of 5" title="Which services do you need?" sub="Select all that apply — we'll create task categories for each.">
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(150px,1fr))", gap: 12, marginBottom: 32 }}>
-              {SERVICES.map(s => {
+              {SERVICES.filter(s => {
+                if (s.id === "Mehendi" || s.id === "Makeup") return eventType === "wedding" || eventType === "prewedding";
+                return true;
+              }).map(s => {
                 const sel = services.includes(s.id);
                 return (
                   <button key={s.id} onClick={() => toggleService(s.id)}
