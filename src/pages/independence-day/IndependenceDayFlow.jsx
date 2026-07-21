@@ -846,14 +846,6 @@ export default function IndependenceDayFlow({ onClose }) {
             </div>
           ))}
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-          <button style={outlineBtn} onClick={() => setStep(0)}>← Back</button>
-          <button
-            style={{ ...primaryBtn, marginTop: 0, flex: 2, opacity: services.length ? 1 : 0.5 }}
-            disabled={!services.length}
-            onClick={() => setStep(2)}
-          >Next →</button>
-        </div>
       </div>
     );
 
@@ -874,14 +866,6 @@ export default function IndependenceDayFlow({ onClose }) {
               <span style={{ fontSize: 13 }}>{v.label}</span>
             </div>
           ))}
-        </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-          <button style={outlineBtn} onClick={() => setStep(1)}>← Back</button>
-          <button
-            style={{ ...primaryBtn, marginTop: 0, flex: 2, opacity: venueType ? 1 : 0.5 }}
-            disabled={!venueType}
-            onClick={() => setStep(3)}
-          >Next →</button>
         </div>
       </div>
     );
@@ -972,16 +956,6 @@ export default function IndependenceDayFlow({ onClose }) {
             )}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 18 }}>
-          <button style={outlineBtn} onClick={() => setStep(2)}>← Back</button>
-          <button
-            style={{ ...primaryBtn, marginTop: 0, flex: 2, opacity: (hostName && address && datetime) ? 1 : 0.5 }}
-            disabled={!(hostName && address && datetime)}
-            onClick={() => hasDecorator ? setStep(4) : setFinalScreen("choice")}
-          >
-            {hasDecorator ? "Next →" : "Continue →"}
-          </button>
-        </div>
       </div>
     );
 
@@ -1003,12 +977,6 @@ export default function IndependenceDayFlow({ onClose }) {
             <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>See all reference images</div>
             <div style={{ fontSize: 12, color: muted, marginTop: 3 }}>Browse curated Independence Day decoration styles</div>
           </button>
-          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
-            <button style={outlineBtn} onClick={() => setStep(3)}>← Back</button>
-            <button style={{ ...primaryBtn, marginTop: 0, flex: 2, background: "#E8D8C4", color: muted, fontFamily: font }} onClick={() => setFinalScreen("choice")}>
-              Skip & continue
-            </button>
-          </div>
         </div>
       );
 
@@ -1033,6 +1001,51 @@ export default function IndependenceDayFlow({ onClose }) {
 
   const showPhotoFooter = decorMode === "browse";
 
+  function renderStepButtons() {
+    if (step === 0 || showPhotoFooter) return null;
+    if (step === 1) return (
+      <div style={{ display: "flex", gap: 10 }}>
+        <button style={outlineBtn} onClick={() => setStep(0)}>← Back</button>
+        <button
+          style={{ ...primaryBtn, marginTop: 0, flex: 2, opacity: services.length ? 1 : 0.5 }}
+          disabled={!services.length}
+          onClick={() => setStep(2)}
+        >Next →</button>
+      </div>
+    );
+    if (step === 2) return (
+      <div style={{ display: "flex", gap: 10 }}>
+        <button style={outlineBtn} onClick={() => setStep(1)}>← Back</button>
+        <button
+          style={{ ...primaryBtn, marginTop: 0, flex: 2, opacity: venueType ? 1 : 0.5 }}
+          disabled={!venueType}
+          onClick={() => setStep(3)}
+        >Next →</button>
+      </div>
+    );
+    if (step === 3) return (
+      <div style={{ display: "flex", gap: 10 }}>
+        <button style={outlineBtn} onClick={() => setStep(2)}>← Back</button>
+        <button
+          style={{ ...primaryBtn, marginTop: 0, flex: 2, opacity: (hostName && address && datetime) ? 1 : 0.5 }}
+          disabled={!(hostName && address && datetime)}
+          onClick={() => hasDecorator ? setStep(4) : setFinalScreen("choice")}
+        >
+          {hasDecorator ? "Next →" : "Continue →"}
+        </button>
+      </div>
+    );
+    if (step === 4 && hasDecorator && !decorMode) return (
+      <div style={{ display: "flex", gap: 10 }}>
+        <button style={outlineBtn} onClick={() => setStep(3)}>← Back</button>
+        <button style={{ ...primaryBtn, marginTop: 0, flex: 2, background: "#E8D8C4", color: muted, fontFamily: font }} onClick={() => setFinalScreen("choice")}>
+          Skip & continue
+        </button>
+      </div>
+    );
+    return null;
+  }
+
   return (
     <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={modal}>
@@ -1048,6 +1061,17 @@ export default function IndependenceDayFlow({ onClose }) {
           <ProgressBar current={step} total={totalSteps} />
         </div>
         <div style={body}>{renderStep()}</div>
+        {!showPhotoFooter && renderStepButtons() && (
+          <div style={{
+            flexShrink: 0,
+            borderTop: "1.5px solid rgba(232,216,196,0.6)",
+            background: "#FFFCF5",
+            padding: "10px 18px",
+            paddingBottom: "calc(10px + env(safe-area-inset-bottom, 0px))",
+          }}>
+            {renderStepButtons()}
+          </div>
+        )}
         {showPhotoFooter && (
           <div style={{
             flexShrink: 0,
