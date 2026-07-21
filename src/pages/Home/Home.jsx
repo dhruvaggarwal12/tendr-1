@@ -1354,10 +1354,17 @@ const Home = () => {
               { icon: "🎁", label: "Gift Hampers", desc: "Curated gift hampers — delivered for your event.", href: "/gift-hampers-cakes" },
               { icon: "🎭", label: "Fun Activities",       desc: "Magic shows, games, dhol players and live entertainment.", href: "/fun-activities" },
               { icon: "🔍", label: "Find by Style",        desc: "Upload a photo and find vendors who match your vibe.", href: "/find-by-style" },
-              { icon: "📅", label: "Upcoming Events",      desc: "See what's coming up — sign in to register interest.", href: "/occasions" },
+              { icon: "📅", label: "Upcoming Events",      desc: "See what's coming up — sign in to view your dashboard.", href: "__upcoming__" },
               { icon: "📚", label: "Tips by Tendr",        desc: "Free guides, community ideas and planning tips.", href: "/guides" },
             ].map(({ icon, label, desc, href }) => (
-              <div key={label} className="offer-tier2-item" onClick={() => navigate(href)}
+              <div key={label} className="offer-tier2-item" onClick={() => {
+                if (href === "__upcoming__") {
+                  if (isSignedIn) navigate("/dashboard");
+                  else navigate("/login", { state: { returnTo: "/dashboard" } });
+                } else {
+                  navigate(href);
+                }
+              }}
                 style={{ background: "#F9F6F2", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "background 0.15s, box-shadow 0.15s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "#FFF8EE"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "#F9F6F2"; e.currentTarget.style.boxShadow = "none"; }}>
