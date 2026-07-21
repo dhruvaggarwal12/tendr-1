@@ -201,7 +201,7 @@ const modal = {
 const hdr = {
   background: "linear-gradient(135deg, #FF9933 0%, #e67e00 40%, #138808 100%)",
   borderRadius: "20px 20px 0 0",
-  padding: "18px 20px 14px",
+  padding: "10px 20px 8px",
   color: white,
   position: "relative",
 };
@@ -258,7 +258,7 @@ const outlineBtn = {
 // ── Steps progress bar ─────────────────────────────────────────────────────
 function ProgressBar({ current, total }) {
   return (
-    <div style={{ display: "flex", gap: 5, marginTop: 14 }}>
+    <div style={{ display: "flex", gap: 5, marginTop: 8 }}>
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} style={{
           flex: 1, height: 3, borderRadius: 2,
@@ -1038,12 +1038,13 @@ export default function IndependenceDayFlow({ onClose }) {
       <div style={modal}>
         <div style={hdr}>
           <button style={closeBtn} onClick={onClose}>✕</button>
-          <div style={{ fontSize: 26, marginBottom: 4 }}>🇮🇳</div>
-          <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", opacity: 0.8, marginBottom: 3, textTransform: "uppercase" }}>
-            Step {step + 1} of {totalSteps}
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+            <span style={{ fontSize: 20 }}>🇮🇳</span>
+            <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", opacity: 0.85, textTransform: "uppercase" }}>
+              Step {step + 1} of {totalSteps} · Independence Day
+            </div>
           </div>
-          <div style={{ fontSize: "1.15rem", fontWeight: 800, margin: 0, letterSpacing: "-0.01em" }}>{stepTitles[step]}</div>
-          <div style={{ fontSize: 11.5, opacity: 0.75, marginTop: 3 }}>Independence Day Celebration</div>
+          <div style={{ fontSize: "1rem", fontWeight: 800, margin: 0, letterSpacing: "-0.01em" }}>{stepTitles[step]}</div>
           <ProgressBar current={step} total={totalSteps} />
         </div>
         <div style={body}>{renderStep()}</div>
