@@ -690,6 +690,8 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
     photography:   { picked: [], custom: '' },
     photos:        [],
   });
+  const [venuePhoto, setVenuePhoto] = useState(null);
+  const venuePhotoInputRef = useRef(null);
   const navigate = useNavigate();
 
   const color = themeAccentColor(theme.id);
@@ -746,10 +748,12 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
       ...(selLines.length ? ['', '🎯 My Preferences:'] : []),
       ...selLines,
       ...(selections.photos.length ? [`🖼️ Sample decor photos: ${selections.photos.length} selected`] : []),
+      ...(venuePhoto ? ['📷 Venue photo: Attached'] : []),
       '',
       'Can you help with planning, vendor booking, and coordination?',
     ].filter(l => l !== null).join('\n');
     try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
+    if (venuePhoto) { try { sessionStorage.setItem('baat_karo_venue_photo', venuePhoto); } catch {} }
     onClose();
     navigate('/baat-karo');
   };
@@ -886,6 +890,34 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
                     <textarea rows={3} placeholder="e.g. outdoor setup, vegan menu, specific colour palette..." value={pForm.notes} onChange={e => setPForm(f => ({ ...f, notes: e.target.value }))}
                       style={{ ...inputStyle, resize: 'vertical', minHeight: 84 }} />
                   </label>
+
+                  {/* Venue photo */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <span style={labelStyle}>Photo of your venue{optLabel}</span>
+                    <input ref={venuePhotoInputRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = ev => setVenuePhoto(ev.target.result);
+                      reader.readAsDataURL(file);
+                    }} />
+                    {venuePhoto ? (
+                      <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden' }}>
+                        <img src={venuePhoto} alt="Venue" style={{ width: '100%', maxHeight: 110, objectFit: 'cover', display: 'block' }} />
+                        <button
+                          onClick={() => { setVenuePhoto(null); if (venuePhotoInputRef.current) venuePhotoInputRef.current.value = ''; }}
+                          style={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: 22, height: 22, color: '#fff', cursor: 'pointer', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Outfit',sans-serif" }}
+                        >✕</button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => venuePhotoInputRef.current?.click()}
+                        style={{ padding: '10px 14px', borderRadius: 10, border: `1.5px dashed ${color}40`, background: `${color}06`, cursor: 'pointer', fontSize: 12, color: 'rgba(245,236,216,0.65)', fontWeight: 500, fontFamily: "'Outfit',sans-serif", textAlign: 'center' }}
+                      >
+                        Upload a photo →
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 

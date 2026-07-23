@@ -19,6 +19,10 @@ export default function BaatKaro() {
   const [refPhotos, setRefPhotos] = useState(() => {
     try { return JSON.parse(sessionStorage.getItem("gh_chat_photos") || "[]"); } catch { return []; }
   });
+  // Venue photo from OccasionPlanner — base64 data URI
+  const [venuePhoto, setVenuePhoto] = useState(() => {
+    try { return sessionStorage.getItem("baat_karo_venue_photo") || null; } catch { return null; }
+  });
   const [charCount, setCharCount] = useState(0);
   const [showAuth, setShowAuth] = useState(false);
   const [sending, setSending] = useState(false);
@@ -42,8 +46,26 @@ export default function BaatKaro() {
       if (res.ok && data.conversationId) {
         try { sessionStorage.removeItem("baat_karo_draft"); } catch {}
 
+        // Send venue photo from OccasionPlanner (base64 data URI)
+        if (venuePhoto) {
+          try {
+            await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sender: "user", content: "📷 Venue / place photo:" }),
+            });
+            await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ sender: "user", content: `[img:${venuePhoto}]` }),
+            });
+          } catch {}
+          try { sessionStorage.removeItem("baat_karo_venue_photo"); } catch {}
+          setVenuePhoto(null);
+        }
+
         // Send each attached photo as an [img:URL] message so the chat renders it as an image.
-        // Venue photos are compressed base64 JEPGs; reference photos are public URLs — both work.
+        // Reference photos are public URLs.
         if (refPhotos.length > 0) {
           for (const photo of refPhotos) {
             // Caption message so admin knows what they're looking at
