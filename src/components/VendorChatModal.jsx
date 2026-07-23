@@ -78,6 +78,46 @@ const CATERER_DISHES = {
     Desserts: ["Gulab Jamun","Rasgulla","Rasmalai","Kheer","Gajar Ka Halwa","Jalebi","Rabri","Kulfi","Phirni","Moong Dal Halwa","Pinni","Peda","Motichoor Ladoo","Kaju Barfi","Besan Barfi","Coconut Barfi","Sooji Halwa","Fruit Custard","Rabri Falooda","Shahi Tukda","Malpua","Imarti","Gajrela"],
     Beverages:["Sharbat","Rose Milk","Thandai","Rabri Lassi","Badam Milk"],
   },
+  "Mughlai": {
+    Starters: ["Galouti Kebab","Kakori Kebab","Shammi Kebab","Paneer Galouti","Malai Tikka","Shikampuri Kebab"],
+    Mains:    ["Shahi Korma","Mughlai Paneer","Navratan Korma","Mutton Rogan Josh","Chicken Korma","Nihari"],
+    Breads:   ["Rumali Roti","Sheermal","Warqi Paratha","Taftan"],
+    Rice:     ["Lucknowi Dum Biryani","Chicken Biryani","Mutton Biryani","Paneer Biryani"],
+    Desserts: ["Shahi Tukda","Phirni","Kulfi","Sewai","Zarda"],
+    Beverages:["Sherbet","Thandai","Lassi"],
+  },
+  "Rajasthani": {
+    Starters: ["Mirchi Vada","Pyaz Ki Kachori","Dal Baati","Mathri","Moong Dal Pakoda"],
+    Mains:    ["Dal Baati Churma","Gatte Ki Sabzi","Ker Sangri","Panchmel Dal","Dahi Ke Aloo","Papad Ki Sabzi"],
+    Breads:   ["Baati","Missi Roti","Khoba Roti"],
+    Rice:     ["Jeera Rice","Veg Pulao"],
+    Desserts: ["Ghewar","Malpua","Moong Dal Halwa","Besan Ladoo","Kalakand"],
+    Beverages:["Chaas","Lassi","Jaljeera"],
+  },
+  "Indo-Chinese": {
+    Starters: ["Chilli Paneer Dry","Veg Manchurian Dry","Crispy Corn","Gobi Manchurian","Spring Rolls","Veg Momos","Chilli Mushroom","Honey Chilli Potatoes"],
+    Mains:    ["Veg in Hot Garlic Sauce","Kung Pao Paneer","Stir Fry Veggies","Tofu in Black Bean Sauce"],
+    Breads:   [],
+    Rice:     ["Veg Fried Rice","Schezwan Fried Rice","Burnt Garlic Rice","Hakka Noodles","Schezwan Noodles"],
+    Desserts: ["Toffee Banana","Date Pancake"],
+    Beverages:["Virgin Mojito","Lemonade","Iced Tea"],
+  },
+  "Tandoor & BBQ": {
+    Starters: ["Paneer Tikka","Hara Bhara Kebab","Stuffed Capsicum","Mushroom Tikka","Malai Broccoli","Tandoori Gobhi","Soya Chaap","Chicken Tikka","Chicken Malai Tikka","Chicken Seekh Kebab","Mutton Seekh Kebab","Fish Tikka"],
+    Mains:    ["BBQ Paneer","Grilled Vegetables","BBQ Mushroom","Grilled Corn"],
+    Breads:   ["Tandoori Roti","Masala Roti"],
+    Rice:     [],
+    Desserts: [],
+    Beverages:["Mint Lemonade","Jaljeera"],
+  },
+  "Jain Special": {
+    Starters: ["Jain Paneer Tikka","Jain Corn Tikki","Jain Dhokla","Jain Khandvi","Jain Sev Puri"],
+    Mains:    ["Jain Dal Makhani","Jain Shahi Paneer","Jain Chole","Jain Mix Veg","Jain Kadhai Paneer","Jain Lauki Subzi","Jain Kadhi"],
+    Breads:   ["Plain Naan","Roti","Phulka","Puri"],
+    Rice:     ["Jain Jeera Rice","Jain Pulao","Jain Khichdi"],
+    Desserts: ["Jain Gulab Jamun","Jain Kheer","Jain Halwa","Jain Ladoo","Jain Shrikhand"],
+    Beverages:["Chaas","Nimbu Pani","Rose Sharbat"],
+  },
   "Other": {
     Starters: ["Veg Appetizer Platter","Seasonal Starters"],
     Mains:    ["Chef Special","Seasonal Main Course"],
@@ -465,6 +505,10 @@ export default function VendorChatModal() {
   const [selectedPkg, setSelectedPkg] = useState(null);
   const [confirmedPkg, setConfirmedPkg] = useState(null);
   const chatPackages = CHAT_PACKAGES[vendor?.serviceType] || [];
+  // Caterer wizard: cuisine + dish picker steps
+  const [showCuisineStep, setShowCuisineStep] = useState(false);
+  const [showDishStep, setShowDishStep] = useState(false);
+  const [wizardCuisine, setWizardCuisine] = useState(null);
 
   // Photo reference step (Decorator only)
   const [showPhotoStep, setShowPhotoStep] = useState(false);
@@ -497,8 +541,11 @@ export default function VendorChatModal() {
   const [showFinalisePopup, setShowFinalisePopup] = useState(false);
   const [finalising, setFinalising] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const isBaatKaro = vendor?.serviceType === "Baat Karo";
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
-  const isThisVendorFinalised = vendor?._id && (() => {
+  const isThisVendorFinalised = (() => {
+    if (isBaatKaro) return !!finalisedVendors["Baat Karo"];
+    if (!vendor?._id) return false;
     const entry = finalisedVendors[vendor?.serviceType];
     if (!entry) return false;
     const arr = Array.isArray(entry) ? entry : [entry];
@@ -556,7 +603,7 @@ export default function VendorChatModal() {
     setMessages([]);
     setText("");
     setConversationId(chatState.conversationId || null);
-    setApproved(existing ? !!chatState.vendor?.approved : (chatState?.skipBotFlow ? true : false));
+    setApproved(existing ? (chatState.vendor?.serviceType === "Baat Karo" || !!chatState.vendor?.approved) : (chatState?.skipBotFlow ? true : false));
     const vid = chatState.vendor?._id;
     const chatDoneValid = (() => {
       if (!vid) return false;
@@ -820,11 +867,29 @@ export default function VendorChatModal() {
     setShowPkgStep(false);
     if (vendor?.serviceType === 'Decorator') {
       setShowPhotoStep(true);
+    } else if (vendor?.serviceType === 'Caterer') {
+      setShowCuisineStep(true);
     } else {
       setBotDone(true);
       botDoneRef.current = true;
       openConversation(answersWithPkg);
     }
+  };
+
+  const handleCuisineSelect = (cuisine) => {
+    setWizardCuisine(cuisine);
+    setShowCuisineStep(false);
+    setShowDishStep(true);
+  };
+
+  const handleWizardDishSend = (dishSummaryText) => {
+    const finalAnswers = { ...botAnswersRef.current, cuisinePreference: wizardCuisine, dishSelection: dishSummaryText };
+    setBotAnswers(finalAnswers);
+    botAnswersRef.current = finalAnswers;
+    setShowDishStep(false);
+    setBotDone(true);
+    botDoneRef.current = true;
+    openConversation(finalAnswers);
   };
 
   const handlePhotoConfirm = (photos) => {
@@ -871,8 +936,8 @@ export default function VendorChatModal() {
     setFinalising(true);
     try {
 
-    // Skip calendar slot booking for Smart Plan concierge chats
-    if (!isConcierge) {
+    // Skip calendar slot booking for Smart Plan concierge chats and Baat Karo
+    if (!isConcierge && !isBaatKaro) {
       // Hold a slot on the vendor's availability calendar for the event date
       const eventDate = reduxFormData?.date;
       if (eventDate && vendor._id && authToken) {
@@ -908,13 +973,17 @@ export default function VendorChatModal() {
       socketRef.current.emit("send_message", {
         conversationId,
         sender: "customer-care",
-        content: isConcierge
+        content: isBaatKaro
+          ? `[FINALISED] ✅ Customer has confirmed the plan with Tendr Team. Ready for payment.`
+          : isConcierge
           ? `[FINALISED] ✅ Customer has finalised the Smart Plan. Ready for payment.`
           : `[FINALISED] ✅ Customer has completed the chat and finalised ${vendor.name || "this vendor"}. Ready for payment.`,
       });
     }
     setMessages(prev => [...prev, {
-      text: isConcierge
+      text: isBaatKaro
+        ? `✅ Confirmed with Tendr Team! Tap the gold Pay button at the bottom right to proceed.`
+        : isConcierge
         ? `✅ Smart Plan finalised! Tap the pay button at the bottom right to proceed.`
         : `✅ ${vendor.name} added to your booking. Slot held for 2 hours. Tap the gold pay button at the bottom right to confirm.`,
       sender: "system", ts: Date.now(),
@@ -1350,6 +1419,49 @@ export default function VendorChatModal() {
             </div>
           )}
 
+          {/* Cuisine step — Caterer only, after package */}
+          {showCuisineStep && !botDone && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "4px 0" }}>
+              <div style={{ alignSelf: "flex-start", maxWidth: "84%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.5 }}>
+                🍛 What cuisine are you looking for?
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
+                {Object.keys(CATERER_DISHES).filter(c => c !== "Other").map(cuisine => (
+                  <button key={cuisine} onClick={() => handleCuisineSelect(cuisine)}
+                    style={{ padding: "8px 15px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.4)", background: "#fff", color: "#C47A2E", fontSize: 12.5, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.12s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "#fff"; }}
+                  >{cuisine}</button>
+                ))}
+                <button onClick={() => handleCuisineSelect("Other")}
+                  style={{ padding: "8px 15px", borderRadius: 100, border: "1.5px dashed rgba(196,122,46,0.35)", background: "#f9f9f9", color: "#9B7450", fontSize: 12.5, fontWeight: 500, cursor: "pointer", fontFamily: font }}>
+                  Other…
+                </button>
+              </div>
+              <button onClick={() => { setShowCuisineStep(false); setBotDone(true); botDoneRef.current = true; openConversation(botAnswersRef.current); }}
+                style={{ alignSelf: "flex-start", padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 12, cursor: "pointer", fontFamily: font }}>
+                Skip dish selection →
+              </button>
+            </div>
+          )}
+
+          {/* Dish picker step — Caterer only, after cuisine selected */}
+          {showDishStep && !botDone && wizardCuisine && (
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "4px 0" }}>
+              <div style={{ alignSelf: "flex-start", maxWidth: "84%", background: "#fff", borderRadius: "16px 16px 16px 4px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", fontSize: 13, color: "#1a1a1a", lineHeight: 1.5 }}>
+                🍽️ Pick your dishes from the <b>{wizardCuisine}</b> menu — limited to your package:
+              </div>
+              <FullMenuCard
+                payload={{ pkg: confirmedPkg?.replace(" Package", "").split(" — ")[0] || "Free", cuisines: [wizardCuisine] }}
+                onSend={handleWizardDishSend}
+              />
+              <button onClick={() => { setShowDishStep(false); setBotDone(true); botDoneRef.current = true; openConversation(botAnswersRef.current); }}
+                style={{ alignSelf: "flex-start", padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 12, cursor: "pointer", fontFamily: font }}>
+                Skip dish selection →
+              </button>
+            </div>
+          )}
+
           {/* Reference photo step (Decorator only) */}
           {showPhotoStep && (
             <div style={{ display: "flex", flexDirection: "column", gap: 10, padding: "4px 0" }}>
@@ -1558,8 +1670,8 @@ export default function VendorChatModal() {
             <div style={{ alignSelf: "stretch", background: "linear-gradient(135deg,rgba(21,128,61,0.1),rgba(34,197,94,0.07))", border: "1.5px solid rgba(21,128,61,0.25)", borderRadius: 12, padding: "10px 14px", display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#15803d,#22c55e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>✓</div>
               <div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>Vendor Finalised</div>
-                <div style={{ fontSize: 11, color: "#6B7450" }}>You've selected {vendor?.name} for your event.</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#15803d" }}>{isBaatKaro ? "Plan Confirmed ✓" : "Vendor Finalised"}</div>
+                <div style={{ fontSize: 11, color: "#6B7450" }}>{isBaatKaro ? "Your plan with Tendr Team is confirmed." : `You've selected ${vendor?.name} for your event.`}</div>
               </div>
             </div>
           )}
@@ -1696,7 +1808,7 @@ export default function VendorChatModal() {
                 <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                   {!chatCompleted ? (
                     <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600, borderLeft: "3px solid #C47A2E", paddingLeft: 8, lineHeight: 1.4 }}>
-                      Click <b>Mark as Done</b> when {isConcierge ? "plan is ready" : "price is finalised"}
+                      Click <b>Mark as Done</b> when {isBaatKaro ? "price & plan is confirmed" : isConcierge ? "plan is ready" : "price is finalised"}
                     </p>
                   ) : <span />}
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
@@ -1719,7 +1831,7 @@ export default function VendorChatModal() {
                     title={!chatCompleted ? "Mark as Done first" : ""}
                     style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: isThisVendorFinalised ? "linear-gradient(135deg,#15803d,#22c55e)" : !chatCompleted ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: (!chatCompleted && !isThisVendorFinalised) ? "#9ca3af" : "#fff", fontSize: 12, fontWeight: 700, cursor: (!chatCompleted && !isThisVendorFinalised) ? "not-allowed" : "pointer", fontFamily: font, whiteSpace: "nowrap", boxShadow: (chatCompleted && !isThisVendorFinalised) ? "0 2px 8px rgba(196,122,46,0.35)" : "none" }}
                   >
-                    {isThisVendorFinalised ? "✓ Finalised" : finalising ? "Finalising…" : isConcierge ? "Finalise Plan" : "Finalise Vendor"}
+                    {isThisVendorFinalised ? "✓ Finalised" : finalising ? "Finalising…" : isBaatKaro ? "Confirm Plan ✓" : isConcierge ? "Finalise Plan" : "Finalise Vendor"}
                   </button>
                   </div>
                 </div>
@@ -1741,10 +1853,12 @@ export default function VendorChatModal() {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <h3 style={{ fontSize: 17, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>
-                {isConcierge ? "Smart Plan Finalised!" : "Vendor Finalised!"}
+                {isBaatKaro ? "Plan Confirmed!" : isConcierge ? "Smart Plan Finalised!" : "Vendor Finalised!"}
               </h3>
               <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 16px", lineHeight: 1.6 }}>
-                {isConcierge
+                {isBaatKaro
+                  ? "Your plan with Tendr Team is locked in. Tap Pay to proceed."
+                  : isConcierge
                   ? "You can pay through the pay button at the bottom right. Please close this window."
                   : `${vendor?.name} has been added to your booking.`}
               </p>

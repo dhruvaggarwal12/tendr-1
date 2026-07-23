@@ -193,6 +193,8 @@ export function buildSummaryMessage(formAnswers, botAnswers, vendorName, service
     botAnswers.venueType          ? `  🏛 Venue type: ${botAnswers.venueType}` : null,
     botAnswers.cateringType       ? `  🍽 Catering: ${botAnswers.cateringType}` : null,
     botAnswers.foodPreference     ? `  🥗 Food: ${botAnswers.foodPreference}` : null,
+    botAnswers.cuisinePreference  ? `  🍛 Cuisine: ${botAnswers.cuisinePreference}` : null,
+    botAnswers.dishSelection      ? `  📋 Dishes:\n${botAnswers.dishSelection}` : null,
     botAnswers.photographyType    ? `  📷 Coverage: ${botAnswers.photographyType}` : null,
     botAnswers.albumRequired      ? `  📕 Album: ${botAnswers.albumRequired}` : null,
     botAnswers.coverage           ? `  ⏱ Hours: ${botAnswers.coverage}` : null,

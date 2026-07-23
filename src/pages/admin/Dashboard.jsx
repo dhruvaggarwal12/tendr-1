@@ -1355,12 +1355,15 @@ const AdminDashboard = () => {
 
   const [pricingAmount, setPricingAmount] = useState("");
   const [pricingVendorName, setPricingVendorName] = useState("");
+  // Send Menu cuisine picker state
+  const [menuPickerOpen, setMenuPickerOpen] = useState(false);
+  const [menuPickerCuisine, setMenuPickerCuisine] = useState("North Indian");
   const [categoryBudgets, setCategoryBudgetsState] = useState({}); // { [category]: amountString }
   const [savingCategoryBudgets, setSavingCategoryBudgets] = useState(false);
 
   // Sync pinned messages + pricing from selectedChat when chat changes
   useEffect(() => {
-    if (!selectedChat?._id) { setPinnedMsgs([]); setPricingAmount(""); setPricingVendorName(""); setCategoryBudgetsState({}); return; }
+    if (!selectedChat?._id) { setPinnedMsgs([]); setPricingAmount(""); setPricingVendorName(""); setCategoryBudgetsState({}); setMenuPickerOpen(false); return; }
     const existing = (selectedChat.pinnedMessages || []).map(m => ({
       content: m.content,
       conversationId: selectedChat._id,
@@ -4060,30 +4063,60 @@ const AdminDashboard = () => {
                           >
                             📦 Send Package Options
                           </button>
-                          {svcType === "Caterer" && (
-                            <button onClick={() => {
+                          {svcType === "Caterer" && (() => {
+                            const MENU_CUISINES = ["North Indian","South Indian","Punjabi","Mughlai","Rajasthani","Gujarati","Bengali","Maharashtrian","Indo-Chinese","Street Food & Chaat","Tandoor & BBQ","Continental","Italian","Desserts & Mithai","Beverages","Jain Special","Vegan","Other"];
+                            const sendMenu = () => {
                               if (!selectedChat?._id || !adminSocketRef.current) return;
                               const conv = currentConversation || [];
                               const pkgMsg = [...conv].reverse().find(m =>
                                 /I'd like the (Basic|Standard|Premium) package:/i.test(m.content || "") ||
-                                /Package: (Basic|Standard|Premium)/i.test(m.content || "")
+                                /Package: (Basic|Standard|Premium)/i.test(m.content || "") ||
+                                /selectedPackage.*?(Basic|Standard|Premium)/i.test(m.content || "")
                               );
                               const pkgMatch = pkgMsg
                                 ? (pkgMsg.content.match(/I'd like the (Basic|Standard|Premium) package:/i) ||
                                    pkgMsg.content.match(/Package: (Basic|Standard|Premium)/i))
                                 : null;
                               const detectedPkg = pkgMatch ? pkgMatch[1] : "Free";
-                              const payload = { pkg: detectedPkg, cuisines: ["North Indian","South Indian","Snacks","Chinese Starters","Punjabi","Sweets","Italian"] };
+                              const payload = { pkg: detectedPkg, cuisines: [menuPickerCuisine] };
                               const msgText = `[FULL_MENU:${JSON.stringify(payload)}]`;
                               const m = { conversationId: selectedChat._id, sender: 'customer-care', content: msgText };
                               adminSocketRef.current.emit('send_message', m);
                               setCurrentConversation((prev) => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
-                            }}
-                              style={{ display: "block", width: "100%", textAlign: "center", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", marginTop: 6 }}
-                            >
-                              🍽️ Send Menu
-                            </button>
-                          )}
+                              setMenuPickerOpen(false);
+                            };
+                            return (
+                              <div style={{ marginTop: 6 }}>
+                                {!menuPickerOpen ? (
+                                  <button onClick={() => setMenuPickerOpen(true)}
+                                    style={{ display: "block", width: "100%", textAlign: "center", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                    🍽️ Send Menu
+                                  </button>
+                                ) : (
+                                  <div style={{ border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 10, overflow: "hidden" }}>
+                                    <div style={{ padding: "7px 10px", background: "rgba(196,122,46,0.07)", fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.07em" }}>Select Cuisine</div>
+                                    <select
+                                      value={menuPickerCuisine}
+                                      onChange={e => setMenuPickerCuisine(e.target.value)}
+                                      style={{ display: "block", width: "100%", padding: "7px 10px", border: "none", borderBottom: "1px solid rgba(196,122,46,0.15)", background: "#fff", fontSize: 12, color: "#2C1A0E", fontFamily: "'Outfit', sans-serif", outline: "none", cursor: "pointer" }}
+                                    >
+                                      {MENU_CUISINES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                    <div style={{ display: "flex", gap: 6, padding: "7px 8px", background: "#fff" }}>
+                                      <button onClick={() => setMenuPickerOpen(false)}
+                                        style={{ flex: 1, padding: "7px 0", borderRadius: 7, border: "1px solid rgba(196,122,46,0.2)", background: "transparent", color: "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                        Cancel
+                                      </button>
+                                      <button onClick={sendMenu}
+                                        style={{ flex: 2, padding: "7px 0", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                                        Send {menuPickerCuisine} Menu →
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                       );
                     })()}
