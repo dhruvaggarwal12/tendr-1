@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthModal from "../../components/AuthModal";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const STORAGE_KEY = "tendr_indepday_form";
@@ -522,6 +523,7 @@ export default function IndependenceDayFlow({ onClose }) {
   const venuePhotoRef = useRef();
 
   const [finalScreen, setFinalScreen] = useState(null);
+  const [authOpen, setAuthOpen]       = useState(false);
 
   // Resume flow
   const [showResume, setShowResume]   = useState(false);
@@ -571,6 +573,12 @@ export default function IndependenceDayFlow({ onClose }) {
         ? p.filter((x) => (x._id || x.id) !== (photo._id || photo.id))
         : [...p, photo]
     );
+
+  function handleBookServices() {
+    const token = localStorage.getItem("tendr_token");
+    if (!token) { setAuthOpen(true); return; }
+    sendToBaatKaro();
+  }
 
   function sendToBaatKaro() {
     const serviceLabels = services
@@ -709,81 +717,101 @@ export default function IndependenceDayFlow({ onClose }) {
   // ── Plan & Ideas screen ──────────────────────────────────────────────────
   if (finalScreen === "planideas") {
     return (
-      <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-        <div style={modal}>
-          <div style={hdr}>
-            <button style={closeBtn} onClick={onClose}>✕</button>
-            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.85, marginBottom: 4 }}>
-              PLAN & IDEAS
+      <>
+        <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+          <div style={modal}>
+            <div style={hdr}>
+              <button style={closeBtn} onClick={onClose}>✕</button>
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.12em", opacity: 0.85, marginBottom: 4 }}>
+                PLAN & IDEAS
+              </div>
+              <div style={{ fontSize: "1.2rem", fontWeight: 700, margin: 0 }}>Independence Day Guide</div>
             </div>
-            <div style={{ fontSize: "1.2rem", fontWeight: 700, margin: 0 }}>Independence Day Guide</div>
-          </div>
-          <div style={body}>
-            <PlanIdeas
-              orgType={orgType}
-              venueType={venueType}
-              onBookServices={sendToBaatKaro}
-              onBack={() => setFinalScreen("choice")}
-            />
+            <div style={body}>
+              <PlanIdeas
+                orgType={orgType}
+                venueType={venueType}
+                onBookServices={handleBookServices}
+                onBack={() => setFinalScreen("choice")}
+              />
+            </div>
           </div>
         </div>
-      </div>
+        {authOpen && (
+          <AuthModal
+            open={authOpen}
+            onClose={() => setAuthOpen(false)}
+            onSuccess={() => { setAuthOpen(false); sendToBaatKaro(); }}
+            defaultMode="login"
+          />
+        )}
+      </>
     );
   }
 
   // ── Choice screen ────────────────────────────────────────────────────────
   if (finalScreen === "choice") {
     return (
-      <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
-        <div style={modal}>
-          <div style={hdr}>
-            <button style={closeBtn} onClick={onClose}>✕</button>
-            <div style={{ fontSize: 26, marginBottom: 6 }}>🇮🇳</div>
-            <div style={{ fontSize: "1.15rem", fontWeight: 700 }}>You're all set!</div>
-            <div style={{ fontSize: 12, opacity: 0.8, marginTop: 3 }}>What would you like to do next?</div>
-          </div>
-          <div style={body}>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-              <button
-                onClick={() => setFinalScreen("planideas")}
-                style={{
-                  padding: "18px 20px", borderRadius: 14,
-                  border: `2px solid ${saffron}`, background: "rgba(255,153,51,0.05)",
-                  cursor: "pointer", textAlign: "left", fontFamily: font,
-                }}
-              >
-                <div style={{ fontSize: 24, marginBottom: 6 }}>📋</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>See Plan & Ideas</div>
-                <div style={{ fontSize: 12, color: muted, marginTop: 3, lineHeight: 1.5 }}>
-                  View {orgType === "hr" ? "corporate" : "community"} event timeline, checklist & decoration ideas
-                </div>
-              </button>
+      <>
+        <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
+          <div style={modal}>
+            <div style={hdr}>
+              <button style={closeBtn} onClick={onClose}>✕</button>
+              <div style={{ fontSize: 26, marginBottom: 6 }}>🇮🇳</div>
+              <div style={{ fontSize: "1.15rem", fontWeight: 700 }}>You're all set!</div>
+              <div style={{ fontSize: 12, opacity: 0.8, marginTop: 3 }}>What would you like to do next?</div>
+            </div>
+            <div style={body}>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                <button
+                  onClick={() => setFinalScreen("planideas")}
+                  style={{
+                    padding: "18px 20px", borderRadius: 14,
+                    border: `2px solid ${saffron}`, background: "rgba(255,153,51,0.05)",
+                    cursor: "pointer", textAlign: "left", fontFamily: font,
+                  }}
+                >
+                  <div style={{ fontSize: 24, marginBottom: 6 }}>📋</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>See Plan & Ideas</div>
+                  <div style={{ fontSize: 12, color: muted, marginTop: 3, lineHeight: 1.5 }}>
+                    View {orgType === "hr" ? "corporate" : "community"} event timeline, checklist & decoration ideas
+                  </div>
+                </button>
+
+                <button
+                  onClick={handleBookServices}
+                  style={{
+                    padding: "18px 20px", borderRadius: 14,
+                    border: `2px solid ${border}`, background: white,
+                    cursor: "pointer", textAlign: "left", fontFamily: font,
+                  }}
+                >
+                  <div style={{ fontSize: 24, marginBottom: 6 }}>💬</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>Book Services Directly</div>
+                  <div style={{ fontSize: 12, color: muted, marginTop: 3, lineHeight: 1.5 }}>
+                    Send your event details to the Tendr team and get vendor recommendations
+                  </div>
+                </button>
+              </div>
 
               <button
-                onClick={sendToBaatKaro}
-                style={{
-                  padding: "18px 20px", borderRadius: 14,
-                  border: `2px solid ${border}`, background: white,
-                  cursor: "pointer", textAlign: "left", fontFamily: font,
-                }}
+                style={{ ...outlineBtn, width: "100%", marginTop: 12, flex: "unset" }}
+                onClick={() => setFinalScreen(null)}
               >
-                <div style={{ fontSize: 24, marginBottom: 6 }}>💬</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: dark }}>Book Services Directly</div>
-                <div style={{ fontSize: 12, color: muted, marginTop: 3, lineHeight: 1.5 }}>
-                  Send your event details to the Tendr team and get vendor recommendations
-                </div>
+                ← Edit my details
               </button>
             </div>
-
-            <button
-              style={{ ...outlineBtn, width: "100%", marginTop: 12, flex: "unset" }}
-              onClick={() => setFinalScreen(null)}
-            >
-              ← Edit my details
-            </button>
           </div>
         </div>
-      </div>
+        {authOpen && (
+          <AuthModal
+            open={authOpen}
+            onClose={() => setAuthOpen(false)}
+            onSuccess={() => { setAuthOpen(false); sendToBaatKaro(); }}
+            defaultMode="login"
+          />
+        )}
+      </>
     );
   }
 
@@ -1047,6 +1075,7 @@ export default function IndependenceDayFlow({ onClose }) {
   }
 
   return (
+    <>
     <div style={overlay} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div style={modal}>
         <div style={hdr}>
@@ -1093,5 +1122,15 @@ export default function IndependenceDayFlow({ onClose }) {
         )}
       </div>
     </div>
+
+    {authOpen && (
+      <AuthModal
+        open={authOpen}
+        onClose={() => setAuthOpen(false)}
+        onSuccess={() => { setAuthOpen(false); sendToBaatKaro(); }}
+        defaultMode="login"
+      />
+    )}
+  </>
   );
 }
