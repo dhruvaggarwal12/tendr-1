@@ -90,7 +90,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
-  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", gifting: "/gift-hampers-cakes", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
 
   const handleNavSearch = (q) => {
     const query = q || searchQuery;
@@ -223,7 +223,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
-      { label: "🎁 Gift Hampers", href: "/gifting" },
+      { label: "🎁 Gift Hampers", href: "/gift-hampers-cakes" },
       { label: "💒 Wedding Stationeries", href: "/stationery" },
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
       ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
@@ -622,7 +622,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
                   { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
                   { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                  { emoji: "🎁", label: "Gift Hampers",   href: "/gifting" },
+                  { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
                   { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
                 ].map(cat => (
                   <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
