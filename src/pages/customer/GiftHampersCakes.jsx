@@ -273,13 +273,6 @@ const GiftHampersCakes = () => {
                     <div className="gh-overlay" style={{ position: "absolute", inset: 0, background: "rgba(44,26,14,0.42)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.2s", borderRadius: 14 }}>
                       <span style={{ color: "#fff", fontSize: 13, fontWeight: 700, background: "rgba(0,0,0,0.45)", borderRadius: 100, padding: "7px 18px" }}>👁 Preview</span>
                     </div>
-                    {(s.priceRange || s.name) && (
-                      <div style={{ padding: "8px 12px 10px" }}>
-                        {s.name && <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{s.name}</div>}
-                        {s.priceRange && <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
-                        {s.vendorName && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>by {s.vendorName}</div>}
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -306,10 +299,6 @@ const GiftHampersCakes = () => {
             <img src={preview.url} alt={preview.name || "Gift Hamper"} style={{ width: "100%", maxHeight: "60vh", objectFit: "contain", background: "#faf5ee", display: "block" }} />
 
             <div style={{ padding: "18px 22px 22px" }}>
-              {preview.name && <div style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>{preview.name}</div>}
-              {preview.priceRange && <div style={{ fontSize: 15, fontWeight: 700, color: "#C47A2E", marginBottom: 4 }}>{preview.priceRange}</div>}
-              {preview.vendorName && <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 16 }}>by {preview.vendorName}</div>}
-
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button
                   onClick={() => handleDownload(preview.url, preview.name)}
