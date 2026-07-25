@@ -202,7 +202,7 @@ const GiftHampersCakes = () => {
           {/* Mobile filter bottom sheet */}
           {filterSheetOpen && (
             <div onClick={() => setFilterSheetOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(20,10,4,0.55)", zIndex:9998, display:"flex", alignItems:"flex-end" }}>
-              <div onClick={e => e.stopPropagation()} style={{ width:"100%", background:"#fff", borderRadius:"20px 20px 0 0", padding:"24px 20px 32px", fontFamily:font, boxShadow:"0 -8px 40px rgba(44,26,14,0.18)" }}>
+              <div onClick={e => e.stopPropagation()} style={{ width:"100%", background:"#fff", borderRadius:"20px 20px 0 0", padding:"24px 20px 32px", fontFamily:font, boxShadow:"0 -8px 40px rgba(44,26,14,0.18)", maxHeight:"80dvh", overflowY:"auto" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
                   <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>All Filters</div>
                   <button onClick={clearAll} style={{ fontSize:12, color:"#C47A2E", fontWeight:700, background:"none", border:"none", cursor:"pointer", fontFamily:font }}>Clear all</button>
@@ -250,7 +250,7 @@ const GiftHampersCakes = () => {
             <div style={{ textAlign: "center", padding: "48px 24px", color: "#9B7450" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
               <p style={{ fontSize: 14, margin: 0 }}>
-                {activeCategory === "All" ? "Sample photos coming soon. Talk to our team for options." : `No ${activeCategory} samples yet. Try a different category!`}
+                {selectedCategories.length === 0 ? "Sample photos coming soon. Talk to our team for options." : "No hampers match this category. Try a different one!"}
               </p>
             </div>
           ) : (

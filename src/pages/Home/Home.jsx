@@ -1533,10 +1533,10 @@ const Home = () => {
           </h2>
           <p style={{ fontSize: 14, color: "#6B4226", margin: 0 }}>Our team can help with gifting for any occasion.</p>
           <button
-            onClick={() => navigate("/baat-karo")}
+            onClick={() => navigate("/gift-hampers-cakes")}
             style={{ background: "transparent", color: "#C47A2E", border: "1.5px solid rgba(196,122,46,0.4)", fontSize: 14, fontWeight: 600, padding: "10px 28px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit',sans-serif", marginTop: 4 }}
           >
-            Chat with Our Team →
+            Browse Gift Hampers →
           </button>
         </div>
       </section>
