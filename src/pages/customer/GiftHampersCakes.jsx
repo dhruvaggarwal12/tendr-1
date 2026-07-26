@@ -15,20 +15,27 @@ const GiftHampersCakes = () => {
   const [downloading, setDownloading] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [occasionFilter, setOccasionFilter] = useState([]);
+  const [showEventTypeFilter, setShowEventTypeFilter] = useState(false);
+  const [showGiftTypeFilter, setShowGiftTypeFilter] = useState(false);
 
-  const CATEGORIES = ["Drinkware", "Dry Fruits & Nuts", "Chocolates & Sweets", "Spiritual & Pooja", "Decorative Boxes", "Tokri & Hampers"];
+  const filteredSamples = samples.filter(s => {
+    if (selectedCategories.length > 0 && !selectedCategories.includes(s.category)) return false;
+    if (occasionFilter.length > 0 && !occasionFilter.some(o => (s.occasion || []).includes(o))) return false;
+    return true;
+  });
 
-  const filteredSamples = selectedCategories.length === 0
-    ? samples
-    : samples.filter(s => selectedCategories.includes(s.category));
+  const availableEventTypes = [...new Set(samples.flatMap(s => s.occasion || []).filter(Boolean))].sort();
+  const availableGiftTypes  = [...new Set(samples.map(s => s.category).filter(Boolean))].sort();
 
   const toggleCategory = (cat) =>
     setSelectedCategories(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
     );
+  const toggleOccasion = (o) => setOccasionFilter(prev => prev.includes(o) ? prev.filter(x => x !== o) : [...prev, o]);
 
-  const clearAll = () => setSelectedCategories([]);
+  const activeFilterCount = selectedCategories.length + occasionFilter.length;
+  const clearAll = () => { setSelectedCategories([]); setOccasionFilter([]); };
 
   useEffect(() => {
     fetch(`${BASE_URL}/admin/gift-hamper-samples`)
@@ -158,86 +165,72 @@ const GiftHampersCakes = () => {
           </div>
 
           {/* ── Filters ── */}
-          <style>{`
-            .gh-chips-row { display:flex; gap:8px; flex-wrap:nowrap; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; margin-bottom:24px; }
-            .gh-chips-row::-webkit-scrollbar { display:none; }
-            .gh-filter-mobile-btn { display:none; }
-            @media(max-width:640px){
-              .gh-chips-row { display:none !important; }
-              .gh-filter-mobile-btn { display:flex !important; margin-bottom:20px; }
-            }
-          `}</style>
-
-          {/* Desktop — scrollable multi-select chips */}
-          <div className="gh-chips-row">
-            <button
-              onClick={clearAll}
-              style={{ flexShrink:0, padding:"8px 18px", borderRadius:50, border:`1.5px solid ${selectedCategories.length===0?"#C47A2E":"rgba(196,122,46,0.25)"}`, background:selectedCategories.length===0?"linear-gradient(135deg,#C47A2E,#CCAB4A)":"#fff", color:selectedCategories.length===0?"#fff":"#5A3A1A", fontSize:13, fontWeight:selectedCategories.length===0?700:500, cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}
-            >All</button>
-            {CATEGORIES.map(cat => {
-              const active = selectedCategories.includes(cat);
-              return (
-                <button key={cat} onClick={() => toggleCategory(cat)}
-                  style={{ flexShrink:0, padding:"8px 18px", borderRadius:50, border:`1.5px solid ${active?"#C47A2E":"rgba(196,122,46,0.25)"}`, background:active?"linear-gradient(135deg,#C47A2E,#CCAB4A)":"#fff", color:active?"#fff":"#5A3A1A", fontSize:13, fontWeight:active?700:500, cursor:"pointer", fontFamily:font, whiteSpace:"nowrap" }}
-                >{cat}</button>
-              );
-            })}
-          </div>
-
-          {/* Mobile — filter button */}
-          <div className="gh-filter-mobile-btn" style={{ alignItems:"center", gap:10 }}>
-            <button onClick={() => setFilterSheetOpen(true)}
-              style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 20px", borderRadius:50, border:`1.5px solid ${selectedCategories.length>0?"#C47A2E":"rgba(196,122,46,0.3)"}`, background:selectedCategories.length>0?"rgba(196,122,46,0.08)":"#fff", color:"#5A3A1A", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:font }}>
-              <span>Filters</span>
-              {selectedCategories.length > 0 && <span style={{ background:"#C47A2E", color:"#fff", fontSize:11, fontWeight:800, borderRadius:50, padding:"2px 8px" }}>{selectedCategories.length}</span>}
-              <span style={{ fontSize:11, color:"#9B7450" }}>▼</span>
-            </button>
-            {selectedCategories.length > 0 && (
-              <button onClick={clearAll} style={{ fontSize:12, color:"#C47A2E", fontWeight:700, background:"none", border:"none", cursor:"pointer", fontFamily:font, padding:0 }}>
-                Clear all
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: showEventTypeFilter || showGiftTypeFilter ? 10 : 0 }}>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", flexShrink: 0 }}>Filter</span>
+              <button
+                onClick={() => setShowEventTypeFilter(v => !v)}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 50, border: `1.5px solid ${showEventTypeFilter || occasionFilter.length > 0 ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: showEventTypeFilter || occasionFilter.length > 0 ? "rgba(196,122,46,0.1)" : "#fff", color: "#5A3A1A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+              >
+                Event Type {occasionFilter.length > 0 && <span style={{ background: "#C47A2E", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 50, padding: "1px 7px", marginLeft: 2 }}>{occasionFilter.length}</span>}
               </button>
+              <button
+                onClick={() => setShowGiftTypeFilter(v => !v)}
+                style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 50, border: `1.5px solid ${showGiftTypeFilter || selectedCategories.length > 0 ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: showGiftTypeFilter || selectedCategories.length > 0 ? "rgba(196,122,46,0.1)" : "#fff", color: "#5A3A1A", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+              >
+                Gift Type {selectedCategories.length > 0 && <span style={{ background: "#C47A2E", color: "#fff", fontSize: 10, fontWeight: 800, borderRadius: 50, padding: "1px 7px", marginLeft: 2 }}>{selectedCategories.length}</span>}
+              </button>
+              {activeFilterCount > 0 && (
+                <button onClick={clearAll} style={{ fontSize: 12, color: "#C47A2E", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: "7px 4px" }}>
+                  Clear all
+                </button>
+              )}
+            </div>
+
+            {showEventTypeFilter && (
+              <div style={{ padding: "10px 12px", background: "rgba(196,122,46,0.04)", borderRadius: 12, border: "1px solid rgba(196,122,46,0.15)", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em" }}>Event Type</span>
+                  <button onClick={() => setShowEventTypeFilter(false)} style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#7A5535" }}>✕</button>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {availableEventTypes.length === 0
+                    ? <span style={{ fontSize: 12, color: "#9B7450" }}>No event types tagged yet</span>
+                    : availableEventTypes.map(o => {
+                        const active = occasionFilter.includes(o);
+                        return (
+                          <button key={o} onClick={() => toggleOccasion(o)}
+                            style={{ padding: "7px 14px", borderRadius: 50, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: active ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff", color: active ? "#fff" : "#5A3A1A", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font }}
+                          >{o}</button>
+                        );
+                      })
+                  }
+                </div>
+              </div>
+            )}
+
+            {showGiftTypeFilter && (
+              <div style={{ padding: "10px 12px", background: "rgba(196,122,46,0.04)", borderRadius: 12, border: "1px solid rgba(196,122,46,0.15)", marginBottom: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em" }}>Gift Type</span>
+                  <button onClick={() => setShowGiftTypeFilter(false)} style={{ width: 22, height: 22, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#7A5535" }}>✕</button>
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {availableGiftTypes.length === 0
+                    ? <span style={{ fontSize: 12, color: "#9B7450" }}>No gift types tagged yet</span>
+                    : availableGiftTypes.map(cat => {
+                        const active = selectedCategories.includes(cat);
+                        return (
+                          <button key={cat} onClick={() => toggleCategory(cat)}
+                            style={{ padding: "7px 14px", borderRadius: 50, border: `1.5px solid ${active ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: active ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff", color: active ? "#fff" : "#5A3A1A", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font }}
+                          >{cat}</button>
+                        );
+                      })
+                  }
+                </div>
+              </div>
             )}
           </div>
-
-          {/* Mobile filter bottom sheet */}
-          {filterSheetOpen && (
-            <div onClick={() => setFilterSheetOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(20,10,4,0.55)", zIndex:9998, display:"flex", alignItems:"flex-end" }}>
-              <div onClick={e => e.stopPropagation()} style={{ width:"100%", background:"#fff", borderRadius:"20px 20px 0 0", padding:"24px 20px 32px", fontFamily:font, boxShadow:"0 -8px 40px rgba(44,26,14,0.18)", maxHeight:"80dvh", overflowY:"auto" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-                  <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>All Filters</div>
-                  <button onClick={clearAll} style={{ fontSize:12, color:"#C47A2E", fontWeight:700, background:"none", border:"none", cursor:"pointer", fontFamily:font }}>Clear all</button>
-                </div>
-
-                <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
-                  {/* All option */}
-                  <label style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 0", borderBottom:"1px solid rgba(196,122,46,0.1)", cursor:"pointer" }}>
-                    <input type="checkbox" checked={selectedCategories.length===0} onChange={clearAll}
-                      style={{ width:18, height:18, accentColor:"#C47A2E", cursor:"pointer" }} />
-                    <span style={{ fontSize:14, fontWeight:selectedCategories.length===0?700:500, color:"#2C1A0E" }}>All</span>
-                    <span style={{ marginLeft:"auto", fontSize:12, color:"#9B7450" }}>{samples.length} items</span>
-                  </label>
-
-                  {CATEGORIES.map(cat => {
-                    const active = selectedCategories.includes(cat);
-                    const count = samples.filter(s => s.category === cat).length;
-                    return (
-                      <label key={cat} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 0", borderBottom:"1px solid rgba(196,122,46,0.1)", cursor:"pointer" }}>
-                        <input type="checkbox" checked={active} onChange={() => toggleCategory(cat)}
-                          style={{ width:18, height:18, accentColor:"#C47A2E", cursor:"pointer" }} />
-                        <span style={{ fontSize:14, fontWeight:active?700:500, color:active?"#C47A2E":"#2C1A0E" }}>{cat}</span>
-                        {count > 0 && <span style={{ marginLeft:"auto", fontSize:12, color:"#9B7450" }}>{count} items</span>}
-                      </label>
-                    );
-                  })}
-                </div>
-
-                <button onClick={() => setFilterSheetOpen(false)}
-                  style={{ width:"100%", marginTop:24, padding:"14px", borderRadius:14, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:800, cursor:"pointer", fontFamily:font }}>
-                  {selectedCategories.length === 0 ? "Show All" : `Show ${filteredSamples.length} Result${filteredSamples.length !== 1 ? "s" : ""}`}
-                </button>
-              </div>
-            </div>
-          )}
 
           {loading ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 14 }}>
@@ -250,7 +243,7 @@ const GiftHampersCakes = () => {
             <div style={{ textAlign: "center", padding: "48px 24px", color: "#9B7450" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🎁</div>
               <p style={{ fontSize: 14, margin: 0 }}>
-                {selectedCategories.length === 0 ? "Sample photos coming soon. Talk to our team for options." : "No hampers match this category. Try a different one!"}
+                {activeFilterCount === 0 ? "Sample photos coming soon. Talk to our team for options." : "No hampers match these filters. Try adjusting your selection."}
               </p>
             </div>
           ) : (
@@ -297,6 +290,21 @@ const GiftHampersCakes = () => {
             >✕</button>
 
             <img src={preview.url} alt={preview.name || "Gift Hamper"} style={{ width: "100%", maxHeight: "60vh", objectFit: "contain", background: "#faf5ee", display: "block" }} />
+
+            {(preview.category || (preview.occasion && preview.occasion.length > 0)) && (
+              <div style={{ padding: "10px 22px 0", display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {preview.category && (
+                  <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.25)" }}>
+                    🎁 {preview.category}
+                  </span>
+                )}
+                {(preview.occasion || []).map(o => (
+                  <span key={o} style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 100, background: "rgba(44,26,14,0.06)", color: "#5A3A1A", border: "1px solid rgba(44,26,14,0.12)" }}>
+                    {o}
+                  </span>
+                ))}
+              </div>
+            )}
 
             <div style={{ padding: "18px 22px 22px" }}>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
