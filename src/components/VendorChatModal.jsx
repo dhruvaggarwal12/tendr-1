@@ -681,9 +681,9 @@ export default function VendorChatModal() {
       });
     }
 
-    // Existing chat: join room directly
+    // Existing chat: join room and load history
     if (isExistingChat && chatState.conversationId) {
-      socket.on("connect", async () => {
+      const loadHistory = async () => {
         const cid = chatState.conversationId;
         socket.emit("join_conversation", { conversationId: cid });
         setConversationId(cid);
@@ -704,7 +704,13 @@ export default function VendorChatModal() {
             }
           }
         } catch {} finally { setMessagesLoading(false); }
-      });
+      };
+      // If socket is already connected, load immediately; otherwise wait for connect
+      if (socket.connected) {
+        loadHistory();
+      } else {
+        socket.on("connect", loadHistory);
+      }
     }
 
     socket.on("conversation_opened", async ({ _id, chatApproved: isApproved }) => {
@@ -1786,10 +1792,8 @@ export default function VendorChatModal() {
                   ➤
                 </button>
               </div>
-              {/* Review & Pay + Book Other Vendors — shows after vendor/concierge is finalised */}
-              {isThisVendorFinalised && (() => {
-                const bookedCount = Object.keys(finalisedVendors).length;
-                const totalCount  = selectedVendorTypes.length;
+              {/* Book Other Vendors — shows after vendor is finalised, not for Baat Karo */}
+              {isThisVendorFinalised && !isBaatKaro && (() => {
                 return (
                   <div style={{ marginBottom: 8 }}>
                     <div style={{ display: "flex", gap: 8, marginBottom: 6 }}>

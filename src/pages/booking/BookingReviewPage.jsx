@@ -574,30 +574,39 @@ const BookingReviewPage = () => {
           }
           .booking-sidebar-proceed { display: none !important; }
           .booking-mobile-cta {
-            display: flex !important;
-            position: fixed;
-            bottom: calc(60px + env(safe-area-inset-bottom, 0px));
-            left: 0; right: 0;
-            background: #FFFCF5;
-            border-top: 1.5px solid rgba(196,122,46,0.15);
-            padding: 10px 16px;
-            box-shadow: 0 -4px 16px rgba(44,26,14,0.08);
-            z-index: 99995;
-            align-items: center;
-            gap: 12px;
+            bottom: 0 !important;
           }
         }
-        .booking-mobile-cta { display: none; }
+        .booking-mobile-cta {
+          display: flex;
+          position: fixed;
+          bottom: 0;
+          left: 0; right: 0;
+          background: #FFFCF5;
+          border-top: 1.5px solid rgba(196,122,46,0.15);
+          padding: 10px 16px;
+          padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
+          box-shadow: 0 -4px 16px rgba(44,26,14,0.08);
+          z-index: 99995;
+          align-items: center;
+          gap: 12px;
+        }
       `}</style>
       <SEO title="Review & Pay" description="Review your booking details and confirm payment on Tendr." path="/booking/review" noIndex={true} />
       <BasicSpeedDial />
       <HamburgerNav title="Review & Pay" active="Pay" />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,32px) clamp(14px,3vw,24px) 80px", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,32px) clamp(14px,3vw,24px) 140px", width: "100%", boxSizing: "border-box" }}>
 
         {/* Page title */}
         <div style={{ marginBottom: 20, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
           <div>
+            <button
+              onClick={() => navigate(-1)}
+              style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "none", border: "none", color: "#9B7450", fontSize: 13, fontWeight: 600, cursor: "pointer", padding: "0 0 8px", fontFamily: "'Outfit', sans-serif" }}
+            >
+              ← Back
+            </button>
             <h1 style={{ fontSize: 26, fontWeight: 800, color: "#2C1A0E", margin: "0 0 4px" }}>Review & Book</h1>
             <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Review your event details and finalised vendors before confirming.</p>
           </div>
@@ -1061,9 +1070,9 @@ const BookingReviewPage = () => {
               </div>
             )}
 
-            {/* ── Total + Proceed ── */}
+            {/* ── Total + Proceed ── hidden on all sizes; fixed footer handles this */}
             <div className="booking-sidebar-proceed"
-              style={{
+              style={{ display: "none",
                 background: "#fff",
                 borderRadius: 16,
                 border: "1.5px solid rgba(139,69,19,0.1)",

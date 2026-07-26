@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import AuthModal from "../../components/AuthModal";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -502,6 +503,8 @@ function PlanIdeas({ orgType, venueType, onBookServices, onBack }) {
 // ── Main component ─────────────────────────────────────────────────────────
 export default function IndependenceDayFlow({ onClose }) {
   const navigate = useNavigate();
+  const token = useSelector(s => s.auth?.token);
+  const pendingNavRef = useRef(false);
 
   const [orgType, setOrgType]     = useState("");
   const [step, setStep]           = useState(0);
@@ -523,7 +526,7 @@ export default function IndependenceDayFlow({ onClose }) {
   const venuePhotoRef = useRef();
 
   const [finalScreen, setFinalScreen] = useState(null);
-  const [authOpen, setAuthOpen]       = useState(false);
+  const [showAuth, setShowAuth]       = useState(false);
 
   // Resume flow
   const [showResume, setShowResume]   = useState(false);
@@ -574,12 +577,6 @@ export default function IndependenceDayFlow({ onClose }) {
         : [...p, photo]
     );
 
-  function handleBookServices() {
-    const token = localStorage.getItem("tendr_token");
-    if (!token) { setAuthOpen(true); return; }
-    sendToBaatKaro();
-  }
-
   function sendToBaatKaro() {
     const serviceLabels = services
       .map((s) => SERVICES.find((x) => x.id === s)?.label)
@@ -620,6 +617,12 @@ export default function IndependenceDayFlow({ onClose }) {
       try { sessionStorage.setItem("gh_chat_photos", JSON.stringify(chatPhotos)); } catch {}
     } else {
       try { sessionStorage.removeItem("gh_chat_photos"); } catch {}
+    }
+
+    if (!token) {
+      pendingNavRef.current = true;
+      setShowAuth(true);
+      return;
     }
 
     onClose();
@@ -731,20 +734,17 @@ export default function IndependenceDayFlow({ onClose }) {
               <PlanIdeas
                 orgType={orgType}
                 venueType={venueType}
-                onBookServices={handleBookServices}
+                onBookServices={sendToBaatKaro}
                 onBack={() => setFinalScreen("choice")}
               />
             </div>
           </div>
         </div>
-        {authOpen && (
-          <AuthModal
-            open={authOpen}
-            onClose={() => setAuthOpen(false)}
-            onSuccess={() => { setAuthOpen(false); sendToBaatKaro(); }}
-            defaultMode="login"
-          />
-        )}
+        <AuthModal
+          open={showAuth}
+          onClose={() => { setShowAuth(false); pendingNavRef.current = false; }}
+          onSuccess={() => { setShowAuth(false); if (pendingNavRef.current) { pendingNavRef.current = false; onClose(); navigate("/baat-karo"); } }}
+        />
       </>
     );
   }
@@ -779,7 +779,7 @@ export default function IndependenceDayFlow({ onClose }) {
                 </button>
 
                 <button
-                  onClick={handleBookServices}
+                  onClick={sendToBaatKaro}
                   style={{
                     padding: "18px 20px", borderRadius: 14,
                     border: `2px solid ${border}`, background: white,
@@ -803,14 +803,11 @@ export default function IndependenceDayFlow({ onClose }) {
             </div>
           </div>
         </div>
-        {authOpen && (
-          <AuthModal
-            open={authOpen}
-            onClose={() => setAuthOpen(false)}
-            onSuccess={() => { setAuthOpen(false); sendToBaatKaro(); }}
-            defaultMode="login"
-          />
-        )}
+        <AuthModal
+          open={showAuth}
+          onClose={() => { setShowAuth(false); pendingNavRef.current = false; }}
+          onSuccess={() => { setShowAuth(false); if (pendingNavRef.current) { pendingNavRef.current = false; onClose(); navigate("/baat-karo"); } }}
+        />
       </>
     );
   }
