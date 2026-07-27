@@ -368,7 +368,7 @@ function PlanIdeas({ orgType, venueType, onBookServices, onBack }) {
   ];
 
   return (
-    <div style={{ fontFamily: font }}>
+    <div style={{ fontFamily: font, paddingBottom: 24 }}>
       {/* Header */}
       <div style={{ textAlign: "center", marginBottom: 20 }}>
         <div style={{ fontSize: 32, marginBottom: 8 }}>🇮🇳</div>
