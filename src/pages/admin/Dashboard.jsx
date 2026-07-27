@@ -2218,25 +2218,27 @@ const AdminDashboard = () => {
                                     </>
                                   );
                                 })()}
-                                {/* Paid: Send to Customer (dashboard link) + Invoice */}
+                                {/* Paid: Notify Customer + Documents */}
                                 {plan.status === "in_progress" && (() => {
-                                  const phone = (plan.customerId?.phoneNumber || "").replace(/[^0-9]/g, "");
                                   const eventSummary = { eventType: plan.eventType, date: plan.date, location: plan.location, guests: plan.guests };
                                   const confirmedVendors = (plan.vendors || plan.confirmedVendors || []).map(v => ({ name: v.vendorName || v.name || "", serviceType: v.serviceType || "" })).filter(v => v.name);
-                                  const name = plan.customerId?.name || "there";
-                                  const dashboardLink = `${window.location.origin}/dashboard`;
-                                  const sendWA = phone ? `https://wa.me/91${phone}?text=${encodeURIComponent(`Hi ${name}! 🎉\n\nYour event is planned!\n\nYou can download your Event Details and Invitation Flyer from your Tendr dashboard:\n\n${dashboardLink}\n\n— Team Tendr 💛`)}` : null;
                                   const sentTs = notifiedAt[plan._id];
                                   const isOverdue = sentTs && (Date.now() - sentTs) > 24 * 60 * 60 * 1000;
                                   return (
                                     <div style={{ display: "flex", gap: 5, flexWrap: "wrap", alignItems: "center" }}>
-                                      {sendWA && (
-                                        <a href={sendWA} target="_blank" rel="noopener noreferrer"
-                                          onClick={() => markNotified(plan._id)}
-                                          style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", textDecoration: "none" }}>
-                                          📲 {sentTs ? "Resend" : "Send to Customer"}
-                                        </a>
-                                      )}
+                                      <button
+                                        onClick={async () => {
+                                          try {
+                                            const r = await fetch(`${BASE_URL}/admin/event-plans/${plan._id}/notify-customer`, {
+                                              method: 'POST', headers: { Authorization: `Bearer ${token}` }, credentials: 'include',
+                                            });
+                                            if (r.ok) markNotified(plan._id);
+                                            else alert('Failed to send notification');
+                                          } catch { alert('Failed to send notification'); }
+                                        }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                        📲 {sentTs ? "Resend Notification" : "Notify Customer"}
+                                      </button>
                                       {sentTs && (
                                         <span style={{ fontSize: 10, fontWeight: 600, color: isOverdue ? "#c0392b" : "#15803d", background: isOverdue ? "#fff5f5" : "#f0fdf4", border: `1px solid ${isOverdue ? "#fca5a5" : "#bbf7d0"}`, borderRadius: 100, padding: "2px 8px", whiteSpace: "nowrap" }}>
                                           {isOverdue ? `⚠️ Sent ${fmtNotifiedAge(sentTs)} — not opened?` : `✓ Sent ${fmtNotifiedAge(sentTs)}`}
