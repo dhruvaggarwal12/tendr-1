@@ -2760,7 +2760,7 @@ const AdminDashboard = () => {
               const filteredVendors = vendorStats.filter(v => {
                 if (vendorSearch && !v.name?.toLowerCase().includes(vendorSearch.toLowerCase())) return false;
                 if (vendorFilterType !== "all" && v.serviceType !== vendorFilterType) return false;
-                if (vendorFilterCity !== "all" && v.city !== vendorFilterCity) return false;
+                if (vendorFilterCity !== "all" && !(v.locations || []).includes(vendorFilterCity)) return false;
                 if (vendorFilterStatus !== "all" && v.status !== vendorFilterStatus) return false;
                 if (vendorFilterTopRated === "yes" && !v.isTopRated) return false;
                 if (vendorFilterTopRated === "no" && v.isTopRated) return false;
@@ -2768,7 +2768,7 @@ const AdminDashboard = () => {
                 if (vendorFilterCorporate === "no" && v.hasCorporateExperience) return false;
                 return true;
               });
-              const allCities = [...new Set(vendorStats.map(v => v.city).filter(Boolean))].sort();
+              const allCities = [...new Set(vendorStats.flatMap(v => v.locations || []).filter(Boolean))].sort();
               const selStyle = { padding: "7px 10px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", fontSize: 12, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", cursor: "pointer", outline: "none" };
               return (
               <div className="mb-8">
