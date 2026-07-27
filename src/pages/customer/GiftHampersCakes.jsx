@@ -20,13 +20,16 @@ const GiftHampersCakes = () => {
   const [showGiftTypeFilter, setShowGiftTypeFilter] = useState(false);
 
   const filteredSamples = samples.filter(s => {
-    if (selectedCategories.length > 0 && !selectedCategories.includes(s.category)) return false;
+    if (selectedCategories.length > 0) {
+      const cats = Array.isArray(s.category) ? s.category : (s.category ? [s.category] : []);
+      if (!selectedCategories.some(c => cats.includes(c))) return false;
+    }
     if (occasionFilter.length > 0 && !occasionFilter.some(o => (s.occasion || []).includes(o))) return false;
     return true;
   });
 
   const availableEventTypes = [...new Set(samples.flatMap(s => s.occasion || []).filter(Boolean))].sort();
-  const availableGiftTypes  = [...new Set(samples.map(s => s.category).filter(Boolean))].sort();
+  const availableGiftTypes  = [...new Set(samples.flatMap(s => Array.isArray(s.category) ? s.category : (s.category ? [s.category] : [])).filter(Boolean))].sort();
 
   const toggleCategory = (cat) =>
     setSelectedCategories(prev =>
@@ -291,13 +294,13 @@ const GiftHampersCakes = () => {
 
             <img src={preview.url} alt={preview.name || "Gift Hamper"} style={{ width: "100%", maxHeight: "60vh", objectFit: "contain", background: "#faf5ee", display: "block" }} />
 
-            {(preview.category || (preview.occasion && preview.occasion.length > 0)) && (
+            {((preview.category?.length > 0) || (preview.occasion && preview.occasion.length > 0)) && (
               <div style={{ padding: "10px 22px 0", display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {preview.category && (
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.25)" }}>
-                    🎁 {preview.category}
+                {(Array.isArray(preview.category) ? preview.category : (preview.category ? [preview.category] : [])).map(c => (
+                  <span key={c} style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 100, background: "rgba(196,122,46,0.1)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.25)" }}>
+                    🎁 {c}
                   </span>
-                )}
+                ))}
                 {(preview.occasion || []).map(o => (
                   <span key={o} style={{ fontSize: 11, fontWeight: 600, padding: "3px 10px", borderRadius: 100, background: "rgba(44,26,14,0.06)", color: "#5A3A1A", border: "1px solid rgba(44,26,14,0.12)" }}>
                     {o}

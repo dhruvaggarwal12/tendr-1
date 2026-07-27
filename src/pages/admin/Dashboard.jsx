@@ -827,7 +827,7 @@ const AdminDashboard = () => {
   const [ghSamplesVendorFilter, setGhSamplesVendorFilter] = useState("");
   const [ghSampleFile, setGhSampleFile]       = useState(null);
   const [ghSamplePriceRange, setGhSamplePriceRange] = useState("");
-  const [ghSampleCategory, setGhSampleCategory] = useState("");
+  const [ghSampleCategory, setGhSampleCategory] = useState([]);
   const [ghSampleOccasion, setGhSampleOccasion] = useState([]);
   const [ghSampleUploading, setGhSampleUploading] = useState(false);
   const [ghSampleMsg, setGhSampleMsg]         = useState("");
@@ -4793,16 +4793,19 @@ const AdminDashboard = () => {
                       style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }}
                     />
                   </div>
-                  <div style={{ flex: "1 1 160px" }}>
+                  <div style={{ flex: "1 1 200px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Gift Type</div>
-                    <select
-                      value={ghSampleCategory}
-                      onChange={e => setGhSampleCategory(e.target.value)}
-                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box", background: "#fff" }}
-                    >
-                      <option value="">— None —</option>
-                      {["Drinkware","Dry Fruits & Nuts","Chocolates & Sweets","Spiritual & Pooja","Decorative Boxes","Tokri & Hampers"].map(c => <option key={c} value={c}>{c}</option>)}
-                    </select>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                      {["Drinkware","Dry Fruits & Nuts","Chocolates & Sweets","Spiritual & Pooja","Decorative Boxes","Tokri & Hampers"].map(c => {
+                        const checked = ghSampleCategory.includes(c);
+                        return (
+                          <button key={c} type="button"
+                            onClick={() => setGhSampleCategory(prev => checked ? prev.filter(x => x !== c) : [...prev, c])}
+                            style={{ padding: "4px 9px", borderRadius: 20, fontSize: 11, fontWeight: checked ? 700 : 500, border: `1px solid ${checked ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked ? "#C47A2E" : "#fff", color: checked ? "#fff" : "#7A5535", cursor: "pointer" }}
+                          >{c}</button>
+                        );
+                      })}
+                    </div>
                   </div>
                   <div style={{ flex: "1 1 200px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Event Type</div>
@@ -4851,7 +4854,7 @@ const AdminDashboard = () => {
                       fd.append("name", ghSampleName.trim());
                       fd.append("vendorName", ghSampleVendor.trim());
                       fd.append("priceRange", ghSamplePriceRange.trim());
-                      if (ghSampleCategory) fd.append("category", ghSampleCategory);
+                      ghSampleCategory.forEach(c => fd.append("category[]", c));
                       ghSampleOccasion.forEach(o => fd.append("occasion[]", o));
                       try {
                         const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples`, {
@@ -4861,7 +4864,7 @@ const AdminDashboard = () => {
                         const d = await r.json();
                         if (d.success) {
                           setGhSamples(prev => [d.sample, ...prev]);
-                          setGhSampleFile(null); setGhSampleName(""); setGhSampleVendor(""); setGhSamplePriceRange(""); setGhSampleCategory(""); setGhSampleOccasion([]);
+                          setGhSampleFile(null); setGhSampleName(""); setGhSampleVendor(""); setGhSamplePriceRange(""); setGhSampleCategory([]); setGhSampleOccasion([]);
                           setGhSampleMsg("Uploaded!");
                         } else { setGhSampleMsg(d.error || "Upload failed."); }
                       } catch (e) { setGhSampleMsg(e.message); }
@@ -4917,15 +4920,18 @@ const AdminDashboard = () => {
                                     </div>
                                   ))}
                                   <div style={{ marginBottom: 5 }}>
-                                    <div style={{ fontSize: 9, fontWeight: 700, color: "#7A5535", marginBottom: 2 }}>Gift Type</div>
-                                    <select
-                                      value={ghEditData.category ?? ""}
-                                      onChange={e => setGhEditData(p => ({ ...p, category: e.target.value }))}
-                                      style={{ width: "100%", padding: "4px 7px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.35)", fontSize: 11, fontFamily: "'Outfit',sans-serif", boxSizing: "border-box", background: "#fff" }}
-                                    >
-                                      <option value="">— None —</option>
-                                      {["Drinkware","Dry Fruits & Nuts","Chocolates & Sweets","Spiritual & Pooja","Decorative Boxes","Tokri & Hampers"].map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
+                                    <div style={{ fontSize: 9, fontWeight: 700, color: "#7A5535", marginBottom: 4 }}>Gift Type</div>
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                                      {["Drinkware","Dry Fruits & Nuts","Chocolates & Sweets","Spiritual & Pooja","Decorative Boxes","Tokri & Hampers"].map(c => {
+                                        const checked = (ghEditData.category || []).includes(c);
+                                        return (
+                                          <button key={c} type="button"
+                                            onClick={() => setGhEditData(p => { const cur = p.category || []; return { ...p, category: checked ? cur.filter(x => x !== c) : [...cur, c] }; })}
+                                            style={{ padding: "3px 7px", borderRadius: 20, fontSize: 10, fontWeight: checked ? 700 : 500, border: `1px solid ${checked ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked ? "#C47A2E" : "#fff", color: checked ? "#fff" : "#7A5535", cursor: "pointer" }}
+                                          >{c}</button>
+                                        );
+                                      })}
+                                    </div>
                                   </div>
                                   <div style={{ marginBottom: 5 }}>
                                     <div style={{ fontSize: 9, fontWeight: 700, color: "#7A5535", marginBottom: 4 }}>Event Type</div>
@@ -4976,7 +4982,7 @@ const AdminDashboard = () => {
                                     </>
                                   ) : (
                                     <button
-                                      onClick={() => { setGhEditingId(s._id); setGhEditData({ name: "", vendorName: "", priceRange: "", category: "", occasion: [] }); }}
+                                      onClick={() => { setGhEditingId(s._id); setGhEditData({ name: "", vendorName: "", priceRange: "", category: [], occasion: [] }); }}
                                       style={{ width: "100%", padding: "5px 0", borderRadius: 7, border: "1.5px dashed rgba(196,122,46,0.5)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
                                     >+ Add Details</button>
                                   )}
@@ -4998,7 +5004,7 @@ const AdminDashboard = () => {
                               {/* Edit button */}
                               {!isEditing && (
                                 <button
-                                  onClick={() => { setGhEditingId(s._id); setGhEditData({ name: s.name || "", vendorName: s.vendorName || "", priceRange: s.priceRange || "", category: s.category || "", occasion: s.occasion || [] }); }}
+                                  onClick={() => { setGhEditingId(s._id); setGhEditData({ name: s.name || "", vendorName: s.vendorName || "", priceRange: s.priceRange || "", category: Array.isArray(s.category) ? s.category : (s.category ? [s.category] : []), occasion: s.occasion || [] }); }}
                                   style={{ position: "absolute", top: 5, right: 32, width: 22, height: 22, borderRadius: "50%", background: "rgba(196,122,46,0.85)", border: "none", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                                   title="Edit info"
                                 >✎</button>
