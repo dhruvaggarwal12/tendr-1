@@ -1120,14 +1120,18 @@ export default function IndependenceDayFlow({ onClose }) {
       </div>
     </div>
 
-    {authOpen && (
-      <AuthModal
-        open={authOpen}
-        onClose={() => setAuthOpen(false)}
-        onSuccess={() => { setAuthOpen(false); sendToBaatKaro(); }}
-        defaultMode="login"
-      />
-    )}
-  </>
+    <AuthModal
+      open={showAuth}
+      onClose={() => { setShowAuth(false); pendingNavRef.current = false; }}
+      onSuccess={() => {
+        setShowAuth(false);
+        if (pendingNavRef.current) {
+          pendingNavRef.current = false;
+          onClose();
+          navigate("/baat-karo");
+        }
+      }}
+    />
+    </>
   );
 }

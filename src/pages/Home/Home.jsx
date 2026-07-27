@@ -10,7 +10,6 @@ import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import PlatformFlow from "../../components/PlatformFlow";
 import OccasionPlanner from "../../components/OccasionPlanner";
 import IndependenceDayFlow from "../independence-day/IndependenceDayFlow";
-import AuthModal from "../../components/AuthModal";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { easeIn, motion } from "framer-motion";
@@ -338,14 +337,7 @@ const Home = () => {
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
-  const [showIndepDay, setShowIndepDay]       = useState(false);
-  const [indepDayAuthOpen, setIndepDayAuthOpen] = useState(false);
-
-  function openIndepDayFlow() {
-    const token = localStorage.getItem("tendr_token");
-    if (!token) { setIndepDayAuthOpen(true); return; }
-    setShowIndepDay(true);
-  }
+  const [showIndepDay, setShowIndepDay] = useState(false);
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");
@@ -902,7 +894,7 @@ const Home = () => {
                 Start Planning →
               </button>
               <button
-                onClick={openIndepDayFlow}
+                onClick={() => setShowIndepDay(true)}
                 style={{ background: "linear-gradient(90deg, #FF9933 0%, #e67e00 50%, #138808 100%)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(255,153,51,0.35)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(255,153,51,0.45)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(255,153,51,0.35)"; }}
@@ -1155,7 +1147,7 @@ const Home = () => {
 
           {/* ── Independence Day featured strip ── */}
           <div
-            onClick={openIndepDayFlow}
+            onClick={() => setShowIndepDay(true)}
             style={{
               display: "flex", alignItems: "center", justifyContent: "space-between",
               width: "100%", marginBottom: 18,
@@ -2007,15 +1999,6 @@ const Home = () => {
         <IndependenceDayFlow onClose={() => setShowIndepDay(false)} />
       )}
 
-      {/* ── Independence Day auth gate ── */}
-      {indepDayAuthOpen && (
-        <AuthModal
-          open={indepDayAuthOpen}
-          onClose={() => setIndepDayAuthOpen(false)}
-          onSuccess={() => { setIndepDayAuthOpen(false); setShowIndepDay(true); }}
-          defaultMode="login"
-        />
-      )}
     </div>
   );
 };
