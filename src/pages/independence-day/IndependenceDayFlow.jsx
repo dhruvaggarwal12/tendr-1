@@ -272,6 +272,24 @@ function ProgressBar({ current, total }) {
   );
 }
 
+// ── Download helper ────────────────────────────────────────────────────────
+async function downloadPhoto(url, title) {
+  try {
+    const res = await fetch(url, { mode: "cors" });
+    const blob = await res.blob();
+    const objUrl = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = objUrl;
+    a.download = (title || "tendr-photo").replace(/[^a-z0-9\s-]/gi, "").trim() + ".jpg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(objUrl);
+  } catch {
+    window.open(url, "_blank");
+  }
+}
+
 // ── Lightbox ───────────────────────────────────────────────────────────────
 function PhotoLightbox({ photo, onClose }) {
   useEffect(() => {
@@ -293,6 +311,18 @@ function PhotoLightbox({ photo, onClose }) {
             {photo.title}
           </div>
         )}
+        <button
+          onClick={() => downloadPhoto(photo.url, photo.title)}
+          style={{
+            marginTop: 12, width: "100%", padding: "11px 16px",
+            background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.25)",
+            borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 600,
+            cursor: "pointer", fontFamily: font, display: "flex",
+            alignItems: "center", justifyContent: "center", gap: 8,
+          }}
+        >
+          ⬇ Download Photo
+        </button>
         <button onClick={onClose} style={{
           position: "absolute", top: -12, right: -12,
           width: 32, height: 32, borderRadius: "50%",
@@ -329,15 +359,24 @@ function PhotoCard({ photo, selected, onToggle }) {
             justifyContent: "center", fontSize: 12, fontWeight: 700,
           }}>✓</div>
         )}
-        <button
-          onClick={(e) => { e.stopPropagation(); setPreview(photo); }}
-          style={{
-            position: "absolute", bottom: 6, right: 6,
-            background: "rgba(0,0,0,0.55)", border: "none", borderRadius: 6,
-            color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 8px",
-            cursor: "pointer", fontFamily: font,
-          }}
-        >⤢ View</button>
+        <div style={{ position: "absolute", bottom: 6, right: 6, display: "flex", gap: 5 }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); downloadPhoto(photo.url, photo.title); }}
+            style={{
+              background: "rgba(0,0,0,0.55)", border: "none", borderRadius: 6,
+              color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 8px",
+              cursor: "pointer", fontFamily: font,
+            }}
+          >⬇ Save</button>
+          <button
+            onClick={(e) => { e.stopPropagation(); setPreview(photo); }}
+            style={{
+              background: "rgba(0,0,0,0.55)", border: "none", borderRadius: 6,
+              color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 8px",
+              cursor: "pointer", fontFamily: font,
+            }}
+          >⤢ View</button>
+        </div>
       </div>
       <div style={{ padding: "7px 9px", background: white }}>
         <div style={{ fontSize: 11, fontWeight: 600, color: dark, fontFamily: font }}>{photo.title}</div>
