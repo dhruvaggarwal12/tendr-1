@@ -10,12 +10,6 @@
   </url>
 
   <url>
-    <loc>https://tendr.co.in/booking</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
     <loc>https://tendr.co.in/listings</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
@@ -26,28 +20,6 @@
     <loc>https://tendr.co.in/vendor/register</loc>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
-  </url>
-
-  <!-- Planning Tools -->
-  <url>
-    <loc>https://tendr.co.in/timeline-picker</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tendr.co.in/budget-picker</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://tendr.co.in/prebuilt-timeline</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.55</priority>
-  </url>
-  <url>
-    <loc>https://tendr.co.in/budget-allocator</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.55</priority>
   </url>
 
   <!-- Info pages -->
