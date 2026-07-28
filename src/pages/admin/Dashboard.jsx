@@ -829,6 +829,7 @@ const AdminDashboard = () => {
   const [ghSamplePriceRange, setGhSamplePriceRange] = useState("");
   const [ghSampleCategory, setGhSampleCategory] = useState([]);
   const [ghSampleOccasion, setGhSampleOccasion] = useState([]);
+  const [ghSampleMinQty, setGhSampleMinQty]     = useState("");
   const [ghSampleUploading, setGhSampleUploading] = useState(false);
   const [ghSampleMsg, setGhSampleMsg]         = useState("");
   const [ghEditingId, setGhEditingId]         = useState(null);
@@ -4793,6 +4794,17 @@ const AdminDashboard = () => {
                       style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }}
                     />
                   </div>
+                  <div style={{ flex: "1 1 100px" }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Min. Quantity</div>
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 10"
+                      value={ghSampleMinQty}
+                      onChange={e => setGhSampleMinQty(e.target.value)}
+                      style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
                   <div style={{ flex: "1 1 200px" }}>
                     <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Gift Type</div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
@@ -4854,6 +4866,7 @@ const AdminDashboard = () => {
                       fd.append("name", ghSampleName.trim());
                       fd.append("vendorName", ghSampleVendor.trim());
                       fd.append("priceRange", ghSamplePriceRange.trim());
+                      if (ghSampleMinQty) fd.append("minQty", ghSampleMinQty);
                       ghSampleCategory.forEach(c => fd.append("category[]", c));
                       ghSampleOccasion.forEach(o => fd.append("occasion[]", o));
                       try {
@@ -4864,7 +4877,7 @@ const AdminDashboard = () => {
                         const d = await r.json();
                         if (d.success) {
                           setGhSamples(prev => [d.sample, ...prev]);
-                          setGhSampleFile(null); setGhSampleName(""); setGhSampleVendor(""); setGhSamplePriceRange(""); setGhSampleCategory([]); setGhSampleOccasion([]);
+                          setGhSampleFile(null); setGhSampleName(""); setGhSampleVendor(""); setGhSamplePriceRange(""); setGhSampleMinQty(""); setGhSampleCategory([]); setGhSampleOccasion([]);
                           setGhSampleMsg("Uploaded!");
                         } else { setGhSampleMsg(d.error || "Upload failed."); }
                       } catch (e) { setGhSampleMsg(e.message); }
@@ -4909,10 +4922,12 @@ const AdminDashboard = () => {
                               {/* Info / edit toggle */}
                               {isEditing ? (
                                 <div style={{ padding: "8px 8px 10px", background: "#fffbeb" }}>
-                                  {[["Name", "name"], ["Vendor", "vendorName"], ["Price Range", "priceRange"]].map(([label, field]) => (
+                                  {[["Name", "name", "text"], ["Vendor", "vendorName", "text"], ["Price Range", "priceRange", "text"], ["Min. Qty", "minQty", "number"]].map(([label, field, type]) => (
                                     <div key={field} style={{ marginBottom: 5 }}>
                                       <div style={{ fontSize: 9, fontWeight: 700, color: "#7A5535", marginBottom: 2 }}>{label}</div>
                                       <input
+                                        type={type}
+                                        min={type === "number" ? 1 : undefined}
                                         value={ghEditData[field] ?? ""}
                                         onChange={e => setGhEditData(p => ({ ...p, [field]: e.target.value }))}
                                         style={{ width: "100%", padding: "4px 7px", borderRadius: 6, border: "1px solid rgba(196,122,46,0.35)", fontSize: 11, fontFamily: "'Outfit',sans-serif", boxSizing: "border-box" }}
@@ -4978,11 +4993,12 @@ const AdminDashboard = () => {
                                     <>
                                       {s.name && <div style={{ fontSize: 11, fontWeight: 700, color: "#2C1A0E", lineHeight: 1.3 }}>{s.name}</div>}
                                       {s.priceRange && <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", marginTop: 2 }}>{s.priceRange}</div>}
+                                      {s.minQty && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 1 }}>Min. {s.minQty} pcs</div>}
                                       {s.vendorName && <div style={{ fontSize: 10, color: "#7A5535", marginTop: 1 }}>by {s.vendorName}</div>}
                                     </>
                                   ) : (
                                     <button
-                                      onClick={() => { setGhEditingId(s._id); setGhEditData({ name: "", vendorName: "", priceRange: "", category: [], occasion: [] }); }}
+                                      onClick={() => { setGhEditingId(s._id); setGhEditData({ name: "", vendorName: "", priceRange: "", minQty: "", category: [], occasion: [] }); }}
                                       style={{ width: "100%", padding: "5px 0", borderRadius: 7, border: "1.5px dashed rgba(196,122,46,0.5)", background: "rgba(196,122,46,0.06)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}
                                     >+ Add Details</button>
                                   )}
@@ -5004,7 +5020,7 @@ const AdminDashboard = () => {
                               {/* Edit button */}
                               {!isEditing && (
                                 <button
-                                  onClick={() => { setGhEditingId(s._id); setGhEditData({ name: s.name || "", vendorName: s.vendorName || "", priceRange: s.priceRange || "", category: Array.isArray(s.category) ? s.category : (s.category ? [s.category] : []), occasion: s.occasion || [] }); }}
+                                  onClick={() => { setGhEditingId(s._id); setGhEditData({ name: s.name || "", vendorName: s.vendorName || "", priceRange: s.priceRange || "", minQty: s.minQty ?? "", category: Array.isArray(s.category) ? s.category : (s.category ? [s.category] : []), occasion: s.occasion || [] }); }}
                                   style={{ position: "absolute", top: 5, right: 32, width: 22, height: 22, borderRadius: "50%", background: "rgba(196,122,46,0.85)", border: "none", color: "#fff", fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                                   title="Edit info"
                                 >✎</button>

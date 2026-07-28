@@ -11,13 +11,15 @@ const GiftHampersCakes = () => {
   const navigate = useNavigate();
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [preview, setPreview] = useState(null);
+  const [previewIdx, setPreviewIdx] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [occasionFilter, setOccasionFilter] = useState([]);
   const [showEventTypeFilter, setShowEventTypeFilter] = useState(false);
   const [showGiftTypeFilter, setShowGiftTypeFilter] = useState(false);
+  const [similarTo, setSimilarTo] = useState(null);
+  const [similarSheetOpen, setSimilarSheetOpen] = useState(false);
 
   const filteredSamples = samples.filter(s => {
     if (selectedCategories.length > 0) {
@@ -31,6 +33,21 @@ const GiftHampersCakes = () => {
   const availableEventTypes = [...new Set(samples.flatMap(s => s.occasion || []).filter(Boolean))].sort();
   const availableGiftTypes  = [...new Set(samples.flatMap(s => Array.isArray(s.category) ? s.category : (s.category ? [s.category] : [])).filter(Boolean))].sort();
 
+  const hammingDist = (h1, h2) => {
+    if (!h1 || !h2 || h1.length !== h2.length) return Infinity;
+    let d = 0;
+    for (let i = 0; i < h1.length; i++) if (h1[i] !== h2[i]) d++;
+    return d;
+  };
+
+  const similarPhotos = similarTo?.ahash
+    ? samples
+        .filter(s => s._id !== similarTo._id && s.ahash)
+        .map(s => ({ ...s, dist: hammingDist(similarTo.ahash, s.ahash) }))
+        .sort((a, b) => a.dist - b.dist)
+        .slice(0, 6)
+    : [];
+
   const toggleCategory = (cat) =>
     setSelectedCategories(prev =>
       prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]
@@ -40,6 +57,8 @@ const GiftHampersCakes = () => {
   const activeFilterCount = selectedCategories.length + occasionFilter.length;
   const clearAll = () => { setSelectedCategories([]); setOccasionFilter([]); };
 
+  const openSimilar = (sample) => { setSimilarTo(sample); setSimilarSheetOpen(true); setPreviewIdx(null); };
+
   useEffect(() => {
     fetch(`${BASE_URL}/admin/gift-hamper-samples`)
       .then(r => r.json())
@@ -47,14 +66,21 @@ const GiftHampersCakes = () => {
       .catch(() => setLoading(false));
   }, []);
 
-  const closePreview = useCallback(() => setPreview(null), []);
+  const preview = previewIdx !== null ? filteredSamples[previewIdx] : null;
+  const closePreview = useCallback(() => setPreviewIdx(null), []);
+  const prevPreview = useCallback(() => setPreviewIdx(i => (i > 0 ? i - 1 : filteredSamples.length - 1)), [filteredSamples.length]);
+  const nextPreview = useCallback(() => setPreviewIdx(i => (i < filteredSamples.length - 1 ? i + 1 : 0)), [filteredSamples.length]);
 
   useEffect(() => {
-    if (!preview) return;
-    const handler = e => { if (e.key === "Escape") closePreview(); };
+    if (previewIdx === null) return;
+    const handler = e => {
+      if (e.key === "Escape") closePreview();
+      if (e.key === "ArrowLeft") prevPreview();
+      if (e.key === "ArrowRight") nextPreview();
+    };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [preview, closePreview]);
+  }, [previewIdx, closePreview, prevPreview, nextPreview]);
 
   const handleDownload = async (url, name) => {
     setDownloading(true);
@@ -251,13 +277,13 @@ const GiftHampersCakes = () => {
             </div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(200px,1fr))", gap: 14 }}>
-              {filteredSamples.map(s => {
+              {filteredSamples.map((s, idx) => {
                 const isSelected = selectedPhotos.some(p => p._id === s._id);
                 return (
                   <div
                     key={s._id}
                     className="gh-card"
-                    onClick={() => setPreview(s)}
+                    onClick={() => setPreviewIdx(idx)}
                     style={{ borderRadius: 14, overflow: "hidden", background: "#fff", border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, boxShadow: isSelected ? "0 0 0 2px rgba(196,122,46,0.35), 0 3px 14px rgba(44,26,14,0.07)" : "0 3px 14px rgba(44,26,14,0.07)", cursor: "pointer", position: "relative" }}
                   >
                     {isSelected && (
@@ -283,6 +309,21 @@ const GiftHampersCakes = () => {
           onClick={closePreview}
           style={{ position: "fixed", inset: 0, background: "rgba(20,10,4,0.88)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}
         >
+          {/* Prev arrow */}
+          {filteredSamples.length > 1 && (
+            <button
+              onClick={e => { e.stopPropagation(); prevPreview(); }}
+              style={{ position: "fixed", left: 12, top: "50%", transform: "translateY(-50%)", zIndex: 10000, width: 42, height: 42, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}
+            >‹</button>
+          )}
+          {/* Next arrow */}
+          {filteredSamples.length > 1 && (
+            <button
+              onClick={e => { e.stopPropagation(); nextPreview(); }}
+              style={{ position: "fixed", right: 12, top: "50%", transform: "translateY(-50%)", zIndex: 10000, width: 42, height: 42, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.25)", color: "#fff", fontSize: 20, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}
+            >›</button>
+          )}
+
           <div
             onClick={e => e.stopPropagation()}
             style={{ background: "#fff", borderRadius: 20, overflow: "hidden", maxWidth: 560, width: "100%", boxShadow: "0 24px 80px rgba(0,0,0,0.55)", position: "relative" }}
@@ -291,6 +332,13 @@ const GiftHampersCakes = () => {
               onClick={closePreview}
               style={{ position: "absolute", top: 12, right: 12, zIndex: 2, width: 32, height: 32, borderRadius: "50%", background: "rgba(0,0,0,0.55)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
             >✕</button>
+
+            {/* Counter */}
+            {filteredSamples.length > 1 && (
+              <div style={{ position: "absolute", top: 12, left: 12, zIndex: 2, fontSize: 11, fontWeight: 700, color: "#fff", background: "rgba(0,0,0,0.45)", borderRadius: 100, padding: "3px 10px" }}>
+                {previewIdx + 1} / {filteredSamples.length}
+              </div>
+            )}
 
             <img src={preview.url} alt={preview.name || "Gift Hamper"} style={{ width: "100%", maxHeight: "60vh", objectFit: "contain", background: "#faf5ee", display: "block" }} />
 
@@ -309,23 +357,95 @@ const GiftHampersCakes = () => {
               </div>
             )}
 
-            <div style={{ padding: "18px 22px 22px" }}>
+            <div style={{ padding: "14px 22px 20px" }}>
+              {(preview.name || preview.priceRange || preview.minQty) && (
+                <div style={{ marginBottom: 12, display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                  {preview.name && <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>{preview.name}</span>}
+                  {preview.priceRange && <span style={{ fontSize: 13, fontWeight: 700, color: "#C47A2E" }}>{preview.priceRange}</span>}
+                  {preview.minQty && <span style={{ fontSize: 12, fontWeight: 600, color: "#7A5535", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 6, padding: "2px 8px" }}>Min. {preview.minQty} pcs</span>}
+                </div>
+              )}
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                 <button
                   onClick={() => handleDownload(preview.url, preview.name)}
                   disabled={downloading}
-                  style={{ flex: "1 1 140px", padding: "11px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: downloading ? "wait" : "pointer", fontFamily: font }}
+                  style={{ flex: "1 1 120px", padding: "11px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: downloading ? "wait" : "pointer", fontFamily: font }}
                 >
-                  {downloading ? "Downloading…" : "⬇ Download Photo"}
+                  {downloading ? "Downloading…" : "⬇ Download"}
                 </button>
                 <button
                   onClick={() => { toggleSelect(preview); closePreview(); }}
-                  style={{ flex: "1 1 140px", padding: "11px 20px", borderRadius: 10, border: `1.5px solid ${selectedPhotos.some(p => p._id === preview._id) ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: selectedPhotos.some(p => p._id === preview._id) ? "rgba(196,122,46,0.1)" : "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                  style={{ flex: "1 1 120px", padding: "11px 20px", borderRadius: 10, border: `1.5px solid ${selectedPhotos.some(p => p._id === preview._id) ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: selectedPhotos.some(p => p._id === preview._id) ? "rgba(196,122,46,0.1)" : "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
                 >
-                  {selectedPhotos.some(p => p._id === preview._id) ? "✓ Added to Chat" : "➕ Add to Chat"}
+                  {selectedPhotos.some(p => p._id === preview._id) ? "✓ Added" : "➕ Add to Chat"}
                 </button>
+                {preview.ahash && (
+                  <button
+                    onClick={() => openSimilar(preview)}
+                    style={{ flex: "1 1 120px", padding: "11px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.4)", background: "#fff", color: "#5A3A1A", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}
+                  >
+                    🔍 Find Similar
+                  </button>
+                )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Similar Photos Sheet ── */}
+      {similarSheetOpen && similarTo && (
+        <div onClick={() => setSimilarSheetOpen(false)} style={{ position:"fixed", inset:0, background:"rgba(20,10,4,0.6)", zIndex:9999, display:"flex", alignItems:"flex-end" }}>
+          <div onClick={e => e.stopPropagation()} style={{ width:"100%", background:"#FFFCF5", borderRadius:"20px 20px 0 0", padding:"22px 20px 32px", fontFamily:font, boxShadow:"0 -8px 40px rgba(44,26,14,0.2)", maxHeight:"75dvh", display:"flex", flexDirection:"column" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16, flexShrink:0 }}>
+              <div>
+                <div style={{ fontSize:16, fontWeight:800, color:"#2C1A0E" }}>Similar to this</div>
+                <div style={{ fontSize:12, color:"#9B7450", marginTop:2 }}>Visually matched from our collection</div>
+              </div>
+              <button onClick={() => setSimilarSheetOpen(false)} style={{ width:30, height:30, borderRadius:"50%", background:"rgba(44,26,14,0.08)", border:"none", fontSize:14, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>✕</button>
+            </div>
+
+            {/* Reference photo */}
+            <div style={{ display:"flex", gap:12, alignItems:"center", padding:"12px", background:"rgba(196,122,46,0.06)", borderRadius:12, marginBottom:16, flexShrink:0 }}>
+              <img src={similarTo.url} alt={similarTo.name || "Reference"} style={{ width:60, height:60, borderRadius:8, objectFit:"cover", flexShrink:0 }} />
+              <div>
+                <div style={{ fontSize:12, fontWeight:700, color:"#C47A2E", marginBottom:2 }}>Reference photo</div>
+                {similarTo.name && <div style={{ fontSize:13, fontWeight:700, color:"#2C1A0E" }}>{similarTo.name}</div>}
+                {similarTo.priceRange && <div style={{ fontSize:12, color:"#9B7450" }}>{similarTo.priceRange}</div>}
+              </div>
+            </div>
+
+            {similarPhotos.length === 0 ? (
+              <div style={{ textAlign:"center", padding:"32px 0", color:"#9B7450" }}>
+                <div style={{ fontSize:32, marginBottom:8 }}>🔍</div>
+                <div style={{ fontSize:13 }}>No visually similar photos found yet. More photos coming soon!</div>
+              </div>
+            ) : (
+              <div style={{ overflowY:"auto", flex:1 }}>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))", gap:10 }}>
+                  {similarPhotos.map(s => {
+                    const isSelected = selectedPhotos.some(p => p._id === s._id);
+                    return (
+                      <div key={s._id} style={{ borderRadius:12, overflow:"hidden", background:"#fff", border:`1.5px solid ${isSelected?"#C47A2E":"rgba(196,122,46,0.15)"}`, boxShadow:"0 2px 10px rgba(44,26,14,0.06)" }}>
+                        <img src={s.url} alt={s.name || "Similar"} style={{ width:"100%", aspectRatio:"4/3", objectFit:"cover", display:"block" }} />
+                        <div style={{ padding:"8px 10px 10px" }}>
+                          {s.name && <div style={{ fontSize:11, fontWeight:700, color:"#2C1A0E", marginBottom:2 }}>{s.name}</div>}
+                          {s.priceRange && <div style={{ fontSize:11, color:"#C47A2E", fontWeight:700 }}>{s.priceRange}</div>}
+                          <button
+                            onClick={() => toggleSelect(s)}
+                            style={{ marginTop:6, width:"100%", padding:"6px", borderRadius:8, border:`1.5px solid ${isSelected?"#C47A2E":"rgba(196,122,46,0.35)"}`, background:isSelected?"linear-gradient(135deg,#C47A2E,#CCAB4A)":"#fff", color:isSelected?"#fff":"#C47A2E", fontSize:11, fontWeight:700, cursor:"pointer", fontFamily:font }}
+                          >{isSelected ? "✓ Added" : "+ Add to Chat"}</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            <button onClick={goToChat} style={{ marginTop:16, width:"100%", padding:"13px", borderRadius:14, border:"none", background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:14, fontWeight:800, cursor:"pointer", fontFamily:font, flexShrink:0 }}>
+              💬 Talk to Our Team{selectedPhotos.length > 0 ? ` · ${selectedPhotos.length} selected` : ""}
+            </button>
           </div>
         </div>
       )}

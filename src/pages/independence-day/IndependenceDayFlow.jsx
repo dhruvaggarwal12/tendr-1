@@ -291,21 +291,54 @@ async function downloadPhoto(url, title) {
 }
 
 // ── Lightbox ───────────────────────────────────────────────────────────────
-function PhotoLightbox({ photo, onClose }) {
+function PhotoLightbox({ photos, idx, onClose, onPrev, onNext }) {
+  const photo = photos[idx];
   useEffect(() => {
-    const onKey = (e) => { if (e.key === "Escape") onClose(); };
+    const onKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowLeft") onPrev();
+      if (e.key === "ArrowRight") onNext();
+    };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [onClose]);
+  }, [onClose, onPrev, onNext]);
+  if (!photo) return null;
   return (
     <div onClick={onClose} style={{
       position: "fixed", inset: 0, zIndex: 9999,
       background: "rgba(0,0,0,0.88)", display: "flex",
       alignItems: "center", justifyContent: "center", padding: 16,
     }}>
+      {/* Prev arrow */}
+      {photos.length > 1 && (
+        <button onClick={e => { e.stopPropagation(); onPrev(); }} style={{
+          position: "fixed", left: 12, top: "50%", transform: "translateY(-50%)",
+          zIndex: 10000, width: 42, height: 42, borderRadius: "50%",
+          background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.25)",
+          color: "#fff", fontSize: 22, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>‹</button>
+      )}
+      {/* Next arrow */}
+      {photos.length > 1 && (
+        <button onClick={e => { e.stopPropagation(); onNext(); }} style={{
+          position: "fixed", right: 12, top: "50%", transform: "translateY(-50%)",
+          zIndex: 10000, width: 42, height: 42, borderRadius: "50%",
+          background: "rgba(255,255,255,0.12)", border: "1.5px solid rgba(255,255,255,0.25)",
+          color: "#fff", fontSize: 22, cursor: "pointer",
+          display: "flex", alignItems: "center", justifyContent: "center",
+        }}>›</button>
+      )}
+
       <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", maxWidth: 640, width: "100%" }}>
+        {/* Counter */}
+        {photos.length > 1 && (
+          <div style={{ textAlign: "center", color: "rgba(255,255,255,0.55)", fontSize: 11, fontWeight: 600, marginBottom: 8 }}>
+            {idx + 1} / {photos.length}
+          </div>
+        )}
         <img src={photo.url} alt={photo.title}
-          style={{ width: "100%", borderRadius: 14, display: "block", maxHeight: "80vh", objectFit: "contain" }} />
+          style={{ width: "100%", borderRadius: 14, display: "block", maxHeight: "75vh", objectFit: "contain" }} />
         {photo.title && (
           <div style={{ marginTop: 10, textAlign: "center", color: "#fff", fontSize: 13, fontWeight: 600, opacity: 0.9 }}>
             {photo.title}
@@ -336,11 +369,8 @@ function PhotoLightbox({ photo, onClose }) {
 }
 
 // ── Photo card ─────────────────────────────────────────────────────────────
-function PhotoCard({ photo, selected, onToggle }) {
-  const [preview, setPreview] = useState(null);
+function PhotoCard({ photo, selected, onToggle, onPreview }) {
   return (
-    <>
-    {preview && <PhotoLightbox photo={preview} onClose={() => setPreview(null)} />}
     <div style={{
       borderRadius: 12, overflow: "hidden",
       border: selected ? `2.5px solid ${saffron}` : "2px solid transparent",
@@ -369,7 +399,7 @@ function PhotoCard({ photo, selected, onToggle }) {
             }}
           >⬇ Save</button>
           <button
-            onClick={(e) => { e.stopPropagation(); setPreview(photo); }}
+            onClick={(e) => { e.stopPropagation(); onPreview(); }}
             style={{
               background: "rgba(0,0,0,0.55)", border: "none", borderRadius: 6,
               color: "#fff", fontSize: 11, fontWeight: 600, padding: "3px 8px",
@@ -383,7 +413,6 @@ function PhotoCard({ photo, selected, onToggle }) {
         <div style={{ fontSize: 10, color: muted, marginTop: 1, lineHeight: 1.4, fontFamily: font }}>{photo.description}</div>
       </div>
     </div>
-    </>
   );
 }
 
@@ -543,6 +572,7 @@ function PlanIdeas({ orgType, venueType, onBookServices, onBack }) {
 export default function IndependenceDayFlow({ onClose }) {
   const navigate = useNavigate();
   const token = useSelector(s => s.auth?.token);
+  const [showAuth, setShowAuth] = useState(false);
   const pendingNavRef = useRef(false);
 
   const [orgType, setOrgType]     = useState("");
@@ -559,13 +589,13 @@ export default function IndependenceDayFlow({ onClose }) {
   const [selectedPhotos, setSelectedPhotos] = useState([]);
   const [venuePhotos, setVenuePhotos]       = useState([]);
   const [photosLoading, setPhotosLoading]   = useState(false);
+  const [lightboxIdx, setLightboxIdx]       = useState(null);
 
   // Optional venue photo upload (Step 3 form)
   const [venuePhotoPreview, setVenuePhotoPreview] = useState(null);
   const venuePhotoRef = useRef();
 
   const [finalScreen, setFinalScreen] = useState(null);
-  const [showAuth, setShowAuth]       = useState(false);
 
   // Resume flow
   const [showResume, setShowResume]   = useState(false);
@@ -1053,8 +1083,8 @@ export default function IndependenceDayFlow({ onClose }) {
             <div style={{ color: muted, fontSize: 13, padding: "12px 0" }}>Loading styles…</div>
           ) : (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-              {venuePhotos.map((photo) => (
-                <PhotoCard key={photo._id} photo={photo} selected={!!selectedPhotos.find((p) => p._id === photo._id)} onToggle={togglePhoto} />
+              {venuePhotos.map((photo, idx) => (
+                <PhotoCard key={photo._id} photo={photo} selected={!!selectedPhotos.find((p) => p._id === photo._id)} onToggle={togglePhoto} onPreview={() => setLightboxIdx(idx)} />
               ))}
             </div>
           )}
@@ -1171,6 +1201,16 @@ export default function IndependenceDayFlow({ onClose }) {
         }
       }}
     />
+
+    {lightboxIdx !== null && venuePhotos.length > 0 && (
+      <PhotoLightbox
+        photos={venuePhotos}
+        idx={lightboxIdx}
+        onClose={() => setLightboxIdx(null)}
+        onPrev={() => setLightboxIdx(i => (i > 0 ? i - 1 : venuePhotos.length - 1))}
+        onNext={() => setLightboxIdx(i => (i < venuePhotos.length - 1 ? i + 1 : 0))}
+      />
+    )}
     </>
   );
 }
