@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#07070C">
+<title>Tendr — We Curate, You Celebrate</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#07070C;--s1:#0E0E18;
+  --gold:#C89B3C;--gl:#EDBD5A;--gp:rgba(200,155,60,.09);
+  --text:#EAE5DB;--muted:#58546B;--dim:#1E1C2A;
+  --grn:#3ECF8E;--grn-bg:rgba(62,207,142,.07);--grn-b:rgba(62,207,142,.22);
+}
+html,body{
+  height:100%;background:var(--bg);color:var(--text);
+  font-family:-apple-system,'Helvetica Neue',Helvetica,Arial,sans-serif;
+  overflow:hidden;-webkit-tap-highlight-color:transparent;
+}
+#app{height:100vh;height:100dvh;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.screen{
+  position:absolute;width:100%;max-width:430px;height:100vh;height:100dvh;
+  display:flex;flex-direction:column;
+  transition:transform .3s cubic-bezier(.4,0,.2,1),opacity .28s ease;will-change:transform,opacity;
+}
+.from-r{transform:translateX(100%);}
+.active{transform:translateX(0)!important;opacity:1!important;}
+.to-l{transform:translateX(-24%);opacity:0;}
+
+/* lang */
+.lang-scr{background:var(--bg);justify-content:center;align-items:center;padding:44px 30px;}
+.logo{font-size:20px;font-weight:900;letter-spacing:3px;color:var(--text);margin-bottom:44px;text-align:center;}
+.logo span{color:var(--gold);}
+.pre{font-size:11px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;text-align:center;}
+.main-h{font-size:30px;font-weight:900;color:var(--text);line-height:1.2;margin-bottom:8px;text-align:center;}
+.main-s{font-size:14px;color:var(--muted);line-height:1.65;margin-bottom:40px;text-align:center;}
+.lang-lbl{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--dim);margin-bottom:12px;text-align:center;align-self:stretch;}
+.lang-list{display:flex;flex-direction:column;gap:10px;width:100%;}
+.lang-btn{display:flex;align-items:center;gap:16px;padding:18px 22px;background:var(--s1);border:1.5px solid rgba(200,155,60,.13);border-radius:16px;cursor:pointer;color:var(--text);font-family:inherit;transition:border-color .15s,background .15s;text-align:left;touch-action:manipulation;}
+.lang-btn:hover{border-color:rgba(200,155,60,.38);background:#131320;}
+.lang-btn:active{transform:scale(.98);}
+.lf{font-size:24px;flex-shrink:0;}
+.ln{font-size:17px;font-weight:800;}
+.ls{font-size:12px;color:var(--muted);margin-top:2px;}
+
+/* question */
+.q-scr{background:var(--bg);overflow:hidden;}
+.q-prog{padding:28px 30px 0;display:flex;justify-content:center;gap:8px;flex-shrink:0;}
+.pd{width:6px;height:6px;border-radius:50%;background:var(--dim);transition:all .3s;}
+.pd.on{background:var(--gold);width:22px;border-radius:3px;}
+.q-mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:16px 28px 36px;}
+.q-body{text-align:center;margin-bottom:24px;}
+.q-step{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:18px;}
+.q-head{font-size:25px;font-weight:900;color:var(--text);line-height:1.28;margin-bottom:14px;}
+.q-sub{font-size:14px;color:#8A859E;line-height:1.72;max-width:300px;margin:0 auto;}
+.q-foot{display:flex;flex-direction:column;gap:0;}
+.yn-wrap{display:flex;flex-direction:column;gap:10px;}
+.yn{width:100%;padding:17px 20px;border-radius:16px;border:1.5px solid;cursor:pointer;font-family:inherit;text-align:left;display:flex;align-items:center;gap:14px;transition:all .18s;color:var(--text);font-size:15px;font-weight:700;touch-action:manipulation;}
+.yn:active{transform:scale(.98);}
+.y-opt{background:var(--grn-bg);border-color:var(--grn-b);}
+.n-opt{background:rgba(255,255,255,.03);border-color:rgba(255,255,255,.08);}
+.yn.chosen-y{background:rgba(62,207,142,.15);border-color:var(--grn);color:var(--grn);}
+.yn.chosen-n{background:rgba(255,255,255,.06);border-color:rgba(255,255,255,.2);}
+.yn.faded{opacity:.14;pointer-events:none;}
+.yn-em{display:none;}
+.emp{margin-top:12px;padding:14px 16px;background:var(--gp);border:1px solid rgba(200,155,60,.18);border-radius:14px;font-size:14px;color:var(--muted);line-height:1.65;display:none;opacity:0;transform:translateY(6px);transition:opacity .3s,transform .3s;}
+.emp.show{opacity:1;transform:translateY(0);}
+.emp b{color:var(--gl);font-weight:700;}
+
+/* ── Empathy overlay base ── */
+.eov{
+  position:absolute;inset:0;z-index:20;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:44px 32px 80px;text-align:center;
+  opacity:0;pointer-events:none;
+}
+.eov.show{pointer-events:auto;}
+.eov-txt{font-size:22px;font-weight:800;color:var(--text);line-height:1.5;max-width:320px;}
+.eov-txt b{color:var(--gl);}
+.eov-sub{font-size:14px;color:var(--muted);margin-top:12px;line-height:1.6;max-width:290px;}
+.eov-bar{position:absolute;bottom:44px;left:32px;right:32px;height:2px;background:var(--dim);border-radius:2px;overflow:hidden;}
+.eov-fill{height:100%;width:0%;background:var(--gold);border-radius:2px;transition:width 2.6s linear;}
+.eov-skip{
+  position:absolute;bottom:14px;right:20px;
+  font-size:11px;font-weight:700;letter-spacing:.5px;
+  color:var(--muted);padding:10px 14px;cursor:pointer;
+  opacity:0;transition:opacity .3s;touch-action:manipulation;
+}
+.eov.show .eov-skip{opacity:1;}
+.eov.show{cursor:pointer;}
+
+/* ── Q1: gentle crossfade ── */
+.eov[data-style="fade"]{background:var(--bg);transition:opacity .42s ease;}
+.eov[data-style="fade"].show{opacity:1;}
+
+/* ── Q2: bottom sheet slides up ── */
+.eov[data-style="card"]{
+  top:auto;min-height:62%;
+  background:var(--s1);
+  align-items:flex-start;text-align:left;
+  padding:34px 28px 80px;
+  opacity:1;transform:translateY(104%);
+  transition:transform .46s cubic-bezier(.08,.9,.22,1);
+  border-radius:22px 22px 0 0;
+  border-top:1.5px solid rgba(200,155,60,.22);
+  box-shadow:0 -14px 56px rgba(0,0,0,.78);
+}
+.eov[data-style="card"].show{transform:translateY(0);}
+.eov[data-style="card"] .eov-txt{font-size:19px;padding-left:14px;border-left:3px solid var(--gold);}
+.eov[data-style="card"] .eov-sub{padding-left:17px;}
+
+/* ── Q3: top sheet drops down from above ── */
+.eov[data-style="wipe"]{
+  bottom:auto;min-height:60%;
+  background:var(--s1);
+  align-items:flex-start;text-align:left;
+  padding:56px 28px 36px;
+  opacity:1;transform:translateY(-104%);
+  transition:transform .46s cubic-bezier(.08,.9,.22,1);
+  border-radius:0 0 22px 22px;
+  border-bottom:1.5px solid rgba(200,155,60,.22);
+  box-shadow:0 14px 56px rgba(0,0,0,.78);
+}
+.eov[data-style="wipe"].show{transform:translateY(0);}
+.eov[data-style="wipe"] .eov-txt{font-size:19px;padding-left:14px;border-left:3px solid var(--gold);}
+.eov[data-style="wipe"] .eov-sub{padding-left:17px;}
+
+/* ── Q4: scale-punch with spring + amber glow ── */
+.eov[data-style="punch"]{
+  background:radial-gradient(ellipse at 50% 44%,rgba(200,155,60,.2) 0%,rgba(210,85,30,.08) 40%,var(--bg) 68%);
+  transform:scale(.78);
+  transition:opacity .18s ease,transform .38s cubic-bezier(.15,1.6,.35,1);
+}
+.eov[data-style="punch"].show{opacity:1;transform:scale(1);}
+.eov[data-style="punch"] .eov-txt{font-size:26px;}
+
+.prog-bar{margin-top:12px;height:2px;background:var(--dim);border-radius:2px;overflow:hidden;display:none;}
+.prog-bar.show{display:block;}
+.prog-fill{height:100%;width:0%;background:var(--gold);border-radius:2px;transition:width 3s linear;}
+.q-bad-list{display:flex;flex-direction:column;gap:10px;margin:0 auto;text-align:left;max-width:290px;}
+.q-bad-item{display:flex;align-items:flex-start;gap:10px;font-size:14.5px;font-weight:600;color:#8A859E;line-height:1.4;}
+.q-bad-x{flex-shrink:0;font-size:14px;margin-top:1px;}
+
+/* ── final question (Screen 5) ── */
+.fq-scr{background:var(--bg);}
+.fq-mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 28px 28px;}
+.fq-top{text-align:center;margin-bottom:20px;}
+.fq-step{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;}
+.fq-head{font-size:22px;font-weight:900;color:var(--text);line-height:1.3;margin-bottom:16px;}
+.fq-list{display:flex;flex-direction:column;gap:7px;align-items:center;margin-bottom:14px;}
+.fq-item{display:flex;align-items:center;gap:11px;font-size:16px;font-weight:700;color:var(--text);}
+.fq-chk{font-size:13px;color:var(--gold);font-weight:900;width:16px;text-align:center;}
+.fq-end{font-size:15px;color:var(--muted);text-align:center;line-height:1.6;margin-top:10px;}
+.fq-end b{color:var(--text);font-size:20px;font-weight:900;display:block;margin-top:6px;}
+.fq-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:0;}
+.fq-opt{
+  width:100%;padding:16px 22px;border-radius:16px;
+  border:1.5px solid rgba(255,255,255,.1);
+  background:rgba(255,255,255,.03);
+  cursor:pointer;font-family:inherit;font-size:15px;font-weight:700;
+  color:var(--text);transition:all .18s;text-align:center;touch-action:manipulation;
+}
+.fq-opt:active{transform:scale(.98);}
+.fq-opt:hover{border-color:rgba(200,155,60,.35);background:rgba(200,155,60,.06);}
+.fq-opt.chosen{background:var(--gp);border-color:var(--gold);color:var(--gl);}
+.fq-opt.faded{opacity:.14;pointer-events:none;}
+
+/* ── wow reveal (3-phase) ── */
+.wow-scr{background:var(--bg);position:relative;overflow:hidden;}
+.wp{
+  position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;padding:40px 30px;
+  opacity:0;transition:opacity .5s ease;pointer-events:none;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+.wp.in{opacity:1;pointer-events:auto;}
+.wp.out{opacity:0;pointer-events:none;}
+
+/* Phase 1: the 6 */
+.wow-num{
+  font-size:120px;font-weight:900;color:var(--gold);
+  line-height:1;text-align:center;
+  text-shadow:0 0 60px rgba(200,155,60,.35);
+  animation:numPop .5s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes numPop{from{opacity:0;transform:scale(.4);}to{opacity:1;transform:scale(1);}}
+.wow-num-sub{
+  font-size:15px;color:var(--muted);text-align:center;
+  margin-top:10px;letter-spacing:.3px;
+  opacity:0;transition:opacity .4s .3s;
+}
+.wp.in .wow-num-sub{opacity:1;}
+.wow-pills{
+  display:flex;flex-wrap:wrap;justify-content:center;
+  gap:8px;margin-top:28px;max-width:320px;
+}
+.wow-pill{
+  padding:8px 14px;border-radius:30px;
+  background:var(--s1);border:1px solid rgba(255,255,255,.08);
+  font-size:12px;font-weight:600;color:var(--muted);
+  opacity:0;transform:translateY(8px);transition:opacity .3s,transform .3s;
+}
+.wow-pill.in{opacity:1;transform:translateY(0);}
+
+/* Phase 2: pivot */
+.wow-opener{
+  font-size:14px;color:var(--muted);text-align:center;
+  margin-bottom:20px;letter-spacing:.3px;
+  opacity:0;transition:opacity .5s .1s;
+}
+.wp.in .wow-opener{opacity:1;}
+.wow-pivot-big{
+  font-size:30px;font-weight:900;color:var(--text);
+  text-align:center;line-height:1.25;
+  opacity:0;transform:translateY(12px);
+  transition:opacity .5s .3s,transform .5s .3s;
+}
+.wow-pivot-big em{color:var(--gold);font-style:normal;}
+.wp.in .wow-pivot-big{opacity:1;transform:translateY(0);}
+
+/* Phase 3: Tendr reveal */
+.wow-tendr-logo{
+  display:block;margin:0 auto 20px;
+  width:min(190px,65vw);height:auto;
+  opacity:0;transform:scale(.85);
+  transition:opacity .55s,transform .55s;
+  flex-shrink:0;
+}
+.wp.in .wow-tendr-logo{opacity:1;transform:scale(1);}
+.wow-feats{display:flex;flex-direction:column;gap:9px;width:100%;margin-bottom:24px;}
+.wow-feat{
+  display:flex;align-items:center;gap:12px;
+  padding:13px 16px;background:var(--gp);
+  border:1px solid rgba(200,155,60,.17);border-radius:13px;
+  opacity:0;transform:translateY(6px);transition:opacity .35s,transform .35s;
+}
+.wow-feat.in{opacity:1;transform:translateY(0);}
+.wf-i{font-size:18px;flex-shrink:0;}
+.wf-t{font-size:14px;font-weight:700;color:var(--text);}
+.wow-cta-btn{
+  display:flex;align-items:center;justify-content:center;
+  width:100%;padding:20px;background:var(--gold);border:none;
+  border-radius:16px;font-size:16px;font-weight:900;color:#07070C;
+  cursor:pointer;font-family:inherit;text-decoration:none;
+  position:relative;overflow:hidden;transition:transform .15s;
+  opacity:0;transition:opacity .5s;
+}
+.wow-cta-btn.in{opacity:1;}
+.wow-cta-btn:active{transform:scale(.98);}
+.wow-cta-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.2) 50%,transparent 70%);animation:sheen 2.6s 1s infinite;}
+@keyframes sheen{0%,55%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
+@keyframes pop{from{opacity:0;transform:scale(.7);}to{opacity:1;transform:scale(1);}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const L={
+en:{
+  skipLabels:['I see where this is going →','Okay, and? →','Go on... →','Alright. Show me what you built →'],
+  qs:[
+    {step:'Question 1 of 4',
+     head:'"Occasion is set. But what do I actually plan?"',
+     sub:'You\'re planning a celebration. You open your phone, stare at it for a minute, and close it. Where do you even start?',
+     y:{em:'😅',t:'Yes, I have',msg:'<b>You\'re not alone.</b>||Most celebrations don\'t start with a plan — they start with confusion.'},
+     n:{em:'😊',t:'No, I usually know',msg:'<b>You\'re one of the lucky ones.</b>||Let\'s see if the next one feels familiar.'},
+    },
+    {step:'Question 2 of 4',
+     head:'You wanted a nice celebration. The planning said otherwise.',
+     subHtml:`<div class="q-bad-item"><span class="q-bad-x">❌</span><span>Budget went higher than expected</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Didn't know what all needed to be booked</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Couldn't keep track of everything</span></div>`,
+     y:{em:'😅',t:'Yes, every time',msg:'<b>Planning a celebration shouldn\'t feel like managing a crisis.</b>||But without the right tools, it always does.'},
+     n:{em:'🙂',t:'No, I managed fine',msg:'<b>That takes real skill.</b>||Most people aren\'t that organised.'},
+    },
+    {step:'Question 3 of 4',
+     head:'Venue from one site. Cake from another. Decor from somewhere else.',
+     sub:'Still making calls the night before — just to confirm everything is actually showing up.',
+     y:{em:'😮',t:'Yes, that\'s my life',msg:'<b>Nothing coordinates itself.</b>||You become the project manager of your own celebration. We thought there had to be a better way.'},
+     n:{em:'👌',t:'No, it works for me',msg:'<b>You\'ve found your rhythm.</b>||One last question.'},
+    },
+    {step:'Question 4 of 4',
+     head:'You did everything right. The vendor didn\'t.',
+     subHtml:`<div class="q-bad-item"><span class="q-bad-x">❌</span><span>Cancelled last minute</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Arrived hours late</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Charged extra without warning</span></div>`,
+     y:{em:'😤',t:'Yes, it happened',msg:'<b>That can ruin an entire event.</b>||And it happens far more often than it should. We built something for exactly this.'},
+     n:{em:'🤞',t:'No, luckily not',msg:'<b>That\'s genuinely good to hear.</b>||Most people haven\'t been that fortunate.'},
+    },
+  ],
+  finalQ:{
+    step:'Almost there.',
+    head:'If one platform could help you...',
+    items:['Know what to plan','Stay on budget — no surprises','Compare quotes — no chasing','Stay on top of every detail','Book vendors you can trust'],
+    end:'your celebration...<b>Would you try it?</b>',
+    opts:[
+      {label:'Definitely 🙌',resp:'<b>Let\'s go.</b> Here\'s what we built for you.',opener:'You said definitely. Good call.'},
+      {label:'Maybe... 🤔',resp:'<b>Fair enough.</b> Give us 10 seconds.',opener:'Fair enough. Let us show you.'},
+      {label:'Tell me more 👀',resp:'<b>Short version incoming.</b>',opener:'Here\'s the short version.'},
+    ],
+  },
+  rev:{
+    numSub:'different apps. one celebration.',
+    pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes app'],
+    feats:[{i:'🎯',t:'"Where do I even begin?" — answered. Everything in one place.'},{i:'🤝',t:'Trusted vendors. Real quotes. No chasing required.'},{i:'📋',t:'No last-minute calls. Every detail tracked, nothing missed.'},{i:'✨',t:'And if a vendor ever lets you down — we have your back.'}],
+    cta:'Plan Your Next Celebration on Tendr →',
+  },
+},
+
+hi:{
+  skipLabels:['देखते हैं आगे क्या है →','हाँ, और? →','आगे बताइए... →','ठीक है। दिखाइए →'],
+  qs:[
+    {step:'सवाल 1 / 4',
+     head:'"Occasion decide है। अब क्या करूँ?"',
+     sub:'आप celebration plan करने बैठे। Phone उठाया। कुछ देर देखते रहे। फिर रख दिया। शुरू कहाँ से करें?',
+     y:{em:'😅',t:'हाँ, बिल्कुल ऐसा हुआ',msg:'<b>आप अकेले नहीं हैं।</b>||ज़्यादातर celebrations vendor book करने से नहीं — confusion से शुरू होती हैं।'},
+     n:{em:'😊',t:'नहीं, मुझे पता था',msg:'<b>आप lucky हैं।</b>||देखते हैं अगला सवाल familiar लगता है या नहीं।'},
+    },
+    {step:'सवाल 2 / 4',
+     head:'एक अच्छी celebration चाहिए थी। Planning ने और ही कर दिया।',
+     subHtml:`<div class="q-bad-item"><span class="q-bad-x">❌</span><span>Budget उम्मीद से ज़्यादा हो गया</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>पता नहीं था कि क्या-क्या book करना है</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>सब कुछ track नहीं हो पाया</span></div>`,
+     y:{em:'😅',t:'हाँ, ऐसा हुआ',msg:'<b>Celebration plan करना crisis manage करना नहीं है।</b>||पर सही tools के बिना, ऐसा ही लगता है।'},
+     n:{em:'🙂',t:'नहीं, मैंने handle कर लिया',msg:'<b>यह सच में काबिले-तारीफ है।</b>||ज़्यादातर लोग इतने organised नहीं होते।'},
+    },
+    {step:'सवाल 3 / 4',
+     head:'Venue एक जगह। Cake दूसरी। Decor कहीं और।',
+     sub:'Event से रात पहले भी calls करनी पड़ती हैं सिर्फ confirm करने के लिए।',
+     y:{em:'😮',t:'हाँ, यही हाल है मेरा',msg:'<b>कुछ खुद coordinate नहीं होता।</b>||आप अपनी ही celebration के project manager बन जाते हैं। हमें लगा इससे बेहतर तरीका होना चाहिए।'},
+     n:{em:'👌',t:'नहीं, मेरे लिए ठीक है',msg:'<b>आपका अपना system है।</b>||एक आखिरी सवाल।'},
+    },
+    {step:'सवाल 4 / 4',
+     head:'आपने सब सही किया। Vendor ने नहीं।',
+     subHtml:`<div class="q-bad-item"><span class="q-bad-x">❌</span><span>Last minute cancel कर दिया</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>घंटों late आए</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>बिना बताए extra charge किया</span></div>`,
+     y:{em:'😤',t:'हाँ, ऐसा हुआ',msg:'<b>यह पूरा event बर्बाद कर सकता है।</b>||और यह जितना होना चाहिए उससे कहीं ज़्यादा होता है। हमने इसके लिए कुछ बनाया है।'},
+     n:{em:'🤞',t:'नहीं, शुक्र है',msg:'<b>यह सुनकर अच्छा लगा।</b>||ज़्यादातर लोग इतने lucky नहीं होते।'},
+    },
+  ],
+  finalQ:{
+    step:'बस एक कदम और।',
+    head:'अगर एक ही platform...',
+    items:['क्या plan करना है — पता हो','Budget में रहें — कोई surprise नहीं','Quotes compare करें — बिना chase किए','हर detail track करें','Trusted vendors से book करें'],
+    end:'आपकी पूरी celebration...<b>क्या आप इसे try करेंगे?</b>',
+    opts:[
+      {label:'बिल्कुल 🙌',resp:'<b>चलते हैं।</b> यह देखिए हमने क्या बनाया।',opener:'आपने हाँ कहा। अच्छा decision है।'},
+      {label:'शायद... 🤔',resp:'<b>ठीक है।</b> 10 seconds दीजिए।',opener:'ठीक है। हम दिखाते हैं।'},
+      {label:'और बताइए 👀',resp:'<b>Short version आ रही है।</b>',opener:'Short version यह है।'},
+    ],
+  },
+  rev:{
+    numSub:'अलग apps। एक celebration।',
+    pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes'],
+    feats:[{i:'🎯',t:'"शुरू कहाँ से करूँ?" — अब यह सवाल नहीं। सब एक जगह।'},{i:'🤝',t:'Trusted vendors। Real quotes। बिना chase किए।'},{i:'📋',t:'Last-minute calls बंद। हर detail track, कुछ miss नहीं।'},{i:'✨',t:'और अगर vendor ने धोखा दिया — हम हैं आपके साथ।'}],
+    cta:'Tendr पर अपनी Celebration Plan करें →',
+  },
+},
+
+hl:{
+  skipLabels:['Dekho aage kya hai →','Haan, aur? →','Aage bolo... →','Theek hai. Dikhao →'],
+  qs:[
+    {step:'Question 1 of 4',
+     head:'"Occasion toh set hai. Ab kya karoon?"',
+     sub:'Celebration plan karne baithe. Phone uthaya. Kuch der ghoorte rahe. Rakh diya. Shuru kahan se karo?',
+     y:{em:'😅',t:'Haan, bilkul aisa hua',msg:'<b>Tum akele nahi ho.</b>||Zyaadatar celebrations confusion se shuru hoti hain — plan se nahi.'},
+     n:{em:'😊',t:'Nahi, mujhe pata tha',msg:'<b>Lucky ho tum.</b>||Dekho agla sawaal familiar lagta hai ya nahi.'},
+    },
+    {step:'Question 2 of 4',
+     head:'Achhi celebration chahiye thi. Planning ne aur hi kar diya.',
+     subHtml:`<div class="q-bad-item"><span class="q-bad-x">❌</span><span>Budget umeed se zyada ho gaya</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Pata nahi tha kya-kya book karna hai</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Sab kuch track nahi ho paya</span></div>`,
+     y:{em:'😅',t:'Haan, aisa hua',msg:'<b>Celebration plan karna crisis manage karna nahi hai.</b>||Par sahi tools ke bina, aisa hi lagta hai.'},
+     n:{em:'🙂',t:'Nahi, maine handle kar liya',msg:'<b>Yeh toh sach mein kaabil-e-taarif hai.</b>||Zyaadatar log itne organised nahi hote.'},
+    },
+    {step:'Question 3 of 4',
+     head:'Venue ek jagah. Cake doosri. Decor kahin aur.',
+     sub:'Event se raat pehle bhi calls karni padti hain sirf confirm karne ke liye.',
+     y:{em:'😮',t:'Haan, yahi haal hai mera',msg:'<b>Kuch khud coordinate nahi hota.</b>||Tum apni celebration ke project manager ban jaate ho. Humne socha isse better hona chahiye.'},
+     n:{em:'👌',t:'Nahi, mere liye theek hai',msg:'<b>Tumhara apna system hai.</b>||Ek aakhri sawaal.'},
+    },
+    {step:'Question 4 of 4',
+     head:'Tumne sab sahi kiya. Vendor ne nahi.',
+     subHtml:`<div class="q-bad-item"><span class="q-bad-x">❌</span><span>Last minute cancel kar diya</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Ghanton late aaye</span></div><div class="q-bad-item"><span class="q-bad-x">❌</span><span>Bina bataye extra charge kiya</span></div>`,
+     y:{em:'😤',t:'Haan, aisa hua',msg:'<b>Yeh poora event barbad kar sakta hai.</b>||Aur yeh jitna hona chahiye usse kahin zyada hota hai. Humne iske liye kuch banaya hai.'},
+     n:{em:'🤞',t:'Nahi, thankfully',msg:'<b>Yeh sunke accha laga.</b>||Zyaadatar log itne lucky nahi hote.'},
+    },
+  ],
+  finalQ:{
+    step:'Almost there.',
+    head:'Agar ek hi platform...',
+    items:['Kya plan karna hai — pata ho','Budget mein raho — koi surprise nahi','Quotes compare karo — bina chase kiye','Har detail track karo','Trusted vendors se book karo'],
+    end:'tumhari poori celebration...<b>Kya tum ise try karoge?</b>',
+    opts:[
+      {label:'Definitely 🙌',resp:'<b>Chalte hain.</b> Dekho humne kya banaya.',opener:'Tumne haan kaha. Badhiya call hai.'},
+      {label:'Maybe... 🤔',resp:'<b>Fair enough.</b> 10 seconds do.',opener:'Fair enough. Hum dikhate hain.'},
+      {label:'Batao aur 👀',resp:'<b>Short version aa raha hai.</b>',opener:'Short version yeh hai.'},
+    ],
+  },
+  rev:{
+    numSub:'alag apps. ek celebration.',
+    pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes'],
+    feats:[{i:'🎯',t:'"Shuru kahan se karoon?" — ab nahi poochna. Sab ek jagah.'},{i:'🤝',t:'Trusted vendors. Real quotes. Bina chase kiye.'},{i:'📋',t:'Last-minute calls khatam. Har cheez track, kuch miss nahi.'},{i:'✨',t:'Aur agar vendor ne let down kiya — hum hain tumhare saath.'}],
+    cta:'Tendr par Apni Celebration Plan Karo →',
+  },
+}
+};
+
+let lang='en', wowChoice=0, advanceTimer=null;
+const app=document.getElementById('app');
+
+function go(html){
+  const prev=app.querySelector('.screen');
+  const d=document.createElement('div');d.innerHTML=html;
+  const next=d.firstElementChild;
+  next.classList.add('from-r');
+  app.appendChild(next);
+  if(prev){prev.classList.add('to-l');setTimeout(()=>prev.remove(),450);}
+  requestAnimationFrame(()=>requestAnimationFrame(()=>next.classList.add('active')));
+}
+
+function langScreen(){
+  go(`<div class="screen lang-scr">
+    <div style="width:100%">
+      <div class="logo">TEN<span>D</span>R</div>
+      <div class="pre">Before we introduce ourselves</div>
+      <div class="main-h">5 quick questions.<br>Less than 30 seconds.</div>
+      <div class="main-s">No sign-up. No catch.<br>Just a quick conversation.</div>
+      <div class="lang-lbl">Choose your language</div>
+      <div class="lang-list">
+        <button class="lang-btn" onclick="setLang('en')"><div><div class="ln">English</div><div class="ls">Continue in English</div></div></button>
+        <button class="lang-btn" onclick="setLang('hi')"><div><div class="ln">हिन्दी</div><div class="ls">हिंदी में चलते हैं</div></div></button>
+        <button class="lang-btn" onclick="setLang('hl')"><div><div class="ln">Hinglish</div><div class="ls">Mix karke chalte hain bhai</div></div></button>
+      </div>
+    </div>
+  </div>`);
+}
+function setLang(l){lang=l;renderQ(0);}
+
+function dots(i){
+  return[0,1,2,3].map(n=>`<div class="pd${n===i?' on':''}"></div>`).join('');
+}
+
+const EOV_STYLES=['fade','card','wipe','punch'];
+function renderQ(idx){
+  const q=L[lang].qs[idx];
+  go(`<div class="screen q-scr">
+    <div class="q-prog">${dots(idx)}</div>
+    <div class="q-mid">
+      <div class="q-body">
+        <div class="q-step">${q.step}</div>
+        <div class="q-head">${q.head}</div>
+        ${q.subHtml
+          ? `<div class="q-bad-list">${q.subHtml}</div>`
+          : `<div class="q-sub">${q.sub}</div>`}
+      </div>
+      <div class="q-foot">
+        <div class="yn-wrap">
+          <button class="yn y-opt" id="by" onclick="answer('y',${idx})"><span class="yn-em">${q.y.em}</span><span>${q.y.t}</span></button>
+          <button class="yn n-opt" id="bn" onclick="answer('n',${idx})"><span class="yn-em">${q.n.em}</span><span>${q.n.t}</span></button>
+        </div>
+      </div>
+    </div>
+    <div class="eov" id="eov" data-style="${EOV_STYLES[idx]}" onclick="advance(${idx})">
+      <div class="eov-txt" id="eov-txt"></div>
+      <div class="eov-sub" id="eov-sub"></div>
+      <div class="eov-bar"><div class="eov-fill" id="eov-fill"></div></div>
+      <div class="eov-skip">${L[lang].skipLabels[idx]}</div>
+    </div>
+  </div>`);
+}
+
+function advance(idx){
+  clearTimeout(advanceTimer);
+  if(idx<3)renderQ(idx+1);else showFinalQ();
+}
+
+function answer(which,idx){
+  const by=document.getElementById('by'),bn=document.getElementById('bn');
+  if(by.disabled)return;
+  by.disabled=true;bn.disabled=true;
+  const q=L[lang].qs[idx];
+  const d=which==='y'?q.y:q.n;
+  if(which==='y'){by.classList.add('chosen-y');bn.classList.add('faded');}
+  else{bn.classList.add('chosen-n');by.classList.add('faded');}
+
+  const ov=document.getElementById('eov');
+  const ovTxt=document.getElementById('eov-txt');
+  const ovSub=document.getElementById('eov-sub');
+  const ovFill=document.getElementById('eov-fill');
+
+  const parts=d.msg.split('||');
+  ovTxt.innerHTML=parts[0].trim();
+  ovSub.innerHTML=(parts[1]||'').trim();
+  ovSub.style.display=parts[1]?'block':'none';
+
+  const style=ov.dataset.style;
+  const delay=(style==='card'||style==='wipe')?50:120;
+  setTimeout(()=>ov.classList.add('show'),delay);
+  setTimeout(()=>{
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{ovFill.style.width='100%';}));
+  },350);
+  advanceTimer=setTimeout(()=>advance(idx),3000);
+}
+
+function showFinalQ(){
+  const fq=L[lang].finalQ;
+  go(`<div class="screen fq-scr">
+    <div class="q-prog">${[0,1,2,3].map(()=>`<div class="pd on"></div>`).join('')}</div>
+    <div class="fq-mid">
+      <div class="fq-top">
+        <div class="fq-step">${fq.step}</div>
+        <div class="fq-head">${fq.head}</div>
+        <div class="fq-list">
+          ${fq.items.map(it=>`<div class="fq-item"><span class="fq-chk">✓</span>${it}</div>`).join('')}
+        </div>
+        <div class="fq-end">${fq.end}</div>
+      </div>
+      <div class="fq-opts">
+        ${fq.opts.map((o,i)=>`<button class="fq-opt" id="fo${i}" onclick="answerFQ(${i})">${o.label}</button>`).join('')}
+      </div>
+      <div class="emp" id="emp" style="margin-top:12px"></div>
+      <div class="prog-bar" id="pbar" style="margin-top:12px"><div class="prog-fill" id="pfill"></div></div>
+    </div>
+  </div>`);
+}
+
+function answerFQ(choice){
+  [0,1,2].forEach(i=>{const b=document.getElementById('fo'+i);if(b)b.disabled=true;});
+  document.getElementById('fo'+choice)?.classList.add('chosen');
+  [0,1,2].filter(i=>i!==choice).forEach(i=>document.getElementById('fo'+i)?.classList.add('faded'));
+  wowChoice=choice;
+  const fq=L[lang].finalQ;
+  const emp=document.getElementById('emp');
+  emp.innerHTML=fq.opts[choice].resp;emp.style.display='block';
+  setTimeout(()=>emp.classList.add('show'),60);
+  const bar=document.getElementById('pbar'),fill=document.getElementById('pfill');
+  setTimeout(()=>{
+    bar.classList.add('show');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{fill.style.width='100%';}));
+  },300);
+  setTimeout(()=>showReveal(),3400);
+}
+
+const LOGO_SVG=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 172" class="wow-tendr-logo">
+  <path d="M55,8 L125,8 C133,8 135,22 129,42 Q118,68 100,84 L94,88 L94,110 Q94,116 106,116 L74,116 Q86,116 86,110 L86,88 L80,84 Q62,68 51,42 C45,22 47,8 55,8 Z"
+    fill="rgba(200,155,60,0.1)" stroke="#C89B3C" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M64,56 Q90,68 116,56 Q112,72 100,84 L80,84 Q68,72 64,56 Z" fill="rgba(200,155,60,0.38)"/>
+  <path d="M22,26 L25.5,17 L29,26 L38,29.5 L29,33 L25.5,42 L22,33 L13,29.5 Z" fill="#EDBD5A"/>
+  <path d="M14,58 L16.5,51 L19,58 L26,60.5 L19,63 L16.5,70 L14,63 L7,60.5 Z" fill="#C89B3C" opacity="0.7"/>
+  <path d="M148,18 L150.5,12 L153,18 L159,20.5 L153,23 L150.5,29 L148,23 L142,20.5 Z" fill="#C89B3C" opacity="0.65"/>
+  <circle cx="158" cy="54" r="3" fill="#C89B3C" opacity="0.45"/>
+  <circle cx="10" cy="80" r="2.5" fill="#C89B3C" opacity="0.35"/>
+  <text x="90" y="148" font-family="Georgia,'Times New Roman',serif" font-size="33" fill="#EDBD5A" text-anchor="middle" letter-spacing="3">tendr</text>
+  <text x="90" y="165" font-family="-apple-system,'Helvetica Neue',Arial,sans-serif" font-size="7.5" fill="#C89B3C" text-anchor="middle" letter-spacing="2.5">— • WE CURATE YOU CELEBRATE • —</text>
+</svg>`;
+
+function showReveal(){
+  const r=L[lang].rev;
+  const fq=L[lang].finalQ;
+  const opener=fq.opts[wowChoice]?.opener||fq.opts[0].opener;
+
+  go(`<div class="screen wow-scr">
+    <div class="wp" id="ph1">
+      <div class="wow-num" id="wnum">1</div>
+      <div class="wow-num-sub">${r.numSub}</div>
+      <div class="wow-pills">
+        ${r.pills.map((p,i)=>`<div class="wow-pill" id="pill${i}">${p}</div>`).join('')}
+      </div>
+    </div>
+    <div class="wp" id="ph2">
+      <div class="wow-opener">${opener}</div>
+      <div class="wow-pivot-big">What if it was just <em>one?</em></div>
+    </div>
+    <div class="wp" id="ph3">
+      ${LOGO_SVG}
+      <div class="wow-feats">
+        ${r.feats.map((f,i)=>`<div class="wow-feat" id="wf${i}"><span class="wf-i">${f.i}</span><span class="wf-t">${f.t}</span></div>`).join('')}
+      </div>
+      <a class="wow-cta-btn" id="wcta" href="https://tendr.co.in" target="_blank">${r.cta}</a>
+    </div>
+  </div>`);
+
+  setTimeout(()=>document.getElementById('ph1')?.classList.add('in'),80);
+
+  let n=1;
+  const countEl=document.getElementById('wnum');
+  const ci=setInterval(()=>{
+    n++;if(countEl)countEl.textContent=n;
+    if(n>=6)clearInterval(ci);
+  },180);
+
+  setTimeout(()=>{
+    r.pills.forEach((_,i)=>setTimeout(()=>document.getElementById('pill'+i)?.classList.add('in'),i*120));
+  },600);
+
+  setTimeout(()=>{
+    const p1=document.getElementById('ph1');
+    if(p1){p1.classList.remove('in');p1.classList.add('out');}
+    setTimeout(()=>document.getElementById('ph2')?.classList.add('in'),480);
+  },3600);
+
+  setTimeout(()=>{
+    const p2=document.getElementById('ph2');
+    if(p2){p2.classList.remove('in');p2.classList.add('out');}
+    setTimeout(()=>{
+      document.getElementById('ph3')?.classList.add('in');
+      r.feats.forEach((_,i)=>setTimeout(()=>document.getElementById('wf'+i)?.classList.add('in'),280+i*130));
+      setTimeout(()=>document.getElementById('wcta')?.classList.add('in'),900);
+    },480);
+  },6000);
+}
+
+langScreen();
+</script>
+</body>
+</html>
