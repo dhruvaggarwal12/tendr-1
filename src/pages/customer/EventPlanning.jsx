@@ -46,32 +46,11 @@ import { setFilters } from "../../redux/listingFiltersSlice";
 import MakeAGroup_Nav from "../../components/MakeAGroup_Nav.jsx";
 import EventFormSummary from "../../components/EventFormSummary.jsx";
 import { getVendors, getSmartPlan, confirmSmartPlan } from "../../apis/vendorApi.js";
+import { CHAT_PACKAGES } from "../../utils/chatbot.js";
 import AuthModal from "../../components/AuthModal.jsx";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-const CAT_PACKAGES = {
-  Caterer:      [
-    { tier: "Basic",    desc: "Buffet · Up to 40 guests · Veg menu · Basic serving" },
-    { tier: "Standard", desc: "Live counters · Up to 80 guests · Veg/Non-Veg · Staff included" },
-    { tier: "Premium",  desc: "Custom menu · 80+ guests · Live counters · Fine dining setup" },
-  ],
-  Photographer: [
-    { tier: "Basic",    desc: "2-3 hrs coverage · 1 photographer · 100+ edited photos" },
-    { tier: "Standard", desc: "4-6 hrs · 1 photographer · 300+ photos · Highlight reel" },
-    { tier: "Premium",  desc: "Full day · 2 photographers · 500+ photos · Teaser video" },
-  ],
-  Decorator:    [
-    { tier: "Basic",    desc: "Balloon & fairy lights · Basic backdrop · Table decor" },
-    { tier: "Standard", desc: "Themed backdrop · Floral decor · Custom signage · Lighting" },
-    { tier: "Premium",  desc: "Full venue styling · Custom installations · Stage setup" },
-  ],
-  DJ:           [
-    { tier: "Basic",    desc: "3 hrs set · 1 DJ · Standard sound system" },
-    { tier: "Standard", desc: "5 hrs · 1 DJ · Pro sound · LED lighting · Wireless mic" },
-    { tier: "Premium",  desc: "Full night · DJ + assistant · Premium sound · Fog machine" },
-  ],
-};
 import BasicSpeedDial from "../../components/BasicSpeedDial.jsx";
 import SelectedVendorsFloat from "../../components/SelectedVendorsFloat";
 import JourneyProgress from "../../components/JourneyProgress";
@@ -637,7 +616,7 @@ const EventPlanning = () => {
                 <button onClick={() => isLastStep ? submitPlan() : setWizardStep(s => s + 1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#9B7450", padding: 0, fontFamily: "'Outfit',sans-serif" }}>{isLastStep ? "Skip & Confirm →" : "Skip →"}</button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {CAT_PACKAGES.Caterer.map(p => {
+                {CHAT_PACKAGES.Caterer.map(p => {
                   const sel = selectedPackages.Caterer === p.tier;
                   const key = `Caterer-${p.tier}`;
                   const open = !!pkgExpanded[key];
@@ -650,13 +629,18 @@ const EventPlanning = () => {
                         </div>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                          {p.guests && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>For {p.guests} guests</div>}
                         </div>
                         <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }}
                           style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", lineHeight: 1, transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
                       </div>
                       {open && (
-                        <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
-                          <p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p>
+                        <div style={{ padding: "8px 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                            {(p.items || p.desc.split(' · ')).map((item, i) => (
+                              <span key={i} style={{ fontSize: 11, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 9px", color: "#5a3a1a", fontWeight: 500 }}>{item}</span>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -700,14 +684,14 @@ const EventPlanning = () => {
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CAT_PACKAGES.Decorator.map(p => { const sel = selectedPackages.Decorator === p.tier; const key = `Decorator-${p.tier}`; const open = !!pkgExpanded[key]; return (
+              {CHAT_PACKAGES.Decorator.map(p => { const sel = selectedPackages.Decorator === p.tier; const key = `Decorator-${p.tier}`; const open = !!pkgExpanded[key]; return (
                 <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, Decorator: p.tier }))}>
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}</div>
-                    <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                    <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>{p.guests && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>For {p.guests} guests</div>}</div>
                     <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
                   </div>
-                  {open && <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p></div>}
+                  {open && <div style={{ padding: "8px 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{(p.items || p.desc.split(' · ')).map((item, i) => <span key={i} style={{ fontSize: 11, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 9px", color: "#5a3a1a", fontWeight: 500 }}>{item}</span>)}</div></div>}
                 </div>
               ); })}
             </div>
@@ -731,14 +715,14 @@ const EventPlanning = () => {
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CAT_PACKAGES.Photographer.map(p => { const sel = selectedPackages.Photographer === p.tier; const key = `Photographer-${p.tier}`; const open = !!pkgExpanded[key]; return (
+              {CHAT_PACKAGES.Photographer.map(p => { const sel = selectedPackages.Photographer === p.tier; const key = `Photographer-${p.tier}`; const open = !!pkgExpanded[key]; return (
                 <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, Photographer: p.tier }))}>
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}</div>
-                    <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                    <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>{p.guests && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>For {p.guests} guests</div>}</div>
                     <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
                   </div>
-                  {open && <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p></div>}
+                  {open && <div style={{ padding: "8px 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{(p.items || p.desc.split(' · ')).map((item, i) => <span key={i} style={{ fontSize: 11, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 9px", color: "#5a3a1a", fontWeight: 500 }}>{item}</span>)}</div></div>}
                 </div>
               ); })}
             </div>
@@ -761,14 +745,14 @@ const EventPlanning = () => {
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {CAT_PACKAGES.DJ.map(p => { const sel = selectedPackages.DJ === p.tier; const key = `DJ-${p.tier}`; const open = !!pkgExpanded[key]; return (
+              {CHAT_PACKAGES.DJ.map(p => { const sel = selectedPackages.DJ === p.tier; const key = `DJ-${p.tier}`; const open = !!pkgExpanded[key]; return (
                 <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 14px", cursor: "pointer" }} onClick={() => setSelectedPackages(s => ({ ...s, DJ: p.tier }))}>
                     <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: sel ? "#C47A2E" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{sel && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#fff" }} />}</div>
-                    <div style={{ flex: 1, fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>
+                    <div style={{ flex: 1 }}><div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{p.tier}</div>{p.guests && <div style={{ fontSize: 11, color: "#9B7450", marginTop: 1 }}>For {p.guests} guests</div>}</div>
                     <button onClick={e => { e.stopPropagation(); setPkgExpanded(x => ({ ...x, [key]: !open })); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 16, padding: "2px 4px", transform: open ? "rotate(180deg)" : "rotate(0)", transition: "transform 0.2s" }}>⌄</button>
                   </div>
-                  {open && <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><p style={{ fontSize: 12.5, color: "#5a3a1a", lineHeight: 1.6, margin: "10px 0 0" }}>{p.desc}</p></div>}
+                  {open && <div style={{ padding: "8px 14px 12px", borderTop: "1px solid rgba(196,122,46,0.1)" }}><div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{(p.items || p.desc.split(' · ')).map((item, i) => <span key={i} style={{ fontSize: 11, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "3px 9px", color: "#5a3a1a", fontWeight: 500 }}>{item}</span>)}</div></div>}
                 </div>
               ); })}
             </div>

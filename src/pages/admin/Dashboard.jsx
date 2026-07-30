@@ -5881,10 +5881,20 @@ const AdminDashboard = () => {
                         {isExp && plan.wizardAnswers && Object.keys(plan.wizardAnswers).length > 0 && (
                           <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 22px", background: "rgba(196,122,46,0.03)" }}>
                             <div style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Event Brief</div>
-                            {Object.entries(plan.wizardAnswers).map(([key, val]) => (
-                              <div key={key} style={{ display: "flex", gap: 8, marginBottom: 6, fontSize: 13 }}>
-                                <span style={{ color: "#9B7450", minWidth: 140, textTransform: "capitalize" }}>{key.replace(/_/g, ' ')}:</span>
-                                <span style={{ color: "#2C1A0E", fontWeight: 500 }}>{Array.isArray(val) ? val.join(', ') : String(val)}</span>
+                            {Object.entries(plan.wizardAnswers).map(([cat, val]) => (
+                              <div key={cat} style={{ marginBottom: 10 }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "capitalize", marginBottom: 4 }}>{cat.replace(/_/g, ' ')}</div>
+                                {val && typeof val === 'object' && !Array.isArray(val)
+                                  ? Object.entries(val).map(([subKey, subVal]) => (
+                                    <div key={subKey} style={{ display: "flex", gap: 8, marginBottom: 4, fontSize: 12, paddingLeft: 8 }}>
+                                      <span style={{ color: "#9B7450", minWidth: 130, textTransform: "capitalize" }}>{subKey.replace(/_/g, ' ')}:</span>
+                                      <span style={{ color: "#2C1A0E", fontWeight: 500 }}>{Array.isArray(subVal) ? subVal.join(', ') : String(subVal)}</span>
+                                    </div>
+                                  ))
+                                  : (
+                                    <div style={{ fontSize: 12, color: "#2C1A0E", fontWeight: 500, paddingLeft: 8 }}>{Array.isArray(val) ? val.join(', ') : String(val)}</div>
+                                  )
+                                }
                               </div>
                             ))}
                           </div>
