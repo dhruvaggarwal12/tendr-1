@@ -51,18 +51,18 @@ const HERO_FEATURES = [
     emoji: "🎁",
   },
   {
-    tag: "Wedding Stationery",
+    tag: "Stationery by Tendr",
     headline: "Design beautiful stationery for your wedding",
     desc: "Create custom wedding invitations, menus and stationery with our ready-made designer templates.",
-    where: "Memories → Wedding Stationery",
+    where: "Memories → Stationery by Tendr",
     href: "/stationery",
     emoji: "💌",
   },
   {
-    tag: "Wedding Stationery",
+    tag: "Stationery by Tendr",
     headline: "Beautiful stationery for every celebration",
     desc: "From invitations to menus and table cards — order premium printed stationery delivered to your door.",
-    where: "Wedding Stationery",
+    where: "Stationery by Tendr",
     href: "/stationery",
     emoji: "💍",
   },
@@ -338,6 +338,7 @@ const Home = () => {
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
   const [showIndepDay, setShowIndepDay] = useState(false);
+  const [showRakhi, setShowRakhi] = useState(false);
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");
@@ -899,7 +900,15 @@ const Home = () => {
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(255,153,51,0.45)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(255,153,51,0.35)"; }}
               >
-                🇮🇳 Book Services
+                🇮🇳 Plan for Independence Day
+              </button>
+              <button
+                onClick={() => navigate("/rakhi-hampers")}
+                style={{ background: "linear-gradient(135deg, #D4622F 0%, #7B3D9E 100%)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(212,98,47,0.35)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(212,98,47,0.45)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(212,98,47,0.35)"; }}
+              >
+                🪢 Rakhi Hampers
               </button>
             </div>
 
@@ -1174,10 +1183,44 @@ const Home = () => {
               </div>
             </div>
             <div style={{ position: "relative", background: "rgba(255,255,255,0.22)", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap" }}>
-              Book Services →
+              Plan Now →
             </div>
           </div>
           {/* ── END Independence Day strip ── */}
+
+          {/* ── Rakhi Gift Hampers strip ── */}
+          <div
+            onClick={() => navigate("/rakhi-hampers")}
+            style={{
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              width: "100%", marginBottom: 18,
+              background: "linear-gradient(90deg, #D4622F 0%, #9B3FA8 60%, #7B3D9E 100%)",
+              borderRadius: 14, padding: "12px 14px",
+              overflow: "hidden", position: "relative",
+              boxShadow: "0 4px 20px rgba(212,98,47,0.35)",
+              boxSizing: "border-box", gap: 10, cursor: "pointer",
+            }}
+          >
+            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.15)" }} />
+            <div style={{ position: "relative", textAlign: "left", minWidth: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
+                <span style={{ fontSize: 20, flexShrink: 0 }}>🪢</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.85)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
+                  Rakhi Special
+                </span>
+              </div>
+              <div style={{ fontSize: "clamp(0.88rem,3.5vw,1.05rem)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.3 }}>
+                Rakhi Gift Hampers
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                Curated hampers for bhai & behen · Delhi NCR delivery
+              </div>
+            </div>
+            <div style={{ position: "relative", background: "rgba(255,255,255,0.22)", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap" }}>
+              Shop Now →
+            </div>
+          </div>
+          {/* ── END Rakhi Gift Hampers strip ── */}
 
           {/* ── House Party Hub strip — hidden on main ── */}
           {/* <div
@@ -1559,9 +1602,8 @@ const Home = () => {
       {false && <JourneyFlow />}
 
 
-      {/* ── Book a Party Place — admin preview only ── */}
-      {user?.isAdmin && (
-        <section style={{ position: "relative", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
+      {/* ── Book a Party Place ── */}
+      <section style={{ position: "relative", overflow: "hidden", fontFamily: "'Outfit', sans-serif" }}>
           <style>{`
             @media (max-width: 767px) {
               .pp-home-content { padding: 28px 20px 24px !important; flex-direction: column !important; gap: 16px !important; }
@@ -1589,7 +1631,7 @@ const Home = () => {
             <div style={{ flex: 1, minWidth: 260 }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.25)", borderRadius: 100, padding: "3px 12px", marginBottom: 14 }}>
                 <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#CCAB4A", display: "inline-block" }} />
-                <span style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.12em" }}>Admin Preview</span>
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.12em" }}>Villas · Farmhouses · Terraces · Halls</span>
               </div>
               <h2 className="pp-home-title" style={{ fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
                 Book a Party Place<br /><span style={{ color: "#CCAB4A" }}>Through Us</span>
@@ -1598,16 +1640,16 @@ const Home = () => {
                 Villas and flats — fully decorated, catered and ready for your celebration. One booking, everything sorted.
               </p>
               <div className="pp-home-pills" style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 22 }}>
-                {["🏡 Villa", "🏢 Flat"].map(t => (
+                {["🏡 Villa", "🌿 Farmhouse", "🏢 Flat", "🏛 Banquet Hall", "🌇 Terrace"].map(t => (
                   <span key={t} style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.75)", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.15)", borderRadius: 100, padding: "4px 14px" }}>{t}</span>
                 ))}
               </div>
               <div className="pp-home-ctas" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                <button onClick={() => window.open("/party-places", "_blank")}
+                <button onClick={() => window.open("/party-places", "_self")}
                   style={{ padding: "12px 24px", borderRadius: 11, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", transition: "opacity 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.opacity = "0.85"}
                   onMouseLeave={e => e.currentTarget.style.opacity = "1"}>
-                  Browse All Places ↗
+                  Browse All Places →
                 </button>
               </div>
             </div>
@@ -1615,9 +1657,9 @@ const Home = () => {
             {/* Right: stat cards — desktop only */}
             <div className="pp-home-stats" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, width: 260, flexShrink: 0 }}>
               {[
-                { num: "2",    label: "Property types" },
-                { num: "400",  label: "Max guests" },
-                { num: "4",    label: "Packages per venue" },
+                { num: "5",    label: "Venue types" },
+                { num: "400+", label: "Max guests" },
+                { num: "8+",   label: "Occasions covered" },
                 { num: "100%", label: "End-to-end handled" },
               ].map(({ num, label }) => (
                 <div key={label} style={{ background: "rgba(255,255,255,0.07)", borderRadius: 14, padding: "16px 14px", border: "1px solid rgba(255,255,255,0.1)", backdropFilter: "blur(8px)" }}>
@@ -1630,13 +1672,15 @@ const Home = () => {
           </div>
 
           {/* Mobile-only: horizontal venue type tiles */}
-          <div className="pp-mobile-types" style={{ display: "none", position: "relative", zIndex: 2, gap: 10, padding: "0 20px 24px" }}>
+          <div className="pp-mobile-types" style={{ display: "none", position: "relative", zIndex: 2, gap: 10, padding: "0 20px 24px", overflowX: "auto" }}>
             {[
-              { icon: "🏡", label: "Villas", sub: "Spacious · Pool · Garden" },
-              { icon: "🏢", label: "Party Flats", sub: "Decorated · City View" },
+              { icon: "🏡", label: "Villas", sub: "Pool · Lawn · Garden" },
+              { icon: "🌿", label: "Farmhouses", sub: "Open grounds · Stage" },
+              { icon: "🏛", label: "Banquet Halls", sub: "AC · Stage · 250 pax" },
+              { icon: "🌇", label: "Terraces", sub: "City views · Open air" },
             ].map(({ icon, label, sub }) => (
-              <button key={label} onClick={() => window.open("/party-places", "_blank")}
-                style={{ flex: 1, display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(10px)", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textAlign: "left" }}>
+              <button key={label} onClick={() => window.open("/party-places", "_self")}
+                style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(10px)", cursor: "pointer", fontFamily: "'Outfit',sans-serif", textAlign: "left" }}>
                 <span style={{ fontSize: 28 }}>{icon}</span>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 600, color: "#fff", lineHeight: 1.2 }}>{label}</div>
@@ -1646,8 +1690,7 @@ const Home = () => {
             ))}
           </div>
 
-        </section>
-      )}
+      </section>
 
       {/* ── Wedding Stationeries Section ── */}
       {(() => {
@@ -1998,7 +2041,6 @@ const Home = () => {
       {showIndepDay && (
         <IndependenceDayFlow onClose={() => setShowIndepDay(false)} />
       )}
-
     </div>
   );
 };

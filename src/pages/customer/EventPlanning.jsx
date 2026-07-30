@@ -5,6 +5,7 @@ import { EventIdeasPanel } from "../../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import { useChatOverlay } from "../../context/ChatContext";
+import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 
 import {
   ChevronRight,
@@ -93,6 +94,7 @@ const EventPlanning = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { openConciergeChat, openVendorChat } = useChatOverlay();
+  const { canInstall, triggerInstall } = useInstallPrompt();
   const TRANSITION_MS = 350;
   const [activeModal, setActiveModal] = useState(null);
   const [animating, setAnimating] = useState(false);
@@ -884,15 +886,15 @@ const EventPlanning = () => {
               </div>
 
               {/* Install app */}
-              <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{ maxWidth: "85%", background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: "18px 18px 18px 4px", padding: "14px 16px", fontSize: 13, color: BROWN, lineHeight: 1.55 }}>
-                  <div style={{ fontWeight: 700, marginBottom: 4 }}>📲 Get instant updates on your phone</div>
-                  <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 10 }}>Install the Tendr app — we'll ping you the moment your vendors are confirmed.</div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                    <a href="https://play.google.com/store" target="_blank" rel="noreferrer" style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}>▶ Google Play</a>
-                    <a href="https://apps.apple.com" target="_blank" rel="noreferrer" style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: "#1a1a2e", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5 }}> App Store</a>
-                  </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px" }}>
+                <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Install the Tendr App</div>
+                  <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Get notified the moment your vendors are confirmed.</div>
                 </div>
+                <button onClick={() => canInstall ? triggerInstall() : window.open("/install", "_self")} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                  Install →
+                </button>
               </div>
 
               {/* Next steps */}
@@ -905,15 +907,6 @@ const EventPlanning = () => {
                       <span style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.5 }}>{s.text}</span>
                     </div>
                   ))}
-                  <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.12)" }}>
-                    <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 8 }}>While you wait, get a head start:</div>
-                    <button
-                      onClick={() => window.open('/invitation-builder', '_blank')}
-                      style={{ width: "100%", padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "linear-gradient(135deg,rgba(196,122,46,0.06),rgba(204,171,74,0.04))", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", display: "flex", alignItems: "center", gap: 8 }}
-                    >
-                      💌 Build Your Invitation →
-                    </button>
-                  </div>
                 </div>
               </div>
 

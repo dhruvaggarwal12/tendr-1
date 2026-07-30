@@ -13,7 +13,7 @@ import { useChatOverlay } from "../context/ChatContext";
 import { useStationeryCart } from "../context/StationeryCartContext";
 import GlobalStationeryCartDrawer from "./GlobalStationeryCartDrawer";
 import { selectCartCount as selectGhCartCount, selectCartItems as selectGhCartItems, selectGhConfirmed, setGhConfirmed, clearCart as clearGhCart, selectGhDeliveryForm } from "../redux/giftHamperCartSlice";
-import { selectStConfirmed, selectStForm, selectStCartSnapshot, clearStBooking } from "../redux/stationeryBookingSlice";
+import { selectStConfirmed, selectStForm, selectStCartSnapshot, selectStCustomizations, clearStBooking } from "../redux/stationeryBookingSlice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -41,6 +41,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const stConfirmed          = useSelector(selectStConfirmed);
   const stForm               = useSelector(selectStForm);
   const stCartSnapshot       = useSelector(selectStCartSnapshot);
+  const stCustomizations     = useSelector(selectStCustomizations);
   const faItems              = useSelector(selectFunCartItems);
   const faTotal              = useSelector(selectFunCartTotal);
   const [funCartOpen, setFunCartOpen] = useState(false);
@@ -375,7 +376,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                         }
                         setShowActiveChats(false);
                         if (convo.chatType === "concierge" || convo.chatType === "support") {
-                          openConciergeChat(convo._id);
+                          openConciergeChat(convo._id, convo.chatType === "support" ? true : !!convo.chatApproved);
                           setTimeout(() => {
                             document.dispatchEvent(new CustomEvent("tendr:set-from-active-chats"));
                           }, 50);
@@ -888,11 +889,28 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             lines.push("");
           }
           if (stConfirmed && stCartSnapshot.length > 0) {
-            lines.push("💒 *WEDDING STATIONERY*");
+            lines.push("✦ *STATIONERY BY TENDR*");
             stCartSnapshot.forEach(({ item, quantity }, i) => {
               const price = item.priceOnRequest ? "Price on request" : item.priceRange || (item.startingPrice ? `₹${(item.startingPrice * quantity).toLocaleString("en-IN")}` : "—");
               lines.push(`${i + 1}. ${item.name} × ${quantity} ${item.unit || "pcs"} — ${price}`);
             });
+            if (stCustomizations) {
+              const custLines = [];
+              stCartSnapshot.forEach(({ item }) => {
+                const key = item._id || item.id;
+                const c = stCustomizations[key] || {};
+                const filled = Object.entries(c).filter(([, v]) => v?.trim());
+                if (filled.length > 0) {
+                  custLines.push(`_${item.name}:_`);
+                  filled.forEach(([k, v]) => custLines.push(`  • ${v}`));
+                }
+              });
+              if (custLines.length > 0) {
+                lines.push("");
+                lines.push("*✦ Customisation Details:*");
+                custLines.forEach(l => lines.push(l));
+              }
+            }
             if (stForm) {
               lines.push("");
               lines.push("*Event Details:*");
@@ -983,7 +1001,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                 {/* Stationery section */}
                 {stConfirmed && stCartSnapshot.length > 0 && (
                   <div style={{ marginBottom: 20, padding: 16, background: "rgba(122,58,30,0.06)", borderRadius: 14, border: "1.5px solid rgba(122,58,30,0.15)" }}>
-                    <div style={{ fontSize: 12, fontWeight: 800, color: "#7A3A1E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>💒 Wedding Stationery</div>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#7A3A1E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>✦ Stationery by Tendr</div>
                     {stCartSnapshot.map(({ item, quantity }) => (
                       <div key={item._id || item.id} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#5a3a1a", marginBottom: 6 }}>
                         <span style={{ flex: 1 }}>{item.name} × {quantity} {item.unit || "pcs"}</span>
@@ -992,6 +1010,14 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                         </span>
                       </div>
                     ))}
+                    {stCustomizations && stCartSnapshot.some(({ item }) => {
+                      const c = stCustomizations[item._id || item.id] || {};
+                      return Object.values(c).some(v => v?.trim());
+                    }) && (
+                      <div style={{ marginTop: 10, fontSize: 11, color: "#7A3A1E", background: "rgba(122,58,30,0.05)", borderRadius: 8, padding: "7px 12px", lineHeight: 1.5, border: "1px solid rgba(122,58,30,0.12)" }}>
+                        ✦ Customisation details shared
+                      </div>
+                    )}
                     {stForm && (
                       <div style={{ marginTop: 10, fontSize: 12, color: "#9B7450", background: "#fff", borderRadius: 8, padding: "8px 12px", lineHeight: 1.6 }}>
                         <div style={{ fontWeight: 700, color: "#5a3a1a", marginBottom: 4 }}>Event Details</div>

@@ -498,11 +498,12 @@ const sidebar_arr = [
   { label: "Chat",             icon: <MessageCircle size={22} />,     key: "Chat" },
   { label: "Chat-Support",     icon: <MessagesSquare size={22} />,    key: "ChatSupport" },
   { label: "Gift Hampers",     icon: <span style={{ fontSize: 18 }}>🎁</span>, key: "GiftHampers" },
+  { label: "Rakhi Hampers",   icon: <span style={{ fontSize: 18 }}>🪢</span>, key: "RakhiHampers" },
   { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
   { label: "Smart Plans",     icon: <span style={{ fontSize: 16 }}>🗂</span>,  key: "SmartPlans" },
-  { label: "Wedding Stationery",    icon: <span style={{ fontSize: 16 }}>💍</span>,  key: "Stationery" },
+  { label: "Stationery by Tendr",   icon: <span style={{ fontSize: 16 }}>✦</span>,   key: "Stationery" },
   { label: "Rec. Intelligence",     icon: <span style={{ fontSize: 16 }}>📊</span>,  key: "Recommendations" },
   { label: "Community",             icon: <span style={{ fontSize: 16 }}>🌟</span>,  key: "Community" },
   { label: "Event Day",             icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "EventDay" },
@@ -818,6 +819,8 @@ const AdminDashboard = () => {
   const [chatRequests, setChatRequests] = useState([]);
   const [ghOrders, setGhOrders]         = useState([]);
   const [ghLoading, setGhLoading]       = useState(false);
+  const [rakhiOrders, setRakhiOrders]   = useState([]);
+  const [rakhiLoading, setRakhiLoading] = useState(false);
   const [selectedGhId, setSelectedGhId] = useState(null);
   const [ghEdits, setGhEdits]           = useState({}); // { [orderId]: items[] }
   const [ghSaving, setGhSaving]         = useState(false);
@@ -827,11 +830,11 @@ const AdminDashboard = () => {
   const [ghSamplesVendorFilter, setGhSamplesVendorFilter] = useState("");
   const [ghSampleFile, setGhSampleFile]       = useState(null);
   const [ghSamplePriceRange, setGhSamplePriceRange] = useState("");
+  const [ghSampleUploading, setGhSampleUploading] = useState(false);
+  const [ghSampleMsg, setGhSampleMsg]         = useState("");
   const [ghSampleCategory, setGhSampleCategory] = useState([]);
   const [ghSampleOccasion, setGhSampleOccasion] = useState([]);
   const [ghSampleMinQty, setGhSampleMinQty]     = useState("");
-  const [ghSampleUploading, setGhSampleUploading] = useState(false);
-  const [ghSampleMsg, setGhSampleMsg]         = useState("");
   const [ghEditingId, setGhEditingId]         = useState(null);
   const [ghEditData, setGhEditData]           = useState({});
   const [ghFindFile, setGhFindFile]     = useState(null);
@@ -879,6 +882,11 @@ const AdminDashboard = () => {
   const [adminGalleryPhotos, setAdminGalleryPhotos] = useState([]);
   const [adminGalleryLoading, setAdminGalleryLoading] = useState(false);
   const [adminGallerySelected, setAdminGallerySelected] = useState([]);
+  // Independence Day photos inline panel in chat
+  const [indepDayPanelOpen, setIndepDayPanelOpen] = useState(false);
+  const [indepDayPhotos, setIndepDayPhotos] = useState([]);
+  const [indepDayPhotosLoading, setIndepDayPhotosLoading] = useState(false);
+  const [indepDayVenueFilter, setIndepDayVenueFilter] = useState("all");
   // Gallery / Photos
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoaded, setGalleryLoaded] = useState(false);
@@ -1103,6 +1111,18 @@ const AdminDashboard = () => {
       .catch((e) => { if (e?.message !== '401') console.error('payments/stats fetch:', e); });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
+
+  // Fetch Rakhi hamper orders when tab is active (reuses gift-hamper-orders endpoint with type filter)
+  useEffect(() => {
+    if (activeDropdown !== 'rakhihampers' || !token || !isAdminToken) return;
+    setRakhiLoading(true);
+    adminFetch(`${BASE_URL}/admin/gift-hamper-orders?type=rakhi`)
+      .then(r => r.json())
+      .then(d => setRakhiOrders(d.orders || []))
+      .catch((e) => { if (e?.message !== '401') console.error('rakhi-hampers fetch:', e); })
+      .finally(() => setRakhiLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDropdown, token]);
 
   // Fetch gift hamper orders when tab is active
   useEffect(() => {
@@ -3842,29 +3862,47 @@ const AdminDashboard = () => {
                   <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
                     {/* Header */}
                     <div className="p-3 sm:p-4 border-b border-[#F1E1A8] flex items-center justify-between flex-wrap gap-2">
-                      {/* User */}
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                          {getInitials(selectedChat.customerId.name)}
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", flex: 1 }}>
+                        {/* User */}
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
+                            {getInitials(selectedChat.customerId.name)}
+                          </div>
+                          <span className="font-semibold text-sm sm:text-lg">
+                            {selectedChat.customerId.name}
+                          </span>
                         </div>
-                        <span className="font-semibold text-sm sm:text-lg">
-                          {selectedChat.customerId.name}
-                        </span>
+
+                        <span className="mx-2 text-gray-400 hidden sm:inline">-</span>
+
+                        {/* Vendor */}
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
+                            {getInitials(selectedChat.vendorId?.name || selectedChat.vendorName || "V")}
+                          </div>
+                          <span className="font-semibold text-sm sm:text-lg">
+                            {selectedChat.vendorId?.name || selectedChat.vendorName}
+                          </span>
+                        </div>
                       </div>
 
-                      <span className="mx-2 text-gray-400 hidden sm:inline">
-                        -
-                      </span>
-
-                      {/* Vendor */}
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
-                          {getInitials(selectedChat.vendorId?.name || selectedChat.vendorName || "V")}
-                        </div>
-                        <span className="font-semibold text-sm sm:text-lg">
-                          {selectedChat.vendorId?.name || selectedChat.vendorName}
-                        </span>
-                      </div>
+                      {/* WhatsApp notify button */}
+                      {(() => {
+                        const phone = (selectedChat.customerId?.phoneNumber || selectedChat.customerId?.whatsappNumber || '').replace(/\D/g, '').slice(-10);
+                        if (!phone) return null;
+                        const name = selectedChat.customerId?.name || 'there';
+                        const waMsg = encodeURIComponent(`Hi ${name}! You have a new message on Tendr.\n\nOpen Active Chats to view → https://tendr.co.in\n\n— Team Tendr`);
+                        return (
+                          <a
+                            href={`https://wa.me/91${phone}?text=${waMsg}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 12, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}
+                          >
+                            📲 Notify on WhatsApp
+                          </a>
+                        );
+                      })()}
                     </div>
 
                     {/* Event details strip */}
@@ -4161,6 +4199,63 @@ const AdminDashboard = () => {
                           style={{ display: "block", width: "100%", padding: "9px 10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
                           🖼️ From Gallery
                         </button>
+
+                        {/* Independence Day photos inline panel */}
+                        <button onClick={() => {
+                          const opening = !indepDayPanelOpen;
+                          setIndepDayPanelOpen(opening);
+                          if (opening && !indepDayPhotos.length) {
+                            setIndepDayPhotosLoading(true);
+                            fetch(`${BASE_URL}/independence-day-photos`)
+                              .then(r => r.json())
+                              .then(data => { setIndepDayPhotos(Array.isArray(data) ? data : []); setIndepDayPhotosLoading(false); })
+                              .catch(() => setIndepDayPhotosLoading(false));
+                          }
+                        }} style={{ display: "block", width: "100%", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(255,153,51,0.4)", background: indepDayPanelOpen ? "rgba(255,153,51,0.08)" : "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
+                          🇮🇳 Independence Day Photos {indepDayPanelOpen ? "▲" : "▼"}
+                        </button>
+
+                        {indepDayPanelOpen && (
+                          <div style={{ border: "1px solid rgba(255,153,51,0.2)", borderRadius: 10, overflow: "hidden", background: "#fffdf8" }}>
+                            {/* Venue filter chips */}
+                            <div style={{ display: "flex", gap: 4, padding: "7px 8px", overflowX: "auto", borderBottom: "1px solid rgba(255,153,51,0.15)" }}>
+                              {[{ id: "all", label: "All" }, ...VENUE_TYPES_IND].map(v => (
+                                <button key={v.id} onClick={() => setIndepDayVenueFilter(v.id)}
+                                  style={{ flexShrink: 0, padding: "3px 9px", borderRadius: 20, border: `1.5px solid ${indepDayVenueFilter === v.id ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: indepDayVenueFilter === v.id ? "#C47A2E" : "#fff", color: indepDayVenueFilter === v.id ? "#fff" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
+                                  {v.icon ? `${v.icon} ` : ""}{v.label}
+                                </button>
+                              ))}
+                            </div>
+                            {indepDayPhotosLoading ? (
+                              <div style={{ padding: "14px 10px", textAlign: "center", fontSize: 12, color: "#9B7450" }}>Loading…</div>
+                            ) : (() => {
+                              const filtered = indepDayVenueFilter === "all" ? indepDayPhotos : indepDayPhotos.filter(p => p.venueType === indepDayVenueFilter);
+                              if (!filtered.length) return <div style={{ padding: "14px 10px", textAlign: "center", fontSize: 12, color: "#bbb" }}>No photos yet</div>;
+                              return (
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, padding: 7, maxHeight: 240, overflowY: "auto" }}>
+                                  {filtered.map(photo => (
+                                    <div key={photo._id} onClick={() => {
+                                      if (!selectedChat?._id || !adminSocketRef.current) return;
+                                      const content = `[img:${photo.url}]`;
+                                      const m = { conversationId: selectedChat._id, sender: 'customer-care', content };
+                                      adminSocketRef.current.emit('send_message', m);
+                                      setCurrentConversation(prev => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
+                                    }} style={{ cursor: "pointer", borderRadius: 7, overflow: "hidden", position: "relative" }}>
+                                      <img src={photo.url} alt={photo.title || "style"} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
+                                      <div style={{ position: "absolute", inset: 0, background: "rgba(196,122,46,0)", transition: "background 0.15s" }}
+                                        onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.18)"}
+                                        onMouseLeave={e => e.currentTarget.style.background = "rgba(196,122,46,0)"}
+                                      />
+                                      {photo.title && (
+                                        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.45)", color: "#fff", fontSize: 9, padding: "3px 5px", lineHeight: 1.3 }}>{photo.title}</div>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -4356,7 +4451,20 @@ const AdminDashboard = () => {
                         </span>
                       </div>
 
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                        {/* WhatsApp notify button */}
+                        {(() => {
+                          const phone = (selectedChat.customerId?.phoneNumber || selectedChat.customerId?.whatsappNumber || '').replace(/\D/g, '').slice(-10);
+                          if (!phone) return null;
+                          const name = selectedChat.customerId?.name || 'there';
+                          const waMsg = encodeURIComponent(`Hi ${name}! You have a new message on Tendr.\n\nOpen Active Chats to view → https://tendr.co.in\n\n— Team Tendr`);
+                          return (
+                            <a href={`https://wa.me/91${phone}?text=${waMsg}`} target="_blank" rel="noopener noreferrer"
+                              style={{ padding: "5px 10px", borderRadius: 8, background: "#25D366", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 4, whiteSpace: "nowrap" }}>
+                              📲 Notify on WhatsApp
+                            </a>
+                          );
+                        })()}
                         <span className="text-xs sm:text-sm text-gray-500">
                           {formatTimeIST(selectedChat.updatedAt)}
                         </span>
@@ -4827,7 +4935,7 @@ const AdminDashboard = () => {
                         return (
                           <button key={o} type="button"
                             onClick={() => setGhSampleOccasion(prev => checked ? prev.filter(x => x !== o) : [...prev, o])}
-                            style={{ padding: "4px 10px", borderRadius: 20, fontSize: 11, fontWeight: checked ? 700 : 500, border: `1px solid ${checked ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked ? "#C47A2E" : "#fff", color: checked ? "#fff" : "#7A5535", cursor: "pointer" }}
+                            style={{ padding: "4px 9px", borderRadius: 20, fontSize: 11, fontWeight: checked ? 700 : 500, border: `1px solid ${checked ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked ? "#C47A2E" : "#fff", color: checked ? "#fff" : "#7A5535", cursor: "pointer" }}
                           >{o}</button>
                         );
                       })}
@@ -5037,6 +5145,66 @@ const AdminDashboard = () => {
             </div>
           );
         })()}
+
+        {/* ── Rakhi Hampers Orders ── */}
+        {activeDropdown === "rakhihampers" && (
+          <div style={{ padding: "28px 24px", maxWidth: 900, margin: "0 auto", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+              <span style={{ fontSize: 28 }}>🪢</span>
+              <div>
+                <div style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E" }}>Rakhi Hamper Orders</div>
+                <div style={{ fontSize: 13, color: "#9B7450", marginTop: 2 }}>Orders placed via the Rakhi Gift Hampers page</div>
+              </div>
+            </div>
+
+            {rakhiLoading ? (
+              <div style={{ padding: "48px 0", textAlign: "center", color: "#9B7450", fontSize: 14 }}>Loading Rakhi orders…</div>
+            ) : rakhiOrders.length === 0 ? (
+              <div style={{
+                padding: "48px 24px", textAlign: "center",
+                background: "rgba(212,98,47,0.05)", borderRadius: 16,
+                border: "1.5px dashed rgba(212,98,47,0.25)",
+              }}>
+                <div style={{ fontSize: 36, marginBottom: 12 }}>🪢</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>No Rakhi orders yet</div>
+                <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.6 }}>
+                  Orders from the Rakhi Gift Hampers page will appear here.<br />
+                  They currently flow through the same chat/Baat Karo funnel.
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {rakhiOrders.map(order => (
+                  <div key={order._id} style={{
+                    background: "#fff", borderRadius: 14, padding: "16px 20px",
+                    border: "1.5px solid rgba(212,98,47,0.2)",
+                    boxShadow: "0 2px 12px rgba(212,98,47,0.08)",
+                  }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                      <div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>
+                          {order.customerName || order.customerId?.name || "Customer"}
+                        </div>
+                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3 }}>
+                          {order.eventType || "Rakhi Hamper"} · {order.eventDate ? new Date(order.eventDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
+                        </div>
+                        {order.notes && (
+                          <div style={{ fontSize: 12, color: "#7A5535", marginTop: 6, fontStyle: "italic" }}>"{order.notes}"</div>
+                        )}
+                      </div>
+                      <div style={{
+                        padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700,
+                        background: order.status === "confirmed" ? "rgba(34,197,94,0.1)" : "rgba(212,98,47,0.1)",
+                        color: order.status === "confirmed" ? "#15803D" : "#D4622F",
+                        flexShrink: 0,
+                      }}>{order.status || "pending"}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ── Invoices ── */}
         {activeDropdown === "invoices" && (() => {

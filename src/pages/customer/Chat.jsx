@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 import { Paperclip, X as XIcon, Image as ImageIcon, CheckCircle2 } from "lucide-react";
 import { getBotFlow, buildSummaryMessage } from "../../utils/chatbot";
 import { useSelector, useDispatch } from "react-redux";
@@ -73,6 +74,7 @@ const Chat = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const location = useLocation();
+  const { canInstall, triggerInstall } = useInstallPrompt();
 
   const {
     vendor: navVendor,
@@ -861,13 +863,15 @@ const Chat = () => {
                     <div key={i} style={{ fontSize: 12.5, color: "#5a3a1a" }}>{s}</div>
                   ))}
                 </div>
-                <div style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 4 }}>📲 Get updates instantly</div>
-                  <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 8 }}>Install the Tendr app to get notified the moment your vendor is confirmed.</div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <a href="https://play.google.com/store" target="_blank" rel="noreferrer" style={{ padding: "6px 12px", borderRadius: 8, background: "#1a1a2e", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none" }}>▶ Google Play</a>
-                    <a href="https://apps.apple.com" target="_blank" rel="noreferrer" style={{ padding: "6px 12px", borderRadius: 8, background: "#1a1a2e", color: "#fff", fontSize: 11, fontWeight: 700, textDecoration: "none" }}> App Store</a>
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.28)", borderRadius: 12, padding: "12px 14px", marginBottom: 10 }}>
+                  <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 12, fontWeight: 800, color: "#C47A2E", marginBottom: 2 }}>Install the Tendr App</div>
+                    <div style={{ fontSize: 11, color: "#7A5535", lineHeight: 1.4 }}>Get notified the moment your vendor is confirmed.</div>
                   </div>
+                  <button onClick={() => canInstall ? triggerInstall() : window.open("/install", "_self")} style={{ flexShrink: 0, padding: "6px 12px", borderRadius: 8, background: "#C47A2E", color: "#fff", fontSize: 11, fontWeight: 700, border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                    Install →
+                  </button>
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>What happens next</div>
                 {[{ icon: "⏳", text: "WhatsApp confirmation usually within 2–4 hrs" }, { icon: "💬", text: "Once approved, you can message the vendor directly" }, { icon: "✅", text: "Finalise and pay after chatting" }].map((s, i) => (
