@@ -13,7 +13,7 @@ const SEARCH_SUGGESTIONS = [
   { text: "Photographers in Delhi" },
   { text: "Caterers in Noida" },
   { text: "DJ in Gurgaon" },
-  { text: "Wedding Stationeries",               type: "page", href: "/stationery" },
+  { text: "Stationery by Tendr",               type: "page", href: "/stationery" },
   { text: "Gift Hampers",               type: "page", href: "/gift-hampers-cakes" },
   { text: "Budget Allocator",                   type: "page", href: "/budget-picker" },
   // { text: "Decor Finder", type: "page", href: "/decor-finder" }, // disabled
@@ -291,7 +291,7 @@ const Navbar = ({
       label: "Our Products",
       items: [
         { label: "Gift Hampers", href: "/gift-hampers-cakes" },
-        { label: "Wedding Stationeries", href: "/stationery" },
+        { label: "Stationery by Tendr", href: "/stationery" },
         { label: "Fun Activities",       href: "/fun-activities" },
       ],
     },
@@ -704,7 +704,8 @@ const Navbar = ({
                               { label: "Chat Requests",   count: adminCounts?.chatRequests,  section: "chatrequests", color: "#b45309" },
                               { label: "Vendor Apps",     count: adminCounts?.vendorApps,    section: "vendors",      color: "#7c3aed" },
                               { label: "Support",         count: adminCounts?.supportChats,  section: "chatsupport",  color: "#0369a1" },
-                              { label: "Concierge",       count: adminCounts?.conciergeChats,section: "chatconcierge",color: "#0369a1" },
+                              { label: "Smart Plans",     count: adminCounts?.smartPlanChats,section: "smartplans",   color: "#16a34a" },
+                              { label: "Chat",            count: adminCounts?.activeChats,   section: "chat",         color: "#0369a1" },
                               { label: "Change Requests", count: adminCounts?.changeRequests, section: "bookings",    color: "#c0392b" },
                             ].map(({ label, count, section, color }) => (
                               <button key={label}
