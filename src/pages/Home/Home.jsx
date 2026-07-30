@@ -902,14 +902,6 @@ const Home = () => {
               >
                 🇮🇳 Plan for Independence Day
               </button>
-              <button
-                onClick={() => navigate("/rakhi-hampers")}
-                style={{ background: "linear-gradient(135deg, #D4622F 0%, #7B3D9E 100%)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(212,98,47,0.35)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(212,98,47,0.45)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(212,98,47,0.35)"; }}
-              >
-                🪢 Rakhi Hampers
-              </button>
             </div>
 
           </div>
@@ -1188,39 +1180,6 @@ const Home = () => {
           </div>
           {/* ── END Independence Day strip ── */}
 
-          {/* ── Rakhi Gift Hampers strip ── */}
-          <div
-            onClick={() => navigate("/rakhi-hampers")}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              width: "100%", marginBottom: 18,
-              background: "linear-gradient(90deg, #D4622F 0%, #9B3FA8 60%, #7B3D9E 100%)",
-              borderRadius: 14, padding: "12px 14px",
-              overflow: "hidden", position: "relative",
-              boxShadow: "0 4px 20px rgba(212,98,47,0.35)",
-              boxSizing: "border-box", gap: 10, cursor: "pointer",
-            }}
-          >
-            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.15)" }} />
-            <div style={{ position: "relative", textAlign: "left", minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>🪢</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.85)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
-                  Rakhi Special
-                </span>
-              </div>
-              <div style={{ fontSize: "clamp(0.88rem,3.5vw,1.05rem)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.3 }}>
-                Rakhi Gift Hampers
-              </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                Curated hampers for bhai & behen · Delhi NCR delivery
-              </div>
-            </div>
-            <div style={{ position: "relative", background: "rgba(255,255,255,0.22)", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap" }}>
-              Shop Now →
-            </div>
-          </div>
-          {/* ── END Rakhi Gift Hampers strip ── */}
 
           {/* ── House Party Hub strip — hidden on main ── */}
           {/* <div

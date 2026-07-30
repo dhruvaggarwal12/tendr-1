@@ -498,7 +498,6 @@ const sidebar_arr = [
   { label: "Chat",             icon: <MessageCircle size={22} />,     key: "Chat" },
   { label: "Chat-Support",     icon: <MessagesSquare size={22} />,    key: "ChatSupport" },
   { label: "Gift Hampers",     icon: <span style={{ fontSize: 18 }}>🎁</span>, key: "GiftHampers" },
-  { label: "Rakhi Hampers",   icon: <span style={{ fontSize: 18 }}>🪢</span>, key: "RakhiHampers" },
   { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
@@ -5146,65 +5145,6 @@ const AdminDashboard = () => {
           );
         })()}
 
-        {/* ── Rakhi Hampers Orders ── */}
-        {activeDropdown === "rakhihampers" && (
-          <div style={{ padding: "28px 24px", maxWidth: 900, margin: "0 auto", fontFamily: "'Outfit', sans-serif" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-              <span style={{ fontSize: 28 }}>🪢</span>
-              <div>
-                <div style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E" }}>Rakhi Hamper Orders</div>
-                <div style={{ fontSize: 13, color: "#9B7450", marginTop: 2 }}>Orders placed via the Rakhi Gift Hampers page</div>
-              </div>
-            </div>
-
-            {rakhiLoading ? (
-              <div style={{ padding: "48px 0", textAlign: "center", color: "#9B7450", fontSize: 14 }}>Loading Rakhi orders…</div>
-            ) : rakhiOrders.length === 0 ? (
-              <div style={{
-                padding: "48px 24px", textAlign: "center",
-                background: "rgba(212,98,47,0.05)", borderRadius: 16,
-                border: "1.5px dashed rgba(212,98,47,0.25)",
-              }}>
-                <div style={{ fontSize: 36, marginBottom: 12 }}>🪢</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>No Rakhi orders yet</div>
-                <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.6 }}>
-                  Orders from the Rakhi Gift Hampers page will appear here.<br />
-                  They currently flow through the same chat/Baat Karo funnel.
-                </div>
-              </div>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {rakhiOrders.map(order => (
-                  <div key={order._id} style={{
-                    background: "#fff", borderRadius: 14, padding: "16px 20px",
-                    border: "1.5px solid rgba(212,98,47,0.2)",
-                    boxShadow: "0 2px 12px rgba(212,98,47,0.08)",
-                  }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
-                      <div>
-                        <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>
-                          {order.customerName || order.customerId?.name || "Customer"}
-                        </div>
-                        <div style={{ fontSize: 12, color: "#9B7450", marginTop: 3 }}>
-                          {order.eventType || "Rakhi Hamper"} · {order.eventDate ? new Date(order.eventDate).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" }) : "—"}
-                        </div>
-                        {order.notes && (
-                          <div style={{ fontSize: 12, color: "#7A5535", marginTop: 6, fontStyle: "italic" }}>"{order.notes}"</div>
-                        )}
-                      </div>
-                      <div style={{
-                        padding: "4px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700,
-                        background: order.status === "confirmed" ? "rgba(34,197,94,0.1)" : "rgba(212,98,47,0.1)",
-                        color: order.status === "confirmed" ? "#15803D" : "#D4622F",
-                        flexShrink: 0,
-                      }}>{order.status || "pending"}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* ── Invoices ── */}
         {activeDropdown === "invoices" && (() => {

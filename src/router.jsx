@@ -54,6 +54,8 @@ const VendorRegistration  = lazy(() => import("./pages/vendor/Registration"));
 const ApplicationStatus   = lazy(() => import("./pages/vendor/ApplicationStatus"));
 const VendorOnboarding    = lazy(() => import("./pages/vendor/Onboarding"));
 const VendorDashboard     = lazy(() => import("./pages/vendor/Dashboard"));
+const VendorProfile       = lazy(() => import("./pages/vendor/Profile"));
+const VendorBookings      = lazy(() => import("./pages/vendor/Bookings"));
 const VendorChatList      = lazy(() => import("./pages/vendor/ChatList"));
 const VendorChat          = lazy(() => import("./pages/vendor/Chat"));
 const CorporateLogin      = lazy(() => import("./pages/corporate/Login"));
@@ -67,6 +69,11 @@ const ChooseBooking       = lazy(() => import("./pages/customer/ChooseBooking"))
 const BaatKaro            = lazy(() => import("./pages/customer/BaatKaro"));
 const GiftHampersCakes    = lazy(() => import('./pages/customer/GiftHampersCakes'));
 const GiftingHub          = lazy(() => import('./pages/customer/GiftingHub'));
+const EquipmentListGenerator = lazy(() => import('./pages/tools/EquipmentListGenerator'));
+const InvitationBuilder      = lazy(() => import('./pages/tools/InvitationBuilder'));
+const EventPlanHub           = lazy(() => import('./pages/plan/EventPlanHub'));
+const CheckboxPicker         = lazy(() => import('./pages/checkbox/CheckboxPicker'));
+const PrebuiltCheckbox       = lazy(() => import('./pages/checkbox/PrebuiltCheckbox'));
 // const DecorFinder      = lazy(() => import('./pages/tools/DecorFinder.jsx')); // disabled
 const FindByStyle         = lazy(() => import('./pages/customer/FindByStyle.jsx'));
 const GuestList           = lazy(() => import('./pages/tools/GuestList.jsx'));
@@ -106,10 +113,13 @@ const CelebrationHub      = lazy(() => import("./pages/celebration-hub/Celebrati
 const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivitiesPage.jsx"));
 const HomeWeddingPlanner  = lazy(() => import("./pages/home-wedding/HomeWeddingPlanner.jsx"));
 const VendorLanding       = lazy(() => import("./pages/vendor/VendorLanding.jsx"));
+const TopRatedVendors     = lazy(() => import("./pages/customer/TopRatedVendors.jsx"));
 const HousePartyHub       = lazy(() => import("./pages/house-party/HousePartyHub.jsx"));
 const PotluckJoin         = lazy(() => import("./pages/house-party/PotluckJoin.jsx"));
 const InviteRSVP          = lazy(() => import("./pages/house-party/InviteRSVP.jsx"));
 const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage.jsx"));
+const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.jsx"));
+const JoinRoom            = lazy(() => import("./pages/join-room/JoinRoom.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -266,12 +276,13 @@ const router = createBrowserRouter([
     path: '/vendor',
     errorElement: <ErrorPage />,
     children: [
-      { path: "register", element: <VendorOnboarding /> },
-      { path: "status", element: <ApplicationStatus /> },
-      // Vendor dashboard disabled for now
-      // { path: "dashboard", element: <VendorDashboard /> },
-      // { path: "chats", element: <VendorChatList /> },
-      // { path: "chat", element: <VendorChat /> },
+      { path: "register",  element: <VendorOnboarding /> },
+      { path: "status",    element: <ApplicationStatus /> },
+      { path: "dashboard", element: <VendorDashboard /> },
+      { path: "profile",   element: <VendorProfile /> },
+      { path: "bookings",  element: <VendorBookings /> },
+      { path: "chats",     element: <VendorChatList /> },
+      { path: "chat",      element: <VendorChat /> },
     ],
   },
 
@@ -429,6 +440,19 @@ const router = createBrowserRouter([
     element: <GiftingHub />,
     errorElement: <ErrorPage />,
   },
+  { path: '/plan',             element: <EventPlanHub />,           errorElement: <ErrorPage /> },
+  { path: '/checklist-picker', element: <CheckboxPicker />,         errorElement: <ErrorPage /> },
+  { path: '/prebuilt-checklist',element: <PrebuiltCheckbox />,      errorElement: <ErrorPage /> },
+  {
+    path: '/equipment-list',
+    element: <EquipmentListGenerator />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/invitation-builder',
+    element: <InvitationBuilder />,
+    errorElement: <ErrorPage />,
+  },
   { path: '/memories', element: <MemoriesPage />, errorElement: <ErrorPage /> },
   { path: '/memories/:id', element: <MemoryProfile />, errorElement: <ErrorPage /> },
   { path: '/stationery', element: <WeddingStationery />, errorElement: <ErrorPage /> },
@@ -448,6 +472,14 @@ const router = createBrowserRouter([
   { path: '/house-party/potluck/:roomId', element: <PotluckJoin />, errorElement: <ErrorPage /> },
   { path: '/house-party/invite/:inviteId', element: <InviteRSVP />, errorElement: <ErrorPage /> },
   { path: '/house-party/photo-wall/:wallId', element: <PhotoWallPage />, errorElement: <ErrorPage /> },
+
+  // ── Occasion Party Hubs ─────────────────────────────────────────────────────
+  { path: '/hub/:occasion', element: <OccasionHub />, errorElement: <ErrorPage /> },
+
+  { path: '/top-rated/:category', element: <TopRatedVendors />, errorElement: <ErrorPage /> },
+
+  // ── Party Room direct join link (/join/A3F2B1) ───────────────────────────
+  { path: '/join/:code', element: <JoinRoom />, errorElement: <ErrorPage /> },
 
   // ── Programmatic vendor SEO landing pages (/decorator-in-delhi, etc.) ───
   { path: '/:slug', element: <VendorLanding />, errorElement: <ErrorPage /> },
