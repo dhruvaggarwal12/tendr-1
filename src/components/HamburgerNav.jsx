@@ -9,6 +9,8 @@ import tendrLogo from "../assets/logos/tendr-logo-secondary.png";
 import { FaChevronDown, FaTimes, FaInstagram, FaFacebookF, FaWhatsapp } from "react-icons/fa";
 import SearchOverlay from "./SearchOverlay";
 import CompareModal from "./CompareModal";
+import TimelinePopup from "./TimelinePopup";
+import BudgetPopup from "./BudgetPopup";
 
 const font = "'Outfit', sans-serif";
 const STEPS = ["Plan", "Browse", "Chat", "Pay"];
@@ -79,6 +81,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   const [searchQuery,      setSearchQuery]      = useState("");
   const [showSuggest,      setShowSuggest]      = useState(false);
   const [showMobileSearch, setShowMobileSearch] = useState(false);
+  const [timelinePopupOpen, setTimelinePopupOpen] = useState(false);
+  const [budgetPopupOpen,   setBudgetPopupOpen]   = useState(false);
   const profileRef = useRef(null);
 
   const SEARCH_SUGGESTIONS = [
@@ -90,7 +94,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
   const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
-  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gift-hampers-cakes", "gift hampers": "/gift-hampers-cakes", hampers: "/gift-hampers-cakes", cakes: "/gift-hampers-cakes", gifting: "/gift-hampers-cakes", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
+  const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
 
   const handleNavSearch = (q) => {
     const query = q || searchQuery;
@@ -223,10 +227,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
     { label: "Our Products", hideOnMobile: true, items: [
-      { label: "🎁 Gift Hampers", href: "/gift-hampers-cakes" },
+      { label: "🎁 Gift Hampers", href: "/gifting" },
       { label: "💒 Wedding Stationeries", href: "/stationery" },
       { label: "🎭 Fun Activities",       href: "/fun-activities" },
-      ...(user?.isAdmin ? [{ label: "🏡 Party Places", href: "/party-places" }] : []),
     ]},
     { label: "Booking", hideOnMobile: true, items: [
       { label: "🔍 You Do It",       href: "/booking", activePaths: ["/plan-event"], activeBookingType: "you-do-it" },
@@ -235,9 +238,13 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
       { label: "🎉 Plan by Occasion", href: "/", onClickOverride: () => { close(); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
     ]},
     { label: "Tools", hideOnMobile: true, items: [
+      { label: "✦ Plan My Event",  href: "/plan", activePaths: ["/plan","/checklist-picker","/prebuilt-checklist"], tag: "hub", onClickOverride: () => { close(); navigate("/plan"); } },
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
-        onClickOverride: () => { close(); try { const raw = localStorage.getItem("tendr_timeline_v2"); const saved = raw ? JSON.parse(raw) : null; navigate(saved?.phases?.length > 0 ? "/prebuilt-timeline" : "/timeline-picker"); } catch { navigate("/timeline-picker"); } } },
-      { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"] },
+        onClickOverride: () => { try { const d = localStorage.getItem("tendr_timeline_v2"); const s = d ? JSON.parse(d) : null; if (s?.phases?.length > 0) { setTimelinePopupOpen(true); } else { window.open("/timeline-picker", "_blank"); } } catch { window.open("/timeline-picker", "_blank"); } } },
+      { label: "Budget Allocator", href: "/budget-picker", activePaths: ["/budget-picker","/budget-allocator"],
+        onClickOverride: () => { try { const d = localStorage.getItem("tendr_budget_v2"); const s = d ? JSON.parse(d) : null; if (s?.totalBudget) { setBudgetPopupOpen(true); } else { window.open("/budget-picker", "_blank"); } } catch { window.open("/budget-picker", "_blank"); } } },
+      { label: "Equipment Planner", href: "/equipment-list", activePaths: ["/equipment-list"], onClickOverride: () => { close(); window.open("/equipment-list", "_blank"); } },
+      { label: "Invitation Builder", href: "/invitation-builder", activePaths: ["/invitation-builder"], onClickOverride: () => { close(); window.open("/invitation-builder", "_blank"); } },
       // { label: "Decor Finder", href: "/decor-finder" }, // disabled
     ]},
     ...(user?.isAdmin ? [{ label: "Memories", hideOnMobile: true, items: [
@@ -389,8 +396,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               <div style={{ display: "flex", gap: 7 }}>
                 <button onClick={() => navigate("/dashboard")} style={{ flex: 1, padding: "6px", borderRadius: 7, border: "1px solid rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Dashboard</button>
               </div>
-              {/* Review & Pay if vendors finalised — hidden on the review page itself */}
-              {!isHomePage && finalisedCount > 0 && location.pathname !== "/booking/review" && (
+              {/* Review & Pay if vendors finalised */}
+              {!isHomePage && finalisedCount > 0 && (
                 <button onClick={() => navigate("/booking/review")} style={{ width: "100%", marginTop: 7, padding: "7px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Review & Pay ({finalisedCount}) →
                 </button>
@@ -622,7 +629,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                   { emoji: "🍽️", label: "Caterer",        href: "/search?categories=Caterer" },
                   { emoji: "📸", label: "Photographer",   href: "/search?categories=Photographer" },
                   { emoji: "🎵", label: "DJ",             href: "/search?categories=DJ" },
-                  { emoji: "🎁", label: "Gift Hampers",   href: "/gift-hampers-cakes" },
+                  { emoji: "🎁", label: "Gift Hampers",   href: "/gifting" },
                   { emoji: "🎭", label: "Fun Activities", href: "/fun-activities" },
                 ].map(cat => (
                   <button key={cat.label} onClick={() => { navigate(cat.href); setVendorPickerOpen(false); }}
@@ -694,8 +701,8 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           >
             {[0,1,2].map(i => <div key={i} style={{ width: 13, height: 1.8, borderRadius: 2, background: "#C47A2E" }} />)}
           </button>
-          {/* Review & Pay button — shows when vendors finalised, hidden on review page */}
-          {finalisedCount > 0 && location.pathname !== "/booking/review" && (
+          {/* Review & Pay button — shows when vendors finalised */}
+          {finalisedCount > 0 && (
             <button
               onClick={() => setReviewPopup(true)}
               style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
@@ -964,6 +971,9 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
           </div>
         </>
       )}
+
+      {timelinePopupOpen && <TimelinePopup onClose={() => setTimelinePopupOpen(false)} />}
+      {budgetPopupOpen   && <BudgetPopup   onClose={() => setBudgetPopupOpen(false)}   />}
     </>
   );
 }

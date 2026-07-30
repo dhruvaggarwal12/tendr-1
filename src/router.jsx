@@ -103,8 +103,6 @@ const OccasionsPage       = lazy(() => import("./pages/occasions/OccasionsPage.j
 const OccasionDetail      = lazy(() => import("./pages/occasions/OccasionDetail.jsx"));
 const MemoriesPage        = lazy(() => import("./pages/memories/MemoriesPage.jsx"));
 const MemoryProfile       = lazy(() => import("./pages/memories/MemoryProfile.jsx"));
-const PartyPlacesPage     = lazy(() => import("./pages/party-places/PartyPlacesPage.jsx"));
-const PartyPlaceProfile   = lazy(() => import("./pages/party-places/PartyPlaceProfile.jsx"));
 const CommunityWall       = lazy(() => import("./pages/community/CommunityWall.jsx"));
 const CelebrationHub      = lazy(() => import("./pages/celebration-hub/CelebrationHub.jsx"));
 const FunActivitiesPage   = lazy(() => import("./pages/fun-activities/FunActivitiesPage.jsx"));
@@ -371,16 +369,6 @@ const router = createBrowserRouter([
   {
     path: "/occasions/:slug",
     element: <OccasionDetail />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: "/party-places",
-    element: <PartyPlacesPage />,
-    errorElement: <ErrorPage />,
-  },
-  {
-    path: "/party-places/:id",
-    element: <PartyPlaceProfile />,
     errorElement: <ErrorPage />,
   },
   {
