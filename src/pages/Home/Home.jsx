@@ -1269,7 +1269,7 @@ const Home = () => {
               {
                 icon: "🔍",
                 eyebrow: "Browse & Search",
-                title: "You know what you want",
+                title: "You know exactly what you want",
                 desc: "Search for a vendor type, compare profiles, and chat to confirm price.",
                 startFrom: "Use the search bar or Browse in the menu",
                 accent: "#C47A2E",
@@ -1278,7 +1278,7 @@ const Home = () => {
               {
                 icon: "✨",
                 eyebrow: "Start Planning",
-                title: "You want help figuring it out",
+                title: "You know what to do, just want the best vendors",
                 desc: "Tell us your event once — we match you with the right vendors.",
                 startFrom: "Click 'Start Planning' above",
                 accent: "#7A4A1E",
@@ -1287,7 +1287,7 @@ const Home = () => {
               {
                 icon: "🎉",
                 eyebrow: "Plan by Occasion",
-                title: "You already know the occasion",
+                title: "You know just the occasion",
                 desc: "Pick your celebration — Birthday, Anniversary, House Party and more — and explore curated themes and ideas.",
                 startFrom: "Scroll to 'What's the occasion?' above",
                 accent: "#C47A2E",
