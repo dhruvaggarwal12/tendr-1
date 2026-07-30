@@ -200,7 +200,7 @@ export default function StationeryCustomizer() {
   return (
     <div style={{ minHeight: "100vh", background: "#F3EFE9", fontFamily: font }}>
       <SEO
-        title={`${template.name} — Wedding Stationery | Tendr`}
+        title={`${template.name} — Stationery by Tendr`}
         description={`Customise the ${template.name} stationery design online.`}
         path={`/stationery/${id}`}
       />
@@ -225,7 +225,7 @@ export default function StationeryCustomizer() {
 
         {/* Left — live preview */}
         <div style={{ flex: 1, display: "flex", alignItems: "flex-start", justifyContent: "center", padding: "48px 32px", background: "#F3EFE9", overflowX: "auto" }}>
-          <div ref={cardRef} style={{ transformOrigin: "top center", transform: `scale(${textScale})`, transformOrigin: "top center" }}>
+          <div ref={cardRef} style={{ transformOrigin: "top center", transform: `scale(${textScale})` }}>
             <Renderer d={data} onChange={onChange} mini={false} ov={ov} />
           </div>
         </div>

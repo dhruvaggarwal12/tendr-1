@@ -6182,7 +6182,7 @@ const AdminDashboard = () => {
                 {remindersLoading ? (
                   <div style={{ color: "#9B7450", fontSize: 14, padding: "32px 0" }}>Loading…</div>
                 ) : remindersError ? (
-                  <div style={{ color: "#dc2626", fontSize: 13, padding: "24px 0", background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 10, padding: "14px 18px" }}>
+                  <div style={{ color: "#dc2626", fontSize: 13, background: "#fef2f2", border: "1px solid #fca5a5", borderRadius: 10, padding: "14px 18px" }}>
                     <strong>Error loading reminders:</strong> {remindersError}
                   </div>
                 ) : allReminders.length === 0 ? (
