@@ -103,12 +103,25 @@ const debouncedSaveToBackend = (formData, token) => {
 const loadFormData = () => {
   try {
     const saved = localStorage.getItem("eventPlanningFormData");
-    return saved ? JSON.parse(saved) : {};
+    if (!saved) return {};
+    const parsed = JSON.parse(saved);
+    if (parsed.__expiresAt && Date.now() > parsed.__expiresAt) {
+      localStorage.removeItem("eventPlanningFormData");
+      return {};
+    }
+    const { __expiresAt, ...formData } = parsed;
+    return formData;
   } catch { return {}; }
 };
 
 const saveFormData = (formData) => {
-  try { localStorage.setItem("eventPlanningFormData", JSON.stringify(formData)); } catch {}
+  try {
+    const date = formData?.date;
+    const expiresAt = date
+      ? new Date(date).getTime() + 24 * 60 * 60 * 1000
+      : Date.now() + 7 * 24 * 60 * 60 * 1000;
+    localStorage.setItem("eventPlanningFormData", JSON.stringify({ ...formData, __expiresAt: expiresAt }));
+  } catch {}
 };
 
 /** Example async submit (replace with your real API) */
@@ -132,7 +145,7 @@ export const submitEventPlan = createAsyncThunk(
 );
 
 const SESSION_KEY = 'tendr_ep_session';
-const SESSION_TTL = 24 * 60 * 60 * 1000; // fallback: 24h when no event date is set
+const SESSION_TTL = 7 * 24 * 60 * 60 * 1000; // fallback: 7 days when no event date is set
 
 const loadSession = () => {
   try {
@@ -148,7 +161,7 @@ const loadSession = () => {
         return null;
       }
     } else {
-      // No event date set yet: use 24h sliding TTL
+      // No event date set yet: use 7-day sliding TTL
       if (parsed.__savedAt && Date.now() - parsed.__savedAt > SESSION_TTL) {
         localStorage.removeItem(SESSION_KEY);
         return null;

@@ -8,12 +8,13 @@ import TalkToTendrStrip from "./TalkToTendrStrip";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 import { EventIdeasPanel } from "../utils/eventIdeas";
 import VendorPhotoPlaceholder from "./VendorPhotoPlaceholder";
+import { getRecommendations } from "../utils/recommendationEngine";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
-// Discovery listing session — isolated from planning-flow Redux data, 24h TTL
+// Discovery listing session — isolated from planning-flow Redux data, 7-day TTL
 const DISCOVERY_KEY = 'tendr:session:discovery';
-const DISCOVERY_TTL = 24 * 60 * 60 * 1000;
+const DISCOVERY_TTL = 7 * 24 * 60 * 60 * 1000;
 const getDiscoverySession = () => {
   try {
     const s = JSON.parse(localStorage.getItem(DISCOVERY_KEY) || 'null');
@@ -60,8 +61,8 @@ const getChatSave = (id) => {
         return null;
       }
     } else {
-      // No event date set — fallback: keep for 24h
-      if (Date.now() - (s.submittedAt || 0) > 24 * 60 * 60 * 1000) {
+      // No event date set — fallback: keep for 7 days
+      if (Date.now() - (s.submittedAt || 0) > 7 * 24 * 60 * 60 * 1000) {
         localStorage.removeItem(chatSaveKey(id));
         return null;
       }
@@ -108,6 +109,7 @@ const VendorList_ListingPage = ({
   const { openVendorChat, openExistingChat, openTendrTeamChat } = useChatOverlay();
   const { token } = useSelector(s => s.auth);
   const formData = useSelector(s => s.eventPlanning?.formData || {});
+  const recommendedServices = eventType ? getRecommendations({ eventType }).services : [];
   const [quickViewVendor, setQuickViewVendor] = useState(null);
   const [chatFormVendor, setChatFormVendor] = useState(null);
   const [authModalOpen, setAuthModalOpen]   = useState(false);
@@ -353,13 +355,18 @@ const VendorList_ListingPage = ({
                       <div className="vendor-card-info-text" style={{ display: "flex", flexDirection: "column", gap: 5 }}>
                         {/* Name — first */}
                         <h3 style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", margin: 0, lineHeight: 1.25 }}>{vendor.name}</h3>
-                        {/* Category + top rated */}
+                        {/* Category + top rated + event intelligence tag */}
                         <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
                           <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase", color: "#9B7450", padding: "2px 0" }}>
                             {vendor.serviceType}
                           </span>
                           {vendor.isTopRated && (
                             <span style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.08)", padding: "2px 8px", borderRadius: 20 }}>⭐ Top Rated</span>
+                          )}
+                          {recommendedServices.includes(vendor.serviceType) && (
+                            <span style={{ fontSize: 10, fontWeight: 700, color: "#6B3FA0", background: "rgba(107,63,160,0.08)", padding: "2px 8px", borderRadius: 20, border: "1px solid rgba(107,63,160,0.15)" }}>
+                              ✦ Best for {eventType}s
+                            </span>
                           )}
                         </div>
                         {/* Location */}

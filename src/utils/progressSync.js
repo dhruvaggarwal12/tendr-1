@@ -13,6 +13,9 @@
  *   tendr_timeline_form    — until event date
  *   tendr_checklist_v2     — until event date
  *   tendr_checklist_form   — until event date
+ *   tendr_budget_v2        — 7 days or until event date
+ *   tendr:chat_req:*       — 7 days or until event date
+ *   tendr:session:discovery — 7 days or until event date
  */
 
 import { saveUserProgress, loadUserProgress } from "../apis/userApi";
@@ -98,6 +101,25 @@ export const readProgressSnapshot = () => {
     return f ? f : null;
   })();
 
+  // Budget
+  const rawBudget = get("tendr_budget_v2") || {};
+  const budgetProgress = !isExpired(rawBudget) ? rawBudget : null;
+
+  // Chat requests — collect all tendr:chat_req:* keys
+  const chatRequests = {};
+  try {
+    Object.keys(localStorage).forEach(k => {
+      if (k.startsWith("tendr:chat_req:")) {
+        const s = get(k);
+        if (s) chatRequests[k] = s;
+      }
+    });
+  } catch {}
+
+  // Discovery session
+  const rawDiscovery = get("tendr:session:discovery") || {};
+  const discoverySession = !isExpired(rawDiscovery) ? rawDiscovery : null;
+
   return {
     savedVendors,
     compareSelected,
@@ -108,6 +130,9 @@ export const readProgressSnapshot = () => {
     timelineForm,
     checklistProgress,
     checklistForm,
+    budgetProgress,
+    chatRequests,
+    discoverySession,
     __savedAt: Date.now(),
   };
 };
@@ -120,6 +145,7 @@ export const restoreProgressSnapshot = (snapshot) => {
   const {
     savedVendors, compareSelected, finalisedVendors, chatDone,
     smartPlan, timelineProgress, timelineForm, checklistProgress, checklistForm,
+    budgetProgress, chatRequests, discoverySession,
   } = snapshot;
 
   // Saved vendors — restore with per-item __savedAt (use Date.now() if missing)
@@ -183,6 +209,23 @@ export const restoreProgressSnapshot = (snapshot) => {
   }
   if (checklistForm && !get("tendr_checklist_form")) {
     set("tendr_checklist_form", checklistForm);
+  }
+
+  // Budget
+  if (budgetProgress && !isExpired(budgetProgress)) {
+    if (!get("tendr_budget_v2")) set("tendr_budget_v2", budgetProgress);
+  }
+
+  // Chat requests — restore each vendor's chat request key if not already present
+  if (chatRequests && typeof chatRequests === "object") {
+    Object.entries(chatRequests).forEach(([key, val]) => {
+      if (!localStorage.getItem(key)) set(key, val);
+    });
+  }
+
+  // Discovery session
+  if (discoverySession && !isExpired(discoverySession)) {
+    if (!get("tendr:session:discovery")) set("tendr:session:discovery", discoverySession);
   }
 };
 

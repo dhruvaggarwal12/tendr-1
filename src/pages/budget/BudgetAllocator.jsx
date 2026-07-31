@@ -60,7 +60,7 @@ const EVENT_TYPES = {
   wedding: {
     label: "Wedding Day", icon: "👰",
     cats: [
-      { name: "Venue & Mandap",   pct: 35, color: "#C47A2E" },
+      { name: "Venue & Setup",    pct: 35, color: "#C47A2E" },
       { name: "Food & Catering",  pct: 25, color: "#10B981" },
       { name: "Photography / Video", pct: 15, color: "#3B82F6" },
       { name: "Decoration",       pct: 12, color: "#8B5CF6" },
@@ -101,34 +101,87 @@ const EVENT_TYPES = {
       { name: "Miscellaneous",    pct: 3,  color: "#6B7280" },
     ],
   },
+  babyshower: {
+    label: "Baby Shower", icon: "🍼",
+    cats: [
+      { name: "Venue & Setup",      pct: 25, color: "#C47A2E" },
+      { name: "Food & Catering",    pct: 28, color: "#10B981" },
+      { name: "Decoration",         pct: 22, color: "#8B5CF6" },
+      { name: "Activities & Games", pct: 10, color: "#F59E0B" },
+      { name: "Photography",        pct: 10, color: "#3B82F6" },
+      { name: "Return Gifts",       pct: 5,  color: "#EC4899" },
+    ],
+  },
+  houseparty: {
+    label: "House Party", icon: "🏠",
+    cats: [
+      { name: "Food & Drinks",    pct: 38, color: "#10B981" },
+      { name: "Decoration",       pct: 20, color: "#8B5CF6" },
+      { name: "Entertainment",    pct: 20, color: "#F59E0B" },
+      { name: "Photography",      pct: 10, color: "#3B82F6" },
+      { name: "Supplies",         pct: 8,  color: "#C47A2E" },
+      { name: "Miscellaneous",    pct: 4,  color: "#6B7280" },
+    ],
+  },
+  housewarming: {
+    label: "Housewarming", icon: "🏡",
+    cats: [
+      { name: "Food & Catering",  pct: 35, color: "#10B981" },
+      { name: "Decoration",       pct: 25, color: "#8B5CF6" },
+      { name: "Puja & Ceremony",  pct: 15, color: "#C47A2E" },
+      { name: "Photography",      pct: 10, color: "#3B82F6" },
+      { name: "Return Gifts",     pct: 10, color: "#EC4899" },
+      { name: "Miscellaneous",    pct: 5,  color: "#6B7280" },
+    ],
+  },
+  kittyparty: {
+    label: "Kitty Party", icon: "🎰",
+    cats: [
+      { name: "Food & Catering",       pct: 35, color: "#10B981" },
+      { name: "Venue & Setup",         pct: 25, color: "#C47A2E" },
+      { name: "Entertainment & Games", pct: 22, color: "#F59E0B" },
+      { name: "Decoration",            pct: 12, color: "#8B5CF6" },
+      { name: "Return Gifts",          pct: 6,  color: "#EC4899" },
+    ],
+  },
+  namingceremony: {
+    label: "Naming Ceremony", icon: "👶",
+    cats: [
+      { name: "Food & Catering",  pct: 32, color: "#10B981" },
+      { name: "Puja & Ceremony",  pct: 28, color: "#C47A2E" },
+      { name: "Decoration",       pct: 20, color: "#8B5CF6" },
+      { name: "Photography",      pct: 12, color: "#3B82F6" },
+      { name: "Return Gifts",     pct: 8,  color: "#EC4899" },
+    ],
+  },
 };
 
 // ── Guest-count personalisation ──────────────────────────────────────────────
 const GUEST_SHIFTS = {
   intimate: [
     { matches: ['food', 'cater', 'drink'], delta: -6 },
-    { matches: ['venue', 'mandap'],        delta: -4 },
+    { matches: ['venue'],        delta: -4 },
     { matches: ['decor'],                  delta: +4 },
     { matches: ['photo', 'video'],         delta: +4 },
     { matches: ['entertain', 'music', 'dj'], delta: +2 },
   ],
   small: [
     { matches: ['food', 'cater', 'drink'], delta: -3 },
-    { matches: ['venue', 'mandap'],        delta: -2 },
+    { matches: ['venue'],        delta: -2 },
     { matches: ['decor'],                  delta: +2 },
     { matches: ['photo', 'video'],         delta: +2 },
   ],
   medium: [],
   large: [
     { matches: ['food', 'cater', 'drink'], delta: +6 },
-    { matches: ['venue', 'mandap'],        delta: +2 },
+    { matches: ['venue'],        delta: +2 },
     { matches: ['decor'],                  delta: -3 },
     { matches: ['photo', 'video'],         delta: -2 },
     { matches: ['misc'],                   delta: -3 },
   ],
   xlarge: [
     { matches: ['food', 'cater', 'drink'], delta: +12 },
-    { matches: ['venue', 'mandap'],        delta: +3 },
+    { matches: ['venue'],        delta: +3 },
     { matches: ['decor'],                  delta: -5 },
     { matches: ['photo', 'video'],         delta: -4 },
     { matches: ['entertain', 'music', 'dj'], delta: -2 },
@@ -373,7 +426,11 @@ export default function BudgetAllocator() {
 
   useEffect(() => {
     if (!loaded) return;
-    localStorage.setItem("tendr_budget_v2", JSON.stringify({ eventKey, totalBudget, guestCount, categories, __expiresAt: Date.now() + TTL_7D }));
+    const eventDate = planFormData?.date;
+    const expiresAt = eventDate
+      ? new Date(eventDate).getTime() + 24 * 60 * 60 * 1000
+      : Date.now() + TTL_7D;
+    localStorage.setItem("tendr_budget_v2", JSON.stringify({ eventKey, totalBudget, guestCount, categories, __expiresAt: expiresAt }));
   }, [eventKey, totalBudget, guestCount, categories, loaded]);
 
   const applyEventType = (key) => {
