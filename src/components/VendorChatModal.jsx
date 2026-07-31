@@ -537,11 +537,14 @@ export default function VendorChatModal() {
 
   // ── Chat action state ────────────────────────────────────────────────────────
   const [chatCompleted, setChatCompleted] = useState(false);
+  const [adminReplied, setAdminReplied] = useState(false);
   const [showReviewPopup, setShowReviewPopup] = useState(false);
   const [showFinalisePopup, setShowFinalisePopup] = useState(false);
   const [finalising, setFinalising] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const isBaatKaro = vendor?.serviceType === "Baat Karo";
+  // Direct chats (no approval) — Mark Done + Finalise locked until admin replies once
+  const isDirectChat = isBaatKaro || (isConcierge && !isSmartPlan);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
   const isThisVendorFinalised = (() => {
     if (isBaatKaro) return !!finalisedVendors["Baat Karo"];
@@ -697,10 +700,12 @@ export default function VendorChatModal() {
           if (res.ok) {
             const hist = await res.json();
             if (Array.isArray(hist) && hist.length > 0) {
-              setMessages(hist.map(m => ({
+              const mapped = hist.map(m => ({
                 text: m.content, sender: m.sender === "user" ? "user" : "vendor",
                 ts: new Date(m.createdAt).getTime(),
-              })));
+              }));
+              setMessages(mapped);
+              if (mapped.some(m => m.sender === "vendor")) setAdminReplied(true);
             }
           }
         } catch {} finally { setMessagesLoading(false); }
@@ -775,10 +780,12 @@ export default function VendorChatModal() {
         if (res.ok) {
           const hist = await res.json();
           if (Array.isArray(hist) && hist.length > 0) {
-            setMessages(hist.map(m => ({
+            const mapped2 = hist.map(m => ({
               text: m.content, sender: m.sender === "user" ? "user" : "vendor",
               ts: new Date(m.createdAt).getTime(),
-            })));
+            }));
+            setMessages(mapped2);
+            if (mapped2.some(m => m.sender === "vendor")) setAdminReplied(true);
           }
         }
       } catch {}
@@ -803,6 +810,7 @@ export default function VendorChatModal() {
     socket.on("new_message", (msg) => {
       if (msg.sender === "user") return;
       setMessages(prev => [...prev, { text: msg.content, sender: "vendor", ts: Date.now() }]);
+      setAdminReplied(true);
     });
 
     socket.on("payment_confirmed", () => {
@@ -1818,16 +1826,18 @@ export default function VendorChatModal() {
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                   <button
                     onClick={() => {
+                      if (isDirectChat && !adminReplied) return;
                       setChatCompleted(true);
                       if (vendor?._id) {
                         localStorage.setItem(`tendr:chat-done:${vendor._id}`, "1");
                         try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
                       }
                     }}
-                    disabled={chatCompleted}
-                    style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : "#fff", fontSize: 12, fontWeight: 700, cursor: chatCompleted ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+                    disabled={chatCompleted || (isDirectChat && !adminReplied)}
+                    title={isDirectChat && !adminReplied && !chatCompleted ? "Available once our team replies" : ""}
+                    style={{ padding: "6px 14px", borderRadius: 100, border: "none", background: chatCompleted ? "#f0fdf4" : (isDirectChat && !adminReplied) ? "rgba(196,122,46,0.08)" : "linear-gradient(135deg,#0369a1,#3b82f6)", color: chatCompleted ? "#15803d" : (isDirectChat && !adminReplied) ? "#9B7450" : "#fff", fontSize: 12, fontWeight: 700, cursor: chatCompleted || (isDirectChat && !adminReplied) ? "default" : "pointer", fontFamily: font, whiteSpace: "nowrap" }}
                   >
-                    {chatCompleted ? "✓ Done" : "Mark as Done"}
+                    {chatCompleted ? "✓ Done" : (isDirectChat && !adminReplied) ? "Waiting for reply…" : "Mark as Done"}
                   </button>
                   <button
                     onClick={handleFinalise}
