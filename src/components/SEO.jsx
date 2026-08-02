@@ -12,7 +12,7 @@ export const CELEBRATION_TYPES = [
 ];
 
 // Cities served
-export const CITIES = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Faridabad", "Greater Noida"];
+export const CITIES = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"];
 
 // Vendor service types → human-readable
 export const SERVICE_LABELS = {
@@ -89,7 +89,6 @@ const CITY_GEO = {
   "Ghaziabad":     { region: "IN-UP", position: "28.6692;77.4538",  icbm: "28.6692, 77.4538"  },
   "Gurugram":      { region: "IN-HR", position: "28.4595;77.0266",  icbm: "28.4595, 77.0266"  },
   "Gurgaon":       { region: "IN-HR", position: "28.4595;77.0266",  icbm: "28.4595, 77.0266"  },
-  "Faridabad":     { region: "IN-HR", position: "28.4089;77.3178",  icbm: "28.4089, 77.3178"  },
 };
 
 // Core SEO component

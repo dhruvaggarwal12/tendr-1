@@ -93,7 +93,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     { text: "Photographers in Ghaziabad", cat: "Photographer", loc: "Ghaziabad" },
   ];
   const SVC_KW2 = { caterer: "Caterer", catering: "Caterer", food: "Caterer", decorator: "Decorator", decoration: "Decorator", decor: "Decorator", photographer: "Photographer", photography: "Photographer", dj: "DJ", music: "DJ" };
-  const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida", faridabad: "Faridabad" };
+  const LOC_KW2 = { delhi: "Delhi", noida: "Noida", gurgaon: "Gurgaon", gurugram: "Gurgaon", ghaziabad: "Ghaziabad", "greater noida": "Greater Noida" };
   const PAGE_KW2 = { budget: "/budget-picker", "gift hamper": "/gifting", "gift hampers": "/gifting", hampers: "/gifting", cakes: "/gift-hampers-cakes", gifting: "/gifting", /* "decor finder": "/decor-finder", */timeline: "/timeline-picker", invitation: "/stationery", flyer: "/stationery", stationery: "/stationery", aftermovie: "/stationery" };
 
   const handleNavSearch = (q) => {

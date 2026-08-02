@@ -163,7 +163,7 @@ export default function AboutUs() {
             "description": "Tendr is Delhi NCR's trusted platform for birthday decoration, balloon decoration, anniversary decoration, surprise setup, baby shower, house party planning, corporate events and more.",
             "email": "contact@tendr.co.in",
             "telephone": "+919211668427",
-            "areaServed": ["Delhi", "Noida", "Gurugram", "Ghaziabad", "Faridabad", "Greater Noida"],
+            "areaServed": ["Delhi", "Noida", "Gurugram", "Ghaziabad", "Greater Noida"],
             "knowsAbout": ["Birthday Decoration", "Anniversary Decoration", "Balloon Decoration", "Corporate Event Planning", "Surprise Party Planning", "Baby Shower Decoration"],
             "sameAs": ["https://www.instagram.com/tendr.in"],
           },
@@ -294,7 +294,7 @@ export default function AboutUs() {
               transparent pricing, and real conversations before you commit.
             </p>
             <p style={{ fontSize: 16, color: "#7A5535", lineHeight: 1.78, margin: 0 }}>
-              Today we serve customers across Delhi, Noida, Greater Noida, Ghaziabad, Gurgaon, and Faridabad
+              Today we serve customers across Delhi, Noida, Greater Noida, Ghaziabad, and Gurgaon
               — connecting them with the region's finest event professionals through
               technology that actually works.
             </p>

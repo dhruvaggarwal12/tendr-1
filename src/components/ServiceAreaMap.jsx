@@ -9,7 +9,6 @@ const CITY_COORDS = {
   "Ghaziabad":     [28.6692,  77.4538],
   "Gurugram":      [28.4595,  77.0266],
   "Gurgaon":       [28.4595,  77.0266],
-  "Faridabad":     [28.4089,  77.3178],
   "Mumbai":        [19.0760,  72.8777],
   "Bangalore":     [12.9716,  77.5946],
   "Bengaluru":     [12.9716,  77.5946],

@@ -14,7 +14,7 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 const PLATFORM_CATEGORIES = ["Caterer", "Decorator", "Photographer", "DJ"];
-const PLATFORM_LOCATIONS  = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida", "Faridabad"];
+const PLATFORM_LOCATIONS  = ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"];
 const CAT_EMOJI = { Caterer: "🍽️", Decorator: "🎨", Photographer: "📸", DJ: "🎵", "Fun Activities": "🎭" };
 
 export default function SearchResults() {

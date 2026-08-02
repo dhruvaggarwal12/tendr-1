@@ -767,7 +767,7 @@ const Home = () => {
   return (
     <div className="App">
       <PageTour pageKey="home" steps={HOME_TOUR_STEPS} onDone={() => window.dispatchEvent(new CustomEvent("tendr:show-signin"))} />
-      <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Faridabad. Compare 100+ verified vendors and book instantly." path="/" />
+      <SEO title="Tendr — Celebration & Event Planning Platform in Delhi NCR" description="Plan birthdays, anniversaries, balloon decorations, surprise parties, baby showers, house parties and corporate events across Delhi, Noida, Gurgaon, Ghaziabad and Greater Noida. Compare 100+ verified vendors and book instantly." path="/" />
       {/* Speed dial (floating) */}
       <div
         className={`sticky bottom-2 right-1 z-50 transform transition-all duration-500 ${
@@ -1066,7 +1066,7 @@ const Home = () => {
       {/* ── Marquee strip — right under hero text ── */}
       {(() => {
         const GROUPS = [
-          { icon: "🏙", label: "Cities", color: "#7A4A1E", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Faridabad", "Greater Noida"] },
+          { icon: "🏙", label: "Cities", color: "#7A4A1E", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"] },
           { icon: "🎯", label: "Services", color: "#C47A2E", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup", "Fun Activities"] },
           { icon: "🎉", label: "Events", color: "#8B4513", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
           { icon: "✨", label: "Platform", color: "#C47A2E", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },

@@ -25,7 +25,7 @@ const FAQ_KB = [
   },
   {
     keywords: ["area", "serve", "city", "location", "where", "available", "delhi", "noida", "gurgaon"],
-    answer: "Tendr currently operates in Delhi NCR (Delhi, Gurgaon, Noida, Faridabad, Ghaziabad). We're expanding to more cities soon — stay tuned! 📍",
+    answer: "Tendr currently operates in Delhi NCR (Delhi, Gurgaon, Noida, Ghaziabad, Greater Noida). We're expanding to more cities soon — stay tuned! 📍",
   },
   {
     keywords: ["chat approval", "approve", "approval", "request", "chat request", "chat approved"],

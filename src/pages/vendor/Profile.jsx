@@ -6,7 +6,7 @@ import logo from "../../assets/logos/tendr-logo-secondary.png";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const LOCATION_OPTIONS = [
-  "Delhi", "Noida", "Gurgaon", "Ghaziabad", "Faridabad",
+  "Delhi", "Noida", "Gurgaon", "Ghaziabad",
   "Greater Noida", "South Delhi", "North Delhi", "East Delhi", "West Delhi",
 ];
 
