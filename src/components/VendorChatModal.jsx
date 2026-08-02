@@ -745,11 +745,13 @@ export default function VendorChatModal() {
 
     // Existing chat: join room and load history
     if (isExistingChat && chatState.conversationId) {
-      const loadHistory = async () => {
-        const cid = chatState.conversationId;
-        socket.emit("join_conversation", { conversationId: cid });
-        setConversationId(cid);
-        if (vendor?.approved) setApproved(true);
+      const cid = chatState.conversationId;
+      setConversationId(cid);
+      if (vendor?.approved) setApproved(true);
+
+      // Fetch history immediately via REST — don't wait for socket connect
+      // (socket join failure or slow connect would otherwise leave chat blank)
+      const fetchHistory = async () => {
         setMessagesLoading(true);
         try {
           const res = await fetch(`${BASE_URL}/messages/${cid}/messages`, {
@@ -769,12 +771,12 @@ export default function VendorChatModal() {
           }
         } catch {} finally { setMessagesLoading(false); }
       };
-      // If socket is already connected, load immediately; otherwise wait for connect
-      if (socket.connected) {
-        loadHistory();
-      } else {
-        socket.on("connect", loadHistory);
-      }
+      fetchHistory();
+
+      // Also join socket room for live messages
+      const joinRoom = () => socket.emit("join_conversation", { conversationId: cid });
+      if (socket.connected) joinRoom();
+      else socket.on("connect", joinRoom);
     }
 
     socket.on("conversation_opened", async ({ _id, chatApproved: isApproved }) => {

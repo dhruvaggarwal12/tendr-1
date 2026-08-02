@@ -19,7 +19,7 @@ export function ChatProvider({ children }) {
   // chatApproved=true  → regular concierge / already accepted (input enabled)
   const openConciergeChat = (conversationId = null, chatApproved = true) =>
     setChatState({
-      vendor: { _id: "concierge", name: "Tendr Concierge", serviceType: "Concierge", approved: chatApproved },
+      vendor: { _id: "concierge", name: "Tendr Team", serviceType: "Concierge", approved: chatApproved },
       conversationId,
       minimized: false,
       isExisting: !!conversationId,

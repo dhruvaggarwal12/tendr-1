@@ -158,8 +158,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         const deduped = active.filter((c) => {
           const vid = c.vendorId?._id || c.vendorId || null;
           if (!vid) {
-            if (seen.has("__tendr_team__")) return false;
-            seen.add("__tendr_team__");
+            const key = `__null_vid_${c.chatType}__`;
+            if (seen.has(key)) return false;
+            seen.add(key);
           }
           return true;
         });
@@ -336,7 +337,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               {(() => {
                 // Merge minimized chat into list if not yet returned by API
                 const minimizedVendorId = chatState?.vendor?._id;
-                const alreadyInList = minimizedVendorId && vendorChats.some(c => {
+                const alreadyInList = vendorChats.some(c => {
+                  // Match by conversationId first (handles null-vendorId Baat Karo chats)
+                  if (chatState?.conversationId && c._id?.toString() === chatState.conversationId?.toString()) return true;
+                  if (!minimizedVendorId) return false;
                   const cvid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
                   return String(cvid) === String(minimizedVendorId);
                 });
@@ -400,7 +404,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                         {(convo.vendorName || "V")[0].toUpperCase()}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || (convo.chatType === "concierge" ? "Tendr Concierge" : "Vendor")}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || "Tendr Team"}</div>
                         <div style={{ fontSize: 12, color: convo.chatRejected ? "#dc2626" : "#9B7450" }}>{convo.chatRejected ? "Vendor not available — see alternatives →" : (convo.serviceType || (convo.chatType === "concierge" ? "Concierge" : "Chat"))}</div>
                       </div>
                       {convo.chatRejected ? (
