@@ -679,9 +679,68 @@ export default function VendorChatModal() {
 
     // New concierge chat: open immediately on connect (no bot)
     if (isConcierge && !chatState.conversationId) {
-      socket.on("connect", () => {
-        socket.emit("open_conversation", { chatType: "concierge" });
-      });
+      if (isSkipBot) {
+        // Talk to Tendr Team — find-or-create the single unified Baat Karo conversation
+        // so every entry point (Baat Karo page, Independence Day, Talk to Tendr Team) shares one chat
+        (async () => {
+          try {
+            const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
+              credentials: "include",
+              body: JSON.stringify({}),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const cid = data.conversationId;
+              setConversationId(cid);
+              setCtxConvoId(cid);
+              setApproved(true);
+              window.dispatchEvent(new CustomEvent("tendr:chat-started"));
+
+              // Load existing message history
+              setMessagesLoading(true);
+              try {
+                const histRes = await fetch(`${BASE_URL}/messages/${cid}/messages`, {
+                  headers: authToken ? { Authorization: `Bearer ${authToken}` } : {},
+                  credentials: "include",
+                });
+                if (histRes.ok) {
+                  const hist = await histRes.json();
+                  if (Array.isArray(hist) && hist.length > 0) {
+                    const mapped = hist.map(m => ({
+                      text: m.content, sender: m.sender === "user" ? "user" : "vendor",
+                      ts: new Date(m.createdAt).getTime(),
+                    }));
+                    setMessages(mapped);
+                    if (mapped.some(m => m.sender === "vendor")) setAdminReplied(true);
+                  }
+                }
+              } catch {} finally { setMessagesLoading(false); }
+
+              // Join socket room for live messages
+              const joinRoom = () => socket.emit("join_conversation", { conversationId: cid });
+              if (socket.connected) joinRoom();
+              else socket.on("connect", joinRoom);
+
+              // Flush any messages the user typed before conversation was ready
+              if (pendingMsgsRef.current.length > 0) {
+                const toFlush = [...pendingMsgsRef.current];
+                pendingMsgsRef.current = [];
+                toFlush.forEach((content, i) => {
+                  setTimeout(() => {
+                    socket.emit("send_message", { conversationId: cid, sender: "user", content });
+                  }, 300 + i * 100);
+                });
+              }
+            }
+          } catch {}
+        })();
+      } else {
+        socket.on("connect", () => {
+          socket.emit("open_conversation", { chatType: "concierge" });
+        });
+      }
     }
 
     // Existing chat: join room and load history
