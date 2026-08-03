@@ -100,7 +100,7 @@ export default function BaatKaro() {
         openExistingChat(data.conversationId, {
           _id: null,
           name: "Tendr Team",
-          serviceType: "Baat Karo",
+          serviceType,
           approved: false,
         });
       }
