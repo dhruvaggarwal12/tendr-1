@@ -344,8 +344,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                   const cvid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
                   return String(cvid) === String(minimizedVendorId);
                 });
-                const displayChats = (!alreadyInList && chatState?.vendor && !chatState.isConcierge)
-                  ? [{ _id: chatState.conversationId || `syn-${minimizedVendorId}`, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: false, chatType: "vendor", _synthetic: true }, ...vendorChats]
+                const displayChats = (!alreadyInList && chatState?.vendor)
+                  ? [{ _id: chatState.conversationId || `syn-${minimizedVendorId}`, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: chatState.chatApproved ?? false, chatType: chatState.isConcierge ? "concierge" : "vendor", _synthetic: true }, ...vendorChats]
                   : vendorChats;
                 if (displayChats.length === 0) return (
                   <div style={{ textAlign: "center", padding: "60px 20px" }}>

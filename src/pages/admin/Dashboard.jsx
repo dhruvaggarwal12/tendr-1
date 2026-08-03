@@ -1278,6 +1278,13 @@ const AdminDashboard = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDropdown, token]);
 
+  // Re-fetch conversations whenever the Chat tab is opened (ensures stale-free list)
+  useEffect(() => {
+    if (activeDropdown !== 'chat' || !token || !isAdminToken) return;
+    reloadConversationsRef.current?.();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeDropdown, token, isAdminToken]);
+
   // Fetch all planned-event reminders when Reminders tab is active
   useEffect(() => {
     if (activeDropdown !== 'reminders' || !token || !isAdminToken) return;
