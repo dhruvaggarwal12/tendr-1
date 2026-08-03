@@ -1815,9 +1815,12 @@ export default function VendorChatModal() {
               DJ:           ["Do you do a playlist session before the event?","Can you take guest requests?","What if equipment fails?","Do you provide sound and lighting both?","How early do you arrive to set up?"],
               SmartPlan:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
               Concierge:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
-              "Baat Karo":  ["Aap kis date ke liye plan kar rahe hain?","Budget kitna rakha hai?","Konsi services chahiye — caterer, decorator, DJ?","Kitne guests honge?","Kab tak reply mil jayega?"],
+              "Baat Karo":       ["Aap kis date ke liye plan kar rahe hain?","Budget kitna rakha hai?","Konsi services chahiye — caterer, decorator, DJ?","Kitne guests honge?","Kab tak reply mil jayega?"],
+              "Independence Day": ["Aap kis city mein event plan kar rahe hain?","Kitne guests honge?","Decorator ya caterer — dono chahiye?","Garden ya hall venue prefer karenge?","Budget batayein?"],
+              "Gift Hampers":     ["Kaunse occasion ke liye hamper chahiye?","Budget kitna hai per piece?","Kitne pieces chahiye?","Koi specific items ya theme?","Delivery kahan chahiye?"],
+              "Occasions":        ["Kaunsa occasion hai?","Kitne guests honge?","Date aur location?","Budget range?","Koi specific theme ya requirements?"],
             };
-            const questions = QA[vendor?.serviceType] || (isConcierge ? QA.Concierge : ["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"]);
+            const questions = QA[vendor?.serviceType] || (isBaatKaro ? QA["Baat Karo"] : isConcierge ? QA.Concierge : ["What packages do you offer?","What is your availability?","Can you share pricing?","What is included?","Can we schedule a call?"]);
             return (
               <div style={{ borderTop: "1px solid rgba(196,122,46,0.08)", background: "#FDFCF8" }}>
                 <button onClick={() => setShowSuggestions(p => !p)}

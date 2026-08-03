@@ -128,7 +128,7 @@ const GiftHampersCakes = () => {
         );
       }
     } catch {}
-    navigate("/baat-karo?context=Gift+Hampers");
+    navigate("/gift-hampers/chat");
   };
 
   return (

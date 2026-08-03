@@ -354,10 +354,10 @@ const BookingReviewPage = () => {
 
         convList.forEach(c => {
           const vid = c.vendorId?._id || c.vendorId;
-          if (!vid) return;
-          const key = vid.toString();
+          const key = vid ? vid.toString() : (c.serviceType ? `__svc__${c.serviceType}` : null);
+          if (!key) return;
           if (c.vendorPrice?.amount > 0) {
-            pm[key] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
+            pm[key] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName || "Tendr Team", service: c.vendorPrice.service || c.serviceType, confirmed: true };
           }
           if (c.bookingSummary) sm[key] = c.bookingSummary;
           // Try pinned from list response first
@@ -368,8 +368,9 @@ const BookingReviewPage = () => {
 
         // For conversations where pinned is still empty, fetch individual to get full pinnedMessages
         const toFetch = convList.filter(c => {
-          const vid = (c.vendorId?._id || c.vendorId)?.toString();
-          return vid && !pinned[vid];
+          const vid = c.vendorId?._id || c.vendorId;
+          const key = vid ? vid.toString() : (c.serviceType ? `__svc__${c.serviceType}` : null);
+          return key && !pinned[key];
         });
 
         await Promise.allSettled(toFetch.map(c =>
@@ -380,10 +381,11 @@ const BookingReviewPage = () => {
             .then(r => r.ok ? r.json() : null)
             .then(full => {
               if (!full) return;
-              const vid = (c.vendorId?._id || c.vendorId)?.toString();
-              if (!vid) return;
+              const vid = c.vendorId?._id || c.vendorId;
+              const key = vid ? vid.toString() : (c.serviceType ? `__svc__${c.serviceType}` : null);
+              if (!key) return;
               const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || [];
-              if (msgs.length) pinned[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "");
+              if (msgs.length) pinned[key] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "");
             })
             .catch(() => {})
         ));
@@ -413,18 +415,20 @@ const BookingReviewPage = () => {
 
         // First pass — read list response
         convList.forEach(c => {
-          const vid = (c.vendorId?._id || c.vendorId)?.toString();
-          if (!vid) return;
-          if (c.vendorPrice?.amount > 0) pm[vid] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName, service: c.vendorPrice.service, confirmed: true };
-          if (c.bookingSummary) sm[vid] = c.bookingSummary;
+          const vid = c.vendorId?._id || c.vendorId;
+          const key = vid ? vid.toString() : (c.serviceType ? `__svc__${c.serviceType}` : null);
+          if (!key) return;
+          if (c.vendorPrice?.amount > 0) pm[key] = { amount: c.vendorPrice.amount, vendorName: c.vendorPrice.vendorName || "Tendr Team", service: c.vendorPrice.service || c.serviceType, confirmed: true };
+          if (c.bookingSummary) sm[key] = c.bookingSummary;
           // Always reset pinned — use empty array if list says no pins
-          pinned[vid] = (c.pinnedMessages || []).map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
+          pinned[key] = (c.pinnedMessages || []).map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
         });
 
         // Second pass — individual fetches to get authoritative pinnedMessages from DB
         await Promise.allSettled(convList.map(async c => {
-          const vid = (c.vendorId?._id || c.vendorId)?.toString();
-          if (!vid) return;
+          const vid = c.vendorId?._id || c.vendorId;
+          const key = vid ? vid.toString() : (c.serviceType ? `__svc__${c.serviceType}` : null);
+          if (!key) return;
           try {
             const r2 = await fetch(`${BASE_URL}/conversations/${c._id}`, {
               headers: { Authorization: `Bearer ${token}` },
@@ -434,7 +438,7 @@ const BookingReviewPage = () => {
             const full = await r2.json();
             const msgs = full.pinnedMessages || full.conversation?.pinnedMessages || [];
             // Always overwrite with authoritative DB value (handles unpins too)
-            pinned[vid] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
+            pinned[key] = msgs.map(m => typeof m === "string" ? m : m.content || m.text || "").filter(Boolean);
           } catch {}
         }));
 
@@ -448,11 +452,10 @@ const BookingReviewPage = () => {
     return () => clearInterval(interval);
   }, [token]);
 
-  const getPrice = (vendor) => {
-    const vid = vendor?._id?.toString();
-    return priceMap[vid]?.amount ?? null; // null = not yet set by admin
-  };
-  const isConfirmed = (vendor) => !!priceMap[vendor?._id?.toString()]?.confirmed;
+  const priceKey = (vendor) =>
+    vendor?._id ? vendor._id.toString() : (vendor?.serviceType ? `__svc__${vendor.serviceType}` : null);
+  const getPrice = (vendor) => priceMap[priceKey(vendor)]?.amount ?? null;
+  const isConfirmed = (vendor) => !!priceMap[priceKey(vendor)]?.confirmed;
 
   const prices = vendorEntries.reduce((acc, [key, v]) => {
     acc[key] = getPrice(v);
@@ -819,8 +822,8 @@ const BookingReviewPage = () => {
                         {candidateArr.map((v) => {
                           const vid = v._id;
                           const isSelected = selectedPerCat[serviceType] === vid;
-                          const vPrice = priceMap[vid]?.amount;
-                          const vPins = pinnedMap[vid] || [];
+                          const vPrice = priceMap[priceKey(v)]?.amount;
+                          const vPins = pinnedMap[priceKey(v)] || [];
                           return (
                             <div
                               key={vid}
@@ -890,16 +893,16 @@ const BookingReviewPage = () => {
                       <div style={{ fontWeight: 700, fontSize: 15, color: "#2C1A0E", marginBottom: 3 }}>
                         {isLetUsDoIt ? "Tendr" : (vendor.name || vendor.businessName || "Vendor")}
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: pinnedMap[vendor?._id?.toString()]?.length ? 6 : 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: (pinnedMap[priceKey(vendor)] || []).length ? 6 : 0 }}>
                         <span style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>
                           {isLetUsDoIt ? "Concierge Planning" : serviceType}
                         </span>
                         {!isLetUsDoIt && vendor.city && <span style={{ fontSize: 12, color: "#9B7450" }}>{vendor.city}</span>}
                       </div>
                       {/* Pinned messages — always visible */}
-                      {pinnedMap[vendor?._id?.toString()]?.length > 0 && (
+                      {(pinnedMap[priceKey(vendor)] || []).length > 0 && (
                         <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                          {pinnedMap[vendor._id.toString()].map((msg, i) => (
+                          {(pinnedMap[priceKey(vendor)] || []).map((msg, i) => (
                             <div key={i} style={{ fontSize: 12, color: "#5a3a1a", background: "#fffaf3", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 8, padding: "6px 10px", whiteSpace: "pre-wrap", wordBreak: "break-word", lineHeight: 1.5, display: "flex", gap: 5, alignItems: "flex-start" }}>
                               <span style={{ flexShrink: 0 }}>📌</span><span>{msg}</span>
                             </div>

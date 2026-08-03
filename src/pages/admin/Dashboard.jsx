@@ -988,6 +988,7 @@ const AdminDashboard = () => {
   const [summaryDraft, setSummaryDraft] = useState("");
 
   const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats, reload: reloadConversations } = useConversations({ enabled: !!token && isAdminToken });
+  const [chatServiceFilter, setChatServiceFilter] = useState("all");
   const [pendingConciergeId, setPendingConciergeId] = useState(null);
   const [deletedChatIds, setDeletedChatIds] = useState(new Set());
   // Live unread counts per conversation ID — incremented when a customer message arrives
@@ -3833,10 +3834,48 @@ const AdminDashboard = () => {
               Chat
             </div>
 
+            {/* Service Type Filter Tabs */}
+            {(() => {
+              const tabs = [
+                { key: "all",             label: "All" },
+                { key: "Baat Karo",       label: "💬 Baat Karo" },
+                { key: "Independence Day", label: "🇮🇳 Independence Day" },
+                { key: "Gift Hampers",    label: "🎁 Gift Hampers" },
+                { key: "Occasions",       label: "🎉 Occasions" },
+                { key: "vendor",          label: "🏪 Vendors" },
+                { key: "SmartPlan",       label: "✨ Smart Plan" },
+              ];
+              return (
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                  {tabs.map(t => {
+                    const count = t.key === "all"
+                      ? recentChats.length
+                      : t.key === "vendor"
+                        ? recentChats.filter(c => c.vendorId && c.chatType === "vendor").length
+                        : recentChats.filter(c => c.serviceType === t.key).length;
+                    return (
+                      <button
+                        key={t.key}
+                        onClick={() => setChatServiceFilter(t.key)}
+                        style={{ padding: "5px 12px", borderRadius: 20, border: `1.5px solid ${chatServiceFilter === t.key ? "#C47A2E" : "rgba(196,122,46,0.25)"}`, background: chatServiceFilter === t.key ? "rgba(196,122,46,0.12)" : "#fff", color: chatServiceFilter === t.key ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: chatServiceFilter === t.key ? 700 : 500, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                      >
+                        {t.label} {count > 0 && <span style={{ fontSize: 10, marginLeft: 3, opacity: 0.7 }}>({count})</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
             <div className="min-h-[500px] sm:min-h-[600px] w-full bg-white border-2 border-[#CCAB4A] rounded-[16px] sm:rounded-[20px] flex flex-col sm:flex-row overflow-hidden hover:shadow-md transition-shadow">
               {/* LEFT - Recent Conversations */}
               <div className="w-full sm:w-1/3 border-b sm:border-b-0 sm:border-r border-[#F1E1A8] overflow-y-auto max-h-[300px] sm:max-h-none">
-                {recentChats.map((c, idx) => (
+                {(chatServiceFilter === "all"
+                  ? recentChats
+                  : chatServiceFilter === "vendor"
+                    ? recentChats.filter(c => c.vendorId && c.chatType === "vendor")
+                    : recentChats.filter(c => c.serviceType === chatServiceFilter)
+                ).map((c, idx) => (
                   <div
                     key={idx}
                     onClick={() => {
@@ -3869,9 +3908,16 @@ const AdminDashboard = () => {
                         <div className="w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-[#FFF4D4] border border-[#CCAB4A] flex items-center justify-center font-semibold text-xs sm:text-sm text-[#CCAB4A]">
                           {getInitials(c.vendorId?.name || c.vendorName || "Tendr Team")}
                         </div>
-                        <span className="font-semibold text-xs sm:text-base hidden sm:inline">
-                          {c.vendorId?.name || c.vendorName || "Tendr Team"}
-                        </span>
+                        <div className="hidden sm:flex flex-col">
+                          <span className="font-semibold text-xs sm:text-base">
+                            {c.vendorId?.name || c.vendorName || "Tendr Team"}
+                          </span>
+                          {c.serviceType && (
+                            <span style={{ fontSize: 10, fontWeight: 600, color: "#C47A2E", opacity: 0.8 }}>
+                              {c.serviceType}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 
@@ -3994,8 +4040,8 @@ const AdminDashboard = () => {
                       </div>
                     )}
 
-                    {/* Hinglish quick replies — Baat Karo chats only */}
-                    {selectedChat?.serviceType === "Baat Karo" && (
+                    {/* Hinglish quick replies — Baat Karo / concierge-type chats */}
+                    {(!selectedChat?.vendorId && ["Baat Karo","Independence Day","Gift Hampers","Occasions"].includes(selectedChat?.serviceType)) && (
                       <div style={{ padding: "8px 10px 0", display: "flex", gap: 6, flexWrap: "wrap", borderTop: "1px solid #F1E1A8" }}>
                         {[
                           "Dhanyawad! Hum aapke liye best vendors dhoondh rahe hain.",
