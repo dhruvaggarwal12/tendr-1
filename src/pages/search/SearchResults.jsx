@@ -8,7 +8,7 @@ import VendorList_ListingPage from "../../components/VendorList_ListingPage";
 import FunActivitiesSection from "../../components/FunActivitiesSection";
 import AuthModal from "../../components/AuthModal";
 import TalkToTendrStrip from "../../components/TalkToTendrStrip";
-import { useChatOverlay } from "../../context/ChatContext";
+import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
@@ -24,7 +24,7 @@ export default function SearchResults() {
 
   const { user } = useSelector(s => s.auth);
   const { token } = useSelector(s => s.auth);
-  const { openTendrTeamChat } = useChatOverlay();
+  const openBaatKaroChat = useOpenBaatKaroChat();
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [pendingTendrChat, setPendingTendrChat] = useState(false);
   const compareSelected = useSelector((s) => s.listingFilters.compareSelected);
@@ -36,7 +36,7 @@ export default function SearchResults() {
 
   const handleTalkToTendr = () => {
     if (!token) { setPendingTendrChat(true); setAuthModalOpen(true); return; }
-    openTendrTeamChat();
+    openBaatKaroChat();
   };
 
   const formData  = useSelector(s => s.eventPlanning?.formData || {});
@@ -429,7 +429,7 @@ export default function SearchResults() {
         onClose={() => { setAuthModalOpen(false); setPendingTendrChat(false); }}
         onSuccess={() => {
           setAuthModalOpen(false);
-          if (pendingTendrChat) { setPendingTendrChat(false); openTendrTeamChat(); }
+          if (pendingTendrChat) { setPendingTendrChat(false); openBaatKaroChat(); }
         }}
       />
 

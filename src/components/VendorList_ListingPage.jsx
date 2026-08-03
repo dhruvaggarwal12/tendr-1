@@ -3,7 +3,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import AuthModal from "./AuthModal";
-import { useChatOverlay } from "../context/ChatContext";
+import { useChatOverlay, useOpenBaatKaroChat } from "../context/ChatContext";
 import TalkToTendrStrip from "./TalkToTendrStrip";
 import { setMultipleFormData, setBookingType } from "../redux/eventPlanningSlice";
 import { EventIdeasPanel } from "../utils/eventIdeas";
@@ -106,7 +106,8 @@ const VendorList_ListingPage = ({
   // true only when user arrived via planning flow (Save and Browse)
   const isFromPlanFlow = location.pathname === "/listings" && new URLSearchParams(location.search).get("fromPlan") === "1";
   const dispatch = useDispatch();
-  const { openVendorChat, openExistingChat, openTendrTeamChat } = useChatOverlay();
+  const { openVendorChat, openExistingChat } = useChatOverlay();
+  const openBaatKaroChat = useOpenBaatKaroChat();
   const { token } = useSelector(s => s.auth);
   const formData = useSelector(s => s.eventPlanning?.formData || {});
   const recommendedServices = eventType ? getRecommendations({ eventType }).services : [];
@@ -190,7 +191,7 @@ const VendorList_ListingPage = ({
       setAuthModalOpen(true);
       return;
     }
-    openTendrTeamChat();
+    openBaatKaroChat();
   };
 
   return (
@@ -1001,7 +1002,7 @@ const VendorList_ListingPage = ({
           }
           if (pendingTendrChat) {
             setPendingTendrChat(false);
-            openTendrTeamChat();
+            openBaatKaroChat();
           }
         }}
       />

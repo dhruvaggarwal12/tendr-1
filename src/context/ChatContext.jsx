@@ -1,4 +1,8 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useCallback } from "react";
+import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const ChatContext = createContext(null);
 
@@ -67,3 +71,34 @@ export const useChatOverlay = () => useContext(ChatContext) || {
   expandChat: () => {},
   closeChat: () => {},
 };
+
+// Finds or navigates to the shared Baat Karo chat.
+// All "Talk to our team" entry points (Budget, Listings, Search, EventPlanning) use this.
+// If an existing Baat Karo chat is found → opens it in the modal.
+// If none → navigates to /baat-karo so the customer can start one.
+export function useOpenBaatKaroChat() {
+  const { token } = useSelector((s) => s.auth);
+  const { openExistingChat } = useChatOverlay();
+  const navigate = useNavigate();
+
+  return useCallback(async () => {
+    if (!token) { navigate("/baat-karo"); return; }
+    try {
+      const res = await fetch(`${BASE_URL}/conversations`, {
+        headers: { Authorization: `Bearer ${token}` },
+        credentials: "include",
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const existing = (data.conversations || []).find(
+          (c) => c.chatType === "vendor" && !c.vendorId && c.serviceType === "Baat Karo"
+        );
+        if (existing) {
+          openExistingChat(existing._id, { _id: null, name: "Tendr Team", serviceType: "Baat Karo" });
+          return;
+        }
+      }
+    } catch {}
+    navigate("/baat-karo");
+  }, [token, openExistingChat, navigate]);
+}

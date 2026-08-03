@@ -4,7 +4,7 @@ import { useRecommendationTracking } from "../../hooks/useRecommendationTracking
 import { EventIdeasPanel } from "../../utils/eventIdeas";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
-import { useChatOverlay } from "../../context/ChatContext";
+import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
 import { useInstallPrompt } from "../../hooks/useInstallPrompt";
 
 import {
@@ -58,9 +58,7 @@ import HamburgerNav from "../../components/HamburgerNav";
 
 const EventPlanning = () => {
   // openChatWithSocket replaced by openConciergeChat — opens the same VendorChatModal window
-  const openChatWithSocket = () => {
-    openConciergeChat(); // opens Tendr Concierge in the centered chat modal
-  };
+  const openChatWithSocket = () => { openBaatKaroChat(); };
 
 
 
@@ -73,6 +71,7 @@ const EventPlanning = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { openConciergeChat, openVendorChat } = useChatOverlay();
+  const openBaatKaroChat = useOpenBaatKaroChat();
   const { canInstall, triggerInstall } = useInstallPrompt();
   const TRANSITION_MS = 350;
   const [activeModal, setActiveModal] = useState(null);
@@ -1711,7 +1710,7 @@ const EventPlanning = () => {
                     style={{ padding: "9px 20px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                     ↺ Try Again
                   </button>
-                  <button onClick={() => { setPlanError(false); openConciergeChat(); }}
+                  <button onClick={() => { setPlanError(false); openBaatKaroChat(); }}
                     style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
                     Talk to Our Team
                   </button>

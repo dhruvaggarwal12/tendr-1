@@ -7,7 +7,7 @@ import SEO from "../../components/SEO";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import HamburgerNav from "../../components/HamburgerNav";
 import AuthModal from "../../components/AuthModal";
-import { useChatOverlay } from "../../context/ChatContext";
+import { useChatOverlay, useOpenBaatKaroChat } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -273,12 +273,12 @@ export default function BudgetAllocator() {
   const planFormData      = useSelector(s => s.eventPlanning?.formData || {});
   const { user }          = useSelector(s => s.auth);
   const { token }         = useSelector(s => s.auth);
-  const { openTendrTeamChat } = useChatOverlay();
+  const openBaatKaroChat = useOpenBaatKaroChat();
   const [tendrAuthOpen, setTendrAuthOpen]   = useState(false);
   const [pendingTendrChat, setPendingTendrChat] = useState(false);
   const handleTalkToTendr = () => {
     if (!token) { setPendingTendrChat(true); setTendrAuthOpen(true); return; }
-    openTendrTeamChat();
+    openBaatKaroChat();
   };
   const isCorporate       = planFormData.eventType === "Corporate Event" && user?.isAdmin;
   const headcount         = parseInt(planFormData.guests) || 0;
@@ -948,7 +948,7 @@ export default function BudgetAllocator() {
       onClose={() => { setTendrAuthOpen(false); setPendingTendrChat(false); }}
       onSuccess={() => {
         setTendrAuthOpen(false);
-        if (pendingTendrChat) { setPendingTendrChat(false); openTendrTeamChat(); }
+        if (pendingTendrChat) { setPendingTendrChat(false); openBaatKaroChat(); }
       }}
     />
     </>
