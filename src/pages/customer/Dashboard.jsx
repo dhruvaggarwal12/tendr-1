@@ -1056,7 +1056,7 @@ export default function CustomerDashboard() {
                       <div style={{ flex: 1 }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
                           <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>{plan.eventType || "Event"}</span>
-                          {statusBadge(plan.status)}
+                          {statusBadge(isPastUnbooked(plan) ? "cancelled" : plan.status)}
                         </div>
                         <div style={{ display: "flex", gap: 16, flexWrap: "wrap", fontSize: 13, color: "#7A5535" }}>
                           {plan.date     && <span>📅 {plan.date}</span>}
@@ -1407,7 +1407,7 @@ export default function CustomerDashboard() {
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
                         <span style={{ fontSize: 17, fontWeight: 800, color: "#2C1A0E" }}>{plan.eventName}</span>
-                        {statusBadge(plan.status)}
+                        {statusBadge(isPastUnbooked(plan) ? "cancelled" : plan.status)}
                         <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 100, background: plan.bookingType === "you-do-it" ? "#eff6ff" : "#f5f3ff", color: plan.bookingType === "you-do-it" ? "#0369a1" : "#7c3aed", border: "1px solid currentColor", fontWeight: 600 }}>
                           {plan.bookingType === "you-do-it" ? "You Do It" : "Let Us Do It"}
                         </span>
