@@ -114,7 +114,7 @@ function CollectionCard({ col, onGet, isStretch }) {
 // ── Baat Karo pre-fill helper ─────────────────────────────────────────────────
 function openBaatKaro(navigate, message) {
   sessionStorage.setItem("baat_karo_draft", JSON.stringify({ message }));
-  navigate("/baat-karo");
+  navigate("/baat-karo?context=Gifting+Hub");
 }
 
 // ════════════════════════════════════════════════════════════════════════════

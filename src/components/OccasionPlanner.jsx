@@ -755,7 +755,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
     try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
     if (venuePhoto) { try { sessionStorage.setItem('baat_karo_venue_photo', venuePhoto); } catch {} }
     onClose();
-    navigate('/baat-karo');
+    navigate('/baat-karo?context=Occasion+Planner');
   };
 
   const downloadPhoto = async (url, index) => {

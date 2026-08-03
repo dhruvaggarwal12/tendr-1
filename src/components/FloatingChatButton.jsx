@@ -158,7 +158,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         const deduped = active.filter((c) => {
           const vid = c.vendorId?._id || c.vendorId || null;
           if (!vid) {
-            const key = `__null_vid_${c.chatType}__`;
+            const key = `__null_vid_${c.serviceType || c.chatType}__`;
             if (seen.has(key)) return false;
             seen.add(key);
           }

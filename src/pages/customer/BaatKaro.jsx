@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useSearchParams } from "react-router-dom";
 import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 import AuthModal from "../../components/AuthModal.jsx";
@@ -11,6 +12,8 @@ const BASE_URL = import.meta.env.VITE_BASE_URL;
 export default function BaatKaro() {
   const { token } = useSelector((s) => s.auth);
   const { openExistingChat } = useChatOverlay();
+  const [searchParams] = useSearchParams();
+  const serviceType = searchParams.get("context") || "Baat Karo";
 
   const [text, setText] = useState(() => {
     try { return sessionStorage.getItem("baat_karo_draft") || ""; } catch { return ""; }
@@ -40,7 +43,7 @@ export default function BaatKaro() {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
-        body: JSON.stringify({ message: text.trim() }),
+        body: JSON.stringify({ message: text.trim(), serviceType }),
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {

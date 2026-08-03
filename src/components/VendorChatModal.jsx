@@ -688,7 +688,7 @@ export default function VendorChatModal() {
               method: "POST",
               headers: { "Content-Type": "application/json", ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}) },
               credentials: "include",
-              body: JSON.stringify({}),
+              body: JSON.stringify({ serviceType: "Talk to Tendr Team" }),
             });
             if (res.ok) {
               const data = await res.json();

@@ -695,7 +695,7 @@ export default function IndependenceDayFlow({ onClose }) {
     }
 
     onClose();
-    navigate("/baat-karo");
+    navigate("/baat-karo?context=Independence+Day");
   }
 
   async function handleVenuePhotoChange(e) {
@@ -812,7 +812,7 @@ export default function IndependenceDayFlow({ onClose }) {
         <AuthModal
           open={showAuth}
           onClose={() => { setShowAuth(false); pendingNavRef.current = false; }}
-          onSuccess={() => { setShowAuth(false); if (pendingNavRef.current) { pendingNavRef.current = false; onClose(); navigate("/baat-karo"); } }}
+          onSuccess={() => { setShowAuth(false); if (pendingNavRef.current) { pendingNavRef.current = false; onClose(); navigate("/baat-karo?context=Independence+Day"); } }}
         />
       </>
     );
@@ -875,7 +875,7 @@ export default function IndependenceDayFlow({ onClose }) {
         <AuthModal
           open={showAuth}
           onClose={() => { setShowAuth(false); pendingNavRef.current = false; }}
-          onSuccess={() => { setShowAuth(false); if (pendingNavRef.current) { pendingNavRef.current = false; onClose(); navigate("/baat-karo"); } }}
+          onSuccess={() => { setShowAuth(false); if (pendingNavRef.current) { pendingNavRef.current = false; onClose(); navigate("/baat-karo?context=Independence+Day"); } }}
         />
       </>
     );
@@ -1197,7 +1197,7 @@ export default function IndependenceDayFlow({ onClose }) {
         if (pendingNavRef.current) {
           pendingNavRef.current = false;
           onClose();
-          navigate("/baat-karo");
+          navigate("/baat-karo?context=Independence+Day");
         }
       }}
     />
