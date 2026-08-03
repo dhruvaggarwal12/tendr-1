@@ -49,17 +49,19 @@ export default function BaatKaro() {
       if (res.ok && data.conversationId) {
         try { sessionStorage.removeItem("baat_karo_draft"); } catch {}
 
+        const msgHeaders = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+
         // Send venue photo from OccasionPlanner (base64 data URI)
         if (venuePhoto) {
           try {
             await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: msgHeaders,
               body: JSON.stringify({ sender: "user", content: "📷 Venue / place photo:" }),
             });
             await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: msgHeaders,
               body: JSON.stringify({ sender: "user", content: `[img:${venuePhoto}]` }),
             });
           } catch {}
@@ -76,7 +78,7 @@ export default function BaatKaro() {
               try {
                 await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
                   method: "POST",
-                  headers: { "Content-Type": "application/json" },
+                  headers: msgHeaders,
                   body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }),
                 });
               } catch {}
@@ -85,7 +87,7 @@ export default function BaatKaro() {
             try {
               await fetch(`${BASE_URL}/messages/${data.conversationId}/message`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: msgHeaders,
                 body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }),
               });
             } catch {}

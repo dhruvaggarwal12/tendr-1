@@ -990,6 +990,11 @@ const AdminDashboard = () => {
   const { recentChats: rawRecentChats, supportChats: rawSupportChats, adminChats: rawAdminChats, reload: reloadConversations } = useConversations({ enabled: !!token && isAdminToken });
   const [pendingConciergeId, setPendingConciergeId] = useState(null);
   const [deletedChatIds, setDeletedChatIds] = useState(new Set());
+  // Live unread counts per conversation ID — incremented when a customer message arrives
+  // in a conversation that isn't currently selected; cleared when admin opens that chat
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const reloadConversationsRef = React.useRef(reloadConversations);
+  React.useEffect(() => { reloadConversationsRef.current = reloadConversations; }, [reloadConversations]);
 
   const handleDeleteChat = (e, chatId) => {
     e.stopPropagation();
@@ -1188,6 +1193,7 @@ const AdminDashboard = () => {
     const convo = await getConversationMessages(id);
     setCurrentConversation(convo || []);
     setAdminMsgInput("");
+    setUnreadCounts(prev => { const n = { ...prev }; delete n[id?.toString()]; return n; });
     if (adminSocketRef.current) {
       adminSocketRef.current.emit('join_conversation', { conversationId: id });
     }
@@ -1355,6 +1361,10 @@ const AdminDashboard = () => {
     socket.on('connect_error', (e) => console.error('Admin socket error:', e.message));
 
     socket.on('new_chat_request', (req) => {
+      // Join the new conversation room so subsequent messages arrive in real-time
+      socket.join(req._id?.toString());
+      // Refresh the Chat tab conversation list (picks up new Baat Karo chats)
+      reloadConversationsRef.current();
       setChatRequests((prev) => {
         const exists = prev.find((r) => r._id === req._id);
         if (exists) return prev;
@@ -1362,13 +1372,18 @@ const AdminDashboard = () => {
       });
     });
 
-    // Receive new messages in real-time — only for the currently selected chat
-    // Use selectedChatRef to avoid stale closure (socket effect only runs on token change)
+    // Receive new messages in real-time
+    // If the message is for the currently open chat → append it
+    // Otherwise → increment unread badge for that conversation
     socket.on('new_message', (msg) => {
       if (msg.sender === 'customer-care') return;
       const cid = selectedChatRef.current?._id?.toString();
-      if (!cid || msg.conversationId?.toString() !== cid) return;
-      setCurrentConversation((prev) => [...(prev || []), msg]);
+      const msgConvoId = msg.conversationId?.toString();
+      if (cid && msgConvoId === cid) {
+        setCurrentConversation((prev) => [...(prev || []), msg]);
+      } else if (msgConvoId) {
+        setUnreadCounts(prev => ({ ...prev, [msgConvoId]: (prev[msgConvoId] || 0) + 1 }));
+      }
     });
 
     return () => { socket.disconnect(); adminSocketRef.current = null; };
@@ -3855,9 +3870,9 @@ const AdminDashboard = () => {
 
                     <div className="flex flex-col items-center sm:items-end text-xs sm:text-sm gap-1">
                       <span className="text-gray-500">{c.time}</span>
-                      {c.unread > 0 && (
+                      {(unreadCounts[c._id?.toString()] > 0) && (
                         <span className="mt-1 w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center rounded-full bg-[#d08f4e] text-white text-xs font-semibold">
-                          {c.unread}
+                          {unreadCounts[c._id?.toString()]}
                         </span>
                       )}
                       {/* Expiry badge */}
