@@ -2234,6 +2234,17 @@ const AdminDashboard = () => {
                                           style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: "none", background: "#0369a1", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
                                           💳 Mark Payment Done
                                         </button>
+                                        <button
+                                          onClick={() => {
+                                            const next = !plan.isBaatKaro;
+                                            fetch(`${BASE_URL}/admin/event-plans/${plan._id}/baat-karo`, {
+                                              method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include',
+                                              body: JSON.stringify({ isBaatKaro: next }),
+                                            }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, isBaatKaro: next } : p)); }).catch(() => {});
+                                          }}
+                                          style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${plan.isBaatKaro ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: plan.isBaatKaro ? "rgba(196,122,46,0.12)" : "transparent", color: plan.isBaatKaro ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                          💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
+                                        </button>
                                       </div>
                                     </>
                                   );
@@ -2269,8 +2280,10 @@ const AdminDashboard = () => {
                                         try {
                                           generateInvoicePDF({ eventSummary, confirmedVendors, amount: plan.totalAmount || plan.amount, orderId: plan.orderId, paymentId: plan.paymentId, userName: plan.customerId?.name });
                                           await new Promise(r => setTimeout(r, 400));
-                                          generateInvitationPDF({ eventSummary, confirmedVendors, userName: plan.customerId?.name });
-                                          await new Promise(r => setTimeout(r, 400));
+                                          if (!plan.isBaatKaro) {
+                                            generateInvitationPDF({ eventSummary, confirmedVendors, userName: plan.customerId?.name });
+                                            await new Promise(r => setTimeout(r, 400));
+                                          }
                                           await generateEventDetailsPDF({ eventSummary, confirmedVendors, pinnedMessages: [], userName: plan.customerId?.name, orderId: plan.orderId });
                                           await new Promise(r => setTimeout(r, 400));
                                           await generateTimelinePDF({ slots: [], eventSummary, userName: plan.customerId?.name });
@@ -2278,6 +2291,17 @@ const AdminDashboard = () => {
                                       }}
                                         style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "5px 10px", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", color: "#CCAB4A", fontSize: 11, fontWeight: 600, cursor: pdfGenerating ? "not-allowed" : "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif", opacity: pdfGenerating ? 0.6 : 1 }}>
                                         📦 {pdfGenerating ? "Generating…" : "Documents"}
+                                      </button>
+                                      <button
+                                        onClick={() => {
+                                          const next = !plan.isBaatKaro;
+                                          fetch(`${BASE_URL}/admin/event-plans/${plan._id}/baat-karo`, {
+                                            method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, credentials: 'include',
+                                            body: JSON.stringify({ isBaatKaro: next }),
+                                          }).then(r => { if (r.ok) setEventPlans(prev => prev.map(p => p._id === plan._id ? { ...p, isBaatKaro: next } : p)); }).catch(() => {});
+                                        }}
+                                        style={{ display: "inline-flex", alignItems: "center", gap: 5, padding: "5px 12px", borderRadius: 8, border: `1.5px solid ${plan.isBaatKaro ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: plan.isBaatKaro ? "rgba(196,122,46,0.12)" : "transparent", color: plan.isBaatKaro ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "'Outfit', sans-serif" }}>
+                                        💬 {plan.isBaatKaro ? "Baat Karo ✓" : "Baat Karo"}
                                       </button>
                                     </div>
                                   );

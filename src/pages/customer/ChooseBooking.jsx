@@ -94,7 +94,7 @@ export default function ChooseBooking() {
   const [flyerData, setFlyerData] = useState(emptyFlyer);
 
   const handleChoose = (type, route) => {
-    if (type === "baat-karo") { setShowFlyerModal(true); return; }
+    if (type === "baat-karo") { navigate("/baat-karo"); return; }
     if (route) { navigate(route); return; }
     dispatch(clearVendorCompare());
     dispatch(setBookingType(type));

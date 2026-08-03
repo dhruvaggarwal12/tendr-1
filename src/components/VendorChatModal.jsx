@@ -542,19 +542,26 @@ export default function VendorChatModal() {
   const [showFinalisePopup, setShowFinalisePopup] = useState(false);
   const [finalising, setFinalising] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const isBaatKaro = vendor?.serviceType === "Baat Karo";
+  // All null-vendorId non-SmartPlan chats are Baat Karo flows (Baat Karo, Independence Day, Gift Hampers, etc.)
+  const isBaatKaro = !vendor?._id && !isSmartPlan;
   // Direct chats (no approval) — Mark Done + Finalise locked until admin replies once
   const isDirectChat = isBaatKaro || (isConcierge && !isSmartPlan);
   const finalisedVendors = useSelector(s => s.listingFilters.finalisedVendors || {});
   const isThisVendorFinalised = (() => {
-    if (isBaatKaro) return !!finalisedVendors["Baat Karo"];
+    if (isBaatKaro) {
+      const key = vendor?.serviceType || "Baat Karo";
+      const entry = finalisedVendors[key];
+      return !!(Array.isArray(entry) ? entry.length > 0 : entry);
+    }
     if (!vendor?._id) return false;
     const entry = finalisedVendors[vendor?.serviceType];
     if (!entry) return false;
     const arr = Array.isArray(entry) ? entry : [entry];
     return arr.some(v => v._id === vendor._id);
   })();
-  const bookingSubmitted = !!localStorage.getItem(`tendr:booking-submitted:${vendor?._id}`);
+  const bookingSubmitted = isBaatKaro
+    ? !!localStorage.getItem(`tendr:baat-karo-finalised:${conversationId}`)
+    : !!localStorage.getItem(`tendr:booking-submitted:${vendor?._id}`);
 
   // ── Minimise animation state ─────────────────────────────────────────────────
   const [minimizing, setMinimizing] = useState(false);
@@ -876,7 +883,7 @@ export default function VendorChatModal() {
 
     socket.on("payment_confirmed", () => {
       dispatch(clearFinalisedVendor());
-      Object.keys(localStorage).filter(k => k.startsWith("tendr:booking-submitted:")).forEach(k => localStorage.removeItem(k));
+      Object.keys(localStorage).filter(k => k.startsWith("tendr:booking-submitted:") || k.startsWith("tendr:baat-karo-finalised:")).forEach(k => localStorage.removeItem(k));
       window.dispatchEvent(new CustomEvent("tendr:payment-confirmed"));
       closeChat();
     });
@@ -1043,6 +1050,7 @@ export default function VendorChatModal() {
     }
 
     dispatch(setFinalisedVendor(vendor));
+    if (isBaatKaro && conversationId) localStorage.setItem(`tendr:baat-karo-finalised:${conversationId}`, "1");
     try { const t = localStorage.getItem("tendr_token") || localStorage.getItem("jwt"); if (t) import("../utils/progressSync").then(m => m.scheduleSyncToServer(t)); } catch {}
     if (socketRef.current && conversationId) {
       socketRef.current.emit("send_message", {

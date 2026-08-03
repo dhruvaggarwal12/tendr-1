@@ -504,15 +504,18 @@ const BookingReviewPage = () => {
     try {
       // Use only the SELECTED vendor per category, not the full array
       const finalisedVendorIds = {};
+      let isBaatKaroBooking = false;
       vendorEntries.forEach(([serviceType, vendor]) => {
         if (vendor?._id) finalisedVendorIds[serviceType] = vendor._id;
+        else isBaatKaroBooking = true;
       });
       const res = await fetch(`${BASE_URL}/event-plans`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         credentials: "include",
         body: JSON.stringify({
-          bookingType: bookingType || "you-do-it",
+          bookingType: isBaatKaroBooking ? "let-us-do-it" : (bookingType || "you-do-it"),
+          isBaatKaro: isBaatKaroBooking,
           eventName: formData.eventName || "My Event",
           eventType: formData.eventType || "Other",
           guests: formData.guests || "0",

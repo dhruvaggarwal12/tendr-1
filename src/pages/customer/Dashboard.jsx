@@ -1551,10 +1551,12 @@ export default function CustomerDashboard() {
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: "#FFFCF5", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>🗓</span>Timeline
                           </button>
+                          {!plan.isBaatKaro && (
                           <button disabled={pdfGenerating} onClick={async () => { setPdfGenerating(true); try { await generateInvitationPDF({ eventSummary, confirmedVendors, userName: pdfUserName, eventTime: plan.eventTime || "", personName: plan.personName || "", venueAddress: plan.venueAddress || "" }); } finally { setPdfGenerating(false); } }}
                             style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "11px 6px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: pdfGenerating ? "not-allowed" : "pointer", fontFamily: font }}>
                             <span style={{ fontSize: 18 }}>📬</span>Invitation
                           </button>
+                          )}
                           </>); })()}
                         </div>
                       </div>
