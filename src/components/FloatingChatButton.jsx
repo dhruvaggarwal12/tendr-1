@@ -334,10 +334,9 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               <button onClick={() => { setShowActiveChats(false); setRejectedPanel(null); setRejectedPanelLoading(false); setRejectedQv(null); }} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
 
-            {/* Chat tabs — shown when there are 2+ distinct chat categories */}
+            {/* Service filter dropdown — shown only when 2+ Baat Karo-type chats exist */}
             {(() => {
-              const TAB_ICONS = { "Baat Karo": "💬", "Independence Day": "🇮🇳", "Gift Hampers": "🎁", "Occasions": "🎉", "__vendors__": "🏪", "__smartplan__": "✨" };
-              const TAB_LABELS = { "__vendors__": "Vendors", "__smartplan__": "Smart Plan" };
+              const ICONS = { "Baat Karo": "💬", "Independence Day": "🇮🇳", "Gift Hampers": "🎁", "Occasions": "🎉" };
               const minimizedVendorId = chatState?.vendor?._id;
               const alreadyInList = vendorChats.some(c => {
                 if (chatState?.conversationId && c._id?.toString() === chatState.conversationId?.toString()) return true;
@@ -348,39 +347,36 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               const allChats = (!alreadyInList && chatState?.vendor)
                 ? [{ _id: chatState.conversationId || `syn-${minimizedVendorId}`, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: chatState.chatApproved ?? false, chatType: chatState.isConcierge ? "concierge" : "vendor", _synthetic: true }, ...vendorChats]
                 : vendorChats;
-              const tabs = ["All"];
               const serviceTypes = [...new Set(
                 allChats
                   .filter(c => !(typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId) && c.chatType !== 'concierge')
                   .map(c => c.serviceType || 'Baat Karo')
               )];
-              tabs.push(...serviceTypes);
-              if (allChats.some(c => (typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId))) tabs.push("__vendors__");
-              if (allChats.some(c => c.chatType === 'concierge')) tabs.push("__smartplan__");
-              if (tabs.length < 3) return null;
+              if (serviceTypes.length < 2) return null;
               return (
-                <div style={{ display: "flex", gap: 6, padding: "10px 16px 0", overflowX: "auto", scrollbarWidth: "none" }}>
-                  {tabs.map(tab => (
-                    <button
-                      key={tab}
-                      onClick={() => setChatTabFilter(tab)}
-                      style={{
-                        flexShrink: 0,
-                        padding: "5px 12px",
-                        borderRadius: 20,
-                        border: chatTabFilter === tab ? "1.5px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.25)",
-                        background: chatTabFilter === tab ? "rgba(196,122,46,0.12)" : "transparent",
-                        color: chatTabFilter === tab ? "#C47A2E" : "#9B7450",
-                        fontSize: 12,
-                        fontWeight: chatTabFilter === tab ? 700 : 500,
-                        cursor: "pointer",
-                        fontFamily: font,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {tab === "All" ? "All" : `${TAB_ICONS[tab] || "💬"} ${TAB_LABELS[tab] || tab}`}
-                    </button>
-                  ))}
+                <div style={{ padding: "10px 16px 0" }}>
+                  <select
+                    value={chatTabFilter}
+                    onChange={e => setChatTabFilter(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "7px 10px",
+                      borderRadius: 10,
+                      border: "1.5px solid rgba(196,122,46,0.3)",
+                      background: "#fffaf3",
+                      color: "#2C1A0E",
+                      fontSize: 13,
+                      fontWeight: 600,
+                      fontFamily: font,
+                      cursor: "pointer",
+                      outline: "none",
+                    }}
+                  >
+                    <option value="All">All chats</option>
+                    {serviceTypes.map(t => (
+                      <option key={t} value={t}>{ICONS[t] || "💬"} {t}</option>
+                    ))}
+                  </select>
                 </div>
               );
             })()}
@@ -404,9 +400,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                   ? allDisplayChats
                   : allDisplayChats.filter(c => {
                       const vid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
-                      if (chatTabFilter === "__vendors__") return !!vid;
-                      if (chatTabFilter === "__smartplan__") return c.chatType === 'concierge';
-                      if (vid || c.chatType === 'concierge') return false;
+                      if (vid || c.chatType === 'concierge') return true; // vendors & smart plan always visible
                       return (c.serviceType || 'Baat Karo') === chatTabFilter;
                     });
                 if (displayChats.length === 0) return (
