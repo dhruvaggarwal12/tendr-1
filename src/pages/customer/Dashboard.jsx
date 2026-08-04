@@ -1121,11 +1121,11 @@ export default function CustomerDashboard() {
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 15, flexShrink: 0 }}>
-                        {(convo.vendorName || convo.vendorId?.name || "V")[0]?.toUpperCase()}
+                        {(() => { const vid = typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId; const nm = vid ? (convo.vendorName || convo.vendorId?.name || "V") : (convo.serviceType || convo.vendorName || "V"); return nm[0]?.toUpperCase(); })()}
                       </div>
                       <div>
                         <div style={{ fontSize: 16, fontWeight: 800, color: "#2C1A0E" }}>
-                          {convo.vendorName || convo.vendorId?.name || "Vendor Chat"}
+                          {(() => { const vid = typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId; return vid ? (convo.vendorName || convo.vendorId?.name || "Vendor Chat") : (convo.serviceType || convo.vendorName || "Tendr Team"); })()}
                         </div>
                         <div style={{ fontSize: 12, color: "#9B7450", marginTop: 2 }}>
                           {convo.serviceType || convo.vendorServiceType || "Vendor"} · Chat started {new Date(convo.createdAt).toLocaleDateString("en-IN")}
@@ -1227,7 +1227,7 @@ export default function CustomerDashboard() {
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
                           <span style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E" }}>
                             {convo.chatType === 'vendor'
-                              ? (convo.vendorName || convo.vendorId?.name || "Vendor Chat")
+                              ? (() => { const vid = typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId; return vid ? (convo.vendorName || convo.vendorId?.name || "Vendor Chat") : (convo.serviceType || convo.vendorName || "Tendr Team"); })()
                               : convo.chatType === 'support' ? "Tendr Support" : "Tendr Concierge"}
                           </span>
                           <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 100,

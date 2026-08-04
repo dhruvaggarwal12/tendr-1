@@ -453,11 +453,15 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                       onMouseLeave={e => (e.currentTarget.style.background = convo.chatRejected ? "rgba(254,242,242,0.7)" : "#fff")}
                     >
                       <div style={{ width: 44, height: 44, borderRadius: "50%", background: convo.chatRejected ? "linear-gradient(135deg,#dc2626,#ef4444)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 17, fontWeight: 800, flexShrink: 0 }}>
-                        {(convo.vendorName || "V")[0].toUpperCase()}
+                        {(() => { const vid = typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId; const nm = vid ? (convo.vendorName || "V") : (convo.serviceType || convo.vendorName || "V"); return nm[0]?.toUpperCase(); })()}
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{convo.vendorName || "Tendr Team"}</div>
-                        <div style={{ fontSize: 12, color: convo.chatRejected ? "#dc2626" : "#9B7450" }}>{convo.chatRejected ? "Vendor not available — see alternatives →" : (convo.serviceType || (convo.chatType === "concierge" ? "Concierge" : "Chat"))}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          {(() => { const vid = typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId; return vid ? (convo.vendorName || "Vendor") : (convo.serviceType || convo.vendorName || "Tendr Team"); })()}
+                        </div>
+                        <div style={{ fontSize: 12, color: convo.chatRejected ? "#dc2626" : "#9B7450" }}>
+                          {convo.chatRejected ? "Vendor not available — see alternatives →" : (() => { const vid = typeof convo.vendorId === 'object' ? convo.vendorId?._id : convo.vendorId; return vid ? (convo.serviceType || "Chat") : "Tendr Team"; })()}
+                        </div>
                       </div>
                       {convo.chatRejected ? (
                         <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
