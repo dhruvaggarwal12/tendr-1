@@ -154,15 +154,11 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
         const active = (data.conversations || []).filter(
           (c) => c.chatType !== "support"
         );
-        // Deduplicate Tendr Team (null vendorId) entries — keep the most recently updated one
+        // Deduplicate only by exact conversationId — backend ensures one per customer per serviceType
         const seen = new Set();
         const deduped = active.filter((c) => {
-          const vid = c.vendorId?._id || c.vendorId || null;
-          if (!vid) {
-            const key = `__null_vid_${c.serviceType || c.chatType}__`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-          }
+          if (seen.has(String(c._id))) return false;
+          seen.add(String(c._id));
           return true;
         });
         setVendorChats(deduped);
