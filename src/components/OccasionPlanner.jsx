@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { useChatOverlay } from '../context/ChatContext';
 
 import BIRTHDAY_THEMES from '../data/birthdayThemes';
 import ANNIVERSARY_THEMES from '../data/anniversaryThemes';
@@ -728,7 +730,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
     { key: 'photography',   icon: '📸', label: 'Photography' },
   ];
 
-  const handleProceed = () => {
+  const handleProceed = async () => {
     const selLines = SEL_META.map(({ key, icon, label }) => {
       const { picked, custom } = selections[key];
       const all = [...picked, ...(custom.trim() ? [custom.trim()] : [])];
@@ -752,10 +754,35 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
       '',
       'Can you help with planning, vendor booking, and coordination?',
     ].filter(l => l !== null).join('\n');
-    try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
-    if (venuePhoto) { try { sessionStorage.setItem('baat_karo_venue_photo', venuePhoto); } catch {} }
+
+    if (!token) {
+      try { sessionStorage.setItem('baat_karo_draft', parts); } catch {}
+      if (venuePhoto) try { sessionStorage.setItem('baat_karo_venue_photo', venuePhoto); } catch {}
+      onClose();
+      navigate('/occasions/chat');
+      return;
+    }
+
     onClose();
-    navigate('/occasions/chat');
+    const hdrs = { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+    try {
+      const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
+        method: 'POST', headers: hdrs, credentials: 'include',
+        body: JSON.stringify({ message: parts, serviceType: 'Occasions' }),
+      });
+      const data = await res.json();
+      if (res.ok && data.conversationId) {
+        const cid = data.conversationId;
+        if (venuePhoto) {
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: 'POST', headers: hdrs, body: JSON.stringify({ sender: 'user', content: '📷 Venue / place photo:' }) }); } catch {}
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: 'POST', headers: hdrs, body: JSON.stringify({ sender: 'user', content: `[img:${venuePhoto}]` }) }); } catch {}
+        }
+        for (const url of selections.photos) {
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: 'POST', headers: hdrs, body: JSON.stringify({ sender: 'user', content: `[img:${url}]` }) }); } catch {}
+        }
+        openExistingChat(cid, { _id: null, name: 'Tendr Team', serviceType: 'Occasions', approved: false });
+      }
+    } catch (e) { console.error('OccasionPlanner chat failed:', e); }
   };
 
   const downloadPhoto = async (url, index) => {
@@ -1033,9 +1060,13 @@ function ThemeCard({ theme, occasion, onExpand, occColor }) {
 
 // ── Main OccasionPlanner component ────────────────────────────────────────
 
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export default function OccasionPlanner({ initialOccasion, onClose }) {
   const fromCard = !!initialOccasion;
   const navigate = useNavigate();
+  const { token } = useSelector(s => s.auth);
+  const { openExistingChat } = useChatOverlay();
 
   const [step,      setStep]      = useState(fromCard ? 0.5 : 0);
   const [occasion,  setOccasion]  = useState(initialOccasion || null);

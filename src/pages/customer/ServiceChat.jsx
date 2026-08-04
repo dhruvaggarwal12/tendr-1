@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -67,18 +67,51 @@ export default function ServiceChat({ serviceType }) {
   const [charCount, setCharCount] = useState(0);
   const [showAuth, setShowAuth] = useState(false);
   const [sending, setSending] = useState(false);
+  const autoSubmittedRef = useRef(false);
 
   useEffect(() => {
     setCharCount(text.length);
     try { sessionStorage.setItem("baat_karo_draft", text); } catch {}
   }, [text]);
 
-  // Auto-submit when landing with a pre-filled draft from a flow (e.g. IndependenceDayFlow, GiftingHub)
+  // Auto-submit for the unauthenticated redirect case: user wasn't logged in when they went through a
+  // flow, logged in via the ServiceChat auth modal, and now token is set with a draft in sessionStorage.
   useEffect(() => {
-    if (!token) return;
+    if (!token || autoSubmittedRef.current) return;
     const draft = (() => { try { return sessionStorage.getItem("baat_karo_draft") || ""; } catch { return ""; } })();
-    if (draft.trim()) submitMessage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (!draft.trim()) return;
+    autoSubmittedRef.current = true;
+    const photos = (() => { try { return JSON.parse(sessionStorage.getItem("gh_chat_photos") || "[]"); } catch { return []; } })();
+    const vPhoto = (() => { try { return sessionStorage.getItem("baat_karo_venue_photo") || null; } catch { return null; } })();
+    setSending(true);
+    const hdrs = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    (async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
+          method: "POST", headers: hdrs, credentials: "include",
+          body: JSON.stringify({ message: draft.trim(), serviceType }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.conversationId) return;
+        const cid = data.conversationId;
+        try { sessionStorage.removeItem("baat_karo_draft"); } catch {}
+        if (vPhoto) {
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: "📷 Venue / place photo:" }) }); } catch {}
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `[img:${vPhoto}]` }) }); } catch {}
+          try { sessionStorage.removeItem("baat_karo_venue_photo"); } catch {}
+          setVenuePhoto(null);
+        }
+        for (const photo of photos) {
+          if (photo.name) try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }) }); } catch {}
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }) }); } catch {}
+        }
+        if (photos.length > 0) { try { sessionStorage.removeItem("gh_chat_photos"); } catch {} setRefPhotos([]); }
+        setText("");
+        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType, approved: false });
+      } catch (e) { console.error("ServiceChat auto-submit failed:", e); }
+      finally { setSending(false); }
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const submitMessage = async () => {

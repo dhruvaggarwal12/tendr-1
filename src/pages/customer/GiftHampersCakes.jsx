@@ -1,14 +1,18 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
 const GiftHampersCakes = () => {
   const navigate = useNavigate();
+  const { token } = useSelector(s => s.auth);
+  const { openExistingChat } = useChatOverlay();
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
   const [previewIdx, setPreviewIdx] = useState(null);
@@ -109,26 +113,35 @@ const GiftHampersCakes = () => {
     );
   };
 
-  const goToChat = () => {
+  const goToChat = async () => {
+    const photos = selectedPhotos.map(({ url, name, priceRange, vendorName }) => ({ url, name, priceRange, vendorName }));
+    const msg = photos.length > 0
+      ? `Hi! I'm interested in ordering a gift hamper from Tendr. I've shortlisted ${photos.length === 1 ? "this option" : "these options"}:\n\n${photos.map((p, i) => `${i + 1}. ${p.name || "Gift Hamper"}${p.priceRange ? ` (${p.priceRange})` : ""}`).join("\n")}\n\nCan you help me with customisation, availability and delivery across Delhi NCR?`
+      : `Hi! I'd like to order a custom gift hamper from Tendr.\n\nCould you share options based on my occasion and budget? I'm open to personalised packaging and hamper curation. Looking forward to your suggestions!`;
+
+    if (!token) {
+      try { sessionStorage.setItem("baat_karo_draft", msg); } catch {}
+      if (photos.length > 0) try { sessionStorage.setItem("gh_chat_photos", JSON.stringify(photos)); } catch {}
+      navigate("/gift-hampers/chat");
+      return;
+    }
+
+    const hdrs = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
     try {
-      if (selectedPhotos.length > 0) {
-        sessionStorage.setItem("gh_chat_photos", JSON.stringify(
-          selectedPhotos.map(({ url, name, priceRange, vendorName }) => ({ url, name, priceRange, vendorName }))
-        ));
-        const itemLines = selectedPhotos
-          .map((p, i) => `${i + 1}. ${p.name || "Gift Hamper"}${p.priceRange ? ` (${p.priceRange})` : ""}`)
-          .join("\n");
-        sessionStorage.setItem("baat_karo_draft",
-          `Hi! I'm interested in ordering a gift hamper from Tendr. I've shortlisted ${selectedPhotos.length === 1 ? "this option" : "these options"}:\n\n${itemLines}\n\nCan you help me with customisation, availability and delivery across Delhi NCR?`
-        );
-      } else {
-        sessionStorage.removeItem("gh_chat_photos");
-        sessionStorage.setItem("baat_karo_draft",
-          `Hi! I'd like to order a custom gift hamper from Tendr.\n\nCould you share options based on my occasion and budget? I'm open to personalised packaging and hamper curation. Looking forward to your suggestions!`
-        );
+      const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
+        method: "POST", headers: hdrs, credentials: "include",
+        body: JSON.stringify({ message: msg, serviceType: "Gift Hampers" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.conversationId) {
+        const cid = data.conversationId;
+        for (const photo of photos) {
+          if (photo.name) try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }) }); } catch {}
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }) }); } catch {}
+        }
+        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: false });
       }
-    } catch {}
-    navigate("/gift-hampers/chat");
+    } catch (e) { console.error("GiftHampersCakes chat failed:", e); }
   };
 
   return (

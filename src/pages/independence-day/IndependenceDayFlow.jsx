@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import AuthModal from "../../components/AuthModal";
+import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const STORAGE_KEY = "tendr_indepday_form";
@@ -572,6 +573,7 @@ function PlanIdeas({ orgType, venueType, onBookServices, onBack }) {
 export default function IndependenceDayFlow({ onClose }) {
   const navigate = useNavigate();
   const token = useSelector(s => s.auth?.token);
+  const { openExistingChat } = useChatOverlay();
   const [showAuth, setShowAuth] = useState(false);
   const pendingNavRef = useRef(false);
 
@@ -646,7 +648,7 @@ export default function IndependenceDayFlow({ onClose }) {
         : [...p, photo]
     );
 
-  function sendToBaatKaro() {
+  async function sendToBaatKaro() {
     const serviceLabels = services
       .map((s) => SERVICES.find((x) => x.id === s)?.label)
       .filter(Boolean).join(", ");
@@ -675,27 +677,37 @@ export default function IndependenceDayFlow({ onClose }) {
       });
     }
 
-    try { sessionStorage.setItem("baat_karo_draft", msg); } catch {}
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
 
     const chatPhotos = [];
     if (venuePhotoPreview) chatPhotos.push({ url: venuePhotoPreview, name: "Your venue", priceRange: "" });
     selectedPhotos.forEach((p) => chatPhotos.push({ url: p.url, name: p.title, priceRange: p.description }));
 
-    if (chatPhotos.length > 0) {
-      try { sessionStorage.setItem("gh_chat_photos", JSON.stringify(chatPhotos)); } catch {}
-    } else {
-      try { sessionStorage.removeItem("gh_chat_photos"); } catch {}
-    }
-
     if (!token) {
+      try { sessionStorage.setItem("baat_karo_draft", msg); } catch {}
+      if (chatPhotos.length > 0) try { sessionStorage.setItem("gh_chat_photos", JSON.stringify(chatPhotos)); } catch {}
       pendingNavRef.current = true;
       setShowAuth(true);
       return;
     }
 
     onClose();
-    navigate("/independence-day/chat");
+    const hdrs = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    try {
+      const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
+        method: "POST", headers: hdrs, credentials: "include",
+        body: JSON.stringify({ message: msg, serviceType: "Independence Day" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.conversationId) {
+        const cid = data.conversationId;
+        for (const photo of chatPhotos) {
+          if (photo.name) try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }) }); } catch {}
+          try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }) }); } catch {}
+        }
+        openExistingChat(cid, { _id: null, name: "Tendr Team", serviceType: "Independence Day", approved: false });
+      }
+    } catch (e) { console.error("IndependenceDay chat failed:", e); }
   }
 
   async function handleVenuePhotoChange(e) {

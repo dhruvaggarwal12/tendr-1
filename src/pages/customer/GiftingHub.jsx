@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
+import { useChatOverlay } from "../../context/ChatContext";
 import {
   OCCASIONS, RECIPIENTS, INTERESTS, CATALOG_ITEMS, CATALOG_CATS,
   COLLECTIONS, BULK_COLLECTIONS, suggestHampers, fmt,
@@ -111,10 +113,9 @@ function CollectionCard({ col, onGet, isStretch }) {
   );
 }
 
-// ── Baat Karo pre-fill helper ─────────────────────────────────────────────────
-function openBaatKaro(navigate, message) {
-  try { sessionStorage.setItem("baat_karo_draft", message); } catch {}
-  navigate("/gift-hampers/chat");
+// ── Gift Hampers chat helper — calls onSubmit(message) provided by GiftingHub ─
+function openBaatKaro(onSubmit, message) {
+  onSubmit(message);
 }
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -223,7 +224,7 @@ function FlowCard({ emoji, label, sub, badge, badgeColor, onClick }) {
 // ════════════════════════════════════════════════════════════════════════════
 // AI FLOW VIEW
 // ════════════════════════════════════════════════════════════════════════════
-function AIView({ setView, navigate }) {
+function AIView({ setView, onSubmit }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({ occasion: "", recipient: "", interests: [], budget: 2000 });
   const [results, setResults] = useState(null);
@@ -270,7 +271,7 @@ function AIView({ setView, navigate }) {
           {results?.map((col, i) => (
             <CollectionCard key={col.id} col={col} isStretch={col.isStretch} onGet={() => {
               const items = col.items.join(", ");
-              openBaatKaro(navigate, `Hi! I'd like to order a "${col.name}" hamper.\n\nOccasion: ${OCCASIONS.find(o => o.id === form.occasion)?.label}\nBudget: ~${fmt(form.budget)}\n\nItems I have in mind: ${items}\n\nCan you confirm price and availability?`);
+              openBaatKaro(onSubmit,`Hi! I'd like to order a "${col.name}" hamper.\n\nOccasion: ${OCCASIONS.find(o => o.id === form.occasion)?.label}\nBudget: ~${fmt(form.budget)}\n\nItems I have in mind: ${items}\n\nCan you confirm price and availability?`);
             }} />
           ))}
         </div>
@@ -414,7 +415,7 @@ function AIView({ setView, navigate }) {
 // ════════════════════════════════════════════════════════════════════════════
 // COLLECTIONS VIEW (single + bulk)
 // ════════════════════════════════════════════════════════════════════════════
-function CollectionsView({ setView, navigate, isBulk, setBulk }) {
+function CollectionsView({ setView, onSubmit, isBulk, setBulk }) {
   const [filter, setFilter] = useState("all");
 
   const occasionFilters = [
@@ -437,11 +438,11 @@ function CollectionsView({ setView, navigate, isBulk, setBulk }) {
   );
 
   const handleGet = (col) => {
-    openBaatKaro(navigate, `Hi! I'm interested in the "${col.name}" gift hamper.\n\nItems: ${col.items.join(", ")}\nBudget range: ${fmt(col.priceRange[0])} – ${fmt(col.priceRange[1])}\n\nCan you confirm price and availability for delivery?`);
+    openBaatKaro(onSubmit,`Hi! I'm interested in the "${col.name}" gift hamper.\n\nItems: ${col.items.join(", ")}\nBudget range: ${fmt(col.priceRange[0])} – ${fmt(col.priceRange[1])}\n\nCan you confirm price and availability for delivery?`);
   };
 
   const handleBulkGet = (col) => {
-    openBaatKaro(navigate, `Hi! I'm interested in bulk return gifts — "${col.name}".\n\nItems: ${col.items.join(", ")}\nPrice per piece: ${fmt(col.pricePerUnit[0])} – ${fmt(col.pricePerUnit[1])}\n\nPlease confirm minimum quantity, customization options, and delivery timeline.`);
+    openBaatKaro(onSubmit,`Hi! I'm interested in bulk return gifts — "${col.name}".\n\nItems: ${col.items.join(", ")}\nPrice per piece: ${fmt(col.pricePerUnit[0])} – ${fmt(col.pricePerUnit[1])}\n\nPlease confirm minimum quantity, customization options, and delivery timeline.`);
   };
 
   return (
@@ -547,7 +548,7 @@ function BulkCard({ col, onGet }) {
 // ════════════════════════════════════════════════════════════════════════════
 // BUILDER VIEW — Build From Scratch
 // ════════════════════════════════════════════════════════════════════════════
-function BuilderView({ setView, navigate }) {
+function BuilderView({ setView, onSubmit }) {
   const [activeCat, setActiveCat] = useState("chocolate");
   const [box, setBox] = useState([]); // [{...item, qty}]
 
@@ -575,7 +576,7 @@ function BuilderView({ setView, navigate }) {
   const handleQuote = () => {
     if (!box.length) return;
     const itemLines = box.map(x => `• ${x.name}${x.qty > 1 ? ` (×${x.qty})` : ""}`).join("\n");
-    openBaatKaro(navigate, `Hi! I'd like a custom gift hamper with the following items:\n\n${itemLines}\n\nEstimated budget: ${fmt(totalMin)} – ${fmt(totalMax)}\n\nCan you confirm the price and packaging options?`);
+    openBaatKaro(onSubmit,`Hi! I'd like a custom gift hamper with the following items:\n\n${itemLines}\n\nEstimated budget: ${fmt(totalMin)} – ${fmt(totalMax)}\n\nCan you confirm the price and packaging options?`);
   };
 
   const getQtyInBox = (id) => box.find(x => x.id === id)?.qty || 0;
@@ -689,12 +690,35 @@ function BuilderView({ setView, navigate }) {
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
+const BASE_URL = import.meta.env.VITE_BASE_URL;
+
 export default function GiftingHub() {
   const navigate = useNavigate();
+  const { token } = useSelector(s => s.auth);
+  const { openExistingChat } = useChatOverlay();
   const [view, setView] = useState("home");
   const [isBulk, setIsBulk] = useState(false);
 
   const handleSetView = useCallback((v) => setView(v), []);
+
+  const submitGiftChat = useCallback(async (message) => {
+    if (!token) {
+      try { sessionStorage.setItem("baat_karo_draft", message); } catch {}
+      navigate("/gift-hampers/chat");
+      return;
+    }
+    const hdrs = { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    try {
+      const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
+        method: "POST", headers: hdrs, credentials: "include",
+        body: JSON.stringify({ message, serviceType: "Gift Hampers" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.conversationId) {
+        openExistingChat(data.conversationId, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: false });
+      }
+    } catch (e) { console.error("GiftingHub chat failed:", e); }
+  }, [token, navigate, openExistingChat]);
 
   return (
     <div style={{ minHeight: "100dvh", background: CREAM, fontFamily: font }}>
@@ -730,14 +754,14 @@ export default function GiftingHub() {
       {/* Views */}
       <div>
         {view === "home" && <HomeView setView={handleSetView} setBulk={setIsBulk} />}
-        {view === "ai" && <AIView setView={handleSetView} navigate={navigate} />}
+        {view === "ai" && <AIView setView={handleSetView} onSubmit={submitGiftChat} />}
         {view === "collections" && (
           <CollectionsView
-            setView={handleSetView} navigate={navigate}
+            setView={handleSetView} onSubmit={submitGiftChat}
             isBulk={isBulk} setBulk={setIsBulk}
           />
         )}
-        {view === "builder" && <BuilderView setView={handleSetView} navigate={navigate} />}
+        {view === "builder" && <BuilderView setView={handleSetView} onSubmit={submitGiftChat} />}
       </div>
 
       <Footer />
