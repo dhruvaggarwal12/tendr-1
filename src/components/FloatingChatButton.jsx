@@ -64,6 +64,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [showMiniChat, setShowMiniChat] = useState(false);
   const [showActiveChats, setShowActiveChats] = useState(false);
+  const [chatTabFilter, setChatTabFilter] = useState("All");
   const [vendorChats, setVendorChats] = useState([]);
   const [rejectedPanel, setRejectedPanel] = useState(null); // { convo, vendors, serviceType, eventDetails } | null
   const [rejectedPanelLoading, setRejectedPanelLoading] = useState(false);
@@ -174,7 +175,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   // Listen for VendorChatModal "back to active chats" event
   // Must be BEFORE any early returns to satisfy Rules of Hooks
   useEffect(() => {
-    const handler = () => setShowActiveChats(true);
+    const handler = () => { setShowActiveChats(true); setChatTabFilter("All"); };
     document.addEventListener("tendr:open-active-chats", handler);
     return () => document.removeEventListener("tendr:open-active-chats", handler);
   }, []);
@@ -239,6 +240,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
     setOpen(false);
     fetchVendorChats();
     setShowActiveChats(true);
+    setChatTabFilter("All");
   };
 
   const handleVendorChatClick = (convo) => {
@@ -332,6 +334,50 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
               <button onClick={() => { setShowActiveChats(false); setRejectedPanel(null); setRejectedPanelLoading(false); setRejectedQv(null); }} style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)", color: "#fff", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
             </div>
 
+            {/* Service-type tabs — shown when there are multiple Baat Karo-category chats */}
+            {(() => {
+              const SERVICE_ICONS = { "Baat Karo": "💬", "Independence Day": "🇮🇳", "Gift Hampers": "🎁", "Occasions": "🎉" };
+              const minimizedVendorId = chatState?.vendor?._id;
+              const alreadyInList = vendorChats.some(c => {
+                if (chatState?.conversationId && c._id?.toString() === chatState.conversationId?.toString()) return true;
+                if (!minimizedVendorId) return false;
+                const cvid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
+                return String(cvid) === String(minimizedVendorId);
+              });
+              const allChats = (!alreadyInList && chatState?.vendor)
+                ? [{ _id: chatState.conversationId || `syn-${minimizedVendorId}`, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: chatState.chatApproved ?? false, chatType: chatState.isConcierge ? "concierge" : "vendor", _synthetic: true }, ...vendorChats]
+                : vendorChats;
+              const serviceChats = allChats.filter(c => !(typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId) && c.chatType !== 'concierge');
+              const uniqueTypes = [...new Set(serviceChats.map(c => c.serviceType || 'Baat Karo'))];
+              if (uniqueTypes.length < 2) return null;
+              const tabs = ["All", ...uniqueTypes];
+              return (
+                <div style={{ display: "flex", gap: 6, padding: "10px 16px 0", overflowX: "auto", scrollbarWidth: "none" }}>
+                  {tabs.map(tab => (
+                    <button
+                      key={tab}
+                      onClick={() => setChatTabFilter(tab)}
+                      style={{
+                        flexShrink: 0,
+                        padding: "5px 12px",
+                        borderRadius: 20,
+                        border: chatTabFilter === tab ? "1.5px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.25)",
+                        background: chatTabFilter === tab ? "rgba(196,122,46,0.12)" : "transparent",
+                        color: chatTabFilter === tab ? "#C47A2E" : "#9B7450",
+                        fontSize: 12,
+                        fontWeight: chatTabFilter === tab ? 700 : 500,
+                        cursor: "pointer",
+                        fontFamily: font,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {tab === "All" ? "All" : `${SERVICE_ICONS[tab] || "💬"} ${tab}`}
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
+
             {/* Chat list */}
             <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
               {(() => {
@@ -344,9 +390,16 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
                   const cvid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
                   return String(cvid) === String(minimizedVendorId);
                 });
-                const displayChats = (!alreadyInList && chatState?.vendor)
+                const allDisplayChats = (!alreadyInList && chatState?.vendor)
                   ? [{ _id: chatState.conversationId || `syn-${minimizedVendorId}`, vendorId: minimizedVendorId, vendorName: chatState.vendor.name, serviceType: chatState.vendor.serviceType, chatApproved: chatState.chatApproved ?? false, chatType: chatState.isConcierge ? "concierge" : "vendor", _synthetic: true }, ...vendorChats]
                   : vendorChats;
+                const displayChats = chatTabFilter === "All"
+                  ? allDisplayChats
+                  : allDisplayChats.filter(c => {
+                      const vid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
+                      if (vid || c.chatType === 'concierge') return true; // always show vendor/concierge chats
+                      return (c.serviceType || 'Baat Karo') === chatTabFilter;
+                    });
                 if (displayChats.length === 0) return (
                   <div style={{ textAlign: "center", padding: "60px 20px" }}>
                     <div style={{ fontSize: 40, marginBottom: 12 }}>💬</div>
