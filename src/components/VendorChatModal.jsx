@@ -613,7 +613,7 @@ export default function VendorChatModal() {
     setMessages([]);
     setText("");
     setConversationId(chatState.conversationId || null);
-    setApproved(existing ? (chatState.vendor?.serviceType === "Baat Karo" || !!chatState.vendor?.approved) : (chatState?.skipBotFlow ? true : false));
+    setApproved(existing ? (!chatState.vendor?._id || !!chatState.vendor?.approved) : (chatState?.skipBotFlow ? true : false));
     const vid = chatState.vendor?._id;
     const chatDoneValid = (() => {
       if (!vid) return false;

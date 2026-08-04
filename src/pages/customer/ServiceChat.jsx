@@ -73,6 +73,14 @@ export default function ServiceChat({ serviceType }) {
     try { sessionStorage.setItem("baat_karo_draft", text); } catch {}
   }, [text]);
 
+  // Auto-submit when landing with a pre-filled draft from a flow (e.g. IndependenceDayFlow, GiftingHub)
+  useEffect(() => {
+    if (!token) return;
+    const draft = (() => { try { return sessionStorage.getItem("baat_karo_draft") || ""; } catch { return ""; } })();
+    if (draft.trim()) submitMessage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
   const submitMessage = async () => {
     if (!text.trim() || sending) return;
     setSending(true);
