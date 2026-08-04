@@ -585,7 +585,7 @@ export default function VendorChatModal() {
   // ── Reset when vendor/mode changes ──────────────────────────────────────────
   useEffect(() => {
     if (!chatState) return;
-    const resetKey = `${chatState.vendor?._id}-${chatState.isExisting}`;
+    const resetKey = `${chatState.vendor?._id}-${chatState.conversationId}-${chatState.isExisting}`;
     // Don't reset if same vendor + same mode (prevents progress loss on re-renders)
     if (resetKey === prevResetKeyRef.current) return;
     prevResetKeyRef.current = resetKey;
@@ -641,7 +641,7 @@ export default function VendorChatModal() {
     if (chatState?.vendor?._id && chatState.vendor._id !== "concierge" && !chatState.isConcierge && chatState.vendor.addToCompare !== false) {
       dispatch(addVendorToCompare(chatState.vendor));
     }
-  }, [chatState?.vendor?._id, chatState?.isExisting]);
+  }, [chatState?.vendor?._id, chatState?.conversationId, chatState?.isExisting]);
 
   // ── Auto-scroll ──────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -889,7 +889,7 @@ export default function VendorChatModal() {
     });
 
     return () => socket.disconnect();
-  }, [chatState?.vendor?._id, currentUser?._id]);
+  }, [chatState?.vendor?._id, chatState?.conversationId, currentUser?._id]);
 
   const openConversation = useCallback((answers) => {
     if (!socketRef.current) return;
