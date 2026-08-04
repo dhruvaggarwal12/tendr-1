@@ -15,6 +15,17 @@ const GiftHampersCakes = () => {
   const { openExistingChat } = useChatOverlay();
   const [samples, setSamples] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [existingChat, setExistingChat] = useState(null);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/conversations`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+      .then(r => r.ok ? r.json() : { conversations: [] })
+      .then(data => {
+        const found = (data.conversations || []).find(c => c.serviceType === "Gift Hampers" && !c.vendorId);
+        if (found) setExistingChat(found);
+      }).catch(() => {});
+  }, [token]);
   const [previewIdx, setPreviewIdx] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
@@ -152,6 +163,18 @@ const GiftHampersCakes = () => {
         path="/gift-hampers-cakes"
       />
       <HamburgerNav title="Gift Hampers" showBack />
+
+      {existingChat && (
+        <div style={{ background: "linear-gradient(90deg,#2C1A0E,#4A2810)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ color: "#fff", fontSize: 14, fontWeight: 600 }}>🎁 You have an active Gift Hampers chat</div>
+          <button
+            onClick={() => openExistingChat(existingChat._id, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: true })}
+            style={{ background: "#C47A2E", color: "#fff", border: "none", borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap" }}
+          >
+            Resume Chat →
+          </button>
+        </div>
+      )}
 
       {/* ── Header ── */}
       <style>{`

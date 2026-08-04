@@ -576,6 +576,17 @@ export default function IndependenceDayFlow({ onClose }) {
   const { openExistingChat } = useChatOverlay();
   const [showAuth, setShowAuth] = useState(false);
   const pendingNavRef = useRef(false);
+  const [existingChat, setExistingChat] = useState(null);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/conversations`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+      .then(r => r.ok ? r.json() : { conversations: [] })
+      .then(data => {
+        const found = (data.conversations || []).find(c => c.serviceType === "Independence Day" && !c.vendorId);
+        if (found) setExistingChat(found);
+      }).catch(() => {});
+  }, [token]);
 
   const [orgType, setOrgType]     = useState("");
   const [step, setStep]           = useState(0);
@@ -1158,6 +1169,14 @@ export default function IndependenceDayFlow({ onClose }) {
       <div style={modal}>
         <div style={hdr}>
           <button style={closeBtn} onClick={onClose}>✕</button>
+          {existingChat && (
+            <button
+              onClick={() => { openExistingChat(existingChat._id, { _id: null, name: "Tendr Team", serviceType: "Independence Day", approved: true }); onClose(); }}
+              style={{ width: "100%", marginBottom: 10, background: "rgba(196,122,46,0.18)", border: "1.5px solid rgba(196,122,46,0.4)", borderRadius: 10, padding: "8px 14px", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", textAlign: "left" }}
+            >
+              🇮🇳 You have an active Independence Day chat &nbsp;→ Resume Chat
+            </button>
+          )}
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
             <span style={{ fontSize: 20 }}>🇮🇳</span>
             <div style={{ fontSize: 10, fontWeight: 800, letterSpacing: "0.14em", opacity: 0.85, textTransform: "uppercase" }}>

@@ -1067,6 +1067,17 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   const navigate = useNavigate();
   const { token } = useSelector(s => s.auth);
   const { openExistingChat } = useChatOverlay();
+  const [existingChat, setExistingChat] = useState(null);
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${BASE_URL}/conversations`, { headers: { Authorization: `Bearer ${token}` }, credentials: "include" })
+      .then(r => r.ok ? r.json() : { conversations: [] })
+      .then(data => {
+        const found = (data.conversations || []).find(c => c.serviceType === 'Occasions' && !c.vendorId);
+        if (found) setExistingChat(found);
+      }).catch(() => {});
+  }, [token]);
 
   const [step,      setStep]      = useState(fromCard ? 0.5 : 0);
   const [occasion,  setOccasion]  = useState(initialOccasion || null);
@@ -1135,6 +1146,17 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
         padding: '20px 16px', overflowY: 'auto',
       }}>
         <div className="op-overlay-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: '100%' }}>
+
+          {existingChat && (
+            <div style={{ width: '100%', maxWidth: 640, marginBottom: 10 }}>
+              <button
+                onClick={() => { openExistingChat(existingChat._id, { _id: null, name: 'Tendr Team', serviceType: 'Occasions', approved: true }); onClose(); }}
+                style={{ width: '100%', background: 'rgba(196,122,46,0.2)', border: '1.5px solid rgba(196,122,46,0.5)', borderRadius: 12, padding: '10px 16px', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', fontFamily: "'Outfit',sans-serif" }}
+              >
+                🎉 You have an active Occasions chat &nbsp;→ Resume Chat
+              </button>
+            </div>
+          )}
 
           {/* Panel */}
           <div className="op-panel op-scroll" onClick={e => e.stopPropagation()} style={{
