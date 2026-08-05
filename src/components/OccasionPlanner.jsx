@@ -695,6 +695,8 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
   const [venuePhoto, setVenuePhoto] = useState(null);
   const venuePhotoInputRef = useRef(null);
   const navigate = useNavigate();
+  const { token } = useSelector(s => s.auth);
+  const { openExistingChat } = useChatOverlay();
 
   const color = themeAccentColor(theme.id);
 
