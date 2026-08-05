@@ -429,6 +429,8 @@ export default function CustomerDashboard() {
   // - Approved + no price agreed yet: always show (still in discussion)
   const pendingVendorChats = conversations.filter(c => {
     if (c.chatType !== "vendor") return false;
+    const vid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
+    if (!vid) return false; // null-vendorId service chats only belong in Chats tab
     if (!c.chatApproved) return isWithin24Hrs(c);   // pending → 24hr rule
     return !(c.vendorPrice?.amount > 0);             // approved + no price = still negotiating
   });

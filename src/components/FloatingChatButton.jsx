@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import tendrLogo from "../assets/logos/tendr.png";
 import AuthModal from "./AuthModal";
-import { removeVendorFromCompare, clearVendorCompare } from "../redux/listingFiltersSlice";
+import { removeVendorFromCompare, clearVendorCompare, setFinalisedVendor } from "../redux/listingFiltersSlice";
 import { selectFunCartCount, selectFunConfirmed, setFunConfirmed, clearFunCart, selectFunCartItems, selectFunCartTotal } from "../redux/funActivitiesCartSlice";
 import router from "../router";
 import MiniChatWidget from "./MiniChatWidget";
@@ -895,20 +895,34 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
       })()}
 
       {/* ── Chat-row-left: Pay + Gift FAB — horizontal row to the left of chat button ── */}
-      {((path !== "/booking/review" && Object.keys(finalisedVendors).length > 0) || ghConfirmed || stConfirmed || funConfirmed) && (
-        <div className="chat-row-left">
-          {path !== "/booking/review" && Object.keys(finalisedVendors).length > 0 && (
-            <button
-              onClick={() => setShowPayPopup(true)}
-              title="Review & Pay"
-              style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0, fontFamily: font }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
-            >
-              Pay
-            </button>
-          )}
-          {(ghConfirmed || stConfirmed || funConfirmed) && (
+      {(() => {
+        const hasLocalPay = path !== "/booking/review" && Object.keys(finalisedVendors).length > 0;
+        const hasBackendPrice = vendorChats.some(c => (c.vendorPrice?.amount > 0) && c.chatApproved);
+        const showPay = hasLocalPay || (path !== "/booking/review" && hasBackendPrice);
+        return ((showPay || ghConfirmed || stConfirmed || funConfirmed) && (
+          <div className="chat-row-left">
+            {showPay && (
+              <button
+                onClick={() => {
+                  if (!Object.keys(finalisedVendors).length && hasBackendPrice) {
+                    vendorChats
+                      .filter(c => (c.vendorPrice?.amount > 0) && c.chatApproved)
+                      .forEach(c => {
+                        const vid = typeof c.vendorId === 'object' ? c.vendorId?._id : c.vendorId;
+                        dispatch(setFinalisedVendor({ _id: vid || null, name: c.vendorName || "Tendr Team", serviceType: c.serviceType, primaryService: c.serviceType }));
+                      });
+                  }
+                  setShowPayPopup(true);
+                }}
+                title="Review & Pay"
+                style={{ position: "relative", borderRadius: 100, padding: "0 16px", height: 44, width: "auto", minWidth: 54, border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: "#CCAB4A", background: "linear-gradient(135deg,#2C1A0E,#4A2810)", boxShadow: "0 4px 14px rgba(44,26,14,0.35)", flexShrink: 0, fontFamily: font }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px) scale(1.04)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0) scale(1)"; }}
+              >
+                Pay
+              </button>
+            )}
+            {(ghConfirmed || stConfirmed || funConfirmed) && (
             <button
               onClick={() => setAddOnsOpen(true)}
               aria-label="View Add-on Orders"
@@ -924,7 +938,8 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
             </button>
           )}
         </div>
-      )}
+        ));
+      })()}
 
       {/* Add-ons panel */}
       {addOnsOpen && (() => {

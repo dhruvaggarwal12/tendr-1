@@ -1076,6 +1076,33 @@ const BookingReviewPage = () => {
               </div>
             )}
 
+            {/* ── People Also Get — upsell block ── */}
+            <div style={{ marginTop: 8, marginBottom: 8, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>People also get</p>
+              {faItems.length === 0 && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <span style={{ fontSize: 22 }}>🎭</span>
+                    <div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Fun Activities</div>
+                      <div style={{ fontSize: 11, color: "#9B7450" }}>Magic shows, live bands, photo booths &amp; more</div>
+                    </div>
+                  </div>
+                  <button onClick={() => navigate("/fun-activities")} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Browse →</button>
+                </div>
+              )}
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <span style={{ fontSize: 22 }}>💌</span>
+                  <div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Wedding Stationeries</div>
+                    <div style={{ fontSize: 11, color: "#9B7450" }}>Invites, menus, cards &amp; more</div>
+                  </div>
+                </div>
+                <button onClick={() => navigate("/stationery")} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Browse →</button>
+              </div>
+            </div>
+
             {/* ── Total + Proceed ── hidden on all sizes; fixed footer handles this */}
             <div className="booking-sidebar-proceed"
               style={{ display: "none",
@@ -1332,7 +1359,7 @@ const BookingReviewPage = () => {
                   onClick={() => setShowConfirmPopup(true)}
                   style={{ width: "100%", padding: "14px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 16, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: !tcAgreed ? "not-allowed" : "pointer", boxShadow: !tcAgreed ? "none" : "0 4px 14px rgba(196,122,46,0.35)", transition: "all 0.2s" }}
                 >
-                  Proceed to Payment
+                  Proceed to WhatsApp →
                 </button>
               )}
               {!tcAgreed && !anyPriceUnset && (
@@ -1352,49 +1379,18 @@ const BookingReviewPage = () => {
                     <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                       <button
                         disabled={saving}
-                        onClick={async () => {
-                          setSaving(true);
-                          const eventPlanId = await saveEventPlan();
-                          // Record referral code usage in backend
-                          if (appliedCode && token) {
-                            fetch(`${BASE_URL}/referrals/apply`, {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-                              credentials: "include",
-                              body: JSON.stringify({ code: appliedCode, orderId: eventPlanId }),
-                            }).catch(() => {});
-                          }
-                          // Fetch pinned messages from customer's conversations
-                          let pinnedLines = [];
-                          try {
-                            const pr = await fetch(`${BASE_URL}/conversations`, {
-                              headers: { Authorization: `Bearer ${token}` },
-                              credentials: "include",
-                            });
-                            if (pr.ok) {
-                              const pd = await pr.json();
-                              const convos = (pd.conversations || []).filter(c => c.chatType === "vendor");
-                              const allPinned = [];
-                              convos.forEach(c => {
-                                (c.pinnedMessages || []).forEach(m => {
-                                  const text = m.content || (typeof m === "string" ? m : "");
-                                  if (text) allPinned.push(`  • ${text}`);
-                                });
-                              });
-                              if (allPinned.length > 0) {
-                                pinnedLines = ["", "*Vendor Quotes:*", ...allPinned];
-                              }
-                            }
-                          } catch {}
-
-                          // Mark booking submitted for each finalised vendor (keeps Pay button + locks chat)
-                          vendorEntries.forEach(([, v]) => {
-                            if (v?._id) localStorage.setItem(`tendr:booking-submitted:${v._id}`, "1");
-                          });
-
-                          // Build WhatsApp summary message
+                        onClick={() => {
+                          // Build WhatsApp message synchronously from already-loaded state
                           const vendorFaTotal = confirmedTotal + faTotal;
-                          const finalAmount = (appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) + effectivePlatformFee;
+                          const discTotal = appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal;
+                          const finalAmount = discTotal + Math.round(discTotal * 0.18) + effectivePlatformFee;
+                          const pinnedLines = (() => {
+                            const allPinned = [];
+                            Object.values(pinnedMap).forEach(msgs => {
+                              msgs.forEach(text => { if (text) allPinned.push(`  • ${text}`); });
+                            });
+                            return allPinned.length > 0 ? ["", "*Pinned Notes:*", ...allPinned] : [];
+                          })();
                           const lines = [
                             `*New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
                             "",
@@ -1429,24 +1425,40 @@ const BookingReviewPage = () => {
                             "",
                             effectivePlatformFee > 0 ? `*Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
                             appliedCode ? `*Referral Code:* ${appliedCode}` : null,
-                            `*Grand Total (incl. 18% GST):* Rs.${Number(finalAmount + Math.round((appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal) * 0.18)).toLocaleString("en-IN")}`,
+                            `*Grand Total (incl. 18% GST):* Rs.${Number(finalAmount).toLocaleString("en-IN")}`,
                             "",
                             currentUser?.name ? `*Customer:* ${currentUser.name}` : null,
                             currentUser?.phoneNumber || currentUser?.phone ? `*Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,
                           ].filter(Boolean).join("\n");
 
-                          // Clear session state (but keep finalisedVendors so Pay button stays until payment confirmed)
+                          // Open WhatsApp immediately (synchronous — avoids popup blocker)
+                          window.open(`https://wa.me/919211668427?text=${encodeURIComponent(lines)}`, "_blank");
+
+                          // Fire-and-forget background saves
+                          setSaving(true);
+                          saveEventPlan().then(eventPlanId => {
+                            if (appliedCode && token && eventPlanId) {
+                              fetch(`${BASE_URL}/referrals/apply`, {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+                                credentials: "include",
+                                body: JSON.stringify({ code: appliedCode, orderId: eventPlanId }),
+                              }).catch(() => {});
+                            }
+                          }).catch(() => {});
+
+                          vendorEntries.forEach(([, v]) => {
+                            if (v?._id) localStorage.setItem(`tendr:booking-submitted:${v._id}`, "1");
+                          });
+
                           sessionStorage.removeItem("wr_appliedCode");
                           sessionStorage.removeItem("wr_referralInput");
                           sessionStorage.removeItem("wr_notes");
                           sessionStorage.removeItem("fa_booking");
                           dispatch(resetEventPlanning());
                           dispatch(clearFunCart());
-
                           setSaving(false);
                           setShowConfirmPopup(false);
-
-                          window.open(`https://wa.me/919211668427?text=${encodeURIComponent(lines)}`, "_blank");
                           navigate("/dashboard", { replace: true });
                         }}
                         style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
@@ -1493,18 +1505,40 @@ const BookingReviewPage = () => {
           </label>
         </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center", width: "100%" }}>
-          {(confirmedTotal + faTotal) > 0 && (() => {
-            const raw = confirmedTotal + faTotal;
-            const disc = appliedCode ? applyDiscount(raw).finalTotal : raw;
-            const total = disc + Math.round(disc * 0.18) + 100;
-            return (
-              <div style={{ fontSize: 13, lineHeight: 1.3, flexShrink: 0 }}>
-                <div style={{ color: "#9B7450", fontSize: 11 }}>Grand Total</div>
-                <div style={{ fontWeight: 900, color: "#2C1A0E", fontSize: 16 }}>{formatINR(total)}</div>
+        {/* Price breakdown */}
+        {(confirmedTotal + faTotal) > 0 && (() => {
+          const raw = confirmedTotal + faTotal;
+          const disc = appliedCode ? applyDiscount(raw).finalTotal : raw;
+          const gst = Math.round(disc * 0.18);
+          const total = disc + gst + effectivePlatformFee;
+          return (
+            <div style={{ width: "100%", background: "rgba(196,122,46,0.06)", borderRadius: 10, padding: "8px 12px", marginBottom: 4 }}>
+              {vendorEntries.map(([cat, v]) => prices[cat] !== null && (
+                <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginBottom: 2 }}>
+                  <span>{v?.name || cat}</span><span>{formatINR(prices[cat])}</span>
+                </div>
+              ))}
+              {faTotal > 0 && (
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginBottom: 2 }}>
+                  <span>Fun Activities</span><span>{formatINR(faTotal)}</span>
+                </div>
+              )}
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginBottom: 2 }}>
+                <span>GST (18%)</span><span>+ {formatINR(gst)}</span>
               </div>
-            );
-          })()}
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", paddingBottom: 5, marginBottom: 5, borderBottom: "1px solid rgba(196,122,46,0.15)" }}>
+                <span>Platform Fee</span>
+                {appliedCode
+                  ? <span style={{ color: "#15803d" }}><s style={{ color: "#ccc" }}>₹{platformFee}</s> FREE</span>
+                  : <span>+ ₹{platformFee}</span>}
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 900, color: "#2C1A0E" }}>
+                <span>Grand Total</span><span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>{formatINR(total)}</span>
+              </div>
+            </div>
+          );
+        })()}
+        <div style={{ display: "flex", gap: 10, alignItems: "center", width: "100%" }}>
           {anyPriceUnset ? (
             <div style={{ flex: 1, padding: "11px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 13, fontWeight: 700, textAlign: "center", border: "1.5px dashed #d1d5db", fontFamily: "'Outfit', sans-serif" }}>
               ⏳ Waiting for quotes
@@ -1515,7 +1549,7 @@ const BookingReviewPage = () => {
               onClick={() => setShowConfirmPopup(true)}
               style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, cursor: !tcAgreed || saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: !tcAgreed ? "none" : "0 3px 12px rgba(196,122,46,0.35)", transition: "all 0.2s" }}
             >
-              Proceed to Payment
+              Proceed to WhatsApp →
             </button>
           )}
         </div>
