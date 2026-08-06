@@ -895,6 +895,14 @@ const Home = () => {
                 Start Planning →
               </button>
               <button
+                onClick={() => navigate("/rakhi-hampers")}
+                style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(196,122,46,0.4)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(196,122,46,0.4)"; }}
+              >
+                🪢 Rakhi Hampers
+              </button>
+              <button
                 onClick={() => setShowIndepDay(true)}
                 style={{ background: "linear-gradient(90deg, #FF9933 0%, #e67e00 50%, #138808 100%)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(255,153,51,0.35)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(255,153,51,0.45)"; }}
@@ -1137,6 +1145,27 @@ const Home = () => {
           .hero-mobile-cats::-webkit-scrollbar { display: none; }
         }
       `}</style>
+
+      {/* ── Rakhi Hampers Banner ── */}
+      <section style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 60%,#3A200C 100%)", padding: "36px 24px" }}>
+        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+            <span style={{ fontSize: 44, lineHeight: 1 }}>🪢</span>
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 4 }}>Raksha Bandhan Special</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.4rem,2.8vw,2rem)", fontWeight: 300, color: "#fff", lineHeight: 1.15 }}>
+                Rakhi Hampers, curated for your loved ones
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/rakhi-hampers")}
+            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "13px 28px", borderRadius: 10, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+          >
+            Explore Now →
+          </button>
+        </div>
+      </section>
 
       {/* ── Plan by Occasion — dark editorial portrait grid ── */}
       <section id="plan-by-occasion" style={{ background: "#1A0E06", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>

@@ -498,6 +498,7 @@ const sidebar_arr = [
   { label: "Chat",             icon: <MessageCircle size={22} />,     key: "Chat" },
   { label: "Chat-Support",     icon: <MessagesSquare size={22} />,    key: "ChatSupport" },
   { label: "Gift Hampers",     icon: <span style={{ fontSize: 18 }}>🎁</span>, key: "GiftHampers" },
+  { label: "Rakhi Hampers",   icon: <span style={{ fontSize: 18 }}>🪢</span>, key: "RakhiHampers" },
   { label: "Invoices",         icon: <FileText size={22} />,                   key: "Invoices" },
   { label: "Reviews",          icon: <Star size={22} />,                       key: "Reviews" },
   { label: "Photos",           icon: <Camera size={22} />,                     key: "Photos" },
@@ -820,6 +821,15 @@ const AdminDashboard = () => {
   const [ghLoading, setGhLoading]       = useState(false);
   const [rakhiOrders, setRakhiOrders]   = useState([]);
   const [rakhiLoading, setRakhiLoading] = useState(false);
+  const [rakhiSamples, setRakhiSamples]           = useState([]);
+  const [rakhiSampleName, setRakhiSampleName]     = useState("");
+  const [rakhiSampleVendor, setRakhiSampleVendor] = useState("");
+  const [rakhiSamplePriceRange, setRakhiSamplePriceRange] = useState("");
+  const [rakhiSampleFile, setRakhiSampleFile]     = useState(null);
+  const [rakhiSampleUploading, setRakhiSampleUploading] = useState(false);
+  const [rakhiSampleMsg, setRakhiSampleMsg]       = useState("");
+  const [rakhiSampleCategory, setRakhiSampleCategory] = useState([]);
+  const [rakhiSampleOccasion, setRakhiSampleOccasion] = useState([]);
   const [selectedGhId, setSelectedGhId] = useState(null);
   const [ghEdits, setGhEdits]           = useState({}); // { [orderId]: items[] }
   const [ghSaving, setGhSaving]         = useState(false);
@@ -1117,7 +1127,7 @@ const AdminDashboard = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Fetch Rakhi hamper orders when tab is active (reuses gift-hamper-orders endpoint with type filter)
+  // Fetch Rakhi hamper orders and samples when tab is active
   useEffect(() => {
     if (activeDropdown !== 'rakhihampers' || !token || !isAdminToken) return;
     setRakhiLoading(true);
@@ -1126,6 +1136,10 @@ const AdminDashboard = () => {
       .then(d => setRakhiOrders(d.orders || []))
       .catch((e) => { if (e?.message !== '401') console.error('rakhi-hampers fetch:', e); })
       .finally(() => setRakhiLoading(false));
+    fetch(`${BASE_URL}/admin/gift-hamper-samples?type=rakhi`)
+      .then(r => r.json())
+      .then(d => setRakhiSamples(d.samples || []))
+      .catch(() => {});
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeDropdown, token]);
 
@@ -5237,6 +5251,144 @@ const AdminDashboard = () => {
           );
         })()}
 
+
+        {/* ── Rakhi Hampers ── */}
+        {activeDropdown === "rakhihampers" && (
+          <div style={{ padding: "24px 20px", maxWidth: 900, margin: "0 auto" }}>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>🪢 Rakhi Hampers</div>
+            <div style={{ fontSize: 13, color: "#9B7450", marginBottom: 24 }}>Manage Rakhi hamper sample photos and orders.</div>
+
+            {/* ── Sample Photos Upload ── */}
+            <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: "20px 22px", marginBottom: 24 }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>🖼️ Sample Rakhi Hamper Photos</div>
+              <div style={{ fontSize: 12, color: "#9B7450", marginBottom: 18 }}>These photos appear on the Rakhi Hampers customer page as reference images.</div>
+
+              <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap", marginBottom: 18, padding: "14px 16px", background: "#FFFCF7", borderRadius: 12, border: "1.5px dashed rgba(196,122,46,0.3)" }}>
+                <div style={{ flex: "1 1 160px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo Name</div>
+                  <input type="text" placeholder="e.g. Luxury Rakhi Hamper" value={rakhiSampleName} onChange={e => setRakhiSampleName(e.target.value)} style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ flex: "1 1 160px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Vendor Name</div>
+                  <input type="text" placeholder="e.g. Sharma Gift House" value={rakhiSampleVendor} onChange={e => setRakhiSampleVendor(e.target.value)} style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ flex: "1 1 140px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Price Range</div>
+                  <input type="text" placeholder="e.g. ₹500 – ₹1,500" value={rakhiSamplePriceRange} onChange={e => setRakhiSamplePriceRange(e.target.value)} style={{ width: "100%", padding: "9px 12px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", fontSize: 13, fontFamily: "'Outfit',sans-serif", color: "#2C1A0E", outline: "none", boxSizing: "border-box" }} />
+                </div>
+                <div style={{ flex: "1 1 200px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Gift Type</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                    {["Drinkware","Dry Fruits & Nuts","Chocolates & Sweets","Spiritual & Pooja","Decorative Boxes","Tokri & Hampers"].map(c => {
+                      const checked = rakhiSampleCategory.includes(c);
+                      return <button key={c} type="button" onClick={() => setRakhiSampleCategory(prev => checked ? prev.filter(x => x !== c) : [...prev, c])} style={{ padding: "4px 9px", borderRadius: 20, fontSize: 11, fontWeight: checked ? 700 : 500, border: `1px solid ${checked ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked ? "#C47A2E" : "#fff", color: checked ? "#fff" : "#7A5535", cursor: "pointer" }}>{c}</button>;
+                    })}
+                  </div>
+                </div>
+                <div style={{ flex: "1 1 200px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Event Type</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+                    {["Rakhi","Birthday","Diwali","Corporate","Wedding","Anniversary","General"].map(o => {
+                      const checked = rakhiSampleOccasion.includes(o);
+                      return <button key={o} type="button" onClick={() => setRakhiSampleOccasion(prev => checked ? prev.filter(x => x !== o) : [...prev, o])} style={{ padding: "4px 9px", borderRadius: 20, fontSize: 11, fontWeight: checked ? 700 : 500, border: `1px solid ${checked ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked ? "#C47A2E" : "#fff", color: checked ? "#fff" : "#7A5535", cursor: "pointer" }}>{o}</button>;
+                    })}
+                  </div>
+                </div>
+                <div style={{ flex: "1 1 140px" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#7A5535", marginBottom: 5 }}>Photo File</div>
+                  <label style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", cursor: "pointer", fontSize: 12, color: "#7A5535", fontFamily: "'Outfit',sans-serif" }}>
+                    📷 {rakhiSampleFile ? rakhiSampleFile.name.slice(0, 22) + (rakhiSampleFile.name.length > 22 ? "…" : "") : "Choose image"}
+                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={async e => {
+                      const raw = e.target.files?.[0];
+                      if (!raw) return setRakhiSampleFile(null);
+                      try {
+                        const bmp = await createImageBitmap(raw);
+                        const MAX = 1200; const scale = Math.min(1, MAX / Math.max(bmp.width, bmp.height));
+                        const w = Math.round(bmp.width * scale), h = Math.round(bmp.height * scale);
+                        const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
+                        canvas.toBlob(blob => { setRakhiSampleFile(new File([blob], raw.name.replace(/\.[^.]+$/, '.jpg'), { type: 'image/jpeg' })); }, 'image/jpeg', 0.85);
+                      } catch { setRakhiSampleFile(raw); }
+                    }} />
+                  </label>
+                </div>
+                <button
+                  disabled={!rakhiSampleFile || rakhiSampleUploading}
+                  onClick={async () => {
+                    if (!rakhiSampleFile || rakhiSampleUploading) return;
+                    setRakhiSampleUploading(true); setRakhiSampleMsg("");
+                    const fd = new FormData();
+                    fd.append("photo", rakhiSampleFile); fd.append("name", rakhiSampleName.trim());
+                    fd.append("vendorName", rakhiSampleVendor.trim()); fd.append("priceRange", rakhiSamplePriceRange.trim());
+                    fd.append("sampleType", "rakhi");
+                    rakhiSampleCategory.forEach(c => fd.append("category[]", c));
+                    rakhiSampleOccasion.forEach(o => fd.append("occasion[]", o));
+                    try {
+                      const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples`, { method: "POST", headers: { Authorization: `Bearer ${token}` }, credentials: "include", body: fd });
+                      const d = await r.json();
+                      if (r.ok && d.sample) {
+                        setRakhiSamples(prev => [d.sample, ...prev]);
+                        setRakhiSampleFile(null); setRakhiSampleName(""); setRakhiSampleVendor(""); setRakhiSamplePriceRange(""); setRakhiSampleCategory([]); setRakhiSampleOccasion([]);
+                        setRakhiSampleMsg("Uploaded!");
+                      } else { setRakhiSampleMsg(d.error || "Upload failed."); }
+                    } catch (e) { setRakhiSampleMsg(e.message); }
+                    finally { setRakhiSampleUploading(false); setTimeout(() => setRakhiSampleMsg(""), 3000); }
+                  }}
+                  style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: !rakhiSampleFile || rakhiSampleUploading ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !rakhiSampleFile || rakhiSampleUploading ? "#9ca3af" : "#fff", fontSize: 13, fontWeight: 700, cursor: !rakhiSampleFile || rakhiSampleUploading ? "not-allowed" : "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0 }}
+                >{rakhiSampleUploading ? "Uploading…" : "✓ Upload"}</button>
+                {rakhiSampleMsg && <span style={{ fontSize: 12, color: rakhiSampleMsg.includes("fail") || rakhiSampleMsg.includes("Error") ? "#ef4444" : "#15803d", fontWeight: 600 }}>{rakhiSampleMsg}</span>}
+              </div>
+
+              {rakhiSamples.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", fontSize: 13, background: "#faf7f2", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.2)" }}>
+                  No Rakhi sample photos yet. Add some above and they'll appear on the customer page.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(160px,1fr))", gap: 12 }}>
+                  {rakhiSamples.map(s => (
+                    <div key={s._id} style={{ borderRadius: 12, overflow: "hidden", background: "#faf5ee", border: "1.5px solid rgba(196,122,46,0.15)" }}>
+                      <img src={s.url} alt={s.name || "Rakhi Hamper"} style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block" }} />
+                      <div style={{ padding: "8px 10px 10px" }}>
+                        {s.name && <div style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{s.name}</div>}
+                        {s.vendorName && <div style={{ fontSize: 11, color: "#7A5535" }}>{s.vendorName}</div>}
+                        {s.priceRange && <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>{s.priceRange}</div>}
+                        <button onClick={async () => {
+                          if (!window.confirm(`Remove "${s.name || "this photo"}"?`)) return;
+                          const r = await fetch(`${BASE_URL}/admin/gift-hamper-samples/${s._id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` }, credentials: "include" });
+                          if (r.ok) setRakhiSamples(prev => prev.filter(x => x._id !== s._id));
+                        }} style={{ marginTop: 6, width: "100%", padding: "5px", borderRadius: 7, border: "1px solid rgba(239,68,68,0.3)", background: "rgba(239,68,68,0.06)", color: "#dc2626", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>Remove</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ── Orders ── */}
+            <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.2)", padding: "20px 22px" }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#2C1A0E", marginBottom: 16 }}>📦 Rakhi Hamper Orders</div>
+              {rakhiLoading ? (
+                <div style={{ fontSize: 13, color: "#9B7450" }}>Loading orders…</div>
+              ) : rakhiOrders.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px", color: "#9B7450", fontSize: 13, background: "#faf7f2", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.2)" }}>No Rakhi hamper orders yet.</div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {rakhiOrders.map(order => (
+                    <div key={order._id} style={{ padding: "14px 16px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.18)", background: "#FFFCF7" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>{order.customerName || order.customerEmail || "Customer"}</div>
+                          <div style={{ fontSize: 11, color: "#9B7450", marginTop: 2 }}>{new Date(order.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</div>
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: order.status === "completed" ? "rgba(21,128,61,0.1)" : "rgba(196,122,46,0.1)", color: order.status === "completed" ? "#15803d" : "#C47A2E", border: `1px solid ${order.status === "completed" ? "rgba(21,128,61,0.3)" : "rgba(196,122,46,0.3)"}` }}>{order.status || "pending"}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ── Invoices ── */}
         {activeDropdown === "invoices" && (() => {
