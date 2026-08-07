@@ -102,72 +102,92 @@ function TipsByTendrSection() {
   const font = "'Outfit', sans-serif";
   const preview = GUIDES.slice(0, 3);
   return (
-    <section style={{ background: "#070B14", padding: "72px 24px 80px", fontFamily: font, position: "relative", overflow: "hidden" }}>
-      {/* Subtle glow blobs */}
-      <div style={{ position: "absolute", top: -80, right: -80, width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,142,247,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-      <div style={{ position: "absolute", bottom: -60, left: -60, width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.05) 0%, transparent 70%)", pointerEvents: "none" }} />
+    <section style={{ background: "#1C0E04", padding: "72px 24px 80px", fontFamily: font, position: "relative", overflow: "hidden" }}>
+      {/* Ambient gold glow blobs */}
+      <div style={{ position: "absolute", top: -80, right: -80, width: 360, height: 360, borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", bottom: -60, left: -60, width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
 
       <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
         {/* Header */}
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}
+        >
           <div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(79,142,247,0.1)", border: "1px solid rgba(79,142,247,0.2)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#4F8EF7", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "5px 14px", marginBottom: 14 }}>
+              <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em" }}>Tips by Tendr</span>
             </div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFFFFF", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#FFF8EC", letterSpacing: "0.01em", lineHeight: 1.15, margin: "0 0 8px" }}>
               Free Event Planning Guides
             </h2>
-            <p style={{ fontSize: 15, color: "#7A8BA8", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
+            <p style={{ fontSize: 15, color: "rgba(255,247,235,0.5)", margin: 0, lineHeight: 1.65, maxWidth: 480 }}>
               Practical guides for budgeting, decorating, and planning any event. Unlock with a WhatsApp number.
             </p>
           </div>
           <button
             onClick={() => navigate("/guides")}
-            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(79,142,247,0.3)", background: "transparent", color: "#4F8EF7", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(204,171,74,0.28)", background: "transparent", color: "#CCAB4A", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0, transition: "all 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(204,171,74,0.1)"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.5)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.borderColor = "rgba(204,171,74,0.28)"; }}
           >
             View All Guides →
           </button>
-        </div>
+        </motion.div>
 
         {/* Guide cards */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 20 }}>
-          {preview.map((guide) => (
-            <div
+          {preview.map((guide, gi) => (
+            <motion.div
               key={guide.slug}
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.45, delay: gi * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
               onClick={() => navigate(`/guides/${guide.slug}`)}
-              style={{ background: "#0F1629", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 18, padding: "24px 22px 20px", cursor: "pointer", transition: "transform 0.2s, border-color 0.2s", position: "relative", overflow: "hidden" }}
-              onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.borderColor = `${guide.theme.accent}40`; }}
-              onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.06)"; }}
+              style={{ background: "rgba(255,247,235,0.04)", border: "1px solid rgba(204,171,74,0.1)", borderRadius: 18, padding: "24px 22px 20px", cursor: "pointer", position: "relative", overflow: "hidden" }}
+              whileHover={{ y: -4, transition: { type: "spring", stiffness: 340, damping: 26 } }}
             >
-              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: guide.theme.accent, opacity: 0.7 }} />
-              <div style={{ fontSize: 32, marginBottom: 12, lineHeight: 1 }}>{guide.coverEmoji}</div>
-              <div style={{ fontSize: 10, fontWeight: 500, color: guide.theme.accent, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{guide.tags[0]}</div>
-              <h3 style={{ fontSize: 16.5, fontWeight: 700, color: "#FFFFFF", margin: "0 0 6px", lineHeight: 1.3, letterSpacing: "-0.01em" }}>{guide.title}</h3>
-              <p style={{ fontSize: 12.5, color: "#7A8BA8", margin: "0 0 16px", lineHeight: 1.6 }}>{guide.subtitle}</p>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 11.5, color: "#4A5E7A" }}>{guide.readTime} · {guide.pages}pp</span>
-                <span style={{ fontSize: 12, fontWeight: 500, color: guide.theme.accent }}>Free →</span>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", opacity: 0.6 }} />
+              {/* Category pill in place of emoji */}
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.12)", borderRadius: 100, padding: "4px 12px", marginBottom: 14 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", flexShrink: 0 }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.1em" }}>{guide.tags[0]}</span>
               </div>
-            </div>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 20, fontWeight: 500, color: "#FFF8EC", margin: "0 0 6px", lineHeight: 1.25, letterSpacing: "0.01em" }}>{guide.title}</h3>
+              <p style={{ fontSize: 13, color: "rgba(255,247,235,0.45)", margin: "0 0 18px", lineHeight: 1.6 }}>{guide.subtitle}</p>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <span style={{ fontSize: 11.5, color: "rgba(255,247,235,0.3)" }}>{guide.readTime} · {guide.pages}pp</span>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E" }}>Free →</span>
+              </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Community row */}
-        <div
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.45, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
           onClick={() => navigate("/community")}
-          style={{ marginTop: 20, padding: "18px 24px", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, transition: "border-color 0.2s" }}
-          onMouseEnter={(e) => e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"}
-          onMouseLeave={(e) => e.currentTarget.style.borderColor = "rgba(196,122,46,0.15)"}
+          style={{ marginTop: 20, padding: "18px 24px", borderRadius: 16, border: "1px solid rgba(196,122,46,0.15)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}
+          whileHover={{ borderColor: "rgba(196,122,46,0.35)", transition: { duration: 0.2 } }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <span style={{ fontSize: 28 }}>💬</span>
+            <div style={{ width: 40, height: 40, borderRadius: 12, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width={17} height={17} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 600, color: "#FFFFFF" }}>Community Wall</div>
-              <div style={{ fontSize: 12.5, color: "#7A8BA8", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
+              <div style={{ fontSize: 15, fontWeight: 600, color: "#FFF8EC" }}>Community Wall</div>
+              <div style={{ fontSize: 12.5, color: "rgba(255,247,235,0.4)", marginTop: 2 }}>See real events shared by customers — photos, setups, and ideas.</div>
             </div>
           </div>
           <span style={{ fontSize: 13, fontWeight: 600, color: "#C47A2E" }}>Explore →</span>
-        </div>
+        </motion.div>
       </div>
     </section>
   );
@@ -181,7 +201,13 @@ function FaqSection() {
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
         {/* Heading */}
-        <div style={{ textAlign: "center", marginBottom: 44 }}>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ textAlign: "center", marginBottom: 44 }}
+        >
           <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.22em", margin: "0 0 14px" }}>Got Questions?</p>
           <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "-0.01em", margin: "0 0 12px", lineHeight: 1.1 }}>
             Frequently Asked Questions
@@ -189,12 +215,20 @@ function FaqSection() {
           <p style={{ fontSize: 14.5, color: "#7A5535", maxWidth: 420, margin: "0 auto", lineHeight: 1.65 }}>
             Everything you need to know before you start planning.
           </p>
-        </div>
+        </motion.div>
 
-        {/* FAQ items — clean hairline accordion */}
-        <div style={{ display: "flex", flexDirection: "column" }}>
+        {/* FAQ items — spring accordion */}
+        <motion.div
+          style={{ display: "flex", flexDirection: "column" }}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.1 }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.05 } } }}
+        >
           {FAQS.map(({ q, a }, i) => (
-            <div key={i}
+            <motion.div
+              key={i}
+              variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 26 } } }}
               style={{
                 borderTop: i === 0 ? "1px solid rgba(196,122,46,0.18)" : "none",
                 borderBottom: "1px solid rgba(196,122,46,0.18)",
@@ -204,7 +238,7 @@ function FaqSection() {
                 onClick={() => setOpen(open === i ? null : i)}
                 style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 20 }}
               >
-                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#1C0E04" : "#3B2410", lineHeight: 1.45, transition: "color 0.18s, font-weight 0.18s" }}>{q}</span>
+                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#1C0E04" : "#3B2410", lineHeight: 1.45, transition: "color 0.18s" }}>{q}</span>
                 <div style={{
                   width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
                   border: `1.5px solid ${open === i ? "#C47A2E" : "rgba(196,122,46,0.3)"}`,
@@ -220,30 +254,46 @@ function FaqSection() {
                   </svg>
                 </div>
               </button>
-              <div style={{ maxHeight: open === i ? 360 : 0, overflow: "hidden", transition: "max-height 0.36s cubic-bezier(0.4,0,0.2,1)" }}>
-                <p style={{ margin: "0 0 20px 0", paddingLeft: 0, fontSize: 14, color: "#6B4A2A", lineHeight: 1.78 }}>{a}</p>
+              <div style={{ maxHeight: open === i ? 400 : 0, overflow: "hidden", transition: "max-height 0.4s cubic-bezier(0.4,0,0.2,1)" }}>
+                <p style={{ margin: "0 0 20px 0", fontSize: 14, color: "#6B4A2A", lineHeight: 1.78 }}>{a}</p>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Still have questions CTA */}
-        <div style={{ textAlign: "center", marginTop: 44, padding: "28px 32px", background: "#fff", borderRadius: 18, border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.45, delay: 0.1, ease: [0.25, 0.46, 0.45, 0.94] }}
+          style={{ textAlign: "center", marginTop: 44, padding: "28px 32px", background: "#fff", borderRadius: 18, border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}
+        >
           <p style={{ fontSize: 16, fontWeight: 700, color: "#1C0E04", margin: "0 0 5px", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.01em" }}>Still have questions?</p>
           <p style={{ fontSize: 13.5, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.6 }}>Our team is happy to help you plan your perfect event.</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
-            <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
-              style={{ padding: "10px 22px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 4px 14px rgba(37,211,102,0.28)" }}>
+            <motion.a
+              href="https://wa.me/919211668427"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ padding: "10px 22px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 4px 14px rgba(37,211,102,0.28)" }}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 24 }}
+            >
               <FaWhatsapp size={15} /> WhatsApp Us
-            </a>
-            <button onClick={() => navigate("/contact-us")}
-              style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.18s" }}
-              onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#C47A2E"; }}>
+            </motion.a>
+            <motion.button
+              onClick={() => navigate("/contact-us")}
+              style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
+              whileHover={{ scale: 1.03, backgroundColor: "#C47A2E", color: "#fff" }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 400, damping: 24 }}
+            >
               Contact Us →
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
       </div>
     </section>
@@ -1097,10 +1147,10 @@ const Home = () => {
       {/* ── Marquee strip — right under hero text ── */}
       {(() => {
         const GROUPS = [
-          { icon: "🏙", label: "Cities", color: "#CCAB4A", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"] },
-          { icon: "🎯", label: "Services", color: "#E8C87A", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup", "Fun Activities"] },
-          { icon: "🎉", label: "Events", color: "#CCAB4A", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
-          { icon: "✨", label: "Platform", color: "#E8C87A", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
+          { label: "Cities", color: "#CCAB4A", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"] },
+          { label: "Services", color: "#E8C87A", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup", "Fun Activities"] },
+          { label: "Events", color: "#CCAB4A", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
+          { label: "Platform", color: "#E8C87A", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
         ];
 
         const strip = [...GROUPS, ...GROUPS]; // duplicate for seamless loop
@@ -1116,7 +1166,6 @@ const Home = () => {
               {strip.map((group, gi) => (
                 <React.Fragment key={gi}>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 0 }}>
-                    <span style={{ fontSize: 12, marginRight: 8, opacity: 0.8 }}>{group.icon}</span>
                     {group.items.map((item, ii) => (
                       <React.Fragment key={ii}>
                         <span style={{ color: group.color, fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", whiteSpace: "nowrap", textTransform: "uppercase" }}>
@@ -1175,10 +1224,25 @@ const Home = () => {
       `}</style>
 
       {/* ── Rakhi Hampers Banner ── */}
-      <section style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 60%,#3A200C 100%)", padding: "36px 24px" }}>
-        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+      <motion.section
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.5 }}
+        transition={{ duration: 0.45 }}
+        style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 60%,#3A200C 100%)", padding: "36px 24px", position: "relative", overflow: "hidden" }}
+      >
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 5% 50%, rgba(204,171,74,0.07), transparent 40%), radial-gradient(circle at 95% 50%, rgba(196,122,46,0.06), transparent 40%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 1120, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 24, flexWrap: "wrap", position: "relative" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-            <span style={{ fontSize: 44, lineHeight: 1 }}>🪢</span>
+            {/* SVG thread/ribbon icon */}
+            <div style={{ width: 52, height: 52, borderRadius: 14, background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width={26} height={26} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                <line x1="9" y1="9" x2="9.01" y2="9"/>
+                <line x1="15" y1="9" x2="15.01" y2="9"/>
+              </svg>
+            </div>
             <div>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.16em", marginBottom: 4 }}>Raksha Bandhan Special</div>
               <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.4rem,2.8vw,2rem)", fontWeight: 300, color: "#fff", lineHeight: 1.15 }}>
@@ -1186,14 +1250,17 @@ const Home = () => {
               </div>
             </div>
           </div>
-          <button
+          <motion.button
             onClick={() => navigate("/rakhi-hampers")}
-            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "13px 28px", borderRadius: 10, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "13px 28px", borderRadius: 10, border: "none", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 400, damping: 24 }}
           >
             Explore Now →
-          </button>
+          </motion.button>
         </div>
-      </section>
+      </motion.section>
 
       {/* ── Plan by Occasion ── */}
       <section id="plan-by-occasion" style={{ background: "#F5EFE6", padding: "76px 28px 84px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
@@ -1577,7 +1644,14 @@ const Home = () => {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
 
           {/* Editorial split header */}
-          <div className="fa-header-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"24px 64px", alignItems:"end", marginBottom:36 }}>
+          <motion.div
+            className="fa-header-grid"
+            style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"24px 64px", alignItems:"end", marginBottom:36 }}
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
             <div>
               <p style={{ fontSize:10, fontWeight:700, letterSpacing:"0.28em", textTransform:"uppercase", color:"#C47A2E", margin:"0 0 18px" }}>Live Entertainment</p>
               <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,3.8vw,2.9rem)", fontWeight:300, color:"#1C0E04", margin:0, letterSpacing:"0.01em", lineHeight:1.08 }}>
@@ -1590,13 +1664,17 @@ const Home = () => {
               </p>
               <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                 <button onClick={() => scrollFaCarousel(-1)}
-                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
+                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>‹</button>
+                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
                 <button onClick={() => scrollFaCarousel(1)}
-                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
+                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>›</button>
+                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>
+                  <svg width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
                 <button onClick={() => navigate("/fun-activities")}
                   style={{ background:"none", border:"1.5px solid rgba(196,122,46,0.38)", color:"#C47A2E", fontSize:13, fontWeight:600, padding:"9px 22px", borderRadius:8, cursor:"pointer", fontFamily:"'Outfit',sans-serif", letterSpacing:"0.04em", transition:"all 0.22s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";e.currentTarget.style.borderColor="#C47A2E";}}
@@ -1605,7 +1683,7 @@ const Home = () => {
                 </button>
               </div>
             </div>
-          </div>
+          </motion.div>
           <style>{`.fa-header-grid { } @media (max-width: 720px) { .fa-header-grid { grid-template-columns: 1fr !important; gap: 16px !important; } }`}</style>
 
           {/* Arrow-navigated cards */}
@@ -1667,7 +1745,14 @@ const Home = () => {
         {/* Subtle radial warmth */}
         <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 10% 50%,rgba(196,122,46,0.06),transparent 50%), radial-gradient(circle at 90% 50%,rgba(204,171,74,0.05),transparent 50%)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
-          <div className="gh-band" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 48, alignItems: "center" }}>
+          <motion.div
+            className="gh-band"
+            style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 48, alignItems: "center" }}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+          >
 
             {/* Left: stacked images + text inline */}
             <div style={{ display: "flex", alignItems: "center", gap: 36, flexWrap: "wrap" }}>
@@ -1702,15 +1787,16 @@ const Home = () => {
             </div>
 
             {/* Right: CTA */}
-            <button
+            <motion.button
               onClick={() => navigate("/gift-hampers-cakes")}
-              style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "14px 30px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 6px 22px rgba(196,122,46,0.38)", transition: "transform 0.2s, box-shadow 0.2s" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(196,122,46,0.5)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 22px rgba(196,122,46,0.38)"; }}
+              style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "14px 30px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 6px 22px rgba(196,122,46,0.38)" }}
+              whileHover={{ scale: 1.03, boxShadow: "0 12px 32px rgba(196,122,46,0.5)" }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: "spring", stiffness: 380, damping: 24 }}
             >
               Browse Hampers →
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         </div>
         <style>{`
           @media (max-width: 760px) { .gh-band { grid-template-columns: 1fr !important; gap: 24px !important; } }
@@ -1736,7 +1822,14 @@ const Home = () => {
           </div>
 
           {/* Stats */}
-          <div className="trust-bar-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(204,171,74,0.1)" }}>
+          <motion.div
+            className="trust-bar-grid"
+            style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(204,171,74,0.1)" }}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.1 } } }}
+          >
             {[
               {
                 num: "100%",
@@ -1757,7 +1850,11 @@ const Home = () => {
                 icon: <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
               },
             ].map(({ num, label, sub, icon }, i, arr) => (
-              <div key={label} style={{ padding: "32px 28px 28px", background: "rgba(255,255,255,0.025)", position: "relative", textAlign: "center" }}>
+              <motion.div
+                key={label}
+                variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 24 } } }}
+                style={{ padding: "32px 28px 28px", background: "rgba(255,255,255,0.025)", position: "relative", textAlign: "center" }}
+              >
                 {i < arr.length - 1 && (
                   <div style={{ position: "absolute", right: 0, top: "20%", bottom: "20%", width: 1, background: "rgba(204,171,74,0.1)" }} />
                 )}
@@ -1771,9 +1868,9 @@ const Home = () => {
                 <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem, 3vw, 2.6rem)", fontWeight: 300, color: "#CCAB4A", lineHeight: 1, marginBottom: 8, letterSpacing: "-0.01em" }}>{num}</div>
                 <div style={{ fontSize: 13, fontWeight: 600, color: "#F5EDD9", marginBottom: 6, letterSpacing: "0.01em" }}>{label}</div>
                 <div style={{ fontSize: 12, color: "rgba(245,237,217,0.4)", lineHeight: 1.5, maxWidth: 190, margin: "0 auto" }}>{sub}</div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
 
         <style>{`
@@ -1952,7 +2049,14 @@ const Home = () => {
             </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }} className="events-portfolio-grid">
+          <motion.div
+            style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}
+            className="events-portfolio-grid"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.15 }}
+            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08 } } }}
+          >
             {[
               { title: "Decoration",         slug: "decoration",    key: "Decoration" },
               { title: "DJ & Entertainment", slug: "entertainment",  key: "Entertainment" },
@@ -1965,7 +2069,8 @@ const Home = () => {
                 : 0;
               const img = catPhotos[imgIdx]?.imageUrl || GALLERY_FALLBACKS[key];
               return (
-              <div key={title}
+              <motion.div key={title}
+                variants={{ hidden: { opacity: 0, y: 32 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 280, damping: 24 } } }}
                 className="portfolio-tile"
                 onClick={() => navigate(`/gallery/${slug}`)}
                 style={{ position: "relative", borderRadius: 18, overflow: "hidden", cursor: "pointer", background: "#2C1A0E" }}
@@ -1997,9 +2102,9 @@ const Home = () => {
                 <div className="portfolio-tile-overlay" style={{ position: "absolute", inset: 0, background: "rgba(196,122,46,0.12)", backdropFilter: "blur(1px)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.28s ease", pointerEvents: "none" }}>
                   <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", background: "rgba(196,122,46,0.9)", borderRadius: 100, padding: "8px 20px", letterSpacing: "0.05em" }}>Explore →</span>
                 </div>
-              </div>
+              </motion.div>
             ); })}
-          </div>
+          </motion.div>
         </div>
         <style>{`
           .portfolio-header-grid { }
@@ -2041,10 +2146,17 @@ const Home = () => {
         <div style={{ position: "absolute", top: "20%", left: "-5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.1),transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "10%", right: "-5%", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.08),transparent 70%)", pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center", position: "relative" }} className="partner-grid">
+        <motion.div
+          style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center", position: "relative" }}
+          className="partner-grid"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.2 }}
+          variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.12 } } }}
+        >
 
           {/* Left: text */}
-          <div>
+          <motion.div variants={{ hidden: { opacity: 0, x: -24 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 260, damping: 24 } } }}>
             {/* Social proof chip */}
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.25)", borderRadius: 100, padding: "6px 14px", marginBottom: 20 }}>
               <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", flexShrink: 0 }} />
@@ -2091,16 +2203,19 @@ const Home = () => {
               </button>
               <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>Free to register · No commission</span>
             </div>
-          </div>
+          </motion.div>
 
           {/* Right: 3 steps */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <motion.div
+            style={{ display: "flex", flexDirection: "column", gap: 16 }}
+            variants={{ hidden: { opacity: 0, x: 24 }, visible: { opacity: 1, x: 0, transition: { type: "spring", stiffness: 260, damping: 24 } } }}
+          >
             {[
-              { num: "01", title: "Submit Your Details", desc: "Fill in your name, phone, and address. Takes under 2 minutes.", icon: "📋" },
-              { num: "02", title: "Get Verified", desc: "Our team reviews your profile and approves your listing within 24–48 hours.", icon: "✅" },
-              { num: "03", title: "Start Receiving Bookings", desc: "Go live on Tendr and get discovered by customers across Delhi NCR.", icon: "🚀" },
+              { num: "01", title: "Submit Your Details", desc: "Fill in your name, phone, and address. Takes under 2 minutes." },
+              { num: "02", title: "Get Verified", desc: "Our team reviews your profile and approves your listing within 24–48 hours." },
+              { num: "03", title: "Start Receiving Bookings", desc: "Go live on Tendr and get discovered by customers across Delhi NCR." },
             ].map((step, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderLeft: "3px solid rgba(204,171,74,0.4)", borderRadius: "0 16px 16px 0", padding: "22px 24px", display: "flex", gap: 20, alignItems: "flex-start", transition: "background 0.2s" }}>
+              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderLeft: "3px solid rgba(204,171,74,0.4)", borderRadius: "0 16px 16px 0", padding: "22px 24px", display: "flex", gap: 20, alignItems: "flex-start" }}>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
                   <span style={{ fontSize: 11, fontWeight: 800, color: "rgba(204,171,74,0.5)", letterSpacing: "0.05em", fontFamily: "'Outfit', sans-serif" }}>{step.num}</span>
                   {i < 2 && <div style={{ width: 1, height: 20, background: "rgba(204,171,74,0.15)" }} />}
@@ -2111,8 +2226,8 @@ const Home = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
         <style>{`.partner-grid { } @media (max-width: 768px) { .partner-grid { grid-template-columns: 1fr !important; gap: 48px !important; } }`}</style>
       </section>
