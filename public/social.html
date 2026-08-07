@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tendr — Links</title>
+  <meta name="description" content="Delhi NCR's home for curated event vendors. Find us on all platforms." />
+  <link rel="icon" href="/tendr-icon.png" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:            #FAF7F2;
+      --surface:       rgba(255,255,255,0.82);
+      --surface-hover: rgba(196,122,46,0.06);
+      --gold:          #C47A2E;
+      --gold-mid:      #D4A040;
+      --gold-bright:   #CCAB4A;
+      --text:          #1C0E04;
+      --text-sub:      rgba(28,14,4,0.44);
+      --border:        rgba(196,122,46,0.18);
+      --border-hover:  rgba(196,122,46,0.42);
+      --radius-card:   15px;
+      --radius-icon:   11px;
+    }
+
+    body {
+      min-height: 100dvh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* top gold hairline */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold) 30%, var(--gold-bright) 70%, transparent);
+      z-index: 10;
+    }
+
+    /* ambient glow */
+    .glow-top {
+      position: fixed;
+      top: -100px; left: 50%;
+      transform: translateX(-50%);
+      width: 600px; height: 360px;
+      background: radial-gradient(ellipse, rgba(196,122,46,0.07) 0%, transparent 66%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-bot {
+      position: fixed;
+      bottom: -60px; right: -40px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(196,122,46,0.05) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      width: 100%;
+      max-width: 430px;
+      padding: 64px 20px 72px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ── Brand ── */
+    .brand {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .logo-img {
+      width: auto;
+      height: 64px;
+      max-width: 220px;
+      object-fit: contain;
+      display: block;
+      margin: 0 auto 10px;
+    }
+
+    .tagline {
+      font-size: 12.5px;
+      color: var(--text-sub);
+      line-height: 1.6;
+      letter-spacing: 0.01em;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(196,122,46,0.22) 25%, rgba(196,122,46,0.22) 75%, transparent);
+      margin: 24px 0;
+    }
+
+    /* ── PRIMARY CTA ── */
+    .cta-primary {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; height: 54px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-mid) 50%, var(--gold-bright) 100%);
+      border: none;
+      color: #fff;
+      font-family: inherit;
+      font-size: 15.5px; font-weight: 700;
+      letter-spacing: 0.01em;
+      cursor: pointer;
+      text-decoration: none;
+      touch-action: manipulation;
+      box-shadow: 0 6px 22px rgba(196,122,46,0.30), 0 2px 8px rgba(0,0,0,0.14);
+      transition: transform 0.16s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.16s ease;
+      margin-bottom: 22px;
+      animation: fadeUp 0.38s cubic-bezier(0.34,1.2,0.64,1) 0.06s both;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cta-primary:active {
+      transform: scale(0.96);
+      box-shadow: 0 3px 10px rgba(196,122,46,0.2);
+      transition: transform 0.08s, box-shadow 0.08s;
+    }
+    .cta-icon {
+      width: 20px; height: 20px;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.9;
+    }
+
+    /* ── Section label ── */
+    .section-label {
+      font-size: 9.5px; font-weight: 700;
+      color: rgba(140,80,20,0.52);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin: 20px 0 9px 2px;
+    }
+
+    /* ── Link cards ── */
+    .links { display: flex; flex-direction: column; gap: 8px; }
+
+    .link-card {
+      display: flex; align-items: center; gap: 13px;
+      padding: 0 15px 0 12px;
+      height: 62px;
+      border-radius: var(--radius-card);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      text-decoration: none;
+      cursor: pointer;
+      width: 100%; text-align: left;
+      font-family: inherit; color: inherit;
+      outline: none;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.18s ease;
+    }
+    .link-card:active {
+      transform: scale(0.97);
+      transition: transform 0.08s ease, background 0.08s, border-color 0.08s;
+      background: var(--surface-hover);
+      border-color: var(--border-hover);
+    }
+
+    /* stagger-sequence: 40ms per item */
+    .link-card:nth-child(1) { animation: fadeUp 0.36s cubic-bezier(0.34,1.2,0.64,1) 0.10s both; }
+    .link-card:nth-child(2) { animation: fadeUp 0.36s cubic-bezier(0.34,1.2,0.64,1) 0.14s both; }
+    .link-card:nth-child(3) { animation: fadeUp 0.36s cubic-bezier(0.34,1.2,0.64,1) 0.18s both; }
+    .link-card:nth-child(4) { animation: fadeUp 0.36s cubic-bezier(0.34,1.2,0.64,1) 0.22s both; }
+    .link-card:nth-child(5) { animation: fadeUp 0.36s cubic-bezier(0.34,1.2,0.64,1) 0.26s both; }
+    .link-card:nth-child(6) { animation: fadeUp 0.36s cubic-bezier(0.34,1.2,0.64,1) 0.30s both; }
+    .link-card:nth-child(7) { animation: fadeUp 0.36s cubic-bezier(0.34,1.2,0.64,1) 0.34s both; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Icon pills — brand-matched per platform */
+    .icon-pill {
+      width: 40px; height: 40px;
+      border-radius: var(--radius-icon);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .icon-pill svg { display: block; }
+
+    .icon-pill.web       { background: rgba(196,122,46,0.13); }
+    .icon-pill.whatsapp  { background: rgba(37,211,102,0.13); }
+    .icon-pill.instagram { background: rgba(228,64,95,0.10); }
+    .icon-pill.x         { background: rgba(28,14,4,0.07); }
+    .icon-pill.linkedin  { background: rgba(10,102,194,0.11); }
+    .icon-pill.vendor    { background: rgba(196,122,46,0.11); }
+    .icon-pill.vcard     { background: rgba(80,120,220,0.10); }
+
+    .link-info { flex: 1; min-width: 0; }
+
+    .link-label {
+      font-size: 14.5px; font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.01em; line-height: 1.3;
+    }
+    .link-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-top: 2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    .chevron {
+      color: rgba(196,122,46,0.48);
+      flex-shrink: 0;
+      transition: transform 0.18s ease, color 0.18s;
+    }
+    .link-card:active .chevron {
+      transform: translateX(3px);
+      color: var(--gold);
+    }
+
+    /* ── Footer ── */
+    .foot {
+      margin-top: 40px; text-align: center;
+      font-size: 11px; color: rgba(28,14,4,0.2);
+      letter-spacing: 0.05em;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .link-card, .cta-primary { animation: none !important; }
+      .link-card, .link-card .chevron, .cta-primary { transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="glow-top" aria-hidden="true"></div>
+<div class="glow-bot" aria-hidden="true"></div>
+
+<!-- SVG icon sprites -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ic-globe" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="10" cy="10" r="8.25"/>
+    <path d="M1.75 10h16.5M10 1.75A12.6 12.6 0 0 1 13.25 10 12.6 12.6 0 0 1 10 18.25 12.6 12.6 0 0 1 6.75 10 12.6 12.6 0 0 1 10 1.75z"/>
+  </symbol>
+  <symbol id="ic-sparkle" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 2v3M10 15v3M2 10h3M15 10h3M4.22 4.22l2.12 2.12M13.66 13.66l2.12 2.12M4.22 15.78l2.12-2.12M13.66 6.34l2.12-2.12"/>
+    <circle cx="10" cy="10" r="3"/>
+  </symbol>
+  <symbol id="ic-chat" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M18 10c0 4.42-3.58 8-8 8a7.97 7.97 0 0 1-3.64-.87L2 18l.87-4.36A8 8 0 1 1 18 10z"/>
+  </symbol>
+  <symbol id="ic-camera" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="5" width="16" height="12" rx="3"/>
+    <circle cx="10" cy="11" r="3"/>
+    <path d="M7 5l1.5-2h3L13 5"/>
+    <circle cx="15.5" cy="8" r=".5" fill="currentColor"/>
+  </symbol>
+  <symbol id="ic-x" viewBox="0 0 20 20" fill="currentColor">
+    <path d="M15.18 2h2.64l-5.77 6.6L18.8 18h-5.32l-4.16-5.44L4.4 18H1.76l6.17-7.06L1.2 2h5.46l3.76 4.92L15.18 2zm-.93 14.4h1.46L5.82 3.48H4.26l10 12.92z"/>
+  </symbol>
+  <symbol id="ic-linkedin" viewBox="0 0 20 20" fill="currentColor">
+    <rect x="2" y="7.5" width="3.5" height="10.5" rx="0.5"/>
+    <circle cx="3.75" cy="4" r="1.75"/>
+    <path d="M8.5 7.5h3.25v1.42C12.3 8 13.3 7.25 14.75 7.25 17.12 7.25 18 8.75 18 11.25V18h-3.5v-6c0-1.14-.38-1.88-1.38-1.88-.82 0-1.37.56-1.62 1.1-.08.2-.12.46-.12.72V18H8.5V7.5z"/>
+  </symbol>
+  <symbol id="ic-briefcase" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2" y="6.5" width="16" height="11" rx="2"/>
+    <path d="M13 6.5v-2a1.5 1.5 0 0 0-1.5-1.5h-3A1.5 1.5 0 0 0 7 4.5v2"/>
+    <line x1="2" y1="11.5" x2="18" y2="11.5"/>
+  </symbol>
+  <symbol id="ic-contact" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 18v-1.5A2.5 2.5 0 0 0 11.5 14h-5A2.5 2.5 0 0 0 4 16.5V18"/>
+    <circle cx="9" cy="8" r="3"/>
+    <path d="M16 10.5v4M14 12.5h4"/>
+  </symbol>
+  <symbol id="ic-chevron" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M6 4l4 4-4 4"/>
+  </symbol>
+  <symbol id="ic-arrow" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 10h12M11 5l5 5-5 5"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+
+  <!-- Brand -->
+  <div class="brand">
+    <img src="tendr-logo-secondary.png" alt="Tendr" class="logo-img" />
+    <p class="tagline">Delhi NCR · Curated Event Vendors</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PRIMARY CTA -->
+  <a href="https://tendr.co.in" target="_blank" rel="noopener noreferrer" class="cta-primary">
+    <span class="cta-icon">
+      <svg width="18" height="18"><use href="#ic-sparkle"/></svg>
+    </span>
+    Start Planning
+    <svg width="16" height="16" style="opacity:.75"><use href="#ic-arrow"/></svg>
+  </a>
+
+  <div class="links">
+
+    <a href="https://www.tendr.co.in" target="_blank" rel="noopener noreferrer" class="link-card">
+      <div class="icon-pill web">
+        <svg width="18" height="18" color="#C47A2E"><use href="#ic-globe"/></svg>
+      </div>
+      <div class="link-info">
+        <div class="link-label">Visit Website</div>
+        <div class="link-sub">tendr.co.in</div>
+      </div>
+      <svg width="16" height="16" class="chevron"><use href="#ic-chevron"/></svg>
+    </a>
+
+    <p class="section-label">Connect with us</p>
+
+    <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer" class="link-card">
+      <div class="icon-pill whatsapp">
+        <svg width="18" height="18" color="#25D366"><use href="#ic-chat"/></svg>
+      </div>
+      <div class="link-info">
+        <div class="link-label">WhatsApp</div>
+        <div class="link-sub">+91-9211668427</div>
+      </div>
+      <svg width="16" height="16" class="chevron"><use href="#ic-chevron"/></svg>
+    </a>
+
+    <a href="https://www.instagram.com/justtendrit?igsh=ZzlxcDhqOXo0dzVu&utm_source=qr" target="_blank" rel="noopener noreferrer" class="link-card">
+      <div class="icon-pill instagram">
+        <svg width="18" height="18" color="#E4405F"><use href="#ic-camera"/></svg>
+      </div>
+      <div class="link-info">
+        <div class="link-label">Instagram</div>
+        <div class="link-sub">@justtendrit</div>
+      </div>
+      <svg width="16" height="16" class="chevron"><use href="#ic-chevron"/></svg>
+    </a>
+
+    <a href="https://x.com/tendr293418?s=11" target="_blank" rel="noopener noreferrer" class="link-card">
+      <div class="icon-pill x">
+        <svg width="17" height="17" color="#1C0E04"><use href="#ic-x"/></svg>
+      </div>
+      <div class="link-info">
+        <div class="link-label">X (Twitter)</div>
+        <div class="link-sub">@tendr293418</div>
+      </div>
+      <svg width="16" height="16" class="chevron"><use href="#ic-chevron"/></svg>
+    </a>
+
+    <a href="https://www.linkedin.com/company/justtendrit/" target="_blank" rel="noopener noreferrer" class="link-card">
+      <div class="icon-pill linkedin">
+        <svg width="18" height="18" color="#5B9BD5"><use href="#ic-linkedin"/></svg>
+      </div>
+      <div class="link-info">
+        <div class="link-label">LinkedIn</div>
+        <div class="link-sub">Tendr · Event Platform</div>
+      </div>
+      <svg width="16" height="16" class="chevron"><use href="#ic-chevron"/></svg>
+    </a>
+
+    <p class="section-label">More</p>
+
+    <a href="https://tendr.co.in/vendor/register" target="_blank" rel="noopener noreferrer" class="link-card">
+      <div class="icon-pill vendor">
+        <svg width="18" height="18" color="#C47A2E"><use href="#ic-briefcase"/></svg>
+      </div>
+      <div class="link-info">
+        <div class="link-label">Become a Vendor</div>
+        <div class="link-sub">List your services on Tendr</div>
+      </div>
+      <svg width="16" height="16" class="chevron"><use href="#ic-chevron"/></svg>
+    </a>
+
+    <button type="button" class="link-card" onclick="downloadVCard()">
+      <div class="icon-pill vcard">
+        <svg width="18" height="18" color="#7BAAEE"><use href="#ic-contact"/></svg>
+      </div>
+      <div class="link-info">
+        <div class="link-label">Save Company Contact</div>
+        <div class="link-sub">Add Tendr to your phone</div>
+      </div>
+      <svg width="16" height="16" class="chevron"><use href="#ic-chevron"/></svg>
+    </button>
+
+  </div>
+
+  <p class="foot">© 2026 Tendr · Delhi NCR, India</p>
+</div>
+
+<script>
+function downloadVCard() {
+  var v = [
+    'BEGIN:VCARD', 'VERSION:3.0',
+    'FN:Tendr', 'ORG:Tendr',
+    'TEL;TYPE=WORK,CELL:+919211668427',
+    'EMAIL:contact@tendr.co.in',
+    'URL:https://www.tendr.co.in',
+    'X-SOCIALPROFILE;type=instagram:https://www.instagram.com/justtendrit',
+    'X-SOCIALPROFILE;type=linkedin:https://www.linkedin.com/company/justtendrit/',
+    'X-SOCIALPROFILE;type=twitter:https://x.com/tendr293418',
+    'NOTE:Delhi NCR event vendor platform. We curate, you celebrate.',
+    'END:VCARD'
+  ].join('\r\n');
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([v], { type: 'text/vcard' }));
+  a.download = 'tendr.vcf';
+  a.click();
+}
+</script>
+
+</body>
+</html>
