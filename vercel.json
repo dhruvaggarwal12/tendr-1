@@ -5,6 +5,14 @@
       "destination": "https://tendr-backend-75ag.onrender.com/sitemap.xml"
     },
     {
+      "source": "/social.html",
+      "destination": "/social.html"
+    },
+    {
+      "source": "/links",
+      "destination": "/social.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
