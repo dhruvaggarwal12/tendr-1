@@ -844,7 +844,7 @@ const Home = () => {
         style={{
           height: "92vh",
           minHeight: 600,
-          paddingTop: 88,
+          paddingTop: 74,
           background: "#1C0E04",
           display: "flex",
           alignItems: "stretch",
@@ -863,14 +863,20 @@ const Home = () => {
         >
           {/* ── Left: fixed hero headline + CTA ── */}
           <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px", position: "relative", overflow: "hidden" }}>
-            {/* Ambient gold glow — top right */}
-            <div aria-hidden style={{ position: "absolute", top: "-15%", right: "-10%", width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.18) 0%, transparent 65%)", pointerEvents: "none" }} />
-            {/* Ambient gold glow — bottom left */}
-            <div aria-hidden style={{ position: "absolute", bottom: "-10%", left: "-8%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.1) 0%, transparent 65%)", pointerEvents: "none" }} />
-            {/* Subtle dot texture */}
-            <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(204,171,74,0.07) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
+            {/* Primary ambient orb — top right (Apple Glow Hero pattern) */}
+            <div aria-hidden style={{ position: "absolute", top: "-22%", right: "-16%", width: 520, height: 520, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.28) 0%, rgba(196,122,46,0.1) 40%, transparent 70%)", pointerEvents: "none" }} />
+            {/* Secondary ambient orb — bottom left */}
+            <div aria-hidden style={{ position: "absolute", bottom: "-18%", left: "-14%", width: 420, height: 420, borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.16) 0%, transparent 65%)", pointerEvents: "none" }} />
+            {/* Centre warmth — mid-depth glow */}
+            <div aria-hidden style={{ position: "absolute", top: "38%", left: "42%", transform: "translate(-50%,-50%)", width: 480, height: 360, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(196,122,46,0.07) 0%, transparent 72%)", pointerEvents: "none" }} />
+            {/* Fine grid texture — replaces dot grid for more editorial feel */}
+            <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(204,171,74,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(204,171,74,0.04) 1px, transparent 1px)", backgroundSize: "44px 44px", pointerEvents: "none" }} />
+            {/* Large decorative "T" lettermark — watermark behind content */}
+            <div aria-hidden style={{ position: "absolute", top: "-8%", left: "-12%", fontFamily: "'Cormorant Garamond',Georgia,serif", fontSize: "min(50vw, 480px)", fontWeight: 700, fontStyle: "italic", color: "rgba(196,122,46,0.042)", lineHeight: 1, pointerEvents: "none", userSelect: "none", WebkitUserSelect: "none", letterSpacing: "-0.03em", zIndex: 0 }}>T</div>
+            {/* Top horizontal hairline accent */}
+            <div aria-hidden style={{ position: "absolute", top: 0, left: "18%", right: "18%", height: 1, background: "linear-gradient(90deg, transparent, rgba(196,122,46,0.32), transparent)", pointerEvents: "none" }} />
             {/* Right-edge gold hairline separator */}
-            <div aria-hidden style={{ position: "absolute", top: "8%", bottom: "8%", right: 0, width: 1, background: "linear-gradient(180deg, transparent, rgba(196,122,46,0.35) 30%, rgba(204,171,74,0.4) 70%, transparent)", pointerEvents: "none" }} />
+            <div aria-hidden style={{ position: "absolute", top: "6%", bottom: "6%", right: 0, width: 1, background: "linear-gradient(180deg, transparent, rgba(196,122,46,0.4) 28%, rgba(204,171,74,0.48) 72%, transparent)", pointerEvents: "none" }} />
 
             {/* Mobile only: 4 main category chips — dark bg adapted */}
             <div className="hero-mobile-cats" data-tour="mob-icon-row" style={{ display: "none", marginBottom: 10, position: "relative", zIndex: 1 }}>
@@ -937,9 +943,13 @@ const Home = () => {
                 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.85rem, 3vw, 2.72rem)", fontWeight: 300, lineHeight: 1.08, color: "#FFF8EC", marginBottom: 14, letterSpacing: "-0.02em", position: "relative", zIndex: 1 }}
               >
                 Everything your<br />event needs.&nbsp;
-                <em style={{ fontStyle: "italic", fontWeight: 700, background: "linear-gradient(135deg,#C47A2E 0%,#D4A848 50%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
-                  One place.
-                </em>
+                <span style={{ position: "relative", display: "inline-block" }}>
+                  {/* Glow halo behind gradient text — Apple Glow Hero pattern */}
+                  <span aria-hidden style={{ position: "absolute", inset: "-8px -12px", borderRadius: 12, background: "radial-gradient(ellipse, rgba(196,122,46,0.38) 0%, transparent 72%)", filter: "blur(12px)", pointerEvents: "none" }} />
+                  <em style={{ fontStyle: "italic", fontWeight: 700, background: "linear-gradient(135deg,#C47A2E 0%,#D4A848 50%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", position: "relative" }}>
+                    One place.
+                  </em>
+                </span>
               </motion.h1>
 
               <motion.p
@@ -991,6 +1001,29 @@ const Home = () => {
               >
                 🇮🇳 Independence Day
               </button>
+            </motion.div>
+
+            {/* Social proof trust bar — below CTAs */}
+            <motion.div
+              className="home-hero-trust"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.34 }}
+              style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 22, position: "relative", zIndex: 1, flexWrap: "wrap" }}
+            >
+              {/* Star rating */}
+              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                {[1,2,3,4,5].map(i => (
+                  <svg key={i} width="11" height="11" viewBox="0 0 24 24" fill="#CCAB4A" stroke="none">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                ))}
+                <span style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 700, marginLeft: 5, fontFamily: "'Outfit',sans-serif", letterSpacing: "0.02em" }}>4.9</span>
+              </div>
+              <div style={{ width: 1, height: 14, background: "rgba(204,171,74,0.2)", flexShrink: 0 }} />
+              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.4)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em" }}>500+ verified vendors</span>
+              <div style={{ width: 1, height: 14, background: "rgba(204,171,74,0.2)", flexShrink: 0 }} />
+              <span style={{ fontSize: 11, color: "rgba(255,247,235,0.4)", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.04em" }}>Delhi · Noida · NCR</span>
             </motion.div>
 
           </div>

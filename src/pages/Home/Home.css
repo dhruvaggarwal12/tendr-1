@@ -309,7 +309,10 @@ body {
   section.hero-section-wrap {
     height: auto !important;
     min-height: unset !important;
-    padding-top: 64px !important;
+    padding-top: 60px !important;
+  }
+  .home-hero-trust {
+    display: none !important;
   }
   .hero-split {
     flex-direction: column !important;

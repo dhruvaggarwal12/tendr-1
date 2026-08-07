@@ -402,7 +402,7 @@ const Navbar = ({
             maxWidth: 1280,
             margin: "0 auto",
             padding: "0 40px",
-            height: scrolled ? 58 : 64,
+            height: scrolled ? 66 : 74,
             display: "flex",
             alignItems: "center",
             transition: "height 0.3s ease",
@@ -414,7 +414,7 @@ const Navbar = ({
             onClick={handleLogoClick}
             style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none" }}
           >
-            <img src={tendrLogo} alt="Tendr" style={{ height: scrolled ? 34 : 38, maxWidth: 140, objectFit: "contain", display: "block" }} />
+            <img src={tendrLogo} alt="Tendr" style={{ height: scrolled ? 36 : 42, maxWidth: 150, objectFit: "contain", display: "block" }} />
           </a>
 
           {/* ── Desktop nav — search LEFT of Browse, then links ── */}
@@ -926,8 +926,8 @@ const Navbar = ({
           .burger-btn-custom { display: flex !important; }
           .mobile-search-bar { display: flex !important; }
           .nav-announcement { display: none !important; }
-          .navbar-main-bar img { height: 26px !important; }
-          .navbar-main-bar { padding: 0 12px !important; height: 52px !important; }
+          .navbar-main-bar img { height: 28px !important; }
+          .navbar-main-bar { padding: 0 12px !important; height: 60px !important; }
           .mobile-menu-content { padding: 6px 14px 20px !important; }
         }
         @media (max-width: 380px) {
