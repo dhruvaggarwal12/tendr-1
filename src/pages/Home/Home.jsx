@@ -845,7 +845,7 @@ const Home = () => {
           height: "92vh",
           minHeight: 600,
           paddingTop: 88,
-          background: "#ffffff",
+          background: "#1C0E04",
           display: "flex",
           alignItems: "stretch",
           fontFamily: "'Outfit', sans-serif",
@@ -862,28 +862,36 @@ const Home = () => {
           className="hero-split"
         >
           {/* ── Left: fixed hero headline + CTA ── */}
-          <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px" }}>
+          <div style={{ flex: "0 0 48%", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 56px 0 64px", position: "relative", overflow: "hidden" }}>
+            {/* Ambient gold glow — top right */}
+            <div aria-hidden style={{ position: "absolute", top: "-15%", right: "-10%", width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.18) 0%, transparent 65%)", pointerEvents: "none" }} />
+            {/* Ambient gold glow — bottom left */}
+            <div aria-hidden style={{ position: "absolute", bottom: "-10%", left: "-8%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(204,171,74,0.1) 0%, transparent 65%)", pointerEvents: "none" }} />
+            {/* Subtle dot texture */}
+            <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(204,171,74,0.07) 1px, transparent 1px)", backgroundSize: "28px 28px", pointerEvents: "none" }} />
+            {/* Right-edge gold hairline separator */}
+            <div aria-hidden style={{ position: "absolute", top: "8%", bottom: "8%", right: 0, width: 1, background: "linear-gradient(180deg, transparent, rgba(196,122,46,0.35) 30%, rgba(204,171,74,0.4) 70%, transparent)", pointerEvents: "none" }} />
 
-            {/* Mobile only: 4 main category chips */}
-            <div className="hero-mobile-cats" data-tour="mob-icon-row" style={{ display: "none", marginBottom: 10 }}>
+            {/* Mobile only: 4 main category chips — dark bg adapted */}
+            <div className="hero-mobile-cats" data-tour="mob-icon-row" style={{ display: "none", marginBottom: 10, position: "relative", zIndex: 1 }}>
               <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
                 {[
-                  { emoji: "🏪", label: "Vendors",       path: null,                  bg: "linear-gradient(135deg,#FFF0E0,#FFE4C4)", isVendors: true },
-                  { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes", bg: "linear-gradient(135deg,#FFF0F8,#FFE4F2)" },
-                  { emoji: "🎭", label: "Fun Activities", path: "/fun-activities",      bg: "linear-gradient(135deg,#F0FFF4,#E0FFE8)" },
-                  { emoji: "💒", label: "Stationeries",   path: "/stationery",          bg: "linear-gradient(135deg,#FDF0D8,#FBE0C0)" },
-                ].map(({ emoji, label, path, bg, isVendors }) => (
+                  { emoji: "🏪", label: "Vendors",       path: null,                  isVendors: true },
+                  { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes" },
+                  { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
+                  { emoji: "💒", label: "Stationeries",   path: "/stationery" },
+                ].map(({ emoji, label, path, isVendors }) => (
                   <button key={label}
                     onClick={() => isVendors ? setVendorStripOpen(o => !o) : navigate(path)}
                     style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "4px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", width: 70 }}>
-                    <div style={{ width: 58, height: 58, borderRadius: 16, background: isVendors && vendorStripOpen ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : bg, border: `1.5px solid ${isVendors && vendorStripOpen ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 8px rgba(196,122,46,0.12)", transition: "background 0.2s" }}>
+                    <div style={{ width: 58, height: 58, borderRadius: 16, background: isVendors && vendorStripOpen ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(204,171,74,0.1)", border: `1.5px solid ${isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(204,171,74,0.22)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 12px rgba(0,0,0,0.3)", transition: "background 0.2s" }}>
                       {isVendors && vendorStripOpen ? "✕" : emoji}
                     </div>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: isVendors && vendorStripOpen ? "#C47A2E" : "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(255,247,235,0.75)", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
                   </button>
                 ))}
               </div>
-              {/* Vendor sub-strip — appears below the main row when Vendors tapped */}
+              {/* Vendor sub-strip */}
               {vendorStripOpen && (
                 <div style={{ marginTop: 10, display: "flex", justifyContent: "center", gap: 12 }}>
                   {[
@@ -894,10 +902,10 @@ const Home = () => {
                   ].map(({ emoji, label, path }) => (
                     <button key={label} onClick={() => { setVendorStripOpen(false); navigate(path); }}
                       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "4px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", width: 56 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 11, background: "linear-gradient(135deg,#FFF0E0,#FFE4C4)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: "0 2px 5px rgba(196,122,46,0.1)" }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(204,171,74,0.1)", border: "1.5px solid rgba(204,171,74,0.22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>
                         {emoji}
                       </div>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "#2C1A0E", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,247,235,0.7)", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -912,13 +920,13 @@ const Home = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
-                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 13px", marginBottom: 20 }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 13px", marginBottom: 20, position: "relative", zIndex: 1 }}
               >
                 <span style={{ position: "relative", width: 6, height: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span style={{ position: "absolute", width: 12, height: 12, borderRadius: "50%", background: "rgba(196,122,46,0.22)", animation: "tendrPing 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C47A2E", display: "inline-block", position: "relative" }} />
+                  <span style={{ position: "absolute", width: 12, height: 12, borderRadius: "50%", background: "rgba(204,171,74,0.3)", animation: "tendrPing 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", position: "relative" }} />
                 </span>
-                <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#B07040" }}>Delhi NCR's Celebration Platform</span>
+                <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A" }}>Delhi NCR's Celebration Platform</span>
               </motion.div>
 
               <motion.h1
@@ -926,7 +934,7 @@ const Home = () => {
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.08 }}
-                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.85rem, 3vw, 2.72rem)", fontWeight: 300, lineHeight: 1.08, color: "#1C0E04", marginBottom: 14, letterSpacing: "-0.02em" }}
+                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.85rem, 3vw, 2.72rem)", fontWeight: 300, lineHeight: 1.08, color: "#FFF8EC", marginBottom: 14, letterSpacing: "-0.02em", position: "relative", zIndex: 1 }}
               >
                 Everything your<br />event needs.&nbsp;
                 <em style={{ fontStyle: "italic", fontWeight: 700, background: "linear-gradient(135deg,#C47A2E 0%,#D4A848 50%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
@@ -939,7 +947,7 @@ const Home = () => {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.16 }}
-                style={{ fontSize: 14, fontWeight: 400, color: "#6B4528", lineHeight: 1.75, maxWidth: 348, margin: 0, letterSpacing: "0.005em" }}
+                style={{ fontSize: 14, fontWeight: 400, color: "rgba(255,247,235,0.62)", lineHeight: 1.75, maxWidth: 348, margin: 0, letterSpacing: "0.005em", position: "relative", zIndex: 1 }}
               >
                 Birthdays, anniversaries, house parties and more — find verified vendors, plan every detail, and book everything across Delhi NCR.
               </motion.p>
@@ -950,36 +958,36 @@ const Home = () => {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.24 }}
-              style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}
+              style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center", position: "relative", zIndex: 1 }}
             >
               {/* Primary CTA */}
               <button
                 onClick={() => navigate("/booking")}
                 className="home-hero-cta"
-                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 14.5, fontWeight: 600, letterSpacing: "0.02em", padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer", boxShadow: "0 4px 18px rgba(196,122,46,0.38)", transition: "transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 30px rgba(196,122,46,0.52)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.38)"; }}
+                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 14.5, fontWeight: 600, letterSpacing: "0.02em", padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer", boxShadow: "0 4px 22px rgba(196,122,46,0.5)", transition: "transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.65)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 22px rgba(196,122,46,0.5)"; }}
               >
                 Start Planning →
               </button>
 
               {/* Divider */}
-              <div style={{ width: 1, height: 22, background: "rgba(196,122,46,0.2)", flexShrink: 0 }} />
+              <div style={{ width: 1, height: 22, background: "rgba(204,171,74,0.25)", flexShrink: 0 }} />
 
-              {/* Seasonal — subordinate ghost-pill style */}
+              {/* Seasonal — subordinate ghost-pill style, adapted for dark bg */}
               <button
                 onClick={() => navigate("/rakhi-hampers")}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.22)", color: "#7A4A18", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.12)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.38)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.32)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.2)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.55)"; e.currentTarget.style.color = "#FFF8EC"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.32)"; e.currentTarget.style.color = "rgba(255,247,235,0.8)"; }}
               >
                 🪢 Rakhi Hampers
               </button>
               <button
                 onClick={() => setShowIndepDay(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,153,51,0.07)", border: "1px solid rgba(255,153,51,0.28)", color: "#7A4A18", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,153,51,0.14)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.45)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,153,51,0.07)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.28)"; }}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,153,51,0.08)", border: "1px solid rgba(255,153,51,0.28)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,153,51,0.16)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.48)"; e.currentTarget.style.color = "#FFF8EC"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,153,51,0.08)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.28)"; e.currentTarget.style.color = "rgba(255,247,235,0.8)"; }}
               >
                 🇮🇳 Independence Day
               </button>
