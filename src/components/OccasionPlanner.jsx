@@ -110,6 +110,16 @@ function timeIcon(key) {
   return null;
 }
 
+function venueIcon(key, color) {
+  const c = color || 'currentColor';
+  const p = { width: 18, height: 18, viewBox: "0 0 24 24", fill: "none", stroke: c, strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (key === 'house')   return <svg {...p}><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>;
+  if (key === 'lawn')    return <svg {...p}><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5.64 5.64l2.12 2.12M16.24 16.24l2.12 2.12M5.64 18.36l2.12-2.12M16.24 7.76l2.12-2.12"/></svg>;
+  if (key === 'garden')  return <svg {...p}><path d="M12 22V10"/><path d="M12 10C12 6.69 9.31 4 6 4c0 3.31 2.69 6 6 6z"/><path d="M12 10c0-3.31 2.69-6 6-6 0 3.31-2.69 6-6 6z"/></svg>;
+  if (key === 'terrace') return <svg {...p}><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>;
+  return null;
+}
+
 function darken(hex, pct) {
   const n = parseInt(hex.replace('#', ''), 16);
   const f = 1 - pct / 100;
@@ -270,8 +280,8 @@ const CSS = `
     to   { opacity:1; transform:scale(1) translateY(0); }
   }
   @keyframes op-step {
-    from { opacity:0; transform:translateY(14px); }
-    to   { opacity:1; transform:translateY(0); }
+    from { opacity:0; transform:translateY(18px) scale(0.98); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
   }
   @keyframes book-fwd {
     from { opacity:0; transform:perspective(900px) rotateY(22deg) translateX(6%) scale(0.97); }
@@ -1252,26 +1262,79 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
               {/* Step 0.5 — Plan with / without theme */}
               {step === 0.5 && (
                 <div>
-                  <button onClick={() => setStep(0)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.75)', fontSize: 15, cursor: 'pointer', padding: '0 0 18px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
+                  <button onClick={() => setStep(0)} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.6)', fontSize: 13, cursor: 'pointer', padding: '0 0 20px', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Back
+                  </button>
                   <p style={{ fontSize: 10, fontWeight: 800, color: occColor, textTransform: 'uppercase', letterSpacing: '0.18em', margin: '0 0 8px', fontFamily: "'Outfit',sans-serif" }}>Plan your {occasion}</p>
-                  <h2 style={h2Style}>How would you like to plan?</h2>
-                  <p style={subStyle}>Choose your planning style</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                    <button onClick={() => goNext(1)} style={{
-                      padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-                      border: `1px solid ${occColor}45`, background: `${occColor}0D`,
-                      transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
-                    }}>
-                      <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan with Theme</div>
-                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Browse curated themes and get tailored vendor suggestions for your event</div>
+                  <h2 style={{ ...h2Style, marginBottom: 24 }}>How would you<br/>like to plan?</h2>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {/* Primary: Plan with Theme */}
+                    <button onClick={() => goNext(1)}
+                      style={{
+                        padding: '22px 20px', borderRadius: 18, textAlign: 'left', cursor: 'pointer',
+                        border: `1.5px solid ${occColor}55`,
+                        background: `linear-gradient(135deg, ${occColor}16 0%, ${occColor}06 100%)`,
+                        transition: 'all 0.2s', fontFamily: "'Outfit',sans-serif",
+                        position: 'relative', overflow: 'hidden',
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = `${occColor}85`; e.currentTarget.style.background = `linear-gradient(135deg, ${occColor}22 0%, ${occColor}0D 100%)`; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = `${occColor}55`; e.currentTarget.style.background = `linear-gradient(135deg, ${occColor}16 0%, ${occColor}06 100%)`; }}
+                    >
+                      {/* Decorative concentric rings top-right */}
+                      <div aria-hidden style={{ position: 'absolute', top: -32, right: -32, width: 100, height: 100, borderRadius: '50%', border: `1px solid ${occColor}18`, pointerEvents: 'none' }} />
+                      <div aria-hidden style={{ position: 'absolute', top: -16, right: -16, width: 64, height: 64, borderRadius: '50%', border: `1px solid ${occColor}12`, pointerEvents: 'none' }} />
+
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                        <div style={{ width: 46, height: 46, borderRadius: 13, background: `${occColor}1C`, border: `1px solid ${occColor}38`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={occColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1.5"/>
+                          </svg>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: 19, fontWeight: 500, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em', lineHeight: 1.15 }}>Plan with Theme</div>
+                          <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.70)', lineHeight: 1.6 }}>Browse curated themes and get tailored vendor suggestions for your event</div>
+                        </div>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={occColor} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 15, opacity: 0.75 }}>
+                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: 7, marginTop: 14, paddingTop: 14, borderTop: `1px solid ${occColor}18` }}>
+                        {['Curated Themes', 'Vendor Match', 'Full Planning'].map((tag, i) => (
+                          <span key={i} style={{ fontSize: 9.5, padding: '3px 10px', borderRadius: 100, background: `${occColor}10`, border: `1px solid ${occColor}28`, color: occColor, fontFamily: "'Outfit',sans-serif", fontWeight: 600, letterSpacing: '0.04em' }}>{tag}</span>
+                        ))}
+                      </div>
                     </button>
-                    <button onClick={() => { onClose(); navigate('/booking'); }} style={{
-                      padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-                      border: '1px solid rgba(245,236,216,0.1)', background: 'rgba(245,236,216,0.03)',
-                      transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
-                    }}>
-                      <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan without Theme</div>
-                      <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Jump straight to planning — browse vendors, get quotes, and finalise</div>
+
+                    {/* Secondary: Plan without Theme */}
+                    <button onClick={() => { onClose(); navigate('/booking'); }}
+                      style={{
+                        padding: '18px 20px', borderRadius: 18, textAlign: 'left', cursor: 'pointer',
+                        border: '1px solid rgba(245,236,216,0.1)', background: 'rgba(245,236,216,0.03)',
+                        transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(245,236,216,0.2)'; e.currentTarget.style.background = 'rgba(245,236,216,0.055)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(245,236,216,0.1)'; e.currentTarget.style.background = 'rgba(245,236,216,0.03)'; }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.48)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                          </svg>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: 17, fontWeight: 400, color: 'rgba(245,236,216,0.82)', marginBottom: 3, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em', lineHeight: 1.2 }}>Plan without Theme</div>
+                          <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.44)', lineHeight: 1.5 }}>Browse vendors directly, get quotes, and finalise</div>
+                        </div>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.25)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                          <path d="M5 12h14M12 5l7 7-7 7"/>
+                        </svg>
+                      </div>
                     </button>
                   </div>
                 </div>
@@ -1287,7 +1350,11 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     {BUDGET_OPTIONS.map(({ key, label, desc, stars }) => (
                       <button key={key} onClick={() => { setBudget(key); setTimeout(() => goNext(), 260); }}
                         style={optStyle(budget === key)}>
-                        <div style={{ color: occColor, fontSize: 11, letterSpacing: 4, marginBottom: 8, opacity: 0.85 }}>{'★'.repeat(stars)}</div>
+                        <div style={{ display: 'flex', gap: 3, marginBottom: 10 }}>
+                          {[1,2,3,4].map(s => (
+                            <div key={s} style={{ height: 3, flex: 1, borderRadius: 2, background: s <= stars ? occColor : 'rgba(245,236,216,0.12)', transition: 'background 0.2s' }} />
+                          ))}
+                        </div>
                         <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
                         <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)', lineHeight: 1.5 }}>{desc}</div>
                       </button>
@@ -1340,12 +1407,19 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   <h2 style={h2Style}>Where is the event?</h2>
                   <p style={subStyle}>Pick your venue type</p>
                   <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
-                    {VENUE_OPTIONS.map(({ key, label }) => (
-                      <button key={key} onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
-                        style={{ ...optStyle(venue === key), display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', textAlign: 'center', fontFamily: "'Cormorant Garamond',serif" }}>{label}</div>
-                      </button>
-                    ))}
+                    {VENUE_OPTIONS.map(({ key, label, desc }) => {
+                      const sel = venue === key;
+                      return (
+                        <button key={key} onClick={() => { setVenue(key); setTimeout(() => goNext(), 260); }}
+                          style={optStyle(sel)}>
+                          <div style={{ width: 34, height: 34, borderRadius: 10, background: sel ? `${occColor}22` : 'rgba(245,236,216,0.07)', border: `1px solid ${sel ? occColor + '45' : 'rgba(245,236,216,0.1)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 10, transition: 'all 0.18s' }}>
+                            {venueIcon(key, sel ? occColor : 'rgba(245,236,216,0.5)')}
+                          </div>
+                          <div style={{ fontSize: 15, fontWeight: 400, color: '#F5ECD8', fontFamily: "'Cormorant Garamond',serif", lineHeight: 1.2, marginBottom: 3 }}>{label}</div>
+                          {desc && <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.46)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.35 }}>{desc}</div>}
+                        </button>
+                      );
+                    })}
                   </div>
                   <NavRow onBack={goBack} onNext={venue ? () => goNext() : null} color={occColor} />
                 </div>

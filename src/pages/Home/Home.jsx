@@ -1307,8 +1307,8 @@ const Home = () => {
             </button>
           </motion.div>
 
-          {/* 4-column grid — 2-column on mobile */}
-          <div className="occ-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+          {/* Single-row strip — hover-reveal: non-hovered cards dim */}
+          <div className="occ-strip" style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}>
             {[
               { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
               { label: "Anniversary",     photo: "/occasions/anniversary-mobile.png" },
@@ -1325,59 +1325,56 @@ const Home = () => {
                 <motion.button
                   key={label}
                   onClick={() => setPlannerOccasion(label)}
-                  initial={{ opacity: 0, y: 24 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, amount: 0.08 }}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.1 }}
                   transition={{ type: "spring", stiffness: 260, damping: 22, delay: i * 0.04 }}
-                  whileHover={{ y: -6, boxShadow: "0 18px 44px rgba(28,14,4,0.28)" }}
+                  whileHover={{ y: -5, scale: 1.02, boxShadow: "0 14px 36px rgba(28,14,4,0.22)" }}
                   onHoverStart={() => setHoveredOcc(label)}
                   onHoverEnd={() => setHoveredOcc(null)}
                   style={{
                     position: "relative",
-                    aspectRatio: "3/4",
-                    borderRadius: 18,
+                    flexShrink: 0,
+                    width: 128,
+                    height: 172,
+                    borderRadius: 14,
                     overflow: "hidden",
                     border: "none",
                     background: "#D4C0A8",
                     cursor: "pointer",
                     padding: 0,
                     display: "block",
-                    opacity: isDimmed ? 0.5 : 1,
-                    transition: "opacity 0.25s ease",
-                    boxShadow: "0 3px 10px rgba(28,14,4,0.1)",
+                    opacity: isDimmed ? 0.52 : 1,
+                    transition: "opacity 0.28s ease",
+                    boxShadow: "0 2px 8px rgba(28,14,4,0.08)",
                   }}
                 >
                   <motion.img
                     src={photo} alt={label} loading="lazy"
-                    animate={{ scale: isHovered ? 1.07 : 1 }}
-                    transition={{ duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    animate={{ scale: isHovered ? 1.09 : 1 }}
+                    transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
                     style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", transformOrigin: "center" }}
                   />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,2,0,0.9) 0%, rgba(6,2,0,0.15) 48%, transparent 100%)" }} />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,2,0,0.88) 0%, rgba(6,2,0,0.18) 52%, transparent 100%)" }} />
                   <motion.div
                     animate={{ opacity: isHovered ? 1 : 0 }}
                     transition={{ duration: 0.18 }}
-                    style={{ position: "absolute", inset: 0, borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.65)", pointerEvents: "none" }}
+                    style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.6)", pointerEvents: "none" }}
                   />
-                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "14px 14px 18px" }}>
-                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 17, fontWeight: 600, fontStyle: "italic", color: "#fff", display: "block", lineHeight: 1.2, textShadow: "0 1px 6px rgba(0,0,0,0.5)" }}>{label}</span>
-                    <motion.div
-                      animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : 5 }}
-                      transition={{ duration: 0.2 }}
-                      style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 6 }}
-                    >
-                      <span style={{ fontSize: 10, color: "#CCAB4A", fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>Explore</span>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                    </motion.div>
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 10px 10px" }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 13, fontWeight: 600, fontStyle: "italic", color: "#fff", display: "block", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.45)" }}>{label}</span>
+                    <motion.span
+                      animate={{ opacity: isHovered ? 1 : 0 }}
+                      transition={{ duration: 0.18 }}
+                      style={{ fontSize: 9.5, color: "#CCAB4A", fontWeight: 600, display: "block", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase" }}
+                    >Explore →</motion.span>
                   </div>
                 </motion.button>
               );
             })}
           </div>
 
-          <style>{`
-            @media (max-width: 600px) { .occ-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 10px !important; } }
-          `}</style>
+          <style>{`.occ-strip::-webkit-scrollbar { display: none; }`}</style>
         </div>
       </section>
       {/* ── END Plan by Occasion ── */}
