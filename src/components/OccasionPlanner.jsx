@@ -53,10 +53,10 @@ const VENUE_OPTIONS = [
 ];
 
 const TIME_OPTIONS = [
-  { key: 'Morning',   label: 'Morning',   desc: '8 am – 12 pm', icon: '🌅' },
-  { key: 'Afternoon', label: 'Afternoon', desc: '12 pm – 4 pm', icon: '☀️' },
-  { key: 'Evening',   label: 'Evening',   desc: '4 pm – 8 pm',  icon: '🌆' },
-  { key: 'Night',     label: 'Night',     desc: '8 pm onwards', icon: '🌙' },
+  { key: 'Morning',   label: 'Morning',   desc: '8 am – 12 pm' },
+  { key: 'Afternoon', label: 'Afternoon', desc: '12 pm – 4 pm' },
+  { key: 'Evening',   label: 'Evening',   desc: '4 pm – 8 pm'  },
+  { key: 'Night',     label: 'Night',     desc: '8 pm onwards' },
 ];
 
 const PAGE_NAMES = ['Overview', 'Customise', 'Plan & Decor'];
@@ -99,6 +99,15 @@ function themeAccentColor(themeId) {
   let h = 5381;
   for (const c of (themeId || '')) { h = ((h << 5) + h) + c.charCodeAt(0); h |= 0; }
   return WARM_SWATCHES[Math.abs(h) % WARM_SWATCHES.length];
+}
+
+function timeIcon(key) {
+  const p = { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round" };
+  if (key === 'Morning')   return <svg {...p}><circle cx="12" cy="9" r="4"/><path d="M12 1v2M12 15v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/><path d="M3 20h18" strokeOpacity="0.45"/></svg>;
+  if (key === 'Afternoon') return <svg {...p}><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>;
+  if (key === 'Evening')   return <svg {...p}><path d="M3 19h18"/><circle cx="12" cy="15" r="4"/><path d="M12 11V7M8.46 9.46 6.34 7.34M15.54 9.46l2.12-2.12"/></svg>;
+  if (key === 'Night')     return <svg {...p}><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>;
+  return null;
 }
 
 function darken(hex, pct) {
@@ -284,7 +293,8 @@ const CSS = `
   .pf-datetime { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
   .op-occ-card:hover  { transform:translateY(-5px) scale(1.03) !important; box-shadow:0 14px 40px rgba(0,0,0,0.5) !important; }
-  .op-theme-card:hover{ background:rgba(245,236,216,0.07) !important; }
+  .op-theme-card:hover { background:rgba(245,236,216,0.06) !important; transform:translateY(-2px) !important; box-shadow:0 8px 28px rgba(0,0,0,0.38) !important; border-color:rgba(196,122,46,0.48) !important; }
+  .op-theme-card:hover .op-theme-img { transform:scale(1.07) !important; }
 
   .op-opt:hover { opacity:0.95; }
 
@@ -489,12 +499,12 @@ function BookPage1({ theme, occasion, photo, color }) {
 
 function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
   const sections = [
-    { key: 'colourPalette', icon: '🎨', title: 'Colour Palette',  items: theme.colourPalette || [] },
-    { key: 'decoration',    icon: '✨', title: 'Decoration',        items: theme.decorationIdeas || [] },
-    { key: 'food',          icon: '🍽️', title: 'Food & Snacks',    items: (theme.foodSuggestions || theme.foodIdeas || []) },
-    { key: 'entertainment', icon: '🎭', title: 'Entertainment',     items: theme.entertainment || [] },
-    { key: 'gifts',         icon: '🎁', title: 'Gifts',             items: theme.returnGiftIdeas || [] },
-    { key: 'photography',   icon: '📸', title: 'Photography Style', items: theme.photographyIdeas || [] },
+    { key: 'colourPalette', title: 'Colour Palette',  items: theme.colourPalette || [] },
+    { key: 'decoration',    title: 'Decoration',        items: theme.decorationIdeas || [] },
+    { key: 'food',          title: 'Food & Snacks',    items: (theme.foodSuggestions || theme.foodIdeas || []) },
+    { key: 'entertainment', title: 'Entertainment',     items: theme.entertainment || [] },
+    { key: 'gifts',         title: 'Gifts',             items: theme.returnGiftIdeas || [] },
+    { key: 'photography',   title: 'Photography Style', items: theme.photographyIdeas || [] },
   ].filter(s => s.items.length > 0);
 
   return (
@@ -506,12 +516,11 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
         <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.60)', margin: 0, letterSpacing: '0.02em' }}>Select what you'd like — pick as many as you want</p>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-        {sections.map(({ key, icon, title, items }) => {
+        {sections.map(({ key, title, items }) => {
           const sec = selections?.[key] || { picked: [], custom: '' };
           return (
             <div key={key}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-                <span style={{ fontSize: 12, lineHeight: 1 }}>{icon}</span>
                 <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{title}</span>
                 {sec.picked.length > 0 && (
                   <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: `${color}22`, color, fontFamily: "'Outfit',sans-serif" }}>{sec.picked.length} selected</span>
@@ -566,7 +575,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
           </div>
           {theme.cakeIdeas?.length > 0 && (
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎂 Cake Ideas</div>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>Cake Ideas</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {theme.cakeIdeas.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
               </div>
@@ -574,7 +583,7 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
           )}
           {theme.gamesActivities?.length > 0 && (
             <div>
-              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>🎮 Games & Activities</div>
+              <div style={{ fontSize: 10, color: 'rgba(245,236,216,0.60)', fontFamily: "'Outfit',sans-serif", marginBottom: 9 }}>Games & Activities</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 7 }}>
                 {theme.gamesActivities.map((item, i) => <CopyChip key={i} text={item} color={color} />)}
               </div>
@@ -1039,22 +1048,37 @@ function ThemeCard({ theme, occasion, onExpand, occColor }) {
 
   return (
     <button className="op-theme-card" onClick={onExpand} style={{
-      display: 'flex', flexDirection: 'row', alignItems: 'center',
-      width: '100%', borderRadius: 12, overflow: 'hidden',
-      border: `1px solid ${occColor}22`, cursor: 'pointer', padding: 0,
-      background: 'rgba(245,236,216,0.04)',
-      transition: 'background 0.18s', textAlign: 'left',
+      width: '100%', borderRadius: 14, overflow: 'hidden',
+      border: `1.5px solid ${occColor}22`, cursor: 'pointer', padding: 0,
+      background: 'rgba(245,236,216,0.03)',
+      transition: 'all 0.22s', textAlign: 'left', display: 'block',
     }}>
-      <div style={{ width: 80, height: 60, flexShrink: 0, overflow: 'hidden' }}>
-        <img src={photo} alt={theme.theme} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      <div style={{ width: '100%', aspectRatio: '3/2', overflow: 'hidden', position: 'relative' }}>
+        <img src={photo} alt={theme.theme}
+          className="op-theme-img"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 0.4s ease' }}
           onError={e => { e.target.src = occFallback(occasion); }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.55) 0%, transparent 60%)' }} />
+        <div style={{ position: 'absolute', top: 8, right: 9 }}>
+          <span style={{
+            fontSize: 8.5, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em',
+            padding: '2px 9px', borderRadius: 100,
+            background: `${badgeColor}28`, border: `1px solid ${badgeColor}50`,
+            color: badgeColor, backdropFilter: 'blur(8px)',
+            fontFamily: "'Outfit',sans-serif",
+          }}>{theme.budget}</span>
+        </div>
       </div>
-      <div style={{ flex: 1, padding: '0 12px', minWidth: 0 }}>
-        <div style={{ fontSize: 17, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Cormorant Garamond',serif" }}>{theme.theme}</div>
-        <div style={{ fontSize: 10, fontWeight: 600, color: badgeColor, marginTop: 3, textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: "'Outfit',sans-serif" }}>{theme.budget}</div>
-      </div>
-      <div style={{ padding: '0 14px', flexShrink: 0 }}>
-        <span style={{ fontSize: 12, color: occColor, fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>↗</span>
+      <div style={{ padding: '11px 13px 13px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 600, color: '#F5ECD8', lineHeight: 1.25, fontFamily: "'Cormorant Garamond',serif", marginBottom: theme.oneLineDesc ? 3 : 0 }}>{theme.theme}</div>
+          {theme.oneLineDesc && (
+            <div style={{ fontSize: 11, color: 'rgba(245,236,216,0.46)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{theme.oneLineDesc}</div>
+          )}
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={occColor} strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, marginTop: 3, opacity: 0.7 }}>
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
       </div>
     </button>
   );
@@ -1155,7 +1179,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                 onClick={() => { openExistingChat(existingChat._id, { _id: null, name: 'Tendr Team', serviceType: 'Occasions', approved: true }); onClose(); }}
                 style={{ width: '100%', background: 'rgba(196,122,46,0.2)', border: '1.5px solid rgba(196,122,46,0.5)', borderRadius: 12, padding: '10px 16px', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', fontFamily: "'Outfit',sans-serif" }}
               >
-                🎉 You have an active Occasions chat &nbsp;→ Resume Chat
+                You have an active Occasions chat &nbsp;→ Resume Chat
               </button>
             </div>
           )}
@@ -1334,10 +1358,10 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   <h2 style={h2Style}>When is the celebration?</h2>
                   <p style={subStyle}>Choose a time slot</p>
                   <div className="op-2col-form" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 11, marginBottom: 20 }}>
-                    {TIME_OPTIONS.map(({ key, label, desc, icon }) => (
+                    {TIME_OPTIONS.map(({ key, label, desc }) => (
                       <button key={key} onClick={() => { setTimeOfDay(key); setTimeout(() => goNext(5), 260); }}
                         style={optStyle(timeOfDay === key)}>
-                        <div style={{ fontSize: 22, marginBottom: 8 }}>{icon}</div>
+                        <div style={{ width: 26, height: 26, marginBottom: 8, color: timeOfDay === key ? occColor : 'rgba(245,236,216,0.5)', display: 'flex' }}>{timeIcon(key)}</div>
                         <div style={{ fontSize: 17, fontWeight: 400, color: '#F5ECD8', marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{label}</div>
                         <div style={{ fontSize: 12.5, fontWeight: 400, color: 'rgba(245,236,216,0.82)' }}>{desc}</div>
                       </button>
@@ -1369,7 +1393,7 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                   </div>
 
                   {results.length > 0 ? (
-                    <div className="op-theme-grid" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+                    <div className="op-theme-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10 }}>
                       {results.map(theme => (
                         <ThemeCard key={theme.id} theme={theme} occasion={occasion} occColor={occColor} onExpand={() => setExpandedTheme(theme)} />
                       ))}
