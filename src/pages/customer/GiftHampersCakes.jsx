@@ -182,24 +182,30 @@ const GiftHampersCakes = () => {
       <style>{`
         @keyframes ghShimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
         @keyframes ghPulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
-        @keyframes ghBarSlide { from{transform:translateY(100%);opacity:0} to{transform:translateY(0);opacity:1} }
+        @keyframes ghOrbBreath { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.78} }
+        @keyframes ghCardIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes ghIslandIn { from{opacity:0;transform:translateX(-50%) translateY(20px) scale(0.92)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
+        .gh-card { opacity: 0; animation: ghCardIn 0.38s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
         .gh-card:hover .gh-overlay { opacity: 1 !important; }
         .gh-card:hover img { transform: scale(1.05) !important; }
-        .gh-card:hover { box-shadow: 0 8px 32px rgba(44,26,14,0.13) !important; }
+        .gh-card:hover { transform: translateY(-3px) !important; box-shadow: 0 12px 36px rgba(44,26,14,0.14) !important; }
+        .gh-card:active { transform: scale(0.98) !important; }
         .gh-filter-btn:hover { background: rgba(196,122,46,0.07) !important; }
         .gh-cta-btn:hover { box-shadow: 0 10px 36px rgba(196,122,46,0.55) !important; transform: translateY(-1px); }
+        .gh-cta-btn:active { transform: scale(0.97) !important; }
         @media(max-width:640px){
           .gh-hero-inner { padding: 44px 20px 40px !important; }
           .gh-h1 { font-size: clamp(1.9rem,7vw,2.5rem) !important; }
           .gh-cta-btn { width: 100% !important; justify-content: center; }
-          .gh-selection-bar { padding: 14px 16px !important; }
+          .gh-island { min-width: unset !important; left: 16px !important; right: 16px !important; transform: none !important; border-radius: 20px !important; }
+          @keyframes ghIslandIn { from{opacity:0;transform:translateY(20px) scale(0.92)} to{opacity:1;transform:none} }
         }
       `}</style>
 
       {/* ── Hero ── */}
       <div style={{ background: "#1C0A04", position: "relative", overflow: "hidden" }}>
         {/* Ambient orbs */}
-        <div aria-hidden style={{ position:"absolute", top:"-28%", right:"-10%", width:520, height:520, borderRadius:"50%", background:"radial-gradient(circle, rgba(196,122,46,0.22) 0%, rgba(196,122,46,0.07) 42%, transparent 70%)", pointerEvents:"none" }} />
+        <div aria-hidden style={{ position:"absolute", top:"-28%", right:"-10%", width:520, height:520, borderRadius:"50%", background:"radial-gradient(circle, rgba(196,122,46,0.22) 0%, rgba(196,122,46,0.07) 42%, transparent 70%)", pointerEvents:"none", animation:"ghOrbBreath 7s ease-in-out infinite" }} />
         <div aria-hidden style={{ position:"absolute", bottom:"-22%", left:"-8%", width:380, height:380, borderRadius:"50%", background:"radial-gradient(circle, rgba(204,171,74,0.14) 0%, transparent 65%)", pointerEvents:"none" }} />
         <div aria-hidden style={{ position:"absolute", top:"55%", left:"48%", transform:"translate(-50%,-50%)", width:560, height:280, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,122,46,0.06) 0%, transparent 70%)", pointerEvents:"none" }} />
         {/* Crosshatch grid */}
@@ -366,7 +372,7 @@ const GiftHampersCakes = () => {
                     key={s._id}
                     className="gh-card"
                     onClick={() => setPreviewIdx(idx)}
-                    style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.1)"}`, boxShadow: isSelected ? "0 0 0 2.5px rgba(196,122,46,0.26), 0 6px 24px rgba(44,26,14,0.09)" : "0 2px 12px rgba(44,26,14,0.06)", cursor: "pointer", position: "relative", transition: "box-shadow 0.22s, border-color 0.22s" }}
+                    style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: `1.5px solid ${isSelected ? "#C47A2E" : "rgba(196,122,46,0.1)"}`, boxShadow: isSelected ? "0 0 0 2.5px rgba(196,122,46,0.26), 0 6px 24px rgba(44,26,14,0.09)" : "0 2px 12px rgba(44,26,14,0.06)", cursor: "pointer", position: "relative", transition: "box-shadow 0.22s, border-color 0.22s, transform 0.22s", animationDelay: `${Math.min(idx * 48, 480)}ms` }}
                   >
                     {isSelected && (
                       <div style={{ position: "absolute", top: 10, right: 10, zIndex: 2, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", display: "flex", alignItems: "center", gap: 4, borderRadius: 100, padding: "4px 9px", boxShadow: "0 2px 8px rgba(196,122,46,0.42)" }}>
@@ -397,21 +403,25 @@ const GiftHampersCakes = () => {
         </div>
       </div>
 
-      {/* ── Sticky Selection Bar ── */}
+      {/* ── Floating Island (Dynamic Action — ln-dev7 pattern) ── */}
       {selectedPhotos.length > 0 && (
         <div
-          className="gh-selection-bar"
-          style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 1000, background: "linear-gradient(135deg,#1C0A04,#2C1810)", padding: "16px 22px", paddingBottom: "calc(16px + env(safe-area-inset-bottom, 0px))", display: "flex", alignItems: "center", gap: 12, boxShadow: "0 -8px 40px rgba(0,0,0,0.32)", borderTop: "1px solid rgba(196,122,46,0.18)", animation: "ghBarSlide 0.28s cubic-bezier(0.25,0.46,0.45,0.94)" }}
+          className="gh-island"
+          style={{ position: "fixed", bottom: "calc(28px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", zIndex: 1000, minWidth: 320, maxWidth: "calc(100vw - 32px)", background: "linear-gradient(135deg,rgba(28,10,4,0.96),rgba(44,26,14,0.94))", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", border: "1px solid rgba(196,122,46,0.22)", borderRadius: 100, padding: "10px 10px 10px 20px", display: "flex", alignItems: "center", gap: 14, boxShadow: "0 8px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(196,122,46,0.08), inset 0 1px 0 rgba(255,248,236,0.06)", animation: "ghIslandIn 0.32s cubic-bezier(0.34,1.56,0.64,1) forwards" }}
         >
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#FFF8EC", fontFamily: font }}>{selectedPhotos.length} photo{selectedPhotos.length > 1 ? "s" : ""} selected</div>
-            <button onClick={() => setSelectedPhotos([])} style={{ background: "none", border: "none", color: "rgba(255,248,236,0.42)", fontSize: 11, cursor: "pointer", fontFamily: font, padding: 0, marginTop: 2, letterSpacing: "0.02em" }}>Clear selection</button>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#FFF8EC", fontFamily: font, whiteSpace: "nowrap" }}>
+              {selectedPhotos.length} photo{selectedPhotos.length > 1 ? "s" : ""} selected
+            </div>
+            <button onClick={() => setSelectedPhotos([])} style={{ background: "none", border: "none", color: "rgba(255,248,236,0.4)", fontSize: 11, cursor: "pointer", fontFamily: font, padding: 0, marginTop: 1, letterSpacing: "0.02em" }}>
+              Clear
+            </button>
           </div>
           <button
             onClick={goToChat}
-            style={{ display: "flex", alignItems: "center", gap: 8, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, padding: "12px 22px", borderRadius: 100, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 4px 18px rgba(196,122,46,0.42)", whiteSpace: "nowrap", flexShrink: 0 }}
+            style={{ display: "flex", alignItems: "center", gap: 7, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, padding: "11px 18px", borderRadius: 100, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 4px 18px rgba(196,122,46,0.48)", whiteSpace: "nowrap", flexShrink: 0, letterSpacing: "0.02em" }}
           >
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             Talk to Team
           </button>
         </div>
