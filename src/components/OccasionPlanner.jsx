@@ -302,11 +302,13 @@ const CSS = `
 
   .pf-datetime { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
 
-  .op-occ-card:hover  { transform:translateY(-5px) scale(1.03) !important; box-shadow:0 14px 40px rgba(0,0,0,0.5) !important; }
+  .op-occ-card:hover  { transform:translateY(-4px) scale(1.02) !important; box-shadow:0 16px 44px rgba(0,0,0,0.62) !important; border-color:rgba(245,236,216,0.18) !important; }
+  .op-occ-card:hover img { transform:scale(1.06) !important; opacity:0.92 !important; }
   .op-theme-card:hover { background:rgba(245,236,216,0.06) !important; transform:translateY(-2px) !important; box-shadow:0 8px 28px rgba(0,0,0,0.38) !important; border-color:rgba(196,122,46,0.48) !important; }
   .op-theme-card:hover .op-theme-img { transform:scale(1.07) !important; }
 
-  .op-opt:hover { opacity:0.95; }
+  .op-opt:hover { background:rgba(245,236,216,0.07) !important; }
+  .op-sel-chip:hover { opacity:0.9; }
 
   button { user-select:none; -webkit-user-select:none; }
   input[type=number]::-webkit-inner-spin-button,
@@ -317,14 +319,14 @@ const CSS = `
     .op-panel        { border-radius:20px !important; max-height:82vh !important; margin:auto !important; }
     .op-overlay-wrap { align-items:center !important; padding:16px !important; }
     .op-picker-grid  { gap:7px !important; }
-    .op-picker-card  { height:78px !important; }
+    .op-picker-card  { height:84px !important; }
     .op-2col-form    { grid-template-columns:1fr 1fr !important; }
     .book-detail-panel{ border-radius:20px !important; max-height:80vh !important; margin:auto !important; }
     .book-detail-wrap { align-items:center !important; padding:16px !important; }
     .book-detail-col  { grid-template-columns:1fr !important; }
     .op-sel-chip      { font-size:10px !important; padding:5px 10px !important; }
     .book-photo-grid  { grid-template-columns:repeat(2,1fr) !important; }
-    .book-hero-img    { height:190px !important; }
+    .book-hero-img    { height:210px !important; }
     .book-title       { font-size:1.7rem !important; }
     .op-theme-grid    { grid-template-columns:1fr !important; }
     .pf-datetime      { grid-template-columns:1fr !important; }
@@ -346,11 +348,13 @@ function SectionLabel({ color, children }) {
 function StatTile({ label, value, color }) {
   return (
     <div style={{
-      padding: '16px 10px', borderRadius: 14, textAlign: 'center',
-      background: `${color}0A`, border: `1px solid ${color}1E`,
+      padding: '16px 11px', borderRadius: 14, textAlign: 'center',
+      background: `${color}0D`, border: `1px solid ${color}24`,
+      position: 'relative', overflow: 'hidden',
     }}>
-      <div style={{ fontSize: 14, fontWeight: 400, color: '#F5ECD8', lineHeight: 1.35, marginBottom: 6, fontFamily: "'Cormorant Garamond',serif" }}>{value}</div>
-      <div style={{ fontSize: 9, color: `${color}99`, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{label}</div>
+      <div aria-hidden style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 40, height: 1.5, background: `linear-gradient(90deg, transparent, ${color}88, transparent)`, pointerEvents: 'none' }} />
+      <div style={{ fontSize: 15, fontWeight: 400, color: '#F5ECD8', lineHeight: 1.3, marginBottom: 5, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>{value}</div>
+      <div style={{ fontSize: 9, color: `${color}80`, textTransform: 'uppercase', letterSpacing: '0.18em', fontFamily: "'Outfit',sans-serif", fontWeight: 700 }}>{label}</div>
     </div>
   );
 }
@@ -363,7 +367,7 @@ function BulletList({ items, color, max = 5 }) {
     <ul style={{ margin: '8px 0 0', padding: 0, listStyle: 'none' }}>
       {shown.map((item, i) => (
         <li key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, alignItems: 'flex-start' }}>
-          <span style={{ color, fontSize: 7, marginTop: 5, flexShrink: 0 }}>◆</span>
+          <svg width="5" height="5" viewBox="0 0 5 5" style={{ marginTop: 8, flexShrink: 0 }}><circle cx="2.5" cy="2.5" r="2.5" fill={color} /></svg>
           <span style={{ fontSize: 13, color: 'rgba(245,236,216,0.97)', lineHeight: 1.6, fontFamily: "'Outfit',sans-serif" }}>{item}</span>
         </li>
       ))}
@@ -394,10 +398,13 @@ function PageDots({ current, total, color }) {
 
 function NavRow({ onBack, onNext, nextLabel = 'Next', color }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 20 }}>
-      <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.75)', fontSize: 15, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none' }}>Back</button>
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 22 }}>
+      <button onClick={onBack} style={{ background: 'transparent', border: 'none', color: 'rgba(245,236,216,0.58)', fontSize: 13, cursor: 'pointer', padding: '8px 0', fontFamily: "'Outfit',sans-serif", WebkitAppearance: 'none', appearance: 'none', outline: 'none', display: 'flex', alignItems: 'center', gap: 5, letterSpacing: '0.02em' }}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        Back
+      </button>
       {onNext && (
-        <button onClick={onNext} style={{ padding: '12px 30px', borderRadius: 100, background: color || FALLBACK_COLOR, color: '#fff', border: 'none', fontSize: 15, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 4px 14px ${color||FALLBACK_COLOR}44` }}>
+        <button onClick={onNext} style={{ padding: '12px 32px', borderRadius: 100, background: `linear-gradient(135deg, ${color || FALLBACK_COLOR}, ${color ? darken(color, 18) : '#A0621C'})`, color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color||FALLBACK_COLOR}45`, letterSpacing: '0.02em' }}>
           {nextLabel}
         </button>
       )}
@@ -408,10 +415,10 @@ function NavRow({ onBack, onNext, nextLabel = 'Next', color }) {
 function Breadcrumb({ occasion, current, color }) {
   if (!occasion) return null;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 16 }}>
-      <span style={{ fontSize: 12, color: 'rgba(245,236,216,0.75)', textTransform: 'uppercase', letterSpacing: '0.1em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
-      <span style={{ color: 'rgba(245,236,216,0.46)', fontSize: 14 }}>›</span>
-      <span style={{ fontSize: 12, color, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>{current}</span>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 16 }}>
+      <span style={{ fontSize: 11, color: 'rgba(245,236,216,0.48)', textTransform: 'uppercase', letterSpacing: '0.12em', fontFamily: "'Outfit',sans-serif" }}>{occasion}</span>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.28)" strokeWidth="2" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+      <span style={{ fontSize: 11, color, textTransform: 'uppercase', letterSpacing: '0.12em', fontWeight: 700, fontFamily: "'Outfit',sans-serif" }}>{current}</span>
     </div>
   );
 }
@@ -420,9 +427,10 @@ function OptButton({ selected, color, onClick, children, className = 'op-opt' })
   return (
     <button className={className} onClick={onClick} style={{
       padding: '18px 15px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-      border: `1.5px solid ${selected ? color : 'rgba(245,236,216,0.12)'}`,
-      background: selected ? `${color}1C` : 'rgba(245,236,216,0.04)',
-      transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+      border: `1.5px solid ${selected ? color + 'BB' : 'rgba(245,236,216,0.1)'}`,
+      background: selected ? `${color}1A` : 'rgba(245,236,216,0.04)',
+      boxShadow: selected ? `0 0 0 1px ${color}22, 0 4px 22px ${color}1E` : 'none',
+      transition: 'all 0.2s', fontFamily: "'Outfit',sans-serif",
     }}>
       {children}
     </button>
@@ -458,10 +466,12 @@ function BookPage1({ theme, occasion, photo, color }) {
   return (
     <div>
       {/* Full-bleed hero — negative margin to cancel parent padding */}
-      <div className="book-hero-img" style={{ margin: '0 -24px', height: 250, position: 'relative', overflow: 'hidden' }}>
-        <img src={photo} alt={theme.theme} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      <div className="book-hero-img" style={{ margin: '0 -24px', height: 295, position: 'relative', overflow: 'hidden' }}>
+        <img src={photo} alt={theme.theme} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transition: 'transform 6s ease' }}
           onError={e => { e.target.src = occFallback(occasion); }} />
-        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, #1A0902 0%, rgba(26,9,2,0.5) 45%, transparent 100%)` }} />
+        <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, #1A0902 0%, rgba(26,9,2,0.62) 35%, rgba(26,9,2,0.12) 65%, transparent 100%)` }} />
+        {/* Ambient top edge glow */}
+        <div aria-hidden style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 80, background: 'linear-gradient(to bottom, rgba(26,9,2,0.38), transparent)', pointerEvents: 'none' }} />
         {/* Badges + Title inside photo */}
         <div style={{ position: 'absolute', bottom: 20, left: 24, right: 24 }}>
           <div style={{ display: 'flex', gap: 6, marginBottom: 8, flexWrap: 'wrap' }}>
@@ -480,7 +490,7 @@ function BookPage1({ theme, occasion, photo, color }) {
       <div style={{ paddingTop: 22 }}>
         {/* Overview */}
         {theme.overview && (
-          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 400, color: 'rgba(245,236,216,0.92)', lineHeight: 1.9, margin: '0 0 24px', borderLeft: `2px solid ${color}35`, paddingLeft: 16 }}>{theme.overview}</p>
+          <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 14, fontWeight: 400, color: 'rgba(245,236,216,0.88)', lineHeight: 2, margin: '0 0 24px', borderLeft: `2.5px solid ${color}55`, paddingLeft: 16 }}>{theme.overview}</p>
         )}
 
         {/* Stats row — 2×2 when age group present, 3-col otherwise */}
@@ -494,7 +504,10 @@ function BookPage1({ theme, occasion, photo, color }) {
         {/* Best Venue chips */}
         {theme.bestVenue?.length > 0 && (
           <div style={{ marginTop: 16 }}>
-            <div style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif", marginBottom: 8 }}>Best Venue</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+              <div style={{ width: 16, height: 2, background: `linear-gradient(90deg, ${color}, transparent)`, borderRadius: 1, flexShrink: 0 }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Best Venue</span>
+            </div>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {theme.bestVenue.map((v, i) => (
                 <span key={i} style={{ padding: '4px 12px', borderRadius: 100, fontSize: 12, background: `${color}0A`, border: `1px solid ${color}22`, color: 'rgba(245,236,216,0.90)', fontFamily: "'Outfit',sans-serif" }}>{v}</span>
@@ -530,8 +543,9 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
           const sec = selections?.[key] || { picked: [], custom: '' };
           return (
             <div key={key}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
-                <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>{title}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <div style={{ width: 16, height: 2, background: `linear-gradient(90deg, ${color}, transparent)`, borderRadius: 1, flexShrink: 0 }} />
+                <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>{title}</span>
                 {sec.picked.length > 0 && (
                   <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: `${color}22`, color, fontFamily: "'Outfit',sans-serif" }}>{sec.picked.length} selected</span>
                 )}
@@ -580,8 +594,9 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
       {(theme.cakeIdeas?.length > 0 || theme.gamesActivities?.length > 0) && (
         <div style={{ marginTop: 10, paddingTop: 24, borderTop: `1px solid ${color}18` }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20 }}>
-            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.14em', fontFamily: "'Outfit',sans-serif" }}>More Ideas</span>
-            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.46)', fontFamily: "'Outfit',sans-serif" }}>· tap to copy</span>
+            <div style={{ width: 16, height: 2, background: `linear-gradient(90deg, ${color}, transparent)`, borderRadius: 1, flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>More Ideas</span>
+            <span style={{ fontSize: 10, color: 'rgba(245,236,216,0.38)', fontFamily: "'Outfit',sans-serif" }}>· tap to copy</span>
           </div>
           {theme.cakeIdeas?.length > 0 && (
             <div style={{ marginBottom: 20 }}>
@@ -608,27 +623,33 @@ function BookPage2({ theme, color, selections, onToggle, onCustomChange }) {
 function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogglePhoto, onProceedNow, onBrowseOtherThemes }) {
   return (
     <div style={{ paddingTop: 8 }}>
-      <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.7rem,4vw,2.2rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 18px', letterSpacing: '0.01em', borderBottom: `1px solid ${color}22`, paddingBottom: 10 }}>
-        Plan & Decor
-      </h3>
+      <div style={{ marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${color}18` }}>
+        <h3 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 'clamp(1.2rem,3.5vw,1.8rem)', fontWeight: 400, color: '#F5ECD8', margin: '0 0 4px', letterSpacing: '0.01em' }}>
+          Plan &amp; Decor
+        </h3>
+        <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: 12, fontWeight: 400, color: 'rgba(245,236,216,0.50)', margin: 0, letterSpacing: '0.02em' }}>Select decor photos and proceed when ready</p>
+      </div>
 
       {/* Planning checklist */}
       {theme.planningChecklist?.length > 0 && (
         <div style={{ marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 14 }}>
-            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Planning Checklist</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+            <div style={{ width: 16, height: 2, background: `linear-gradient(90deg, ${color}, transparent)`, borderRadius: 1, flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Planning Checklist</span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
             {theme.planningChecklist.map((item, i) => (
               <div key={i} style={{
                 display: 'flex', alignItems: 'flex-start', gap: 12,
-                padding: '11px 14px', borderRadius: 12,
-                background: `${color}07`, border: `1px solid ${color}18`,
+                padding: '12px 16px', borderRadius: 12,
+                background: 'rgba(245,236,216,0.03)', border: '1px solid rgba(245,236,216,0.07)',
               }}>
-                <div style={{ width: 16, height: 16, borderRadius: 5, border: `1px solid ${color}45`, background: `${color}0D`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-                  <span style={{ color, fontSize: 8, fontWeight: 600 }}>✓</span>
+                <div style={{ width: 18, height: 18, borderRadius: '50%', background: `${color}18`, border: `1.5px solid ${color}55`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
+                  <svg width="8" height="8" viewBox="0 0 12 12" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M2 6l3 3 5-5"/>
+                  </svg>
                 </div>
-                <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.92)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.55 }}>{item}</span>
+                <span style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.88)', fontFamily: "'Outfit',sans-serif", lineHeight: 1.6 }}>{item}</span>
               </div>
             ))}
           </div>
@@ -639,7 +660,8 @@ function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogg
       {galleryUrls.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-            <span style={{ fontSize: 10, fontWeight: 600, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Decor Photos</span>
+            <div style={{ width: 16, height: 2, background: `linear-gradient(90deg, ${color}, transparent)`, borderRadius: 1, flexShrink: 0 }} />
+            <span style={{ fontSize: 10, fontWeight: 700, color, textTransform: 'uppercase', letterSpacing: '0.16em', fontFamily: "'Outfit',sans-serif" }}>Decor Photos</span>
             {selectedPhotos.length > 0 && (
               <span style={{ fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: `${color}22`, color, fontFamily: "'Outfit',sans-serif" }}>{selectedPhotos.length} selected</span>
             )}
@@ -674,18 +696,20 @@ function BookPage3({ theme, color, galleryUrls = [], selectedPhotos = [], onTogg
       )}
 
       {/* CTAs */}
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 18, borderTop: `1px solid ${color}18` }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', paddingTop: 20, borderTop: `1px solid ${color}18` }}>
         <button onClick={onProceedNow} style={{
-          flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
+          flex: 1, minWidth: 130, padding: '15px 22px', borderRadius: 100,
           background: `linear-gradient(135deg, ${color}, ${darken(color,22)})`,
-          color: '#fff', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer',
-          fontFamily: "'Outfit',sans-serif", boxShadow: `0 5px 18px ${color}42`, letterSpacing: '0.02em',
+          color: '#fff', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer',
+          fontFamily: "'Outfit',sans-serif",
+          boxShadow: `0 6px 26px ${color}52, 0 2px 8px ${color}28`,
+          letterSpacing: '0.03em',
         }}>Proceed Now</button>
         <button onClick={onBrowseOtherThemes} style={{
-          flex: 1, minWidth: 130, padding: '14px 20px', borderRadius: 100,
-          background: 'rgba(245,236,216,0.04)', color: 'rgba(245,236,216,0.65)',
-          border: '1px solid rgba(245,236,216,0.1)', fontSize: 13, fontWeight: 400, cursor: 'pointer',
-          fontFamily: "'Outfit',sans-serif",
+          flex: 1, minWidth: 130, padding: '15px 22px', borderRadius: 100,
+          background: 'rgba(245,236,216,0.05)', color: 'rgba(245,236,216,0.72)',
+          border: '1.5px solid rgba(245,236,216,0.12)', fontSize: 13, fontWeight: 500, cursor: 'pointer',
+          fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em',
         }}>Browse Other Themes</button>
       </div>
     </div>
@@ -1155,9 +1179,10 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
   // Form option button shared style
   const optStyle = (selected) => ({
     padding: '18px 15px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
-    border: `1.5px solid ${selected ? occColor : 'rgba(245,236,216,0.11)'}`,
-    background: selected ? `${occColor}1C` : 'rgba(245,236,216,0.04)',
-    transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+    border: `1.5px solid ${selected ? occColor + 'BB' : 'rgba(245,236,216,0.1)'}`,
+    background: selected ? `${occColor}1A` : 'rgba(245,236,216,0.04)',
+    boxShadow: selected ? `0 0 0 1px ${occColor}22, 0 4px 22px ${occColor}1E` : 'none',
+    transition: 'all 0.2s', fontFamily: "'Outfit',sans-serif",
   });
 
   const occBg = OCC_BG[occasion] || ['#1C0A04', '#130600'];
@@ -1198,12 +1223,14 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
           <div className="op-panel op-scroll" onClick={e => e.stopPropagation()} style={{
             width: '100%', maxWidth: 640, maxHeight: '90vh', overflowY: 'auto',
             background: occBgGradient,
-            border: `1px solid ${occColor}38`,
+            border: `1px solid ${occColor}3A`,
             borderRadius: 26,
             fontFamily: "'Outfit',sans-serif",
-            boxShadow: `0 32px 100px rgba(0,0,0,0.75), 0 0 0 1px ${occColor}14`,
+            boxShadow: `0 36px 110px rgba(0,0,0,0.78), 0 0 0 1px ${occColor}18`,
             position: 'relative',
           }}>
+            {/* Top ambient glow hairline */}
+            <div aria-hidden style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: '55%', height: 1, background: `linear-gradient(90deg, transparent, ${occColor}70, transparent)`, pointerEvents: 'none', zIndex: 1 }} />
 
             {/* Close */}
             <button onClick={onClose} style={{
@@ -1216,14 +1243,26 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
 
             {/* Progress bar — steps 1-4 */}
             {step >= 1 && step <= 4 && (
-              <div style={{ padding: '18px 22px 0', display: 'flex', gap: 5 }}>
-                {[1,2,3,4].map(s => (
-                  <div key={s} style={{
-                    flex: 1, height: 3, borderRadius: 3,
-                    background: s <= step ? occColor : 'rgba(245,236,216,0.1)',
-                    transition: 'background 0.3s',
-                  }} />
-                ))}
+              <div style={{ padding: '18px 22px 0' }}>
+                <div style={{ display: 'flex', gap: 5, marginBottom: 7 }}>
+                  {[1,2,3,4].map(s => (
+                    <div key={s} style={{
+                      flex: 1, height: 2.5, borderRadius: 2,
+                      background: s <= step ? occColor : 'rgba(245,236,216,0.1)',
+                      transition: 'background 0.32s',
+                    }} />
+                  ))}
+                </div>
+                <div style={{ display: 'flex' }}>
+                  {['Budget', 'Guests', 'Venue', 'Time'].map((lbl, i) => (
+                    <span key={lbl} style={{
+                      flex: 1, fontSize: 8.5, fontFamily: "'Outfit',sans-serif",
+                      color: (i + 1) <= step ? occColor : 'rgba(245,236,216,0.22)',
+                      textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700,
+                      textAlign: 'center', transition: 'color 0.32s',
+                    }}>{lbl}</span>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -1240,18 +1279,19 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     {OCCASIONS_LIST.map(({ label, photo }) => (
                       <button key={label} className="op-occ-card op-picker-card" onClick={() => { setOccasion(label); goNext(0.5); }}
                         style={{
-                          position: 'relative', height: 94, borderRadius: 14,
-                          overflow: 'hidden', border: '1.5px solid rgba(245,236,216,0.07)',
+                          position: 'relative', height: 112, borderRadius: 14,
+                          overflow: 'hidden', border: '1.5px solid rgba(245,236,216,0.06)',
                           cursor: 'pointer', padding: 0, background: '#160800',
-                          transition: 'transform 0.2s, box-shadow 0.2s', boxShadow: '0 4px 18px rgba(0,0,0,0.42)',
+                          transition: 'transform 0.22s, box-shadow 0.22s, border-color 0.22s',
+                          boxShadow: '0 4px 20px rgba(0,0,0,0.52)',
                         }}>
-                        <img src={photo} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.78 }} />
+                        <img src={photo} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.82, transition: 'transform 0.4s, opacity 0.22s' }} />
                         <div style={{
                           position: 'absolute', inset: 0,
-                          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 55%, transparent 100%)',
-                          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '7px 7px',
+                          background: 'linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.14) 52%, transparent 100%)',
+                          display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '8px 8px',
                         }}>
-                          <span style={{ fontSize: 10, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Outfit',sans-serif" }}>{label}</span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#F5ECD8', lineHeight: 1.2, fontFamily: "'Outfit',sans-serif", letterSpacing: '0.01em' }}>{label}</span>
                         </div>
                       </button>
                     ))}
@@ -1377,21 +1417,23 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       onKeyDown={e => e.key === 'Enter' && guests && goNext()}
                       autoFocus
                       style={{
-                        width: '100%', boxSizing: 'border-box', padding: '16px 80px 16px 20px',
-                        fontSize: 28, fontWeight: 700,
-                        background: 'rgba(245,236,216,0.05)', border: `1.5px solid ${occColor}35`,
-                        borderRadius: 14, color: '#F5ECD8', outline: 'none', fontFamily: "'Outfit',sans-serif",
+                        width: '100%', boxSizing: 'border-box', padding: '18px 90px 18px 22px',
+                        fontSize: 32, fontWeight: 700,
+                        background: 'rgba(245,236,216,0.05)', border: `1.5px solid ${occColor}40`,
+                        borderRadius: 16, color: '#F5ECD8', outline: 'none', fontFamily: "'Outfit',sans-serif",
+                        letterSpacing: '-0.01em',
                       }}
                     />
-                    <span style={{ position: 'absolute', right: 18, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: 'rgba(245,236,216,0.44)', pointerEvents: 'none', fontFamily: "'Outfit',sans-serif" }}>guests</span>
+                    <span style={{ position: 'absolute', right: 20, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: 'rgba(245,236,216,0.40)', pointerEvents: 'none', fontFamily: "'Outfit',sans-serif", fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>guests</span>
                   </div>
                   <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap', marginBottom: 22 }}>
                     {['10','25','50','100','150','250'].map(g => (
                       <button key={g} onClick={() => setGuests(g)} style={{
-                        padding: '7px 13px', borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                        background: guests === g ? `${occColor}20` : 'rgba(245,236,216,0.05)',
-                        border: `1px solid ${guests === g ? occColor : 'rgba(245,236,216,0.12)'}`,
-                        color: guests === g ? occColor : 'rgba(245,236,216,0.65)',
+                        padding: '8px 15px', borderRadius: 100, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                        background: guests === g ? `${occColor}1E` : 'rgba(245,236,216,0.05)',
+                        border: `1.5px solid ${guests === g ? occColor + 'BB' : 'rgba(245,236,216,0.1)'}`,
+                        color: guests === g ? occColor : 'rgba(245,236,216,0.62)',
+                        boxShadow: guests === g ? `0 0 0 1px ${occColor}1A` : 'none',
                         transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
                       }}>{g}</button>
                     ))}
@@ -1458,10 +1500,10 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                     </h2>
                     {!showAll && (
                       <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                        {budget    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: `${occColor}14`, border: `1px solid ${occColor}38`, color: occColor, fontFamily: "'Outfit',sans-serif" }}>{BUDGET_OPTIONS.find(b => b.key === budget)?.label}</span>}
-                        {guests    && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
-                        {venue     && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
-                        {timeOfDay && <span style={{ fontSize: 11, padding: '3px 10px', borderRadius: 100, background: 'rgba(245,236,216,0.06)', border: '1px solid rgba(245,236,216,0.12)', color: 'rgba(245,236,216,0.75)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
+                        {budget    && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: `${occColor}18`, border: `1px solid ${occColor}44`, color: occColor, fontFamily: "'Outfit',sans-serif", fontWeight: 600 }}>{BUDGET_OPTIONS.find(b => b.key === budget)?.label}</span>}
+                        {guests    && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{guests} guests</span>}
+                        {venue     && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{VENUE_OPTIONS.find(v => v.key === venue)?.label}</span>}
+                        {timeOfDay && <span style={{ fontSize: 11, padding: '4px 11px', borderRadius: 100, background: 'rgba(245,236,216,0.07)', border: '1px solid rgba(245,236,216,0.14)', color: 'rgba(245,236,216,0.80)', fontFamily: "'Outfit',sans-serif" }}>{timeOfDay}</span>}
                       </div>
                     )}
                   </div>
