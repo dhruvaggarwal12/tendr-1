@@ -396,14 +396,17 @@
 function downloadVCard() {
   var v = [
     'BEGIN:VCARD', 'VERSION:3.0',
-    'FN:Tendr', 'ORG:Tendr',
+    'FN:Dhruv Aggarwal',
+    'ORG:Tendr',
+    'TITLE:Founder & Director',
     'TEL;TYPE=WORK,CELL:+919211668427',
-    'EMAIL:contact@tendr.co.in',
+    'EMAIL;TYPE=WORK:contact@tendr.co.in',
+    'EMAIL;TYPE=HOME:dhruvaggarwal1144@gmail.com',
     'URL:https://www.tendr.co.in',
     'X-SOCIALPROFILE;type=instagram:https://www.instagram.com/justtendrit',
     'X-SOCIALPROFILE;type=linkedin:https://www.linkedin.com/company/justtendrit/',
     'X-SOCIALPROFILE;type=twitter:https://x.com/tendr293418',
-    'NOTE:Delhi NCR event vendor platform. We curate, you celebrate.',
+    'NOTE:Founder & Director at Tendr — Delhi NCR event vendor platform.',
     'END:VCARD'
   ].join('\r\n');
   var a = document.createElement('a');
