@@ -349,10 +349,10 @@ const Navbar = ({
     gap: 10,
     padding: "10px 14px",
     borderRadius: 8,
-    color: "#3B2F2F",
+    color: "#1C0E04",
     textDecoration: "none",
     fontSize: 14,
-    fontWeight: 500,
+    fontWeight: 600,
     letterSpacing: "0.01em",
     lineHeight: 1.45,
     transition: "background 0.15s",
@@ -377,96 +377,65 @@ const Navbar = ({
         left: 0,
         width: "100%",
         zIndex: 1000,
-        background: scrolled ? "rgba(255,252,245,0.98)" : "rgba(255,255,255,0.97)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderBottom: scrolled
-          ? "1px solid rgba(139,69,19,0.12)"
-          : "1px solid rgba(139,69,19,0.07)",
-        boxShadow: scrolled
-          ? "0 2px 24px rgba(139,69,19,0.07)"
-          : "0 1px 6px rgba(0,0,0,0.03)",
-        transition: "all 0.3s ease",
         fontFamily: font,
       }}
     >
+
       {/* ── Main bar ── */}
       <div
-        className="navbar-main-bar"
         style={{
-          maxWidth: 1280,
-          margin: "0 auto",
-          padding: "0 40px",
-          height: scrolled ? 64 : 76,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 32,
-          transition: "height 0.3s ease",
+          background: scrolled ? "rgba(255,253,250,0.99)" : "rgba(255,253,250,0.97)",
+          backdropFilter: "blur(24px)",
+          WebkitBackdropFilter: "blur(24px)",
+          borderBottom: scrolled
+            ? "1px solid rgba(196,122,46,0.28)"
+            : "1px solid rgba(196,122,46,0.14)",
+          boxShadow: scrolled
+            ? "0 1px 0 rgba(196,122,46,0.08), 0 8px 36px rgba(139,69,19,0.1)"
+            : "none",
+          transition: "all 0.3s ease",
         }}
       >
-        {/* Logo */}
-        <a
-          href="/"
-          onClick={handleLogoClick}
-          style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none" }}
-        >
-          <img src={tendrLogo} alt="Tendr" style={{ height: scrolled ? 32 : 36, maxWidth: 140, objectFit: "contain", display: "block" }} />
-        </a>
-
-
-        {/* ── Desktop nav — search first, then links, then gift hampers, then auth ── */}
         <div
-          className="desktop-nav"
-          style={{ display: "flex", alignItems: "center", gap: 6 }}
+          className="navbar-main-bar"
+          style={{
+            maxWidth: 1280,
+            margin: "0 auto",
+            padding: "0 40px",
+            height: scrolled ? 58 : 64,
+            display: "flex",
+            alignItems: "center",
+            transition: "height 0.3s ease",
+          }}
         >
-          {/* Search bar */}
-          <div ref={searchRef} data-tour="search-bar" style={{ position: "relative", width: 220, flexShrink: 0 }}>
-            <div style={{
-              display: "flex", alignItems: "center", gap: 7,
-              padding: "7px 13px", borderRadius: 100,
-              border: `2px solid ${searchFocused ? "#C47A2E" : "rgba(196,122,46,0.2)"}`,
-              background: searchFocused ? "#fff" : "rgba(196,122,46,0.04)",
-              boxShadow: searchFocused ? "0 6px 28px rgba(196,122,46,0.28), 0 0 0 4px rgba(196,122,46,0.08)" : "none",
-              transform: searchFocused ? "scale(1.04) translateY(-1px)" : "scale(1)",
-              transition: "all 0.22s cubic-bezier(0.34,1.56,0.64,1)",
-            }}>
-              <FaSearch size={11} style={{ color: searchFocused ? "#C47A2E" : "#9B7450", flexShrink: 0 }} />
-              <input
-                value={searchQuery}
-                onChange={e => { setSearchQuery(e.target.value); setShowSuggestions(true); }}
-                onFocus={() => { setSearchFocused(true); setShowSuggestions(true); }}
-                onBlur={() => setSearchFocused(false)}
-                onKeyDown={e => { if (e.key === "Enter") handleSearch(); if (e.key === "Escape") { setShowSuggestions(false); setSearchQuery(""); } }}
-                placeholder="Search..."
-                style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: font, color: "#2C1A0E", minWidth: 0 }}
-              />
-              {searchQuery && <button onClick={() => { setSearchQuery(""); setShowSuggestions(false); }} style={{ background: "none", border: "none", color: "#9B7450", cursor: "pointer", fontSize: 13, padding: 0 }}>✕</button>}
-            </div>
-            {showSuggestions && (
-              <div style={{ position: "absolute", top: "calc(100% + 8px)", left: 0, right: 0, minWidth: 280, background: "#FFFEF9", borderRadius: 14, boxShadow: "0 8px 32px rgba(139,69,19,0.13)", border: "1px solid rgba(196,122,46,0.12)", padding: 6, zIndex: 9999 }}>
-                {searchQuery.length === 0 && <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", padding: "4px 10px 6px" }}>Popular searches</div>}
-                {filteredSuggestions.map((s, i) => (
-                  <button key={i}
-                    onMouseDown={e => e.preventDefault()}
-                    onClick={() => { setSearchQuery(s.text); if (s.href) { navigate(s.href); setShowSuggestions(false); } else { handleSearch(s.text); } }}
-                    style={{ width: "100%", textAlign: "left", padding: "9px 12px", borderRadius: 9, border: "none", background: "transparent", cursor: "pointer", fontSize: 13, color: "#3B2F2F", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}
-                    onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.07)"}
-                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                    <span>{s.text}</span>
-                    {s.type === "page" && <span style={{ fontSize: 10, color: "#9B7450", background: "rgba(196,122,46,0.08)", padding: "2px 7px", borderRadius: 10, flexShrink: 0 }}>Tool</span>}
-                  </button>
-                ))}
-                {filteredSuggestions.length === 0 && searchQuery.length > 0 && <div style={{ padding: "10px 12px", fontSize: 13, color: "#9B7450" }}>Press Enter to search</div>}
-              </div>
-            )}
-          </div>
+          {/* Logo */}
+          <a
+            href="/"
+            onClick={handleLogoClick}
+            style={{ display: "flex", alignItems: "center", flexShrink: 0, textDecoration: "none" }}
+          >
+            <img src={tendrLogo} alt="Tendr" style={{ height: scrolled ? 34 : 38, maxWidth: 140, objectFit: "contain", display: "block" }} />
+          </a>
 
-          {/* thin divider */}
-          <div style={{ width: 1, height: 20, background: "rgba(139,69,19,0.12)", flexShrink: 0 }} />
-
+          {/* ── Desktop nav — search LEFT of Browse, then links ── */}
+          <div
+            className="desktop-nav"
+            style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 0 }}
+          >
+          {/* Search pill — left of Browse */}
+          <button
+            data-tour="search-bar"
+            onClick={() => setSearchOverlay(true)}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "9px 16px 9px 13px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, marginRight: 10, flexShrink: 0, transition: "all 0.2s ease", minWidth: 220 }}
+            onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.09)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; e.currentTarget.style.boxShadow = "0 2px 14px rgba(196,122,46,0.12)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.04)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; e.currentTarget.style.boxShadow = "none"; }}
+          >
+            <FaSearch size={12} style={{ color: "#C47A2E", flexShrink: 0, opacity: 0.85 }} />
+            <span style={{ fontSize: 13, color: "#A07850", whiteSpace: "nowrap", flex: 1, letterSpacing: "0.01em" }}>Search vendors, services…</span>
+            <span style={{ fontSize: 9.5, color: "rgba(160,120,80,0.45)", border: "1px solid rgba(160,120,80,0.18)", borderRadius: 5, padding: "2px 6px", whiteSpace: "nowrap", fontFamily: "monospace", letterSpacing: "0.04em" }}>⌘K</span>
+          </button>
           {/* Primary nav links */}
-          <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
             {NAV_ITEMS.map((group) => (
               group.directLink ? (
                 <div key={group.label} style={{ position: "relative" }}>
@@ -474,22 +443,23 @@ const Navbar = ({
                     href={group.href}
                     style={{
                       background: "transparent",
-                      color: "#3B2F2F",
-                      fontSize: 15,
+                      color: "#1C0E04",
+                      fontSize: 14,
                       fontWeight: 600,
-                      letterSpacing: "0.02em",
-                      padding: "8px 15px",
+                      letterSpacing: "0.015em",
+                      padding: "7px 12px",
                       borderRadius: 8,
+                      border: "none",
                       display: "flex",
                       alignItems: "center",
                       textDecoration: "none",
-                      transition: "all 0.2s",
+                      transition: "color 0.15s, background 0.15s",
                       fontFamily: font,
                       whiteSpace: "nowrap",
                       lineHeight: 1,
                     }}
-                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(139,69,19,0.07)"; e.currentTarget.style.color = "#8B4513"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#3B2F2F"; }}
+                    onMouseEnter={e => { e.currentTarget.style.color = "#A0621C"; e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = "#2C1A0E"; e.currentTarget.style.background = "transparent"; }}
                   >
                     {group.label}
                   </a>
@@ -504,21 +474,19 @@ const Navbar = ({
               >
                 <button
                   style={{
-                    background: activeDropdown === group.label
-                      ? "rgba(139,69,19,0.07)"
-                      : "transparent",
+                    background: activeDropdown === group.label ? "rgba(196,122,46,0.1)" : "transparent",
                     border: "none",
-                    color: activeDropdown === group.label ? "#8B4513" : "#3B2F2F",
-                    fontSize: 15,
+                    color: activeDropdown === group.label ? "#9A5A18" : "#1C0E04",
+                    fontSize: 14,
                     fontWeight: 600,
-                    letterSpacing: "0.02em",
-                    padding: "8px 15px",
+                    letterSpacing: "0.015em",
+                    padding: "7px 12px",
                     borderRadius: 8,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: 5,
-                    transition: "all 0.2s",
+                    gap: 4,
+                    transition: "color 0.15s, background 0.15s",
                     fontFamily: font,
                     whiteSpace: "nowrap",
                     lineHeight: 1,
@@ -526,13 +494,11 @@ const Navbar = ({
                 >
                   {group.label}
                   <FaChevronDown
-                    size={9}
+                    size={8}
                     style={{
-                      transform: activeDropdown === group.label
-                        ? "rotate(180deg)"
-                        : "rotate(0deg)",
-                      transition: "transform 0.22s ease",
-                      opacity: 0.45,
+                      transform: activeDropdown === group.label ? "rotate(180deg)" : "rotate(0deg)",
+                      transition: "transform 0.2s ease",
+                      opacity: activeDropdown === group.label ? 0.6 : 0.3,
                       marginTop: 1,
                     }}
                   />
@@ -542,84 +508,69 @@ const Navbar = ({
                 <div
                   style={{
                     position: "absolute",
-                    top: "calc(100% + 8px)",
+                    top: "calc(100% + 10px)",
                     left: group.megaMenu ? "0" : "50%",
                     transform: group.megaMenu
-                      ? (activeDropdown === group.label ? "translateY(0)" : "translateY(-6px)")
-                      : (activeDropdown === group.label ? "translateX(-50%) translateY(0)" : "translateX(-50%) translateY(-6px)"),
+                      ? (activeDropdown === group.label ? "translateY(0)" : "translateY(-8px)")
+                      : (activeDropdown === group.label ? "translateX(-50%) translateY(0)" : "translateX(-50%) translateY(-8px)"),
                     background: "#FFFEF9",
-                    borderRadius: 14,
-                    boxShadow: "0 8px 32px rgba(139,69,19,0.13), 0 2px 8px rgba(0,0,0,0.06)",
-                    border: "1px solid rgba(139,69,19,0.08)",
-                    minWidth: group.megaMenu ? 460 : 210,
-                    padding: group.megaMenu ? "14px" : "6px",
+                    borderRadius: 16,
+                    boxShadow: "0 16px 48px rgba(139,69,19,0.15), 0 2px 10px rgba(0,0,0,0.06)",
+                    border: "1px solid rgba(196,122,46,0.18)",
+                    minWidth: group.megaMenu ? 400 : 200,
+                    padding: group.megaMenu ? "16px" : "8px",
                     opacity: activeDropdown === group.label ? 1 : 0,
                     visibility: activeDropdown === group.label ? "visible" : "hidden",
-                    transition: "opacity 0.2s ease, transform 0.2s ease, visibility 0.2s",
+                    transition: "opacity 0.18s ease, transform 0.18s ease, visibility 0.18s",
                     zIndex: 999,
                   }}
                 >
                   {group.megaMenu ? (
-                    <div style={{ display: "flex", gap: 14 }}>
-                      {/* Left: 2×3 vendor category grid */}
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Find a Vendor</div>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                          {group.items.map(item => (
-                            <a key={item.id} href={item.href}
-                              style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "13px 8px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.12)", background: "#fff", textDecoration: "none", cursor: "pointer", transition: "all 0.15s" }}
-                              onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; }}
-                              onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; }}
-                            >
-                              <span style={{ fontSize: 12, fontWeight: 600, color: "#2C1A0E", textAlign: "center", lineHeight: 1.3 }}>{item.label}</span>
-                            </a>
-                          ))}
-                        </div>
+                    <div>
+                      <p style={{ fontSize: 9, fontWeight: 700, color: "#B8956A", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 10px 2px" }}>Find a Vendor</p>
+                      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 12 }}>
+                        {[
+                          { id: "Decorator",    label: "Decorator",    href: "/search?categories=Decorator",    icon: "🎀", color: "#F9EEF4" },
+                          { id: "Caterer",      label: "Caterer",      href: "/search?categories=Caterer",      icon: "🍽️", color: "#F0F5EE" },
+                          { id: "Photographer", label: "Photographer", href: "/search?categories=Photographer", icon: "📸", color: "#EEF2FA" },
+                          { id: "DJ",           label: "DJ",           href: "/search?categories=DJ",           icon: "🎵", color: "#F5EDFE" },
+                        ].map(item => (
+                          <a key={item.id} href={item.href}
+                            style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 11px", borderRadius: 10, background: "#F9F6F1", textDecoration: "none", cursor: "pointer", transition: "all 0.15s", border: "1px solid transparent" }}
+                            onMouseEnter={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(196,122,46,0.09)"; }}
+                            onMouseLeave={e => { e.currentTarget.style.background = "#F9F6F1"; e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.boxShadow = "none"; }}
+                          >
+                            <span style={{ width: 28, height: 28, borderRadius: 7, background: item.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0 }}>{item.icon}</span>
+                            <span style={{ fontSize: 13.5, fontWeight: 600, color: "#1C0E04", letterSpacing: "0.01em" }}>{item.label}</span>
+                          </a>
+                        ))}
                       </div>
-                      {/* Vertical divider */}
-                      <div style={{ width: 1, background: "rgba(196,122,46,0.13)", flexShrink: 0 }} />
-                      {/* Right: Top Rated + Register */}
-                      <div style={{ minWidth: 160, display: "flex", flexDirection: "column", justifyContent: "center", gap: 4 }}>
-                        <div style={{ fontSize: 10, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6, paddingLeft: 4 }}>Quick Links</div>
+                      <div style={{ borderTop: "1px solid rgba(196,122,46,0.1)", paddingTop: 9 }}>
                         {group.sideItems.map(item => (
                           <a key={item.label} href={item.href}
-                            style={{ ...dropdownItemStyle, borderRadius: 8 }}
-                            onMouseEnter={hoverOn}
-                            onMouseLeave={hoverOff}
-                          >{item.label}</a>
+                            style={{ ...dropdownItemStyle, fontSize: 12.5, color: "#B07040", fontWeight: 600 }}
+                            onMouseEnter={hoverOn} onMouseLeave={hoverOff}
+                          >{item.label} →</a>
                         ))}
                       </div>
                     </div>
                   ) : (
                     group.items.map((item) =>
                       item.comingSoon ? (
-                        <div key={item.label} style={{ ...dropdownItemStyle, cursor: "default", opacity: 0.55, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div key={item.label} style={{ ...dropdownItemStyle, cursor: "default", opacity: 0.5, pointerEvents: "none", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <span>{item.label}</span>
-                          <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: "0.1em", textTransform: "uppercase", background: "rgba(196,122,46,0.12)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20, marginLeft: 8, whiteSpace: "nowrap" }}>Soon</span>
+                          <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", color: "#C47A2E", padding: "2px 7px", borderRadius: 20, marginLeft: 8, whiteSpace: "nowrap" }}>Soon</span>
                         </div>
                       ) : item.disabled ? (
-                        <div key={item.label} title="Fill your event details first" style={{ ...dropdownItemStyle, cursor: "not-allowed", opacity: 0.45, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <div key={item.label} title="Fill your event details first" style={{ ...dropdownItemStyle, cursor: "not-allowed", opacity: 0.4, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                           <span>{item.label}</span>
-                          <span style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", marginLeft: 8, whiteSpace: "nowrap" }}>fill form first</span>
                         </div>
                       ) : item.href ? (
-                        <a
-                          key={item.label}
-                          href={item.href}
-                          style={dropdownItemStyle}
-                          onMouseEnter={hoverOn}
-                          onMouseLeave={hoverOff}
-                        >
+                        <a key={item.label} href={item.href} style={dropdownItemStyle} onMouseEnter={hoverOn} onMouseLeave={hoverOff}>
                           {item.label}
                         </a>
                       ) : (
-                        <button
-                          key={item.label}
-                          onClick={item.onClick}
-                          style={dropdownItemStyle}
-                          onMouseEnter={hoverOn}
-                          onMouseLeave={hoverOff}
-                        >
+                        <button key={item.label} onClick={item.onClick} style={dropdownItemStyle} onMouseEnter={hoverOn} onMouseLeave={hoverOff}>
                           {item.label}
                         </button>
                       )
@@ -630,9 +581,21 @@ const Navbar = ({
               )
             ))}
           </div>
+          </div>{/* end centered desktop-nav */}
 
-          {/* Divider before auth */}
-          <div style={{ width: 1, height: 20, background: "rgba(139,69,19,0.12)", margin: "0 4px", flexShrink: 0 }} />
+          {/* Mobile search bar — sits between logo and burger on mobile */}
+          <button
+            className="mobile-search-bar"
+            data-tour="mob-search"
+            onClick={() => setSearchOverlay(true)}
+            style={{ flex: 1, minWidth: 0, margin: "0 10px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer" }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span style={{ fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap" }}>Search vendors, tools...</span>
+          </button>
+
+          {/* ── Right action cluster (desktop) ── */}
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }} className="desktop-nav">
 
           {/* Right cluster: conditional buttons + profile — always together */}
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
@@ -757,46 +720,26 @@ const Navbar = ({
               href="https://wa.me/919211668427"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ background: "#25D366", color: "#fff", width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.35)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s", marginLeft: 12 }}
+              style={{ background: "#25D366", color: "#fff", width: 36, height: 36, borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(37,211,102,0.3)", textDecoration: "none", flexShrink: 0, transition: "transform 0.2s" }}
               onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.08)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              <FaWhatsapp size={16} />
+              <FaWhatsapp size={14} />
             </a>
-          </div>
-        </div>
+          </div>{/* end inner right cluster */}
+          </div>{/* end right action cluster desktop-nav */}
 
-        {/* Mobile search bar — taps open full-screen overlay */}
-        <button
-          className="mobile-search-bar"
-          data-tour="mob-search"
-          onClick={() => setSearchOverlay(true)}
-          style={{ flex: 1, minWidth: 0, margin: "0 6px", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "7px 12px", cursor: "pointer" }}
-        >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9B7450" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0, verticalAlign: "middle", display: "block" }}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <span style={{ fontSize: 12, fontFamily: font, color: "#9B7450", whiteSpace: "nowrap", verticalAlign: "middle" }}>Search vendors, tools...</span>
-        </button>
-
-        {/* Burger (mobile) */}
-        <button
-          className="burger-btn-custom"
-          data-tour="mob-burger"
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{
-            background: "none",
-            border: "none",
-            color: "#3B2F2F",
-            cursor: "pointer",
-            padding: "6px 4px",
-            display: "flex",
-            alignItems: "center",
-            borderRadius: 8,
-            flexShrink: 0,
-          }}
-        >
-          {menuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
-        </button>
-      </div>
+          {/* Burger (mobile) */}
+          <button
+            className="burger-btn-custom"
+            data-tour="mob-burger"
+            onClick={() => setMenuOpen(!menuOpen)}
+            style={{ background: "none", border: "none", color: "#3B2F2F", cursor: "pointer", padding: "6px 4px", display: "flex", alignItems: "center", borderRadius: 8, flexShrink: 0 }}
+          >
+            {menuOpen ? <FaTimes size={20} /> : <FaBars size={20} />}
+          </button>
+        </div>{/* end navbar-main-bar */}
+      </div>{/* end main bar wrapper */}
 
       {/* ── Mobile menu ── */}
       <div
@@ -809,7 +752,7 @@ const Navbar = ({
         }}
       >
         <div style={{ padding: "8px 24px 24px" }}>
-          {NAV_ITEMS.filter(g => g.label === "Community" || g.label === "Company").map((group) => (
+          {NAV_ITEMS.map((group) => (
             group.directLink ? (
               <div key={group.label} style={{ marginBottom: 2 }}>
                 <a
@@ -967,6 +910,10 @@ const Navbar = ({
 
       <SearchOverlay isOpen={searchOverlay} onClose={() => setSearchOverlay(false)} />
       <style>{`
+        @keyframes tendrMarquee {
+          0%   { transform: translateX(0%); }
+          100% { transform: translateX(-50%); }
+        }
         @media (min-width: 768px) {
           .burger-btn-custom { display: none !important; }
           .desktop-nav { display: flex !important; }
@@ -978,7 +925,8 @@ const Navbar = ({
           .desktop-search { display: none !important; }
           .burger-btn-custom { display: flex !important; }
           .mobile-search-bar { display: flex !important; }
-          .navbar-main-bar img { height: 28px !important; }
+          .nav-announcement { display: none !important; }
+          .navbar-main-bar img { height: 26px !important; }
           .navbar-main-bar { padding: 0 12px !important; height: 52px !important; }
           .mobile-menu-content { padding: 6px 14px 20px !important; }
         }

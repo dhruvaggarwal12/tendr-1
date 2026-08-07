@@ -177,72 +177,69 @@ function FaqSection() {
   const [open, setOpen] = React.useState(null);
   const navigate = useNavigate();
   return (
-    <section style={{ background: "linear-gradient(180deg,#FFF8F0 0%,#F0EBE3 100%)", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
-      <div style={{ maxWidth: 800, margin: "0 auto" }}>
+    <section style={{ background: "#FAF7F2", padding: "80px 24px 88px", fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
         {/* Heading */}
-        <div style={{ textAlign: "center", marginBottom: 52 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 12px" }}>Got Questions?</p>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "0.01em", margin: "0 0 12px", lineHeight: 1.15 }}>
+        <div style={{ textAlign: "center", marginBottom: 44 }}>
+          <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.22em", margin: "0 0 14px" }}>Got Questions?</p>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.8rem)", fontWeight: 400, color: "#1C0E04", letterSpacing: "-0.01em", margin: "0 0 12px", lineHeight: 1.1 }}>
             Frequently Asked Questions
           </h2>
-          <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 460, margin: "0 auto" }}>
-            Everything you need to know before you start planning your celebration.
+          <p style={{ fontSize: 14.5, color: "#7A5535", maxWidth: 420, margin: "0 auto", lineHeight: 1.65 }}>
+            Everything you need to know before you start planning.
           </p>
         </div>
 
-        {/* FAQ items */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {/* FAQ items — clean hairline accordion */}
+        <div style={{ display: "flex", flexDirection: "column" }}>
           {FAQS.map(({ q, a }, i) => (
             <div key={i}
               style={{
-                background: "#FFFCF5",
-                borderRadius: 16,
-                border: `1.5px solid ${open === i ? "#C47A2E" : "rgba(196,122,46,0.14)"}`,
-                overflow: "hidden",
-                transition: "border-color 0.22s, box-shadow 0.22s",
-                boxShadow: open === i ? "0 6px 24px rgba(196,122,46,0.12)" : "0 2px 8px rgba(139,69,19,0.04)",
+                borderTop: i === 0 ? "1px solid rgba(196,122,46,0.18)" : "none",
+                borderBottom: "1px solid rgba(196,122,46,0.18)",
               }}
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
-                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 24px", background: open === i ? "rgba(196,122,46,0.03)" : "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 16 }}
+                style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 4px", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "left", gap: 20 }}
               >
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
-                  <span style={{ fontSize: 12, fontWeight: 500, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 8, padding: "3px 8px", flexShrink: 0, marginTop: 2, letterSpacing: "0.04em" }}>
-                    {String(i + 1).padStart(2, "0")}
-                  </span>
-                  <span style={{ fontSize: 15, fontWeight: 500, color: "#2C1A0E", lineHeight: 1.45 }}>{q}</span>
-                </div>
+                <span style={{ fontSize: 14.5, fontWeight: open === i ? 600 : 500, color: open === i ? "#1C0E04" : "#3B2410", lineHeight: 1.45, transition: "color 0.18s, font-weight 0.18s" }}>{q}</span>
                 <div style={{
-                  width: 28, height: 28, borderRadius: "50%", flexShrink: 0,
-                  background: open === i ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.1)",
+                  width: 26, height: 26, borderRadius: "50%", flexShrink: 0,
+                  border: `1.5px solid ${open === i ? "#C47A2E" : "rgba(196,122,46,0.3)"}`,
+                  background: open === i ? "linear-gradient(135deg,#C47A2E,#D4A848)" : "transparent",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  transition: "all 0.25s",
+                  transition: "all 0.22s ease",
                 }}>
-                  <span style={{ fontSize: 16, color: open === i ? "#fff" : "#C47A2E", fontWeight: 700, lineHeight: 1, transform: open === i ? "rotate(45deg)" : "rotate(0)", display: "inline-block", transition: "transform 0.25s ease" }}>+</span>
+                  <svg width={10} height={10} viewBox="0 0 24 24" fill="none" stroke={open === i ? "#fff" : "#C47A2E"} strokeWidth={2.5} strokeLinecap="round">
+                    {open === i
+                      ? <line x1="5" y1="12" x2="19" y2="12" />
+                      : <><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></>
+                    }
+                  </svg>
                 </div>
               </button>
-              <div style={{ maxHeight: open === i ? 400 : 0, overflow: "hidden", transition: "max-height 0.38s cubic-bezier(0.4,0,0.2,1)" }}>
-                <div style={{ borderLeft: "3px solid #C47A2E", margin: "0 24px 20px 58px", paddingLeft: 16 }}>
-                  <p style={{ margin: 0, fontSize: 14.5, color: "#6B4226", lineHeight: 1.75 }}>{a}</p>
-                </div>
+              <div style={{ maxHeight: open === i ? 360 : 0, overflow: "hidden", transition: "max-height 0.36s cubic-bezier(0.4,0,0.2,1)" }}>
+                <p style={{ margin: "0 0 20px 0", paddingLeft: 0, fontSize: 14, color: "#6B4A2A", lineHeight: 1.78 }}>{a}</p>
               </div>
             </div>
           ))}
         </div>
 
         {/* Still have questions CTA */}
-        <div style={{ textAlign: "center", marginTop: 44, padding: "28px 24px", background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 4px 20px rgba(139,69,19,0.06)" }}>
-          <p style={{ fontSize: 16, fontWeight: 600, color: "#2C1A0E", margin: "0 0 6px" }}>Still have questions?</p>
-          <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 18px" }}>Our team is happy to help you plan your perfect event.</p>
+        <div style={{ textAlign: "center", marginTop: 44, padding: "28px 32px", background: "#fff", borderRadius: 18, border: "1px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 16px rgba(139,69,19,0.06)" }}>
+          <p style={{ fontSize: 16, fontWeight: 700, color: "#1C0E04", margin: "0 0 5px", fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "0.01em" }}>Still have questions?</p>
+          <p style={{ fontSize: 13.5, color: "#9B7450", margin: "0 0 18px", lineHeight: 1.6 }}>Our team is happy to help you plan your perfect event.</p>
           <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
             <a href="https://wa.me/919211668427" target="_blank" rel="noopener noreferrer"
-              style={{ padding: "10px 24px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 14, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7 }}>
-              💬 WhatsApp Us
+              style={{ padding: "10px 22px", borderRadius: 10, background: "#25d366", color: "#fff", fontSize: 13.5, fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 7, boxShadow: "0 4px 14px rgba(37,211,102,0.28)" }}>
+              <FaWhatsapp size={15} /> WhatsApp Us
             </a>
             <button onClick={() => navigate("/contact-us")}
-              style={{ padding: "10px 24px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+              style={{ padding: "10px 22px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.18s" }}
+              onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#C47A2E"; }}>
               Contact Us →
             </button>
           </div>
@@ -336,9 +333,11 @@ const Home = () => {
   const [vendorStripOpen, setVendorStripOpen] = useState(false);
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
-  const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
+  const [plannerOccasion, setPlannerOccasion] = useState(null);
+  const [activePath, setActivePath] = useState(0);
   const [showIndepDay, setShowIndepDay] = useState(false);
   const [showRakhi, setShowRakhi] = useState(false);
+  const [hoveredOcc, setHoveredOcc] = useState(null);
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");
@@ -796,7 +795,7 @@ const Home = () => {
           height: "92vh",
           minHeight: 600,
           paddingTop: 88,
-          background: "linear-gradient(135deg, #FFF8EE 0%, #FFF3DC 60%, #FDE8C8 100%)",
+          background: "#ffffff",
           display: "flex",
           alignItems: "stretch",
           fontFamily: "'Outfit', sans-serif",
@@ -855,62 +854,86 @@ const Home = () => {
               )}
             </div>
 
-            {/* Fixed headline block */}
-            <div style={{ marginBottom: 36 }}>
-              <div className="home-hero-badge" style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
-                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#C47A2E", display: "inline-block" }} />
-                <span style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.13em", textTransform: "uppercase", color: "#C47A2E" }}>Delhi NCR's Celebration Platform</span>
-              </div>
+            {/* Headline block — stagger entrance (ui-ux-pro-max: stagger-sequence, spring-physics) */}
+            <div style={{ marginBottom: 28 }}>
+              {/* Badge */}
+              <motion.div
+                className="home-hero-badge"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94] }}
+                style={{ display: "inline-flex", alignItems: "center", gap: 7, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 13px", marginBottom: 20 }}
+              >
+                <span style={{ position: "relative", width: 6, height: 6, display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  <span style={{ position: "absolute", width: 12, height: 12, borderRadius: "50%", background: "rgba(196,122,46,0.22)", animation: "tendrPing 1.8s cubic-bezier(0,0,0.2,1) infinite" }} />
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C47A2E", display: "inline-block", position: "relative" }} />
+                </span>
+                <span style={{ fontSize: 10.5, fontWeight: 600, letterSpacing: "0.14em", textTransform: "uppercase", color: "#B07040" }}>Delhi NCR's Celebration Platform</span>
+              </motion.div>
 
-              <h1 className="home-hero-h1" style={{ fontSize: "clamp(2.2rem, 4vw, 3.4rem)", lineHeight: 1.12, color: "#2C1A0E", marginBottom: 18, letterSpacing: "-0.03em" }}>
-                Everything your event needs.<br />
-                <span style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+              <motion.h1
+                className="home-hero-h1"
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.08 }}
+                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.85rem, 3vw, 2.72rem)", fontWeight: 300, lineHeight: 1.08, color: "#1C0E04", marginBottom: 14, letterSpacing: "-0.02em" }}
+              >
+                Everything your<br />event needs.&nbsp;
+                <em style={{ fontStyle: "italic", fontWeight: 700, background: "linear-gradient(135deg,#C47A2E 0%,#D4A848 50%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                   One place.
-                </span>
-              </h1>
+                </em>
+              </motion.h1>
 
-              <p className="home-hero-para" style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", lineHeight: 1.65, maxWidth: 420, margin: 0 }}>
-                Birthdays, anniversaries, house parties and more — find vendors, plan the details, and book everything in Delhi NCR.
-              </p>
+              <motion.p
+                className="home-hero-para"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.16 }}
+                style={{ fontSize: 14, fontWeight: 400, color: "#6B4528", lineHeight: 1.75, maxWidth: 348, margin: 0, letterSpacing: "0.005em" }}
+              >
+                Birthdays, anniversaries, house parties and more — find verified vendors, plan every detail, and book everything across Delhi NCR.
+              </motion.p>
             </div>
 
-            {/* Trust chips */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 28 }}>
-              {["✓ Verified vendors", "✓ Free to browse", "✓ Price locked before you pay", "✓ 100+ vendors"].map(chip => (
-                <span key={chip} style={{ fontSize: 12, fontWeight: 500, color: "#7A5535", background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "5px 12px", whiteSpace: "nowrap" }}>
-                  {chip}
-                </span>
-              ))}
-            </div>
-
-            {/* CTA */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 12, alignItems: "center" }}>
+            {/* CTA row — primary action dominant, seasonal events subordinate (ui-ux-pro-max: primary-action) */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.24 }}
+              style={{ display: "flex", flexWrap: "wrap", gap: 10, alignItems: "center" }}
+            >
+              {/* Primary CTA */}
               <button
                 onClick={() => navigate("/booking")}
                 className="home-hero-cta"
-                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 17, fontWeight: 600, letterSpacing: "0.02em", padding: "15px 40px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 6px 28px rgba(196,122,46,0.45)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.55)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 28px rgba(196,122,46,0.45)"; }}
+                style={{ background: "linear-gradient(135deg, #C47A2E 0%, #D4A848 100%)", color: "#fff", fontSize: 14.5, fontWeight: 600, letterSpacing: "0.02em", padding: "11px 28px", borderRadius: 11, border: "none", cursor: "pointer", boxShadow: "0 4px 18px rgba(196,122,46,0.38)", transition: "transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 30px rgba(196,122,46,0.52)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.38)"; }}
               >
                 Start Planning →
               </button>
+
+              {/* Divider */}
+              <div style={{ width: 1, height: 22, background: "rgba(196,122,46,0.2)", flexShrink: 0 }} />
+
+              {/* Seasonal — subordinate ghost-pill style */}
               <button
                 onClick={() => navigate("/rakhi-hampers")}
-                style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(196,122,46,0.4)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.5)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(196,122,46,0.4)"; }}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.22)", color: "#7A4A18", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.12)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.38)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.06)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.22)"; }}
               >
                 🪢 Rakhi Hampers
               </button>
               <button
                 onClick={() => setShowIndepDay(true)}
-                style={{ background: "linear-gradient(90deg, #FF9933 0%, #e67e00 50%, #138808 100%)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(255,153,51,0.35)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(255,153,51,0.45)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(255,153,51,0.35)"; }}
+                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,153,51,0.07)", border: "1px solid rgba(255,153,51,0.28)", color: "#7A4A18", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,153,51,0.14)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.45)"; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,153,51,0.07)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.28)"; }}
               >
-                🇮🇳 Plan for Independence Day
+                🇮🇳 Independence Day
               </button>
-            </div>
+            </motion.div>
 
           </div>
 
@@ -1074,43 +1097,41 @@ const Home = () => {
       {/* ── Marquee strip — right under hero text ── */}
       {(() => {
         const GROUPS = [
-          { icon: "🏙", label: "Cities", color: "#7A4A1E", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"] },
-          { icon: "🎯", label: "Services", color: "#C47A2E", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup", "Fun Activities"] },
-          { icon: "🎉", label: "Events", color: "#8B4513", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
-          { icon: "✨", label: "Platform", color: "#C47A2E", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
+          { icon: "🏙", label: "Cities", color: "#CCAB4A", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"] },
+          { icon: "🎯", label: "Services", color: "#E8C87A", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup", "Fun Activities"] },
+          { icon: "🎉", label: "Events", color: "#CCAB4A", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
+          { icon: "✨", label: "Platform", color: "#E8C87A", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
         ];
 
         const strip = [...GROUPS, ...GROUPS]; // duplicate for seamless loop
 
         return (
           <div style={{
-            background: "linear-gradient(90deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06),rgba(196,122,46,0.08))",
-            borderTop: "1px solid rgba(196,122,46,0.18)",
-            borderBottom: "1px solid rgba(196,122,46,0.18)",
-            padding: "10px 0", overflow: "hidden",
+            background: "#1C0E04",
+            borderTop: "1px solid rgba(204,171,74,0.12)",
+            borderBottom: "1px solid rgba(204,171,74,0.12)",
+            padding: "11px 0", overflow: "hidden",
           }}>
             <div style={{ display: "flex", alignItems: "center", width: "max-content", animation: "tendr-marquee 40s linear infinite" }}>
               {strip.map((group, gi) => (
                 <React.Fragment key={gi}>
-                  {/* Group items with · between */}
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 0 }}>
-                    <span style={{ fontSize: 14, marginRight: 8 }}>{group.icon}</span>
+                    <span style={{ fontSize: 12, marginRight: 8, opacity: 0.8 }}>{group.icon}</span>
                     {group.items.map((item, ii) => (
                       <React.Fragment key={ii}>
-                        <span style={{ color: group.color, fontSize: 11.5, fontWeight: 500, letterSpacing: "0.08em", whiteSpace: "nowrap", textTransform: "uppercase" }}>
+                        <span style={{ color: group.color, fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", whiteSpace: "nowrap", textTransform: "uppercase" }}>
                           {item}
                         </span>
                         {ii < group.items.length - 1 && (
-                          <span style={{ color: "rgba(196,122,46,0.4)", fontSize: 10, padding: "0 10px" }}>·</span>
+                          <span style={{ color: "rgba(204,171,74,0.3)", fontSize: 10, padding: "0 10px" }}>·</span>
                         )}
                       </React.Fragment>
                     ))}
                   </span>
-                  {/* | divider between groups */}
                   <span style={{
-                    display: "inline-block", width: 1.5, height: 16,
-                    background: "linear-gradient(180deg,transparent,#C47A2E,transparent)",
-                    margin: "0 24px", opacity: 0.6, verticalAlign: "middle", flexShrink: 0,
+                    display: "inline-block", width: 1, height: 14,
+                    background: "linear-gradient(180deg,transparent,rgba(204,171,74,0.5),transparent)",
+                    margin: "0 28px", verticalAlign: "middle", flexShrink: 0,
                   }} />
                 </React.Fragment>
               ))}
@@ -1128,6 +1149,12 @@ const Home = () => {
           from { opacity: 0; transform: scale(1.04); }
           to   { opacity: 1; transform: scale(1); }
         }
+        @keyframes tendrPing {
+          0%   { transform: scale(0.85); opacity: 0.9; }
+          70%  { transform: scale(1.9);  opacity: 0; }
+          100% { transform: scale(0.85); opacity: 0; }
+        }
+        .hero-desktop-search { display: flex !important; }
         @media (max-width: 900px) {
           .hero-split {
             flex-direction: column !important;
@@ -1143,6 +1170,7 @@ const Home = () => {
             display: block !important;
           }
           .hero-mobile-cats::-webkit-scrollbar { display: none; }
+          .hero-desktop-search { display: none !important; }
         }
       `}</style>
 
@@ -1167,84 +1195,45 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Plan by Occasion — dark editorial portrait grid ── */}
-      <section id="plan-by-occasion" style={{ background: "#1A0E06", padding: "48px 24px 52px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 28 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 8px" }}>Plan by Occasion</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, letterSpacing: "0.01em" }}>What's the occasion?</h2>
-          </div>
+      {/* ── Plan by Occasion ── */}
+      <section id="plan-by-occasion" style={{ background: "#F5EFE6", padding: "76px 28px 84px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Ambient warm glow */}
+        <div aria-hidden style={{ position: "absolute", top: -100, right: -60, width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
 
-          {/* ── Independence Day featured strip ── */}
-          <div
-            onClick={() => setShowIndepDay(true)}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              width: "100%", marginBottom: 18,
-              background: "linear-gradient(90deg, #FF9933 0%, #e67e00 30%, #138808 100%)",
-              borderRadius: 14, padding: "12px 14px",
-              overflow: "hidden", position: "relative",
-              boxShadow: "0 4px 20px rgba(255,153,51,0.35)",
-              boxSizing: "border-box", gap: 10, cursor: "pointer",
-            }}
+        <div style={{ maxWidth: 1120, margin: "0 auto", position: "relative" }}>
+
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 44, flexWrap: "wrap", gap: 16 }}
           >
-            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.18)" }} />
-            <div style={{ position: "relative", textAlign: "left", minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>🇮🇳</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.85)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
-                  Independence Day
-                </span>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)" }} />
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.3em", fontFamily: "'Outfit', sans-serif" }}>Plan by Occasion</span>
               </div>
-              <div style={{ fontSize: "clamp(0.88rem,3.5vw,1.05rem)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.3 }}>
-                Plan your celebration
-              </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                Decorator · Caterer · DJ · Photographer
-              </div>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,3.4vw,2.8rem)", fontWeight: 600, color: "#1C0E04", margin: 0, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
+                What's the{" "}
+                <em style={{ fontStyle: "italic", fontWeight: 700, background: "linear-gradient(135deg,#C47A2E 0%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>occasion?</em>
+              </h2>
             </div>
-            <div style={{ position: "relative", background: "rgba(255,255,255,0.22)", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap" }}>
-              Plan Now →
-            </div>
-          </div>
-          {/* ── END Independence Day strip ── */}
+            <button
+              onClick={() => setShowIndepDay(true)}
+              style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.72)", border: "1px solid rgba(196,122,46,0.28)", borderRadius: 100, padding: "9px 18px 9px 14px", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Outfit',sans-serif", backdropFilter: "blur(8px)", boxShadow: "0 2px 10px rgba(196,122,46,0.07)", flexShrink: 0 }}
+              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 22px rgba(196,122,46,0.16)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.background = "#fff"; }}
+              onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; e.currentTarget.style.background = "rgba(255,255,255,0.72)"; }}
+            >
+              <span style={{ fontSize: 16 }}>🇮🇳</span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>Independence Day</span>
+              <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>→</span>
+            </button>
+          </motion.div>
 
-
-          {/* ── House Party Hub strip — hidden on main ── */}
-          {/* <div
-            onClick={() => navigate("/house-party")}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              width: "100%", marginBottom: 18,
-              background: "linear-gradient(90deg, #1a0533 0%, #2d1b69 50%, #0f2027 100%)",
-              borderRadius: 14, padding: "12px 14px",
-              overflow: "hidden", position: "relative",
-              boxShadow: "0 4px 20px rgba(124,58,237,0.3)",
-              boxSizing: "border-box", gap: 10, cursor: "pointer",
-              border: "1.5px solid rgba(124,58,237,0.3)",
-            }}
-          >
-            <div style={{ position: "relative", textAlign: "left", minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>🎉</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,180,255,0.85)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
-                  House Party Hub
-                </span>
-              </div>
-              <div style={{ fontSize: "clamp(0.88rem,3.5vw,1.05rem)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.3 }}>
-                Games · Photo Wall · Bill Split · More
-              </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginTop: 2 }}>
-                The app everyone opens during the party
-              </div>
-            </div>
-            <div style={{ position: "relative", background: "rgba(124,58,237,0.5)", borderRadius: 20, padding: "5px 14px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap", border: "1px solid rgba(124,58,237,0.6)" }}>
-              Open →
-            </div>
-          </div> */}
-          {/* ── END House Party Hub strip ── */}
-
-          <div className="occ-portrait-grid" style={{ display: "grid", gridTemplateColumns: "repeat(8,1fr)", gap: 10 }}>
+          {/* Single-row strip — hover-reveal: non-hovered cards dim */}
+          <div className="occ-strip" style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}>
             {[
               { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
               { label: "Anniversary",     photo: "/occasions/anniversary-mobile.png" },
@@ -1254,244 +1243,370 @@ const Home = () => {
               { label: "Get Together",    photo: "/occasions/get-together-mobile.png" },
               { label: "Kitty Party",     photo: "/occasions/kitty-party-mobile.png" },
               { label: "Naming Ceremony", photo: "/occasions/naming-ceremony-mobile.png" },
-            ].map(({ label, photo }) => (
-              <button key={label}
-                onClick={() => setPlannerOccasion(label)}
-                style={{ position: "relative", borderRadius: 12, overflow: "hidden", border: "1px solid rgba(204,171,74,0.12)", background: "#2C1A0E", cursor: "pointer", padding: 0, aspectRatio: "3/4", display: "block", width: "100%", transition: "transform 0.2s, box-shadow 0.2s" }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.boxShadow = "0 16px 36px rgba(0,0,0,0.5)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; }}
-              >
-                <img src={photo} alt={label} loading="lazy"
-                  style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
-                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(10,4,0,0.85) 0%, rgba(10,4,0,0.2) 55%, transparent 100%)" }} />
-                <div style={{ position: "absolute", bottom: 10, left: 10, right: 10 }}>
-                  <span style={{ fontSize: 11, fontWeight: 500, color: "#fff", letterSpacing: "0.01em", textShadow: "0 1px 4px rgba(0,0,0,0.7)", lineHeight: 1.3, display: "block" }}>{label}</span>
-                </div>
-              </button>
-            ))}
+            ].map(({ label, photo }, i) => {
+              const isHovered = hoveredOcc === label;
+              const isDimmed  = hoveredOcc !== null && !isHovered;
+              return (
+                <motion.button
+                  key={label}
+                  onClick={() => setPlannerOccasion(label)}
+                  initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{ type: "spring", stiffness: 260, damping: 22, delay: i * 0.04 }}
+                  whileHover={{ y: -5, scale: 1.02, boxShadow: "0 14px 36px rgba(28,14,4,0.22)" }}
+                  onHoverStart={() => setHoveredOcc(label)}
+                  onHoverEnd={() => setHoveredOcc(null)}
+                  style={{
+                    position: "relative",
+                    flexShrink: 0,
+                    width: 128,
+                    height: 172,
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    border: "none",
+                    background: "#D4C0A8",
+                    cursor: "pointer",
+                    padding: 0,
+                    display: "block",
+                    opacity: isDimmed ? 0.52 : 1,
+                    transition: "opacity 0.28s ease",
+                    boxShadow: "0 2px 8px rgba(28,14,4,0.08)",
+                  }}
+                >
+                  <motion.img
+                    src={photo} alt={label} loading="lazy"
+                    animate={{ scale: isHovered ? 1.09 : 1 }}
+                    transition={{ duration: 0.42, ease: [0.25, 0.46, 0.45, 0.94] }}
+                    style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block", transformOrigin: "center" }}
+                  />
+                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(6,2,0,0.88) 0%, rgba(6,2,0,0.18) 52%, transparent 100%)" }} />
+                  <motion.div
+                    animate={{ opacity: isHovered ? 1 : 0 }}
+                    transition={{ duration: 0.18 }}
+                    style={{ position: "absolute", inset: 0, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.6)", pointerEvents: "none" }}
+                  />
+                  <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 10px 10px" }}>
+                    <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 13, fontWeight: 600, fontStyle: "italic", color: "#fff", display: "block", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.45)" }}>{label}</span>
+                    <motion.span
+                      animate={{ opacity: isHovered ? 1 : 0 }}
+                      transition={{ duration: 0.18 }}
+                      style={{ fontSize: 9.5, color: "#CCAB4A", fontWeight: 600, display: "block", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase" }}
+                    >Explore →</motion.span>
+                  </div>
+                </motion.button>
+              );
+            })}
           </div>
 
-          <style>{`
-            @media (max-width: 480px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; gap: 7px !important; } }
-            @media (min-width: 481px) and (max-width: 720px) { .occ-portrait-grid { grid-template-columns: repeat(4,1fr) !important; } }
-          `}</style>
+          <style>{`.occ-strip::-webkit-scrollbar { display: none; }`}</style>
         </div>
       </section>
       {/* ── END Plan by Occasion ── */}
 
       {/* ── Which path is for you ── */}
-      <section style={{ background: "#F8F4EF", padding: "64px 24px 72px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
+      {(() => {
+        const PATHS = [
+          {
+            title: "Browse & Search",
+            hook: "You know exactly what you want",
+            tag: "Self-directed",
+            steps: [
+              { n: "01", text: "Search by vendor type — Photographer, Caterer, DJ, Decorator" },
+              { n: "02", text: "Filter by location and budget, compare profiles side by side" },
+              { n: "03", text: "Chat directly to confirm price — no middlemen, no commission" },
+            ],
+            cta: "Browse Vendors",
+            action: () => navigate("/listings"),
+          },
+          {
+            title: "Smart Planning",
+            hook: "You want the best vendors for your budget",
+            tag: "Guided",
+            steps: [
+              { n: "01", text: "Tell us your event type, date, guest count and total budget" },
+              { n: "02", text: "We shortlist verified vendors that fit your requirements" },
+              { n: "03", text: "Review, chat and confirm — we handle all the matching" },
+            ],
+            cta: "Start Planning",
+            action: () => navigate("/booking"),
+          },
+          {
+            title: "By Occasion",
+            hook: "You have an occasion in mind",
+            tag: "Occasion-first",
+            steps: [
+              { n: "01", text: "Pick your celebration — Birthday, Anniversary, House Party…" },
+              { n: "02", text: "Browse curated ideas and vendor packages for that occasion" },
+              { n: "03", text: "Book everything in one place, all in under 10 minutes" },
+            ],
+            cta: "Pick Occasion",
+            action: () => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }),
+          },
+        ];
+        const ap = PATHS[activePath];
+        return (
+          <section style={{ background: "#F5EFE6", padding: "80px 28px 88px", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ maxWidth: 1080, margin: "0 auto" }}>
 
-          <div style={{ textAlign: "center", marginBottom: 44 }}>
-            <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: "0.16em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 12px" }}>Find Your Way</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "0.01em" }}>
-              Which one is for you?
-            </h2>
-            <p style={{ fontSize: 15, fontWeight: 400, color: "#6B4226", maxWidth: 400, margin: "0 auto", lineHeight: 1.65 }}>
-              Three ways to use Tendr — pick whichever fits how you think.
-            </p>
-          </div>
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.4 }}
+                transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
+                style={{ marginBottom: 48 }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                  <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)" }} />
+                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.28em" }}>Find your way</span>
+                </div>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,3.4vw,2.8rem)", fontWeight: 600, color: "#1C0E04", margin: 0, lineHeight: 1.06, letterSpacing: "-0.02em" }}>
+                  Which path suits you?
+                </h2>
+              </motion.div>
 
-          <div className="path-cards-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16, maxWidth: 960, margin: "0 auto" }}>
+              <div className="path-two-col" style={{ display: "grid", gridTemplateColumns: "5fr 7fr", gap: 20, alignItems: "stretch" }}>
+
+                {/* Left: tab pills — no numbered badges, clean state clarity (ui-ux-pro-max: state-clarity) */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {PATHS.map((p, i) => (
+                    <motion.button
+                      key={i}
+                      onClick={() => setActivePath(i)}
+                      whileHover={{ x: activePath === i ? 0 : 3 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
+                      style={{
+                        textAlign: "left",
+                        cursor: "pointer",
+                        fontFamily: "'Outfit', sans-serif",
+                        background: activePath === i ? "#fff" : "rgba(255,255,255,0.45)",
+                        borderRadius: 14,
+                        padding: "20px 22px",
+                        border: "1px solid",
+                        borderColor: activePath === i ? "rgba(196,122,46,0.28)" : "rgba(196,122,46,0.1)",
+                        borderLeft: `3px solid ${activePath === i ? "#C47A2E" : "rgba(196,122,46,0.12)"}`,
+                        boxShadow: activePath === i ? "0 6px 28px rgba(196,122,46,0.13)" : "none",
+                        transition: "background 0.22s, border-color 0.22s, box-shadow 0.22s",
+                        outline: "none",
+                      }}
+                    >
+                      {/* Tag pill */}
+                      <span style={{ fontSize: 9.5, fontWeight: 700, color: activePath === i ? "#C47A2E" : "#B8956A", textTransform: "uppercase", letterSpacing: "0.16em", display: "block", marginBottom: 8 }}>
+                        {p.tag}
+                      </span>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: activePath === i ? "#1C0E04" : "#6B4528", margin: "0 0 5px", lineHeight: 1.3, fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
+                        {p.title}
+                      </p>
+                      <p style={{ fontSize: 12.5, color: activePath === i ? "#7A5535" : "rgba(107,69,40,0.6)", margin: 0, lineHeight: 1.45 }}>
+                        {p.hook}
+                      </p>
+                    </motion.button>
+                  ))}
+                </div>
+
+                {/* Right: dark panel — strong contrast, premium feel */}
+                <div style={{ background: "#1C0E04", borderRadius: 20, padding: "36px 36px 32px", position: "relative", overflow: "hidden" }}>
+                  {/* Ambient glow */}
+                  <div aria-hidden style={{ position: "absolute", top: -60, right: -40, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+                  {/* AnimatePresence for content switch (ui-ux-pro-max: motion-meaning) */}
+                  <motion.div
+                    key={activePath}
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  >
+                    <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(196,122,46,0.7)", textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 12px" }}>How it works</p>
+                    <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.25rem,2.2vw,1.55rem)", fontWeight: 600, fontStyle: "italic", color: "rgba(255,247,235,0.92)", margin: "0 0 32px", lineHeight: 1.28 }}>
+                      {ap.hook}
+                    </p>
+
+                    {/* Steps — clean numbered lines, no circle bubbles */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 32 }}>
+                      {ap.steps.map(({ n, text }, i) => (
+                        <motion.div
+                          key={n}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.3, delay: i * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
+                          style={{ display: "flex", gap: 16, alignItems: "flex-start" }}
+                        >
+                          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,122,46,0.6)", letterSpacing: "0.1em", minWidth: 22, paddingTop: 2, fontFamily: "monospace" }}>{n}</span>
+                          <div style={{ flex: 1, borderTop: "1px solid rgba(255,247,235,0.07)", paddingTop: 12 }}>
+                            <p style={{ fontSize: 13.5, color: "rgba(255,247,235,0.72)", margin: 0, lineHeight: 1.65, fontWeight: 400 }}>{text}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    <button
+                      onClick={ap.action}
+                      style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 13.5, fontWeight: 600, padding: "12px 28px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.38)", transition: "transform 0.2s, box-shadow 0.2s", letterSpacing: "0.02em" }}
+                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.5)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.38)"; }}
+                    >
+                      {ap.cta} →
+                    </button>
+                  </motion.div>
+                </div>
+
+              </div>
+            </div>
+            <style>{`@media (max-width: 760px) { .path-two-col { grid-template-columns: 1fr !important; } }`}</style>
+          </section>
+        );
+      })()}
+
+      {/* ── Everything for your celebration ── */}
+      <section style={{ background: "#FAF7F2", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif" }}>
+        <div style={{ maxWidth: 1080, margin: "0 auto" }}>
+
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.4 }}
+            transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
+            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}
+          >
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)" }} />
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.28em" }}>Built for your event</span>
+              </div>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3.2vw,2.6rem)", fontWeight: 600, color: "#1C0E04", margin: 0, lineHeight: 1.06, letterSpacing: "-0.02em" }}>
+                Everything for your celebration
+              </h2>
+            </div>
+          </motion.div>
+
+          {/* Bento grid — 4 cols, warm tiles, stagger entrance (21st.dev bento + ui-ux-pro-max stagger-sequence) */}
+          <div className="efc-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {[
-              {
-                icon: "🔍",
-                eyebrow: "Browse & Search",
-                title: "You know exactly what you want",
-                desc: "Search for a vendor type, compare profiles, and chat to confirm price.",
-                startFrom: "Use the search bar or Browse in the menu",
-                accent: "#C47A2E",
-                onClick: null,
-              },
-              {
-                icon: "✨",
-                eyebrow: "Start Planning",
-                title: "You know what to do, just want the best vendors",
-                desc: "Tell us your event once — we match you with the right vendors.",
-                startFrom: "Click 'Start Planning' above",
-                accent: "#7A4A1E",
-                onClick: null,
-              },
-              {
-                icon: "🎉",
-                eyebrow: "Plan by Occasion",
-                title: "You know just the occasion",
-                desc: "Pick your celebration — Birthday, Anniversary, House Party and more — and explore curated themes and ideas.",
-                startFrom: "Scroll to 'What's the occasion?' above",
-                accent: "#C47A2E",
-                onClick: () => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }),
-              },
-            ].map(({ icon, eyebrow, title, desc, startFrom, accent, onClick }) => (
-              <div key={eyebrow}
-                onClick={onClick || undefined}
+              { label: "Wedding Stationeries", desc: "Invitations, itineraries & thank you cards", href: "/stationery", span: 2,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg> },
+              { label: "Event Timeline",       desc: "Day-by-day countdown for your event",        href: "/timeline-picker", span: 1,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="14" x2="8" y2="14" strokeWidth={2.5}/><line x1="12" y1="14" x2="16" y2="14"/></svg> },
+              { label: "Budget Allocator",     desc: "Track every rupee across all categories",    href: "/budget-picker", span: 1,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 12V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5z"/><path d="M20 12h-4a2 2 0 0 0 0 4h4"/></svg> },
+              { label: "Fun Activities",       desc: "Magic shows, games & live entertainment",    href: "/fun-activities", span: 1,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+              { label: "Find by Style",        desc: "Upload a photo, match your vibe",            href: "/find-by-style", span: 1,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
+              { label: "Gift Hampers",         desc: "Curated hampers delivered to your door",     href: "/gift-hampers-cakes", span: 2,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M20 12v10H4V12"/><path d="M22 7H2v5h20V7z"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C10 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C14 2 12 7 12 7z"/></svg> },
+              { label: "Upcoming Events",      desc: "See your confirmed bookings & documents",    href: "__upcoming__", span: 1,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> },
+              { label: "Tips by Tendr",        desc: "Free guides, ideas and planning checklists", href: "/guides", span: 1,
+                icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round"><path d="M9 21h6M12 3a6 6 0 0 1 6 6c0 2.22-1.21 4.17-3 5.2V17H9v-2.8C7.21 13.17 6 11.22 6 9a6 6 0 0 1 6-6z"/></svg> },
+            ].map(({ label, desc, href, icon, span }, i) => (
+              <motion.div
+                key={label}
+                className="efc-tile"
+                onClick={() => {
+                  if (href === "__upcoming__") {
+                    if (isSignedIn) navigate("/dashboard");
+                    else navigate("/login", { state: { returnTo: "/dashboard" } });
+                  } else navigate(href);
+                }}
+                /* stagger entrance (ui-ux-pro-max: stagger-sequence, spring-physics) */
+                initial={{ opacity: 0, y: 18, scale: 0.97 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                viewport={{ once: true, amount: 0.08 }}
+                transition={{ type: "spring", stiffness: 240, damping: 22, delay: i * 0.04 }}
+                whileHover={{ y: -4, scale: 1.01 }}
                 style={{
-                  background: "#FFFCF7",
-                  border: "1px solid rgba(196,122,46,0.13)",
-                  borderRadius: 20,
-                  padding: "28px 24px 22px",
+                  gridColumn: span > 1 ? `span ${span}` : undefined,
+                  background: "#fff",
+                  border: "1px solid rgba(196,122,46,0.12)",
+                  borderRadius: 16,
+                  padding: span > 1 ? "24px 26px" : "20px 20px 18px",
+                  cursor: "pointer",
                   display: "flex",
                   flexDirection: "column",
-                  gap: 10,
-                  boxShadow: "0 2px 12px rgba(44,26,14,0.05)",
-                  cursor: onClick ? "pointer" : "default",
-                  transition: onClick ? "box-shadow 0.2s, transform 0.2s" : undefined,
+                  gap: span > 1 ? 14 : 10,
+                  boxShadow: "0 1px 4px rgba(28,14,4,0.04)",
+                  transition: "border-color 0.22s, box-shadow 0.22s",
+                  position: "relative",
+                  overflow: "hidden",
                 }}
-                onMouseEnter={onClick ? e => { e.currentTarget.style.boxShadow = "0 8px 28px rgba(44,26,14,0.12)"; e.currentTarget.style.transform = "translateY(-3px)"; } : undefined}
-                onMouseLeave={onClick ? e => { e.currentTarget.style.boxShadow = "0 2px 12px rgba(44,26,14,0.05)"; e.currentTarget.style.transform = "translateY(0)"; } : undefined}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.3)"; e.currentTarget.style.boxShadow = "0 8px 28px rgba(196,122,46,0.12)"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; e.currentTarget.style.boxShadow = "0 1px 4px rgba(28,14,4,0.04)"; }}
               >
-                <div style={{ width: 44, height: 44, borderRadius: 13, background: "rgba(196,122,46,0.07)", border: "1px solid rgba(196,122,46,0.14)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>{icon}</div>
-                <p style={{ fontSize: 10, fontWeight: 600, color: accent, textTransform: "uppercase", letterSpacing: "0.15em", margin: 0 }}>{eyebrow}</p>
-                <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.2rem,1.8vw,1.45rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, lineHeight: 1.25, letterSpacing: "0.01em" }}>{title}</h3>
-                <p style={{ fontSize: 13, fontWeight: 400, color: "#6B4226", margin: 0, lineHeight: 1.65 }}>{desc}</p>
-                <div style={{ marginTop: 6, paddingTop: 12, borderTop: "1px solid rgba(196,122,46,0.1)", fontSize: 11, color: "#B08A6A", fontWeight: 500 }}>
-                  ↳ {startFrom}
+                {/* Icon pill */}
+                <div style={{ width: 42, height: 42, borderRadius: 12, background: "linear-gradient(135deg, rgba(196,122,46,0.1) 0%, rgba(204,171,74,0.07) 100%)", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", flexShrink: 0 }}>
+                  {icon}
                 </div>
-              </div>
-            ))}
-          </div>
 
-          <style>{`
-            @media (max-width: 700px) {
-              .path-cards-grid {
-                grid-template-columns: 1fr !important;
-                max-width: 100% !important;
-              }
-            }
-            @media (min-width: 701px) and (max-width: 900px) {
-              .path-cards-grid {
-                grid-template-columns: repeat(2,1fr) !important;
-              }
-            }
-          `}</style>
-        </div>
-      </section>
-
-      {/* ── Everything for your celebration — static 2-tier grid ── */}
-      <section style={{ background: "#FFFFFF", padding: "60px 24px 56px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto" }}>
-
-          {/* Heading */}
-          <div style={{ textAlign: "center", marginBottom: 40 }}>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "0.01em" }}>Everything for your celebration</h2>
-            <p style={{ fontSize: 15, color: "#6B4226", margin: 0 }}>Pick what you need — vendors, planning tools, entertainment, stationery and more.</p>
-          </div>
-
-          <div className="offer-tier2-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 10 }}>
-            {[
-              { icon: "💒", label: "Wedding Stationeries", desc: "Invitations, itineraries, thank you cards — personalised.", href: "/stationery" },
-              { icon: "⏱️", label: "Event Timeline",       desc: "Build a day-by-day countdown for your event.", href: "/timeline-picker" },
-              { icon: "💰", label: "Budget Allocator",     desc: "Set budget per category and track every rupee.", href: "/budget-picker" },
-              { icon: "🎁", label: "Gift Hampers", desc: "Curated gift hampers — delivered for your event.", href: "/gift-hampers-cakes" },
-              { icon: "🎭", label: "Fun Activities",       desc: "Magic shows, games, dhol players and live entertainment.", href: "/fun-activities" },
-              { icon: "🔍", label: "Find by Style",        desc: "Upload a photo and find vendors who match your vibe.", href: "/find-by-style" },
-              { icon: "📅", label: "Upcoming Events",      desc: "See what's coming up — sign in to view your dashboard.", href: "__upcoming__" },
-              { icon: "📚", label: "Tips by Tendr",        desc: "Free guides, community ideas and planning tips.", href: "/guides" },
-            ].map(({ icon, label, desc, href }) => (
-              <div key={label} className="offer-tier2-item" onClick={() => {
-                if (href === "__upcoming__") {
-                  if (isSignedIn) navigate("/dashboard");
-                  else navigate("/login", { state: { returnTo: "/dashboard" } });
-                } else {
-                  navigate(href);
-                }
-              }}
-                style={{ background: "#F9F6F2", border: "1px solid rgba(196,122,46,0.12)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12, transition: "background 0.15s, box-shadow 0.15s" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "#FFF8EE"; e.currentTarget.style.boxShadow = "0 4px 16px rgba(196,122,46,0.1)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "#F9F6F2"; e.currentTarget.style.boxShadow = "none"; }}>
-                <span style={{ fontSize: 22, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{icon}</span>
-                <div className="offer-tier2-inner" style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>{label}</span>
-                    <span className="offer-tier2-arrow" style={{ fontSize: 13, color: "rgba(196,122,46,0.5)", flexShrink: 0 }}>→</span>
-                  </div>
-                  <div className="offer-tier2-desc" style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.5, marginTop: 3 }}>{desc}</div>
+                {/* Label + arrow */}
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
+                  <span style={{ fontSize: span > 1 ? 15 : 13.5, fontWeight: 600, color: "#1C0E04", lineHeight: 1.28, fontFamily: "'Outfit', sans-serif" }}>{label}</span>
+                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginTop: 2, color: "rgba(196,122,46,0.4)" }}>
+                    <path d="M2.5 7h9M8 3.5 11.5 7 8 10.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
-              </div>
+
+                {/* Description */}
+                <span style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5, display: "block" }}>{desc}</span>
+
+                {/* Wide tile: subtle warm wash at bottom-right */}
+                {span > 1 && (
+                  <div aria-hidden style={{ position: "absolute", bottom: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+                )}
+              </motion.div>
             ))}
           </div>
 
           <style>{`
             @media (max-width: 640px) {
-              /* Tier 1 — horizontal scroll row */
-              .offer-tier1-grid {
-                display: flex !important;
-                overflow-x: auto !important;
-                gap: 10px !important;
-                padding-bottom: 8px !important;
-                scrollbar-width: none;
-                -webkit-overflow-scrolling: touch;
-                margin-bottom: 24px !important;
-              }
-              .offer-tier1-grid::-webkit-scrollbar { display: none; }
-              .offer-tier1-grid > div {
-                min-width: 196px !important;
-                max-width: 196px !important;
-                flex-shrink: 0 !important;
-              }
-
-              /* Tier 2 — compact pill scroll row */
-              .offer-tier2-grid {
-                display: flex !important;
-                overflow-x: auto !important;
-                gap: 8px !important;
-                padding-bottom: 8px !important;
-                scrollbar-width: none;
-                -webkit-overflow-scrolling: touch;
-              }
-              .offer-tier2-grid::-webkit-scrollbar { display: none; }
-              .offer-tier2-item {
-                min-width: 96px !important;
-                max-width: 96px !important;
-                flex-shrink: 0 !important;
-                flex-direction: column !important;
-                align-items: center !important;
-                text-align: center !important;
-                padding: 14px 8px 12px !important;
-                gap: 6px !important;
-              }
-              .offer-tier2-item > span { margin-top: 0 !important; }
-              .offer-tier2-inner { flex: unset !important; min-width: unset !important; width: 100%; }
-              .offer-tier2-inner > div:first-child { justify-content: center !important; }
-              .offer-tier2-arrow { display: none !important; }
-              .offer-tier2-desc  { display: none !important; }
+              .efc-grid { display: flex !important; overflow-x: auto !important; gap: 10px !important; padding-bottom: 8px !important; scrollbar-width: none; }
+              .efc-grid::-webkit-scrollbar { display: none; }
+              .efc-tile { min-width: 148px !important; max-width: 148px !important; flex-shrink: 0 !important; }
             }
-            @media (min-width: 641px) and (max-width: 960px) {
-              .offer-tier1-grid { grid-template-columns: repeat(3,1fr) !important; }
-              .offer-tier2-grid { grid-template-columns: repeat(4,1fr) !important; }
+            @media (min-width: 641px) and (max-width: 900px) {
+              .efc-grid { grid-template-columns: repeat(2,1fr) !important; }
+              .efc-tile[style*="span 2"] { grid-column: span 2 !important; }
             }
           `}</style>
         </div>
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
-      <section style={{ background:"linear-gradient(180deg,#FFF8EF 0%,#F8F4EF 60%,#F0EBE3 100%)", padding:"60px 24px 64px", fontFamily:"'Outfit', sans-serif" }}>
+      <section style={{ background:"#FAF7F2", padding:"72px 24px 68px", fontFamily:"'Outfit', sans-serif", borderTop:"1px solid rgba(196,122,46,0.07)" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:28, flexWrap:"wrap", gap:12 }}>
+
+          {/* Editorial split header */}
+          <div className="fa-header-grid" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"24px 64px", alignItems:"end", marginBottom:36 }}>
             <div>
-              <p style={{ fontSize:11, fontWeight:700, color:"#C47A2E", textTransform:"uppercase", letterSpacing:"0.14em", margin:"0 0 8px" }}>Live Entertainment</p>
-              <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(1.8rem,3.5vw,2.6rem)", fontWeight:400, color:"#2C1A0E", margin:"0 0 8px", letterSpacing:"0.01em" }}>
-                Add Some Magic —<br /><span style={{ color:"#C47A2E" }}>Fun Activities</span>
+              <p style={{ fontSize:10, fontWeight:700, letterSpacing:"0.28em", textTransform:"uppercase", color:"#C47A2E", margin:"0 0 18px" }}>Live Entertainment</p>
+              <h2 style={{ fontFamily:"'Cormorant Garamond', Georgia, serif", fontSize:"clamp(2rem,3.8vw,2.9rem)", fontWeight:300, color:"#1C0E04", margin:0, letterSpacing:"0.01em", lineHeight:1.08 }}>
+                Add some magic<br />to your event.
               </h2>
-              <p style={{ fontSize:15, color:"#6B4226", margin:0, maxWidth:480, lineHeight:1.65 }}>
-                Fixed-price entertainment add-ons — magic shows, game zones, live counters and more. Confirmed within 2 hours.
-              </p>
             </div>
-            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-              <button onClick={() => scrollFaCarousel(-1)}
-                style={{ width:38, height:38, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#C47A2E", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(196,122,46,0.1)", flexShrink:0, transition:"all 0.2s" }}
-                onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.color="#C47A2E";}}>‹</button>
-              <button onClick={() => scrollFaCarousel(1)}
-                style={{ width:38, height:38, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.25)", background:"#fff", color:"#C47A2E", fontSize:20, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", boxShadow:"0 2px 8px rgba(196,122,46,0.1)", flexShrink:0, transition:"all 0.2s" }}
-                onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
-                onMouseLeave={e=>{e.currentTarget.style.background="#fff";e.currentTarget.style.color="#C47A2E";}}>›</button>
-              <button onClick={() => navigate("/fun-activities")}
-                style={{ padding:"10px 22px", borderRadius:12, border:"1.5px solid rgba(196,122,46,0.35)", background:"transparent", color:"#C47A2E", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"'Outfit',sans-serif", whiteSpace:"nowrap" }}>
-                See All →
-              </button>
+            <div style={{ display:"flex", flexDirection:"column", gap:16, paddingBottom:"0.2em" }}>
+              <p style={{ fontSize:14.5, color:"#7A5535", margin:0, lineHeight:1.72 }}>
+                Fixed-price entertainment — magic shows, game zones, live counters and more. Confirmed within 2 hours.
+              </p>
+              <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+                <button onClick={() => scrollFaCarousel(-1)}
+                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
+                  onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>‹</button>
+                <button onClick={() => scrollFaCarousel(1)}
+                  style={{ width:36, height:36, borderRadius:"50%", border:"1.5px solid rgba(196,122,46,0.28)", background:"transparent", color:"#C47A2E", fontSize:18, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all 0.2s" }}
+                  onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.color="#C47A2E";}}>›</button>
+                <button onClick={() => navigate("/fun-activities")}
+                  style={{ background:"none", border:"1.5px solid rgba(196,122,46,0.38)", color:"#C47A2E", fontSize:13, fontWeight:600, padding:"9px 22px", borderRadius:8, cursor:"pointer", fontFamily:"'Outfit',sans-serif", letterSpacing:"0.04em", transition:"all 0.22s" }}
+                  onMouseEnter={e=>{e.currentTarget.style.background="#C47A2E";e.currentTarget.style.color="#fff";e.currentTarget.style.borderColor="#C47A2E";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="none";e.currentTarget.style.color="#C47A2E";e.currentTarget.style.borderColor="rgba(196,122,46,0.38)";}}>
+                  View all →
+                </button>
+              </div>
             </div>
           </div>
+          <style>{`.fa-header-grid { } @media (max-width: 720px) { .fa-header-grid { grid-template-columns: 1fr !important; gap: 16px !important; } }`}</style>
 
           {/* Arrow-navigated cards */}
           <div
@@ -1548,43 +1663,124 @@ const Home = () => {
       </section>
 
       {/* ── Gift Hampers ── */}
-      <section style={{ background: "#FFFDF7", padding: "36px 24px", fontFamily: "'Outfit', sans-serif", borderTop: "1px solid rgba(196,122,46,0.08)" }}>
-        <div style={{ maxWidth: 640, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 12 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: 0 }}>Gift Hampers</p>
-          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,2.8vw,2rem)", fontWeight: 400, color: "#2C1A0E", margin: 0, letterSpacing: "0.01em", lineHeight: 1.2 }}>
-            The Perfect Gift,&nbsp;<span style={{ color: "#C47A2E" }}>Delivered to the Door</span>
-          </h2>
-          <p style={{ fontSize: 14, color: "#6B4226", margin: 0 }}>Our team can help with gifting for any occasion.</p>
-          <button
-            onClick={() => navigate("/gift-hampers-cakes")}
-            style={{ background: "transparent", color: "#C47A2E", border: "1.5px solid rgba(196,122,46,0.4)", fontSize: 14, fontWeight: 600, padding: "10px 28px", borderRadius: 10, cursor: "pointer", fontFamily: "'Outfit',sans-serif", marginTop: 4 }}
-          >
-            Browse Gift Hampers →
-          </button>
+      <section style={{ background: "#F5EFE6", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Subtle radial warmth */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 10% 50%,rgba(196,122,46,0.06),transparent 50%), radial-gradient(circle at 90% 50%,rgba(204,171,74,0.05),transparent 50%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
+          <div className="gh-band" style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 48, alignItems: "center" }}>
+
+            {/* Left: stacked images + text inline */}
+            <div style={{ display: "flex", alignItems: "center", gap: 36, flexWrap: "wrap" }}>
+              {/* Staggered thumbnails */}
+              <div style={{ display: "flex", alignItems: "flex-end", flexShrink: 0, position: "relative", height: 100 }}>
+                {[
+                  { src: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=300&q=80", h: 80 },
+                  { src: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=300&q=80", h: 100 },
+                  { src: "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=300&q=80", h: 80 },
+                ].map(({ src, h }, i) => (
+                  <div key={i} style={{ width: 82, height: h, borderRadius: 14, overflow: "hidden", border: "2.5px solid #F5EFE6", flexShrink: 0, marginLeft: i > 0 ? -18 : 0, position: "relative", zIndex: i === 1 ? 2 : 1, boxShadow: "0 6px 20px rgba(28,14,4,0.14)", transition: "transform 0.2s" }}>
+                    <img src={src} alt="hamper" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                  </div>
+                ))}
+              </div>
+
+              {/* Text block */}
+              <div>
+                <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.22em", margin: "0 0 10px" }}>Gift Hampers</p>
+                <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,2.8vw,2.1rem)", fontWeight: 600, color: "#1C0E04", margin: "0 0 10px", lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+                  The perfect gift,<br />delivered.
+                </p>
+                <p style={{ fontSize: 14, color: "#7A5535", margin: "0 0 18px", lineHeight: 1.6, maxWidth: 320 }}>
+                  Curated hampers for birthdays, anniversaries &amp; corporates — delivered across Delhi NCR.
+                </p>
+                <div style={{ display: "flex", gap: 16 }}>
+                  {["Birthday Specials", "Corporate Gifts", "Festival Hampers"].map((tag, i) => (
+                    <span key={i} style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "4px 12px" }}>{tag}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Right: CTA */}
+            <button
+              onClick={() => navigate("/gift-hampers-cakes")}
+              style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "14px 30px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 6px 22px rgba(196,122,46,0.38)", transition: "transform 0.2s, box-shadow 0.2s" }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 12px 32px rgba(196,122,46,0.5)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 22px rgba(196,122,46,0.38)"; }}
+            >
+              Browse Hampers →
+            </button>
+          </div>
         </div>
+        <style>{`
+          @media (max-width: 760px) { .gh-band { grid-template-columns: 1fr !important; gap: 24px !important; } }
+        `}</style>
       </section>
 
       {/* ── Trust bar ── */}
-      <section style={{ background: "#fff", borderTop: "1px solid rgba(196,122,46,0.1)", borderBottom: "1px solid rgba(196,122,46,0.1)", padding: "28px 24px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "center", gap: 0, flexWrap: "wrap" }}>
-          {[
-            { stat: "Manually Verified",        sub: "Every vendor is personally reviewed before listing" },
-            { stat: "5,000+ Events Completed",  sub: "Collectively delivered by our vendor network" },
-            { stat: "Response in 24 hrs",       sub: "A real person responds to every booking request" },
-          ].map(({ stat, sub }, i, arr) => (
-            <div key={stat} style={{ display: "flex", alignItems: "center", gap: 0, flex: "1 1 220px", minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "16px 28px", flex: 1 }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#2C1A0E", lineHeight: 1.3 }}>{stat}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4, marginTop: 2 }}>{sub}</div>
-                </div>
-              </div>
-              {i < arr.length - 1 && (
-                <div style={{ width: 1, height: 40, background: "rgba(196,122,46,0.18)", flexShrink: 0, alignSelf: "center" }} />
-              )}
+      <section style={{ background: "#1C0E04", padding: "52px 24px 60px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Gold glow blobs */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 15% 60%,rgba(204,171,74,0.07),transparent 45%), radial-gradient(circle at 85% 40%,rgba(196,122,46,0.06),transparent 45%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
+          {/* Header */}
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 32, height: 1, background: "linear-gradient(90deg,transparent,rgba(204,171,74,0.5))" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#CCAB4A" }}>Why Tendr</span>
+              <div style={{ width: 32, height: 1, background: "linear-gradient(90deg,rgba(204,171,74,0.5),transparent)" }} />
             </div>
-          ))}
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,2.8vw,2.2rem)", fontWeight: 300, color: "#FFF8EC", margin: 0, lineHeight: 1.1, fontStyle: "italic", letterSpacing: "0.01em" }}>
+              Built on trust. Proven by results.
+            </h2>
+          </div>
+
+          {/* Stats */}
+          <div className="trust-bar-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 2, borderRadius: 16, overflow: "hidden", border: "1px solid rgba(204,171,74,0.1)" }}>
+            {[
+              {
+                num: "100%",
+                label: "Manually Verified",
+                sub: "Every vendor personally reviewed before listing",
+                icon: <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>,
+              },
+              {
+                num: "5,000+",
+                label: "Events Delivered",
+                sub: "Collectively by our network across Delhi NCR",
+                icon: <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
+              },
+              {
+                num: "24 hrs",
+                label: "Response Guarantee",
+                sub: "A real person responds to every booking request",
+                icon: <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+              },
+            ].map(({ num, label, sub, icon }, i, arr) => (
+              <div key={label} style={{ padding: "32px 28px 28px", background: "rgba(255,255,255,0.025)", position: "relative", textAlign: "center" }}>
+                {i < arr.length - 1 && (
+                  <div style={{ position: "absolute", right: 0, top: "20%", bottom: "20%", width: 1, background: "rgba(204,171,74,0.1)" }} />
+                )}
+                {/* Icon */}
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: 12, background: "rgba(204,171,74,0.08)", border: "1px solid rgba(204,171,74,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    {icon}
+                  </div>
+                </div>
+                {/* Number */}
+                <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem, 3vw, 2.6rem)", fontWeight: 300, color: "#CCAB4A", lineHeight: 1, marginBottom: 8, letterSpacing: "-0.01em" }}>{num}</div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#F5EDD9", marginBottom: 6, letterSpacing: "0.01em" }}>{label}</div>
+                <div style={{ fontSize: 12, color: "rgba(245,237,217,0.4)", lineHeight: 1.5, maxWidth: 190, margin: "0 auto" }}>{sub}</div>
+              </div>
+            ))}
+          </div>
         </div>
+
+        <style>{`
+          @media (max-width: 640px) {
+            .trust-bar-grid { grid-template-columns: 1fr !important; border-radius: 16px !important; }
+          }
+        `}</style>
       </section>
 
       {false && <JourneyFlow />}
@@ -1635,7 +1831,7 @@ const Home = () => {
         const SECTION_BG = "https://images.unsplash.com/photo-1507692049790-de58290a4334?w=1600&auto=format&q=70";
 
         return (
-          <section style={{ position: "relative", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
+          <section style={{ position: "relative", padding: "56px 24px 64px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
             {/* Background image */}
             <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${SECTION_BG}')`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }} />
             {/* Dark overlay on top of bg image */}
@@ -1650,19 +1846,19 @@ const Home = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.55 }}
-                style={{ textAlign: "center", marginBottom: 52 }}
+                style={{ textAlign: "center", marginBottom: 36 }}
               >
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 18 }}>
-                  <div style={{ flex: 1, maxWidth: 80, height: 1, background: "linear-gradient(90deg,transparent,rgba(204,171,74,0.4))" }} />
-                  <span style={{ color: "#CCAB4A", fontSize: 11, letterSpacing: "0.15em" }}>✦ ✦ ✦</span>
-                  <div style={{ flex: 1, maxWidth: 80, height: 1, background: "linear-gradient(90deg,rgba(204,171,74,0.4),transparent)" }} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 14, marginBottom: 20 }}>
+                  <div style={{ flex: 1, maxWidth: 100, height: 1, background: "linear-gradient(90deg,transparent,rgba(204,171,74,0.5))" }} />
+                  <span style={{ color: "#CCAB4A", fontSize: 12, letterSpacing: "0.2em" }}>✦ ✦ ✦</span>
+                  <div style={{ flex: 1, maxWidth: 100, height: 1, background: "linear-gradient(90deg,rgba(204,171,74,0.5),transparent)" }} />
                 </div>
-                <p style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.22em", textTransform: "uppercase", color: "#CCAB4A", margin: "0 0 14px" }}>Crafted with Love</p>
-                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.4rem,5vw,3.8rem)", fontWeight: 300, color: "#FFF8EC", margin: "0 0 14px", letterSpacing: "0.04em", fontStyle: "italic", lineHeight: 1.08 }}>
+                <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.26em", textTransform: "uppercase", color: "#CCAB4A", margin: "0 0 16px" }}>Crafted with Love · Delhi NCR</p>
+                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3.2rem)", fontWeight: 300, color: "#FFF8EC", margin: "0 0 12px", letterSpacing: "0.02em", fontStyle: "italic", lineHeight: 1.05 }}>
                   Wedding Stationeries
                 </h2>
-                <p style={{ fontSize: 14, color: "rgba(255,248,236,0.5)", margin: "0 auto 28px", maxWidth: 420, lineHeight: 1.65 }}>
-                  Fully personalised for your wedding. No templates, no shortcuts.
+                <p style={{ fontSize: 14, color: "rgba(255,248,236,0.5)", margin: "0 auto 24px", maxWidth: 400, lineHeight: 1.65 }}>
+                  Fully personalised for your wedding — invitations, itineraries, thank you cards and more.
                 </p>
                 <button
                   onClick={() => navigate("/stationery")}
@@ -1684,7 +1880,7 @@ const Home = () => {
                     viewport={{ once: true }}
                     transition={{ duration: 0.5, delay: i * 0.09 }}
                     onClick={() => navigate("/stationery")}
-                    style={{ borderRadius: 20, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 280, display: "flex", flexDirection: "column", justifyContent: "flex-end", boxShadow: "0 8px 32px rgba(0,0,0,0.55)", transition: "transform 0.28s, box-shadow 0.28s", border: "1px solid rgba(255,255,255,0.08)" }}
+                    style={{ borderRadius: 18, overflow: "hidden", cursor: "pointer", position: "relative", minHeight: 240, display: "flex", flexDirection: "column", justifyContent: "flex-end", boxShadow: "0 8px 32px rgba(0,0,0,0.55)", transition: "transform 0.28s, box-shadow 0.28s", border: "1px solid rgba(255,255,255,0.08)" }}
                     onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-8px) scale(1.015)"; e.currentTarget.style.boxShadow = "0 24px 60px rgba(0,0,0,0.65)"; }}
                     onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 8px 32px rgba(0,0,0,0.55)"; }}
                   >
@@ -1740,62 +1936,81 @@ const Home = () => {
       })()}
 
       {/* Events Portfolio Gallery */}
-      <section style={{ background: "#FFFFFF", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#F8F5F0", padding: "88px 24px 96px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 48 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 12 }}>Vendor Portfolio</p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#2C1A0E", letterSpacing: "0.01em", margin: "0 0 14px" }}>What Our Vendors Can Do</h2>
-            <p style={{ fontSize: 15, color: "#6B4226", maxWidth: 560, margin: "0 auto", lineHeight: 1.65 }}>Real photos from vendor portfolios — showing exactly what they can deliver for your event.</p>
-            <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "18px auto 0" }} />
+
+          {/* Editorial split header */}
+          <div className="portfolio-header-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 72px", alignItems: "end", marginBottom: 52 }}>
+            <div>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.28em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 18px" }}>From the field</p>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 300, color: "#1C0E04", letterSpacing: "0.01em", margin: 0, lineHeight: 1.06 }}>
+                Real work.<br />Real vendors.
+              </h2>
+            </div>
+            <p style={{ fontSize: 15, color: "#7A5535", maxWidth: 400, lineHeight: 1.72, margin: 0 }}>
+              Every photo here is from a verified Tendr vendor's actual portfolio — showing exactly what they've delivered for clients across Delhi NCR.
+            </p>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24 }} className="events-portfolio-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }} className="events-portfolio-grid">
             {[
-              { title: "Decoration",       slug: "decoration",    key: "Decoration" },
-              { title: "DJ & Entertainment", slug: "entertainment", key: "Entertainment" },
-              { title: "Photography",      slug: "photography",   key: "Photography" },
-              { title: "Catering",         slug: "catering",      key: "Catering" },
+              { title: "Decoration",         slug: "decoration",    key: "Decoration" },
+              { title: "DJ & Entertainment", slug: "entertainment",  key: "Entertainment" },
+              { title: "Photography",        slug: "photography",   key: "Photography" },
+              { title: "Catering",           slug: "catering",      key: "Catering" },
             ].map(({ title, slug, key }, catIdx) => {
               const catPhotos = galleryByCategory[key] || [];
-              // Each tile cycles at a different offset so they don't all flip at the same time
               const imgIdx = catPhotos.length > 0
                 ? Math.floor((glimpseCounter + catIdx * 2) / 1) % catPhotos.length
                 : 0;
               const img = catPhotos[imgIdx]?.imageUrl || GALLERY_FALLBACKS[key];
               return (
-              <div key={title} style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                <div className="portfolio-img-wrap" style={{ position: "relative", borderRadius: 16, overflow: "hidden", height: 220, background: "#2C1A0E" }}>
-                  <img key={img} src={img} alt={title}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", animation: "glimpseFade 0.6s ease" }} />
-                  <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,0,0.65) 0%, transparent 55%)", display: "flex", alignItems: "flex-end", padding: "14px 18px" }}>
-                    <span style={{ color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", textShadow: "0 1px 6px rgba(0,0,0,0.4)" }}>{title}</span>
+              <div key={title}
+                className="portfolio-tile"
+                onClick={() => navigate(`/gallery/${slug}`)}
+                style={{ position: "relative", borderRadius: 18, overflow: "hidden", cursor: "pointer", background: "#2C1A0E" }}
+                onMouseEnter={e => { e.currentTarget.querySelector(".portfolio-tile-overlay").style.opacity = "1"; e.currentTarget.querySelector(".portfolio-tile-img").style.transform = "scale(1.04)"; }}
+                onMouseLeave={e => { e.currentTarget.querySelector(".portfolio-tile-overlay").style.opacity = "0"; e.currentTarget.querySelector(".portfolio-tile-img").style.transform = "scale(1)"; }}
+              >
+                {/* Photo — tall 4:5 aspect */}
+                <div className="portfolio-img-wrap" style={{ aspectRatio: "4/5", overflow: "hidden" }}>
+                  <img key={img} src={img} alt={title} className="portfolio-tile-img"
+                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", animation: "glimpseFade 0.6s ease", transition: "transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94)" }} />
+                </div>
+
+                {/* Permanent bottom gradient + label */}
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(20,8,0,0.78) 0%, rgba(20,8,0,0.15) 45%, transparent 75%)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 20px 18px", display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                  <div>
+                    <span style={{ fontSize: 16, fontWeight: 600, color: "#fff", letterSpacing: "0.01em", textShadow: "0 1px 6px rgba(0,0,0,0.4)", display: "block", lineHeight: 1.2 }}>{title}</span>
                   </div>
                   {catPhotos.length > 1 && (
-                    <div style={{ position: "absolute", top: 10, right: 12, display: "flex", gap: 4 }}>
+                    <div style={{ display: "flex", gap: 4 }}>
                       {catPhotos.slice(0, Math.min(catPhotos.length, 5)).map((_, di) => (
-                        <div key={di} style={{ width: 5, height: 5, borderRadius: "50%", background: di === imgIdx % Math.min(catPhotos.length, 5) ? "#fff" : "rgba(255,255,255,0.4)", transition: "background 0.3s" }} />
+                        <div key={di} style={{ width: 4, height: 4, borderRadius: "50%", background: di === imgIdx % Math.min(catPhotos.length, 5) ? "#CCAB4A" : "rgba(255,255,255,0.35)", transition: "background 0.3s" }} />
                       ))}
                     </div>
                   )}
                 </div>
-                <button onClick={() => navigate(`/gallery/${slug}`)}
-                  style={{ width: "100%", padding: "9px 0", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.28)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.15s" }}
-                  onMouseEnter={e => { e.currentTarget.style.background = "#C47A2E"; e.currentTarget.style.color = "#fff"; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.color = "#C47A2E"; }}>
-                  Explore {title} →
-                </button>
+
+                {/* Hover overlay — explore CTA */}
+                <div className="portfolio-tile-overlay" style={{ position: "absolute", inset: 0, background: "rgba(196,122,46,0.12)", backdropFilter: "blur(1px)", display: "flex", alignItems: "center", justifyContent: "center", opacity: 0, transition: "opacity 0.28s ease", pointerEvents: "none" }}>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: "#fff", background: "rgba(196,122,46,0.9)", borderRadius: 100, padding: "8px 20px", letterSpacing: "0.05em" }}>Explore →</span>
+                </div>
               </div>
             ); })}
           </div>
         </div>
         <style>{`
+          .portfolio-header-grid { }
+          @media (max-width: 720px) { .portfolio-header-grid { grid-template-columns: 1fr !important; gap: 16px !important; } }
           @media (max-width: 900px) { .events-portfolio-grid { grid-template-columns: repeat(2, 1fr) !important; } }
           @media (max-width: 520px) {
             .events-portfolio-grid {
               display: flex !important;
               overflow-x: auto !important;
               scroll-snap-type: x mandatory !important;
-              gap: 14px !important;
+              gap: 12px !important;
               padding: 4px 2px 14px !important;
               margin: 0 -24px !important;
               padding-left: 24px !important;
@@ -1808,7 +2023,7 @@ const Home = () => {
               scroll-snap-align: start !important;
               min-width: 0 !important;
             }
-            .portfolio-img-wrap { height: 160px !important; }
+            .portfolio-img-wrap { aspect-ratio: 3/4 !important; }
           }
           @keyframes glimpseFade { from { opacity: 0.4; } to { opacity: 1; } }
         `}</style>
@@ -1819,58 +2034,80 @@ const Home = () => {
       <TipsByTendrSection />
 
       {/* Become a Partner Section */}
-      <section style={{ background: "#2C1A0E", padding: "96px 24px", fontFamily: "'Outfit', sans-serif" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center" }} className="partner-grid">
+      <section style={{ background: "#1C0E04", padding: "96px 24px 100px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Subtle dot texture overlay */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle, rgba(204,171,74,0.08) 1px, transparent 1px)", backgroundSize: "32px 32px", pointerEvents: "none" }} />
+        {/* Gold glow blobs */}
+        <div style={{ position: "absolute", top: "20%", left: "-5%", width: 320, height: 320, borderRadius: "50%", background: "radial-gradient(circle,rgba(196,122,46,0.1),transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "10%", right: "-5%", width: 280, height: 280, borderRadius: "50%", background: "radial-gradient(circle,rgba(204,171,74,0.08),transparent 70%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 72, alignItems: "center", position: "relative" }} className="partner-grid">
 
           {/* Left: text */}
           <div>
-            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 16 }}>
+            {/* Social proof chip */}
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.25)", borderRadius: 100, padding: "6px 14px", marginBottom: 20 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", flexShrink: 0 }} />
+              <span style={{ fontSize: 11.5, fontWeight: 600, color: "#CCAB4A", letterSpacing: "0.04em" }}>200+ vendors already on Tendr</span>
+            </div>
+
+            <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(204,171,74,0.6)", marginBottom: 14 }}>
               For Vendors
             </p>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,3.5vw,2.6rem)", fontWeight: 400, color: "#fff", letterSpacing: "0.01em", lineHeight: 1.2, margin: "0 0 20px" }}>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,3.8vw,3rem)", fontWeight: 300, color: "#fff", letterSpacing: "0.01em", lineHeight: 1.12, margin: "0 0 20px" }}>
               Grow your business<br />
-              <span style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                with Tendr
+              <span style={{ fontStyle: "italic", fontWeight: 600, background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                with Tendr.
               </span>
             </h2>
-            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.65)", lineHeight: 1.65, margin: "0 0 32px", maxWidth: 420 }}>
-              Join Delhi NCR's most trusted event services marketplace. Get discovered by customers actively looking for photographers, caterers, decorators, and DJs.
+            <p style={{ fontSize: 15, color: "rgba(255,255,255,0.6)", lineHeight: 1.7, margin: "0 0 32px", maxWidth: 400 }}>
+              Join Delhi NCR's most trusted event marketplace. Get discovered by customers actively looking for photographers, caterers, decorators and DJs.
             </p>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 36 }}>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: 13, marginBottom: 36 }}>
               {[
                 "No paid ads needed — we bring customers to you",
-                "Verified profile builds trust instantly",
+                "Verified profile builds instant credibility",
                 "Direct chat with clients before committing",
                 "Grow your reviews and ranking over time",
               ].map((item, i) => (
-                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
-                  <span style={{ width: 20, height: 20, borderRadius: "50%", background: "rgba(204,171,74,0.2)", border: "1.5px solid rgba(204,171,74,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#CCAB4A", flexShrink: 0, marginTop: 2 }}>✓</span>
-                  <span style={{ fontSize: 14.5, color: "rgba(255,255,255,0.75)", lineHeight: 1.5 }}>{item}</span>
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                  <div style={{ width: 22, height: 22, borderRadius: 7, background: "rgba(204,171,74,0.12)", border: "1px solid rgba(204,171,74,0.3)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                    <svg width={11} height={11} viewBox="0 0 24 24" fill="none" stroke="#CCAB4A" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <span style={{ fontSize: 14.5, color: "rgba(255,255,255,0.72)", lineHeight: 1.55 }}>{item}</span>
                 </div>
               ))}
             </div>
-            <button
-              onClick={() => navigate("/vendor/register")}
-              style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 16, fontWeight: 600, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 4px 18px rgba(196,122,46,0.45)", transition: "opacity 0.2s" }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-            >
-              List Your Service →
-            </button>
+
+            <div style={{ display: "flex", gap: 14, flexWrap: "wrap", alignItems: "center" }}>
+              <button
+                onClick={() => navigate("/vendor/register")}
+                style={{ background: "linear-gradient(135deg, #C47A2E, #CCAB4A)", color: "#fff", border: "none", borderRadius: 12, padding: "14px 32px", fontSize: 15, fontWeight: 700, fontFamily: "'Outfit', sans-serif", cursor: "pointer", boxShadow: "0 6px 24px rgba(196,122,46,0.4)", transition: "transform 0.2s, box-shadow 0.2s" }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(196,122,46,0.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 6px 24px rgba(196,122,46,0.4)"; }}
+              >
+                List Your Service →
+              </button>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>Free to register · No commission</span>
+            </div>
           </div>
 
           {/* Right: 3 steps */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
             {[
-              { num: "01", title: "Submit Your Details", desc: "Fill in your name, phone, and address. Takes under 2 minutes." },
-              { num: "02", title: "Get Verified", desc: "Our team reviews your profile and approves your listing within 24–48 hours." },
-              { num: "03", title: "Start Receiving Bookings", desc: "Go live on Tendr and get discovered by customers across Delhi NCR." },
+              { num: "01", title: "Submit Your Details", desc: "Fill in your name, phone, and address. Takes under 2 minutes.", icon: "📋" },
+              { num: "02", title: "Get Verified", desc: "Our team reviews your profile and approves your listing within 24–48 hours.", icon: "✅" },
+              { num: "03", title: "Start Receiving Bookings", desc: "Go live on Tendr and get discovered by customers across Delhi NCR.", icon: "🚀" },
             ].map((step, i) => (
-              <div key={i} style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "24px 24px", display: "flex", gap: 20, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 28, fontWeight: 900, color: "#CCAB4A", lineHeight: 1, flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>{step.num}</span>
+              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderLeft: "3px solid rgba(204,171,74,0.4)", borderRadius: "0 16px 16px 0", padding: "22px 24px", display: "flex", gap: 20, alignItems: "flex-start", transition: "background 0.2s" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontSize: 11, fontWeight: 800, color: "rgba(204,171,74,0.5)", letterSpacing: "0.05em", fontFamily: "'Outfit', sans-serif" }}>{step.num}</span>
+                  {i < 2 && <div style={{ width: 1, height: 20, background: "rgba(204,171,74,0.15)" }} />}
+                </div>
                 <div>
-                  <h4 style={{ fontSize: 16, fontWeight: 600, color: "#fff", margin: "0 0 6px" }}>{step.title}</h4>
-                  <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.55 }}>{step.desc}</p>
+                  <h4 style={{ fontSize: 15.5, fontWeight: 700, color: "#fff", margin: "0 0 6px", letterSpacing: "0.005em" }}>{step.title}</h4>
+                  <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.5)", margin: 0, lineHeight: 1.6 }}>{step.desc}</p>
                 </div>
               </div>
             ))}
