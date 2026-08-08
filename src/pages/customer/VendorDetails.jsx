@@ -258,28 +258,23 @@ const VendorDetailsPage = () => {
     formAdditionalInfo && ("Notes: " + formAdditionalInfo),
   ].filter(Boolean);
 
+  const shimmerStyle = { background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" };
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFFCF5]" style={{ fontFamily: "'Outfit', sans-serif" }}>
+      <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
         <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
-        <div className="max-w-6xl mx-auto px-4 py-10">
-          {/* Gallery skeleton */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-8">
-            <div style={{ height: 400, borderRadius: 12, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-            <div className="grid grid-cols-2 gap-3">
-              {[0,1,2,3].map(i => (
-                <div key={i} style={{ height: 195, borderRadius: i === 1 ? "0 12px 0 0" : i === 3 ? "0 0 12px 0" : 0, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
-              ))}
-            </div>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "32px 24px 80px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12, marginBottom: 32 }}>
+            <div style={{ height: 360, borderRadius: 20, ...shimmerStyle }} />
           </div>
-          {/* Info skeleton */}
           <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
             <div style={{ flex: 2, minWidth: 260, display: "flex", flexDirection: "column", gap: 14 }}>
-              {[200, 120, 80, 300, 300].map((w, i) => (
-                <div key={i} style={{ height: i === 0 ? 32 : i === 3 || i === 4 ? 18 : 20, width: w, borderRadius: 8, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+              {[220, 130, 90, 300, 260].map((w, i) => (
+                <div key={i} style={{ height: i === 0 ? 36 : 18, width: w, borderRadius: 10, ...shimmerStyle }} />
               ))}
             </div>
-            <div style={{ flex: 1, minWidth: 240, height: 280, borderRadius: 16, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+            <div style={{ flex: 1, minWidth: 240, height: 280, borderRadius: 20, ...shimmerStyle }} />
           </div>
         </div>
       </div>
@@ -288,14 +283,13 @@ const VendorDetailsPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-2xl font-semibold text-red-600 mb-4">Error loading vendor</div>
-          <div className="text-gray-600 mb-4">{error}</div>
-          <button
-            onClick={() => navigate("/listings")}
-            className="px-6 py-2 bg-[#CCAB4A] text-white rounded-xl hover:bg-[#ab8f39]"
-          >
+      <div style={{ minHeight: "100vh", background: "#F8F4EF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit', sans-serif", padding: 24 }}>
+        <div style={{ textAlign: "center", maxWidth: 400 }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Couldn't load vendor</h2>
+          <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.6 }}>{error}</p>
+          <button onClick={() => navigate("/listings")}
+            style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
             Back to Listings
           </button>
         </div>
@@ -305,15 +299,14 @@ const VendorDetailsPage = () => {
 
   if (!vendor) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-2xl font-semibold text-gray-600 mb-4">Vendor not found</div>
-          <div className="text-gray-600 mb-4">The vendor you are looking for does not exist or has been removed.</div>
-          <button
-            onClick={() => navigate("/listings")}
-            className="px-6 py-2 bg-[#CCAB4A] text-white rounded-xl hover:bg-[#ab8f39]"
-          >
-            Back to Listings
+      <div style={{ minHeight: "100vh", background: "#F8F4EF", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Outfit', sans-serif", padding: 24 }}>
+        <div style={{ textAlign: "center", maxWidth: 400 }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>Vendor not found</h2>
+          <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.6 }}>This vendor may have been removed or the link is incorrect.</p>
+          <button onClick={() => navigate("/listings")}
+            style={{ padding: "11px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif" }}>
+            Browse Vendors
           </button>
         </div>
       </div>
@@ -429,7 +422,7 @@ const VendorDetailsPage = () => {
             {vendor?.isTopRated && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>🏆 Top Rated</span>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
-            <h1 className="vendor-detail-h1" style={{ fontSize: 34, fontWeight: 900, color: "#2C1A0E", margin: 0, lineHeight: 1.1, letterSpacing: "-0.02em", flex: 1 }}>{vendor.name || "Vendor"}</h1>
+            <h1 className="vendor-detail-h1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 300, color: "#1C0A04", margin: 0, lineHeight: 1.1, letterSpacing: "0.01em", flex: 1 }}>{vendor.name || "Vendor"}</h1>
             <button onClick={handleShare}
               style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.25)", background: shareCopied ? "rgba(196,122,46,0.08)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", flexShrink: 0, transition: "all 0.2s" }}
               title={shareCopied ? "Link copied!" : "Share vendor"}>

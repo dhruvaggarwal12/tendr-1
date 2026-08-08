@@ -195,11 +195,23 @@ const VendorList_ListingPage = ({
   };
 
   return (
-    <div className="flex flex-col min-h-full">
-      <div className="mx-auto w-full max-w-7xl px-3 sm:px-5">
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100%" }}>
+      <style>{`
+        .vl-grid { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 8px 0 16px; }
+        @media (min-width: 540px) { .vl-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (min-width: 1024px) { .vl-grid { grid-template-columns: repeat(3,1fr); } }
+        @media (min-width: 1280px) { .vl-grid { grid-template-columns: repeat(4,1fr); } }
+        .vendor-card { animation: vl-card-in 0.4s both; }
+        @keyframes vl-card-in { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        @media (max-width: 540px) {
+          .vendor-card-mobile-overlay { display: block !important; }
+          .vendor-card-info-text { display: none !important; }
+          .vendor-card-img { height: 200px !important; }
+        }
+      `}</style>
+      <div style={{ width: "100%", maxWidth: 1400, margin: "0 auto", padding: "0 12px" }}>
 
-
-        <div className="vendor-list">
+        <div>
           {isLoading ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px 60px", fontFamily: font }}>
               <div style={{ fontSize: 50, marginBottom: 20, animation: "curateFloat 2s ease-in-out infinite" }}>✨</div>
@@ -240,7 +252,7 @@ const VendorList_ListingPage = ({
             </div>
           ) : (
             <>
-            <div className="vendor-list-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 pt-2 pb-4">
+            <div className="vl-grid">
               {serviceType === "Decorator" && (
                 <div style={{ background: "linear-gradient(145deg,#2C1A0E,#3D2210)", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.3)", overflow: "hidden", fontFamily: font, display: "flex", flexDirection: "column" }}>
                   <div style={{ height: 220, background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.1))", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, position: "relative" }}>
@@ -272,6 +284,7 @@ const VendorList_ListingPage = ({
                   <div
                     key={vendor._id || index}
                     className="vendor-card"
+                    style={{ animationDelay: `${Math.min(index, 8) * 55}ms` }}
                     onClick={() => {
                       if (window.innerWidth >= 1024) {
                         window.open(`/vendor/${vendor._id}`, "_blank");
@@ -413,14 +426,24 @@ const VendorList_ListingPage = ({
 
         {/* Show More */}
         {paginationInfo?.totalPages > currentPage && (
-          <div className="flex justify-center mt-4 sm:mt-6 mb-10">
+          <div style={{ display: "flex", justifyContent: "center", margin: "20px 0 40px" }}>
             <button
               type="button"
               onClick={handleShowMore}
               disabled={isLoading}
-              className={`rounded-full shadow-sm px-6 py-2.5 font-semibold border border-[#CCAB4A] transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A]/30 ${isLoading ? "opacity-60 cursor-not-allowed" : "hover:-translate-y-0.5 hover:shadow-md"}`}
+              style={{
+                padding: "12px 36px", borderRadius: 100,
+                border: "1.5px solid rgba(196,122,46,0.4)",
+                background: isLoading ? "rgba(196,122,46,0.06)" : "#fff",
+                color: "#C47A2E", fontSize: 14, fontWeight: 700,
+                fontFamily: "'Outfit', sans-serif",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                opacity: isLoading ? 0.6 : 1,
+                boxShadow: "0 2px 12px rgba(196,122,46,0.12)",
+                transition: "all 0.2s",
+              }}
             >
-              {isLoading ? "Loading..." : "Show More"}
+              {isLoading ? "Loading…" : "Show More Vendors"}
             </button>
           </div>
         )}

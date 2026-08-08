@@ -206,7 +206,6 @@ export default function TopRatedVendors() {
         title={categoryTitle(category)}
         description={categoryDescription(category)}
         path={`/top-rated/${category || ""}`}
-        noIndex
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Browse Vendors", path: "/listings" }, { name: category || "Vendors", path: `/top-rated/${category || ""}` }]}
         schema={{
           "@context": "https://schema.org",
@@ -286,11 +285,14 @@ export default function TopRatedVendors() {
       `}</style>
 
       {/* Header */}
-      <div style={{ background: "linear-gradient(160deg, #FFF8F2, #F5E6CC)", padding: "52px 32px 40px", textAlign: "center" }}>
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 10 }}>Top Rated</p>
-        <h1 style={{ fontSize: "clamp(1.8rem, 4vw, 2.8rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 12px" }}>{info.label}</h1>
-        <p style={{ fontSize: 15, color: "#9B7450", margin: 0 }}>Verified, top-rated vendors ready for your event</p>
-        <div style={{ width: 48, height: 3, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "16px auto 0" }} />
+      <div style={{ background: "linear-gradient(160deg, #1C0A04 0%, #2C1A0E 100%)", padding: "52px 32px 44px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 80% at 50% 120%, rgba(196,122,46,0.18) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "#CCAB4A", marginBottom: 12, position: "relative" }}>Top Rated · Delhi NCR</p>
+        <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem, 5vw, 3.2rem)", fontWeight: 300, color: "#FAF7F2", letterSpacing: "0.02em", margin: "0 0 14px", lineHeight: 1.15, position: "relative" }}>
+          {info.label}
+        </h1>
+        <p style={{ fontSize: 14, color: "rgba(255,248,236,0.6)", margin: 0, fontFamily: font, position: "relative" }}>Verified vendors, handpicked for quality</p>
+        <div style={{ width: 48, height: 2, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 100, margin: "20px auto 0", position: "relative" }} />
       </div>
 
       {/* How to book strip */}
