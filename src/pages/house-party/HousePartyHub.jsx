@@ -712,6 +712,7 @@ const SECTIONS = [
 
 export default function HousePartyHub() {
   const [open, setOpen] = useState(null);
+  const [hoveredTool, setHoveredTool] = useState(null);
   const navigate = useNavigate();
 
   const renderModal = () => {
@@ -765,39 +766,127 @@ export default function HousePartyHub() {
   };
 
   return (
-    <div style={{ minHeight: "100dvh", background: "linear-gradient(135deg, #0f0c29, #1a1a2e, #16213e)", fontFamily: font, paddingBottom: 40 }}>
-      {/* Header */}
-      <div style={{ padding: "20px 18px 0" }}>
-        <button onClick={() => navigate(-1)} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", padding: "8px 14px", borderRadius: 20, cursor: "pointer", fontSize: 13, fontFamily: font, marginBottom: 20 }}>← Back</button>
-        <div style={{ textAlign: "center", paddingBottom: 24 }}>
-          <div style={{ fontSize: 52 }}>🎉</div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", margin: "8px 0 4px", letterSpacing: "-0.02em" }}>House Party Hub</h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>The app everyone opens during the party</p>
+    <div style={{ minHeight: "100dvh", background: "linear-gradient(160deg, #0d0a1e 0%, #1a1030 50%, #12101f 100%)", fontFamily: font }}>
+      <style>{`
+        @keyframes hp-orb {
+          0%, 100% { opacity: 0.35; transform: translate(-50%,-50%) scale(1); }
+          50%       { opacity: 0.6;  transform: translate(-50%,-50%) scale(1.1); }
+        }
+        @keyframes hp-tool-in {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (max-width: 480px) {
+          .hp-hero-h1 { font-size: 2rem !important; }
+          .hp-grid    { grid-template-columns: 1fr 1fr !important; }
+        }
+      `}</style>
+
+      {/* ── Hero ── */}
+      <div style={{ position: "relative", overflow: "hidden", padding: "28px 20px 0", textAlign: "center" }}>
+        {/* neon orb */}
+        <div style={{
+          position: "absolute", top: "50%", left: "50%",
+          width: 480, height: 480, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(124,58,237,0.22) 0%, rgba(37,99,235,0.08) 45%, transparent 70%)",
+          animation: "hp-orb 5s ease-in-out infinite",
+          pointerEvents: "none",
+        }} />
+
+        {/* back */}
+        <button onClick={() => navigate(-1)} style={{
+          position: "relative",
+          background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
+          color: "rgba(255,255,255,0.7)", padding: "7px 16px",
+          borderRadius: 100, cursor: "pointer", fontSize: 12,
+          fontFamily: font, fontWeight: 600, marginBottom: 28,
+          transition: "background 0.15s",
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
+        onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}
+        >← Back</button>
+
+        {/* eyebrow pill */}
+        <div style={{ position: "relative", marginBottom: 14 }}>
+          <span style={{
+            display: "inline-flex", alignItems: "center", gap: 7,
+            background: "rgba(124,58,237,0.15)",
+            border: "1px solid rgba(124,58,237,0.35)",
+            borderRadius: 100, padding: "5px 14px",
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA", boxShadow: "0 0 6px rgba(167,139,250,0.8)" }} />
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.1em", textTransform: "uppercase" }}>Party Toolkit</span>
+          </span>
         </div>
+
+        <h1 className="hp-hero-h1" style={{
+          position: "relative",
+          fontSize: "clamp(2.2rem,5vw,3rem)", fontWeight: 900,
+          color: "#fff", margin: "0 0 8px", letterSpacing: "-0.025em", lineHeight: 1.1,
+        }}>House Party Hub</h1>
+        <p style={{
+          position: "relative",
+          fontSize: 14, color: "rgba(255,255,255,0.45)",
+          margin: "0 0 36px", lineHeight: 1.55,
+        }}>The app everyone opens during the party</p>
       </div>
 
-      {/* Sections */}
-      {SECTIONS.map(sec => {
-        const tools = TOOLS.filter(t => t.section === sec.id);
-        return (
-          <div key={sec.id} style={{ padding: "0 16px", marginBottom: 28 }}>
-            <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{sec.label}</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{sec.subtitle}</div>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
-              {tools.map(t => (
-                <div key={t.id} onClick={() => setOpen(t.id)} style={{ background: "rgba(255,255,255,0.05)", border: "1.5px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "16px 14px", cursor: "pointer", transition: "all 0.15s", active: { transform: "scale(0.97)" } }}>
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>{t.emoji}</div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4, lineHeight: 1.3 }}>{t.title}</div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>{t.desc}</div>
-                  <div style={{ width: 24, height: 3, background: t.color, borderRadius: 4, marginTop: 10 }} />
+      {/* ── Sections ── */}
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px 56px" }}>
+        {SECTIONS.map((sec, si) => {
+          const tools = TOOLS.filter(t => t.section === sec.id);
+          return (
+            <div key={sec.id} style={{ marginBottom: 36 }}>
+              {/* Section header */}
+              <div style={{
+                display: "flex", alignItems: "center", gap: 10, marginBottom: 14,
+                paddingBottom: 10,
+                borderBottom: "1px solid rgba(255,255,255,0.06)",
+              }}>
+                <span style={{ fontSize: 18 }}>{sec.label.split(" ")[0]}</span>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>
+                    {sec.label.split(" ").slice(1).join(" ")}
+                  </div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{sec.subtitle}</div>
                 </div>
-              ))}
+              </div>
+
+              {/* Tool grid */}
+              <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+                {tools.map((t, ti) => {
+                  const isHovered = hoveredTool === t.id;
+                  return (
+                    <div
+                      key={t.id}
+                      onClick={() => setOpen(t.id)}
+                      onMouseEnter={() => setHoveredTool(t.id)}
+                      onMouseLeave={() => setHoveredTool(null)}
+                      style={{
+                        background: isHovered ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                        border: `1.5px solid ${isHovered ? t.color + "55" : "rgba(255,255,255,0.07)"}`,
+                        borderRadius: 16,
+                        padding: "18px 15px 15px",
+                        cursor: "pointer",
+                        transition: "all 0.18s",
+                        transform: isHovered ? "translateY(-2px)" : "none",
+                        boxShadow: isHovered ? `0 8px 24px ${t.color}22` : "none",
+                        animation: `hp-tool-in 0.4s ease both`,
+                        animationDelay: `${(si * tools.length + ti) * 0.04}s`,
+                      }}
+                    >
+                      <div style={{ fontSize: 26, marginBottom: 10, lineHeight: 1 }}>{t.emoji}</div>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
+                      <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.6, transition: "opacity 0.18s" }} />
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
 
       {renderModal()}
     </div>

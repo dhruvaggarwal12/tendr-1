@@ -434,8 +434,21 @@ export default function CelebrationHub() {
 
 
   return (
-    <div style={{ minHeight: "100vh", background: CREAM, fontFamily: font }}>
+    <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: font }}>
       <HamburgerNav active="Home" />
+
+      <style>{`
+        @keyframes ch-orb {
+          0%, 100% { opacity: 0.45; transform: translateX(-50%) scale(1); }
+          50%       { opacity: 0.7;  transform: translateX(-50%) scale(1.06); }
+        }
+        .ch-tabs::-webkit-scrollbar { display: none; }
+        @media (max-width: 640px) {
+          .ch-hero { padding: 48px 18px 36px !important; }
+          .ch-hero-h1 { font-size: 2.2rem !important; }
+          .ch-layout { padding: 24px 14px 64px !important; }
+        }
+      `}</style>
 
       {/* Toast */}
       {toast && (
@@ -452,34 +465,59 @@ export default function CelebrationHub() {
         />
       )}
 
-      <div style={{ maxWidth: 880, margin: "0 auto", padding: "64px 16px 80px" }}>
+      {/* ── Hero banner ── */}
+      <div className="ch-hero" style={{
+        position: "relative", overflow: "hidden",
+        background: "#FFFCF5",
+        borderBottom: "1px solid rgba(196,122,46,0.1)",
+        padding: "60px 24px 48px",
+        textAlign: "center",
+      }}>
+        {/* orb */}
+        <div style={{
+          position: "absolute", top: -60, left: "50%",
+          width: 480, height: 480, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(224,93,46,0.1) 0%, rgba(196,122,46,0.06) 40%, transparent 68%)",
+          animation: "ch-orb 5s ease-in-out infinite",
+          pointerEvents: "none",
+        }} />
 
-        {/* ── Header ── */}
-        <div style={{ marginBottom: 32 }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,69,0,0.08)", border: "1px solid rgba(255,69,0,0.2)", borderRadius: 100, padding: "5px 16px", marginBottom: 14 }}>
-            <span style={{ fontSize: 14 }}>🎉</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#e05d2e", textTransform: "uppercase", letterSpacing: "0.1em" }}>Celebration Hub</span>
-          </div>
+        <p style={{ position: "relative", fontSize: 11, fontWeight: 800, color: "#C47A2E", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 14px" }}>
+          Community
+        </p>
+        <h1 className="ch-hero-h1" style={{
+          position: "relative",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          fontSize: "clamp(2.4rem,5vw,3.8rem)",
+          fontWeight: 300, color: "#2C1A0E",
+          margin: "0 0 14px", lineHeight: 1.1,
+        }}>
+          Celebration <em style={{ fontStyle: "italic", color: "#C47A2E" }}>Hub</em>
+        </h1>
+        <p style={{ position: "relative", fontSize: 15, color: "#7A5535", margin: "0 0 28px", lineHeight: 1.65, maxWidth: 420, marginLeft: "auto", marginRight: "auto" }}>
+          Real couples, real vendors, real talk — share stories, ask questions, inspire each other.
+        </p>
 
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
-            <div>
-              <h1 style={{ fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 900, color: BROWN, margin: "0 0 8px", lineHeight: 1.1, letterSpacing: "-0.02em" }}>
-                Community Discussions
-              </h1>
-              <p style={{ fontSize: 15, color: "#7A5535", margin: 0, lineHeight: 1.55 }}>
-                Real couples, real vendors, real talk. Share your stories, ask questions, inspire each other.
-              </p>
-            </div>
+        <button
+          onClick={() => setShowNewPost(true)}
+          style={{
+            position: "relative",
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "13px 26px", borderRadius: 12, border: "none",
+            background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
+            color: "#fff", fontSize: 14, fontWeight: 800,
+            cursor: "pointer", fontFamily: font,
+            boxShadow: "0 4px 18px rgba(196,122,46,0.35)",
+            transition: "opacity 0.2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+        >
+          ✍️ Create Post
+        </button>
+      </div>
 
-            {/* Action buttons */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0, alignSelf: "flex-start" }}>
-              <button onClick={() => setShowNewPost(true)}
-                style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 22px", borderRadius: 12, border: "none", background: `linear-gradient(135deg,${GOLD},#CCAB4A)`, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)", whiteSpace: "nowrap" }}>
-                ✍️ Create Post
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="ch-layout" style={{ maxWidth: 880, margin: "0 auto", padding: "32px 16px 80px" }}>
 
         {/* ── Tab bar ── */}
         <div className="ch-tabs" style={{ display: "flex", gap: 6, overflowX: "auto", scrollbarWidth: "none", WebkitOverflowScrolling: "touch", marginBottom: 24, paddingBottom: 4 }}>
@@ -487,13 +525,22 @@ export default function CelebrationHub() {
             const active = activeTab === tab.id;
             return (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 100, flexShrink: 0, border: `1.5px solid ${active ? tab.accent : "rgba(196,122,46,0.18)"}`, background: active ? tab.accent : "#fff", color: active ? "#fff" : "#7A5535", fontSize: 13, fontWeight: active ? 700 : 500, cursor: "pointer", fontFamily: font, boxShadow: active ? `0 4px 14px ${tab.accent}40` : "none", transition: "all 0.18s" }}>
-                <span style={{ fontSize: 15 }}>{tab.emoji}</span>
+                style={{
+                  display: "flex", alignItems: "center", gap: 7,
+                  padding: "9px 18px", borderRadius: 100, flexShrink: 0,
+                  border: `1.5px solid ${active ? tab.accent : "rgba(44,26,14,0.12)"}`,
+                  background: active ? tab.accent : "#FFFCF5",
+                  color: active ? "#fff" : "#7A5535",
+                  fontSize: 13, fontWeight: active ? 700 : 500,
+                  cursor: "pointer", fontFamily: font,
+                  boxShadow: active ? `0 4px 14px ${tab.accent}35` : "none",
+                  transition: "all 0.18s",
+                }}>
+                <span style={{ fontSize: 14 }}>{tab.emoji}</span>
                 {tab.label}
               </button>
             );
           })}
-          <style>{`.ch-tabs::-webkit-scrollbar{display:none}`}</style>
         </div>
 
         {/* ── Tab content ── */}

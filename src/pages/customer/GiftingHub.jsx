@@ -50,63 +50,53 @@ function FloatingGetBtn({ label = "Get This Hamper", onClick }) {
 
 function CollectionCard({ col, onGet, isStretch }) {
   const [imgErr, setImgErr] = useState(false);
+  const [hov, setHov] = useState(false);
   return (
-    <div style={{
-      background: "#fff", borderRadius: 18, overflow: "hidden",
-      boxShadow: "0 2px 16px rgba(44,26,14,0.09)", border: "1.5px solid rgba(196,122,46,0.12)",
-      display: "flex", flexDirection: "column",
-      ...(isStretch ? { opacity: 0.88, border: "1.5px dashed rgba(196,122,46,0.35)" } : {}),
-    }}>
+    <div
+      onMouseEnter={() => setHov(true)}
+      onMouseLeave={() => setHov(false)}
+      style={{
+        background: "#fff", borderRadius: 20, overflow: "hidden",
+        boxShadow: hov ? "0 8px 28px rgba(44,26,14,0.13)" : "0 2px 14px rgba(44,26,14,0.07)",
+        border: isStretch ? "1.5px dashed rgba(124,58,237,0.35)" : `1.5px solid ${hov ? "rgba(196,122,46,0.3)" : "rgba(196,122,46,0.12)"}`,
+        display: "flex", flexDirection: "column",
+        transform: hov ? "translateY(-2px)" : "none",
+        transition: "all 0.18s",
+      }}
+    >
       {/* Photo */}
-      <div style={{ height: 160, background: "#f5ede0", position: "relative", overflow: "hidden" }}>
+      <div style={{ height: 165, background: "linear-gradient(135deg,#f5ede0,#efe4cc)", position: "relative", overflow: "hidden" }}>
         {!imgErr
           ? <img src={col.photo} alt={col.name} onError={() => setImgErr(true)}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s", transform: hov ? "scale(1.04)" : "scale(1)" }} />
           : <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", fontSize: 52 }}>{col.emoji}</div>
         }
         {col.badge && (
-          <div style={{
-            position: "absolute", top: 10, left: 10, background: GOLD, color: "#fff",
-            fontSize: 10, fontWeight: 800, padding: "4px 10px", borderRadius: 20, fontFamily: font,
-          }}>{col.badge}</div>
+          <div style={{ position: "absolute", top: 10, left: 10, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 9, fontWeight: 800, padding: "4px 10px", borderRadius: 20 }}>{col.badge}</div>
         )}
         {isStretch && (
-          <div style={{
-            position: "absolute", top: 10, right: 10, background: "#7C3AED", color: "#fff",
-            fontSize: 10, fontWeight: 800, padding: "4px 10px", borderRadius: 20, fontFamily: font,
-          }}>Stretch Pick</div>
+          <div style={{ position: "absolute", top: 10, right: 10, background: "#7C3AED", color: "#fff", fontSize: 9, fontWeight: 800, padding: "4px 10px", borderRadius: 20 }}>Stretch Pick</div>
         )}
       </div>
 
       {/* Content */}
       <div style={{ padding: "16px 16px 18px", flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: DARK, fontFamily: font, lineHeight: 1.2 }}>{col.name}</div>
-          <div style={{ fontSize: 12, fontWeight: 700, color: GOLD, whiteSpace: "nowrap", marginLeft: 8 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: DARK, lineHeight: 1.2 }}>{col.name}</div>
+          <div style={{ fontSize: 12, fontWeight: 700, color: GOLD, whiteSpace: "nowrap", flexShrink: 0 }}>
             {fmt(col.priceRange[0])}–{fmt(col.priceRange[1])}
           </div>
         </div>
-        <div style={{ fontSize: 12.5, color: "#9B7450", fontFamily: font }}>{col.tagline}</div>
-
-        {/* Items */}
+        <div style={{ fontSize: 12, color: "#9B7450" }}>{col.tagline}</div>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginTop: 2 }}>
           {col.items.slice(0, 4).map((item, i) => (
-            <span key={i} style={{
-              fontSize: 10.5, background: "rgba(196,122,46,0.09)", color: "#7A5020",
-              padding: "3px 8px", borderRadius: 20, fontFamily: font,
-            }}>{item}</span>
+            <span key={i} style={{ fontSize: 10, background: "rgba(196,122,46,0.08)", color: "#7A5020", padding: "3px 8px", borderRadius: 20 }}>{item}</span>
           ))}
-          {col.items.length > 4 && (
-            <span style={{ fontSize: 10.5, color: "#9B7450", fontFamily: font, padding: "3px 0" }}>+{col.items.length - 4} more</span>
-          )}
+          {col.items.length > 4 && <span style={{ fontSize: 10, color: "#9B7450", padding: "3px 0" }}>+{col.items.length - 4} more</span>}
         </div>
-
         {isStretch && (
-          <div style={{ fontSize: 11, color: "#7C3AED", fontFamily: font, fontStyle: "italic" }}>
-            Slightly above your budget — but a great fit!
-          </div>
+          <div style={{ fontSize: 11, color: "#7C3AED", fontStyle: "italic" }}>Slightly above your budget — but a great fit!</div>
         )}
-
         <FloatingGetBtn onClick={onGet} />
       </div>
     </div>
@@ -122,101 +112,159 @@ function openBaatKaro(onSubmit, message) {
 // HOME VIEW
 // ════════════════════════════════════════════════════════════════════════════
 function HomeView({ setView, setBulk }) {
+  const [hoveredFlow, setHoveredFlow] = React.useState(null);
+
+  const FLOWS = [
+    { id: "ai",          emoji: "🤖", label: "AI Creates My Gift",   sub: "Tell us who & why — we suggest the perfect hamper", badge: "Smart Pick", badgeColor: "#7C3AED" },
+    { id: "collections", emoji: "🛍️", label: "Browse Collections",    sub: "12+ curated hampers for every occasion" },
+    { id: "builder",     emoji: "🎨", label: "Build From Scratch",    sub: "Pick items one by one and we'll box it beautifully" },
+  ];
+
+  const HOW = [
+    "Pick a hamper or build your own",
+    "We send the brief to vendors in your area",
+    "Vendor confirms price & availability in 2–4 hrs",
+    "You confirm → they deliver on your date",
+  ];
+
   return (
-    <div style={{ padding: "0 16px 48px", maxWidth: 560, margin: "0 auto" }}>
-      {/* Hero */}
-      <div style={{ textAlign: "center", padding: "32px 0 24px" }}>
-        <div style={{ fontSize: 38 }}>🎁</div>
-        <h1 style={{ fontSize: 26, fontWeight: 900, color: DARK, margin: "8px 0 6px", fontFamily: font }}>Gift Something Special</h1>
-        <p style={{ fontSize: 14, color: "#9B7450", fontFamily: font, margin: 0, lineHeight: 1.6 }}>
-          Real gift hampers · Curated by us · Fulfilled by local vendors<br />
+    <div>
+      {/* ── Hero ── */}
+      <div className="gh-hero-wrap" style={{
+        position: "relative", overflow: "hidden",
+        background: "#FFFCF5",
+        borderBottom: "1px solid rgba(196,122,46,0.1)",
+        padding: "64px 24px 52px", textAlign: "center",
+      }}>
+        {/* orb */}
+        <div style={{
+          position: "absolute", top: -80, left: "50%",
+          width: 500, height: 500, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(204,171,74,0.16) 0%, transparent 65%)",
+          animation: "gh-orb 4.5s ease-in-out infinite",
+          pointerEvents: "none",
+        }} />
+
+        <p style={{ position: "relative", fontSize: 11, fontWeight: 800, color: GOLD, letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 14px" }}>
+          Real Hampers · Local Vendors
+        </p>
+        <h1 className="gh-hero-h1" style={{
+          position: "relative",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
+          fontSize: "clamp(2.8rem,6vw,4.4rem)",
+          fontWeight: 300, color: DARK,
+          margin: "0 0 14px", lineHeight: 1.08,
+        }}>
+          Gift Something{" "}
+          <em style={{ fontStyle: "italic", color: GOLD }}>Special</em>
+        </h1>
+        <p style={{ position: "relative", fontSize: 14, color: "#9B7450", margin: "0 auto 10px", lineHeight: 1.65, maxWidth: 380 }}>
           No in-house stock — vendor confirms price in 2–4 hrs
         </p>
       </div>
 
-      {/* 3 main flows */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {/* ── Flows ── */}
+      <div style={{ maxWidth: 560, margin: "0 auto", padding: "28px 16px 0" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          {FLOWS.map(f => (
+            <FlowCard
+              key={f.id}
+              {...f}
+              hovered={hoveredFlow === f.id}
+              onHover={() => setHoveredFlow(f.id)}
+              onLeave={() => setHoveredFlow(null)}
+              onClick={() => setView(f.id)}
+            />
+          ))}
+        </div>
 
-        <FlowCard
-          emoji="🤖" label="AI Creates My Gift"
-          sub="Tell us who & why — we suggest the perfect hamper"
-          badge="Smart Pick"
-          badgeColor="#7C3AED"
-          onClick={() => setView("ai")}
-        />
-
-        <FlowCard
-          emoji="🛍️" label="Browse Collections"
-          sub="12+ curated hampers for every occasion"
-          onClick={() => setView("collections")}
-        />
-
-        <FlowCard
-          emoji="🎨" label="Build From Scratch"
-          sub="Pick items one by one and we'll box it beautifully"
-          onClick={() => setView("builder")}
-        />
-      </div>
-
-      {/* Bulk divider */}
-      <div style={{ margin: "28px 0 0" }}>
-        <div style={{
-          background: "linear-gradient(135deg,#2C1A0E,#4A2810)", borderRadius: 16,
-          padding: "20px 20px", cursor: "pointer",
-        }} onClick={() => { setBulk(true); setView("collections"); }}>
-          <div style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A", fontFamily: font, marginBottom: 4 }}>
-            📦 Bulk Return Gifts (50+ pieces)
-          </div>
-          <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.7)", fontFamily: font, lineHeight: 1.5 }}>
-            Wedding favors · Diwali corporate gifts · Birthday party returns<br />
-            Starting ₹100/pc · Minimum 30 pieces
-          </div>
-          <div style={{ marginTop: 12, fontSize: 12, fontWeight: 700, color: GOLD, fontFamily: font }}>
-            Browse bulk options →
+        {/* Bulk CTA */}
+        <div
+          onClick={() => { setBulk(true); setView("collections"); }}
+          style={{
+            marginTop: 16,
+            background: "linear-gradient(135deg,#1C0A04,#3A1808)",
+            borderRadius: 18, padding: "22px 22px", cursor: "pointer",
+            border: "1.5px solid rgba(204,171,74,0.18)",
+            transition: "opacity 0.2s",
+          }}
+          onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
+          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ fontSize: 28, flexShrink: 0 }}>📦</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 14, fontWeight: 800, color: "#CCAB4A", marginBottom: 4 }}>
+                Bulk Return Gifts
+              </div>
+              <div style={{ fontSize: 12.5, color: "rgba(255,255,255,0.6)", lineHeight: 1.55 }}>
+                Wedding favors · Diwali corporate gifts · Starting ₹100/pc · Min 30 pieces
+              </div>
+            </div>
+            <div style={{ color: GOLD, fontSize: 18, flexShrink: 0 }}>›</div>
           </div>
         </div>
-      </div>
 
-      {/* How it works */}
-      <div style={{ marginTop: 32 }}>
-        <div style={{ fontSize: 13, fontWeight: 800, color: DARK, fontFamily: font, marginBottom: 12 }}>How it works</div>
-        {[
-          ["✦", "Pick a hamper or build your own"],
-          ["✦", "We send the brief to vendors in your area"],
-          ["✦", "Vendor confirms price & availability in 2–4 hrs"],
-          ["✦", "You confirm → they deliver on your date"],
-        ].map(([icon, text], i) => (
-          <div key={i} style={{ display: "flex", gap: 10, marginBottom: 10, alignItems: "flex-start" }}>
-            <div style={{ color: GOLD, fontSize: 14, fontWeight: 900, marginTop: 1 }}>{icon}</div>
-            <div style={{ fontSize: 13, color: "#5A3A1A", fontFamily: font }}>{text}</div>
+        {/* How it works */}
+        <div style={{ marginTop: 32, padding: "22px 20px", background: "#FFFCF5", borderRadius: 18, border: "1.5px solid rgba(196,122,46,0.1)" }}>
+          <div style={{ fontSize: 12, fontWeight: 800, color: DARK, letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 16 }}>How it works</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {HOW.map((text, i) => (
+              <div key={i} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <div style={{
+                  width: 24, height: 24, borderRadius: "50%", flexShrink: 0,
+                  background: "linear-gradient(135deg,rgba(196,122,46,0.15),rgba(204,171,74,0.1))",
+                  border: "1.5px solid rgba(196,122,46,0.25)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 11, fontWeight: 800, color: GOLD,
+                }}>{i + 1}</div>
+                <div style={{ fontSize: 13, color: "#5A3A1A", lineHeight: 1.55, paddingTop: 3 }}>{text}</div>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <div style={{ height: 48 }} />
       </div>
     </div>
   );
 }
 
-function FlowCard({ emoji, label, sub, badge, badgeColor, onClick }) {
+function FlowCard({ emoji, label, sub, badge, badgeColor, hovered, onHover, onLeave, onClick }) {
   return (
-    <div onClick={onClick} style={{
-      background: "#fff", borderRadius: 18, padding: "20px 18px",
-      boxShadow: "0 2px 16px rgba(44,26,14,0.08)", border: "1.5px solid rgba(196,122,46,0.14)",
-      cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
-      transition: "box-shadow 0.15s",
-    }}>
-      <div style={{ fontSize: 34, flexShrink: 0 }}>{emoji}</div>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, color: DARK, fontFamily: font }}>{label}</div>
+    <div
+      onClick={onClick}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      style={{
+        background: hovered ? "#FFFCF5" : "#fff",
+        borderRadius: 18, padding: "20px 18px",
+        boxShadow: hovered ? "0 6px 24px rgba(44,26,14,0.12)" : "0 2px 12px rgba(44,26,14,0.06)",
+        border: `1.5px solid ${hovered ? "rgba(196,122,46,0.3)" : "rgba(196,122,46,0.13)"}`,
+        cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
+        transform: hovered ? "translateY(-1px)" : "none",
+        transition: "all 0.18s",
+      }}
+    >
+      <div style={{
+        width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+        background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.06))",
+        border: "1.5px solid rgba(196,122,46,0.15)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 24,
+      }}>{emoji}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: DARK }}>{label}</div>
           {badge && (
-            <span style={{ fontSize: 9, fontWeight: 800, background: badgeColor, color: "#fff", padding: "2px 8px", borderRadius: 20, fontFamily: font }}>
+            <span style={{ fontSize: 9, fontWeight: 800, background: badgeColor, color: "#fff", padding: "2px 9px", borderRadius: 20, letterSpacing: "0.04em", flexShrink: 0 }}>
               {badge}
             </span>
           )}
         </div>
-        <div style={{ fontSize: 12.5, color: "#9B7450", fontFamily: font, marginTop: 2 }}>{sub}</div>
+        <div style={{ fontSize: 12.5, color: "#9B7450", marginTop: 3, lineHeight: 1.5 }}>{sub}</div>
       </div>
-      <div style={{ color: GOLD, fontSize: 18, fontWeight: 900 }}>›</div>
+      <div style={{ color: GOLD, fontSize: 18, fontWeight: 700, flexShrink: 0, opacity: hovered ? 1 : 0.5, transition: "opacity 0.18s" }}>›</div>
     </div>
   );
 }
@@ -715,13 +763,14 @@ export default function GiftingHub() {
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
+        window.dispatchEvent(new CustomEvent("tendr:chat-started"));
         openExistingChat(data.conversationId, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: false });
       }
     } catch (e) { console.error("GiftingHub chat failed:", e); }
   }, [token, navigate, openExistingChat]);
 
   return (
-    <div style={{ minHeight: "100dvh", background: CREAM, fontFamily: font }}>
+    <div style={{ minHeight: "100dvh", background: "#FAF7F2", fontFamily: font }}>
       <SEO
         title="Gift Hampers — Tendr"
         description="Curated gift hampers for every occasion. AI-powered suggestions, browse collections, or build your own. Local vendors, real products."
@@ -729,27 +778,39 @@ export default function GiftingHub() {
       />
       <HamburgerNav />
 
-      {/* View header bar */}
-      <div style={{
-        background: "#fff", borderBottom: "1px solid rgba(196,122,46,0.12)",
-        padding: "16px 20px 14px", position: "sticky", top: 0, zIndex: 90,
-      }}>
-        <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ fontSize: 18, fontWeight: 900, color: DARK, fontFamily: font }}>
-            {view === "home" && "🎁 Gifting"}
-            {view === "ai" && "🤖 AI Gift Suggester"}
-            {view === "collections" && (isBulk ? "📦 Bulk Return Gifts" : "🛍️ Browse Collections")}
-            {view === "builder" && "🎨 Build From Scratch"}
-          </div>
-          {view !== "home" && (
+      <style>{`
+        @keyframes gh-orb {
+          0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
+          50%       { opacity: 0.8; transform: translateX(-50%) scale(1.06); }
+        }
+        @media (max-width: 640px) {
+          .gh-hero-wrap { padding: 52px 18px 40px !important; }
+          .gh-hero-h1   { font-size: 2.6rem !important; }
+        }
+      `}</style>
+
+      {/* Floating view-switcher header (non-home views) */}
+      {view !== "home" && (
+        <div style={{
+          background: "rgba(255,252,245,0.92)", backdropFilter: "blur(12px)",
+          borderBottom: "1px solid rgba(196,122,46,0.12)",
+          padding: "13px 20px 12px", position: "sticky", top: 0, zIndex: 90,
+        }}>
+          <div style={{ maxWidth: 560, margin: "0 auto", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: DARK }}>
+              {view === "ai"          && "🤖 AI Gift Suggester"}
+              {view === "collections" && (isBulk ? "📦 Bulk Return Gifts" : "🛍️ Browse Collections")}
+              {view === "builder"     && "🎨 Build From Scratch"}
+            </div>
             <button onClick={() => setView("home")} style={{
-              marginLeft: "auto", fontSize: 11, color: "#9B7450", background: "none",
-              border: "1px solid rgba(155,116,80,0.3)", padding: "4px 10px",
-              borderRadius: 8, cursor: "pointer", fontFamily: font,
-            }}>Home</button>
-          )}
+              marginLeft: "auto", fontSize: 11, color: "#9B7450",
+              background: "rgba(155,116,80,0.08)",
+              border: "1px solid rgba(155,116,80,0.22)",
+              padding: "5px 12px", borderRadius: 100, cursor: "pointer", fontFamily: font, fontWeight: 600,
+            }}>← Home</button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Views */}
       <div>
