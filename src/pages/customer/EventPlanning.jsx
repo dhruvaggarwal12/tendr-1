@@ -2024,17 +2024,19 @@ const EventPlanning = () => {
 
           {/* Input Types */}
           <div style={{ marginBottom: 8 }}>
+            <style>{`
+              .eq-input { width:100%; box-sizing:border-box; padding:13px 16px; border-radius:14px; border:1.5px solid rgba(196,122,46,0.3); background:#fff; font-size:16px; font-family:'Outfit',sans-serif; color:#1C0A04; outline:none; transition:border-color 0.18s; }
+              .eq-input::placeholder { color:#C4A882; }
+              .eq-input:focus { border-color:#C47A2E; box-shadow:0 0 0 3px rgba(196,122,46,0.1); }
+            `}</style>
             {currentQuestion.type === "text" && (
               <input
                 type="text"
                 value={formData[currentQuestion.id] || ""}
-                onChange={(e) =>
-                  handleInputChange(currentQuestion.id, e.target.value)
-                }
+                onChange={e => handleInputChange(currentQuestion.id, e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={currentQuestion.placeholder}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 placeholder-gray-400
-              focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:border-transparent transition-all duration-200"
+                className="eq-input"
                 autoFocus
               />
             )}
@@ -2043,13 +2045,10 @@ const EventPlanning = () => {
               <input
                 type="number"
                 value={formData[currentQuestion.id] || ""}
-                onChange={(e) =>
-                  handleInputChange(currentQuestion.id, e.target.value)
-                }
+                onChange={e => handleInputChange(currentQuestion.id, e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={currentQuestion.placeholder}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A] rounded-2xl
-              text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                className="eq-input"
                 autoFocus
               />
             )}
@@ -2111,14 +2110,12 @@ const EventPlanning = () => {
             {currentQuestion.type === "textarea" && (
               <textarea
                 value={formData[currentQuestion.id] || ""}
-                onChange={(e) =>
-                  handleInputChange(currentQuestion.id, e.target.value)
-                }
+                onChange={e => handleInputChange(currentQuestion.id, e.target.value)}
                 onKeyDown={handleTextareaKeyDown}
                 placeholder={currentQuestion.placeholder}
                 rows={4}
-                className="w-full p-4 text-lg sm:text-xl bg-white border-2 border-[#CCAB4A] rounded-2xl
-              text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200 resize-none"
+                className="eq-input"
+                style={{ resize: "none", lineHeight: 1.6 }}
                 autoFocus
               />
             )}
@@ -2146,26 +2143,37 @@ const EventPlanning = () => {
                     className={currentQuestion.id !== "eventType" ? "space-y-3" : ""}
                     style={currentQuestion.id === "eventType" ? { display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 } : undefined}
                   >
-                    {currentQuestion.options.map((option, index) => (
-                      <button
-                        type="button"
-                        key={index}
-                        tabIndex={0}
-                        onClick={() => handleOptionClick(option)}
-                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleOptionClick(option); } }}
-                        className={`w-full text-left rounded-2xl transition-all duration-200
-                        border-2 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] focus:ring-offset-2
-                        ${currentQuestion.id === "eventType" ? "text-base p-3" : "text-lg sm:text-xl p-4"}
-                        ${
-                          formData[currentQuestion.id] === option
-                            ? "border-[#C47A2E] text-gray-800 shadow-md"
-                            : "bg-white border-[#e5d4b3] text-gray-700 hover:border-[#CCAB4A]"
-                        }`}
-                        style={formData[currentQuestion.id] === option ? {background:"rgba(196,122,46,0.1)"} : {}}
-                      >
-                        {option}
-                      </button>
-                    ))}
+                    {currentQuestion.options.map((option, index) => {
+                      const selected = formData[currentQuestion.id] === option;
+                      return (
+                        <button
+                          type="button"
+                          key={index}
+                          tabIndex={0}
+                          onClick={() => handleOptionClick(option)}
+                          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleOptionClick(option); } }}
+                          style={{
+                            width: "100%", textAlign: "left", borderRadius: 12,
+                            padding: currentQuestion.id === "eventType" ? "11px 14px" : "14px 16px",
+                            border: `1.5px solid ${selected ? "#C47A2E" : "rgba(196,122,46,0.22)"}`,
+                            background: selected ? "rgba(196,122,46,0.1)" : "#fff",
+                            color: selected ? "#1C0A04" : "#4A2C0E",
+                            fontSize: currentQuestion.id === "eventType" ? 14 : 15,
+                            fontWeight: selected ? 700 : 400,
+                            fontFamily: "'Outfit', sans-serif",
+                            cursor: "pointer",
+                            transition: "all 0.15s",
+                            boxShadow: selected ? "0 2px 10px rgba(196,122,46,0.18)" : "none",
+                            display: "flex", alignItems: "center", justifyContent: "space-between",
+                          }}
+                        >
+                          {option}
+                          {selected && (
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
 
                   {/* Invite-only: person name — for Birthday, Anniversary, Baby Shower, Graduation */}
@@ -2180,7 +2188,7 @@ const EventPlanning = () => {
                         value={invitePersonName}
                         onChange={(e) => { setInvitePersonName(e.target.value); try { localStorage.setItem('tendr_person_name', e.target.value); } catch {} }}
                         placeholder={NAME_PLACEHOLDERS[formData.eventType] || "Optional"}
-                        className="w-full p-3 bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                        className="eq-input"
                         style={{ fontSize: 15 }}
                       />
                     </div>
@@ -2198,7 +2206,7 @@ const EventPlanning = () => {
                         value={inviteVenueAddress}
                         onChange={(e) => { setInviteVenueAddress(e.target.value); try { localStorage.setItem('tendr_venue_address', e.target.value); } catch {} }}
                         placeholder="e.g., The Grand Pavilion, Sector 45"
-                        className="w-full p-3 bg-white border-2 border-[#CCAB4A] rounded-2xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#CCAB4A] transition-all duration-200"
+                        className="eq-input"
                         style={{ fontSize: 15 }}
                       />
                     </div>
@@ -2214,52 +2222,66 @@ const EventPlanning = () => {
         </div>
 
         {/* Navigation */}
-        <div className="flex justify-between items-center w-full max-w-xl sm:max-w-2xl" style={{ gap: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", maxWidth: 672, gap: 12 }}>
           {/* PREVIOUS / BACK TO HOME on first step */}
           {currentStep === 0 ? (
             <button
               onClick={() => navigate("/")}
-              className="flex items-center text-base px-4 py-3 rounded-2xl transition-all duration-300 text-gray-600 hover:bg-white hover:text-black"
-              style={{ flexShrink: 0 }}
+              style={{
+                display: "flex", alignItems: "center", gap: 4,
+                fontSize: 15, padding: "11px 16px", borderRadius: 12,
+                border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent",
+                color: "#7A5A3A", fontFamily: "'Outfit', sans-serif", cursor: "pointer",
+                flexShrink: 0, transition: "background 0.15s",
+              }}
             >
-              <ChevronLeft className="w-5 h-5 mr-1" />
+              <ChevronLeft style={{ width: 18, height: 18 }} />
               Home
             </button>
           ) : (
             <button
               onClick={prevStep}
               disabled={animating}
-              className={`flex items-center text-base px-4 py-3 rounded-2xl transition-all duration-300 flex-shrink-0
-              ${animating ? "text-gray-400 cursor-not-allowed" : "text-gray-600 hover:bg-white hover:text-black"}`}
+              style={{
+                display: "flex", alignItems: "center", gap: 4,
+                fontSize: 15, padding: "11px 16px", borderRadius: 12,
+                border: "1.5px solid rgba(196,122,46,0.2)", background: "transparent",
+                color: animating ? "#C4A882" : "#7A5A3A",
+                fontFamily: "'Outfit', sans-serif",
+                cursor: animating ? "not-allowed" : "pointer",
+                flexShrink: 0, transition: "background 0.15s",
+              }}
             >
-              <ChevronLeft className="w-5 h-5 mr-1" />
+              <ChevronLeft style={{ width: 18, height: 18 }} />
               Prev
             </button>
           )}
 
           {/* NEXT */}
-          <button
-            onClick={nextStep}
-            disabled={(!formData[currentQuestion.id] && !currentQuestion.optional) || animating}
-            style={{
-              ...((formData[currentQuestion.id] || currentQuestion.optional) && !animating ? { background: "linear-gradient(135deg,#C47A2E,#CCAB4A)" } : {}),
-              flexShrink: 0, maxWidth: "calc(100% - 90px)"
-            }}
-            className={`flex items-center justify-center text-sm sm:text-base px-5 sm:px-8 py-3 rounded-2xl transition-all duration-300
-            ${
-              (formData[currentQuestion.id] || currentQuestion.optional) && !animating
-                ? "text-white shadow-lg"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-            }`}
-          >
-            <span className="hidden sm:inline">
-              {currentStep === questions.length - 1 ? "Select Service Category" : "Next"}
-            </span>
-            <span className="sm:hidden">
-              {currentStep === questions.length - 1 ? "Continue" : "Next"}
-            </span>
-            <ChevronRight className="w-5 h-5 ml-1 flex-shrink-0" />
-          </button>
+          {(() => {
+            const canAdvance = (formData[currentQuestion.id] || currentQuestion.optional) && !animating;
+            return (
+              <button
+                onClick={nextStep}
+                disabled={!canAdvance}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                  fontSize: 15, padding: "12px 28px", borderRadius: 12,
+                  border: "none",
+                  background: canAdvance ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.12)",
+                  color: canAdvance ? "#fff" : "#C4A882",
+                  fontFamily: "'Outfit', sans-serif", fontWeight: 600,
+                  cursor: canAdvance ? "pointer" : "not-allowed",
+                  flexShrink: 0, maxWidth: "calc(100% - 90px)",
+                  boxShadow: canAdvance ? "0 4px 16px rgba(196,122,46,0.35)" : "none",
+                  transition: "all 0.2s",
+                }}
+              >
+                {currentStep === questions.length - 1 ? "Continue" : "Next"}
+                <ChevronRight style={{ width: 18, height: 18, flexShrink: 0 }} />
+              </button>
+            );
+          })()}
         </div>
       </div>
       </div>{/* closes flex wrapper */}
