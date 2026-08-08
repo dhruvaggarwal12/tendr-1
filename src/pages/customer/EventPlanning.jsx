@@ -1959,64 +1959,71 @@ const EventPlanning = () => {
    *  ======================= */
 
   return (
-    <div className="min-h-screen bg-[#F8F4EF]">
+    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
       <style>{`
         @media(max-width:600px){
-          .event-question-card{padding:16px 16px 14px!important}
-          .event-question-card h1{font-size:1.2rem!important}
-          .event-question-card p{font-size:0.8rem!important}
-          .event-question-card .w-14{width:40px!important;height:40px!important}
+          .event-question-card { padding: 18px 16px 16px !important; }
+          .eq-title { font-size: 1.25rem !important; }
+          .eq-subtitle { font-size: 0.8rem !important; }
+          .eq-icon-wrap { width: 38px !important; height: 38px !important; }
         }
+        .event-question-card { background: #FFFCF7; border-radius: 22px; padding: 28px 26px 24px; margin-bottom: 20px; border: 1.5px solid rgba(196,122,46,0.12); box-shadow: 0 2px 20px rgba(44,26,14,0.07); }
       `}</style>
       <HamburgerNav active="Plan" />
       <BasicSpeedDial />
       <SelectedVendorsFloat />
-      <div className="flex items-center justify-center pt-4 pb-10 px-4 sm:px-6 md:px-10">
-      <div className="w-full max-w-xl sm:max-w-2xl">
-        {/* Progress Bar */}
-        <div className="mb-8">
-          <div className="flex justify-between text-gray-600 text-xs sm:text-sm mb-2">
-            <span>
-              Question {currentStep + 1} of {questions.length}
-            </span>
-            <span>{Math.round(progress)}% complete</span>
-          </div>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 16, paddingBottom: 48, paddingLeft: 16, paddingRight: 16 }}>
+      <div style={{ width: "100%", maxWidth: 560 }}>
 
-          <div className="w-full bg-[#f3e8d4] rounded-full h-3 shadow-inner">
-            <div
-              className="rounded-full h-3 transition-all duration-500 ease-out"
-              style={{ width: `${progress}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)" }}
-            ></div>
+        {/* Step indicator dots + progress */}
+        <div style={{ marginBottom: 28 }}>
+          {/* Dot stepper */}
+          <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 12 }}>
+            {questions.map((_, i) => {
+              const done = i < currentStep;
+              const active = i === currentStep;
+              return (
+                <div key={i} style={{ display: "flex", alignItems: "center", flex: i < questions.length - 1 ? 1 : "none" }}>
+                  <div style={{ width: active ? 24 : 8, height: 8, borderRadius: 100, background: done ? "#C47A2E" : active ? "linear-gradient(90deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.18)", transition: "all 0.4s cubic-bezier(0.25,0.46,0.45,0.94)", flexShrink: 0 }} />
+                  {i < questions.length - 1 && <div style={{ flex: 1, height: 1, background: done ? "rgba(196,122,46,0.4)" : "rgba(196,122,46,0.12)", margin: "0 3px" }} />}
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", letterSpacing: "0.04em" }}>
+              Step {currentStep + 1} of {questions.length}
+            </span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", letterSpacing: "0.03em" }}>{Math.round(progress)}% done</span>
           </div>
         </div>
 
         {/* Question Card */}
         <div
-          className="bg-white rounded-3xl p-4 sm:p-8 mb-6 sm:mb-8 border border-white/50 shadow-xl event-question-card"
+          className="event-question-card"
           style={{
             transition: `opacity ${TRANSITION_MS}ms ease, transform ${TRANSITION_MS}ms ease`,
             opacity: animating ? 0 : 1,
-            transform: animating ? 'translateY(12px)' : 'translateY(0)',
+            transform: animating ? 'translateY(10px)' : 'translateY(0)',
           }}
         >
-          {/* Upper Part */}
-          <div className="flex items-center mb-6">
-            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mr-4 text-white shadow-lg text-2xl" style={{background:"linear-gradient(135deg,#C47A2E,#CCAB4A)"}}>
+          {/* Icon + title */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 14, marginBottom: 22 }}>
+            <div className="eq-icon-wrap" style={{ width: 44, height: 44, borderRadius: 12, background: "rgba(196,122,46,0.1)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "#C47A2E", flexShrink: 0, marginTop: 2 }}>
               {currentQuestion.icon}
             </div>
-
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-1 sm:mb-2">
+              <h1 className="eq-title" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.6rem", fontWeight: 300, color: "#1C0A04", margin: "0 0 5px", lineHeight: 1.2, letterSpacing: "0.01em", textWrap: "balance" }}>
                 {currentQuestion.title}
               </h1>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <p className="eq-subtitle" style={{ fontSize: 13, fontWeight: 400, color: "#7A5A3A", margin: 0, lineHeight: 1.5 }}>
                 {currentQuestion.subtitle}
               </p>
             </div>
           </div>
 
           {/* Input Types */}
-          <div className="mb-8">
+          <div style={{ marginBottom: 8 }}>
             {currentQuestion.type === "text" && (
               <input
                 type="text"
