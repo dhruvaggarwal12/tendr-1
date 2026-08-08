@@ -352,9 +352,9 @@ const VendorList = () => {
       <HamburgerNav active="Browse" showBack />
       <div>
         {/* Full-width main content */}
-        <div className="p-3 lg:p-4" style={{ position: "relative" }}>
+        <div style={{ position: "relative", padding: "12px 12px 16px" }}>
           {/* Page header */}
-          <div className="mb-1">
+          <div style={{ marginBottom: 4 }}>
 
             {/* Per-category budget range adjuster — compact slider (or fixed label from Budget Allocator) */}
             {serviceType && (() => {
@@ -710,45 +710,52 @@ const VendorList = () => {
           </div>
 
           {paginationInfo && paginationInfo.totalPages > 1 && (
-            <div className="mt-8 flex justify-center">
-              <div className="flex space-x-2">
+            <div style={{ marginTop: 32, display: "flex", justifyContent: "center" }}>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", fontFamily: "'Outfit', sans-serif" }}>
                 <button
                   onClick={() => fetchPage(Math.max(1, currentPage - 1))}
                   disabled={isLoading || currentPage === 1}
-                  className="px-3 py-2 text-sm sm:text-base bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    padding: "8px 14px", fontSize: 13, borderRadius: 10,
+                    border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff",
+                    color: "#4A2C0E", cursor: isLoading || currentPage === 1 ? "not-allowed" : "pointer",
+                    opacity: isLoading || currentPage === 1 ? 0.4 : 1, fontFamily: "'Outfit', sans-serif",
+                  }}
                 >
-                  Previous
+                  Prev
                 </button>
 
-                {Array.from(
-                  { length: Math.min(5, paginationInfo.totalPages) },
-                  (_, i) => {
-                    const pageNum = i + 1;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() =>
-                          pageNum > currentPage ? handleShowMore() : fetchPage(pageNum)
-                        }
-                        className={`px-3 py-2 text-sm sm:text-base rounded-lg ${currentPage === pageNum
-                          ? "bg-[#CCAB4A] text-white"
-                          : "bg-white border border-gray-300 hover:bg-gray-50"
-                          }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  }
-                )}
+                {Array.from({ length: Math.min(5, paginationInfo.totalPages) }, (_, i) => {
+                  const pageNum = i + 1;
+                  const active = currentPage === pageNum;
+                  return (
+                    <button
+                      key={pageNum}
+                      onClick={() => pageNum > currentPage ? handleShowMore() : fetchPage(pageNum)}
+                      style={{
+                        padding: "8px 13px", fontSize: 13, borderRadius: 10,
+                        border: active ? "none" : "1.5px solid rgba(196,122,46,0.3)",
+                        background: active ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff",
+                        color: active ? "#fff" : "#4A2C0E",
+                        fontWeight: active ? 700 : 400, cursor: "pointer",
+                        fontFamily: "'Outfit', sans-serif",
+                        boxShadow: active ? "0 2px 8px rgba(196,122,46,0.3)" : "none",
+                      }}
+                    >
+                      {pageNum}
+                    </button>
+                  );
+                })}
 
                 <button
                   onClick={() => fetchPage(currentPage + 1)}
-                  disabled={
-                    isLoading ||
-                    (paginationInfo.totalPages &&
-                      currentPage >= paginationInfo.totalPages)
-                  }
-                  className="px-3 py-2 text-sm sm:text-base bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isLoading || (paginationInfo.totalPages && currentPage >= paginationInfo.totalPages)}
+                  style={{
+                    padding: "8px 14px", fontSize: 13, borderRadius: 10,
+                    border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff",
+                    color: "#4A2C0E", cursor: (isLoading || currentPage >= paginationInfo.totalPages) ? "not-allowed" : "pointer",
+                    opacity: (isLoading || currentPage >= paginationInfo.totalPages) ? 0.4 : 1, fontFamily: "'Outfit', sans-serif",
+                  }}
                 >
                   Next
                 </button>
