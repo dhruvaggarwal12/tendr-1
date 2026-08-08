@@ -712,6 +712,7 @@ export default function IndependenceDayFlow({ onClose }) {
       const data = await res.json();
       if (res.ok && data.conversationId) {
         const cid = data.conversationId;
+        window.dispatchEvent(new CustomEvent("tendr:chat-started"));
         for (const photo of chatPhotos) {
           if (photo.name) try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `📎 ${photo.name}${photo.priceRange ? ` — ${photo.priceRange}` : ""}` }) }); } catch {}
           try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: `[img:${photo.url}]` }) }); } catch {}

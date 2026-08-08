@@ -775,6 +775,7 @@ function BookDetail({ theme, occasion, onClose, onBrowseOtherThemes }) {
       const data = await res.json();
       if (res.ok && data.conversationId) {
         const cid = data.conversationId;
+        window.dispatchEvent(new CustomEvent("tendr:chat-started"));
         if (venuePhoto) {
           try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: 'POST', headers: hdrs, body: JSON.stringify({ sender: 'user', content: '📷 Venue / place photo:' }) }); } catch {}
           try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: 'POST', headers: hdrs, body: JSON.stringify({ sender: 'user', content: `[img:${venuePhoto}]` }) }); } catch {}

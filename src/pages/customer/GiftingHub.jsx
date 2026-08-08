@@ -715,6 +715,7 @@ export default function GiftingHub() {
       });
       const data = await res.json();
       if (res.ok && data.conversationId) {
+        window.dispatchEvent(new CustomEvent("tendr:chat-started"));
         openExistingChat(data.conversationId, { _id: null, name: "Tendr Team", serviceType: "Gift Hampers", approved: false });
       }
     } catch (e) { console.error("GiftingHub chat failed:", e); }
