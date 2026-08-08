@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { clearCart } from "../../redux/giftHamperCartSlice";
-import { selectFunCartItems, selectFunCartTotal, clearFunCart } from "../../redux/funActivitiesCartSlice";
+import { selectFunCartItems, selectFunCartTotal, clearFunCart, addActivity } from "../../redux/funActivitiesCartSlice";
+import { FUN_ACTIVITIES } from "../../data/funActivitiesData";
 import SEO from "../../components/SEO";
 import { generateReferralCode, isValidFormat, parseCode, applyDiscount, DISCOUNT_PERCENT } from "../../utils/referral";
 import { generateEventDetailsPDF } from "../../utils/pdfGenerator";
@@ -185,6 +186,198 @@ function TnCModal({ onClose, vendorTypes }) {
         </div>
       </div>
     </>
+  );
+}
+
+// ── People Also Get — horizontal scroll product section ─────────────────────
+const GIFT_HAMPER_CARDS = [
+  { id: "gh-1", name: "Birthday Hamper", image: "https://images.unsplash.com/photo-1607344645866-009c320b63e0?w=400&q=80", price: "₹799 – ₹2,499", desc: "Curated birthday gift hampers with chocolates, candles, personalised cards & more.", tags: ["Birthday", "Gift"] },
+  { id: "gh-2", name: "Anniversary Box", image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&q=80", price: "₹1,199 – ₹3,999", desc: "Premium anniversary hampers with wine glasses, chocolates, and personalised keepsakes.", tags: ["Anniversary", "Luxury"] },
+  { id: "gh-3", name: "Festive Hamper", image: "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=400&q=80", price: "₹599 – ₹1,999", desc: "Beautifully packed festive hampers perfect for Diwali, Rakhi & other celebrations.", tags: ["Festive", "Gift"] },
+  { id: "gh-4", name: "Custom Cake", image: "https://images.unsplash.com/photo-1558636508-e0db3814bd1d?w=400&q=80", price: "₹899 – ₹4,999", desc: "Personalised photo or theme cakes delivered fresh across Delhi NCR.", tags: ["Cake", "Custom"] },
+];
+
+function PeopleAlsoGet({ faItems, dispatch, navigate, addActivity }) {
+  const [paxModal, setPaxModal] = React.useState(null); // { type: "activity"|"hamper", item }
+
+  const font = "'Outfit', sans-serif";
+  const serif = "'Cormorant Garamond', Georgia, serif";
+
+  // First 5 fun activities as product cards
+  const activityCards = FUN_ACTIVITIES.slice(0, 5);
+
+  return (
+    <div style={{ marginTop: 24, marginBottom: 8 }}>
+      <style>{`
+        .pag-scroll::-webkit-scrollbar { display: none; }
+        .pag-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+        .pag-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .pag-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(44,26,14,0.13) !important; }
+      `}</style>
+
+      {/* Section header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, paddingRight: 4 }}>
+        <div>
+          <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 3px" }}>Often added together</p>
+          <h3 style={{ fontFamily: serif, fontSize: "1.1rem", fontWeight: 400, color: "#1C0A04", margin: 0, lineHeight: 1.2 }}>People Also Get</h3>
+        </div>
+        <button onClick={() => navigate("/fun-activities")} style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "none", border: "none", cursor: "pointer", fontFamily: font, padding: 0, textDecoration: "underline", textUnderlineOffset: 2 }}>
+          See all →
+        </button>
+      </div>
+
+      {/* Fun Activities row */}
+      <p style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Fun Activities</p>
+      <div className="pag-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4, marginBottom: 20 }}>
+        {activityCards.map(act => {
+          const alreadyAdded = faItems.some(i => i.id === act.id);
+          return (
+            <div key={act.id} className="pag-card" onClick={() => setPaxModal({ type: "activity", item: act })}
+              style={{ flexShrink: 0, width: 150, borderRadius: 14, overflow: "hidden", background: "#FFFCF7", border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.07)", cursor: "pointer" }}>
+              <div style={{ height: 110, overflow: "hidden", position: "relative" }}>
+                <img src={act.image} alt={act.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,4,0.55) 0%, transparent 55%)" }} />
+                <span style={{ position: "absolute", bottom: 7, left: 8, fontSize: 10, fontWeight: 800, color: "#FFF8EC", letterSpacing: "0.05em", lineHeight: 1 }}>₹{act.price.toLocaleString("en-IN")}</span>
+              </div>
+              <div style={{ padding: "10px 10px 10px" }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 4, lineHeight: 1.3 }}>{act.name}</div>
+                <div style={{ fontSize: 10, color: "#9B7450", marginBottom: 8, lineHeight: 1.4 }}>{act.duration} · {act.guests}</div>
+                <button onClick={e => { e.stopPropagation(); if (!alreadyAdded) dispatch(addActivity(act)); }}
+                  style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: alreadyAdded ? "rgba(196,122,46,0.12)" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: alreadyAdded ? "#C47A2E" : "#fff", fontSize: 11, fontWeight: 700, cursor: alreadyAdded ? "default" : "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                  {alreadyAdded ? "✓ Added" : "Quick Add +"}
+                </button>
+              </div>
+            </div>
+          );
+        })}
+        {/* View all card */}
+        <div className="pag-card" onClick={() => navigate("/fun-activities")}
+          style={{ flexShrink: 0, width: 130, borderRadius: 14, border: "1.5px dashed rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 170 }}>
+          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textAlign: "center", lineHeight: 1.4, padding: "0 8px" }}>See All Activities</span>
+        </div>
+      </div>
+
+      {/* Gift Hampers & Cakes row */}
+      <p style={{ fontSize: 11, fontWeight: 700, color: "#5a3a1a", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>Gift Hampers &amp; Cakes</p>
+      <div className="pag-scroll" style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
+        {GIFT_HAMPER_CARDS.map(g => (
+          <div key={g.id} className="pag-card" onClick={() => setPaxModal({ type: "hamper", item: g })}
+            style={{ flexShrink: 0, width: 150, borderRadius: 14, overflow: "hidden", background: "#FFFCF7", border: "1.5px solid rgba(196,122,46,0.14)", boxShadow: "0 2px 10px rgba(44,26,14,0.07)", cursor: "pointer" }}>
+            <div style={{ height: 110, overflow: "hidden", position: "relative" }}>
+              <img src={g.image} alt={g.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,4,0.55) 0%, transparent 55%)" }} />
+              <span style={{ position: "absolute", bottom: 7, left: 8, fontSize: 10, fontWeight: 800, color: "#FFF8EC", letterSpacing: "0.05em", lineHeight: 1 }}>{g.price}</span>
+            </div>
+            <div style={{ padding: "10px 10px 10px" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04", marginBottom: 4, lineHeight: 1.3 }}>{g.name}</div>
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginBottom: 8 }}>
+                {g.tags.map(t => <span key={t} style={{ fontSize: 9, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.09)", borderRadius: 100, padding: "2px 7px" }}>{t}</span>)}
+              </div>
+              <button onClick={e => { e.stopPropagation(); navigate("/gift-hampers-cakes"); }}
+                style={{ width: "100%", padding: "6px 0", borderRadius: 8, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                Browse →
+              </button>
+            </div>
+          </div>
+        ))}
+        {/* View all hampers card */}
+        <div className="pag-card" onClick={() => navigate("/gift-hampers-cakes")}
+          style={{ flexShrink: 0, width: 130, borderRadius: 14, border: "1.5px dashed rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.04)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8, minHeight: 170 }}>
+          <div style={{ width: 38, height: 38, borderRadius: "50%", background: "rgba(196,122,46,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </div>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textAlign: "center", lineHeight: 1.4, padding: "0 8px" }}>See All Hampers</span>
+        </div>
+      </div>
+
+      {/* Product Quick-View Modal */}
+      {paxModal && (
+        <>
+          <div onClick={() => setPaxModal(null)} style={{ position: "fixed", inset: 0, background: "rgba(10,4,0,0.65)", zIndex: 10200, backdropFilter: "blur(8px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 10201, background: "#FFFCF5", borderRadius: 22, width: "90%", maxWidth: 400, maxHeight: "88vh", display: "flex", flexDirection: "column", boxShadow: "0 28px 72px rgba(28,10,4,0.35)", overflow: "hidden", fontFamily: font }}>
+            {/* Photo */}
+            <div style={{ position: "relative", height: 200, flexShrink: 0 }}>
+              <img src={paxModal.item.image} alt={paxModal.item.name} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,10,4,0.7) 0%, transparent 50%)" }} />
+              <button onClick={() => setPaxModal(null)}
+                style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", border: "none", background: "rgba(28,10,4,0.6)", color: "#fff", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(4px)" }}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+              <div style={{ position: "absolute", bottom: 14, left: 16 }}>
+                <div style={{ fontSize: 16, fontFamily: serif, fontWeight: 400, color: "#FFF8EC", marginBottom: 3 }}>{paxModal.item.name}</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: "#CCAB4A" }}>
+                  {paxModal.type === "activity" ? `₹${paxModal.item.price.toLocaleString("en-IN")}` : paxModal.item.price}
+                </div>
+              </div>
+            </div>
+            {/* Body */}
+            <div style={{ padding: "18px 20px", overflowY: "auto", flex: 1 }}>
+              {paxModal.type === "activity" && (
+                <>
+                  <div style={{ display: "flex", gap: 12, marginBottom: 14 }}>
+                    {[{ label: "Duration", val: paxModal.item.duration }, { label: "Guests", val: paxModal.item.guests }].map(({ label, val }) => (
+                      <div key={label} style={{ flex: 1, background: "rgba(196,122,46,0.07)", borderRadius: 10, padding: "8px 10px" }}>
+                        <div style={{ fontSize: 9, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>{label}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: "#1C0A04" }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.65, margin: "0 0 14px" }}>{paxModal.item.desc}</p>
+                  {paxModal.item.includes?.length > 0 && (
+                    <div style={{ marginBottom: 14 }}>
+                      <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>What's included</p>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                        {paxModal.item.includes.map((inc, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 12, color: "#4A2C0E" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: 1 }}><polyline points="20 6 9 17 4 12"/></svg>
+                            {inc}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+              {paxModal.type === "hamper" && (
+                <>
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                    {paxModal.item.tags.map(t => <span key={t} style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px", border: "1px solid rgba(196,122,46,0.2)" }}>{t}</span>)}
+                  </div>
+                  <p style={{ fontSize: 13, color: "#5a3a1a", lineHeight: 1.65, margin: "0 0 8px" }}>{paxModal.item.desc}</p>
+                  <p style={{ fontSize: 12, color: "#9B7450", margin: 0 }}>Customisation available. Delivery across Delhi NCR.</p>
+                </>
+              )}
+            </div>
+            {/* Footer CTA */}
+            <div style={{ padding: "12px 20px", paddingBottom: "max(16px, env(safe-area-inset-bottom))", borderTop: "1px solid rgba(196,122,46,0.1)", flexShrink: 0 }}>
+              {paxModal.type === "activity" ? (() => {
+                const alreadyAdded = false; // simplified — full form handled on activities page
+                return (
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <button onClick={() => { dispatch(addActivity(paxModal.item)); setPaxModal(null); }}
+                      style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                      Add to Event
+                    </button>
+                    <button onClick={() => navigate("/fun-activities")}
+                      style={{ padding: "12px 16px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      See All
+                    </button>
+                  </div>
+                );
+              })() : (
+                <button onClick={() => { setPaxModal(null); navigate("/gift-hampers-cakes"); }}
+                  style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font, touchAction: "manipulation" }}>
+                  Browse Gift Hampers →
+                </button>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -1076,32 +1269,8 @@ const BookingReviewPage = () => {
               </div>
             )}
 
-            {/* ── People Also Get — upsell block ── */}
-            <div style={{ marginTop: 8, marginBottom: 8, borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>People also get</p>
-              {faItems.length === 0 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>🎭</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Fun Activities</div>
-                      <div style={{ fontSize: 11, color: "#9B7450" }}>Magic shows, live bands, photo booths &amp; more</div>
-                    </div>
-                  </div>
-                  <button onClick={() => navigate("/fun-activities")} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Browse →</button>
-                </div>
-              )}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ fontSize: 22 }}>💌</span>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Wedding Stationeries</div>
-                    <div style={{ fontSize: 11, color: "#9B7450" }}>Invites, menus, cards &amp; more</div>
-                  </div>
-                </div>
-                <button onClick={() => navigate("/stationery")} style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>Browse →</button>
-              </div>
-            </div>
+            {/* ── People Also Get — horizontal scroll with product cards ── */}
+            <PeopleAlsoGet faItems={faItems} dispatch={dispatch} navigate={navigate} addActivity={addActivity} />
 
             {/* ── Total + Proceed ── hidden on all sizes; fixed footer handles this */}
             <div className="booking-sidebar-proceed"
@@ -1243,44 +1412,8 @@ const BookingReviewPage = () => {
                 )}
               </div>
 
-              {/* People Also Get — upsell block (hide if both fun activities and stationery already in cart) */}
-              <div style={{ margin: "14px 0 0", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.18)", background: "#fff8f2", padding: "14px 16px" }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 10px" }}>People also get</p>
-
-                {/* Fun Activities row — only show if user hasn't added them */}
-                {faItems.length === 0 && (
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>🎭</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Fun Activities</div>
-                      <div style={{ fontSize: 11, color: "#9B7450" }}>Magic shows, live bands, photo booths & more</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate("/fun-activities")}
-                    style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                    Browse →
-                  </button>
-                </div>
-                )}
-
-                {/* Wedding Stationeries chip */}
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <span style={{ fontSize: 22 }}>💌</span>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E" }}>Wedding Stationeries</div>
-                      <div style={{ fontSize: 11, color: "#9B7450" }}>Invites, menus, cards &amp; more</div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => navigate("/stationery")}
-                    style={{ flexShrink: 0, padding: "7px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
-                    Browse →
-                  </button>
-                </div>
-              </div>
+              {/* People Also Get — compact strip in sidebar (desktop) */}
+              <div style={{ margin: "0 0 0" }} />
 
               {/* Referral code input */}
               <div style={{ marginBottom: 16 }}>
@@ -1366,8 +1499,8 @@ const BookingReviewPage = () => {
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "6px 0 0" }}>Please agree to the terms to continue</p>
               )}
 
-              {/* Confirmation popup */}
-              {showConfirmPopup && (
+              {/* Confirmation popup — MOVED TO ROOT LEVEL (see below) */}
+              {false && (
                 <>
                   <div onClick={() => setShowConfirmPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 999, backdropFilter: "blur(3px)" }} />
                   <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 1000, background: "#FFFCF5", borderRadius: 20, padding: "32px 28px", width: "90%", maxWidth: 420, boxShadow: "0 20px 60px rgba(139,69,19,0.2)", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
@@ -1486,74 +1619,164 @@ const BookingReviewPage = () => {
         </div>
       </div>
 
-      {/* Mobile-only fixed checkout bar — hidden on desktop via CSS */}
-      <div className="booking-mobile-cta" style={{ flexDirection: "column", gap: 8, paddingBottom: "max(16px, env(safe-area-inset-bottom))" }}>
-        {/* T&C checkbox — mobile */}
-        <div style={{ display: "flex", alignItems: "center", gap: 8, width: "100%" }}>
-          <input
-            type="checkbox"
-            id="tc-agree-mob"
-            checked={tcAgreed}
-            onChange={e => setTcAgreed(e.target.checked)}
-            style={{ width: 15, height: 15, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }}
-          />
-          <label htmlFor="tc-agree-mob" style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.4, cursor: "pointer" }}>
-            I agree to the{" "}
-            <span onClick={() => setShowTcModal(true)} style={{ color: "#C47A2E", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}>
-              Terms & Conditions
-            </span>
-          </label>
-        </div>
-
-        {/* Price breakdown */}
+      {/* Mobile-only fixed checkout bar */}
+      <div className="booking-mobile-cta" style={{ flexDirection: "column", gap: 0, padding: 0, paddingBottom: 0 }}>
+        {/* Price breakdown — clean card design */}
         {(confirmedTotal + faTotal) > 0 && (() => {
           const raw = confirmedTotal + faTotal;
           const disc = appliedCode ? applyDiscount(raw).finalTotal : raw;
           const gst = Math.round(disc * 0.18);
           const total = disc + gst + effectivePlatformFee;
           return (
-            <div style={{ width: "100%", background: "rgba(196,122,46,0.06)", borderRadius: 10, padding: "8px 12px", marginBottom: 4 }}>
-              {vendorEntries.map(([cat, v]) => prices[cat] !== null && (
-                <div key={cat} style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginBottom: 2 }}>
-                  <span>{v?.name || cat}</span><span>{formatINR(prices[cat])}</span>
-                </div>
-              ))}
-              {faTotal > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginBottom: 2 }}>
-                  <span>Fun Activities</span><span>{formatINR(faTotal)}</span>
-                </div>
-              )}
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", marginBottom: 2 }}>
-                <span>GST (18%)</span><span>+ {formatINR(gst)}</span>
+            <div style={{ width: "100%", padding: "10px 16px 8px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+              {/* Line items row */}
+              <div style={{ display: "flex", gap: 0, marginBottom: 6, overflowX: "auto", scrollbarWidth: "none" }}>
+                <style>{`.mob-price-row::-webkit-scrollbar{display:none}`}</style>
+                {[
+                  ...vendorEntries.filter(([cat]) => prices[cat] !== null).map(([cat, v]) => ({ label: v?.name || cat, val: formatINR(prices[cat]) })),
+                  ...(faTotal > 0 ? [{ label: "Activities", val: formatINR(faTotal) }] : []),
+                  { label: "GST 18%", val: `+${formatINR(gst)}` },
+                  { label: appliedCode ? "Platform" : "Platform", val: appliedCode ? "FREE" : `+₹${platformFee}` },
+                ].map(({ label, val }, i, arr) => (
+                  <div key={label} style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+                    <div style={{ textAlign: "center", paddingRight: 8, paddingLeft: i === 0 ? 0 : 8, borderLeft: i === 0 ? "none" : "1px solid rgba(196,122,46,0.15)" }}>
+                      <div style={{ fontSize: 10, fontWeight: 600, color: "#9B7450", whiteSpace: "nowrap", marginBottom: 1 }}>{label}</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: val.startsWith("+") ? "#5a3a1a" : "#2C1A0E", whiteSpace: "nowrap" }}>{val}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9B7450", paddingBottom: 5, marginBottom: 5, borderBottom: "1px solid rgba(196,122,46,0.15)" }}>
-                <span>Platform Fee</span>
-                {appliedCode
-                  ? <span style={{ color: "#15803d" }}><s style={{ color: "#ccc" }}>₹{platformFee}</s> FREE</span>
-                  : <span>+ ₹{platformFee}</span>}
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 14, fontWeight: 900, color: "#2C1A0E" }}>
-                <span>Grand Total</span><span style={{ color: allConfirmed ? "#15803d" : "#C47A2E" }}>{formatINR(total)}</span>
+              {/* Grand total row */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 11, fontWeight: 600, color: "#9B7450", letterSpacing: "0.04em", textTransform: "uppercase" }}>Grand Total</span>
+                <span style={{ fontSize: 18, fontWeight: 900, color: allConfirmed ? "#15803d" : "#C47A2E", fontVariantNumeric: "tabular-nums" }}>{formatINR(total)}</span>
               </div>
             </div>
           );
         })()}
-        <div style={{ display: "flex", gap: 10, alignItems: "center", width: "100%" }}>
+
+        {/* T&C + CTA row */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, padding: "10px 16px", paddingBottom: "max(12px, env(safe-area-inset-bottom))" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <input type="checkbox" id="tc-agree-mob" checked={tcAgreed} onChange={e => setTcAgreed(e.target.checked)}
+              style={{ width: 15, height: 15, accentColor: "#C47A2E", flexShrink: 0, cursor: "pointer" }} />
+            <label htmlFor="tc-agree-mob" style={{ fontSize: 12, color: "#5a3a1a", lineHeight: 1.4, cursor: "pointer" }}>
+              I agree to the{" "}
+              <span onClick={() => setShowTcModal(true)} style={{ color: "#C47A2E", fontWeight: 700, textDecoration: "underline", cursor: "pointer" }}>
+                Terms & Conditions
+              </span>
+            </label>
+          </div>
           {anyPriceUnset ? (
-            <div style={{ flex: 1, padding: "11px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 13, fontWeight: 700, textAlign: "center", border: "1.5px dashed #d1d5db", fontFamily: "'Outfit', sans-serif" }}>
+            <div style={{ width: "100%", padding: "11px", borderRadius: 12, background: "#f3f4f6", color: "#9ca3af", fontSize: 13, fontWeight: 700, textAlign: "center", border: "1.5px dashed #d1d5db", fontFamily: "'Outfit', sans-serif" }}>
               ⏳ Waiting for quotes
             </div>
           ) : (
-            <button
-              disabled={saving || !tcAgreed}
-              onClick={() => setShowConfirmPopup(true)}
-              style={{ flex: 1, padding: "12px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 14, fontWeight: 700, cursor: !tcAgreed || saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: !tcAgreed ? "none" : "0 3px 12px rgba(196,122,46,0.35)", transition: "all 0.2s" }}
-            >
+            <button disabled={saving || !tcAgreed} onClick={() => setShowConfirmPopup(true)}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: !tcAgreed ? "#e5e7eb" : "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: !tcAgreed ? "#9ca3af" : "#fff", fontSize: 15, fontWeight: 700, cursor: !tcAgreed || saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: !tcAgreed ? "none" : "0 3px 14px rgba(196,122,46,0.35)", transition: "all 0.2s", touchAction: "manipulation" }}>
               Proceed to WhatsApp →
             </button>
           )}
         </div>
       </div>
+
+      {/* ── Confirmation popup — root level so it renders on BOTH mobile and desktop ── */}
+      {showConfirmPopup && (
+        <>
+          <div onClick={() => setShowConfirmPopup(false)} style={{ position: "fixed", inset: 0, background: "rgba(10,4,0,0.6)", zIndex: 10100, backdropFilter: "blur(6px)" }} />
+          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 10101, background: "#FFFCF5", borderRadius: 22, padding: "28px 24px", width: "90%", maxWidth: 400, boxShadow: "0 24px 64px rgba(28,10,4,0.3)", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
+            {/* Icon */}
+            <div style={{ width: 52, height: 52, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            </div>
+            <h2 style={{ fontSize: 19, fontWeight: 800, color: "#1C0A04", margin: "0 0 8px" }}>Ready to confirm?</h2>
+            <p style={{ fontSize: 13, color: "#7A5A3A", lineHeight: 1.65, margin: "0 0 22px" }}>
+              We'll open WhatsApp with your full booking details. The Tendr team will coordinate everything from there.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 9 }}>
+              <button disabled={saving} onClick={() => {
+                const vendorFaTotal = confirmedTotal + faTotal;
+                const discTotal = appliedCode ? applyDiscount(vendorFaTotal).finalTotal : vendorFaTotal;
+                const finalAmount = discTotal + Math.round(discTotal * 0.18) + effectivePlatformFee;
+                const pinnedLines = (() => {
+                  const allPinned = [];
+                  Object.values(pinnedMap).forEach(msgs => {
+                    msgs.forEach(text => { if (text) allPinned.push(`  • ${text}`); });
+                  });
+                  return allPinned.length > 0 ? ["", "*Pinned Notes:*", ...allPinned] : [];
+                })();
+                const lines = [
+                  `*New Booking — ${formData.eventName || formData.eventType || "Event"}*`,
+                  "",
+                  `*Event:* ${formData.eventType || "—"}`,
+                  formData.date     ? `*Date:* ${formData.date}` : null,
+                  formData.location ? `*Location:* ${formData.location}` : null,
+                  formData.guests   ? `*Guests:* ${formData.guests}` : null,
+                  ...(isSmartPlan && smartPlanSlots.length > 0 ? [
+                    "",
+                    "*Smart Plan Breakdown:*",
+                    ...smartPlanSlots.map(s => `• ${s.category}: Rs.${Number(s.estimatedCost || 0).toLocaleString("en-IN")}${s.vendorName ? ` (${s.vendorName})` : ""}`),
+                  ] : vendorEntries.length > 0 ? [
+                    "",
+                    "*Finalised Vendors:*",
+                    ...vendorEntries.map(([cat, v]) =>
+                      `• ${cat}: ${v?.name || "Tendr"} — ${prices[cat] !== null ? "Rs." + Number(prices[cat]).toLocaleString("en-IN") : "TBC"}`
+                    ),
+                  ] : []),
+                  ...pinnedLines,
+                  ...(faItems.length > 0 ? [
+                    "",
+                    "*Fun Activities:*",
+                    ...faItems.filter(i => i.form).map(i => [
+                      `• ${i.name} — Rs.${Number(i.totalPrice || 0).toLocaleString("en-IN")}`,
+                      `   Date: ${i.form.date} · Time: ${i.form.time}`,
+                      `   Address: ${i.form.address}`,
+                      `   Guests: ${i.form.guests} · ${i.form.eventType}`,
+                      i.form.name ? `   Contact: ${i.form.name} · ${i.form.phone}` : null,
+                      i.form.notes ? `   Notes: ${i.form.notes}` : null,
+                    ].filter(Boolean).join("\n")),
+                  ] : []),
+                  "",
+                  effectivePlatformFee > 0 ? `*Platform Fee:* Rs.${Number(effectivePlatformFee).toLocaleString("en-IN")}` : null,
+                  appliedCode ? `*Referral Code:* ${appliedCode}` : null,
+                  `*Grand Total (incl. 18% GST):* Rs.${Number(finalAmount).toLocaleString("en-IN")}`,
+                  "",
+                  currentUser?.name ? `*Customer:* ${currentUser.name}` : null,
+                  currentUser?.phoneNumber || currentUser?.phone ? `*Phone:* ${currentUser.phoneNumber || currentUser.phone}` : null,
+                ].filter(Boolean).join("\n");
+                window.open(`https://wa.me/919211668427?text=${encodeURIComponent(lines)}`, "_blank");
+                setSaving(true);
+                saveEventPlan().then(eventPlanId => {
+                  if (appliedCode && token && eventPlanId) {
+                    fetch(`${BASE_URL}/referrals/apply`, { method: "POST", headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` }, credentials: "include", body: JSON.stringify({ code: appliedCode, orderId: eventPlanId }) }).catch(() => {});
+                  }
+                }).catch(() => {});
+                vendorEntries.forEach(([, v]) => { if (v?._id) localStorage.setItem(`tendr:booking-submitted:${v._id}`, "1"); });
+                sessionStorage.removeItem("wr_appliedCode");
+                sessionStorage.removeItem("wr_referralInput");
+                sessionStorage.removeItem("wr_notes");
+                sessionStorage.removeItem("fa_booking");
+                dispatch(resetEventPlanning());
+                dispatch(clearFunCart());
+                setSaving(false);
+                setShowConfirmPopup(false);
+                navigate("/dashboard", { replace: true });
+              }}
+                style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: saving ? "not-allowed" : "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 14px rgba(196,122,46,0.35)", touchAction: "manipulation" }}>
+                {saving ? "Saving…" : "Confirm & Send to Tendr →"}
+              </button>
+              <button onClick={() => { setShowConfirmPopup(false); navigate("/listings"); }}
+                style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                Add More Vendors
+              </button>
+              <button onClick={() => { setShowConfirmPopup(false); navigate("/"); }}
+                style={{ width: "100%", padding: "9px", borderRadius: 12, border: "none", background: "transparent", color: "#9B7450", fontSize: 13, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}>
+                Return to Home
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* T&C Modal */}
       {showTcModal && (
