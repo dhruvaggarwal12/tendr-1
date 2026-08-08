@@ -179,8 +179,9 @@ const VendorList = () => {
     if (user?.isAdmin) return;
     if (finalisedCount > 0) return;
     if (location.state?.selectedCategories?.length) return;
-    // Bypass gate when arriving from a rejected-chat WA link (event details in URL)
-    if (new URLSearchParams(location.search).get("from") === "rejected") return;
+    // Bypass when URL already carries filter context (direct links, SEO, WA rejection links)
+    const _p = new URLSearchParams(location.search);
+    if (_p.get("from") === "rejected" || _p.get("serviceType") || _p.get("location") || _p.get("eventType")) return;
 
     // All 5 fields must be present in Redux
     if (formEventType && locationType && date && guestCount) return; // budget optional
