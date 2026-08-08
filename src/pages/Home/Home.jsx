@@ -878,40 +878,46 @@ const Home = () => {
             {/* Right-edge gold hairline separator */}
             <div aria-hidden style={{ position: "absolute", top: "6%", bottom: "6%", right: 0, width: 1, background: "linear-gradient(180deg, transparent, rgba(196,122,46,0.4) 28%, rgba(204,171,74,0.48) 72%, transparent)", pointerEvents: "none" }} />
 
-            {/* Mobile only: 4 main category chips — dark bg adapted */}
-            <div className="hero-mobile-cats" data-tour="mob-icon-row" style={{ display: "none", marginBottom: 10, position: "relative", zIndex: 1 }}>
-              <div style={{ display: "flex", justifyContent: "center", gap: 14 }}>
+            {/* Mobile only: 4 service shortcuts — SVG icons, editorial style */}
+            <div className="hero-mobile-cats" data-tour="mob-icon-row" style={{ display: "none", marginBottom: 20, position: "relative", zIndex: 1 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
                 {[
-                  { emoji: "🏪", label: "Vendors",       path: null,                  isVendors: true },
-                  { emoji: "🎁", label: "Gift Hampers",   path: "/gift-hampers-cakes" },
-                  { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
-                  { emoji: "💒", label: "Stationeries",   path: "/stationery" },
-                ].map(({ emoji, label, path, isVendors }) => (
+                  { label: "Vendors", isVendors: true, path: null,
+                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> },
+                  { label: "Hampers", isVendors: false, path: "/gift-hampers-cakes",
+                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><path d="M12 22V7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg> },
+                  { label: "Activities", isVendors: false, path: "/fun-activities",
+                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> },
+                  { label: "Stationery", isVendors: false, path: "/stationery",
+                    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> },
+                ].map(({ icon, label, path, isVendors }) => (
                   <button key={label}
                     onClick={() => isVendors ? setVendorStripOpen(o => !o) : navigate(path)}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "4px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", width: 70 }}>
-                    <div style={{ width: 58, height: 58, borderRadius: 16, background: isVendors && vendorStripOpen ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(204,171,74,0.1)", border: `1.5px solid ${isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(204,171,74,0.22)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: "0 2px 12px rgba(0,0,0,0.3)", transition: "background 0.2s" }}>
-                      {isVendors && vendorStripOpen ? "✕" : emoji}
-                    </div>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(255,247,235,0.75)", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 7, padding: "12px 6px", background: isVendors && vendorStripOpen ? "rgba(196,122,46,0.18)" : "rgba(255,248,236,0.05)", border: `1px solid ${isVendors && vendorStripOpen ? "rgba(196,122,46,0.5)" : "rgba(255,248,236,0.08)"}`, borderRadius: 14, cursor: "pointer", fontFamily: "'Outfit',sans-serif", transition: "all 0.18s", color: isVendors && vendorStripOpen ? "#CCAB4A" : "rgba(255,248,236,0.72)" }}>
+                    {vendorStripOpen && isVendors
+                      ? <svg width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
+                      : icon}
+                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2, textAlign: "center" }}>{label}</span>
                   </button>
                 ))}
               </div>
-              {/* Vendor sub-strip */}
+              {/* Vendor sub-strip — SVG icons */}
               {vendorStripOpen && (
-                <div style={{ marginTop: 10, display: "flex", justifyContent: "center", gap: 12 }}>
+                <div style={{ marginTop: 10, display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 8 }}>
                   {[
-                    { emoji: "🎀", label: "Decorator",    path: "/search?categories=Decorator" },
-                    { emoji: "🍽", label: "Caterer",       path: "/search?categories=Caterer" },
-                    { emoji: "📸", label: "Photographer",  path: "/search?categories=Photographer" },
-                    { emoji: "🎵", label: "DJ",            path: "/search?categories=DJ" },
-                  ].map(({ emoji, label, path }) => (
+                    { label: "Decorator", path: "/search?categories=Decorator",
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="3.5"/><path d="M10 10L4 20h16"/><path d="M4 20h4l4-7"/></svg> },
+                    { label: "Caterer", path: "/search?categories=Caterer",
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg> },
+                    { label: "Photo", path: "/search?categories=Photographer",
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
+                    { label: "DJ", path: "/search?categories=DJ",
+                      icon: <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 9v-7"/><path d="M15.5 12.5L21 9"/><path d="M12 15v7"/><path d="M8.5 12.5L3 9"/></svg> },
+                  ].map(({ icon, label, path }) => (
                     <button key={label} onClick={() => { setVendorStripOpen(false); navigate(path); }}
-                      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: "4px 0", background: "none", border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", width: 56 }}>
-                      <div style={{ width: 40, height: 40, borderRadius: 11, background: "rgba(204,171,74,0.1)", border: "1.5px solid rgba(204,171,74,0.22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, boxShadow: "0 2px 8px rgba(0,0,0,0.25)" }}>
-                        {emoji}
-                      </div>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: "rgba(255,247,235,0.7)", textAlign: "center", lineHeight: 1.2 }}>{label}</span>
+                      style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 4px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", color: "#CCAB4A" }}>
+                      {icon}
+                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2 }}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -984,22 +990,26 @@ const Home = () => {
               {/* Divider */}
               <div style={{ width: 1, height: 22, background: "rgba(204,171,74,0.25)", flexShrink: 0 }} />
 
-              {/* Seasonal — subordinate ghost-pill style, adapted for dark bg */}
+              {/* Seasonal — subordinate ghost-pill style */}
               <button
                 onClick={() => navigate("/rakhi-hampers")}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.32)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                className="home-seasonal-btn"
+                style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.32)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.2)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.55)"; e.currentTarget.style.color = "#FFF8EC"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.32)"; e.currentTarget.style.color = "rgba(255,247,235,0.8)"; }}
               >
-                🪢 Rakhi Hampers
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Rakhi Hampers
               </button>
               <button
                 onClick={() => setShowIndepDay(true)}
-                style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,153,51,0.08)", border: "1px solid rgba(255,153,51,0.28)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
+                className="home-seasonal-btn"
+                style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,153,51,0.08)", border: "1px solid rgba(255,153,51,0.28)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,153,51,0.16)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.48)"; e.currentTarget.style.color = "#FFF8EC"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,153,51,0.08)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.28)"; e.currentTarget.style.color = "rgba(255,247,235,0.8)"; }}
               >
-                🇮🇳 Independence Day
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF9933" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                Independence Day
               </button>
             </motion.div>
 
@@ -1044,8 +1054,10 @@ const Home = () => {
               {!galleryLoaded && (
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,#2C1A0E,#4A2810)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <div style={{ textAlign: "center", color: "rgba(204,171,74,0.6)" }}>
-                    <div style={{ fontSize: 32, marginBottom: 12 }}>🎉</div>
-                    <div style={{ fontSize: 13, letterSpacing: "0.1em" }}>Loading gallery...</div>
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(204,171,74,0.5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginBottom: 12, display: "block", margin: "0 auto 12px" }}>
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    <div style={{ fontSize: 11, letterSpacing: "0.14em", textTransform: "uppercase" }}>Loading gallery</div>
                   </div>
                 </div>
               )}
@@ -1184,6 +1196,21 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Mobile photo strip — Editorial Image Hero pattern (felipemenezes098/hero-05) ── */}
+      {/* Shows below hero on mobile, hidden on desktop */}
+      <div className="home-mob-img-strip" style={{ display: "none", background: "#1C0E04", paddingBottom: 0, overflowX: "auto", WebkitOverflowScrolling: "touch", scrollSnapType: "x mandatory", scrollbarWidth: "none" }}>
+        <style>{`.home-mob-img-strip::-webkit-scrollbar{display:none}`}</style>
+        <div style={{ display: "flex", gap: 10, padding: "0 20px 20px" }}>
+          {CELEBRATION_PHOTOS.map((p, i) => (
+            <div key={i} style={{ flexShrink: 0, width: "72vw", maxWidth: 280, borderRadius: 16, overflow: "hidden", position: "relative", scrollSnapAlign: "start", aspectRatio: "3/4" }}>
+              <img src={p.url} alt={p.label} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} loading="lazy" />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(28,14,4,0.72) 0%, transparent 55%)", pointerEvents: "none" }} />
+              <span style={{ position: "absolute", bottom: 14, left: 14, fontSize: 11, fontWeight: 700, color: "#FFF8EC", fontFamily: "'Outfit',sans-serif", letterSpacing: "0.08em", textTransform: "uppercase", opacity: 0.88 }}>{p.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* ── Marquee strip — right under hero text ── */}
       {(() => {

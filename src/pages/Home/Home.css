@@ -305,12 +305,12 @@ body {
 
 /* ── Hero split responsive ── */
 @media (max-width: 860px) {
-  /* Remove fixed height so hero shrinks to content on mobile */
   section.hero-section-wrap {
     height: auto !important;
     min-height: unset !important;
     padding-top: 60px !important;
   }
+  /* Trust bar hidden on mobile — too cluttered */
   .home-hero-trust {
     display: none !important;
   }
@@ -321,16 +321,47 @@ body {
   .hero-split > div:first-child {
     flex: none !important;
     width: 100% !important;
-    padding: 28px 22px 24px !important;
+    /* Generous vertical breathing room — professional, not cramped */
+    padding: 32px 22px 28px !important;
     justify-content: flex-start !important;
     order: 1;
   }
-  /* Hide photo carousel on mobile — replaced by poster/search section */
+  /* Show hero-mobile-cats on mobile */
+  .hero-mobile-cats {
+    display: block !important;
+  }
+  /* Photo carousel hidden on mobile — replaced by editorial scroll strip */
   .hero-split > div:last-child {
     display: none !important;
   }
   .hero-mobile-search-section {
     display: flex !important;
+  }
+  /* Show the editorial photo strip on mobile */
+  .home-mob-img-strip {
+    display: block !important;
+  }
+  /* Hero h1 — larger, more presence on mobile */
+  .home-hero-h1 {
+    font-size: clamp(2rem, 6.5vw, 2.4rem) !important;
+    line-height: 1.1 !important;
+  }
+  /* Seasonal event buttons — hide on mobile to reduce clutter */
+  .home-seasonal-btn {
+    display: none !important;
+  }
+  /* Primary CTA — pill shape, full comfortable width on mobile */
+  .home-hero-cta {
+    border-radius: 100px !important;
+    padding: 13px 32px !important;
+    font-size: 15px !important;
+    width: 100% !important;
+    justify-content: center !important;
+    letter-spacing: 0.03em !important;
+  }
+  /* Divider between CTA and seasonal — hide on mobile */
+  .home-hero-cta-divider {
+    display: none !important;
   }
 }
 

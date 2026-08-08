@@ -185,6 +185,7 @@ const GiftHampersCakes = () => {
         @keyframes ghOrbBreath { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.1);opacity:0.78} }
         @keyframes ghCardIn { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
         @keyframes ghIslandIn { from{opacity:0;transform:translateX(-50%) translateY(20px) scale(0.92)} to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)} }
+        @keyframes ghIslandInMobile { from{opacity:0;transform:translateY(20px) scale(0.9)} to{opacity:1;transform:translateY(0) scale(1)} }
         .gh-card { opacity: 0; animation: ghCardIn 0.38s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
         .gh-card:hover .gh-overlay { opacity: 1 !important; }
         .gh-card:hover img { transform: scale(1.05) !important; }
@@ -198,7 +199,7 @@ const GiftHampersCakes = () => {
           .gh-h1 { font-size: clamp(1.9rem,7vw,2.5rem) !important; }
           .gh-cta-btn { width: 100% !important; justify-content: center; }
           .gh-island { min-width: unset !important; left: 16px !important; right: 16px !important; transform: none !important; border-radius: 20px !important; }
-          @keyframes ghIslandIn { from{opacity:0;transform:translateY(20px) scale(0.92)} to{opacity:1;transform:none} }
+          .gh-island { animation-name: ghIslandInMobile !important; }
         }
       `}</style>
 
