@@ -94,6 +94,7 @@ export default function ServiceChat({ serviceType }) {
         const data = await res.json();
         if (!res.ok || !data.conversationId) return;
         const cid = data.conversationId;
+        window.dispatchEvent(new CustomEvent("tendr:chat-started"));
         try { sessionStorage.removeItem("baat_karo_draft"); } catch {}
         if (vPhoto) {
           try { await fetch(`${BASE_URL}/messages/${cid}/message`, { method: "POST", headers: hdrs, body: JSON.stringify({ sender: "user", content: "📷 Venue / place photo:" }) }); } catch {}
@@ -167,6 +168,7 @@ export default function ServiceChat({ serviceType }) {
         }
 
         setText("");
+        window.dispatchEvent(new CustomEvent("tendr:chat-started"));
         openExistingChat(data.conversationId, {
           _id: null,
           name: "Tendr Team",

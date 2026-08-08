@@ -771,31 +771,16 @@ const BookingReviewPage = () => {
           .booking-review-main {
             min-width: 0 !important;
           }
-          .booking-sidebar-proceed { display: none !important; }
-          .booking-mobile-cta {
-            bottom: 0 !important;
-          }
         }
         .booking-mobile-cta {
-          display: flex;
-          position: fixed;
-          bottom: 0;
-          left: 0; right: 0;
-          background: #FFFCF5;
-          border-top: 1.5px solid rgba(196,122,46,0.15);
-          padding: 10px 16px;
-          padding-bottom: max(10px, env(safe-area-inset-bottom, 0px));
-          box-shadow: 0 -4px 16px rgba(44,26,14,0.08);
-          z-index: 99995;
-          align-items: center;
-          gap: 12px;
+          display: none !important;
         }
       `}</style>
       <SEO title="Review & Pay" description="Review your booking details and confirm payment on Tendr." path="/booking/review" noIndex={true} />
       <BasicSpeedDial />
       <HamburgerNav title="Review & Pay" active="Pay" />
 
-      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,32px) clamp(14px,3vw,24px) 140px", width: "100%", boxSizing: "border-box" }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto", padding: "clamp(16px,4vw,32px) clamp(14px,3vw,24px) 40px", width: "100%", boxSizing: "border-box" }}>
 
         {/* Page title */}
         <div style={{ marginBottom: 20, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
@@ -1272,9 +1257,9 @@ const BookingReviewPage = () => {
             {/* ── People Also Get — horizontal scroll with product cards ── */}
             <PeopleAlsoGet faItems={faItems} dispatch={dispatch} navigate={navigate} addActivity={addActivity} />
 
-            {/* ── Total + Proceed ── hidden on all sizes; fixed footer handles this */}
+            {/* ── Total + Proceed ── inline below People Also Get ── */}
             <div className="booking-sidebar-proceed"
-              style={{ display: "none",
+              style={{
                 background: "#fff",
                 borderRadius: 16,
                 border: "1.5px solid rgba(139,69,19,0.1)",

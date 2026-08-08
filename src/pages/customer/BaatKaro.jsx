@@ -97,6 +97,7 @@ export default function BaatKaro() {
         }
 
         setText("");
+        window.dispatchEvent(new CustomEvent("tendr:chat-started"));
         openExistingChat(data.conversationId, {
           _id: null,
           name: "Tendr Team",

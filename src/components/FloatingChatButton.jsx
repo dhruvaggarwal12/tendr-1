@@ -171,10 +171,10 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
   // Listen for VendorChatModal "back to active chats" event
   // Must be BEFORE any early returns to satisfy Rules of Hooks
   useEffect(() => {
-    const handler = () => { setShowActiveChats(true); setChatTabFilter("All"); };
+    const handler = () => { fetchVendorChats(); setShowActiveChats(true); setChatTabFilter("All"); };
     document.addEventListener("tendr:open-active-chats", handler);
     return () => document.removeEventListener("tendr:open-active-chats", handler);
-  }, []);
+  }, [fetchVendorChats]);
 
   // Re-fetch chats when a new vendor conversation is created
   useEffect(() => {
