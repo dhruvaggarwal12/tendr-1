@@ -96,18 +96,26 @@ export default function ContactUs() {
       <HamburgerNav />
 
       {/* Hero */}
-      <div style={{ background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", padding: "72px 24px 60px", textAlign: "center" }}>
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 14 }}>Get in Touch</p>
-        <h1 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 16px" }}>Contact Us</h1>
-        <p style={{ fontSize: 17, color: "#7A5535", maxWidth: 500, margin: "0 auto" }}>We're here to help. Reach out and we'll get back to you within a few hours.</p>
-        <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "20px auto 0" }} />
+      <div className="cu-dot-bg" style={{ padding: "80px 24px 64px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 62% 72% at 50% 50%, rgba(255,252,245,0.95) 0%, rgba(255,252,245,0.58) 60%, transparent 100%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative" }}>
+          <span className="cu-in-0" style={{ display: "inline-block", fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.22)", padding: "4px 14px", borderRadius: 100, marginBottom: 18 }}>
+            Get in Touch
+          </span>
+          <h1 className="cu-in-1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.2rem, 5vw, 3.4rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 16px", lineHeight: 1.15 }}>
+            Contact <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Us</em>
+          </h1>
+          <p className="cu-in-2" style={{ fontSize: 17, color: "#7A5535", maxWidth: 500, margin: "0 auto", lineHeight: 1.65 }}>
+            We're here to help. Reach out and we'll get back to you within a few hours.
+          </p>
+        </div>
       </div>
 
       <div style={{ maxWidth: 1000, margin: "0 auto", padding: "64px 24px 80px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start" }} className="contact-layout">
 
         {/* Left: contact info */}
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 28px", letterSpacing: "-0.01em" }}>Our Contact Details</h2>
+          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem, 3vw, 2rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 28px" }}>Our Contact <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Details</em></h2>
 
           {[
             { icon: "📧", label: "Email", value: "contact@tendr.co.in", href: "mailto:contact@tendr.co.in" },
@@ -144,7 +152,7 @@ export default function ContactUs() {
             </div>
           ) : (
             <>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 24px" }}>Send us a Message</h3>
+              <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.3rem, 3vw, 1.7rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 24px" }}>Send us a <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Message</em></h3>
               <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
                 <div>
                   <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#6B3A1F", marginBottom: 6 }}>Your Name</label>
@@ -174,7 +182,15 @@ export default function ContactUs() {
         </div>
       </div>
 
-      <style>{`@media (max-width: 700px) { .contact-layout { grid-template-columns: 1fr !important; } }`}</style>
+      <style>{`
+        .cu-dot-bg { background-color: #FFFCF5; background-image: radial-gradient(circle, rgba(196,122,46,0.22) 1.5px, transparent 1.5px); background-size: 26px 26px; }
+        @keyframes cu-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .cu-in-0 { animation: cu-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .cu-in-1 { animation: cu-in 0.52s 0.13s cubic-bezier(.22,1,.36,1) both; }
+        .cu-in-2 { animation: cu-in 0.52s 0.21s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .cu-in-0,.cu-in-1,.cu-in-2 { animation: none !important; opacity: 1 !important; } }
+        @media (max-width: 700px) { .contact-layout { grid-template-columns: 1fr !important; } }
+      `}</style>
       <Footer />
     </div>
   );

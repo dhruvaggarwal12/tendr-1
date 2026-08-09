@@ -173,62 +173,17 @@ export default function AboutUs() {
       <HamburgerNav />
 
       {/* ── Hero ── */}
-      <section
-        style={{
-          background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 60%, #EDD5A8 100%)",
-          padding: "100px 24px 80px",
-          textAlign: "center",
-          position: "relative",
-          overflow: "hidden",
-        }}
-      >
-        {/* Decorative circles */}
-        <div style={{ position: "absolute", top: -60, right: -60, width: 320, height: 320, borderRadius: "50%", background: "rgba(204,171,74,0.08)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: -40, left: -40, width: 220, height: 220, borderRadius: "50%", background: "rgba(196,122,46,0.07)", pointerEvents: "none" }} />
-
+      <section className="au-dot-bg" style={{ padding: "100px 24px 80px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 62% 72% at 50% 50%, rgba(255,252,245,0.95) 0%, rgba(255,252,245,0.58) 60%, transparent 100%)", pointerEvents: "none" }} />
         <div style={{ position: "relative", maxWidth: 760, margin: "0 auto" }}>
-          <p
-            style={{
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: "0.16em",
-              textTransform: "uppercase",
-              color: "#C47A2E",
-              marginBottom: 18,
-            }}
-          >
+          <span className="au-in-0" style={{ display: "inline-block", fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.22)", padding: "4px 14px", borderRadius: 100, marginBottom: 20 }}>
             Our Story
-          </p>
-          <h1
-            style={{
-              fontSize: "clamp(2.6rem, 6vw, 4.2rem)",
-              fontWeight: 900,
-              color: "#2C1A0E",
-              letterSpacing: "-0.03em",
-              lineHeight: 1.1,
-              margin: "0 0 24px",
-            }}
-          >
+          </span>
+          <h1 className="au-in-1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.6rem, 6vw, 4.2rem)", fontWeight: 300, color: "#2C1A0E", lineHeight: 1.1, margin: "0 0 24px" }}>
             We Curate.<br />
-            <span
-              style={{
-                background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}
-            >
-              You Celebrate.
-            </span>
+            <em style={{ color: "#CCAB4A", fontStyle: "italic" }}>You Celebrate.</em>
           </h1>
-          <p
-            style={{
-              fontSize: 18,
-              color: "#7A5535",
-              lineHeight: 1.7,
-              margin: "0 auto",
-              maxWidth: 580,
-            }}
-          >
+          <p className="au-in-2" style={{ fontSize: 18, color: "#7A5535", lineHeight: 1.7, margin: "0 auto", maxWidth: 580 }}>
             Tendr was built for one simple reason — planning a celebration in India
             should feel exciting, not exhausting.
           </p>
@@ -636,6 +591,12 @@ export default function AboutUs() {
       <Footer />
 
       <style>{`
+        .au-dot-bg { background-color: #FFFCF5; background-image: radial-gradient(circle, rgba(196,122,46,0.22) 1.5px, transparent 1.5px); background-size: 26px 26px; }
+        @keyframes au-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .au-in-0 { animation: au-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .au-in-1 { animation: au-in 0.52s 0.13s cubic-bezier(.22,1,.36,1) both; }
+        .au-in-2 { animation: au-in 0.52s 0.21s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .au-in-0,.au-in-1,.au-in-2 { animation: none !important; opacity: 1 !important; } }
         @media (max-width: 900px) {
           .about-story-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
           .about-values-grid { grid-template-columns: repeat(2, 1fr) !important; }

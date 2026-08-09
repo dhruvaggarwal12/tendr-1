@@ -450,20 +450,30 @@ export default function CommunityWall() {
         </div>
       )}
 
+      <style>{`
+        @keyframes cw-hero-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+        .cw-h-0 { animation: cw-hero-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .cw-h-1 { animation: cw-hero-in 0.52s 0.14s cubic-bezier(.22,1,.36,1) both; }
+        .cw-h-2 { animation: cw-hero-in 0.52s 0.23s cubic-bezier(.22,1,.36,1) both; }
+        .cw-h-3 { animation: cw-hero-in 0.52s 0.32s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .cw-h-0,.cw-h-1,.cw-h-2,.cw-h-3 { animation: none !important; opacity: 1 !important; } }
+      `}</style>
+
       {/* Hero */}
       <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 50%,#6B3A1F 100%)", padding: "52px 24px 44px", textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%,rgba(196,122,46,0.18) 0%,transparent 65%)", pointerEvents: "none" }} />
         <div style={{ position: "relative" }}>
-          <div style={{ display: "inline-block", background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 16px", fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
+          <div className="cw-h-0" style={{ display: "inline-block", background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 16px", fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
             Community Wall
           </div>
-          <h1 style={{ fontSize: "clamp(26px,5vw,42px)", fontWeight: 900, color: "#fff", margin: "0 0 14px", lineHeight: 1.18, letterSpacing: "-0.02em" }}>
-            Stories from Every Celebration
+          <h1 className="cw-h-1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,5vw,3rem)", fontWeight: 300, color: "#fff", margin: "0 0 14px", lineHeight: 1.18 }}>
+            Stories from Every <em style={{ color: "#CCAB4A", fontStyle: "italic" }}>Celebration</em>
           </h1>
-          <p style={{ fontSize: "clamp(13px,2vw,16px)", color: "rgba(255,255,255,0.65)", maxWidth: 540, margin: "0 auto 28px", lineHeight: 1.65 }}>
+          <p className="cw-h-2" style={{ fontSize: "clamp(13px,2vw,16px)", color: "rgba(255,255,255,0.65)", maxWidth: 540, margin: "0 auto 28px", lineHeight: 1.65 }}>
             Real experiences, polls, creative ideas, and honest lessons — shared by people who celebrate with Tendr.
           </p>
           <button
+            className="cw-h-3"
             onClick={() => {
               if (isStandalone || isLoggedIn) { setFormOpen(v => !v); return; }
               navigate("/login");

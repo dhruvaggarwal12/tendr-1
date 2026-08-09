@@ -61,28 +61,37 @@ export default function InstallApp() {
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+    <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font }}>
       <HamburgerNav title="Install App" noSidebar />
 
-      <div style={{ maxWidth: 500, margin: "0 auto", padding: "32px 20px 80px" }}>
+      <style>{`
+        .ia-dot-bg { background-color: #FFFCF5; background-image: radial-gradient(circle, rgba(196,122,46,0.22) 1.5px, transparent 1.5px); background-size: 26px 26px; }
+        @keyframes ia-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .ia-in-0 { animation: ia-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .ia-in-1 { animation: ia-in 0.52s 0.13s cubic-bezier(.22,1,.36,1) both; }
+        .ia-in-2 { animation: ia-in 0.52s 0.21s cubic-bezier(.22,1,.36,1) both; }
+        @keyframes ia-step-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .ia-step { animation: ia-step-in 0.45s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .ia-in-0,.ia-in-1,.ia-in-2,.ia-step { animation: none !important; opacity: 1 !important; } }
+      `}</style>
 
-        {/* Hero */}
-        {(() => {
-          const heroContent = {
-            android: { icon: "🤖", title: "Install on Android",      sub: "Add Tendr to your home screen from Chrome — no app store needed." },
-            desktop: { icon: "💻", title: "Install on Desktop",       sub: "Add Tendr as a desktop app that opens instantly without a browser." },
-            ios:     { icon: "🍎", title: "Install on iPhone / iPad", sub: "Add Tendr to your home screen from Safari in 4 quick steps." },
-          }[active];
-          return (
-            <div style={{ textAlign: "center", marginBottom: 32 }}>
-              <div style={{ fontSize: 52, marginBottom: 12 }}>{heroContent.icon}</div>
-              <h1 style={{ fontSize: "clamp(1.5rem,5vw,2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px", letterSpacing: "-0.02em", lineHeight: 1.2 }}>
-                {heroContent.title}
-              </h1>
-              <p style={{ fontSize: 14, color: "#9B7450", margin: 0, lineHeight: 1.6 }}>{heroContent.sub}</p>
-            </div>
-          );
-        })()}
+      {/* Dot-grid hero */}
+      <div className="ia-dot-bg" style={{ padding: "72px 24px 52px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(255,252,245,0.95) 0%, rgba(255,252,245,0.55) 60%, transparent 100%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative" }}>
+          <span className="ia-in-0" style={{ display: "inline-block", fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.22)", padding: "4px 14px", borderRadius: 100, marginBottom: 18 }}>
+            Progressive Web App
+          </span>
+          <h1 className="ia-in-1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 300, color: "#1C0A04", lineHeight: 1.15, margin: "0 0 14px" }}>
+            Install <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Tendr</em>
+          </h1>
+          <p className="ia-in-2" style={{ fontSize: 15, color: "#7A5535", maxWidth: 380, margin: "0 auto", lineHeight: 1.65 }}>
+            Add Tendr to your home screen for an app-like experience — no app store required.
+          </p>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 500, margin: "0 auto", padding: "24px 20px 80px" }}>
 
         {/* Device tabs */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24, background: "#fff", borderRadius: 14, padding: 5, border: "1.5px solid rgba(196,122,46,0.12)" }}>
@@ -156,7 +165,7 @@ export default function InstallApp() {
             </div>
             <div style={{ padding: "20px 22px", display: "flex", flexDirection: "column", gap: 18 }}>
               {IOS_STEPS.map(({ num, icon, text, highlight }) => (
-                <div key={num} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
+                <div key={num} className="ia-step" style={{ display: "flex", gap: 14, alignItems: "flex-start", animationDelay: `${(num - 1) * 0.1}s` }}>
                   <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontWeight: 900, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, boxShadow: "0 2px 8px rgba(196,122,46,0.3)" }}>
                     {num}
                   </div>
