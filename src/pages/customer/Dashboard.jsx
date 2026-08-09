@@ -476,6 +476,16 @@ export default function CustomerDashboard() {
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <style>{`
+        @keyframes dash-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .dash-in-0 { animation: dash-in 0.5s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .dash-in-1 { animation: dash-in 0.5s 0.13s cubic-bezier(.22,1,.36,1) both; }
+        .dash-in-2 { animation: dash-in 0.5s 0.21s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) {
+          .dash-in-0,.dash-in-1,.dash-in-2 { animation: none !important; opacity: 1 !important; }
+        }
         @media (max-width: 768px) {
           .dashboard-install-banner { padding: 8px 12px !important; }
           .dashboard-install-banner span:first-child { font-size: 20px !important; }
@@ -518,7 +528,7 @@ export default function CustomerDashboard() {
         )}
 
         {/* Profile card */}
-        <div className="dashboard-profile-card" style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 12px rgba(139,69,19,0.07)", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <div className="dashboard-profile-card dash-in-0" style={{ background: "#FFFCF5", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.15)", boxShadow: "0 2px 12px rgba(139,69,19,0.07)", padding: "16px 20px", marginBottom: 20, display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
           <div style={{ width: 48, height: 48, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
             {user?.name?.[0]?.toUpperCase() || "U"}
           </div>
@@ -866,26 +876,31 @@ export default function CustomerDashboard() {
         })()}
 
         {/* Events section */}
-        <div style={{ marginBottom: 20 }}>
-          <h3 className="dashboard-events-title" style={{ fontSize: 20, fontWeight: 800, color: "#2C1A0E", margin: "0 0 12px", letterSpacing: "-0.01em" }}>Your Events</h3>
+        <div className="dash-in-2" style={{ marginBottom: 20 }}>
+          <h3 className="dashboard-events-title" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,3vw,2rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 14px" }}>
+            Your <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Events</em>
+          </h3>
 
           {/* Tabs */}
-          <div className="cust-tab-row" style={{ display: "flex", gap: 8, marginBottom: 20, flexWrap: "wrap" }}>
+          <div className="cust-tab-row" style={{ display: "flex", gap: 6, marginBottom: 20, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 2 }}>
             {TABS.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                style={{ padding: "7px 18px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.18s",
-                  borderColor: activeTab === tab ? "#C47A2E" : "rgba(139,69,19,0.2)",
+                style={{ padding: "7px 16px", borderRadius: 100, fontSize: 13, fontWeight: 600, fontFamily: font, cursor: "pointer", border: "1.5px solid", transition: "all 0.18s", flexShrink: 0,
+                  borderColor: activeTab === tab ? "#C47A2E" : "rgba(139,69,19,0.18)",
                   background: activeTab === tab ? "#C47A2E" : "#fff",
                   color: activeTab === tab ? "#fff" : "#6B3A1F",
+                  boxShadow: activeTab === tab ? "0 3px 10px rgba(196,122,46,0.25)" : "none",
                 }}
               >
                 {tab}
-                <span style={{ marginLeft: 6, fontSize: 11, fontWeight: 700,
-                  background: activeTab === tab ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)",
-                  color: activeTab === tab ? "#fff" : "#C47A2E",
-                  borderRadius: 100, padding: "1px 7px" }}>
-                  {counts[tab]}
-                </span>
+                {counts[tab] > 0 && (
+                  <span style={{ marginLeft: 5, fontSize: 10.5, fontWeight: 700,
+                    background: activeTab === tab ? "rgba(255,255,255,0.25)" : "rgba(196,122,46,0.1)",
+                    color: activeTab === tab ? "#fff" : "#C47A2E",
+                    borderRadius: 100, padding: "1px 6px" }}>
+                    {counts[tab]}
+                  </span>
+                )}
               </button>
             ))}
           </div>

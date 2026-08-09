@@ -31,6 +31,14 @@ export default function PartyPlacesPage() {
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
       <SEO title="Book a Party Place — Tendr" description="Villas, farmhouses, flats and venues for your celebration" path="/party-places" noIndex />
       <HamburgerNav />
+      <style>{`
+        @keyframes pp-in {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .pp-card-anim { animation: pp-in 0.48s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .pp-card-anim { animation: none !important; opacity: 1 !important; } }
+      `}</style>
 
       {/* Header — venue photo hero */}
       <div style={{ position: "relative", overflow: "hidden", height: 220 }}>
@@ -115,8 +123,8 @@ export default function PartyPlacesPage() {
             }
           `}</style>
           <div className="pp-page-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
-            {places.map(place => (
-              <div key={place.id} className="pp-card" style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", transition: "transform 0.2s, box-shadow 0.2s" }}
+            {places.map((place, idx) => (
+              <div key={place.id} className="pp-card pp-card-anim" style={{ background: "#fff", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", overflow: "hidden", boxShadow: "0 4px 20px rgba(139,69,19,0.07)", transition: "transform 0.2s, box-shadow 0.2s", animationDelay: `${idx * 0.06}s` }}
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 32px rgba(139,69,19,0.12)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(139,69,19,0.07)"; }}>
                 {/* Photo */}

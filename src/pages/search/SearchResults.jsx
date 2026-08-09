@@ -173,6 +173,14 @@ export default function SearchResults() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <style>{`
+        @keyframes sr-in {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .sr-header { animation: sr-in 0.45s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .sr-header { animation: none; } }
+      `}</style>
       <BasicSpeedDial />
       <HamburgerNav active="Browse" />
 
@@ -189,8 +197,8 @@ export default function SearchResults() {
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "24px 20px 80px" }}>
 
         {/* Page header */}
-        <div style={{ marginBottom: 12 }}>
-          <h1 style={{ fontSize: 22, fontWeight: 900, color: "#2C1A0E", margin: "0 0 12px", textTransform: "capitalize" }}>
+        <div className="sr-header" style={{ marginBottom: 12 }}>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,4vw,2.2rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 12px", textTransform: "capitalize" }}>
             {rawQuery || (activeCat
               ? `${activeCat}s${localLoc ? ` in ${localLoc}` : ""}${(localBudget || rawBudget) ? ` under ₹${Number(localBudget || rawBudget).toLocaleString("en-IN")}` : ""}`
               : "Search Results")}
@@ -377,19 +385,29 @@ export default function SearchResults() {
         ) : (
           /* Vendor results */
           !loading && vendors.length === 0 ? (
-            <div style={{ padding: "60px 24px 24px" }}>
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: 40, marginBottom: 14 }}>🔍</div>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px" }}>No vendors found</h3>
-                <p style={{ fontSize: 14, color: "#9B7450", margin: "0 0 20px" }}>
-                  {rawBudget ? "Try increasing your budget or removing the budget filter." : "Try a different location or category."}
+            <div style={{ padding: "48px 0 24px" }}>
+              <div style={{ textAlign: "center", background: "#FFFCF5", borderRadius: 20, border: "1.5px solid rgba(196,122,46,0.12)", padding: "48px 28px 40px", boxShadow: "0 2px 16px rgba(139,69,19,0.05)" }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(196,122,46,0.08)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, margin: "0 auto 18px" }}>
+                  {activeCat ? (CAT_EMOJI[activeCat] || "🔍") : "🔍"}
+                </div>
+                <h3 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "1.6rem", fontWeight: 300, color: "#2C1A0E", margin: "0 0 10px" }}>
+                  No {activeCat || "vendors"} found
+                </h3>
+                <p style={{ fontSize: 13.5, color: "#9B7450", margin: "0 0 24px", lineHeight: 1.6, maxWidth: 340, marginLeft: "auto", marginRight: "auto" }}>
+                  {rawBudget ? "Try increasing your budget or removing the budget filter." : localLoc ? `No results in ${localLoc} — try removing the location filter.` : "Try a different category or tell us what you need."}
                 </p>
-                {rawBudget && (
-                  <button onClick={() => navigate(`/search?categories=${rawCats.join(",")}&locations=${rawLocs.join(",")}&q=${encodeURIComponent(rawQuery)}`)}
-                    style={{ padding: "10px 22px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    Search without budget filter →
+                <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
+                  {rawBudget && (
+                    <button onClick={() => navigate(`/search?categories=${rawCats.join(",")}&locations=${rawLocs.join(",")}&q=${encodeURIComponent(rawQuery)}`)}
+                      style={{ padding: "10px 22px", borderRadius: 100, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.3)" }}>
+                      Remove budget filter →
+                    </button>
+                  )}
+                  <button onClick={handleTalkToTendr}
+                    style={{ padding: "10px 22px", borderRadius: 100, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                    Ask Tendr Team
                   </button>
-                )}
+                </div>
               </div>
               <TalkToTendrStrip onTalk={handleTalkToTendr} serviceType={activeCat} />
             </div>

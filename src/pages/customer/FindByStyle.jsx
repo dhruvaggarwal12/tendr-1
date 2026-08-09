@@ -121,18 +121,48 @@ export default function FindByStyle() {
     <div style={{ minHeight: '100vh', background: '#FFFCF5', fontFamily: font }}>
       <HamburgerNav />
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 60px' }}>
+      <style>{`
+        .fbs-dot-bg {
+          background-color: #FFFCF5;
+          background-image: radial-gradient(circle, rgba(196,122,46,0.2) 1.5px, transparent 1.5px);
+          background-size: 26px 26px;
+        }
+        @keyframes fbs-in {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .fbs-in-0 { animation: fbs-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .fbs-in-1 { animation: fbs-in 0.52s 0.15s cubic-bezier(.22,1,.36,1) both; }
+        .fbs-in-2 { animation: fbs-in 0.52s 0.25s cubic-bezier(.22,1,.36,1) both; }
+        @keyframes fbs-scan {
+          0%   { transform: translateY(0); opacity: 0.7; }
+          50%  { transform: translateY(calc(100% - 2px)); opacity: 1; }
+          100% { transform: translateY(0); opacity: 0.7; }
+        }
+        .fbs-scanner { animation: fbs-scan 2.2s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .fbs-in-0,.fbs-in-1,.fbs-in-2 { animation: none; opacity: 1; }
+          .fbs-scanner { animation: none; }
+        }
+      `}</style>
 
-        {/* Header */}
-        <div style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 11, fontWeight: 800, color: '#C47A2E', textTransform: 'uppercase', letterSpacing: '0.16em', margin: '0 0 8px' }}>Find by Style</p>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(1.9rem,5vw,2.8rem)', fontWeight: 400, color: '#2C1A0E', margin: '0 0 10px', letterSpacing: '0.01em' }}>
-            Upload a photo,<br />find the vendor
+      {/* Dot-grid hero */}
+      <div className="fbs-dot-bg" style={{ position: 'relative', overflow: 'hidden', borderBottom: '1.5px solid rgba(196,122,46,0.1)', padding: '72px 24px 56px', textAlign: 'center' }}>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: 'radial-gradient(ellipse 62% 70% at 50% 50%, rgba(255,252,245,0.95) 0%, rgba(255,252,245,0.6) 60%, transparent 100%)' }} />
+        <div style={{ position: 'relative', maxWidth: 540, margin: '0 auto' }}>
+          <span className="fbs-in-0" style={{ display: 'inline-block', fontSize: 10, fontWeight: 800, color: '#C47A2E', letterSpacing: '0.22em', textTransform: 'uppercase', background: 'rgba(196,122,46,0.08)', border: '1px solid rgba(196,122,46,0.22)', padding: '5px 14px', borderRadius: 100, marginBottom: 22 }}>
+            AI Visual Match
+          </span>
+          <h1 className="fbs-in-1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 'clamp(2.6rem,6vw,4rem)', fontWeight: 300, color: '#2C1A0E', margin: '0 0 16px', lineHeight: 1.05 }}>
+            Upload a photo,<br /><em style={{ color: '#C47A2E', fontStyle: 'italic' }}>find the vendor</em>
           </h1>
-          <p style={{ fontSize: 15, color: '#6B4226', margin: 0, lineHeight: 1.6 }}>
-            See a decoration style you love? Upload the photo and we'll show you vendors in our network whose work looks closest to it.
+          <p className="fbs-in-2" style={{ fontSize: 15, color: '#7A5535', margin: '0 auto', lineHeight: 1.65, maxWidth: 400 }}>
+            See a decoration style you love? Upload the photo and we'll match you with vendors whose work looks closest to it.
           </p>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '36px 20px 60px' }}>
 
         {/* Upload area */}
         {!preview ? (
@@ -142,17 +172,26 @@ export default function FindByStyle() {
             onDragLeave={onDragLeave}
             onClick={() => inputRef.current?.click()}
             style={{
-              border: `2px dashed ${dragging ? '#C47A2E' : 'rgba(196,122,46,0.35)'}`,
-              borderRadius: 18, padding: '48px 24px',
+              border: `2px dashed ${dragging ? '#C47A2E' : 'rgba(196,122,46,0.32)'}`,
+              borderRadius: 20, padding: '64px 24px',
               textAlign: 'center', cursor: 'pointer',
-              background: dragging ? 'rgba(196,122,46,0.04)' : '#fff',
+              background: dragging ? 'rgba(196,122,46,0.05)' : '#FFFCF5',
               transition: 'all 0.18s',
               marginBottom: 28,
+              boxShadow: dragging ? '0 0 0 4px rgba(196,122,46,0.12)' : 'none',
+              position: 'relative', overflow: 'hidden',
             }}
           >
-            <div style={{ fontSize: 40, marginBottom: 14 }}>🖼️</div>
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#2C1A0E', marginBottom: 6 }}>Drop a photo here</div>
-            <div style={{ fontSize: 13, color: '#9B7450' }}>or click to browse · JPG, PNG, WebP</div>
+            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(196,122,46,0.08)', border: '1.5px solid rgba(196,122,46,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 26 }}>
+              {dragging ? '⬇' : '🖼'}
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: '#2C1A0E', marginBottom: 8 }}>
+              {dragging ? 'Drop it here' : 'Drop a photo here'}
+            </div>
+            <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 16 }}>or click to browse · JPG, PNG, WebP</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 20px', borderRadius: 100, background: 'linear-gradient(135deg,#C47A2E,#CCAB4A)', color: '#fff', fontSize: 13, fontWeight: 700 }}>
+              Choose Photo
+            </div>
             <input
               ref={inputRef}
               type="file"

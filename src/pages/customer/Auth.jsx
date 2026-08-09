@@ -9,6 +9,7 @@ import { fetchEventData } from "../../redux/eventPlanningSlice";
 import { syncProgressOnLogin } from "../../utils/progressSync";
 
 const font = "'Outfit', sans-serif";
+const FD   = "'Cormorant Garamond', Georgia, serif";
 
 const EyeIcon = ({ open }) => (
   <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,11 +241,11 @@ const Auth = () => {
           </div>
 
           <div>
-            <p style={{ fontSize: 13, fontWeight: 600, letterSpacing: "0.12em", textTransform: "uppercase", color: "rgba(204,171,74,0.85)", marginBottom: 16 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.18em", textTransform: "uppercase", color: "rgba(204,171,74,0.75)", marginBottom: 18 }}>
               Event Planning, Simplified
             </p>
-            <h2 style={{ fontSize: 38, fontWeight: 900, color: "#fff", lineHeight: 1.18, margin: "0 0 20px", letterSpacing: "-0.02em" }}>
-              Your celebration,<br />perfectly planned.
+            <h2 style={{ fontFamily: FD, fontSize: "clamp(2.4rem,3.6vw,3.2rem)", fontWeight: 300, color: "#FAF7F2", lineHeight: 1.1, margin: "0 0 20px" }}>
+              Your celebration,<br /><em style={{ fontStyle: "italic", color: "#CCAB4A" }}>perfectly planned.</em>
             </h2>
             <p style={{ fontSize: 15.5, color: "rgba(255,255,255,0.7)", lineHeight: 1.65, marginBottom: 36, maxWidth: 340 }}>
               Discover verified vendors across Delhi NCR — caterers, decorators, photographers, DJs, and more.
@@ -302,12 +303,13 @@ const Auth = () => {
         <div className="auth-mobile-bg" style={{ position: "fixed", inset: 0, zIndex: 1, background: "rgba(204,171,74,0.25)", display: "none" }} />
 
         <div
+          className="auth-card"
           style={{
             width: "100%",
             maxWidth: 420,
             background: "#FFFCF5",
             borderRadius: 24,
-            boxShadow: "0 12px 48px rgba(139,69,19,0.13), 0 2px 8px rgba(0,0,0,0.04)",
+            boxShadow: "0 16px 56px rgba(139,69,19,0.15), 0 2px 8px rgba(0,0,0,0.04)",
             border: "1px solid rgba(139,69,19,0.1)",
             padding: "36px 36px 32px",
             position: "relative",
@@ -563,6 +565,12 @@ const Auth = () => {
       </div>
 
       <style>{`
+        @keyframes auth-in {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .auth-card { animation: auth-in 0.52s 0.08s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .auth-card { animation: none; } }
         @media (min-width: 860px) {
           .auth-left-panel { display: flex !important; }
           .auth-mobile-bg { display: none !important; }

@@ -118,34 +118,81 @@ export default function BaatKaro() {
   };
 
   const suggestions = [
-    "200 logo ka birthday party hai, caterer aur decorator chahiye, budget 1.5 lakh hai",
-    "Shaadi mein 400 guests, DJ aur photographer chahiye, date 15 February hai Delhi mein",
-    "Corporate event 100 log, catering aur decoration, Noida mein, budget flexible",
+    { label: "Birthday · 200 guests", full: "200 logo ka birthday party hai, caterer aur decorator chahiye, budget 1.5 lakh hai" },
+    { label: "Shaadi · DJ + Photo", full: "Shaadi mein 400 guests, DJ aur photographer chahiye, date 15 February hai Delhi mein" },
+    { label: "Corporate · 100 pax", full: "Corporate event 100 log, catering aur decoration, Noida mein, budget flexible" },
   ];
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", fontFamily: font }}>
+    <div style={{ minHeight: "100vh", background: "#FFFCF5", fontFamily: font }}>
       <SEO title="Baat Karo — Quick Connect | Tendr" description="Just tell us what you need in plain words. We'll get back to you right here in the app." path="/baat-karo" />
       <HamburgerNav />
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "48px 20px 80px" }}>
+      <style>{`
+        .bk-dot-bg {
+          background-color: #FFFCF5;
+          background-image: radial-gradient(circle, rgba(196,122,46,0.22) 1.5px, transparent 1.5px);
+          background-size: 26px 26px;
+        }
+        @keyframes bk-in {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .bk-in-0 { animation: bk-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .bk-in-1 { animation: bk-in 0.52s 0.13s cubic-bezier(.22,1,.36,1) both; }
+        .bk-in-2 { animation: bk-in 0.52s 0.21s cubic-bezier(.22,1,.36,1) both; }
+        .bk-in-3 { animation: bk-in 0.52s 0.29s cubic-bezier(.22,1,.36,1) both; }
+        .bk-chip {
+          display: inline-flex; align-items: center; gap: 6px;
+          padding: 7px 16px; border-radius: 100px;
+          border: 1.5px solid rgba(196,122,46,0.28);
+          background: rgba(196,122,46,0.05);
+          color: #7A5535; font-size: 12.5px; font-weight: 600;
+          cursor: pointer; white-space: nowrap; flex-shrink: 0;
+          transition: background 0.15s, border-color 0.15s;
+          font-family: inherit;
+        }
+        .bk-chip:hover { background: rgba(196,122,46,0.12); border-color: rgba(196,122,46,0.45); }
+        @media (prefers-reduced-motion: reduce) {
+          .bk-in-0,.bk-in-1,.bk-in-2,.bk-in-3 { animation: none; opacity: 1; }
+        }
+      `}</style>
 
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 32 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 16, background: "rgba(196,122,46,0.1)", border: "2px solid rgba(196,122,46,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, margin: "0 auto 14px" }}>
-            💬
-          </div>
-          <h1 style={{ fontSize: "clamp(1.4rem, 4vw, 2rem)", fontWeight: 900, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-            Baat Karo
+      {/* Dot-grid hero */}
+      <div className="bk-dot-bg" style={{ position: "relative", overflow: "hidden", borderBottom: "1.5px solid rgba(196,122,46,0.1)", padding: "72px 24px 56px", textAlign: "center" }}>
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: "radial-gradient(ellipse 62% 72% at 50% 50%, rgba(255,252,245,0.95) 0%, rgba(255,252,245,0.6) 58%, transparent 100%)",
+        }} />
+        <div style={{ position: "relative", maxWidth: 520, margin: "0 auto" }}>
+          <span className="bk-in-0" style={{
+            display: "inline-block",
+            fontSize: 10, fontWeight: 800, color: "#C47A2E",
+            letterSpacing: "0.22em", textTransform: "uppercase",
+            background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.22)",
+            padding: "5px 14px", borderRadius: 100, marginBottom: 22,
+          }}>Concierge Chat</span>
+
+          <h1 className="bk-in-1" style={{
+            fontFamily: "'Cormorant Garamond', Georgia, serif",
+            fontSize: "clamp(2.6rem,6vw,4.2rem)",
+            fontWeight: 300, color: "#2C1A0E",
+            margin: "0 0 16px", lineHeight: 1.05,
+          }}>
+            Baat <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Karo</em>
           </h1>
-          <p style={{ fontSize: 14, color: "#9B7450", margin: 0, lineHeight: 1.6 }}>
-            Koi form nahi, koi category nahi — bas likh do apni requirements.<br />
-            Hamari Tendr Team yahin app mein reply karegi.
+
+          <p className="bk-in-2" style={{ fontSize: 15, color: "#7A5535", margin: "0 auto", lineHeight: 1.65, maxWidth: 400 }}>
+            Koi form nahi, koi category nahi — bas apna event likh do.<br />
+            Hamari Tendr Team yahin reply karegi.
           </p>
         </div>
+      </div>
+
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "36px 20px 80px" }}>
 
         {/* Chat box */}
-        <div style={{ background: "#FFFCF5", border: "2px solid rgba(196,122,46,0.25)", borderRadius: 20, padding: 20, boxShadow: "0 4px 24px rgba(139,69,19,0.08)", marginBottom: 16 }}>
+        <div className="bk-in-3" style={{ background: "#FFFCF5", border: "2px solid rgba(196,122,46,0.22)", borderRadius: 20, padding: 20, boxShadow: "0 4px 28px rgba(139,69,19,0.08)", marginBottom: 16 }}>
 
           {/* Bot message */}
           <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
@@ -162,7 +209,7 @@ export default function BaatKaro() {
             </div>
           </div>
 
-          {/* Attached photos strip — venue photo + reference style photos */}
+          {/* Attached photos strip */}
           {refPhotos.length > 0 && (
             <div style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 12, background: "rgba(196,122,46,0.07)", border: "1px dashed rgba(196,122,46,0.35)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
@@ -228,19 +275,15 @@ export default function BaatKaro() {
           </div>
         </div>
 
-        {/* Suggestions */}
+        {/* Suggestion chips — horizontal scrollable */}
         <div style={{ marginBottom: 20 }}>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 8px" }}>
-            Examples
+          <p style={{ fontSize: 10.5, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>
+            Try an example
           </p>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
             {suggestions.map((s, i) => (
-              <button key={i} onClick={() => setText(s)}
-                style={{ textAlign: "left", padding: "9px 13px", borderRadius: 10, border: "1.5px dashed rgba(196,122,46,0.3)", background: "rgba(196,122,46,0.04)", color: "#7A5535", fontSize: 12.5, fontFamily: font, cursor: "pointer", lineHeight: 1.5, transition: "background 0.15s" }}
-                onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
-                onMouseLeave={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
-              >
-                "{s}"
+              <button key={i} onClick={() => setText(s.full)} className="bk-chip">
+                {s.label}
               </button>
             ))}
           </div>
@@ -252,10 +295,10 @@ export default function BaatKaro() {
           disabled={!text.trim() || sending}
           style={{
             width: "100%",
-            padding: "14px",
+            padding: "15px",
             borderRadius: 14,
             border: "none",
-            background: text.trim() && !sending ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.15)",
+            background: text.trim() && !sending ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.12)",
             color: text.trim() && !sending ? "#fff" : "#9B7450",
             fontSize: 16,
             fontWeight: 800,
@@ -269,11 +312,10 @@ export default function BaatKaro() {
             gap: 10,
           }}
         >
-          <span style={{ fontSize: 20 }}>💬</span>
           {sending ? "Sending…" : !token ? "Sign in & Send →" : "Send →"}
         </button>
 
-        <p style={{ textAlign: "center", fontSize: 12, color: "#9B7450", marginTop: 8 }}>
+        <p style={{ textAlign: "center", fontSize: 12, color: "#9B7450", marginTop: 10 }}>
           Tendr Team is reviewing your message — track it under My Chats.
         </p>
       </div>

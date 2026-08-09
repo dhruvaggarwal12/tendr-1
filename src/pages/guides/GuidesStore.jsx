@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import { GUIDES } from "./guideData";
@@ -19,26 +20,41 @@ const STORE = {
 
 export default function GuidesStore() {
   const navigate = useNavigate();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setMounted(true), 60); return () => clearTimeout(t); }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: STORE.bg, fontFamily: font }}>
       <HamburgerNav title="Event Planning Guides" />
 
+      <style>{`
+        @keyframes gs-in {
+          from { opacity: 0; transform: translateY(24px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .gs-card { animation: none !important; opacity: 1 !important; }
+        }
+      `}</style>
+
       <div style={{ maxWidth: 1100, margin: "0 auto", padding: "32px 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: 20 }}>
-          <h1 style={{ fontSize: "clamp(1.1rem, 3.5vw, 1.7rem)", fontWeight: 900, color: STORE.heading, letterSpacing: "-0.02em", lineHeight: 1.2, margin: "0 0 6px" }}>
-            Event Planning Guides
+        <div style={{ textAlign: "center", marginBottom: 28 }}>
+          <span style={{ display: "inline-block", fontSize: 10, fontWeight: 800, color: "#C47A2E", letterSpacing: "0.2em", textTransform: "uppercase", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", padding: "4px 14px", borderRadius: 100, marginBottom: 14 }}>
+            Knowledge Base
+          </span>
+          <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,3rem)", fontWeight: 300, color: STORE.heading, lineHeight: 1.15, margin: "0 0 10px" }}>
+            Event Planning <em style={{ color: "#CCAB4A", fontStyle: "italic" }}>Guides</em>
           </h1>
-          <p style={{ fontSize: 12, color: STORE.muted, maxWidth: 400, margin: "0 auto", lineHeight: 1.5 }}>
+          <p style={{ fontSize: 13, color: STORE.muted, maxWidth: 360, margin: "0 auto", lineHeight: 1.6 }}>
             Practical, no-fluff guides for budgeting, decorating, and planning any event.
           </p>
         </div>
 
         {/* Guide cards grid */}
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(min(280px, 100%), 1fr))", gap: 16 }}>
-          {GUIDES.map((guide) => (
-            <GuideCard key={guide.slug} guide={guide} onOpen={() => navigate(`/guides/${guide.slug}`)} />
+          {GUIDES.map((guide, idx) => (
+            <GuideCard key={guide.slug} guide={guide} index={idx} mounted={mounted} onOpen={() => navigate(`/guides/${guide.slug}`)} />
           ))}
         </div>
 
@@ -53,11 +69,12 @@ export default function GuidesStore() {
   );
 }
 
-function GuideCard({ guide, onOpen }) {
+function GuideCard({ guide, onOpen, index, mounted }) {
   const { theme } = guide;
   return (
     <div
       onClick={onOpen}
+      className="gs-card"
       style={{
         background: STORE.card,
         border: `1px solid ${STORE.border}`,
@@ -67,6 +84,8 @@ function GuideCard({ guide, onOpen }) {
         transition: "transform 0.2s, border-color 0.2s, box-shadow 0.2s",
         position: "relative",
         overflow: "hidden",
+        animation: mounted ? `gs-in 0.5s ${index * 0.07}s cubic-bezier(.22,1,.36,1) both` : "none",
+        opacity: mounted ? undefined : 0,
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = "translateY(-4px)";
