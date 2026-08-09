@@ -29,16 +29,24 @@ export default function MemoriesPage() {
     <div style={{ minHeight: "100vh", background: "#f8f4ef", fontFamily: font }}>
       <HamburgerNav />
 
+      <style>{`
+        @keyframes mem-in { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+        .mem-in-0 { animation: mem-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .mem-in-1 { animation: mem-in 0.52s 0.14s cubic-bezier(.22,1,.36,1) both; }
+        .mem-in-2 { animation: mem-in 0.52s 0.23s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .mem-in-0,.mem-in-1,.mem-in-2 { animation: none !important; opacity: 1 !important; } }
+      `}</style>
       {/* Header */}
-      <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", padding: "40px 24px 32px" }}>
-        <div style={{ maxWidth: 900, margin: "0 auto" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(204,171,74,0.8)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>
-            ✨ Memories by Tendr
+      <div style={{ background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 100%)", padding: "52px 24px 40px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 50% 0%, rgba(196,122,46,0.18) 0%, transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 900, margin: "0 auto", position: "relative" }}>
+          <div className="mem-in-0" style={{ display: "inline-block", background: "rgba(204,171,74,0.15)", border: "1px solid rgba(204,171,74,0.3)", borderRadius: 100, padding: "5px 16px", fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16 }}>
+            Memories by Tendr
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", margin: "0 0 8px", lineHeight: 1.2 }}>
-            Make every event unforgettable
+          <h1 className="mem-in-1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,3rem)", fontWeight: 300, color: "#fff", margin: "0 0 12px", lineHeight: 1.2 }}>
+            Make every event <em style={{ color: "#CCAB4A", fontStyle: "italic" }}>unforgettable</em>
           </h1>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: 0, lineHeight: 1.7 }}>
+          <p className="mem-in-2" style={{ fontSize: 14, color: "rgba(255,255,255,0.6)", margin: "0 auto", lineHeight: 1.7, maxWidth: 500 }}>
             From custom invitations to elegant décor — handpicked keepsakes for your celebrations.
           </p>
         </div>

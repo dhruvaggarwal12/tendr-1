@@ -163,9 +163,9 @@ export default function ComingSoon() {
         {/* Headline */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 0.1 }}
-          style={{ fontSize: "clamp(2.6rem, 7vw, 5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.05, margin: "0 0 28px" }}
+          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.6rem, 7vw, 5rem)", fontWeight: 300, color: "#fff", lineHeight: 1.05, margin: "0 0 28px" }}
         >
-          Coming Soon
+          Coming <em style={{ color: "#CCAB4A", fontStyle: "italic" }}>Soon</em>
         </motion.h1>
 
         {/* Logo */}

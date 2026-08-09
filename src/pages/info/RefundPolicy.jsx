@@ -36,14 +36,28 @@ export default function RefundPolicy() {
 
       <HamburgerNav />
 
+      <style>{`
+        .rp-dot-bg { background-color: #FFFCF5; background-image: radial-gradient(circle, rgba(196,122,46,0.22) 1.5px, transparent 1.5px); background-size: 26px 26px; }
+        @keyframes rp-in { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .rp-in-0 { animation: rp-in 0.52s 0.05s cubic-bezier(.22,1,.36,1) both; }
+        .rp-in-1 { animation: rp-in 0.52s 0.13s cubic-bezier(.22,1,.36,1) both; }
+        .rp-in-2 { animation: rp-in 0.52s 0.21s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) { .rp-in-0,.rp-in-1,.rp-in-2 { animation: none !important; opacity: 1 !important; } }
+      `}</style>
       {/* Hero */}
-      <div style={{ background: "linear-gradient(160deg, #FFF8F2 0%, #F5E6CC 100%)", padding: "72px 24px 60px", textAlign: "center" }}>
-        <p style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.14em", textTransform: "uppercase", color: "#C47A2E", marginBottom: 14 }}>Policies</p>
-        <h1 style={{ fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.02em", margin: "0 0 16px" }}>Refund Policy</h1>
-        <p style={{ fontSize: 17, color: "#7A5535", maxWidth: 520, margin: "0 auto" }}>
-          We strive to be fair to both our customers and vendors. Here's exactly how our refund process works.
-        </p>
-        <div style={{ width: 48, height: 3, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)", borderRadius: 100, margin: "20px auto 0" }} />
+      <div className="rp-dot-bg" style={{ padding: "80px 24px 64px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 62% 72% at 50% 50%, rgba(255,252,245,0.95) 0%, rgba(255,252,245,0.58) 60%, transparent 100%)", pointerEvents: "none" }} />
+        <div style={{ position: "relative" }}>
+          <span className="rp-in-0" style={{ display: "inline-block", fontSize: 11, fontWeight: 800, letterSpacing: "0.2em", textTransform: "uppercase", color: "#C47A2E", background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.22)", padding: "4px 14px", borderRadius: 100, marginBottom: 18 }}>
+            Policies
+          </span>
+          <h1 className="rp-in-1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2.2rem, 5vw, 3.4rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 16px", lineHeight: 1.15 }}>
+            Refund <em style={{ color: "#C47A2E", fontStyle: "italic" }}>Policy</em>
+          </h1>
+          <p className="rp-in-2" style={{ fontSize: 17, color: "#7A5535", maxWidth: 520, margin: "0 auto", lineHeight: 1.65 }}>
+            We strive to be fair to both our customers and vendors. Here's exactly how our refund process works.
+          </p>
+        </div>
       </div>
 
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "64px 24px 80px" }}>

@@ -66,6 +66,10 @@ export default function ToolIntroWrapper({ toolId, icon, title, tagline, descrip
       <div style={{ maxWidth: 900, margin: "0 auto", padding: "44px 24px 80px" }}>
 
         <style>{`
+          @keyframes ti-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+          .ti-in-0 { animation: ti-in 0.5s 0.05s cubic-bezier(.22,1,.36,1) both; }
+          .ti-in-1 { animation: ti-in 0.5s 0.14s cubic-bezier(.22,1,.36,1) both; }
+          @media (prefers-reduced-motion: reduce) { .ti-in-0,.ti-in-1 { animation: none !important; opacity: 1 !important; } }
           @media (max-width: 600px) {
             .tool-intro-hero { flex-direction: column !important; gap: 20px !important; }
             .tool-intro-icon { width: 64px !important; height: 64px !important; font-size: 32px !important; border-radius: 18px !important; }
@@ -74,11 +78,11 @@ export default function ToolIntroWrapper({ toolId, icon, title, tagline, descrip
         `}</style>
         {/* Hero */}
         <div className="tool-intro-hero" style={{ display: "flex", gap: 36, alignItems: "flex-start", marginBottom: 48, flexWrap: "wrap" }}>
-          <div className="tool-intro-icon" style={{ width: 100, height: 100, borderRadius: 28, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, boxShadow: "0 8px 28px rgba(196,122,46,0.35)", flexShrink: 0 }}>
+          <div className="tool-intro-icon ti-in-0" style={{ width: 100, height: 100, borderRadius: 28, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 48, boxShadow: "0 8px 28px rgba(196,122,46,0.35)", flexShrink: 0 }}>
             {icon}
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{ fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 900, color: "#2C1A0E", letterSpacing: "-0.03em", margin: "0 0 8px", lineHeight: 1.1 }}>{title}</h1>
+          <div className="ti-in-1" style={{ flex: 1, minWidth: 0 }}>
+            <h1 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 300, color: "#2C1A0E", margin: "0 0 8px", lineHeight: 1.1 }}>{title}</h1>
             <p style={{ fontSize: 16, fontWeight: 700, color: "#C47A2E", margin: "0 0 10px" }}>{tagline}</p>
             <p style={{ fontSize: 14.5, color: "#7A5535", lineHeight: 1.7, margin: "0 0 20px", maxWidth: 500 }}>{description}</p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
