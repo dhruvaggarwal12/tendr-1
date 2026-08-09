@@ -133,22 +133,22 @@ function HomeView({ setView, setBulk }) {
       <div className="gh-hero-wrap" style={{
         position: "relative", overflow: "hidden",
         background: "#FFFCF5",
-        borderBottom: "1px solid rgba(196,122,46,0.1)",
-        padding: "64px 24px 52px", textAlign: "center",
+        borderBottom: "1.5px solid rgba(196,122,46,0.12)",
+        padding: "64px 24px 44px", textAlign: "center",
       }}>
-        {/* orb */}
+        {/* Warm grid texture */}
         <div style={{
-          position: "absolute", top: -80, left: "50%",
-          width: 500, height: 500, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(204,171,74,0.16) 0%, transparent 65%)",
-          animation: "gh-orb 4.5s ease-in-out infinite",
-          pointerEvents: "none",
+          position: "absolute", inset: 0, pointerEvents: "none",
+          backgroundImage: "radial-gradient(circle, rgba(196,122,46,0.18) 1px, transparent 1px)",
+          backgroundSize: "24px 24px",
+          maskImage: "radial-gradient(ellipse 70% 80% at 50% 50%, transparent 30%, black 100%)",
+          WebkitMaskImage: "radial-gradient(ellipse 70% 80% at 50% 50%, transparent 30%, black 100%)",
         }} />
 
-        <p style={{ position: "relative", fontSize: 11, fontWeight: 800, color: GOLD, letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 14px" }}>
+        <p className="gh-in-0" style={{ position: "relative", fontSize: 11, fontWeight: 800, color: GOLD, letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 14px" }}>
           Real Hampers · Local Vendors
         </p>
-        <h1 className="gh-hero-h1" style={{
+        <h1 className="gh-hero-h1 gh-in-1" style={{
           position: "relative",
           fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontSize: "clamp(2.8rem,6vw,4.4rem)",
@@ -158,9 +158,26 @@ function HomeView({ setView, setBulk }) {
           Gift Something{" "}
           <em style={{ fontStyle: "italic", color: GOLD }}>Special</em>
         </h1>
-        <p style={{ position: "relative", fontSize: 14, color: "#9B7450", margin: "0 auto 10px", lineHeight: 1.65, maxWidth: 380 }}>
+        <p className="gh-in-2" style={{ position: "relative", fontSize: 14, color: "#9B7450", margin: "0 auto 24px", lineHeight: 1.65, maxWidth: 380 }}>
           No in-house stock — vendor confirms price in 2–4 hrs
         </p>
+
+        {/* Scrolling category marquee */}
+        <div style={{ overflow: "hidden", marginBottom: -4, opacity: 0.7 }}>
+          <div className="gh-marquee-track">
+            {["🎂 Birthday", "💍 Wedding", "🏠 Housewarming", "🍫 Chocolates", "🕯️ Candles", "🧴 Skincare", "📦 Corporate", "🌸 Anniversary",
+              "🎂 Birthday", "💍 Wedding", "🏠 Housewarming", "🍫 Chocolates", "🕯️ Candles", "🧴 Skincare", "📦 Corporate", "🌸 Anniversary"].map((item, i) => (
+              <span key={i} style={{
+                display: "inline-flex", alignItems: "center",
+                fontSize: 12, fontWeight: 600, color: "#9B7450",
+                background: "rgba(196,122,46,0.07)",
+                border: "1px solid rgba(196,122,46,0.14)",
+                borderRadius: 100, padding: "6px 16px", margin: "0 5px",
+                whiteSpace: "nowrap",
+              }}>{item}</span>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* ── Flows ── */}
@@ -237,15 +254,28 @@ function FlowCard({ emoji, label, sub, badge, badgeColor, hovered, onHover, onLe
       onMouseEnter={onHover}
       onMouseLeave={onLeave}
       style={{
-        background: hovered ? "#FFFCF5" : "#fff",
+        position: "relative", overflow: "hidden",
+        background: "#fff",
         borderRadius: 18, padding: "20px 18px",
-        boxShadow: hovered ? "0 6px 24px rgba(44,26,14,0.12)" : "0 2px 12px rgba(44,26,14,0.06)",
+        boxShadow: hovered ? "0 8px 28px rgba(44,26,14,0.13)" : "0 2px 12px rgba(44,26,14,0.06)",
         border: `1.5px solid ${hovered ? "rgba(196,122,46,0.3)" : "rgba(196,122,46,0.13)"}`,
         cursor: "pointer", display: "flex", alignItems: "center", gap: 16,
-        transform: hovered ? "translateY(-1px)" : "none",
-        transition: "all 0.18s",
+        transform: hovered ? "translateY(-2px)" : "none",
+        transition: "transform 0.22s cubic-bezier(.22,1,.36,1), box-shadow 0.22s, border-color 0.22s",
       }}
     >
+      {/* Sliding reveal panel */}
+      <div style={{
+        position: "absolute", top: 0, right: 0, bottom: 0, width: "38%",
+        background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+        transform: hovered ? "translateX(0)" : "translateX(102%)",
+        transition: "transform 0.28s cubic-bezier(.22,1,.36,1)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        pointerEvents: "none",
+      }}>
+        <span style={{ fontSize: 28, fontWeight: 900, color: "rgba(255,255,255,0.9)" }}>›</span>
+      </div>
+
       <div style={{
         width: 48, height: 48, borderRadius: 14, flexShrink: 0,
         background: "linear-gradient(135deg,rgba(196,122,46,0.1),rgba(204,171,74,0.06))",
@@ -253,7 +283,7 @@ function FlowCard({ emoji, label, sub, badge, badgeColor, hovered, onHover, onLe
         display: "flex", alignItems: "center", justifyContent: "center",
         fontSize: 24,
       }}>{emoji}</div>
-      <div style={{ flex: 1, minWidth: 0 }}>
+      <div style={{ flex: 1, minWidth: 0, paddingRight: hovered ? "38%" : 0, transition: "padding-right 0.28s cubic-bezier(.22,1,.36,1)" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 7, flexWrap: "wrap" }}>
           <div style={{ fontSize: 15, fontWeight: 800, color: DARK }}>{label}</div>
           {badge && (
@@ -264,7 +294,6 @@ function FlowCard({ emoji, label, sub, badge, badgeColor, hovered, onHover, onLe
         </div>
         <div style={{ fontSize: 12.5, color: "#9B7450", marginTop: 3, lineHeight: 1.5 }}>{sub}</div>
       </div>
-      <div style={{ color: GOLD, fontSize: 18, fontWeight: 700, flexShrink: 0, opacity: hovered ? 1 : 0.5, transition: "opacity 0.18s" }}>›</div>
     </div>
   );
 }
@@ -779,12 +808,24 @@ export default function GiftingHub() {
       <HamburgerNav />
 
       <style>{`
-        @keyframes gh-orb {
-          0%, 100% { opacity: 0.5; transform: translateX(-50%) scale(1); }
-          50%       { opacity: 0.8; transform: translateX(-50%) scale(1.06); }
+        @keyframes gh-in {
+          from { opacity: 0; transform: translateY(16px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes gh-marquee {
+          from { transform: translateX(0); }
+          to   { transform: translateX(-50%); }
+        }
+        .gh-in-0 { animation: gh-in 0.5s 0.04s cubic-bezier(.22,1,.36,1) both; }
+        .gh-in-1 { animation: gh-in 0.5s 0.12s cubic-bezier(.22,1,.36,1) both; }
+        .gh-in-2 { animation: gh-in 0.5s 0.2s  cubic-bezier(.22,1,.36,1) both; }
+        .gh-marquee-track { display: flex; width: max-content; animation: gh-marquee 22s linear infinite; }
+        @media (prefers-reduced-motion: reduce) {
+          .gh-in-0, .gh-in-1, .gh-in-2 { animation: none; opacity: 1; }
+          .gh-marquee-track { animation: none; }
         }
         @media (max-width: 640px) {
-          .gh-hero-wrap { padding: 52px 18px 40px !important; }
+          .gh-hero-wrap { padding: 52px 18px 36px !important; }
           .gh-hero-h1   { font-size: 2.6rem !important; }
         }
       `}</style>

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -7,15 +7,47 @@ import Footer from "../../components/Footer";
 const F  = "'Outfit', sans-serif";
 const FD = "'Cormorant Garamond', Georgia, serif";
 
-const FEATURES = [
-  { emoji: "🪢", title: "Curated Rakhi Sets",    desc: "Premium rakhis + personalised gifts in one beautiful handcrafted box." },
-  { emoji: "🎁", title: "Hampers for Everyone",   desc: "Brother, sister, and family packs — pick what fits the moment." },
-  { emoji: "🚚", title: "Delhi NCR Delivery",     desc: "Delivered fresh to your doorstep before Raksha Bandhan." },
-  { emoji: "✨", title: "Personalised Touch",      desc: "Custom messages, photos, and handwritten notes — no extra cost." },
+const RAKSHA_BANDHAN = new Date("2026-08-09T00:00:00");
+
+const AVATARS = [
+  { initials: "P", color: "#C47A2E" },
+  { initials: "R", color: "#9B7450" },
+  { initials: "A", color: "#CCAB4A" },
+  { initials: "S", color: "#C47A2E" },
 ];
+
+function useCountdown(target) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const tick = () => {
+      const diff = target - Date.now();
+      if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return; }
+      setTimeLeft({
+        days:    Math.floor(diff / 86400000),
+        hours:   Math.floor((diff % 86400000) / 3600000),
+        minutes: Math.floor((diff % 3600000)  / 60000),
+        seconds: Math.floor((diff % 60000)    / 1000),
+      });
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [target]);
+
+  return timeLeft;
+}
 
 const RakhiGiftHub = () => {
   const navigate = useNavigate();
+  const timeLeft = useCountdown(RAKSHA_BANDHAN);
+  const [email, setEmail] = useState("");
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleNotify = (e) => {
+    e.preventDefault();
+    if (email.trim()) setSubmitted(true);
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: "#FAF7F2", fontFamily: F }}>
@@ -27,186 +59,203 @@ const RakhiGiftHub = () => {
       <HamburgerNav title="Rakhi Hampers" showBack />
 
       <style>{`
-        @keyframes rh-orb {
-          0%, 100% { opacity: 0.45; transform: translate(-50%, -50%) scale(1); }
-          50%       { opacity: 0.75; transform: translate(-50%, -50%) scale(1.08); }
-        }
-        @keyframes rh-badge-float {
-          0%, 100% { transform: translateY(0); }
-          50%       { transform: translateY(-5px); }
-        }
-        @keyframes rh-card-in {
+        @keyframes rh-in {
           from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        @keyframes rh-pulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(196,122,46,0.35); }
+          50%       { box-shadow: 0 0 0 8px rgba(196,122,46,0); }
+        }
+        .rh-digit-block {
+          background: rgba(255,252,245,0.06);
+          border: 1.5px solid rgba(255,255,255,0.1);
+          border-radius: 14px;
+          padding: 16px 12px 10px;
+          min-width: 68px;
+          text-align: center;
+          backdrop-filter: blur(8px);
+        }
+        .rh-notify-btn {
+          background: linear-gradient(135deg, #C47A2E, #CCAB4A);
+          color: #fff;
+          border: none;
+          border-radius: 12px;
+          font-family: ${F};
+          font-size: 14px;
+          font-weight: 700;
+          padding: 14px 24px;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: opacity 0.2s;
+        }
+        .rh-notify-btn:hover { opacity: 0.88; }
+        .rh-secondary-btn {
+          background: transparent;
+          border: 1.5px solid rgba(196,122,46,0.35);
+          color: #C47A2E;
+          border-radius: 12px;
+          font-family: ${F};
+          font-size: 14px;
+          font-weight: 600;
+          padding: 14px 24px;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .rh-secondary-btn:hover { background: rgba(196,122,46,0.07); }
         @media (max-width: 640px) {
-          .rh-hero     { padding: 64px 20px 56px !important; }
-          .rh-hero-h1  { font-size: 3rem !important; }
-          .rh-features { grid-template-columns: 1fr !important; }
+          .rh-hero    { padding: 64px 20px 56px !important; }
+          .rh-hero-h1 { font-size: 2.8rem !important; }
+          .rh-digit-block { min-width: 56px; padding: 12px 8px 8px; }
+          .rh-email-row { flex-direction: column !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .rh-pulse-dot { animation: none !important; }
         }
       `}</style>
 
-      {/* ── Dark hero ── */}
+      {/* Hero */}
       <div className="rh-hero" style={{
         position: "relative", overflow: "hidden",
         background: "linear-gradient(160deg, #1C0A04 0%, #3A1808 55%, #2C1A0E 100%)",
         padding: "96px 24px 80px",
         textAlign: "center",
       }}>
-        {/* orb */}
+        {/* Texture overlay */}
         <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          width: 540, height: 540, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(204,171,74,0.13) 0%, transparent 68%)",
-          animation: "rh-orb 5.5s ease-in-out infinite",
-          pointerEvents: "none",
+          position: "absolute", inset: 0, pointerEvents: "none",
+          backgroundImage: "radial-gradient(circle, rgba(204,171,74,0.06) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }} />
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: "radial-gradient(ellipse 70% 60% at 50% 40%, rgba(196,122,46,0.12) 0%, transparent 70%)",
         }} />
 
-        {/* "Coming Soon" badge */}
-        <div style={{ position: "relative", marginBottom: 28, animation: "rh-badge-float 3.5s ease-in-out infinite" }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 8,
-            background: "rgba(204,171,74,0.1)",
-            border: "1.5px solid rgba(204,171,74,0.3)",
-            borderRadius: 100, padding: "7px 18px",
-          }}>
-            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A", display: "inline-block", boxShadow: "0 0 6px rgba(204,171,74,0.7)" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.14em", textTransform: "uppercase" }}>
-              Raksha Bandhan Special
-            </span>
-          </span>
-        </div>
-
-        {/* headline */}
-        <h1 className="rh-hero-h1" style={{
-          position: "relative",
-          fontFamily: FD, fontSize: "clamp(3.2rem,7vw,5rem)",
-          fontWeight: 300, color: "#FAF7F2",
-          margin: "0 0 10px", lineHeight: 1.06,
-        }}>
-          Rakhi Hampers
-        </h1>
-        <p style={{
-          position: "relative",
-          fontFamily: FD, fontSize: "clamp(1.1rem,3vw,1.5rem)",
-          color: "rgba(255,255,255,0.45)", fontStyle: "italic",
-          margin: "0 0 24px",
-        }}>For the ones who matter most</p>
-
-        <p style={{
-          position: "relative",
-          fontSize: 15, color: "rgba(255,255,255,0.58)",
-          lineHeight: 1.75, margin: "0 auto 40px", maxWidth: 420,
-        }}>
-          We're curating premium Rakhi hampers — personalised, beautiful, and delivered across Delhi NCR before Raksha Bandhan.
-        </p>
-
-        {/* CTAs */}
-        <div style={{ position: "relative", display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-          <button
-            onClick={() => navigate("/gift-hampers-cakes")}
-            style={{
-              background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-              color: "#fff", fontSize: 14, fontWeight: 700,
-              padding: "14px 28px", borderRadius: 12, border: "none",
-              cursor: "pointer", fontFamily: F,
-              boxShadow: "0 4px 20px rgba(196,122,46,0.4)",
-              transition: "opacity 0.2s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.opacity = "0.9"}
-            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-          >
-            Browse Gift Hampers →
-          </button>
-          <button
-            onClick={() => navigate("/")}
-            style={{
-              background: "rgba(255,255,255,0.07)",
-              color: "rgba(255,255,255,0.8)", fontSize: 14, fontWeight: 600,
-              padding: "14px 28px", borderRadius: 12,
-              border: "1.5px solid rgba(255,255,255,0.18)",
-              cursor: "pointer", fontFamily: F, transition: "background 0.2s",
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
-            onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}
-          >
-            ← Back to Home
-          </button>
-        </div>
-      </div>
-
-      {/* ── What's Coming ── */}
-      <div style={{ maxWidth: 760, margin: "0 auto", padding: "72px 24px 80px" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }}>
-          <p style={{
-            fontSize: 11, fontWeight: 800, color: "#C47A2E",
-            letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 12px",
-          }}>What's Coming</p>
-          <h2 style={{
-            fontFamily: FD, fontSize: "clamp(2rem,5vw,3rem)",
-            fontWeight: 300, color: "#2C1A0E",
-            margin: 0, lineHeight: 1.15,
-          }}>
-            Built for{" "}
-            <em style={{ fontStyle: "italic", color: "#C47A2E" }}>Raksha Bandhan</em>
-          </h2>
-        </div>
-
-        <div className="rh-features" style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-          gap: 16,
-        }}>
-          {FEATURES.map((f, i) => (
-            <div key={f.title} style={{
-              background: "#FFFCF5",
-              border: "1.5px solid rgba(196,122,46,0.12)",
-              borderRadius: 18,
-              padding: "24px 22px",
-              boxShadow: "0 2px 14px rgba(44,26,14,0.05)",
-              display: "flex", gap: 16, alignItems: "flex-start",
-              animation: `rh-card-in 0.5s ease both`,
-              animationDelay: `${i * 0.1}s`,
+        <div style={{ position: "relative", maxWidth: 580, margin: "0 auto" }}>
+          {/* Live badge */}
+          <div style={{ marginBottom: 28, animation: "rh-in 0.5s 0.05s both" }}>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 8,
+              background: "rgba(204,171,74,0.1)",
+              border: "1.5px solid rgba(204,171,74,0.28)",
+              borderRadius: 100, padding: "7px 18px",
             }}>
-              <div style={{
-                width: 44, height: 44, borderRadius: 12, flexShrink: 0,
-                background: "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))",
-                border: "1.5px solid rgba(196,122,46,0.18)",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 22,
-              }}>{f.emoji}</div>
-              <div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>{f.title}</div>
-                <div style={{ fontSize: 13, color: "#9B7450", lineHeight: 1.6 }}>{f.desc}</div>
-              </div>
-            </div>
-          ))}
-        </div>
+              <span className="rh-pulse-dot" style={{
+                width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A",
+                display: "inline-block",
+                animation: "rh-pulse 2s ease-in-out infinite",
+              }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                Raksha Bandhan 2026 — Coming Soon
+              </span>
+            </span>
+          </div>
 
-        {/* Notify CTA */}
-        <div style={{
-          marginTop: 48,
-          background: "linear-gradient(135deg, #2C1A0E 0%, #3A1808 100%)",
-          borderRadius: 20, padding: "32px 28px", textAlign: "center",
-        }}>
-          <div style={{ fontSize: 24, marginBottom: 12 }}>🔔</div>
-          <h3 style={{
-            fontFamily: FD, fontSize: "1.6rem", fontWeight: 300,
-            color: "#FAF7F2", margin: "0 0 10px",
-          }}>Be the first to know</h3>
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.55)", margin: "0 0 20px", lineHeight: 1.6 }}>
-            Rakhi Hampers launch before Raksha Bandhan. Meanwhile, explore our full gift hamper range.
-          </p>
-          <button
-            onClick={() => navigate("/gift-hampers-cakes")}
-            style={{
-              background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-              color: "#fff", fontSize: 14, fontWeight: 700,
-              padding: "13px 28px", borderRadius: 12, border: "none",
-              cursor: "pointer", fontFamily: F,
-              boxShadow: "0 4px 16px rgba(196,122,46,0.35)",
-            }}
-          >Browse Gift Hampers →</button>
+          <h1 className="rh-hero-h1" style={{
+            fontFamily: FD, fontSize: "clamp(3rem,7vw,4.8rem)",
+            fontWeight: 300, color: "#FAF7F2",
+            margin: "0 0 10px", lineHeight: 1.06,
+            animation: "rh-in 0.55s 0.12s cubic-bezier(.22,1,.36,1) both",
+          }}>
+            Rakhi Hampers
+          </h1>
+          <p style={{
+            fontFamily: FD, fontSize: "clamp(1.1rem,3vw,1.4rem)",
+            color: "rgba(255,255,255,0.42)", fontStyle: "italic",
+            margin: "0 0 44px",
+            animation: "rh-in 0.55s 0.2s both",
+          }}>For the ones who matter most</p>
+
+          {/* Countdown */}
+          <div style={{
+            display: "flex", gap: 12, justifyContent: "center", marginBottom: 44,
+            animation: "rh-in 0.55s 0.28s both",
+          }}>
+            {[
+              { value: timeLeft.days,    label: "Days"    },
+              { value: timeLeft.hours,   label: "Hours"   },
+              { value: timeLeft.minutes, label: "Mins"    },
+              { value: timeLeft.seconds, label: "Secs"    },
+            ].map(({ value, label }) => (
+              <div key={label} className="rh-digit-block">
+                <div style={{
+                  fontFamily: FD, fontSize: "clamp(2rem,5vw,2.8rem)",
+                  fontWeight: 300, color: "#CCAB4A", lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}>
+                  {String(value).padStart(2, "0")}
+                </div>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.38)", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 6 }}>
+                  {label}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Social proof avatars */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
+            marginBottom: 36,
+            animation: "rh-in 0.55s 0.34s both",
+          }}>
+            <div style={{ display: "flex" }}>
+              {AVATARS.map((av, i) => (
+                <div key={i} style={{
+                  width: 32, height: 32, borderRadius: "50%",
+                  background: av.color,
+                  border: "2px solid #1C0A04",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, fontWeight: 700, color: "#fff",
+                  marginLeft: i === 0 ? 0 : -10,
+                  zIndex: AVATARS.length - i,
+                  position: "relative",
+                }}>{av.initials}</div>
+              ))}
+            </div>
+            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>
+              <strong style={{ color: "rgba(255,255,255,0.8)" }}>200+ families</strong> already on the waitlist
+            </span>
+          </div>
+
+          {/* Email capture */}
+          <div style={{ animation: "rh-in 0.55s 0.4s both" }}>
+            {submitted ? (
+              <div style={{
+                background: "rgba(196,122,46,0.12)",
+                border: "1.5px solid rgba(196,122,46,0.3)",
+                borderRadius: 14, padding: "18px 24px",
+                color: "#CCAB4A", fontSize: 15, fontWeight: 600,
+              }}>
+                You're on the list! We'll notify you before launch.
+              </div>
+            ) : (
+              <form onSubmit={handleNotify} style={{ display: "flex", gap: 8, maxWidth: 440, margin: "0 auto" }} className="rh-email-row">
+                <input
+                  type="email"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  style={{
+                    flex: 1, background: "rgba(255,255,255,0.07)",
+                    border: "1.5px solid rgba(255,255,255,0.14)",
+                    borderRadius: 12, padding: "14px 16px",
+                    color: "#FAF7F2", fontSize: 14, fontFamily: F,
+                    outline: "none", minWidth: 0,
+                  }}
+                />
+                <button type="submit" className="rh-notify-btn">Notify me</button>
+              </form>
+            )}
+          </div>
+
+          {/* Browse existing */}
+          <div style={{ marginTop: 20, animation: "rh-in 0.55s 0.46s both" }}>
+            <button onClick={() => navigate("/gift-hampers-cakes")} className="rh-secondary-btn">
+              Browse Gift Hampers in the meantime →
+            </button>
+          </div>
         </div>
       </div>
 

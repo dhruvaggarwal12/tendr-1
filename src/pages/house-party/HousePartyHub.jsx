@@ -713,7 +713,24 @@ const SECTIONS = [
 export default function HousePartyHub() {
   const [open, setOpen] = useState(null);
   const [hoveredTool, setHoveredTool] = useState(null);
+  const [glare, setGlare] = useState({});
   const navigate = useNavigate();
+
+  const handleCardMouseMove = (e, id) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setGlare(prev => ({
+      ...prev,
+      [id]: {
+        x: ((e.clientX - rect.left) / rect.width) * 100,
+        y: ((e.clientY - rect.top) / rect.height) * 100,
+      },
+    }));
+  };
+
+  const handleCardMouseLeave = (id) => {
+    setHoveredTool(null);
+    setGlare(prev => { const n = { ...prev }; delete n[id]; return n; });
+  };
 
   const renderModal = () => {
     switch (open) {
@@ -766,30 +783,40 @@ export default function HousePartyHub() {
   };
 
   return (
-    <div style={{ minHeight: "100dvh", background: "linear-gradient(160deg, #0d0a1e 0%, #1a1030 50%, #12101f 100%)", fontFamily: font }}>
+    <div className="hp-aurora-bg" style={{ minHeight: "100dvh", fontFamily: font }}>
       <style>{`
-        @keyframes hp-orb {
-          0%, 100% { opacity: 0.35; transform: translate(-50%,-50%) scale(1); }
-          50%       { opacity: 0.6;  transform: translate(-50%,-50%) scale(1.1); }
+        @keyframes hp-aurora {
+          0%   { background-position: 0% 50%; }
+          50%  { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
         @keyframes hp-tool-in {
           from { opacity: 0; transform: translateY(14px); }
           to   { opacity: 1; transform: translateY(0); }
         }
+        .hp-aurora-bg {
+          background: linear-gradient(125deg, #0d0a1e, #1a1030, #0d1a2e, #1a0d2e, #0d0a1e);
+          background-size: 300% 300%;
+          animation: hp-aurora 18s ease infinite;
+        }
         @media (max-width: 480px) {
           .hp-hero-h1 { font-size: 2rem !important; }
           .hp-grid    { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hp-aurora-bg { animation: none; }
+          [data-hp-card] { transition: none !important; }
         }
       `}</style>
 
       {/* ── Hero ── */}
       <div style={{ position: "relative", overflow: "hidden", padding: "28px 20px 0", textAlign: "center" }}>
-        {/* neon orb */}
+        {/* Aurora accent layer */}
         <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          width: 480, height: 480, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(124,58,237,0.22) 0%, rgba(37,99,235,0.08) 45%, transparent 70%)",
-          animation: "hp-orb 5s ease-in-out infinite",
+          position: "absolute", top: -120, left: "50%", transform: "translateX(-50%)",
+          width: 700, height: 340, borderRadius: "50%",
+          background: "radial-gradient(ellipse at 40% 60%, rgba(124,58,237,0.18) 0%, rgba(37,99,235,0.1) 40%, transparent 70%)",
+          filter: "blur(40px)",
           pointerEvents: "none",
         }} />
 
@@ -856,29 +883,36 @@ export default function HousePartyHub() {
               <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
                 {tools.map((t, ti) => {
                   const isHovered = hoveredTool === t.id;
+                  const g = glare[t.id];
+                  const cardBg = g
+                    ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}33 0%, rgba(255,255,255,0.06) 55%), rgba(255,255,255,0.04)`
+                    : "rgba(255,255,255,0.04)";
                   return (
                     <div
                       key={t.id}
+                      data-hp-card
                       onClick={() => setOpen(t.id)}
                       onMouseEnter={() => setHoveredTool(t.id)}
-                      onMouseLeave={() => setHoveredTool(null)}
+                      onMouseMove={(e) => handleCardMouseMove(e, t.id)}
+                      onMouseLeave={() => handleCardMouseLeave(t.id)}
                       style={{
-                        background: isHovered ? "rgba(255,255,255,0.08)" : "rgba(255,255,255,0.04)",
+                        background: cardBg,
                         border: `1.5px solid ${isHovered ? t.color + "55" : "rgba(255,255,255,0.07)"}`,
                         borderRadius: 16,
                         padding: "18px 15px 15px",
                         cursor: "pointer",
-                        transition: "all 0.18s",
-                        transform: isHovered ? "translateY(-2px)" : "none",
-                        boxShadow: isHovered ? `0 8px 24px ${t.color}22` : "none",
+                        transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
+                        transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
+                        boxShadow: isHovered ? `0 10px 32px ${t.color}28` : "none",
                         animation: `hp-tool-in 0.4s ease both`,
                         animationDelay: `${(si * tools.length + ti) * 0.04}s`,
+                        willChange: "background",
                       }}
                     >
                       <div style={{ fontSize: 26, marginBottom: 10, lineHeight: 1 }}>{t.emoji}</div>
                       <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
                       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
-                      <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.6, transition: "opacity 0.18s" }} />
+                      <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.55, transition: "opacity 0.18s" }} />
                     </div>
                   );
                 })}

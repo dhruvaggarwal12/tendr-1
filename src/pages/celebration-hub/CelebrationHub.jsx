@@ -109,16 +109,42 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
     if (newComment) setComments(prev => [newComment, ...prev]);
   };
 
+  const authorInitial = (post.isAnonymous ? "A" : (post.author || "U")).charAt(0).toUpperCase();
+
   return (
-    <div style={{ background: "#fff", borderRadius: 16, border: "1.5px solid rgba(196,122,46,0.1)", padding: "18px 20px", boxShadow: "0 2px 10px rgba(0,0,0,0.04)", fontFamily: font }}>
-      {/* Category + badges row */}
-      <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 10, flexWrap: "wrap" }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: catColor, borderRadius: 100, padding: "2px 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          {CAT_LABELS[post.category] || post.category?.replace(/-/g, " ")}
-        </span>
-        {post.isPinned   && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD,     background: "rgba(196,122,46,0.1)",   borderRadius: 100, padding: "2px 10px" }}>📌 Pinned</span>}
-        {post.isFeatured && <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", background: "rgba(124,58,237,0.08)", borderRadius: 100, padding: "2px 10px" }}>✨ Featured</span>}
-        {post._isUserCreated && <span style={{ fontSize: 10, fontWeight: 700, color: "#16a34a", background: "rgba(22,163,74,0.08)", borderRadius: 100, padding: "2px 10px" }}>🆕 New</span>}
+    <div style={{
+      background: "rgba(255,252,245,0.82)",
+      backdropFilter: "blur(12px)",
+      WebkitBackdropFilter: "blur(12px)",
+      borderRadius: 16,
+      border: "1px solid rgba(196,122,46,0.1)",
+      borderLeft: `4px solid ${catColor}`,
+      padding: "18px 20px",
+      boxShadow: "0 2px 14px rgba(44,26,14,0.06)",
+      fontFamily: font,
+    }}>
+      {/* Author row */}
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+        <div style={{
+          width: 34, height: 34, borderRadius: "50%",
+          background: `linear-gradient(135deg, ${catColor}, ${catColor}aa)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 13, fontWeight: 800, color: "#fff", flexShrink: 0,
+        }}>{authorInitial}</div>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: BROWN }}>
+            {post.isAnonymous ? "Anonymous" : post.author}
+          </div>
+          <div style={{ fontSize: 11, color: "#9B7450" }}>{post.date}</div>
+        </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: catColor, borderRadius: 100, padding: "2px 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            {CAT_LABELS[post.category] || post.category?.replace(/-/g, " ")}
+          </span>
+          {post.isPinned   && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD,     background: "rgba(196,122,46,0.1)",   borderRadius: 100, padding: "2px 10px" }}>📌 Pinned</span>}
+          {post.isFeatured && <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", background: "rgba(124,58,237,0.08)", borderRadius: 100, padding: "2px 10px" }}>✨ Featured</span>}
+          {post._isUserCreated && <span style={{ fontSize: 10, fontWeight: 700, color: "#16a34a", background: "rgba(22,163,74,0.08)", borderRadius: 100, padding: "2px 10px" }}>🆕 New</span>}
+        </div>
       </div>
 
       {/* Title */}
@@ -135,9 +161,8 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
         {expanded ? "Show less ↑" : "Read more ↓"}
       </button>
 
-      {/* Meta + actions row */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: 12, color: "#9B7450", flexWrap: "wrap", gap: 8 }}>
-        <span>{post.isAnonymous ? "Anonymous" : post.author} · {post.date}</span>
+      {/* Actions row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", fontSize: 12, color: "#9B7450", flexWrap: "wrap", gap: 8 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {/* Like button */}
           <button onClick={() => onLike(post.id || post._id)}
@@ -438,11 +463,25 @@ export default function CelebrationHub() {
       <HamburgerNav active="Home" />
 
       <style>{`
-        @keyframes ch-orb {
-          0%, 100% { opacity: 0.45; transform: translateX(-50%) scale(1); }
-          50%       { opacity: 0.7;  transform: translateX(-50%) scale(1.06); }
+        .ch-hero-texture {
+          background-color: #FFF8EE;
+          background-image:
+            linear-gradient(rgba(196,122,46,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(196,122,46,0.06) 1px, transparent 1px);
+          background-size: 32px 32px;
         }
         .ch-tabs::-webkit-scrollbar { display: none; }
+        @keyframes ch-in {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .ch-in-0 { animation: ch-in 0.5s 0.04s cubic-bezier(.22,1,.36,1) both; }
+        .ch-in-1 { animation: ch-in 0.5s 0.12s cubic-bezier(.22,1,.36,1) both; }
+        .ch-in-2 { animation: ch-in 0.5s 0.2s  cubic-bezier(.22,1,.36,1) both; }
+        .ch-in-3 { animation: ch-in 0.5s 0.28s cubic-bezier(.22,1,.36,1) both; }
+        @media (prefers-reduced-motion: reduce) {
+          .ch-in-0, .ch-in-1, .ch-in-2, .ch-in-3 { animation: none; opacity: 1; }
+        }
         @media (max-width: 640px) {
           .ch-hero { padding: 48px 18px 36px !important; }
           .ch-hero-h1 { font-size: 2.2rem !important; }
@@ -466,26 +505,22 @@ export default function CelebrationHub() {
       )}
 
       {/* ── Hero banner ── */}
-      <div className="ch-hero" style={{
+      <div className="ch-hero ch-hero-texture" style={{
         position: "relative", overflow: "hidden",
-        background: "#FFFCF5",
-        borderBottom: "1px solid rgba(196,122,46,0.1)",
+        borderBottom: "1.5px solid rgba(196,122,46,0.12)",
         padding: "60px 24px 48px",
         textAlign: "center",
       }}>
-        {/* orb */}
+        {/* Radial vignette so grid fades behind text */}
         <div style={{
-          position: "absolute", top: -60, left: "50%",
-          width: 480, height: 480, borderRadius: "50%",
-          background: "radial-gradient(circle, rgba(224,93,46,0.1) 0%, rgba(196,122,46,0.06) 40%, transparent 68%)",
-          animation: "ch-orb 5s ease-in-out infinite",
-          pointerEvents: "none",
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: "radial-gradient(ellipse 60% 70% at 50% 50%, rgba(255,248,238,0.96) 0%, rgba(255,248,238,0.6) 60%, transparent 100%)",
         }} />
 
-        <p style={{ position: "relative", fontSize: 11, fontWeight: 800, color: "#C47A2E", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 14px" }}>
+        <p className="ch-in-0" style={{ position: "relative", fontSize: 11, fontWeight: 800, color: "#C47A2E", letterSpacing: "0.18em", textTransform: "uppercase", margin: "0 0 14px" }}>
           Community
         </p>
-        <h1 className="ch-hero-h1" style={{
+        <h1 className="ch-hero-h1 ch-in-1" style={{
           position: "relative",
           fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontSize: "clamp(2.4rem,5vw,3.8rem)",
@@ -494,27 +529,29 @@ export default function CelebrationHub() {
         }}>
           Celebration <em style={{ fontStyle: "italic", color: "#C47A2E" }}>Hub</em>
         </h1>
-        <p style={{ position: "relative", fontSize: 15, color: "#7A5535", margin: "0 0 28px", lineHeight: 1.65, maxWidth: 420, marginLeft: "auto", marginRight: "auto" }}>
+        <p className="ch-in-2" style={{ position: "relative", fontSize: 15, color: "#7A5535", margin: "0 0 28px", lineHeight: 1.65, maxWidth: 420, marginLeft: "auto", marginRight: "auto" }}>
           Real couples, real vendors, real talk — share stories, ask questions, inspire each other.
         </p>
 
-        <button
-          onClick={() => setShowNewPost(true)}
-          style={{
-            position: "relative",
-            display: "inline-flex", alignItems: "center", gap: 8,
-            padding: "13px 26px", borderRadius: 12, border: "none",
-            background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
-            color: "#fff", fontSize: 14, fontWeight: 800,
-            cursor: "pointer", fontFamily: font,
-            boxShadow: "0 4px 18px rgba(196,122,46,0.35)",
-            transition: "opacity 0.2s",
-          }}
-          onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
-          onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-        >
-          ✍️ Create Post
-        </button>
+        <div className="ch-in-3">
+          <button
+            onClick={() => setShowNewPost(true)}
+            style={{
+              position: "relative",
+              display: "inline-flex", alignItems: "center", gap: 8,
+              padding: "13px 26px", borderRadius: 12, border: "none",
+              background: "linear-gradient(135deg,#C47A2E,#CCAB4A)",
+              color: "#fff", fontSize: 14, fontWeight: 800,
+              cursor: "pointer", fontFamily: font,
+              boxShadow: "0 4px 18px rgba(196,122,46,0.35)",
+              transition: "opacity 0.2s",
+            }}
+            onMouseEnter={e => e.currentTarget.style.opacity = "0.88"}
+            onMouseLeave={e => e.currentTarget.style.opacity = "1"}
+          >
+            ✍️ Create Post
+          </button>
+        </div>
       </div>
 
       <div className="ch-layout" style={{ maxWidth: 880, margin: "0 auto", padding: "32px 16px 80px" }}>
