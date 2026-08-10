@@ -35,6 +35,19 @@ const CONFIG = {
     seoDesc: "Custom curated gift hampers for every occasion. Tell us what you need and we'll handle the rest.",
     seoPath: "/gift-hampers/chat",
   },
+  "Rakhi Hampers": {
+    icon: "🪢",
+    title: "Rakhi Hampers",
+    subtitle: "Tell us about your Rakhi requirements — for siblings, family or bulk gifting. We'll curate the perfect hamper and deliver across Delhi NCR.",
+    suggestions: [
+      "Rakhi hamper for bhai, budget 1000-2000, mithai + dry fruits + personalised card chahiye",
+      "Premium Rakhi set for 3 siblings, budget 3000-5000 per hamper, luxury packaging",
+      "Corporate Rakhi gifting, 100 pieces, budget 500-800 per piece, branded packaging",
+    ],
+    seoTitle: "Rakhi Hampers | Tendr",
+    seoDesc: "Custom Rakhi hampers curated for your loved ones. Tell us what you need and we'll handle the rest.",
+    seoPath: "/rakhi-hampers/chat",
+  },
   "Occasions": {
     icon: "🎉",
     title: "Plan by Occasions",

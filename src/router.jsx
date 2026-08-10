@@ -309,6 +309,11 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
   {
+    path: "/rakhi-hampers/chat",
+    element: <ServiceChat serviceType="Rakhi Hampers" />,
+    errorElement: <ErrorPage />
+  },
+  {
     path: "/occasions/chat",
     element: <ServiceChat serviceType="Occasions" />,
     errorElement: <ErrorPage />
