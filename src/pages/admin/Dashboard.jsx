@@ -1152,8 +1152,8 @@ const AdminDashboard = () => {
       .then(d => setGhOrders(d.orders || []))
       .catch((e) => { if (e?.message !== '401') console.error('gift-hampers fetch:', e); })
       .finally(() => setGhLoading(false));
-    // Also fetch sample photos
-    fetch(`${BASE_URL}/admin/gift-hamper-samples`)
+    // Also fetch sample photos (gift type only)
+    fetch(`${BASE_URL}/admin/gift-hamper-samples?type=gift`)
       .then(r => r.json())
       .then(d => setGhSamples(d.samples || []))
       .catch(() => {});
@@ -5079,6 +5079,7 @@ const AdminDashboard = () => {
                       fd.append("name", ghSampleName.trim());
                       fd.append("vendorName", ghSampleVendor.trim());
                       fd.append("priceRange", ghSamplePriceRange.trim());
+                      fd.append("sampleType", "gift");
                       if (ghSampleMinQty) fd.append("minQty", ghSampleMinQty);
                       ghSampleCategory.forEach(c => fd.append("category[]", c));
                       ghSampleOccasion.forEach(o => fd.append("occasion[]", o));
