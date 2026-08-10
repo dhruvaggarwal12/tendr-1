@@ -139,6 +139,7 @@ export default function TimelinePicker() {
         title="Event Timeline — Personalized Planning Schedule"
         description="Get a personalized event timeline based on your event type, date, and services. Free event planning countdown for birthdays, weddings, anniversaries and corporate events in Delhi NCR."
         path="/timeline-picker"
+        noIndex={true}
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Event Timeline", path: "/timeline-picker" }]}
         schema={{
           "@context": "https://schema.org",

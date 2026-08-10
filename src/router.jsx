@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet, ScrollRestoration } from "react-router-dom";
+import { createBrowserRouter, Outlet, ScrollRestoration, Navigate } from "react-router-dom";
 import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -227,10 +227,9 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
   {
-    // legacy static route, keep for compatibility
+    // legacy route — redirect to listings to avoid duplicate canonical
     path: '/VendorDetails',
-    element: <VendorDetails />,
-    errorElement: <ErrorPage />,
+    element: <Navigate to="/listings" replace />,
   },
   {
     // preferred dynamic route

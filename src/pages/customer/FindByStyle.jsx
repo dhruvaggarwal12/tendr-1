@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import HamburgerNav from '../../components/HamburgerNav';
@@ -119,6 +120,7 @@ export default function FindByStyle() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#FFFCF5', fontFamily: font }}>
+      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       <HamburgerNav />
 
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '32px 20px 60px' }}>

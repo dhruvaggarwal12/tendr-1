@@ -37,6 +37,7 @@ export default function BudgetPicker() {
         title="Event Budget Planner — Smart Budget Split for Your Celebration"
         description="Plan your event budget with Tendr's free budget allocator. Get a smart split across decoration, catering, photography and entertainment for birthdays, anniversaries and corporate events in Delhi NCR."
         path="/budget-picker"
+        noIndex={true}
         breadcrumbs={[{ name: "Home", path: "/" }, { name: "Budget Planner", path: "/budget-picker" }]}
         schema={{
           "@context": "https://schema.org",
