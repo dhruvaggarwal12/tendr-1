@@ -75,7 +75,7 @@ const GiftHampersCakes = () => {
   const openSimilar = (sample) => { setSimilarTo(sample); setSimilarSheetOpen(true); setPreviewIdx(null); };
 
   useEffect(() => {
-    fetch(`${BASE_URL}/admin/gift-hamper-samples`)
+    fetch(`${BASE_URL}/admin/gift-hamper-samples?type=gift`)
       .then(r => r.json())
       .then(d => { setSamples(d.samples || []); setLoading(false); })
       .catch(() => setLoading(false));
