@@ -1,13 +1,24 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 import Footer from "../../components/Footer";
 
 const font = "'Outfit', sans-serif";
+const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const RakhiGiftHub = () => {
   const navigate = useNavigate();
+  const [samples, setSamples] = useState([]);
+  const [samplesLoading, setSamplesLoading] = useState(true);
+  const [previewIdx, setPreviewIdx] = useState(null);
+
+  useEffect(() => {
+    fetch(`${BASE_URL}/admin/gift-hamper-samples?type=rakhi`)
+      .then(r => r.json())
+      .then(d => { setSamples(d.samples || []); setSamplesLoading(false); })
+      .catch(() => setSamplesLoading(false));
+  }, []);
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
@@ -68,6 +79,77 @@ const RakhiGiftHub = () => {
           </div>
         </div>
       </div>
+
+      {/* Rakhi Hamper Gallery */}
+      {(samplesLoading || samples.length > 0) && (
+        <div style={{ maxWidth: 960, margin: "0 auto", padding: "56px 20px 80px" }}>
+          <div style={{ textAlign: "center", marginBottom: 36 }}>
+            <p style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", color: "#C47A2E", margin: "0 0 10px" }}>Sample Collection</p>
+            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 300, color: "#1C0A04", margin: "0 0 10px" }}>
+              Rakhi Hampers
+            </h2>
+            <p style={{ fontSize: 14, color: "#9B7450", margin: 0 }}>Browse our curated Rakhi hamper collection — personalised notes, premium packaging, delivered across Delhi NCR.</p>
+          </div>
+
+          {samplesLoading ? (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
+              {[1,2,3,4].map(i => (
+                <div key={i} style={{ borderRadius: 16, overflow: "hidden", background: "#f5ede0" }}>
+                  <div style={{ height: 220, background: "linear-gradient(90deg,#f0ebe3 25%,#faf5ee 50%,#f0ebe3 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.4s infinite" }} />
+                  <div style={{ padding: 14 }}>
+                    <div style={{ height: 12, width: "70%", background: "#f0ebe3", borderRadius: 6, marginBottom: 8 }} />
+                    <div style={{ height: 10, width: "45%", background: "#f0ebe3", borderRadius: 6 }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 16 }}>
+              {samples.map((s, i) => (
+                <div
+                  key={s._id}
+                  onClick={() => setPreviewIdx(i)}
+                  style={{ borderRadius: 16, overflow: "hidden", background: "#fff", border: "1.5px solid rgba(196,122,46,0.12)", boxShadow: "0 2px 10px rgba(44,26,14,0.06)", cursor: "pointer", transition: "all 0.18s" }}
+                  onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(44,26,14,0.12)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(44,26,14,0.06)"; }}
+                >
+                  <div style={{ height: 220, overflow: "hidden", background: "#f5ede0" }}>
+                    <img src={s.url} alt={s.name || "Rakhi Hamper"} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.3s" }}
+                      onMouseEnter={e => e.currentTarget.style.transform = "scale(1.05)"}
+                      onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+                    />
+                  </div>
+                  <div style={{ padding: "12px 14px 14px" }}>
+                    {s.name && <div style={{ fontSize: 13, fontWeight: 700, color: "#1C0A04", marginBottom: 4 }}>{s.name}</div>}
+                    {s.priceRange && <div style={{ fontSize: 12, fontWeight: 600, color: "#C47A2E" }}>{s.priceRange}</div>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Full-screen preview */}
+      {previewIdx !== null && samples[previewIdx] && (
+        <div
+          onClick={() => setPreviewIdx(null)}
+          style={{ position: "fixed", inset: 0, background: "rgba(28,10,4,0.88)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 24 }}
+        >
+          <div onClick={e => e.stopPropagation()} style={{ maxWidth: 560, width: "100%", background: "#fff", borderRadius: 20, overflow: "hidden", position: "relative" }}>
+            <img src={samples[previewIdx].url} alt={samples[previewIdx].name || "Rakhi Hamper"} style={{ width: "100%", maxHeight: 420, objectFit: "cover", display: "block" }} />
+            <div style={{ padding: "16px 20px 20px" }}>
+              {samples[previewIdx].name && <div style={{ fontSize: 16, fontWeight: 700, color: "#1C0A04", marginBottom: 4 }}>{samples[previewIdx].name}</div>}
+              {samples[previewIdx].priceRange && <div style={{ fontSize: 14, color: "#C47A2E", fontWeight: 600 }}>{samples[previewIdx].priceRange}</div>}
+            </div>
+            <button onClick={() => setPreviewIdx(null)} style={{ position: "absolute", top: 12, right: 12, width: 32, height: 32, borderRadius: "50%", background: "rgba(28,10,4,0.6)", border: "none", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+            {previewIdx > 0 && <button onClick={() => setPreviewIdx(p => p - 1)} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", width: 36, height: 36, borderRadius: "50%", background: "rgba(28,10,4,0.5)", border: "none", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>‹</button>}
+            {previewIdx < samples.length - 1 && <button onClick={() => setPreviewIdx(p => p + 1)} style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", width: 36, height: 36, borderRadius: "50%", background: "rgba(28,10,4,0.5)", border: "none", color: "#fff", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>›</button>}
+          </div>
+        </div>
+      )}
+
+      <style>{`@keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }`}</style>
 
       <Footer />
     </div>
