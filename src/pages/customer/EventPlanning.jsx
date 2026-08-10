@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import { Helmet } from "react-helmet-async";
 import { getRecommendations, SERVICE_LABELS } from "../../utils/recommendationEngine";
 import { useRecommendationTracking } from "../../hooks/useRecommendationTracking";
 import { EventIdeasPanel } from "../../utils/eventIdeas";
@@ -1960,6 +1961,7 @@ const EventPlanning = () => {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: "'Outfit', sans-serif" }}>
+      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       <style>{`
         @media(max-width:600px){
           .event-question-card { padding: 18px 16px 16px !important; }

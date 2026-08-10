@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import { selectCartItems, selectCartTotal } from "../../redux/giftHamperCartSlice";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -475,6 +476,7 @@ export default function CustomerDashboard() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#F8F4EF", fontFamily: font }}>
+      <Helmet><meta name="robots" content="noindex, nofollow" /></Helmet>
       <style>{`
         @keyframes dash-in {
           from { opacity: 0; transform: translateY(20px); }

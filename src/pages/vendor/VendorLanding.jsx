@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate, Link, Navigate } from "react-router-dom";
 import SEO from "../../components/SEO";
 import HamburgerNav from "../../components/HamburgerNav";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
@@ -306,7 +306,7 @@ export default function VendorLanding() {
       .finally(() => setLoading(false));
   }, [slug, sortBy, sortOrder]); // eslint-disable-line
 
-  if (!parsed) return <NotFound />;
+  if (!parsed) return <Navigate to="/" replace />;
 
   const { service, city, budget, serviceSlug, citySlug } = parsed;
   const details = VENDOR_CONTENT[service.type];
