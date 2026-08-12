@@ -2403,142 +2403,65 @@ const Home = () => {
             {/* Backdrop */}
             <div
               onClick={() => setOccasionFlow(null)}
-              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.65)", zIndex: 9000, backdropFilter: "blur(4px)", WebkitBackdropFilter: "blur(4px)" }}
+              style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.68)", zIndex: 9000, backdropFilter: "blur(5px)", WebkitBackdropFilter: "blur(5px)" }}
             />
 
-            {/* Sheet */}
+            {/* Center modal */}
             <div style={{
-              position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 9001,
-              background: "#13090200", display: "flex", flexDirection: "column",
-              maxHeight: "92dvh",
+              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+              zIndex: 9001, width: "min(94vw, 560px)", maxHeight: "82dvh",
+              background: "linear-gradient(180deg,#1D0E03 0%,#120700 100%)",
+              borderRadius: 22, display: "flex", flexDirection: "column",
+              boxShadow: "0 24px 80px rgba(0,0,0,0.75), 0 0 0 1px rgba(196,122,46,0.18)",
+              overflow: "hidden",
             }}>
-              <div style={{
-                background: "linear-gradient(180deg,#1C0E02 0%,#130800 100%)",
-                borderRadius: "22px 22px 0 0",
-                display: "flex", flexDirection: "column",
-                maxHeight: "92dvh", overflow: "hidden",
-                boxShadow: "0 -8px 48px rgba(0,0,0,0.7)",
-              }}>
-                {/* Drag handle */}
-                <div style={{ display: "flex", justifyContent: "center", padding: "12px 0 6px" }}>
-                  <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(255,247,235,0.15)" }} />
-                </div>
-
-                {/* ── Step 1: Occasion grid ── */}
-                {isGrid && (
-                  <>
-                    <div style={{ padding: "8px 20px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                        <div>
-                          <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 4px", fontFamily: f }}>Plan an Occasion</p>
-                          <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.3rem,3vw,1.8rem)", fontWeight: 400, color: "#F5ECD8", margin: 0, lineHeight: 1.15 }}>What are you celebrating?</h2>
-                        </div>
-                        <button onClick={() => setOccasionFlow(null)} style={{ background: "rgba(255,247,235,0.08)", border: "none", color: "#F5ECD8", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
-                      </div>
-                      {/* Search */}
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,247,235,0.06)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "0 14px" }}>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.4)" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                        <input
-                          value={occasionSearch}
-                          onChange={e => setOccasionSearch(e.target.value)}
-                          placeholder="Search occasions…"
-                          style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: f, color: "#F5ECD8", padding: "10px 0" }}
-                        />
-                        {occasionSearch && <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(245,236,216,0.4)", cursor: "pointer", fontSize: 15, padding: 0 }}>✕</button>}
-                      </div>
-                    </div>
-
-                    {/* Grid */}
-                    <div style={{ overflowY: "auto", flex: 1, padding: "16px 16px 36px" }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
-                        {filtered.map(o => (
-                          <button
-                            key={o.id}
-                            onClick={() => setOccasionFlow(o)}
-                            style={{ background: "rgba(255,247,235,0.04)", border: "1.5px solid rgba(196,122,46,0.12)", borderRadius: 14, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, fontFamily: f, transition: "all 0.18s" }}
-                            onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; e.currentTarget.style.background = "rgba(196,122,46,0.08)"; }}
-                            onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; e.currentTarget.style.background = "rgba(255,247,235,0.04)"; }}
-                          >
-                            <div style={{ height: 82, overflow: "hidden", position: "relative" }}>
-                              <img src={o.coverImage} alt={o.name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.75 }} />
-                              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.55) 0%,transparent 55%)" }} />
-                              <span style={{ position: "absolute", top: 8, left: 9, fontSize: 20 }}>{o.icon}</span>
-                            </div>
-                            <div style={{ padding: "8px 10px 10px" }}>
-                              <div style={{ fontSize: 12, fontWeight: 700, color: "#F5ECD8", lineHeight: 1.25 }}>{o.name}</div>
-                              {o.localName && <div style={{ fontSize: 10, color: "#C47A2E", fontWeight: 600, marginTop: 2 }}>{o.localName}</div>}
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* ── Step 2: Party Tools vs Plan the Party ── */}
-                {!isGrid && occ && (
-                  <div style={{ padding: "12px 20px 40px", overflowY: "auto" }}>
-                    {/* Back */}
-                    <button onClick={() => setOccasionFlow("grid")} style={{ background: "none", border: "none", color: "rgba(245,236,216,0.5)", fontSize: 13, cursor: "pointer", padding: "0 0 16px", fontFamily: f, display: "flex", alignItems: "center", gap: 5 }}>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-                      All Occasions
-                    </button>
-
-                    {/* Occasion name */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 6 }}>
-                      <span style={{ fontSize: 32 }}>{occ.icon}</span>
-                      <div>
-                        <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", margin: "0 0 2px", fontFamily: f }}>You're planning</p>
-                        <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.4rem,3vw,1.9rem)", fontWeight: 400, color: "#F5ECD8", margin: 0, lineHeight: 1.1 }}>{occ.name}</h2>
-                      </div>
-                    </div>
-                    <p style={{ fontSize: 13, color: "rgba(245,236,216,0.45)", margin: "0 0 22px", fontFamily: f, lineHeight: 1.5 }}>How would you like to get started?</p>
-
-                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                      {/* Plan the Party */}
-                      <button
-                        onClick={() => { setOccasionFlow(null); navigate(`/occasions/${occ.id}`); }}
-                        style={{ padding: "20px 20px 20px 24px", borderRadius: 16, textAlign: "left", cursor: "pointer", border: "1.5px solid rgba(196,122,46,0.4)", background: "rgba(196,122,46,0.1)", transition: "all 0.18s", fontFamily: f, position: "relative", overflow: "hidden" }}
-                        onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.18)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.65)"; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.4)"; }}
-                      >
-                        <div aria-hidden style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: "#C47A2E" }} />
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                          <div>
-                            <div style={{ fontSize: 17, fontWeight: 500, color: "#F5ECD8", marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: "0.01em" }}>📋 Plan the Party</div>
-                            <div style={{ fontSize: 12.5, color: "rgba(245,236,216,0.6)", lineHeight: 1.55 }}>Décor themes, gift ideas, checklist, equipment &amp; vendor suggestions</div>
-                          </div>
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.7)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                        </div>
-                      </button>
-
-                      {/* Party Tools */}
-                      {hub ? (
-                        <button
-                          onClick={() => { setOccasionFlow(null); navigate(hub); }}
-                          style={{ padding: "20px 20px 20px 24px", borderRadius: 16, textAlign: "left", cursor: "pointer", border: "1px solid rgba(124,58,237,0.3)", background: "rgba(124,58,237,0.1)", transition: "all 0.18s", fontFamily: f, position: "relative", overflow: "hidden" }}
-                          onMouseEnter={e => { e.currentTarget.style.background = "rgba(124,58,237,0.18)"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.55)"; }}
-                          onMouseLeave={e => { e.currentTarget.style.background = "rgba(124,58,237,0.1)"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.3)"; }}
-                        >
-                          <div aria-hidden style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: "#7C3AED" }} />
-                          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                            <div>
-                              <div style={{ fontSize: 17, fontWeight: 500, color: "#F5ECD8", marginBottom: 4, fontFamily: "'Cormorant Garamond',serif", letterSpacing: "0.01em" }}>🛠️ Party Tools</div>
-                              <div style={{ fontSize: 12.5, color: "rgba(245,236,216,0.6)", lineHeight: 1.55 }}>Games, playlists, bill splitter &amp; occasion-specific tools for the big day</div>
-                            </div>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(124,58,237,0.7)" strokeWidth="2" strokeLinecap="round" style={{ flexShrink: 0 }}><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                          </div>
-                        </button>
-                      ) : (
-                        <div style={{ padding: "16px 20px 16px 24px", borderRadius: 16, border: "1px solid rgba(255,247,235,0.07)", background: "rgba(255,247,235,0.02)", position: "relative", overflow: "hidden" }}>
-                          <div aria-hidden style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: "rgba(255,247,235,0.1)" }} />
-                          <div style={{ fontSize: 16, fontWeight: 400, color: "rgba(245,236,216,0.35)", fontFamily: "'Cormorant Garamond',serif" }}>🛠️ Party Tools</div>
-                          <div style={{ fontSize: 11.5, color: "rgba(245,236,216,0.25)", marginTop: 3, fontFamily: f }}>Coming soon for this occasion</div>
-                        </div>
-                      )}
-                    </div>
+              {/* Header */}
+              <div style={{ padding: "20px 20px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", flexShrink: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                  <div>
+                    <p style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 4px", fontFamily: f }}>Plan an Occasion</p>
+                    <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.25rem,3vw,1.7rem)", fontWeight: 400, color: "#F5ECD8", margin: 0, lineHeight: 1.15 }}>What are you celebrating?</h2>
                   </div>
-                )}
+                  <button onClick={() => setOccasionFlow(null)} style={{ background: "rgba(255,247,235,0.08)", border: "1px solid rgba(255,247,235,0.1)", color: "#F5ECD8", width: 32, height: 32, borderRadius: "50%", cursor: "pointer", fontSize: 15, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.18s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,247,235,0.16)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,247,235,0.08)"; }}>✕</button>
+                </div>
+                {/* Search */}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,247,235,0.06)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 100, padding: "0 14px" }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,236,216,0.4)" strokeWidth="2.5" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input
+                    value={occasionSearch}
+                    onChange={e => setOccasionSearch(e.target.value)}
+                    placeholder="Search occasions…"
+                    style={{ flex: 1, border: "none", outline: "none", background: "transparent", fontSize: 13, fontFamily: f, color: "#F5ECD8", padding: "10px 0" }}
+                  />
+                  {occasionSearch && <button onClick={() => setOccasionSearch("")} style={{ background: "none", border: "none", color: "rgba(245,236,216,0.4)", cursor: "pointer", fontSize: 15, padding: 0 }}>✕</button>}
+                </div>
+              </div>
+
+              {/* Grid */}
+              <div style={{ overflowY: "auto", flex: 1, padding: "14px 14px 24px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(120px,1fr))", gap: 10 }}>
+                  {filtered.map(o => (
+                    <button
+                      key={o.id}
+                      onClick={() => { setOccasionFlow(null); navigate(`/occasions/${o.id}`); }}
+                      style={{ background: "rgba(255,247,235,0.04)", border: "1.5px solid rgba(196,122,46,0.12)", borderRadius: 14, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, fontFamily: f, transition: "all 0.18s" }}
+                      onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
+                      onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; e.currentTarget.style.background = "rgba(255,247,235,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}
+                    >
+                      <div style={{ height: 80, overflow: "hidden", position: "relative" }}>
+                        <img src={o.coverImage} alt={o.name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.78 }} />
+                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.52) 0%,transparent 55%)" }} />
+                        <span style={{ position: "absolute", top: 7, left: 8, fontSize: 19 }}>{o.icon}</span>
+                      </div>
+                      <div style={{ padding: "7px 10px 9px" }}>
+                        <div style={{ fontSize: 11.5, fontWeight: 700, color: "#F5ECD8", lineHeight: 1.25 }}>{o.name}</div>
+                        {o.localName && <div style={{ fontSize: 9.5, color: "#C47A2E", fontWeight: 600, marginTop: 2 }}>{o.localName}</div>}
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </>

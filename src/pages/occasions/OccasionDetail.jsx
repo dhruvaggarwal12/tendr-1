@@ -555,20 +555,36 @@ export default function OccasionDetail() {
                 <SLabel>Book your vendors</SLabel>
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {catVendors.map(cat => (
-                    <button key={cat} onClick={() => navigate(`/listings?serviceType=${cat}`)}
+                    <button key={cat} onClick={() => window.open(`/listings?serviceType=${cat}`, '_blank', 'noopener')}
                       style={{ display:"flex", alignItems:"center", justifyContent:"space-between", padding:"14px 18px", borderRadius:14, border:`1.5px solid ${border}`, background:"#fff", cursor:"pointer", fontFamily:font, transition:"all 0.18s" }}>
                       <div style={{ textAlign:"left" }}>
                         <div style={{ fontSize:14, fontWeight:700, color:ink }}>{cat}</div>
-                        <div style={{ fontSize:11.5, color:muted, marginTop:1 }}>Browse verified vendors</div>
+                        <div style={{ fontSize:11.5, color:muted, marginTop:1 }}>Opens in new tab · verified vendors</div>
                       </div>
                       <div style={{ background:`linear-gradient(135deg,${gold},${goldLt})`, borderRadius:9, padding:"7px 14px", flexShrink:0 }}>
-                        <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>Find →</span>
+                        <span style={{ fontSize:12, fontWeight:700, color:"#fff" }}>Find ↗</span>
                       </div>
                     </button>
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Baat Karo Tendr Se — WhatsApp CTA */}
+            <a
+              href={`https://wa.me/919211668427?text=Hi%20Tendr%2C%20I%27m%20planning%20a%20${encodeURIComponent(occasion.name)}%20and%20need%20help%20finding%20vendors.`}
+              target="_blank" rel="noopener noreferrer"
+              style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px", borderRadius:14, background:"#25D366", marginBottom:20, textDecoration:"none", transition:"opacity 0.18s" }}
+              onMouseEnter={e => { e.currentTarget.style.opacity="0.88"; }}
+              onMouseLeave={e => { e.currentTarget.style.opacity="1"; }}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:14, fontWeight:700, color:"#fff", lineHeight:1.2 }}>Baat Karo Tendr Se</div>
+                <div style={{ fontSize:11.5, color:"rgba(255,255,255,0.82)", marginTop:2 }}>Chat with us on WhatsApp — we'll help you plan</div>
+              </div>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
 
             {/* Gifts browse */}
             {gifts.length > 0 && (
@@ -658,8 +674,8 @@ export default function OccasionDetail() {
               </button>
             )}
             {step===5 && (
-              <button onClick={() => { const cats=catVendors; navigate(cats.length>0?`/listings?serviceType=${cats[0]}`:"/listings"); }} style={btnPrimary}>
-                Start Booking Vendors →
+              <button onClick={() => { const cats=catVendors; window.open(cats.length>0?`/listings?serviceType=${cats[0]}`:"/listings", '_blank', 'noopener'); }} style={btnPrimary}>
+                Start Booking Vendors ↗
               </button>
             )}
           </div>
