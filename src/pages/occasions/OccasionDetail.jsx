@@ -4,557 +4,451 @@ import { getOccasionById } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
 
-const font = "'Outfit', sans-serif";
+const font  = "'Outfit', sans-serif";
+const serif = "'Cormorant Garamond', Georgia, serif";
+const gold  = "#C47A2E";
+const goldLt = "#CCAB4A";
+const bg    = "#FDFAF5";
+const ink   = "#1E0F00";
 
-// ── Hub route mapping ─────────────────────────────────────────────────────────
 const HUB_ROUTES = {
-  "birthday-party":   { route: "/birthday-hub",        label: "Birthday Hub",         emoji: "🎂" },
-  "first-birthday":   { route: "/birthday-hub",        label: "Birthday Hub",         emoji: "🎂" },
-  "anniversary":      { route: "/anniversary-hub",     label: "Anniversary Hub",      emoji: "💍" },
-  "baby-shower":      { route: "/baby-shower-hub",     label: "Baby Shower Hub",      emoji: "👶" },
-  "gender-reveal":    { route: "/baby-shower-hub",     label: "Baby Shower Hub",      emoji: "🍼" },
-  "newborn-welcome":  { route: "/baby-shower-hub",     label: "Baby Shower Hub",      emoji: "👶" },
-  "housewarming":     { route: "/housewarming-hub",    label: "Housewarming Hub",     emoji: "🏡" },
-  "get-together":     { route: "/get-together-hub",    label: "Get Together Hub",     emoji: "🎉" },
-  "naming-ceremony":  { route: "/naming-ceremony-hub", label: "Naming Ceremony Hub",  emoji: "🌸" },
+  "birthday-party":  "/birthday-hub",
+  "first-birthday":  "/birthday-hub",
+  "anniversary":     "/anniversary-hub",
+  "baby-shower":     "/baby-shower-hub",
+  "gender-reveal":   "/baby-shower-hub",
+  "newborn-welcome": "/baby-shower-hub",
+  "housewarming":    "/housewarming-hub",
+  "get-together":    "/get-together-hub",
+  "naming-ceremony": "/naming-ceremony-hub",
 };
 
-// ── Equipment generator ───────────────────────────────────────────────────────
 function getEquipment(id, guests) {
   const g = guests;
   const tables = Math.ceil(g / 6);
-
   const common = [
-    { cat: "Seating & Tables", items: [
-      { name: "Folding chairs", qty: `${g + 5} chairs` },
-      { name: "Tables (6-seater)", qty: `${tables} tables` },
-    ]},
-    { cat: "Serving", items: [
-      { name: "Disposable plates", qty: `${Math.ceil(g * 1.5)} pieces` },
-      { name: "Cups / glasses", qty: `${g * 2} pieces` },
-      { name: "Napkins", qty: `${g * 3} pieces` },
-      { name: "Serving spoons", qty: "5–6 pieces" },
-      { name: "Garbage bags", qty: "4–5 bags" },
-    ]},
+    { cat: "Seating & Tables", items: [{ name: "Folding chairs", qty: `${g + 5} chairs` }, { name: "Tables (6-seater)", qty: `${tables} tables` }] },
+    { cat: "Serving", items: [{ name: "Disposable plates", qty: `${Math.ceil(g * 1.5)} pieces` }, { name: "Cups / glasses", qty: `${g * 2} pieces` }, { name: "Napkins", qty: `${g * 3} pieces` }, { name: "Serving spoons", qty: "5–6 pieces" }, { name: "Garbage bags", qty: "4–5 bags" }] },
   ];
-
   const specific = {
-    "birthday-party": [
-      { cat: "Décor", items: [
-        { name: "Balloon bouquets", qty: `${Math.ceil(g / 3)} bouquets` },
-        { name: "Streamers / ribbons", qty: "4–5 rolls" },
-        { name: "Fairy lights / LED strips", qty: "3 sets" },
-        { name: "Photo backdrop", qty: "1 backdrop" },
-        { name: "Birthday banner", qty: "1 banner" },
-      ]},
-      { cat: "Entertainment", items: [
-        { name: g > 40 ? "Sound system (PA)" : "Bluetooth speaker", qty: g > 40 ? "1 system" : "1–2 speakers" },
-        { name: "Extension cords", qty: "2–3 cords" },
-        { name: "Cake knife + server set", qty: "1 set" },
-      ]},
-    ],
-    "first-birthday": [
-      { cat: "Décor", items: [
-        { name: "Balloon arch", qty: "1 arch" },
-        { name: "Theme backdrop", qty: "1 backdrop" },
-        { name: "Fairy lights", qty: "2 sets" },
-        { name: "Highchair decoration kit", qty: "1 set" },
-        { name: "Smash cake table setup", qty: "1 setup" },
-      ]},
-      { cat: "Baby Safety", items: [
-        { name: "Soft play mat / floor mat", qty: "1–2 mats" },
-        { name: "Baby gate (if stairs)", qty: "1–2 gates" },
-      ]},
-    ],
-    "baby-shower": [
-      { cat: "Décor", items: [
-        { name: "Pastel balloon clusters", qty: `${Math.ceil(g / 5)} clusters` },
-        { name: "Fairy lights / string lights", qty: "2–3 sets" },
-        { name: "Floral centrepieces", qty: `${tables} pieces` },
-        { name: "Photo backdrop / arch", qty: "1 backdrop" },
-        { name: "Gift display table", qty: "1 table" },
-      ]},
-      { cat: "Activity Supplies", items: [
-        { name: "Plain onesies (for decorating)", qty: `${Math.ceil(g * 0.5)} onesies` },
-        { name: "Fabric markers", qty: "6–8 markers" },
-        { name: "Prediction card printouts", qty: `${g} cards` },
-        { name: "Bingo card printouts", qty: `${g} cards` },
-      ]},
-    ],
-    "anniversary": [
-      { cat: "Décor", items: [
-        { name: "Candles (pillar + tea lights)", qty: `${Math.ceil(g / 2)} pieces` },
-        { name: "Flower arrangements / centrepieces", qty: `${tables} pieces` },
-        { name: "Warm fairy lights / Edison bulbs", qty: "3 sets" },
-        { name: "Memory photo display", qty: "1 display" },
-        { name: "Couple's photo backdrop", qty: "1 backdrop" },
-      ]},
-      { cat: "Table Setting", items: [
-        { name: "Champagne / sparkling glasses", qty: `${g + 5} glasses` },
-        { name: "Cloth napkins", qty: `${g} napkins` },
-        { name: "Table runners", qty: `${tables} runners` },
-      ]},
-    ],
-    "housewarming": [
-      { cat: "Décor", items: [
-        { name: "Welcome floral arch / wreath", qty: "1" },
-        { name: "Fairy lights (indoor, warm)", qty: "2 sets" },
-        { name: "Table centrepieces", qty: `${tables} pieces` },
-        { name: "Potted plants / indoor greens", qty: "3–4 plants" },
-      ]},
-      { cat: "Serving", items: [
-        { name: "Serving trays", qty: `${Math.ceil(g / 10)} trays` },
-        { name: "Chafing dishes / hot-pots", qty: "4–5 pieces" },
-        { name: "Ladles / tongs", qty: "5–6 pieces" },
-      ]},
-    ],
-    "get-together": [
-      { cat: "Entertainment", items: [
-        { name: "Bluetooth speaker", qty: "1–2 speakers" },
-        { name: "Extension cords", qty: "2 cords" },
-        { name: "Card / board games", qty: "2–3 games" },
-      ]},
-      { cat: "Décor (optional)", items: [
-        { name: "String lights / fairy lights", qty: "2 sets" },
-        { name: "Photo corner props box", qty: "1 box" },
-      ]},
-    ],
-    "naming-ceremony": [
-      { cat: "Ceremony Items", items: [
-        { name: "Marigold garlands", qty: "4–6 garlands" },
-        { name: "Diyas (oil lamps)", qty: "10–15 diyas" },
-        { name: "Puja thali setup", qty: "1–2 sets" },
-        { name: "Banana leaves (prasad)", qty: `${Math.ceil(g / 2)} pieces` },
-        { name: "Flower petals / rangoli colour", qty: "2–3 packs" },
-      ]},
-      { cat: "Décor", items: [
-        { name: "Fabric backdrop (saffron / yellow)", qty: "1 backdrop" },
-        { name: "Fairy lights", qty: "2 sets" },
-        { name: "Floral centrepieces", qty: `${tables} pieces` },
-      ]},
-    ],
-    "gender-reveal": [
-      { cat: "Reveal Items", items: [
-        { name: "Gender reveal box (confetti)", qty: "1 box" },
-        { name: "Pink & blue balloons", qty: `${Math.ceil(g * 1.5)} balloons` },
-        { name: "Gender reveal cake setup", qty: "1 cake" },
-        { name: "Confetti cannons", qty: "4–6 cannons" },
-      ]},
-      { cat: "Décor", items: [
-        { name: "Pink & blue streamers", qty: "4 rolls" },
-        { name: '"He or She?" banner', qty: "1 banner" },
-        { name: "Fairy lights", qty: "2 sets" },
-        { name: "Photo backdrop", qty: "1 backdrop" },
-      ]},
-    ],
-    "graduation": [
-      { cat: "Décor", items: [
-        { name: "Graduation balloon arch", qty: "1 arch" },
-        { name: "Memory / achievement photo wall", qty: "1 display" },
-        { name: "Graduation banner", qty: "1 banner" },
-        { name: "Fairy lights", qty: "2 sets" },
-      ]},
-      { cat: "Entertainment", items: [
-        { name: "Bluetooth speaker", qty: "1–2 speakers" },
-        { name: "Photo booth props box", qty: "1 box" },
-        { name: "Extension cord", qty: "2 cords" },
-      ]},
-    ],
-    "farewell": [
-      { cat: "Décor", items: [
-        { name: "Memory photo wall", qty: "1 display" },
-        { name: "Farewell banner", qty: "1 banner" },
-        { name: "Flower arrangements", qty: `${tables} pieces` },
-        { name: "Fairy lights", qty: "2 sets" },
-      ]},
-      { cat: "Keepsakes", items: [
-        { name: "Memory scrapbook / card", qty: "1 book" },
-        { name: "Card signing station", qty: "1 setup" },
-      ]},
-    ],
-    "retirement": [
-      { cat: "Décor", items: [
-        { name: "Retirement banner", qty: "1 banner" },
-        { name: "Career memory wall display", qty: "1 display" },
-        { name: "Flower arrangements", qty: `${tables} pieces` },
-      ]},
-      { cat: "Keepsakes", items: [
-        { name: "Memory book with colleague messages", qty: "1 book" },
-        { name: "Framed career achievement display", qty: "1 frame" },
-        { name: "Gift & card table", qty: "1 table" },
-      ]},
-    ],
-    "newborn-welcome": [
-      { cat: "Décor", items: [
-        { name: "Flower arch at entrance", qty: "1 arch" },
-        { name: "Soft-tone welcome balloons", qty: `${Math.ceil(g / 4)} balloons` },
-        { name: "Photo corner backdrop", qty: "1 backdrop" },
-        { name: "Warm fairy lights (indoor)", qty: "1–2 sets" },
-      ]},
-      { cat: "Comfort", items: [
-        { name: "Baby-safe floor mat / blanket area", qty: "1 mat" },
-        { name: "Extra chairs for elders", qty: `${Math.ceil(g * 0.3)} chairs` },
-        { name: "Quiet corner setup for feeds", qty: "1 corner" },
-      ]},
-    ],
+    "birthday-party":  [{ cat: "Décor", items: [{ name: "Balloon bouquets", qty: `${Math.ceil(g/3)} bouquets` }, { name: "Streamers / ribbons", qty: "4–5 rolls" }, { name: "Fairy lights", qty: "3 sets" }, { name: "Photo backdrop", qty: "1 backdrop" }, { name: "Birthday banner", qty: "1 banner" }] }, { cat: "Entertainment", items: [{ name: g > 40 ? "Sound system" : "Bluetooth speaker", qty: g > 40 ? "1 system" : "1–2 speakers" }, { name: "Cake knife + server", qty: "1 set" }] }],
+    "first-birthday":  [{ cat: "Décor", items: [{ name: "Balloon arch", qty: "1 arch" }, { name: "Theme backdrop", qty: "1 backdrop" }, { name: "Highchair decoration", qty: "1 set" }, { name: "Smash cake table", qty: "1 setup" }] }, { cat: "Baby Safety", items: [{ name: "Soft play mat", qty: "1–2 mats" }, { name: "Baby gate", qty: "1–2 gates" }] }],
+    "baby-shower":     [{ cat: "Décor", items: [{ name: "Pastel balloon clusters", qty: `${Math.ceil(g/5)} clusters` }, { name: "Fairy lights", qty: "2–3 sets" }, { name: "Floral centrepieces", qty: `${tables} pieces` }, { name: "Photo backdrop", qty: "1 backdrop" }] }, { cat: "Activity Supplies", items: [{ name: "Plain onesies", qty: `${Math.ceil(g*0.5)} onesies` }, { name: "Fabric markers", qty: "6–8 markers" }, { name: "Bingo card printouts", qty: `${g} cards` }] }],
+    "anniversary":     [{ cat: "Décor", items: [{ name: "Candles (pillar + tea lights)", qty: `${Math.ceil(g/2)} pieces` }, { name: "Flower centrepieces", qty: `${tables} pieces` }, { name: "Warm fairy lights", qty: "3 sets" }, { name: "Memory photo display", qty: "1 display" }] }, { cat: "Table Setting", items: [{ name: "Champagne glasses", qty: `${g+5} glasses` }, { name: "Cloth napkins", qty: `${g} napkins` }, { name: "Table runners", qty: `${tables} runners` }] }],
+    "housewarming":    [{ cat: "Décor", items: [{ name: "Welcome floral arch", qty: "1" }, { name: "Indoor fairy lights", qty: "2 sets" }, { name: "Table centrepieces", qty: `${tables} pieces` }, { name: "Potted plants", qty: "3–4 plants" }] }, { cat: "Serving", items: [{ name: "Serving trays", qty: `${Math.ceil(g/10)} trays` }, { name: "Chafing dishes", qty: "4–5 pieces" }] }],
+    "get-together":    [{ cat: "Entertainment", items: [{ name: "Bluetooth speaker", qty: "1–2 speakers" }, { name: "Card / board games", qty: "2–3 games" }] }, { cat: "Décor", items: [{ name: "String lights", qty: "2 sets" }, { name: "Photo corner props", qty: "1 box" }] }],
+    "naming-ceremony": [{ cat: "Ceremony", items: [{ name: "Marigold garlands", qty: "4–6 garlands" }, { name: "Diyas (oil lamps)", qty: "10–15 diyas" }, { name: "Puja thali setup", qty: "1–2 sets" }, { name: "Flower petals / rangoli", qty: "2–3 packs" }] }, { cat: "Décor", items: [{ name: "Fabric backdrop (saffron)", qty: "1 backdrop" }, { name: "Fairy lights", qty: "2 sets" }, { name: "Floral centrepieces", qty: `${tables} pieces` }] }],
+    "gender-reveal":   [{ cat: "Reveal Items", items: [{ name: "Gender reveal box", qty: "1 box" }, { name: "Pink & blue balloons", qty: `${Math.ceil(g*1.5)} balloons` }, { name: "Confetti cannons", qty: "4–6 cannons" }] }, { cat: "Décor", items: [{ name: "Pink & blue streamers", qty: "4 rolls" }, { name: '"He or She?" banner', qty: "1 banner" }, { name: "Photo backdrop", qty: "1 backdrop" }] }],
+    "graduation":      [{ cat: "Décor", items: [{ name: "Graduation balloon arch", qty: "1 arch" }, { name: "Memory photo wall", qty: "1 display" }, { name: "Graduation banner", qty: "1 banner" }] }, { cat: "Entertainment", items: [{ name: "Bluetooth speaker", qty: "1–2 speakers" }, { name: "Photo booth props", qty: "1 box" }] }],
+    "farewell":        [{ cat: "Décor", items: [{ name: "Memory photo wall", qty: "1 display" }, { name: "Farewell banner", qty: "1 banner" }, { name: "Flower arrangements", qty: `${tables} pieces` }] }, { cat: "Keepsakes", items: [{ name: "Memory scrapbook", qty: "1 book" }, { name: "Card signing station", qty: "1 setup" }] }],
+    "retirement":      [{ cat: "Décor", items: [{ name: "Retirement banner", qty: "1 banner" }, { name: "Career memory wall", qty: "1 display" }, { name: "Flower arrangements", qty: `${tables} pieces` }] }, { cat: "Keepsakes", items: [{ name: "Memory book", qty: "1 book" }, { name: "Gift & card table", qty: "1 table" }] }],
+    "newborn-welcome": [{ cat: "Décor", items: [{ name: "Flower arch at entrance", qty: "1 arch" }, { name: "Welcome balloons", qty: `${Math.ceil(g/4)} balloons` }, { name: "Photo corner backdrop", qty: "1 backdrop" }] }, { cat: "Comfort", items: [{ name: "Baby-safe floor mat", qty: "1 mat" }, { name: "Extra chairs for elders", qty: `${Math.ceil(g*0.3)} chairs` }] }],
   };
-
   return [...common, ...(specific[id] || [])];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+const STEPS = ["Details", "Theme", "Vendors", "Gifts", "Your Plan"];
 
+function ProgressBar({ step }) {
+  return (
+    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+      {STEPS.map((label, i) => {
+        const n = i + 1;
+        const done = n < step;
+        const cur  = n === step;
+        return (
+          <React.Fragment key={n}>
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+              <div style={{ width: cur ? 28 : 22, height: cur ? 28 : 22, borderRadius: "50%", background: done ? gold : cur ? `linear-gradient(135deg,${gold},${goldLt})` : "rgba(196,122,46,0.1)", border: done || cur ? "none" : "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.25s", boxShadow: cur ? "0 0 0 4px rgba(196,122,46,0.15)" : "none" }}>
+                {done
+                  ? <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  : <span style={{ fontSize: cur ? 11 : 10, fontWeight: 700, color: cur ? "#fff" : "rgba(196,122,46,0.45)", fontFamily: font }}>{n}</span>
+                }
+              </div>
+              <span style={{ fontSize: 9, fontWeight: cur ? 700 : 500, color: cur ? gold : "rgba(196,122,46,0.35)", fontFamily: font, whiteSpace: "nowrap" }}>{label}</span>
+            </div>
+            {i < STEPS.length - 1 && (
+              <div style={{ flex: 1, height: 1.5, background: done ? gold : "rgba(196,122,46,0.15)", marginBottom: 14, transition: "background 0.3s", minWidth: 8 }} />
+            )}
+          </React.Fragment>
+        );
+      })}
+    </div>
+  );
+}
+
+function StepShell({ title, subtitle, children }) {
+  return (
+    <div style={{ animation: "fadeUp 0.28s cubic-bezier(0.25,0.46,0.45,0.94)" }}>
+      <style>{`@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}`}</style>
+      <div style={{ marginBottom: 22 }}>
+        <h2 style={{ fontFamily: serif, fontSize: "clamp(1.45rem,4vw,2rem)", fontWeight: 400, color: ink, margin: "0 0 6px", lineHeight: 1.15, letterSpacing: "-0.01em" }}>{title}</h2>
+        {subtitle && <p style={{ fontSize: 13.5, color: "rgba(30,15,0,0.45)", margin: 0, lineHeight: 1.6, fontFamily: font }}>{subtitle}</p>}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 export default function OccasionDetail() {
-  const { slug } = useParams();
-  const navigate  = useNavigate();
-  const [popup, setPopup]               = useState(null);
-  const [activeTab, setActiveTab]       = useState("decor");
-  const [checked, setChecked]           = useState({});
-  const [guests, setGuests]             = useState(20);
-  const [selectedTheme, setSelectedTheme] = useState(null);
+  const { slug }   = useParams();
+  const navigate   = useNavigate();
+
+  const [step,    setStep]    = useState(1);
+  const [guests,  setGuests]  = useState(20);
+  const [date,    setDate]    = useState("");
+  const [budget,  setBudget]  = useState("");
+  const [theme,   setTheme]   = useState(null);
+  const [vendors, setVendors] = useState([]);
+  const [gifts,   setGifts]   = useState([]);
+  const [checked, setChecked] = useState({});
 
   const occasion = getOccasionById(slug);
-  if (!occasion) { navigate("/occasions"); return null; }
+  if (!occasion) { navigate("/"); return null; }
 
-  const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
-  const hub = HUB_ROUTES[slug];
+  const hub       = HUB_ROUTES[slug];
   const equipment = getEquipment(slug, guests);
   const tasksDone = Object.values(checked).filter(Boolean).length;
   const tasksTotal = (occasion.checklist || []).length;
+  const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
+  const budgetMid = Math.round((occasion.budgetMin + occasion.budgetMax) / 2);
 
-  const Section = ({ title, children }) => (
-    <div style={{ marginBottom: 28 }}>
-      <h2 style={{ fontSize: 13, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", margin: "0 0 12px", display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ display: "inline-block", width: 3, height: 14, background: "#C47A2E", borderRadius: 2 }} />
-        {title}
-      </h2>
-      {children}
-    </div>
-  );
+  const toggleVendor = (c) => setVendors(v => v.includes(c) ? v.filter(x => x !== c) : [...v, c]);
+  const toggleGift   = (n) => setGifts(g  => g.includes(n)  ? g.filter(x => x !== n) : [...g, n]);
+  const next = () => setStep(s => Math.min(s + 1, 5));
+  const back = () => { if (step === 1) navigate(-1); else setStep(s => s - 1); };
 
-  const Card = ({ onClick, children }) => (
-    <div onClick={onClick}
-      style={{ background: "#fff", borderRadius: 12, padding: "13px 15px", border: "1.5px solid rgba(196,122,46,0.1)", cursor: "pointer", transition: "transform 0.15s, box-shadow 0.15s, border-color 0.15s" }}
-      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(196,122,46,0.14)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.35)"; }}
-      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "none"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.1)"; }}>
-      {children}
-    </div>
-  );
+  const primaryBtn = { width: "100%", padding: "15px 20px", borderRadius: 14, border: "none", background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 20px rgba(196,122,46,0.3)", transition: "all 0.2s" };
+  const ghostBtn   = { padding: "13px 20px", borderRadius: 14, border: `1.5px solid rgba(196,122,46,0.25)`, background: "transparent", color: gold, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.2s", whiteSpace: "nowrap" };
 
   return (
-    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: font, background: "#F8F4EF" }}>
-      <SEO title={`${occasion.name} Planning Guide — Tendr`} description={occasion.tagline} path={`/occasions/${slug}`} />
+    <div style={{ minHeight: "100dvh", background: bg, fontFamily: font, display: "flex", flexDirection: "column" }}>
+      <SEO title={`Plan your ${occasion.name} — Tendr`} description={`Step-by-step ${occasion.name} planner — theme, vendors, checklist and more.`} path={`/occasions/${slug}`} />
 
-      {/* Nav */}
-      <div style={{ flexShrink: 0 }}>
+      {/* ── Sticky header ── */}
+      <div style={{ position: "sticky", top: 0, zIndex: 100, background: bg, borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
         <HamburgerNav active="Occasions" />
-      </div>
-
-      {/* Hero + info strip */}
-      <div style={{ flexShrink: 0 }}>
-        <div style={{ position: "relative", height: 180, overflow: "hidden" }}>
-          <img src={occasion.coverImage} alt={occasion.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%)" }} />
-          <button onClick={() => navigate("/occasions")}
-            style={{ position: "absolute", top: 14, left: 18, background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: 8, color: "#fff", fontSize: 12, fontWeight: 600, padding: "5px 11px", cursor: "pointer", fontFamily: font, backdropFilter: "blur(4px)" }}>
-            ← All Occasions
+        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 20px 4px" }}>
+          <button onClick={back} style={{ width: 34, height: 34, borderRadius: 10, border: "none", background: "rgba(196,122,46,0.08)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
           </button>
-          <div style={{ position: "absolute", bottom: 14, left: 20 }}>
-            <span style={{ fontSize: 26, marginRight: 6 }}>{occasion.icon}</span>
-            <h1 style={{ fontSize: "clamp(1.1rem,3vw,1.6rem)", fontWeight: 900, color: "#fff", margin: 0, display: "inline", letterSpacing: "-0.01em" }}>{occasion.name}</h1>
-            {occasion.localName && <span style={{ fontSize: 11, color: "rgba(255,255,255,0.6)", marginLeft: 8 }}>({occasion.localName})</span>}
+          <span style={{ fontSize: 22 }}>{occasion.icon}</span>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 13, fontWeight: 800, color: ink, lineHeight: 1.2 }}>{occasion.name}</div>
+            {occasion.localName && <div style={{ fontSize: 10, color: gold, fontWeight: 600 }}>{occasion.localName}</div>}
           </div>
-        </div>
-
-        <div style={{ background: "#F8F4EF", padding: "12px 20px 10px", borderBottom: "1px solid rgba(196,122,46,0.12)" }}>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 6 }}>
-            {[
-              { icon: "👥", val: occasion.typicalGuests + " guests" },
-              { icon: "💰", val: `${fmtBudget(occasion.budgetMin)} – ${fmtBudget(occasion.budgetMax)}` },
-            ].map(({ icon, val }) => (
-              <span key={val} style={{ fontSize: 11, fontWeight: 600, color: "#5a3a1a", background: "#fff", border: "1.5px solid rgba(196,122,46,0.15)", borderRadius: 100, padding: "3px 10px" }}>
-                {icon} {val}
-              </span>
-            ))}
-          </div>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {occasion.vendorCategories.map((cat, i) => (
-              <button key={cat} onClick={() => navigate(`/listings?serviceType=${cat}`)}
-                style={{ padding: "7px 12px", borderRadius: 8, border: "none", background: i === 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.12)", color: i === 0 ? "#fff" : "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                {cat} →
-              </button>
-            ))}
-            <button onClick={() => navigate("/gift-hampers-cakes")}
-              style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-              Gift Hampers →
+          {hub && (
+            <button onClick={() => navigate(hub)} style={{ fontSize: 11, fontWeight: 700, color: "#7C3AED", background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", flexShrink: 0 }}>
+              🛠️ Party Tools
             </button>
-          </div>
+          )}
+        </div>
+        <div style={{ padding: "10px 20px 14px", overflowX: "auto", scrollbarWidth: "none" }}>
+          <ProgressBar step={step} />
         </div>
       </div>
 
-      {/* Tab bar */}
-      <div style={{ display: "flex", borderBottom: "1.5px solid rgba(196,122,46,0.12)", background: "#F8F4EF", flexShrink: 0, overflowX: "auto", scrollbarWidth: "none" }}>
-        {[
-          { id: "decor",      icon: "🎨", label: "Décor",      count: occasion.decorThemes.length },
-          { id: "gifts",      icon: "🎁", label: "Gifts",      count: occasion.giftIdeas.length },
-          { id: "activities", icon: "🎯", label: "Activities",  count: occasion.activities.length },
-          { id: "checklist",  icon: "✅", label: "Plan",        count: tasksTotal },
-        ].map(t => (
-          <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
-            flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-            padding: "10px 4px 8px", border: "none", background: "transparent", cursor: "pointer",
-            fontFamily: font, borderBottom: `2.5px solid ${activeTab === t.id ? "#C47A2E" : "transparent"}`,
-            transition: "border-color 0.18s", minWidth: 68, whiteSpace: "nowrap",
-          }}>
-            <span style={{ fontSize: 16 }}>{t.icon}</span>
-            <span style={{ fontSize: 10, fontWeight: activeTab === t.id ? 800 : 500, color: activeTab === t.id ? "#C47A2E" : "#9B7450" }}>{t.label}</span>
-            <span style={{ fontSize: 9, color: "rgba(196,122,46,0.5)", fontWeight: 600 }}>({t.count})</span>
-          </button>
-        ))}
-      </div>
+      {/* ── Step content ── */}
+      <div style={{ flex: 1, overflowY: "auto", padding: "24px 20px 130px", maxWidth: 680, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
 
-      {/* Scrollable content */}
-      <div style={{ flex: 1, overflowY: "auto", padding: "18px 16px 16px" }}>
-
-        {/* ── Décor tab ── */}
-        {activeTab === "decor" && (
-          <Section title="Décor Themes">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
-              {occasion.decorThemes.map((t, i) => (
-                <Card key={i} onClick={() => setPopup({ type: "decor", item: t })}>
-                  {selectedTheme === t.name && (
-                    <div style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", marginBottom: 4 }}>✓ YOUR THEME</div>
-                  )}
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 3 }}>{t.name}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.45, marginBottom: 6, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{t.desc}</div>
-                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                    {(t.tags || []).slice(0, 3).map(tag => (
-                      <span key={tag} style={{ fontSize: 10, fontWeight: 600, color: "#C47A2E", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "2px 6px" }}>#{tag}</span>
-                    ))}
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ── Gifts tab ── */}
-        {activeTab === "gifts" && (
-          <Section title="Gift Ideas">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
-              {occasion.giftIdeas.map((g, i) => (
-                <Card key={i} onClick={() => setPopup({ type: "gift", item: g })}>
-                  <div style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
-                    <span style={{ fontSize: 18, flexShrink: 0 }}>🎁</span>
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>{g.name}</div>
-                      <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.4, marginBottom: 4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{g.desc}</div>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E" }}>{g.price}</div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ── Activities tab ── */}
-        {activeTab === "activities" && (
-          <Section title="Activities">
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
-              {occasion.activities.map((a, i) => (
-                <Card key={i} onClick={() => setPopup({ type: "activity", item: a })}>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 3 }}>{a.name}</div>
-                  <div style={{ fontSize: 11.5, color: "#9B7450", lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{a.desc}</div>
-                </Card>
-              ))}
-            </div>
-          </Section>
-        )}
-
-        {/* ── Plan tab ── */}
-        {activeTab === "checklist" && (
-          <>
-            {/* Celebration Blueprint card */}
-            <div style={{ background: "linear-gradient(135deg,#FFF8F0,#FFFDF9)", border: "1.5px solid rgba(196,122,46,0.2)", borderRadius: 16, padding: "16px 18px", marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>📋 Your Celebration Blueprint</div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
-                  <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginBottom: 3 }}>OCCASION</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>{occasion.icon} {occasion.name}</div>
+        {/* ── STEP 1: DETAILS ── */}
+        {step === 1 && (
+          <StepShell title="Let's set the scene" subtitle="Tell us about your celebration — we'll tailor everything to fit.">
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", marginBottom: 14, border: "1.5px solid rgba(196,122,46,0.1)" }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 14 }}>How many guests?</label>
+              <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                <button onClick={() => setGuests(g => Math.max(5, g - 5))} style={{ width: 40, height: 40, borderRadius: 11, border: `1.5px solid rgba(196,122,46,0.2)`, background: "#F8F4EF", color: gold, fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>−</button>
+                <div style={{ flex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 44, fontWeight: 900, color: ink, lineHeight: 1 }}>{guests}</div>
+                  <div style={{ fontSize: 11, color: "rgba(30,15,0,0.35)", marginTop: 3 }}>guests</div>
                 </div>
-                <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
-                  <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginBottom: 3 }}>THEME</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: selectedTheme ? "#C47A2E" : "#9B7450" }}>
-                    {selectedTheme || <span style={{ fontStyle: "italic", fontWeight: 400, fontSize: 12 }}>Pick from Décor tab</span>}
-                  </div>
-                </div>
-                <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
-                  <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginBottom: 3 }}>GUESTS</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E" }}>{guests} people</div>
-                </div>
-                <div style={{ background: "#fff", borderRadius: 10, padding: "10px 12px", border: "1px solid rgba(196,122,46,0.1)" }}>
-                  <div style={{ fontSize: 10, color: "#9B7450", fontWeight: 600, marginBottom: 3 }}>BUDGET RANGE</div>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: "#2C1A0E" }}>{fmtBudget(occasion.budgetMin)} – {fmtBudget(occasion.budgetMax)}</div>
-                </div>
+                <button onClick={() => setGuests(g => g + 5)} style={{ width: 40, height: 40, borderRadius: 11, border: "none", background: `linear-gradient(135deg,${gold},${goldLt})`, color: "#fff", fontSize: 22, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>+</button>
               </div>
-              {tasksDone > 0 && (
-                <div style={{ marginTop: 10 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                    <span style={{ fontSize: 11, color: "#9B7450" }}>Planning progress</span>
-                    <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E" }}>{tasksDone}/{tasksTotal} done</span>
-                  </div>
-                  <div style={{ height: 5, background: "rgba(196,122,46,0.12)", borderRadius: 4, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${(tasksDone / tasksTotal) * 100}%`, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)", borderRadius: 4, transition: "width 0.3s" }} />
-                  </div>
-                </div>
-              )}
-              <div style={{ marginTop: 10, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                <span style={{ fontSize: 10, color: "#9B7450" }}>Vendors needed:</span>
-                {occasion.vendorCategories.map(cat => (
-                  <span key={cat} onClick={() => navigate(`/listings?serviceType=${cat}`)} style={{ fontSize: 10, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "2px 8px", cursor: "pointer" }}>{cat} →</span>
+              <div style={{ display: "flex", gap: 6, marginTop: 14, flexWrap: "wrap" }}>
+                {[10, 20, 30, 50, 75, 100].map(n => (
+                  <button key={n} onClick={() => setGuests(n)} style={{ fontSize: 12, fontWeight: 600, padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${guests === n ? gold : "rgba(196,122,46,0.15)"}`, background: guests === n ? "rgba(196,122,46,0.1)" : "transparent", color: guests === n ? gold : "rgba(30,15,0,0.4)", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>{n}</button>
                 ))}
               </div>
             </div>
 
-            {/* Guest count stepper */}
-            <Section title="How many guests?">
-              <div style={{ display: "flex", alignItems: "center", gap: 16, background: "#fff", borderRadius: 12, padding: "14px 18px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
-                <button onClick={() => setGuests(g => Math.max(5, g - 5))}
-                  style={{ width: 36, height: 36, borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.2)", background: "#F8F4EF", color: "#C47A2E", fontSize: 18, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
-                <div style={{ flex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: 28, fontWeight: 900, color: "#2C1A0E" }}>{guests}</div>
-                  <div style={{ fontSize: 11, color: "#9B7450" }}>guests · equipment updates below</div>
-                </div>
-                <button onClick={() => setGuests(g => g + 5)}
-                  style={{ width: 36, height: 36, borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 18, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
-              </div>
-            </Section>
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", marginBottom: 14, border: "1.5px solid rgba(196,122,46,0.1)" }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 10 }}>
+                Party date <span style={{ fontWeight: 400, color: "rgba(196,122,46,0.45)", textTransform: "none", letterSpacing: 0, fontSize: 11 }}>(optional)</span>
+              </label>
+              <input type="date" value={date} onChange={e => setDate(e.target.value)} style={{ width: "100%", padding: "11px 14px", borderRadius: 11, border: "1.5px solid rgba(196,122,46,0.15)", background: "#FDFAF5", fontSize: 14, fontFamily: font, color: ink, outline: "none", boxSizing: "border-box", cursor: "pointer" }} />
+            </div>
 
-            {/* Planning checklist */}
-            <Section title="Planning checklist">
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px 20px", border: "1.5px solid rgba(196,122,46,0.1)" }}>
+              <label style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", display: "block", marginBottom: 10 }}>
+                Your budget <span style={{ fontWeight: 400, color: "rgba(196,122,46,0.45)", textTransform: "none", letterSpacing: 0, fontSize: 11 }}>(optional)</span>
+              </label>
+              <div style={{ position: "relative" }}>
+                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: 14, fontWeight: 700, color: "rgba(30,15,0,0.3)", fontFamily: font }}>₹</span>
+                <input type="number" value={budget} onChange={e => setBudget(e.target.value)} placeholder={budgetMid.toString()} style={{ width: "100%", padding: "11px 14px 11px 28px", borderRadius: 11, border: "1.5px solid rgba(196,122,46,0.15)", background: "#FDFAF5", fontSize: 14, fontFamily: font, color: ink, outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+                <span style={{ fontSize: 11, color: "rgba(30,15,0,0.3)" }}>Typical range for {guests} guests</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: gold }}>{fmtBudget(occasion.budgetMin)} – {fmtBudget(occasion.budgetMax)}</span>
+              </div>
+            </div>
+          </StepShell>
+        )}
+
+        {/* ── STEP 2: THEME ── */}
+        {step === 2 && (
+          <StepShell title="Pick your décor theme" subtitle="Choose the vibe for your celebration — we'll use it in your blueprint.">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(280px,1fr))", gap: 12 }}>
+              {(occasion.decorThemes || []).map((t, i) => {
+                const sel = theme?.name === t.name;
+                return (
+                  <button key={i} onClick={() => setTheme(sel ? null : t)}
+                    style={{ padding: "18px 18px 15px", borderRadius: 16, textAlign: "left", cursor: "pointer", border: `2px solid ${sel ? gold : "rgba(196,122,46,0.12)"}`, background: sel ? "rgba(196,122,46,0.06)" : "#fff", transition: "all 0.18s", fontFamily: font, position: "relative", overflow: "hidden" }}>
+                    {sel && <div aria-hidden style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: 4, background: gold }} />}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8, paddingLeft: sel ? 8 : 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 800, color: sel ? gold : ink, lineHeight: 1.2 }}>{t.name}</div>
+                      <div style={{ width: 22, height: 22, borderRadius: "50%", border: `2px solid ${sel ? gold : "rgba(196,122,46,0.2)"}`, background: sel ? gold : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginLeft: 8, transition: "all 0.18s" }}>
+                        {sel && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "rgba(30,15,0,0.5)", lineHeight: 1.55, marginBottom: 10, paddingLeft: sel ? 8 : 0 }}>{t.desc}</div>
+                    <div style={{ display: "flex", gap: 5, flexWrap: "wrap", paddingLeft: sel ? 8 : 0 }}>
+                      {(t.tags || []).slice(0, 3).map(tag => (
+                        <span key={tag} style={{ fontSize: 10, fontWeight: 600, color: gold, background: "rgba(196,122,46,0.08)", borderRadius: 100, padding: "2px 8px" }}>#{tag}</span>
+                      ))}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            {!theme && <p style={{ fontSize: 12, color: "rgba(30,15,0,0.3)", textAlign: "center", marginTop: 16, fontFamily: font }}>Tap a theme to select it — or proceed without one</p>}
+          </StepShell>
+        )}
+
+        {/* ── STEP 3: VENDORS ── */}
+        {step === 3 && (
+          <StepShell title="What do you need?" subtitle="Select everything you'd like to arrange — we'll match you with verified vendors.">
+            <div style={{ marginBottom: 22 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Vendor Categories</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {(occasion.vendorCategories || []).map(cat => {
+                  const sel = vendors.includes(cat);
+                  return (
+                    <button key={cat} onClick={() => toggleVendor(cat)}
+                      style={{ padding: "10px 16px", borderRadius: 100, border: `1.5px solid ${sel ? gold : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.1)" : "#fff", color: sel ? gold : "rgba(30,15,0,0.55)", fontSize: 13, fontWeight: sel ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s", display: "flex", alignItems: "center", gap: 6 }}>
+                      {sel && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      {cat}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <div style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Activities & Entertainment</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 10 }}>
+                {(occasion.activities || []).map((a, i) => {
+                  const sel = vendors.includes(a.name);
+                  return (
+                    <button key={i} onClick={() => toggleVendor(a.name)}
+                      style={{ padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${sel ? gold : "rgba(196,122,46,0.12)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#fff", textAlign: "left", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                        <div style={{ minWidth: 0 }}>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: sel ? gold : ink, marginBottom: 3 }}>{a.name}</div>
+                          <div style={{ fontSize: 11.5, color: "rgba(30,15,0,0.4)", lineHeight: 1.4 }}>{(a.desc || "").slice(0, 70)}{(a.desc?.length || 0) > 70 ? "…" : ""}</div>
+                        </div>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${sel ? gold : "rgba(196,122,46,0.2)"}`, background: sel ? gold : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+                          {sel && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {vendors.length === 0 && <p style={{ fontSize: 12, color: "rgba(30,15,0,0.3)", textAlign: "center", marginTop: 16, fontFamily: font }}>Select at least one, or skip to continue</p>}
+          </StepShell>
+        )}
+
+        {/* ── STEP 4: GIFTS ── */}
+        {step === 4 && (
+          <StepShell title="Any gifts or hampers?" subtitle="Pick ideas to include in your plan — or skip this step.">
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(240px,1fr))", gap: 12 }}>
+              {(occasion.giftIdeas || []).map((g, i) => {
+                const sel = gifts.includes(g.name);
+                return (
+                  <button key={i} onClick={() => toggleGift(g.name)}
+                    style={{ padding: "16px", borderRadius: 16, textAlign: "left", cursor: "pointer", border: `1.5px solid ${sel ? gold : "rgba(196,122,46,0.12)"}`, background: sel ? "rgba(196,122,46,0.07)" : "#fff", fontFamily: font, transition: "all 0.15s" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, marginBottom: 6 }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: sel ? gold : ink, lineHeight: 1.3 }}>{g.name}</div>
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", border: `2px solid ${sel ? gold : "rgba(196,122,46,0.2)"}`, background: sel ? gold : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s" }}>
+                        {sel && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "rgba(30,15,0,0.45)", lineHeight: 1.45, marginBottom: 8 }}>{(g.desc || "").slice(0, 80)}{(g.desc?.length || 0) > 80 ? "…" : ""}</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: gold }}>{g.price}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </StepShell>
+        )}
+
+        {/* ── STEP 5: BLUEPRINT ── */}
+        {step === 5 && (
+          <StepShell title="Your celebration plan" subtitle="Everything in one place — review, tick off tasks and start booking.">
+
+            {/* Summary header */}
+            <div style={{ background: "linear-gradient(135deg,#FFF8F0,#FFFDF9)", border: `1.5px solid rgba(196,122,46,0.18)`, borderRadius: 20, padding: "20px", marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+                <span style={{ fontSize: 36 }}>{occasion.icon}</span>
+                <div>
+                  <div style={{ fontFamily: serif, fontSize: 20, fontWeight: 400, color: ink }}>{occasion.name}</div>
+                  {date && <div style={{ fontSize: 12, color: gold, fontWeight: 600, marginTop: 2 }}>📅 {new Date(date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}</div>}
+                </div>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                {[
+                  { label: "GUESTS",  val: `${guests} people` },
+                  { label: "BUDGET",  val: budget ? `₹${Number(budget).toLocaleString("en-IN")}` : `${fmtBudget(occasion.budgetMin)}–${fmtBudget(occasion.budgetMax)}` },
+                  { label: "THEME",   val: theme?.name || "—" },
+                  { label: "VENDORS", val: vendors.filter(v => (occasion.vendorCategories || []).includes(v)).length > 0 ? `${vendors.filter(v => (occasion.vendorCategories||[]).includes(v)).length} categories` : "—" },
+                ].map(({ label, val }) => (
+                  <div key={label} style={{ background: "#fff", borderRadius: 12, padding: "11px 14px", border: "1px solid rgba(196,122,46,0.1)" }}>
+                    <div style={{ fontSize: 9, fontWeight: 700, color: "rgba(196,122,46,0.45)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>{label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: val === "—" ? "rgba(30,15,0,0.25)" : ink }}>{val}</div>
+                  </div>
+                ))}
+              </div>
+              {theme && (
+                <div style={{ marginTop: 10, background: "rgba(196,122,46,0.06)", borderRadius: 12, padding: "11px 14px" }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 3 }}>Theme Details</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: ink, marginBottom: 3 }}>{theme.name}</div>
+                  <div style={{ fontSize: 12, color: "rgba(30,15,0,0.45)", lineHeight: 1.5 }}>{theme.desc}</div>
+                </div>
+              )}
+            </div>
+
+            {/* Book vendors */}
+            {vendors.filter(v => (occasion.vendorCategories || []).includes(v)).length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Book Your Vendors</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {vendors.filter(v => (occasion.vendorCategories || []).includes(v)).map(cat => (
+                    <button key={cat} onClick={() => navigate(`/listings?serviceType=${cat}`)}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
+                      <div style={{ textAlign: "left" }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: ink }}>{cat}</div>
+                        <div style={{ fontSize: 11.5, color: "rgba(30,15,0,0.4)", marginTop: 1 }}>Browse verified vendors</div>
+                      </div>
+                      <div style={{ background: `linear-gradient(135deg,${gold},${goldLt})`, borderRadius: 9, padding: "7px 14px", flexShrink: 0 }}>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>Find →</span>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Gift ideas */}
+            {gifts.length > 0 && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Gift Ideas</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                  {gifts.map(name => {
+                    const g = (occasion.giftIdeas || []).find(g => g.name === name);
+                    return g ? (
+                      <div key={name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 16px", borderRadius: 12, background: "#fff", border: "1px solid rgba(196,122,46,0.1)" }}>
+                        <div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: ink }}>{g.name}</div>
+                          <div style={{ fontSize: 11, color: gold, fontWeight: 600, marginTop: 1 }}>{g.price}</div>
+                        </div>
+                        <button onClick={() => navigate("/gift-hampers-cakes")} style={{ fontSize: 11, fontWeight: 700, color: gold, background: "rgba(196,122,46,0.08)", border: "1px solid rgba(196,122,46,0.2)", borderRadius: 8, padding: "5px 10px", cursor: "pointer", fontFamily: font }}>View →</button>
+                      </div>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Checklist */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em" }}>Planning Checklist</div>
+                {tasksDone > 0 && <span style={{ fontSize: 11, fontWeight: 700, color: gold }}>{tasksDone}/{tasksTotal}</span>}
+              </div>
+              {tasksDone > 0 && (
+                <div style={{ height: 4, background: "rgba(196,122,46,0.12)", borderRadius: 3, overflow: "hidden", marginBottom: 10 }}>
+                  <div style={{ height: "100%", width: `${(tasksDone / tasksTotal) * 100}%`, background: `linear-gradient(90deg,${gold},${goldLt})`, borderRadius: 3, transition: "width 0.3s" }} />
+                </div>
+              )}
               {(occasion.checklist || []).map((item, i) => (
                 <div key={i} onClick={() => setChecked(c => ({ ...c, [i]: !c[i] }))}
-                  style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "12px 14px", background: checked[i] ? "rgba(196,122,46,0.05)" : "#fff", borderRadius: 12, border: `1.5px solid ${checked[i] ? "rgba(196,122,46,0.2)" : "rgba(196,122,46,0.1)"}`, marginBottom: 7, cursor: "pointer", transition: "all 0.15s" }}>
-                  <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked[i] ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked[i] ? "#C47A2E" : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1, transition: "all 0.15s" }}>
-                    {checked[i] && <span style={{ color: "#fff", fontSize: 11, lineHeight: 1 }}>✓</span>}
+                  style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "11px 14px", background: checked[i] ? "rgba(196,122,46,0.04)" : "#fff", borderRadius: 12, border: `1.5px solid ${checked[i] ? "rgba(196,122,46,0.18)" : "rgba(196,122,46,0.1)"}`, marginBottom: 6, cursor: "pointer", transition: "all 0.15s" }}>
+                  <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked[i] ? gold : "rgba(196,122,46,0.25)"}`, background: checked[i] ? gold : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1, transition: "all 0.15s" }}>
+                    {checked[i] && <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
-                  <span style={{ fontSize: 13, color: checked[i] ? "#9B7450" : "#2C1A0E", textDecoration: checked[i] ? "line-through" : "none", lineHeight: 1.5, transition: "all 0.15s" }}>{item}</span>
+                  <span style={{ fontSize: 13, color: checked[i] ? "rgba(30,15,0,0.35)" : ink, textDecoration: checked[i] ? "line-through" : "none", lineHeight: 1.5, transition: "all 0.15s" }}>{item}</span>
                 </div>
               ))}
-            </Section>
+            </div>
 
-            {/* Equipment generator */}
-            <Section title={`What to arrange · ${guests} guests`}>
-              <p style={{ fontSize: 12, color: "#9B7450", marginBottom: 14, lineHeight: 1.5 }}>
-                Quantities update as you change the guest count above. These are estimates — adjust to your venue.
-              </p>
+            {/* Equipment */}
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: gold, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>What to Arrange · {guests} guests</div>
               {equipment.map(({ cat, items }) => (
-                <div key={cat} style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 7 }}>{cat}</div>
+                <div key={cat} style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,122,46,0.55)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>{cat}</div>
                   {items.map(({ name, qty }) => (
-                    <div key={name} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 13px", background: "#fff", borderRadius: 9, marginBottom: 5, border: "1px solid rgba(196,122,46,0.08)" }}>
-                      <span style={{ fontSize: 13, color: "#2C1A0E" }}>{name}</span>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#C47A2E", flexShrink: 0, marginLeft: 8 }}>{qty}</span>
+                    <div key={name} style={{ display: "flex", justifyContent: "space-between", padding: "9px 13px", background: "#fff", borderRadius: 9, marginBottom: 5, border: "1px solid rgba(196,122,46,0.08)" }}>
+                      <span style={{ fontSize: 13, color: ink }}>{name}</span>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: gold, flexShrink: 0, marginLeft: 8 }}>{qty}</span>
                     </div>
                   ))}
                 </div>
               ))}
-            </Section>
-          </>
-        )}
+            </div>
 
+            {/* Hub banner */}
+            {hub && (
+              <div onClick={() => navigate(hub)} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 20px", background: "linear-gradient(135deg,#1a0a2e,#2d1060)", borderRadius: 16, cursor: "pointer" }}>
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>Party day is here?</div>
+                  <div style={{ fontSize: 11, color: "rgba(167,139,250,0.8)", marginTop: 2 }}>Games, playlists, bill split & more</div>
+                </div>
+                <div style={{ background: "rgba(124,58,237,0.35)", border: "1px solid rgba(124,58,237,0.5)", borderRadius: 10, padding: "8px 14px", flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#C4B5FD" }}>Open Hub →</span>
+                </div>
+              </div>
+            )}
+          </StepShell>
+        )}
       </div>
 
-      {/* ── Party Day Hub banner ── */}
-      {hub && (
-        <div
-          onClick={() => navigate(hub.route)}
-          style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "space-between", padding: "13px 20px", background: "linear-gradient(135deg,#1a0a2e,#2d1060)", borderTop: "1px solid rgba(124,58,237,0.2)", cursor: "pointer" }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ fontSize: 22 }}>{hub.emoji}</span>
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>It's party day?</div>
-              <div style={{ fontSize: 11, color: "rgba(167,139,250,0.8)", marginTop: 1 }}>Games, playlists, bill split & more</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(124,58,237,0.35)", border: "1px solid rgba(124,58,237,0.5)", borderRadius: 8, padding: "7px 12px" }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#C4B5FD" }}>Open {hub.label}</span>
-            <span style={{ color: "#C4B5FD", fontSize: 12 }}>→</span>
-          </div>
-        </div>
-      )}
-
-      {/* Popup Modal */}
-      {popup && (
-        <>
-          <div onClick={() => setPopup(null)}
-            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 9998, backdropFilter: "blur(3px)" }} />
-          <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 9999, background: "#FFFCF5", borderRadius: 20, padding: "26px 24px", maxWidth: 440, width: "90%", maxHeight: "80dvh", overflowY: "auto", boxShadow: "0 24px 60px rgba(0,0,0,0.25)", fontFamily: font }}>
-            <button onClick={() => setPopup(null)}
-              style={{ position: "absolute", top: 14, right: 14, background: "#f3f4f6", border: "none", borderRadius: "50%", width: 28, height: 28, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280" }}>
-              ✕
+      {/* ── Fixed bottom CTA ── */}
+      <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: bg, borderTop: "1px solid rgba(196,122,46,0.1)", padding: "14px 20px calc(14px + env(safe-area-inset-bottom,0px))", zIndex: 50 }}>
+        <div style={{ maxWidth: 680, margin: "0 auto", display: "flex", gap: 10 }}>
+          {step > 1 && <button onClick={back} style={ghostBtn}>← Back</button>}
+          {step < 5 && (
+            <button onClick={next} style={{ ...primaryBtn, flex: 1 }}>
+              {step === 1 && "Pick a theme →"}
+              {step === 2 && (theme ? `Use "${theme.name}" →` : "Skip →")}
+              {step === 3 && (vendors.length > 0 ? `Next — Gifts (${vendors.length} selected) →` : "Skip →")}
+              {step === 4 && (gifts.length > 0 ? `See my plan →` : "Skip, see my plan →")}
             </button>
-
-            {popup.type === "decor" && (
-              <>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>🎨 Décor Theme</div>
-                <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px" }}>{popup.item.name}</h3>
-                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 14px" }}>{popup.item.desc}</p>
-                {(popup.item.tags || []).length > 0 && (
-                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 18 }}>
-                    {popup.item.tags.map(tag => (
-                      <span key={tag} style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", background: "rgba(196,122,46,0.1)", borderRadius: 100, padding: "3px 10px" }}>#{tag}</span>
-                    ))}
-                  </div>
-                )}
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <button
-                    onClick={() => { setSelectedTheme(popup.item.name); setPopup(null); setActiveTab("checklist"); }}
-                    style={{ padding: "10px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, flex: 1 }}>
-                    {selectedTheme === popup.item.name ? "✓ Theme selected" : "Use this theme →"}
-                  </button>
-                  <button onClick={() => { setPopup(null); navigate("/listings?serviceType=Decorator"); }}
-                    style={{ padding: "10px 14px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                    Find Decorators
-                  </button>
-                </div>
-              </>
-            )}
-
-            {popup.type === "gift" && (
-              <>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>🎁 Gift Idea</div>
-                <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 6px" }}>{popup.item.name}</h3>
-                <div style={{ fontSize: 15, fontWeight: 800, color: "#C47A2E", marginBottom: 10 }}>{popup.item.price}</div>
-                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 18px" }}>{popup.item.desc}</p>
-                <button onClick={() => { setPopup(null); navigate("/gift-hampers-cakes"); }}
-                  style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, width: "100%" }}>
-                  Browse Gift Hampers →
-                </button>
-              </>
-            )}
-
-            {popup.type === "activity" && (
-              <>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>🎯 Activity</div>
-                <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 10px" }}>{popup.item.name}</h3>
-                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 18px" }}>{popup.item.desc}</p>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {occasion.vendorCategories.map(cat => (
-                    <button key={cat} onClick={() => { setPopup(null); navigate(`/listings?serviceType=${cat}`); }}
-                      style={{ padding: "9px 14px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                      Find {cat} →
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
-          </div>
-        </>
-      )}
-
+          )}
+          {step === 5 && (
+            <button
+              onClick={() => {
+                const cats = vendors.filter(v => (occasion.vendorCategories || []).includes(v));
+                navigate(cats.length > 0 ? `/listings?serviceType=${cats[0]}` : "/listings");
+              }}
+              style={{ ...primaryBtn, flex: 1 }}>
+              Start Booking Vendors →
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
