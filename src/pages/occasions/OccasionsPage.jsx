@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { OCCASIONS } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -9,10 +8,7 @@ const font = "'Outfit', sans-serif";
 
 export default function OccasionsPage() {
   const navigate = useNavigate();
-  const { user } = useSelector((s) => s.auth);
   const [search, setSearch] = useState("");
-
-  if (!user?.isAdmin) { navigate("/"); return null; }
 
   const filtered = OCCASIONS.filter(o =>
     !search.trim() ||
@@ -22,7 +18,7 @@ export default function OccasionsPage() {
 
   return (
     <div style={{ minHeight: "100vh", background: "#FFFAF5", fontFamily: font }}>
-      <SEO title="Occasions — Tendr" description="Plan by occasion" path="/occasions" noIndex />
+      <SEO title="What Are You Celebrating? — Tendr" description="Plan your occasion — décor ideas, gift suggestions, activities and vendor recommendations for every celebration." path="/occasions" />
       <HamburgerNav active="Occasions" />
 
       {/* Festive hero */}
@@ -40,7 +36,7 @@ export default function OccasionsPage() {
 
         <div style={{ position:"relative" }}>
           <div style={{ fontSize: 42, letterSpacing: 6, marginBottom: 14, lineHeight: 1 }}>🎂 💍 🍼 🎓</div>
-          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>🎉 Admin Preview</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", margin: "0 0 10px" }}>🎉 Plan by Occasion</p>
           <h1 style={{
             fontFamily: "'Cormorant Garamond', Georgia, serif",
             fontSize: "clamp(1.8rem,4vw,2.8rem)",

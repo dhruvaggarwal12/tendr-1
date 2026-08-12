@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
 import { getOccasionById } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -10,13 +9,12 @@ const font = "'Outfit', sans-serif";
 export default function OccasionDetail() {
   const { slug } = useParams();
   const navigate  = useNavigate();
-  const { user } = useSelector((s) => s.auth);
   const [popup, setPopup] = useState(null);
   const [activeTab, setActiveTab] = useState("decor");
+  const [checked, setChecked] = useState({});
 
   const occasion = getOccasionById(slug);
 
-  if (!user?.isAdmin) { navigate("/"); return null; }
   if (!occasion) { navigate("/occasions"); return null; }
 
   const fmtBudget = (n) => `₹${Number(n).toLocaleString("en-IN")}`;
@@ -42,7 +40,7 @@ export default function OccasionDetail() {
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column", overflow: "hidden", fontFamily: font, background: "#F8F4EF" }}>
-      <SEO title={`${occasion.name} — Tendr Occasions`} description={occasion.tagline} path={`/occasions/${slug}`} noIndex />
+      <SEO title={`${occasion.name} Planning Guide — Tendr`} description={occasion.tagline} path={`/occasions/${slug}`} />
 
       {/* Nav — fixed at top */}
       <div style={{ flexShrink: 0 }}>
@@ -81,10 +79,12 @@ export default function OccasionDetail() {
           </div>
           <p style={{ fontSize: 13, color: "#7A5535", margin: "0 0 10px", lineHeight: 1.5 }}>{occasion.tagline}</p>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <button onClick={() => navigate(`/listings?serviceType=${occasion.vendorCategories[0]}`)}
-              style={{ padding: "8px 16px", borderRadius: 9, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-              Find Vendors →
-            </button>
+            {occasion.vendorCategories.map((cat, i) => (
+              <button key={cat} onClick={() => navigate(`/listings?serviceType=${cat}`)}
+                style={{ padding: "8px 14px", borderRadius: 9, border: "none", background: i === 0 ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "rgba(196,122,46,0.12)", color: i === 0 ? "#fff" : "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                {cat} →
+              </button>
+            ))}
             <button onClick={() => navigate("/gift-hampers-cakes")}
               style={{ padding: "8px 14px", borderRadius: 9, border: "1.5px solid rgba(196,122,46,0.3)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
               Gift Hampers →
@@ -99,6 +99,7 @@ export default function OccasionDetail() {
           { id: "decor",      icon: "🎨", label: "Décor",      count: occasion.decorThemes.length },
           { id: "gifts",      icon: "🎁", label: "Gifts",      count: occasion.giftIdeas.length },
           { id: "activities", icon: "🎯", label: "Activities",  count: occasion.activities.length },
+          { id: "checklist",  icon: "✅", label: "Checklist",   count: (occasion.checklist || []).length },
         ].map(t => (
           <button key={t.id} onClick={() => setActiveTab(t.id)} style={{
             flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
@@ -166,6 +167,33 @@ export default function OccasionDetail() {
           </Section>
         )}
 
+        {activeTab === "checklist" && (
+          <Section title="Planning Checklist">
+            <p style={{ fontSize: 12, color: "#9B7450", marginBottom: 16, lineHeight: 1.5 }}>
+              Tap each item as you complete it. A rough guide — adjust to your timeline.
+            </p>
+            {(occasion.checklist || []).map((item, i) => (
+              <div
+                key={i}
+                onClick={() => setChecked(c => ({ ...c, [i]: !c[i] }))}
+                style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "13px 15px", background: checked[i] ? "rgba(196,122,46,0.06)" : "#fff", borderRadius: 12, border: `1.5px solid ${checked[i] ? "rgba(196,122,46,0.25)" : "rgba(196,122,46,0.1)"}`, marginBottom: 8, cursor: "pointer", transition: "all 0.15s" }}
+              >
+                <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${checked[i] ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, background: checked[i] ? "#C47A2E" : "transparent", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1, transition: "all 0.15s" }}>
+                  {checked[i] && <span style={{ color: "#fff", fontSize: 12, lineHeight: 1 }}>✓</span>}
+                </div>
+                <span style={{ fontSize: 13, color: checked[i] ? "#9B7450" : "#2C1A0E", textDecoration: checked[i] ? "line-through" : "none", lineHeight: 1.5, transition: "all 0.15s" }}>{item}</span>
+              </div>
+            ))}
+            {Object.values(checked).filter(Boolean).length > 0 && (
+              <div style={{ marginTop: 16, padding: "12px 16px", background: "rgba(196,122,46,0.08)", borderRadius: 12, textAlign: "center" }}>
+                <span style={{ fontSize: 13, color: "#C47A2E", fontWeight: 700 }}>
+                  {Object.values(checked).filter(Boolean).length} of {(occasion.checklist || []).length} done
+                </span>
+                <span style={{ fontSize: 13, color: "#9B7450" }}> — keep going!</span>
+              </div>
+            )}
+          </Section>
+        )}
 
       </div>
 
@@ -216,7 +244,15 @@ export default function OccasionDetail() {
               <>
                 <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>🎯 Activity</div>
                 <h3 style={{ fontSize: 18, fontWeight: 900, color: "#2C1A0E", margin: "0 0 12px" }}>{popup.item.name}</h3>
-                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: 0 }}>{popup.item.desc}</p>
+                <p style={{ fontSize: 14, color: "#5a3a1a", lineHeight: 1.7, margin: "0 0 20px" }}>{popup.item.desc}</p>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {occasion.vendorCategories.map(cat => (
+                    <button key={cat} onClick={() => { setPopup(null); navigate(`/listings?serviceType=${cat}`); }}
+                      style={{ padding: "9px 16px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                      Find {cat} →
+                    </button>
+                  ))}
+                </div>
               </>
             )}
           </div>

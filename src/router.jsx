@@ -115,6 +115,7 @@ const HousePartyHub       = lazy(() => import("./pages/house-party/HousePartyHub
 const PotluckJoin         = lazy(() => import("./pages/house-party/PotluckJoin.jsx"));
 const InviteRSVP          = lazy(() => import("./pages/house-party/InviteRSVP.jsx"));
 const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage.jsx"));
+const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -465,6 +466,14 @@ const router = createBrowserRouter([
   { path: '/house-party/potluck/:roomId', element: <PotluckJoin />, errorElement: <ErrorPage /> },
   { path: '/house-party/invite/:inviteId', element: <InviteRSVP />, errorElement: <ErrorPage /> },
   { path: '/house-party/photo-wall/:wallId', element: <PhotoWallPage />, errorElement: <ErrorPage /> },
+
+  { path: '/birthday-hub', element: <OccasionHub occasion="birthday" />, errorElement: <ErrorPage /> },
+  { path: '/anniversary-hub', element: <OccasionHub occasion="anniversary" />, errorElement: <ErrorPage /> },
+  { path: '/baby-shower-hub', element: <OccasionHub occasion="baby-shower" />, errorElement: <ErrorPage /> },
+  { path: '/housewarming-hub', element: <OccasionHub occasion="housewarming" />, errorElement: <ErrorPage /> },
+  { path: '/get-together-hub', element: <OccasionHub occasion="get-together" />, errorElement: <ErrorPage /> },
+  { path: '/kitty-party-hub', element: <OccasionHub occasion="kitty-party" />, errorElement: <ErrorPage /> },
+  { path: '/naming-ceremony-hub', element: <OccasionHub occasion="naming-ceremony" />, errorElement: <ErrorPage /> },
 
 
   { path: '/top-rated/:category', element: <TopRatedVendors />, errorElement: <ErrorPage /> },
