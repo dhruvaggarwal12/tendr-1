@@ -1398,7 +1398,14 @@ const Home = () => {
               return (
                 <motion.button
                   key={label}
-                  onClick={() => setPlannerOccasion(label)}
+                  onClick={() => {
+                    const slugMap = {
+                      "Birthday":"birthday-party","Anniversary":"anniversary","Baby Shower":"baby-shower",
+                      "House Party":"get-together","Housewarming":"housewarming","Get Together":"get-together",
+                      "Kitty Party":"get-together","Naming Ceremony":"naming-ceremony",
+                    };
+                    navigate(`/occasions/${slugMap[label]||"birthday-party"}`);
+                  }}
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
                   viewport={{ once: true, amount: 0.1 }}
