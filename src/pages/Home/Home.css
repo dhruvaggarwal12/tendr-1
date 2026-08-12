@@ -337,9 +337,9 @@ body {
   .hero-mobile-search-section {
     display: flex !important;
   }
-  /* Show the editorial photo strip on mobile */
+  /* Photo strip hidden on mobile — cleaner hero without carousel */
   .home-mob-img-strip {
-    display: block !important;
+    display: none !important;
   }
   /* Hero h1 — larger, more presence on mobile */
   .home-hero-h1 {
@@ -1952,6 +1952,64 @@ body {
 @media (min-width: 768px) {
   .mobile-menu {
     display: none;
+  }
+}
+
+/* ── Mobile compact cards & section tweaks ── */
+@media (max-width: 640px) {
+  /* EFC "Everything for your celebration" tiles — tighter on mobile */
+  .efc-tile {
+    min-width: 128px !important;
+    max-width: 128px !important;
+    padding: 14px 14px 11px !important;
+    gap: 8px !important;
+  }
+  .efc-tile > div:first-child {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 10px !important;
+  }
+  .efc-tile > div:first-child svg {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  /* "Which path suits you" — horizontal tab row + single panel below */
+  .path-tab-list {
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding-bottom: 2px !important;
+  }
+  .path-tab-list::-webkit-scrollbar { display: none; }
+  .path-tab-list > button {
+    flex-shrink: 0 !important;
+    min-width: 140px !important;
+    padding: 12px 14px !important;
+  }
+  .path-tab-list > button p:last-child {
+    display: none !important;
+  }
+
+  /* "Why Tendr" trust stats — horizontal scroll on mobile */
+  .trust-bar-grid {
+    display: flex !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    scrollbar-width: none !important;
+    border-radius: 14px !important;
+  }
+  .trust-bar-grid::-webkit-scrollbar { display: none; }
+  .trust-bar-grid > div {
+    min-width: 78vw !important;
+    flex-shrink: 0 !important;
+    scroll-snap-align: start !important;
+    border-right: 1px solid rgba(204,171,74,0.1) !important;
+  }
+  .trust-bar-grid > div > div[style*="position: absolute"] {
+    display: none !important;
   }
 }
 

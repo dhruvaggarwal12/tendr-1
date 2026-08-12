@@ -1518,7 +1518,7 @@ const Home = () => {
               <div className="path-two-col" style={{ display: "grid", gridTemplateColumns: "5fr 7fr", gap: 20, alignItems: "stretch" }}>
 
                 {/* Left: tab pills — no numbered badges, clean state clarity (ui-ux-pro-max: state-clarity) */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div className="path-tab-list" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {PATHS.map((p, i) => (
                     <motion.button
                       key={i}
@@ -1957,7 +1957,8 @@ const Home = () => {
 
         <style>{`
           @media (max-width: 640px) {
-            .trust-bar-grid { grid-template-columns: 1fr !important; border-radius: 16px !important; }
+            .trust-bar-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; border-radius: 14px !important; }
+            .trust-bar-grid > div { min-width: 78vw !important; flex-shrink: 0 !important; scroll-snap-align: start !important; }
           }
         `}</style>
       </section>
