@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { getOccasionById } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -29,6 +29,17 @@ const AGE_GROUPS = [
   { id:"Teens",    label:"Teens",    sub:"13–19 yrs", icon:"🧑" },
   { id:"Adults",   label:"Adults",   sub:"20–60 yrs", icon:"👨" },
   { id:"Seniors",  label:"Seniors",  sub:"60+ yrs",   icon:"👴" },
+];
+
+const VENUE_TYPES = [
+  { id:"Home / Apartment",  icon:"🏠" },
+  { id:"Banquet Hall",      icon:"🏛️" },
+  { id:"Garden / Lawn",     icon:"🌿" },
+  { id:"Restaurant",        icon:"🍽️" },
+  { id:"Farmhouse",         icon:"🌾" },
+  { id:"Rooftop / Terrace", icon:"🌆" },
+  { id:"Community Centre",  icon:"🏢" },
+  { id:"Outdoor / Open Air",icon:"☀️" },
 ];
 
 const ALL_VENDORS = [
@@ -94,9 +105,10 @@ function themeColor(tags=[]) {
   return "#C47A2E";
 }
 
-/* ── vendor recommendations based on theme + age groups ── */
-function getRecommended(occasion, theme, ageGroups) {
+/* ── vendor recommendations based on theme + age groups + venue ── */
+function getRecommended(occasion, theme, ageGroups, venueType) {
   const recs = new Set(occasion.vendorCategories||[]);
+  const venue=(venueType||"").toLowerCase();
   if(theme) {
     const t=(theme.tags||[]).join(" ").toLowerCase();
     if(t.includes("floral")||t.includes("garden")||t.includes("nature")) recs.add("Florist");
@@ -104,6 +116,12 @@ function getRecommended(occasion, theme, ageGroups) {
     if(t.includes("bollywood")||t.includes("indian")) recs.add("Emcee / Host");
     if(t.includes("gold")||t.includes("elegant")||t.includes("glam")) recs.add("Lighting Setup");
     if(t.includes("photo")||t.includes("memories")||t.includes("red-carpet")) recs.add("Photo Booth");
+  }
+  if(venue.includes("garden")||venue.includes("outdoor")||venue.includes("farmhouse")||venue.includes("rooftop")) {
+    recs.add("Lighting Setup");
+  }
+  if(venue.includes("banquet")||venue.includes("hall")) {
+    recs.add("Sound System");
   }
   if(ageGroups.includes("Kids")||ageGroups.includes("Toddlers")) {
     recs.add("Entertainer"); recs.add("Balloon Artist");
@@ -113,8 +131,212 @@ function getRecommended(occasion, theme, ageGroups) {
   return recs;
 }
 
+/* ── vendor tips (what to actually ask for) ── */
+function getVendorTips(type, {theme, venueType, ageGroups, cateringType}) {
+  const tags=(theme?.tags||[]).join(" ").toLowerCase();
+  const venue=(venueType||"").toLowerCase();
+  const ages=ageGroups||[];
+
+  if(type==="Decorator") {
+    const items=[];
+    // venue-specific items
+    if(venue.includes("garden")||venue.includes("lawn")||venue.includes("outdoor")) {
+      items.push("String lights strung overhead","Floral arch at entrance","Lanterns along pathways","Ground flowers/petals");
+    } else if(venue.includes("banquet")||venue.includes("hall")) {
+      items.push("Backdrop wall behind the main table","Table centrepieces for each table","Ceiling draping or balloon ceiling","Stage/podium décor");
+    } else if(venue.includes("home")||venue.includes("room")||venue.includes("apartment")) {
+      items.push("Balloon cluster at the entrance","Living room focal point (arch or wall)","Door frame décor","Photo corner with props");
+    } else if(venue.includes("rooftop")||venue.includes("terrace")) {
+      items.push("Edison bulb string lights","Low seating with cushions","Potted plants as dividers","Fairy light curtain");
+    } else if(venue.includes("farmhouse")) {
+      items.push("Hanging fairy lights from trees","Rustic wooden props","Floral installation at entrance");
+    } else if(venue.includes("restaurant")) {
+      items.push("Table centrepieces","Backdrop behind the cake table","Balloon clusters on tables");
+    } else {
+      items.push("Backdrop wall","Balloon arch","Table centrepieces");
+    }
+    // theme items
+    if(tags.includes("pastel")||tags.includes("floral")) {
+      items.push("Pastel balloon cloud","Floral centrepieces (roses/peonies)","Tulle draping","Pampas grass accents");
+    } else if(tags.includes("neon")||tags.includes("glow")) {
+      items.push("Custom neon sign with name","UV-reactive props","RGB LED strip lighting","Black fabric backdrop");
+    } else if(tags.includes("bollywood")||tags.includes("indian")) {
+      items.push("Marigold garlands","Colourful dupatta draping","Diya clusters","Rangoli at entrance");
+    } else if(tags.includes("gold")||tags.includes("elegant")) {
+      items.push("Gold balloon arch","Crystal candle holders","Metallic table runners","Warm uplighting");
+    } else if(tags.includes("jungle")||tags.includes("nature")||tags.includes("green")) {
+      items.push("Tropical leaf backdrop","Moss table runner","Terracotta pots","Monstera leaf accents");
+    } else if(tags.includes("minimal")||tags.includes("white")||tags.includes("modern")) {
+      items.push("White balloon wall","Geometric frames","Monochrome floral","Floating candles");
+    }
+    if(ages.includes("Kids")||ages.includes("Toddlers")) {
+      items.push("Character-themed balloons","Colourful streamers","Soft safe props (no sharp edges)");
+    }
+    return {
+      heading:"Ask your decorator for",
+      items:[...new Set(items)].slice(0,7),
+      tip:venueType?`Tip: Tell the decorator it's a ${venueType} — setup time and equipment change significantly.`:"Tip: Share reference photos and the venue size before finalising quotes.",
+    };
+  }
+
+  if(type==="Caterer") {
+    const menu=[];
+    if(cateringType==="Full Buffet"||!cateringType) {
+      menu.push("2–3 starter options","Paneer + non-veg main","Dal + rice + roti","Live counter (chaat/pasta)","Dessert station");
+    } else if(cateringType==="Finger Foods") {
+      menu.push("Mini sandwiches / sliders","Cocktail samosas","Bruschetta","Cheese & cracker platter","Dips with nachos/pita");
+    } else if(cateringType==="High Tea") {
+      menu.push("Assorted teas & coffees","Finger sandwiches (4 varieties)","Scones with cream & jam","Mini pastries","Macarons or petit fours");
+    } else if(cateringType==="Plated Dinner") {
+      menu.push("Welcome amuse-bouche","Soup course","Salad","Main with 2 sides","Dessert plating per person");
+    } else if(cateringType==="Snacks & Starters") {
+      menu.push("Pakoras / bhajis","Pav bhaji counter","Mini sliders","Dips & chutneys","Fresh juice station");
+    } else if(cateringType==="Dessert Station"||cateringType==="Dessert Spread") {
+      menu.push("Assorted mithais","Brownies & cupcakes","Jar desserts","Ice cream station","Chocolate fountain");
+    } else {
+      menu.push("Variety of starters","Main course with sides","Dessert","Beverage station");
+    }
+    if(ages.includes("Kids")||ages.includes("Toddlers")) {
+      menu.push("Kids corner: mini pizza + pasta + fries","Juice station (no aerated drinks for toddlers)");
+    }
+    if(ages.includes("Teens")) {
+      menu.push("Live pizza/pasta counter","Mocktail bar","DIY dessert station");
+    }
+    if(ages.includes("Seniors")) {
+      menu.push("Soft/easy-to-eat options","Low-spice variants","Light dal-rice section");
+    }
+    return {
+      heading:"Menu to plan with caterer",
+      items:[...new Set(menu)].slice(0,8),
+      tip:"Tip: Share guest count, dietary restrictions (veg/non-veg ratio), and your venue type — caterer adjusts portions and setup accordingly.",
+    };
+  }
+
+  if(type==="DJ") {
+    const sets=[];
+    if(tags.includes("bollywood")||tags.includes("indian")) {
+      sets.push("Bollywood hits (2015–present)","90s Bollywood classics","Bhangra floor set","Filmi slow dance numbers");
+    } else if(tags.includes("neon")||tags.includes("glow")) {
+      sets.push("EDM / progressive house mix","Trending Insta/Reels music","Hip-hop & trap set","Big room anthems");
+    } else if(tags.includes("elegant")||tags.includes("gold")) {
+      sets.push("Lounge jazz for dinner","Soft Bollywood for cocktail hour","Build-up to dance set","Slow dance finale");
+    }
+    if(ages.includes("Kids")) sets.push("Kids dance anthems (Baby Shark, etc.)","Cartoon theme songs");
+    if(ages.includes("Teens")) sets.push("Trending Spotify Top 50","BTS / K-pop set if relevant");
+    if(ages.includes("Seniors")) sets.push("Old Hindi film songs (Kishore Kumar, Lata Mangeshkar)","Mohammad Rafi classics");
+    if(!sets.length) sets.push("Bollywood mix (old + new)","Top 40 pop","Dance floor anthems","Slow close");
+    return {
+      heading:"Tell your DJ to play",
+      items:[...new Set(sets)].slice(0,6),
+      tip:"Tip: Send a 10-song reference playlist when you enquire — helps the DJ match the vibe without guesswork.",
+    };
+  }
+
+  if(type==="Florist") {
+    const flowers=[];
+    if(tags.includes("pastel")||tags.includes("floral")||tags.includes("pink")) {
+      flowers.push("Pink roses + baby's breath","Lavender sprigs","Gerbera daisies (soft cream/pink)","Peonies (if in season)","Eucalyptus greenery");
+    } else if(tags.includes("bollywood")||tags.includes("indian")) {
+      flowers.push("Marigold strings & garlands","Mogra / jasmine bunches","Tuberose strands","Rose petals for pathway","Banana leaf accents");
+    } else if(tags.includes("gold")||tags.includes("elegant")) {
+      flowers.push("White orchids","Calla lilies","Gold-spray foliage","Dark greenery filler","Crystal-pin roses");
+    } else if(tags.includes("jungle")||tags.includes("nature")||tags.includes("green")) {
+      flowers.push("Bird of paradise","Anthuriums","Monstera leaves","Tropical palm fronds","Exotic ferns");
+    } else if(tags.includes("minimal")||tags.includes("white")||tags.includes("modern")) {
+      flowers.push("White roses","Gypsophila (baby's breath)","Dried pampas grass","Greenery-only arrangements");
+    } else {
+      flowers.push("Mixed seasonal blooms","Greenery filler","2–3 focal statement flowers");
+    }
+    return {
+      heading:"Request from your florist",
+      items:[...new Set(flowers)].slice(0,6),
+      tip:"Tip: Book 2 weeks before — fresh flowers need advance ordering. Ask if they can deliver day-of for freshness.",
+    };
+  }
+
+  if(type==="Photographer") {
+    const shots=["Candid group moments","Detail shots (décor, cake, table settings)","Arrival / entrance shots","Cake-cutting / key moment close-ups"];
+    if(ages.includes("Kids")||ages.includes("Toddlers")) shots.push("Kids playing candid shots","Parent + child portrait");
+    if(ages.includes("Seniors")) shots.push("Multi-generational family portrait");
+    if(tags.includes("bollywood")||tags.includes("indian")) shots.push("Celebration/dance candids","Traditional ritual close-ups");
+    shots.push("Wide venue establishing shot","Group photo at end");
+    return {
+      heading:"Shot list to share",
+      items:[...new Set(shots)].slice(0,7),
+      tip:"Tip: Walk the photographer through the venue 30 mins before guests arrive. Agree on 1–2 'must-have' hero shots upfront.",
+    };
+  }
+
+  if(type==="Lighting Setup") {
+    const lights=[];
+    if(tags.includes("gold")||tags.includes("elegant")) {
+      lights.push("Warm white uplighting on walls","Spotlights on centrepieces","Pendant / chandelier hire","Candle-effect LED clusters");
+    } else if(tags.includes("neon")||tags.includes("glow")) {
+      lights.push("Coloured LED wash lights","Mirror ball / disco ball","Neon sign hire","RGB moving spotlights");
+    } else if(venue.includes("garden")||venue.includes("outdoor")||venue.includes("rooftop")) {
+      lights.push("String lights overhead","Pathway lantern hire","Uplighting on trees","Fairy light curtain backdrop");
+    } else {
+      lights.push("Warm ambient wash","Coloured mood lighting","Uplighting on backdrop wall","Spotlit cake table");
+    }
+    return {
+      heading:"Lighting to request",
+      items:[...new Set(lights)].slice(0,6),
+      tip:"Tip: Ask for 'warm-white for dinner, switch to coloured for dancing' — most lighting vendors offer this as a scene change.",
+    };
+  }
+
+  if(type==="Entertainer") {
+    const acts=[];
+    if(ages.includes("Toddlers")) acts.push("Puppet show","Soft play area","Bubble machine","Face painting (toddler-safe)");
+    if(ages.includes("Kids")) acts.push("Magician","Clown (optional)","Balloon twisting artist","Treasure hunt MC","Craft activity station");
+    if(ages.includes("Teens")) acts.push("Escape room challenge","Photo booth with props","Beat the DJ activity","Trivia host");
+    if(!acts.length) acts.push("Interactive games host","Icebreaker activities","Memory wall setup");
+    return {
+      heading:"Entertainment to arrange",
+      items:[...new Set(acts)].slice(0,6),
+      tip:"Tip: Book entertainer separately from DJ — they play different roles. Confirm safety certifications for kids' entertainers.",
+    };
+  }
+
+  if(type==="Cake Artist") {
+    const flavours=[];
+    if(tags.includes("pastel")||tags.includes("floral")) {
+      flavours.push("Vanilla with floral fondant décor","Pastel ombre layers","Pressed flower cake","Watercolour frosting");
+    } else if(tags.includes("bollywood")||tags.includes("indian")) {
+      flavours.push("Rose & cardamom flavour","Gold leaf tiers","Traditional motif fondant","Saffron & pistachio filling");
+    } else if(tags.includes("neon")||tags.includes("glow")) {
+      flavours.push("Dark chocolate with neon drip","UV-reactive icing (special order)","Electric blue + purple tiers");
+    } else {
+      flavours.push("Classic vanilla / chocolate","Custom message on top","Character topper","Matching colour scheme frosting");
+    }
+    if(ages.includes("Kids")||ages.includes("Toddlers")) {
+      flavours.push("No-alcohol flavours","Allergen-free option available?","Smash cake for toddler (separate)");
+    }
+    return {
+      heading:"Discuss with your cake artist",
+      items:[...new Set(flavours)].slice(0,6),
+      tip:"Tip: Share theme colours + a reference photo. Confirm delivery time — cakes need to arrive 2 hrs before cutting.",
+    };
+  }
+
+  if(type==="Photo Booth") {
+    return {
+      heading:"What to set up",
+      items:["Printed or digital instant photos","Props box (hats, signs, glasses)","Themed backdrop matching décor","GIF/video booth option","Unlimited prints for guests"],
+      tip:"Tip: Place the photo booth near the entrance or bar area — it gets used more. Confirm if props are included in the quote.",
+    };
+  }
+
+  // generic
+  return {
+    heading:"What to discuss when you call",
+    items:["Your event date & location","Guest count","Budget range","Any special requirements","References / inspiration photos"],
+    tip:"Tip: Always share date, guest count, venue name and city when first reaching out — it speeds up quotes significantly.",
+  };
+}
+
 /* ── timeline ── */
-function buildTimeline(dateStr) {
+function buildTimeline(dateStr, vendors) {
   if(!dateStr) return null;
   const event=new Date(dateStr+"T00:00:00");
   const today=new Date(); today.setHours(0,0,0,0);
@@ -123,14 +345,21 @@ function buildTimeline(dateStr) {
   const fmt=d=>d.toLocaleDateString("en-IN",{day:"numeric",month:"short"});
   const offset=n=>{const d=new Date(event);d.setDate(d.getDate()+n);return d;};
   const phases=[];
-  if(days>=30) phases.push({when:"Right now",date:null,tasks:["Book decorator & caterer","Lock the venue","Draft your guest list"]});
-  else if(days>=7) phases.push({when:"Right now — urgent",date:null,tasks:["Call your decorator today","Confirm caterer & menu urgently"]});
-  else phases.push({when:"Right now",date:null,tasks:["Arrange decor supplies","Call vendors immediately"]});
-  if(days>=21) phases.push({when:"3 weeks out",date:fmt(offset(-21)),tasks:["Send invitations","Order the cake","Plan the menu"]});
-  if(days>=14) phases.push({when:"2 weeks out",date:fmt(offset(-14)),tasks:["Confirm headcount with caterer","Finalise entertainment"]});
-  if(days>=7)  phases.push({when:"1 week out",date:fmt(offset(-7)),tasks:["All vendor confirmations","Buy decor supplies","Prep the playlist"]});
-  if(days>=1)  phases.push({when:"Day before",date:fmt(offset(-1)),tasks:["Set up décor","Charge cameras","Confirm deliveries"]});
-  phases.push({when:"🎉 Party day",date:fmt(event),tasks:["Welcome your guests","Take lots of photos","Enjoy every moment"]});
+  const needsCaterer=!vendors||vendors.includes("Caterer");
+  const needsDecor=!vendors||vendors.includes("Decorator");
+  const firstTask=needsDecor&&needsCaterer?"Book your decorator & caterer first":"Book decorator now";
+  const rightNow=days>=30
+    ? [firstTask,"Lock the venue","Draft your guest list"]
+    : days>=7
+    ? ["Call vendors today — urgently","Confirm caterer & menu","Finalise headcount"]
+    : ["Arrange whatever you can now","Call vendors immediately"];
+  const urgentLabel=days>=7?"Right now":"Urgent — right now";
+  phases.push({when:urgentLabel,date:null,tasks:rightNow});
+  if(days>=21) phases.push({when:"3 weeks out",date:fmt(offset(-21)),tasks:["Send invitations","Order the cake","Share final menu with caterer"]});
+  if(days>=14) phases.push({when:"2 weeks out",date:fmt(offset(-14)),tasks:["Confirm final headcount","Finalise entertainment","Order any printed items"]});
+  if(days>=7)  phases.push({when:"1 week out",date:fmt(offset(-7)),tasks:["All vendor confirmations in writing","Buy remaining décor supplies","Create the day-of schedule"]});
+  if(days>=1)  phases.push({when:"Day before",date:fmt(offset(-1)),tasks:["Venue setup (if allowed)","Charge all cameras & phones","Confirm all delivery times"]});
+  phases.push({when:"🎉 Party day",date:fmt(event),tasks:["Brief your helpers on roles","Welcome guests warmly","Take lots of candid photos"]});
   return {days,phases};
 }
 
@@ -159,8 +388,18 @@ async function downloadPlanCard(el,name){
   }catch{window.print();}
 }
 
-/* ── fmtNum ── */
 const fmtNum=n=>`₹${Number(n).toLocaleString("en-IN")}`;
+
+function timeAgo(iso) {
+  if(!iso) return "";
+  const ms=Date.now()-new Date(iso).getTime();
+  const h=Math.floor(ms/3600000);
+  const m=Math.floor(ms/60000);
+  if(h>23) return `${Math.floor(h/24)}d ago`;
+  if(h>0) return `${h}h ago`;
+  if(m>0) return `${m}m ago`;
+  return "just now";
+}
 
 /* ── inline CSS ── */
 const css=`
@@ -169,17 +408,16 @@ const css=`
   .chip{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:100px;border:1.5px solid ${border};background:#fff;color:${muted};font-size:13px;font-weight:500;cursor:pointer;transition:all 0.16s;font-family:${font};white-space:nowrap;position:relative;}
   .chip:hover{border-color:rgba(196,122,46,0.4);color:${gold};}
   .chip.sel{border-color:${gold};background:rgba(196,122,46,0.09);color:${gold};font-weight:700;}
-  .chip-lg{padding:11px 20px;font-size:14px;}
   input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.45;cursor:pointer;filter:invert(60%) sepia(60%) saturate(400%) hue-rotate(5deg);}
   ::-webkit-scrollbar{display:none;}
   @media(min-width:600px){.g2{grid-template-columns:repeat(2,1fr)!important;}}
   @media(min-width:600px){.age-g{grid-template-columns:repeat(5,1fr)!important;}}
+  @media(min-width:600px){.venue-g{grid-template-columns:repeat(4,1fr)!important;}}
 `;
 
 /* ── Progress bar ── */
 function Progress({step,withTheme}){
   const labels=withTheme?["Details","Guests","Theme","Services","Gifts","Plan"]:["Details","Guests","Services","Gifts","Plan"];
-  const total=labels.length;
   const cur=withTheme?step:(step<=2?step:step>=4?step-1:step);
   return(
     <div style={{padding:"0 20px 0"}}>
@@ -208,6 +446,8 @@ export default function OccasionDetail(){
   const [guests,setGuests]=useState(20);
   const [date,setDate]=useState("");
   const [budget,setBudget]=useState("");
+  const [city,setCity]=useState("");
+  const [venueType,setVenueType]=useState("");
   const [ageGroups,setAgeGroups]=useState([]);
   const [theme,setTheme]=useState(null);
   const [vendors,setVendors]=useState([]);
@@ -215,9 +455,42 @@ export default function OccasionDetail(){
   const [cakeType,setCakeType]=useState("");
   const [inviteType,setInviteType]=useState("");
   const [customVendor,setCustomVendor]=useState("");
+  const [expandedTip,setExpandedTip]=useState(null);
   const [gifts,setGifts]=useState([]);
   const [checked,setChecked]=useState({});
   const [downloading,setDownloading]=useState(false);
+  const [savedPlan,setSavedPlan]=useState(null);
+
+  const PLAN_KEY=`tendr-plan-${slug}`;
+
+  /* load saved plan on mount */
+  useEffect(()=>{
+    try{
+      const saved=JSON.parse(localStorage.getItem(PLAN_KEY)||"null");
+      if(saved&&saved.step>0) setSavedPlan(saved);
+    }catch{}
+  },[slug]);
+
+  /* save on any change */
+  useEffect(()=>{
+    if(step>0){
+      localStorage.setItem(PLAN_KEY,JSON.stringify({
+        planMode,step,guests,date,budget,city,venueType,
+        ageGroups,theme,vendors,cateringType,cakeType,inviteType,gifts,checked,
+        savedAt:new Date().toISOString(),
+      }));
+    }
+  },[planMode,step,guests,date,budget,city,venueType,ageGroups,theme,vendors,cateringType,cakeType,inviteType,gifts,checked]);
+
+  function restorePlan(s){
+    setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
+    setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
+    setVenueType(s.venueType||"");setAgeGroups(s.ageGroups||[]);
+    setTheme(s.theme||null);setVendors(s.vendors||[]);
+    setCateringType(s.cateringType||"");setCakeType(s.cakeType||"");
+    setInviteType(s.inviteType||"");setGifts(s.gifts||[]);
+    setChecked(s.checked||{});setSavedPlan(null);
+  }
 
   const occasion=getOccasionById(slug);
   if(!occasion){navigate("/");return null;}
@@ -225,12 +498,20 @@ export default function OccasionDetail(){
   const hub=HUB_ROUTES[slug];
   const equipment=getEquipment(slug,guests);
   const withTheme=planMode==="with";
-  const recommended=getRecommended(occasion,theme,ageGroups);
+  const recommended=getRecommended(occasion,theme,ageGroups,venueType);
   const tasksDone=Object.values(checked).filter(Boolean).length;
   const tasksTotal=(occasion.checklist||[]).length;
   const catVendors=vendors.filter(v=>(occasion.vendorCategories||[]).includes(v)||ALL_VENDORS.includes(v));
-  const timeline=buildTimeline(date);
+  const timeline=buildTimeline(date,vendors);
   const budgetSplit=buildBudgetSplit(budget);
+
+  /* vendor link URL */
+  const vendorUrl=(cat)=>{
+    const params=new URLSearchParams({serviceType:cat});
+    if(city.trim()) params.set("city",city.trim());
+    if(venueType) params.set("venueType",venueType);
+    return `/listings?${params.toString()}`;
+  };
 
   /* navigation */
   const next=()=>{
@@ -267,13 +548,12 @@ export default function OccasionDetail(){
   const sLabel={fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font};
   const fieldCard={background:"#fff",borderRadius:18,padding:"20px 22px",border:`1.5px solid ${border}`,marginBottom:12,transition:"border-color 0.2s"};
 
-  /* theme-aware gift filter: boost gifts that mention theme tags */
+  /* theme-aware gift sort */
   const sortedGifts=[...(occasion.giftIdeas||[])].sort((a,b)=>{
     if(!theme) return 0;
     const tags=(theme.tags||[]).join(" ").toLowerCase();
-    const aScore=[a.name,a.desc].join(" ").toLowerCase().split(" ").filter(w=>tags.includes(w)).length;
-    const bScore=[b.name,b.desc].join(" ").toLowerCase().split(" ").filter(w=>tags.includes(w)).length;
-    return bScore-aScore;
+    const score=x=>[x.name,x.desc||""].join(" ").toLowerCase().split(/\s+/).filter(w=>tags.includes(w)).length;
+    return score(b)-score(a);
   });
 
   return(
@@ -304,6 +584,18 @@ export default function OccasionDetail(){
         {/* ══ STEP 0: mode choice ══ */}
         {step===0&&(
           <div className="os">
+            {/* saved plan banner */}
+            {savedPlan&&(
+              <div style={{background:"rgba(196,122,46,0.06)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
+                <div style={{fontSize:12,fontWeight:700,color:gold,marginBottom:6}}>📋 You have a saved plan · {timeAgo(savedPlan.savedAt)}</div>
+                <div style={{fontSize:12,color:muted,marginBottom:12}}>{savedPlan.guests} guests · {savedPlan.date||"No date"}{savedPlan.city?` · ${savedPlan.city}`:""}</div>
+                <div style={{display:"flex",gap:8}}>
+                  <button onClick={()=>restorePlan(savedPlan)} style={{flex:1,padding:"10px 0",borderRadius:10,border:"none",background:gold,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>Continue plan</button>
+                  <button onClick={()=>{setSavedPlan(null);localStorage.removeItem(PLAN_KEY);}} style={{padding:"10px 14px",borderRadius:10,border:`1px solid rgba(196,122,46,0.2)`,background:"transparent",color:muted,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>Start fresh</button>
+                </div>
+              </div>
+            )}
+
             <p style={{fontFamily:serif,fontSize:"clamp(1.5rem,4vw,2rem)",color:ink,lineHeight:1.25,marginBottom:6}}>
               How would you like to plan?
             </p>
@@ -323,9 +615,9 @@ export default function OccasionDetail(){
                     </div>
                     <svg style={{marginLeft:"auto",flexShrink:0}} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                   </div>
-                  <p style={{fontSize:12.5,color:muted,margin:"0 0 10px",lineHeight:1.6,paddingLeft:0}}>Browse curated décor themes and build your entire plan around one aesthetic.</p>
+                  <p style={{fontSize:12.5,color:muted,margin:"0 0 10px",lineHeight:1.6}}>Browse curated décor themes and get specific advice on what to arrange, what to ask vendors, and what to order.</p>
                   <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    {["Theme picker","Vendor match","Full blueprint"].map(t=>(
+                    {["Theme picker","Vendor advice","Full blueprint"].map(t=>(
                       <span key={t} style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
                     ))}
                   </div>
@@ -343,7 +635,7 @@ export default function OccasionDetail(){
                     <div style={{fontFamily:serif,fontSize:17,fontWeight:500,color:ink}}>Jump straight in</div>
                     <svg style={{marginLeft:"auto",flexShrink:0}} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.4)" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                   </div>
-                  <p style={{fontSize:12.5,color:muted,margin:"0 0 10px",lineHeight:1.6}}>Skip theme selection — go straight to vendors and gifts. Great if you already know what you want.</p>
+                  <p style={{fontSize:12.5,color:muted,margin:"0 0 10px",lineHeight:1.6}}>Skip theme selection — go straight to vendors. Great if you already know what you want.</p>
                   <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                     {["Faster","Direct to vendors","Full blueprint"].map(t=>(
                       <span key={t} style={{fontSize:10,fontWeight:600,color:"rgba(196,122,46,0.5)",background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.12)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
@@ -355,7 +647,7 @@ export default function OccasionDetail(){
           </div>
         )}
 
-        {/* ══ STEP 1: details (conversational) ══ */}
+        {/* ══ STEP 1: details ══ */}
         {step===1&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.35,marginBottom:28}}>
@@ -393,6 +685,32 @@ export default function OccasionDetail(){
               {timeline&&<div style={{fontSize:11,color:gold,marginTop:8,fontWeight:600}}>⏳ {timeline.days} days away</div>}
             </div>
 
+            {/* city */}
+            <div style={fieldCard}>
+              <div style={sLabel}>City</div>
+              <input type="text" value={city} onChange={e=>setCity(e.target.value)}
+                placeholder="e.g. Delhi, Mumbai, Bengaluru…"
+                style={{width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.12)`,background:"#FDFAF5",fontSize:14,fontFamily:font,color:ink,outline:"none",boxSizing:"border-box",minHeight:44}}/>
+              <div style={{fontSize:11,color:muted,marginTop:8}}>We'll show vendors available in your city</div>
+            </div>
+
+            {/* venue type */}
+            <div style={fieldCard}>
+              <div style={sLabel}>Where is it?</div>
+              <div className="venue-g" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+                {VENUE_TYPES.map(v=>{
+                  const sel=venueType===v.id;
+                  return(
+                    <button key={v.id} onClick={()=>setVenueType(t=>t===v.id?"":v.id)}
+                      style={{display:"flex",alignItems:"center",gap:9,padding:"11px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left",minHeight:44}}>
+                      <span style={{fontSize:18,flexShrink:0}}>{v.icon}</span>
+                      <span style={{fontSize:12.5,fontWeight:sel?700:500,color:sel?gold:ink,lineHeight:1.3}}>{v.id}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             {/* budget */}
             <div style={fieldCard}>
               <div style={sLabel}>Budget — optional</div>
@@ -414,7 +732,7 @@ export default function OccasionDetail(){
         {step===2&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Who's coming?</p>
-            <p style={{fontSize:13,color:muted,marginBottom:28,lineHeight:1.6}}>Helps us tailor entertainment and catering suggestions.</p>
+            <p style={{fontSize:13,color:muted,marginBottom:28,lineHeight:1.6}}>Helps us tailor entertainment and catering to your crowd.</p>
             <div className="age-g" style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10}}>
               {AGE_GROUPS.map(ag=>{
                 const sel=ageGroups.includes(ag.id);
@@ -437,7 +755,7 @@ export default function OccasionDetail(){
         {step===3&&withTheme&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Pick your vibe</p>
-            <p style={{fontSize:13,color:muted,marginBottom:24,lineHeight:1.6}}>Sets the look for everything — vendors and gifts will reflect it.</p>
+            <p style={{fontSize:13,color:muted,marginBottom:24,lineHeight:1.6}}>Sets the look for everything — décor advice, vendor tips and gift suggestions will match.</p>
             <div style={{display:"flex",flexDirection:"column",gap:10}}>
               {(occasion.decorThemes||[]).map((t,i)=>{
                 const sel=theme?.name===t.name;
@@ -458,7 +776,7 @@ export default function OccasionDetail(){
                 );
               })}
             </div>
-            {!theme&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:14}}>Tap to select — or skip without a theme</p>}
+            {!theme&&<p style={{fontSize:12,color:"rgba(30,15,0,0.28)",textAlign:"center",marginTop:14}}>Tap to select — or skip to continue without a theme</p>}
           </div>
         )}
 
@@ -468,12 +786,12 @@ export default function OccasionDetail(){
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>What do you need?</p>
             {theme&&<div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(196,122,46,0.07)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:100,padding:"4px 12px",marginBottom:18}}>
               <div style={{width:10,height:10,borderRadius:"50%",background:themeColor(theme.tags)}}/>
-              <span style={{fontSize:11,fontWeight:700,color:gold}}>{theme.name} theme selected</span>
+              <span style={{fontSize:11,fontWeight:700,color:gold}}>{theme.name} theme</span>
             </div>}
-            {!theme&&<p style={{fontSize:13,color:muted,marginBottom:20,lineHeight:1.6}}>Select what you'd like to arrange for the celebration.</p>}
+            {!theme&&<p style={{fontSize:13,color:muted,marginBottom:20,lineHeight:1.6}}>Select what you'd like to arrange.</p>}
 
-            {/* vendors — mandatory */}
-            <div style={{marginBottom:24}}>
+            {/* vendors */}
+            <div style={{marginBottom:20}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
                 <div style={sLabel}>Who do you need?</div>
                 <span style={{fontSize:10,fontWeight:700,color:"#E05252",letterSpacing:"0.06em",marginTop:-2}}>Required</span>
@@ -483,15 +801,14 @@ export default function OccasionDetail(){
                   const sel=vendors.includes(v);
                   const rec=recommended.has(v);
                   return(
-                    <button key={v} onClick={()=>toggleVendor(v)} className={`chip${sel?" sel":""}`}>
+                    <button key={v} onClick={()=>{toggleVendor(v);if(!sel)setExpandedTip(v);else if(expandedTip===v)setExpandedTip(null);}} className={`chip${sel?" sel":""}`}>
                       {rec&&!sel&&<span style={{width:6,height:6,borderRadius:"50%",background:gold,flexShrink:0}}/>}
                       {v}
-                      {rec&&!sel&&<span style={{fontSize:8,fontWeight:800,color:gold,opacity:0.7}}>✦</span>}
                     </button>
                   );
                 })}
               </div>
-              {recommended.size>0&&<p style={{fontSize:11,color:muted,marginBottom:10}}>✦ Recommended based on your theme and guests</p>}
+              {recommended.size>0&&<p style={{fontSize:11,color:muted,marginBottom:10}}>● Recommended for your setup</p>}
               {/* add your own */}
               <div style={{display:"flex",gap:8,alignItems:"center"}}>
                 <input type="text" value={customVendor} onChange={e=>setCustomVendor(e.target.value)}
@@ -502,8 +819,42 @@ export default function OccasionDetail(){
               </div>
             </div>
 
+            {/* vendor tips — shown for selected vendors */}
+            {vendors.filter(v=>ALL_VENDORS.includes(v)).map(v=>{
+              const tips=getVendorTips(v,{theme,venueType,ageGroups,cateringType});
+              const isOpen=expandedTip===v;
+              return(
+                <div key={v} style={{marginBottom:10,border:`1.5px solid ${isOpen?gold:"rgba(196,122,46,0.14)"}`,borderRadius:14,overflow:"hidden",transition:"border-color 0.2s"}}>
+                  <button onClick={()=>setExpandedTip(t=>t===v?null:v)}
+                    style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 16px",background:isOpen?"rgba(196,122,46,0.04)":"#fff",border:"none",cursor:"pointer",fontFamily:font,textAlign:"left"}}>
+                    <div style={{fontSize:13,fontWeight:700,color:isOpen?gold:ink}}>{v}</div>
+                    <div style={{display:"flex",alignItems:"center",gap:6}}>
+                      <span style={{fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",borderRadius:100,padding:"2px 8px"}}>What to ask for</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                  </button>
+                  {isOpen&&(
+                    <div style={{padding:"0 16px 14px",background:"rgba(196,122,46,0.03)"}}>
+                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{tips.heading}</div>
+                      {tips.items.map((item,i)=>(
+                        <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:5}}>
+                          <div style={{width:5,height:5,borderRadius:"50%",background:gold,marginTop:5,flexShrink:0}}/>
+                          <span style={{fontSize:12.5,color:ink,lineHeight:1.5}}>{item}</span>
+                        </div>
+                      ))}
+                      <div style={{marginTop:10,padding:"9px 12px",background:"rgba(196,122,46,0.07)",borderRadius:9,fontSize:11.5,color:gold,fontWeight:600,lineHeight:1.5}}>{tips.tip}</div>
+                      <button onClick={()=>window.open(vendorUrl(v),"_blank","noopener")}
+                        style={{marginTop:10,width:"100%",padding:"10px 0",borderRadius:10,background:`linear-gradient(135deg,${gold},${goldLt})`,border:"none",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                        Find {v} in {city||"your city"} ↗
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
             {/* catering */}
-            <div style={{marginBottom:20}}>
+            <div style={{marginBottom:20,marginTop:4}}>
               <div style={sLabel}>Catering style</div>
               <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
                 {(CATERING_OPTS[occasion.id]||CATERING_OPTS.default).map(opt=>(
@@ -532,7 +883,7 @@ export default function OccasionDetail(){
               </div>
             </div>
 
-            {/* decor ideas from theme */}
+            {/* theme décor hint */}
             {theme&&(
               <div style={{background:"rgba(196,122,46,0.04)",border:`1px solid ${border}`,borderRadius:14,padding:"14px 16px"}}>
                 <div style={{...sLabel,marginBottom:8}}>Perfect for {theme.name}</div>
@@ -557,9 +908,8 @@ export default function OccasionDetail(){
                 return(
                   <button key={i} onClick={()=>toggleGift(g.name)}
                     style={{padding:"15px 16px",borderRadius:14,textAlign:"left",cursor:"pointer",border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.06)":"#fff",fontFamily:font,transition:"all 0.18s",minHeight:44}}
-                    onMouseEnter={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.3)";}}}
-                    onMouseLeave={e=>{if(!sel){e.currentTarget.style.borderColor="rgba(196,122,46,0.12)";}}}
-                  >
+                    onMouseEnter={e=>{if(!sel)e.currentTarget.style.borderColor="rgba(196,122,46,0.3)";}}
+                    onMouseLeave={e=>{if(!sel)e.currentTarget.style.borderColor="rgba(196,122,46,0.12)";}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:5}}>
                       <div style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.3}}>{g.name}</div>
                       <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.18)"}`,background:sel?gold:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.18s",marginTop:1}}>
@@ -579,9 +929,9 @@ export default function OccasionDetail(){
         {step===6&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
-            <p style={{fontSize:13,color:muted,marginBottom:24,lineHeight:1.6}}>Download your card, then book vendors and tick off the list.</p>
+            <p style={{fontSize:13,color:muted,marginBottom:24,lineHeight:1.6}}>Download your card, book your vendors, and tick off the list.</p>
 
-            {/* ── downloadable card ── */}
+            {/* downloadable card */}
             <div ref={cardRef} style={{background:"linear-gradient(145deg,#FFF8EE,#FFFDF7)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:20,overflow:"hidden",marginBottom:12}}>
               <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,padding:"18px 20px 16px",position:"relative",overflow:"hidden"}}>
                 <div aria-hidden style={{position:"absolute",top:-24,right:-24,width:90,height:90,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,0.14)"}}/>
@@ -597,30 +947,23 @@ export default function OccasionDetail(){
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
                   {[
                     {icon:"👥",label:"Guests",val:`${guests} people`},
-                    {icon:"💰",label:"Budget",val:budget?`₹${Number(budget).toLocaleString("en-IN")}`:`${fmtNum(occasion.budgetMin)}–${fmtNum(occasion.budgetMax)}`},
+                    {icon:"💰",label:"Budget",val:budget?fmtNum(Number(budget)):`${fmtNum(occasion.budgetMin)}–${fmtNum(occasion.budgetMax)}`},
                     {icon:"📅",label:"Date",val:date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}):"TBD"},
-                    {icon:"🎨",label:"Theme",val:theme?.name||"No theme"},
+                    {icon:"📍",label:"Location",val:city?(venueType?`${city} · ${venueType}`:city):(venueType||"TBD")},
                   ].map(({icon,label,val})=>(
                     <div key={label} style={{background:"#fff",borderRadius:10,padding:"10px 12px",border:`1px solid rgba(196,122,46,0.1)`}}>
                       <div style={{fontSize:9,fontWeight:700,color:"rgba(196,122,46,0.45)",textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:2}}>{icon} {label}</div>
-                      <div style={{fontSize:12.5,fontWeight:700,color:val==="TBD"||val==="No theme"?"rgba(30,15,0,0.25)":ink}}>{val}</div>
+                      <div style={{fontSize:12.5,fontWeight:700,color:val==="TBD"?"rgba(30,15,0,0.25)":ink}}>{val}</div>
                     </div>
                   ))}
                 </div>
-                {cateringType&&<div style={{marginBottom:8,fontSize:11.5,color:muted}}>🍽️ {cateringType} · {cakeType||"Cake TBD"} · {inviteType||"Invites TBD"}</div>}
+                {theme&&<div style={{marginBottom:8,fontSize:11.5,fontWeight:700,color:gold}}>🎨 {theme.name} theme</div>}
+                {cateringType&&<div style={{marginBottom:8,fontSize:11.5,color:muted}}>🍽️ {cateringType}{cakeType&&` · ${cakeType}`}{inviteType&&` · ${inviteType}`}</div>}
                 {catVendors.length>0&&(
                   <div style={{marginBottom:10}}>
                     <div style={{fontSize:9,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Vendors needed</div>
                     <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
                       {catVendors.map(v=><span key={v} style={{fontSize:10.5,fontWeight:600,color:gold,background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:100,padding:"3px 9px"}}>{v}</span>)}
-                    </div>
-                  </div>
-                )}
-                {gifts.length>0&&(
-                  <div style={{marginBottom:10}}>
-                    <div style={{fontSize:9,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Gift ideas</div>
-                    <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                      {gifts.map(n=>{const g=(occasion.giftIdeas||[]).find(g=>g.name===n);return g?<span key={n} style={{fontSize:10.5,fontWeight:600,color:"rgba(30,15,0,0.55)",background:"rgba(196,122,46,0.04)",border:`1px solid ${border}`,borderRadius:100,padding:"3px 9px"}}>{g.name} · {g.price}</span>:null;})}
                     </div>
                   </div>
                 )}
@@ -637,7 +980,7 @@ export default function OccasionDetail(){
               {downloading?<><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Plan Card</>}
             </button>
 
-            {/* ── timeline ── */}
+            {/* timeline */}
             {timeline&&(
               <div style={{marginBottom:24}}>
                 <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:16,fontFamily:font}}>Your timeline · {timeline.days} days to go</div>
@@ -645,8 +988,8 @@ export default function OccasionDetail(){
                   <div style={{position:"absolute",left:7,top:8,bottom:8,width:1.5,background:`linear-gradient(180deg,${gold},rgba(196,122,46,0.1))`}}/>
                   {timeline.phases.map((p,i)=>(
                     <div key={i} style={{position:"relative",marginBottom:i<timeline.phases.length-1?20:0}}>
-                      <div style={{position:"absolute",left:-21,top:2,width:10,height:10,borderRadius:"50%",background:i===timeline.phases.length-1?gold:"#fff",border:`2px solid ${gold}`,transition:"all 0.3s"}}/>
-                      <div style={{fontSize:10.5,fontWeight:700,color:i===timeline.phases.length-1?gold:gold,marginBottom:4,letterSpacing:"0.02em"}}>{p.when}{p.date&&<span style={{color:muted,fontWeight:400,marginLeft:6}}>{p.date}</span>}</div>
+                      <div style={{position:"absolute",left:-21,top:2,width:10,height:10,borderRadius:"50%",background:i===timeline.phases.length-1?gold:"#fff",border:`2px solid ${gold}`}}/>
+                      <div style={{fontSize:10.5,fontWeight:700,color:gold,marginBottom:4}}>{p.when}{p.date&&<span style={{color:muted,fontWeight:400,marginLeft:6}}>{p.date}</span>}</div>
                       {p.tasks.map((t,j)=><div key={j} style={{fontSize:12,color:muted,lineHeight:1.5,marginBottom:1}}>· {t}</div>)}
                     </div>
                   ))}
@@ -654,7 +997,7 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* ── budget split ── */}
+            {/* budget split */}
             {budgetSplit&&(
               <div style={{marginBottom:24}}>
                 <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:14,fontFamily:font}}>Budget breakdown · {fmtNum(Number(budget))}</div>
@@ -672,19 +1015,21 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* ── vendor booking ── */}
+            {/* vendor booking */}
             {catVendors.length>0&&(
               <div style={{marginBottom:16}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Book your vendors</div>
+                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>
+                  Book your vendors{city&&<span style={{fontWeight:400,color:muted,textTransform:"none",fontSize:10}}> · {city}</span>}
+                </div>
                 <div style={{display:"flex",flexDirection:"column",gap:8}}>
                   {catVendors.map(cat=>(
-                    <button key={cat} onClick={()=>window.open(`/listings?serviceType=${cat}`,"_blank","noopener")}
+                    <button key={cat} onClick={()=>window.open(vendorUrl(cat),"_blank","noopener")}
                       style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 16px",borderRadius:12,border:`1.5px solid ${border}`,background:"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.18s",minHeight:44}}
                       onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.35)";}}
                       onMouseLeave={e=>{e.currentTarget.style.borderColor=border;}}>
                       <div>
                         <div style={{fontSize:13.5,fontWeight:700,color:ink}}>{cat}</div>
-                        <div style={{fontSize:11,color:muted,marginTop:1}}>Opens in new tab</div>
+                        <div style={{fontSize:11,color:muted,marginTop:1}}>{city?`Showing in ${city}`:"Opens in new tab"}</div>
                       </div>
                       <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,borderRadius:8,padding:"6px 13px",flexShrink:0}}>
                         <span style={{fontSize:12,fontWeight:700,color:"#fff"}}>Find ↗</span>
@@ -695,20 +1040,20 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* ── Baat Karo ── */}
-            <a href={`https://wa.me/919211668427?text=Hi%20Tendr%2C%20I%27m%20planning%20a%20${encodeURIComponent(occasion.name)}%20for%20${guests}%20guests${date?`%20on%20${encodeURIComponent(new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}))}`:""}.%20Need%20help%20finding%20vendors!`}
+            {/* WhatsApp CTA */}
+            <a href={`https://wa.me/919211668427?text=Hi%20Tendr%2C%20I%27m%20planning%20a%20${encodeURIComponent(occasion.name)}%20for%20${guests}%20guests${date?`%20on%20${encodeURIComponent(new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}))}`:""}.${city?`%20Location%3A%20${encodeURIComponent(city)}.`:""} Can you help me find vendors?`}
               target="_blank" rel="noopener noreferrer"
               style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",borderRadius:14,background:"#25D366",marginBottom:20,textDecoration:"none",transition:"opacity 0.18s"}}
               onMouseEnter={e=>{e.currentTarget.style.opacity="0.88";}} onMouseLeave={e=>{e.currentTarget.style.opacity="1";}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
               <div style={{flex:1}}>
                 <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.2}}>Baat Karo Tendr Se</div>
-                <div style={{fontSize:11.5,color:"rgba(255,255,255,0.82)",marginTop:2}}>Chat on WhatsApp — we'll help you plan</div>
+                <div style={{fontSize:11.5,color:"rgba(255,255,255,0.82)",marginTop:2}}>Chat on WhatsApp — we'll help you find vendors{city?` in ${city}`:""}</div>
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
 
-            {/* ── gifts list ── */}
+            {/* gifts */}
             {gifts.length>0&&(
               <div style={{marginBottom:20}}>
                 <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>Gift ideas</div>
@@ -727,7 +1072,7 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* ── checklist ── */}
+            {/* checklist */}
             <div style={{marginBottom:20}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                 <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",fontFamily:font}}>Checklist</div>
@@ -749,7 +1094,7 @@ export default function OccasionDetail(){
               ))}
             </div>
 
-            {/* ── equipment ── */}
+            {/* equipment */}
             <div style={{marginBottom:20}}>
               <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>What to arrange · {guests} guests</div>
               {equipment.map(({cat,items})=>(
@@ -781,23 +1126,22 @@ export default function OccasionDetail(){
         )}
       </div>
 
-      {/* ── fixed bottom CTA ── */}
+      {/* fixed bottom CTA */}
       {step>0&&(
         <div style={{position:"fixed",bottom:0,left:0,right:0,background:bg,borderTop:`1px solid ${border}`,padding:"12px 20px calc(12px + env(safe-area-inset-bottom,0px))",zIndex:50}}>
           <div style={{maxWidth:680,margin:"0 auto",display:"flex",gap:10}}>
-            {step>1&&<button onClick={back} style={btnGhost}>← Back</button>}
-            {step===1&&<button onClick={back} style={btnGhost}>← Back</button>}
+            {step>0&&<button onClick={back} style={btnGhost}>← Back</button>}
             {step<6&&(
               <button onClick={next} disabled={!canNext()} style={btnPrimary}>
                 {step===1&&(!date?"Set a date first →":"Next — Who's coming? →")}
                 {step===2&&"Next →"}
                 {step===3&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}
-                {step===4&&(vendors.length>0?`Next — Gifts →`:"Skip →")}
-                {step===5&&(gifts.length>0?`See my plan →`:"Skip — see plan →")}
+                {step===4&&(vendors.length>0?"Next — Gifts →":"Skip →")}
+                {step===5&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
               </button>
             )}
             {step===6&&(
-              <button onClick={()=>{const cats=catVendors;window.open(cats.length>0?`/listings?serviceType=${cats[0]}`:"/listings","_blank","noopener");}} style={btnPrimary}>
+              <button onClick={()=>window.open(catVendors.length>0?vendorUrl(catVendors[0]):"/listings","_blank","noopener")} style={btnPrimary}>
                 Start Booking Vendors ↗
               </button>
             )}
