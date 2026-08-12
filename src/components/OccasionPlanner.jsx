@@ -1238,7 +1238,9 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                       border: `1px solid ${occColor}45`, background: `${occColor}0D`,
                       transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+                      position: 'relative', overflow: 'hidden',
                     }}>
+                      <div aria-hidden style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: occColor }} />
                       <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan with Theme</div>
                       <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Browse curated themes and get tailored vendor suggestions for your event</div>
                     </button>
@@ -1246,7 +1248,9 @@ export default function OccasionPlanner({ initialOccasion, onClose }) {
                       padding: '20px 18px', borderRadius: 16, textAlign: 'left', cursor: 'pointer',
                       border: '1px solid rgba(245,236,216,0.1)', background: 'rgba(245,236,216,0.03)',
                       transition: 'all 0.18s', fontFamily: "'Outfit',sans-serif",
+                      position: 'relative', overflow: 'hidden',
                     }}>
+                      <div aria-hidden style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 4, background: 'rgba(245,236,216,0.2)' }} />
                       <div style={{ fontSize: 16, fontWeight: 400, color: '#F5ECD8', marginBottom: 6, fontFamily: "'Cormorant Garamond',serif", letterSpacing: '0.01em' }}>Plan without Theme</div>
                       <div style={{ fontSize: 13, fontWeight: 400, color: 'rgba(245,236,216,0.85)', lineHeight: 1.55 }}>Jump straight to planning — browse vendors, get quotes, and finalise</div>
                     </button>
