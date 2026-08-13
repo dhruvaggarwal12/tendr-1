@@ -1028,41 +1028,6 @@ const Home = () => {
               </button>
             </motion.div>
 
-            {/* Party Hub / Plan the Party — quick-choice cards */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.32 }}
-              style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 16, position: "relative", zIndex: 1, maxWidth: 420 }}
-            >
-              {/* Party Hub card */}
-              <button
-                onClick={() => { setOccasionFlow("grid"); setOccasionSearch(""); }}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 14, border: "none", background: "#1C0900", cursor: "pointer", textAlign: "left", fontFamily: "'Outfit',sans-serif", transition: "opacity 0.14s" }}
-                onMouseEnter={e => e.currentTarget.style.opacity = "0.82"}
-                onMouseLeave={e => e.currentTarget.style.opacity = "1"}
-              >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>🎮</div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 1 }}>Party Hub</div>
-                  <div style={{ fontSize: 10.5, color: "rgba(255,255,255,0.45)", lineHeight: 1.35 }}>Games & activities</div>
-                </div>
-              </button>
-              {/* Plan the Party card */}
-              <button
-                onClick={() => navigate("/booking")}
-                style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.28)", background: "rgba(196,122,46,0.06)", cursor: "pointer", textAlign: "left", fontFamily: "'Outfit',sans-serif", transition: "all 0.16s" }}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.55)"; e.currentTarget.style.background = "rgba(196,122,46,0.12)"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; e.currentTarget.style.background = "rgba(196,122,46,0.06)"; }}
-              >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg,#C47A2E,#D4A848)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>📋</div>
-                <div>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "#FFF8EC", marginBottom: 1 }}>Plan the Party</div>
-                  <div style={{ fontSize: 10.5, color: "rgba(255,247,235,0.45)", lineHeight: 1.35 }}>Vendors & blueprint</div>
-                </div>
-              </button>
-            </motion.div>
-
             {/* Social proof trust bar — below CTAs */}
             <motion.div
               className="home-hero-trust"
