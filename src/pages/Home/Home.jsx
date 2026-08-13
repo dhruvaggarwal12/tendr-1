@@ -2266,6 +2266,99 @@ const Home = () => {
       </section>
 
 
+      {/* ── Puja Kits Section ── */}
+      <section style={{ background: "#120800", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
+        {/* Ambient glow */}
+        <div style={{ position: "absolute", top: -80, right: -80, width: 500, height: 400, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(196,122,46,0.09) 0%, transparent 68%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: -40, left: -60, width: 360, height: 280, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(196,122,46,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 56, alignItems: "center" }}>
+
+            {/* Left: copy */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
+            >
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(204,171,74,0.1)", border: "1px solid rgba(204,171,74,0.22)", borderRadius: 100, padding: "5px 14px", marginBottom: 20 }}>
+                <span style={{ fontSize: 12 }}>🪔</span>
+                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#CCAB4A", textTransform: "uppercase", letterSpacing: "0.14em" }}>New — Puja Kits</span>
+              </div>
+              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem, 3.2vw, 2.6rem)", fontWeight: 400, color: "#FFF8EC", margin: "0 0 14px", lineHeight: 1.15, letterSpacing: "-0.01em" }}>
+                Puja, Planned<br />by Tendr.
+              </h2>
+              <p style={{ fontSize: 15, color: "rgba(255,247,235,0.5)", lineHeight: 1.75, margin: "0 0 10px", maxWidth: 400 }}>
+                Choose your Puja. Tell us your requirements.<br />We'll prepare everything you need, packed and ready.
+              </p>
+              <p style={{ fontSize: 13, color: "rgba(255,247,235,0.33)", lineHeight: 1.6, margin: "0 0 28px", maxWidth: 380 }}>
+                Occasion-specific kits · Exact quantities · Organized Tendr box · Open → Follow → Celebrate
+              </p>
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <motion.button
+                  whileHover={{ y: -2, boxShadow: "0 12px 36px rgba(196,122,46,0.5)" }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate("/puja-kits")}
+                  style={{ padding: "12px 26px", borderRadius: 12, background: "linear-gradient(135deg, #C47A2E, #D4A848)", color: "#fff", fontSize: 14, fontWeight: 600, border: "none", cursor: "pointer", fontFamily: "'Outfit', sans-serif", boxShadow: "0 4px 20px rgba(196,122,46,0.4)", transition: "all 0.2s" }}
+                >
+                  Explore Puja Kits →
+                </motion.button>
+                <motion.button
+                  whileHover={{ borderColor: "rgba(196,122,46,0.65)", background: "rgba(196,122,46,0.08)" }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate("/puja-kits")}
+                  style={{ padding: "12px 22px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.35)", background: "transparent", color: "rgba(255,247,235,0.75)", fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", transition: "all 0.2s" }}
+                >
+                  Upload Pandit's List
+                </motion.button>
+              </div>
+            </motion.div>
+
+            {/* Right: steps + kit types preview */}
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.5, delay: 0.12, ease: [0.25, 0.46, 0.45, 0.94] }}
+              style={{ display: "flex", flexDirection: "column", gap: 12 }}
+            >
+              {/* How it works mini */}
+              {[
+                { n: "1", title: "Choose Your Puja", sub: "Select from 25+ pujas and festivals" },
+                { n: "2", title: "Set Your Requirements", sub: "Guest count, date and delivery location" },
+                { n: "3", title: "Get Your Kit", sub: "Packed in labeled sections, ready to use" },
+              ].map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 14, padding: "14px 16px", borderRadius: 14, background: "rgba(255,247,235,0.03)", border: "1px solid rgba(196,122,46,0.1)" }}>
+                  <div style={{ width: 30, height: 30, borderRadius: "50%", background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 12, fontWeight: 800, color: "#C47A2E", fontFamily: "'Outfit', sans-serif" }}>{step.n}</div>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: "#FFF8EC", marginBottom: 3, fontFamily: "'Outfit', sans-serif" }}>{step.title}</div>
+                    <div style={{ fontSize: 12, color: "rgba(255,247,235,0.4)", fontFamily: "'Outfit', sans-serif" }}>{step.sub}</div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Kit types mini preview */}
+              <div style={{ marginTop: 4, padding: "16px 16px", borderRadius: 14, border: "1px solid rgba(196,122,46,0.18)", background: "rgba(196,122,46,0.04)" }}>
+                <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>Kit Options</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {[
+                    { name: "Essential Kit", price: "from ₹799" },
+                    { name: "Complete Kit ★", price: "from ₹1,099" },
+                    { name: "Pandit's Kit", price: "Custom" },
+                  ].map(k => (
+                    <div key={k.name} style={{ padding: "8px 12px", borderRadius: 10, background: "rgba(255,247,235,0.05)", border: "1px solid rgba(255,247,235,0.08)" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#FFF8EC", marginBottom: 2, fontFamily: "'Outfit', sans-serif" }}>{k.name}</div>
+                      <div style={{ fontSize: 11, color: "#C47A2E", fontFamily: "'Outfit', sans-serif" }}>{k.price}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Tips by Tendr ── */}
       <TipsByTendrSection />
 

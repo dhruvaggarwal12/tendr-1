@@ -116,6 +116,7 @@ const PotluckJoin         = lazy(() => import("./pages/house-party/PotluckJoin.j
 const InviteRSVP          = lazy(() => import("./pages/house-party/InviteRSVP.jsx"));
 const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage.jsx"));
 const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.jsx"));
+const PujaKits            = lazy(() => import("./pages/puja-kits/PujaKits.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -409,14 +410,20 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
   },
 
-  { 
-    path: "/event-planning", 
-    element: <EventPlanningForm />, 
-    errorElement: <ErrorPage /> 
+  {
+    path: "/event-planning",
+    element: <EventPlanningForm />,
+    errorElement: <ErrorPage />
   },
 
-  { 
-    path: "*", 
+  {
+    path: "/puja-kits",
+    element: <PujaKits />,
+    errorElement: <ErrorPage />,
+  },
+
+  {
+    path: "*",
     element: <NotFound />, 
     errorElement: <ErrorPage /> 
   },
