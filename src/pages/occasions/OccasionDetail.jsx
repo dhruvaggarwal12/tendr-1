@@ -647,83 +647,110 @@ export default function OccasionDetail(){
           </div>
         )}
 
-        {/* ══ STEP 1: details ══ */}
+        {/* ══ STEP 1: details (sentence form) ══ */}
         {step===1&&(
           <div className="os">
-            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.35,marginBottom:28}}>
-              Tell us about your<br/>
-              <span style={{color:gold}}>{occasion.name} {occasion.icon}</span>
-            </p>
+            {/* heading */}
+            <div style={{marginBottom:36}}>
+              <div style={{fontSize:11,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:10,fontFamily:font}}>Tell us about your celebration</div>
+              <div style={{fontFamily:serif,fontSize:"clamp(1.6rem,4vw,2.2rem)",color:ink,lineHeight:1.2,letterSpacing:"-0.01em"}}>
+                {occasion.name} <span style={{fontSize:"0.75em"}}>{occasion.icon}</span>
+              </div>
+            </div>
 
-            {/* guests */}
-            <div style={{...fieldCard,borderColor:guests?"rgba(196,122,46,0.22)":border}}>
-              <div style={sLabel}>How many guests?</div>
-              <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:14}}>
-                <button onClick={()=>setGuests(g=>Math.max(5,g-5))} style={{width:44,height:44,borderRadius:12,border:`1.5px solid rgba(196,122,46,0.2)`,background:"#F8F4EF",color:gold,fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300,transition:"all 0.15s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(196,122,46,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="#F8F4EF"}>−</button>
-                <div style={{flex:1,textAlign:"center"}}>
-                  <div style={{fontFamily:serif,fontSize:52,fontWeight:900,color:ink,lineHeight:1,letterSpacing:"-0.03em"}}>{guests}</div>
-                  <div style={{fontSize:11,color:muted,marginTop:3}}>guests</div>
+            {/* ── sentence rows ── */}
+            <div style={{display:"flex",flexDirection:"column"}}>
+
+              {/* for N guests */}
+              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
+                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>for how many guests?</div>
+                <div style={{display:"flex",alignItems:"center",gap:0}}>
+                  <button onClick={()=>setGuests(g=>Math.max(5,g-5))}
+                    style={{width:44,height:52,borderRadius:"12px 0 0 12px",border:`1.5px solid rgba(196,122,46,0.2)`,borderRight:"none",background:"#F8F4EF",color:gold,fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300,transition:"background 0.15s"}}
+                    onMouseEnter={e=>e.currentTarget.style.background="rgba(196,122,46,0.1)"} onMouseLeave={e=>e.currentTarget.style.background="#F8F4EF"}>−</button>
+                  <div style={{height:52,flex:1,display:"flex",alignItems:"center",justifyContent:"center",border:`1.5px solid rgba(196,122,46,0.2)`,background:"#fff",borderLeft:"none",borderRight:"none"}}>
+                    <span style={{fontFamily:serif,fontSize:32,fontWeight:900,color:ink,letterSpacing:"-0.03em"}}>{guests}</span>
+                    <span style={{fontSize:13,color:muted,marginLeft:8}}>guests</span>
+                  </div>
+                  <button onClick={()=>setGuests(g=>g+5)}
+                    style={{width:44,height:52,borderRadius:"0 12px 12px 0",border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300,boxShadow:"0 3px 10px rgba(196,122,46,0.3)"}}>+</button>
                 </div>
-                <button onClick={()=>setGuests(g=>g+5)} style={{width:44,height:44,borderRadius:12,border:"none",background:`linear-gradient(135deg,${gold},${goldLt})`,color:"#fff",fontSize:22,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,fontWeight:300,boxShadow:"0 3px 10px rgba(196,122,46,0.3)"}}>+</button>
+                <div style={{display:"flex",gap:6,flexWrap:"wrap",marginTop:10}}>
+                  {[10,20,30,50,75,100,150].map(n=>(
+                    <button key={n} onClick={()=>setGuests(n)}
+                      style={{fontSize:12,fontWeight:600,padding:"5px 12px",borderRadius:100,border:`1.5px solid ${guests===n?gold:"rgba(196,122,46,0.14)"}`,background:guests===n?"rgba(196,122,46,0.09)":"transparent",color:guests===n?gold:muted,cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>{n}</button>
+                  ))}
+                </div>
               </div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
-                {[10,20,30,50,75,100,150].map(n=>(
-                  <button key={n} onClick={()=>setGuests(n)} style={{fontSize:12,fontWeight:600,padding:"6px 13px",borderRadius:100,border:`1.5px solid ${guests===n?gold:"rgba(196,122,46,0.15)"}`,background:guests===n?"rgba(196,122,46,0.1)":"transparent",color:guests===n?gold:muted,cursor:"pointer",fontFamily:font,transition:"all 0.15s"}}>{n}</button>
-                ))}
-              </div>
-            </div>
 
-            {/* date — mandatory */}
-            <div style={{...fieldCard,borderColor:date?gold:border}}>
-              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8}}>
-                <div style={sLabel}>Party date</div>
-                {!date&&<span style={{fontSize:10,color:"#E05252",fontWeight:700,letterSpacing:"0.06em"}}>Required</span>}
-                {date&&<span style={{fontSize:10,color:gold,fontWeight:700,letterSpacing:"0.06em"}}>✓ Set</span>}
+              {/* on [date] */}
+              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                  <div style={{fontSize:12,color:muted,fontWeight:500,fontFamily:font,letterSpacing:"0.02em"}}>on what date?</div>
+                  {!date&&<span style={{fontSize:10,color:"#E05252",fontWeight:800,letterSpacing:"0.08em"}}>Required</span>}
+                  {date&&<span style={{fontSize:10,color:gold,fontWeight:700}}>✓ {timeline?.days} days away</span>}
+                </div>
+                <label style={{display:"block",position:"relative",cursor:"pointer"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",borderRadius:12,border:`1.5px solid ${date?gold:"rgba(196,122,46,0.18)"}`,background:date?"rgba(196,122,46,0.04)":"#fff",transition:"all 0.2s"}}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={date?gold:muted} strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span style={{fontFamily:serif,fontSize:20,fontWeight:date?700:400,color:date?ink:muted,flex:1,letterSpacing:"-0.01em"}}>
+                      {date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{weekday:"short",day:"numeric",month:"long",year:"numeric"}):"Pick a date"}
+                    </span>
+                    {date&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                  </div>
+                  <input type="date" value={date} onChange={e=>setDate(e.target.value)}
+                    style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%"}}/>
+                </label>
               </div>
-              <input type="date" value={date} onChange={e=>setDate(e.target.value)}
-                style={{width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px solid ${date?"rgba(196,122,46,0.25)":"rgba(196,122,46,0.12)"}`,background:"#FDFAF5",fontSize:15,fontFamily:font,color:date?ink:"rgba(28,9,0,0.3)",outline:"none",boxSizing:"border-box",cursor:"pointer",minHeight:44}}/>
-              {timeline&&<div style={{fontSize:11,color:gold,marginTop:8,fontWeight:600}}>⏳ {timeline.days} days away</div>}
-            </div>
 
-            {/* city */}
-            <div style={fieldCard}>
-              <div style={sLabel}>City</div>
-              <input type="text" value={city} onChange={e=>setCity(e.target.value)}
-                placeholder="e.g. Delhi, Mumbai, Bengaluru…"
-                style={{width:"100%",padding:"12px 14px",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.12)`,background:"#FDFAF5",fontSize:14,fontFamily:font,color:ink,outline:"none",boxSizing:"border-box",minHeight:44}}/>
-              <div style={{fontSize:11,color:muted,marginTop:8}}>We'll show vendors available in your city</div>
-            </div>
+              {/* at [venue] */}
+              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
+                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>at what kind of venue?</div>
+                <div className="venue-g" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
+                  {VENUE_TYPES.map(v=>{
+                    const sel=venueType===v.id;
+                    return(
+                      <button key={v.id} onClick={()=>setVenueType(t=>t===v.id?"":v.id)}
+                        style={{display:"flex",alignItems:"center",gap:9,padding:"11px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left",minHeight:44}}>
+                        <span style={{fontSize:17,flexShrink:0,lineHeight:1}}>{v.icon}</span>
+                        <span style={{fontSize:12.5,fontWeight:sel?700:500,color:sel?gold:ink,lineHeight:1.3}}>{v.id}</span>
+                        {sel&&<svg style={{marginLeft:"auto",flexShrink:0}} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-            {/* venue type */}
-            <div style={fieldCard}>
-              <div style={sLabel}>Where is it?</div>
-              <div className="venue-g" style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:8}}>
-                {VENUE_TYPES.map(v=>{
-                  const sel=venueType===v.id;
-                  return(
-                    <button key={v.id} onClick={()=>setVenueType(t=>t===v.id?"":v.id)}
-                      style={{display:"flex",alignItems:"center",gap:9,padding:"11px 13px",borderRadius:12,border:`1.5px solid ${sel?gold:border}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.16s",textAlign:"left",minHeight:44}}>
-                      <span style={{fontSize:18,flexShrink:0}}>{v.icon}</span>
-                      <span style={{fontSize:12.5,fontWeight:sel?700:500,color:sel?gold:ink,lineHeight:1.3}}>{v.id}</span>
-                    </button>
-                  );
-                })}
+              {/* in [city] */}
+              <div style={{paddingBottom:28,borderBottom:`1px solid rgba(196,122,46,0.08)`,marginBottom:28}}>
+                <div style={{fontSize:12,color:muted,fontWeight:500,marginBottom:10,fontFamily:font,letterSpacing:"0.02em"}}>in which city?</div>
+                <div style={{position:"relative"}}>
+                  <svg style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)"}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={city?gold:muted} strokeWidth="2" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                  <input type="text" value={city} onChange={e=>setCity(e.target.value)}
+                    placeholder="Delhi, Mumbai, Bengaluru…"
+                    style={{width:"100%",padding:"14px 14px 14px 40px",borderRadius:12,border:`1.5px solid ${city?gold:"rgba(196,122,46,0.18)"}`,background:city?"rgba(196,122,46,0.03)":"#fff",fontSize:16,fontFamily:serif,fontWeight:city?700:400,color:city?ink:muted,outline:"none",boxSizing:"border-box",transition:"all 0.2s"}}/>
+                </div>
+                <div style={{fontSize:11,color:muted,marginTop:7}}>We'll show vendors near you</div>
               </div>
-            </div>
 
-            {/* budget */}
-            <div style={fieldCard}>
-              <div style={sLabel}>Budget — optional</div>
-              <div style={{position:"relative"}}>
-                <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",fontSize:17,fontWeight:700,color:"rgba(30,15,0,0.22)",fontFamily:serif}}>₹</span>
-                <input type="number" value={budget} onChange={e=>setBudget(e.target.value)}
-                  placeholder={String(Math.round((occasion.budgetMin+occasion.budgetMax)/2))}
-                  style={{width:"100%",padding:"12px 14px 12px 32px",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.12)`,background:"#FDFAF5",fontSize:16,fontFamily:font,color:ink,outline:"none",boxSizing:"border-box",minHeight:44}}/>
+              {/* budget */}
+              <div>
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:10}}>
+                  <div style={{fontSize:12,color:muted,fontWeight:500,fontFamily:font,letterSpacing:"0.02em"}}>what's your budget?</div>
+                  <span style={{fontSize:10,color:muted,fontWeight:500}}>optional</span>
+                </div>
+                <div style={{position:"relative"}}>
+                  <span style={{position:"absolute",left:14,top:"50%",transform:"translateY(-50%)",fontSize:18,fontWeight:700,color:budget?gold:"rgba(196,122,46,0.25)",fontFamily:serif}}>₹</span>
+                  <input type="number" value={budget} onChange={e=>setBudget(e.target.value)}
+                    placeholder={String(Math.round((occasion.budgetMin+occasion.budgetMax)/2))}
+                    style={{width:"100%",padding:"14px 14px 14px 34px",borderRadius:12,border:`1.5px solid ${budget?gold:"rgba(196,122,46,0.18)"}`,background:budget?"rgba(196,122,46,0.03)":"#fff",fontSize:16,fontFamily:serif,fontWeight:budget?700:400,color:budget?ink:muted,outline:"none",boxSizing:"border-box",transition:"all 0.2s"}}/>
+                </div>
+                <div style={{display:"flex",justifyContent:"space-between",marginTop:7}}>
+                  <span style={{fontSize:11,color:"rgba(30,15,0,0.28)"}}>Typical for {guests} guests</span>
+                  <span style={{fontSize:11,fontWeight:700,color:gold}}>{fmtNum(occasion.budgetMin)} – {fmtNum(occasion.budgetMax)}</span>
+                </div>
               </div>
-              <div style={{display:"flex",justifyContent:"space-between",marginTop:8}}>
-                <span style={{fontSize:11,color:"rgba(30,15,0,0.28)"}}>Typical for {guests} guests</span>
-                <span style={{fontSize:11,fontWeight:700,color:gold}}>{fmtNum(occasion.budgetMin)} – {fmtNum(occasion.budgetMax)}</span>
-              </div>
+
             </div>
           </div>
         )}
