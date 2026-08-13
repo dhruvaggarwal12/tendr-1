@@ -11,8 +11,8 @@ const gold  = "#C47A2E";
 const goldLt= "#D4A848";
 const bg    = "#FDFAF5";
 const ink   = "#1C0900";
-const muted = "rgba(28,9,0,0.42)";
-const border= "rgba(196,122,46,0.14)";
+const muted = "rgba(28,9,0,0.55)";
+const border= "rgba(196,122,46,0.2)";
 
 const HUB_ROUTES = {
   "birthday-party":"\/birthday-hub","first-birthday":"\/birthday-hub",
@@ -48,24 +48,19 @@ const ALL_VENDORS = [
   "Lighting Setup","Sound System","Makeup Artist","Balloon Artist","Cake Artist",
 ];
 
-const CATERING_OPTS = {
-  default:            ["Full Buffet","Finger Foods","Snacks & Starters","High Tea","Dessert Station"],
-  "birthday-party":   ["Full Buffet","Snacks & Starters","Finger Foods","Dessert Spread","Bar Setup"],
-  "anniversary":      ["Plated Dinner","Cocktail Reception","Full Buffet","Intimate Meal"],
-  "baby-shower":      ["High Tea","Light Snacks","Full Buffet","Customised Menu"],
-  "first-birthday":   ["Kids Bites & Snacks","Full Buffet","Dessert Spread","Custom Menu"],
-  "naming-ceremony":  ["Full Vegetarian Meal","Snacks & Mithai","Traditional Thali","Custom Menu"],
-  "housewarming":     ["Full Meal","Snacks & Starters","Sweets & Mithai","Custom Menu"],
-  "get-together":     ["Finger Foods","Full Buffet","Bar Setup","Light Snacks"],
-  "newborn-welcome":  ["Light Snacks","Sweets & Mithai","Custom Menu"],
-  "graduation":       ["Full Buffet","Snacks & Starters","Dessert Spread"],
-  "farewell":         ["Finger Foods","Full Buffet","Dessert Spread"],
-  "retirement":       ["Plated Dinner","Full Buffet","Cocktail Reception"],
-  "gender-reveal":    ["Finger Foods","Dessert Spread","High Tea","Custom Menu"],
-};
+/* catering service styles — shown inside the Caterer tip card */
+const CATERING_STYLES = [
+  "Buffet — self serve",
+  "Buffet + waiter service",
+  "Plated meal",
+  "Live counters",
+  "Finger foods / cocktail",
+  "High tea",
+  "Dessert station only",
+  "Custom — I'll discuss",
+];
 
-const CAKE_OPTS   = ["Single Tier","Multi-Tier","Cupcake Tower","Jar Cakes","Themed Cake","No Cake","Custom"];
-const INVITE_OPTS = ["WhatsApp E-invite","Printed Card","Both","Digital Only","Skip — Word of Mouth"];
+const CAKE_OPTS = ["Single Tier","Multi-Tier","Cupcake Tower","Jar Cakes","Themed Cake","No Cake","Custom"];
 
 /* ── equipment calculator ── */
 function getEquipment(id, guests) {
@@ -181,34 +176,33 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType}) {
 
   if(type==="Caterer") {
     const menu=[];
-    if(cateringType==="Full Buffet"||!cateringType) {
-      menu.push("2–3 starter options","Paneer + non-veg main","Dal + rice + roti","Live counter (chaat/pasta)","Dessert station");
-    } else if(cateringType==="Finger Foods") {
-      menu.push("Mini sandwiches / sliders","Cocktail samosas","Bruschetta","Cheese & cracker platter","Dips with nachos/pita");
-    } else if(cateringType==="High Tea") {
-      menu.push("Assorted teas & coffees","Finger sandwiches (4 varieties)","Scones with cream & jam","Mini pastries","Macarons or petit fours");
-    } else if(cateringType==="Plated Dinner") {
-      menu.push("Welcome amuse-bouche","Soup course","Salad","Main with 2 sides","Dessert plating per person");
-    } else if(cateringType==="Snacks & Starters") {
-      menu.push("Pakoras / bhajis","Pav bhaji counter","Mini sliders","Dips & chutneys","Fresh juice station");
-    } else if(cateringType==="Dessert Station"||cateringType==="Dessert Spread") {
-      menu.push("Assorted mithais","Brownies & cupcakes","Jar desserts","Ice cream station","Chocolate fountain");
+    const cs=cateringType||"";
+    if(cs.includes("Buffet + waiter")) {
+      menu.push("Waiter-served starter rounds","2–3 main course options","Live chaat or pasta counter","Dal + rice + bread","Dessert table");
+    } else if(cs.includes("Buffet")) {
+      menu.push("Self-serve starters section","2–3 mains (veg + non-veg)","Dal + rice + roti","Salad bar","Dessert counter");
+    } else if(cs.includes("Plated")) {
+      menu.push("Welcome amuse-bouche","Soup + salad course","Plated main with 2 sides","Dessert per person","Bread rolls");
+    } else if(cs.includes("Live counter")) {
+      menu.push("Live chaat / pani puri counter","Pasta or pizza station","Dosa / Frankies counter","Grilled section","Beverage station");
+    } else if(cs.includes("Finger foods")) {
+      menu.push("Mini sandwiches & sliders","Cocktail samosas & spring rolls","Bruschetta","Cheese & cracker platter","Dips with nachos");
+    } else if(cs.includes("High tea")) {
+      menu.push("Assorted teas & coffees","Finger sandwiches (4 varieties)","Scones with cream & jam","Mini pastries","Macarons");
+    } else if(cs.includes("Dessert")) {
+      menu.push("Assorted mithais","Brownies & mini cakes","Jar desserts","Ice cream station","Chocolate fountain");
     } else {
-      menu.push("Variety of starters","Main course with sides","Dessert","Beverage station");
+      menu.push("Discuss service style with caterer","2–3 main options","Starters + mains + dessert","Beverage station");
     }
     if(ages.includes("Kids")||ages.includes("Toddlers")) {
-      menu.push("Kids corner: mini pizza + pasta + fries","Juice station (no aerated drinks for toddlers)");
+      menu.push("Kids corner: mini pizza + pasta + fries","Juice station (no aerated drinks)");
     }
-    if(ages.includes("Teens")) {
-      menu.push("Live pizza/pasta counter","Mocktail bar","DIY dessert station");
-    }
-    if(ages.includes("Seniors")) {
-      menu.push("Soft/easy-to-eat options","Low-spice variants","Light dal-rice section");
-    }
+    if(ages.includes("Teens")) menu.push("Live pizza/pasta counter","Mocktail bar");
+    if(ages.includes("Seniors")) menu.push("Soft/easy options + low-spice section");
     return {
       heading:"Menu to plan with caterer",
       items:[...new Set(menu)].slice(0,8),
-      tip:"Tip: Share guest count, dietary restrictions (veg/non-veg ratio), and your venue type — caterer adjusts portions and setup accordingly.",
+      tip:"Tip: Tell the caterer your service style, guest count, veg/non-veg split, and venue type upfront — they'll size everything correctly.",
     };
   }
 
@@ -405,9 +399,9 @@ function timeAgo(iso) {
 const css=`
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
   .os{animation:fadeUp 0.28s cubic-bezier(0.22,1,0.36,1);}
-  .chip{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:100px;border:1.5px solid ${border};background:#fff;color:${muted};font-size:13px;font-weight:500;cursor:pointer;transition:all 0.16s;font-family:${font};white-space:nowrap;position:relative;}
-  .chip:hover{border-color:rgba(196,122,46,0.4);color:${gold};}
-  .chip.sel{border-color:${gold};background:rgba(196,122,46,0.09);color:${gold};font-weight:700;}
+  .chip{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:100px;border:1.5px solid rgba(196,122,46,0.22);background:rgba(196,122,46,0.03);color:${ink};font-size:13px;font-weight:500;cursor:pointer;transition:all 0.16s;font-family:${font};white-space:nowrap;position:relative;}
+  .chip:hover{border-color:rgba(196,122,46,0.5);background:rgba(196,122,46,0.07);color:${gold};}
+  .chip.sel{border-color:${gold};background:rgba(196,122,46,0.12);color:${gold};font-weight:700;box-shadow:0 0 0 3px rgba(196,122,46,0.08);}
   input[type="date"]::-webkit-calendar-picker-indicator{opacity:0.45;cursor:pointer;filter:invert(60%) sepia(60%) saturate(400%) hue-rotate(5deg);}
   ::-webkit-scrollbar{display:none;}
   @media(min-width:600px){.g2{grid-template-columns:repeat(2,1fr)!important;}}
@@ -846,33 +840,77 @@ export default function OccasionDetail(){
               </div>
             </div>
 
-            {/* vendor tips — shown for selected vendors */}
+            {/* vendor tip cards — inline sub-selections for relevant vendors */}
             {vendors.filter(v=>ALL_VENDORS.includes(v)).map(v=>{
               const tips=getVendorTips(v,{theme,venueType,ageGroups,cateringType});
               const isOpen=expandedTip===v;
+              const isCaterer=v==="Caterer";
+              const isCake=v==="Cake Artist";
               return(
-                <div key={v} style={{marginBottom:10,border:`1.5px solid ${isOpen?gold:"rgba(196,122,46,0.14)"}`,borderRadius:14,overflow:"hidden",transition:"border-color 0.2s"}}>
+                <div key={v} style={{marginBottom:10,borderRadius:16,overflow:"hidden",border:`1.5px solid ${isOpen?gold:border}`,transition:"border-color 0.2s",background:"#fff"}}>
                   <button onClick={()=>setExpandedTip(t=>t===v?null:v)}
-                    style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 16px",background:isOpen?"rgba(196,122,46,0.04)":"#fff",border:"none",cursor:"pointer",fontFamily:font,textAlign:"left"}}>
-                    <div style={{fontSize:13,fontWeight:700,color:isOpen?gold:ink}}>{v}</div>
-                    <div style={{display:"flex",alignItems:"center",gap:6}}>
-                      <span style={{fontSize:10,fontWeight:700,color:gold,background:"rgba(196,122,46,0.08)",borderRadius:100,padding:"2px 8px"}}>What to ask for</span>
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round" style={{transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.2s"}}><polyline points="6 9 12 15 18 9"/></svg>
+                    style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"15px 18px",background:isOpen?`linear-gradient(135deg,rgba(196,122,46,0.06),rgba(212,168,72,0.04))`:"#fff",border:"none",cursor:"pointer",fontFamily:font,textAlign:"left",transition:"background 0.2s"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:isOpen?gold:"rgba(196,122,46,0.3)",transition:"background 0.2s",flexShrink:0}}/>
+                      <div style={{fontSize:14,fontWeight:700,color:isOpen?gold:ink,letterSpacing:"-0.01em"}}>{v}</div>
+                      {isCaterer&&cateringType&&<span style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"2px 8px",marginLeft:2}}>{cateringType.split("—")[0].trim()}</span>}
+                      {isCake&&cakeType&&<span style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"2px 8px",marginLeft:2}}>{cakeType}</span>}
                     </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isOpen?gold:"rgba(196,122,46,0.4)"} strokeWidth="2.5" strokeLinecap="round" style={{transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.22s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
                   </button>
+
                   {isOpen&&(
-                    <div style={{padding:"0 16px 14px",background:"rgba(196,122,46,0.03)"}}>
-                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>{tips.heading}</div>
-                      {tips.items.map((item,i)=>(
-                        <div key={i} style={{display:"flex",alignItems:"flex-start",gap:8,marginBottom:5}}>
-                          <div style={{width:5,height:5,borderRadius:"50%",background:gold,marginTop:5,flexShrink:0}}/>
-                          <span style={{fontSize:12.5,color:ink,lineHeight:1.5}}>{item}</span>
+                    <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,padding:"16px 18px 18px",background:"rgba(196,122,46,0.02)"}}>
+
+                      {/* Caterer: service style picker first */}
+                      {isCaterer&&(
+                        <div style={{marginBottom:16}}>
+                          <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Service style</div>
+                          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+                            {CATERING_STYLES.map(s=>(
+                              <button key={s} onClick={()=>setCateringType(t=>t===s?"":s)}
+                                className={`chip${cateringType===s?" sel":""}`}
+                                style={{fontSize:12,padding:"7px 13px"}}>
+                                {s}
+                              </button>
+                            ))}
+                          </div>
                         </div>
-                      ))}
-                      <div style={{marginTop:10,padding:"9px 12px",background:"rgba(196,122,46,0.07)",borderRadius:9,fontSize:11.5,color:gold,fontWeight:600,lineHeight:1.5}}>{tips.tip}</div>
+                      )}
+
+                      {/* Cake Artist: cake style picker first */}
+                      {isCake&&(
+                        <div style={{marginBottom:16}}>
+                          <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Cake style</div>
+                          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
+                            {CAKE_OPTS.map(s=>(
+                              <button key={s} onClick={()=>setCakeType(t=>t===s?"":s)}
+                                className={`chip${cakeType===s?" sel":""}`}
+                                style={{fontSize:12,padding:"7px 13px"}}>
+                                {s}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* tip items */}
+                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>{tips.heading}</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:12}}>
+                        {tips.items.map((item,i)=>(
+                          <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"7px 10px",borderRadius:8,background:"#fff",border:`1px solid rgba(196,122,46,0.1)`}}>
+                            <div style={{width:4,height:4,borderRadius:"50%",background:gold,marginTop:6,flexShrink:0}}/>
+                            <span style={{fontSize:12.5,color:ink,lineHeight:1.5,fontWeight:500}}>{item}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* tip callout */}
+                      <div style={{padding:"10px 13px",background:`linear-gradient(135deg,rgba(196,122,46,0.08),rgba(212,168,72,0.05))`,borderRadius:10,fontSize:12,color:gold,fontWeight:600,lineHeight:1.5,marginBottom:12,borderLeft:`3px solid ${gold}`}}>{tips.tip}</div>
+
                       <button onClick={()=>window.open(vendorUrl(v),"_blank","noopener")}
-                        style={{marginTop:10,width:"100%",padding:"10px 0",borderRadius:10,background:`linear-gradient(135deg,${gold},${goldLt})`,border:"none",color:"#fff",fontSize:12.5,fontWeight:700,cursor:"pointer",fontFamily:font}}>
-                        Find {v} in {city||"your city"} ↗
+                        style={{width:"100%",padding:"12px 0",borderRadius:12,background:`linear-gradient(135deg,${gold},${goldLt})`,border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:"0 4px 14px rgba(196,122,46,0.28)",letterSpacing:"0.01em"}}>
+                        Find {v}{city?` in ${city}`:""} ↗
                       </button>
                     </div>
                   )}
@@ -880,40 +918,10 @@ export default function OccasionDetail(){
               );
             })}
 
-            {/* catering */}
-            <div style={{marginBottom:20,marginTop:4}}>
-              <div style={sLabel}>Catering style</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {(CATERING_OPTS[occasion.id]||CATERING_OPTS.default).map(opt=>(
-                  <button key={opt} onClick={()=>setCateringType(t=>t===opt?"":opt)} className={`chip${cateringType===opt?" sel":""}`}>{opt}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* cake */}
-            <div style={{marginBottom:20}}>
-              <div style={sLabel}>Cake</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {CAKE_OPTS.map(opt=>(
-                  <button key={opt} onClick={()=>setCakeType(t=>t===opt?"":opt)} className={`chip${cakeType===opt?" sel":""}`}>{opt}</button>
-                ))}
-              </div>
-            </div>
-
-            {/* invitations */}
-            <div style={{marginBottom:20}}>
-              <div style={sLabel}>Invitations</div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
-                {INVITE_OPTS.map(opt=>(
-                  <button key={opt} onClick={()=>setInviteType(t=>t===opt?"":opt)} className={`chip${inviteType===opt?" sel":""}`}>{opt}</button>
-                ))}
-              </div>
-            </div>
-
             {/* theme décor hint */}
-            {theme&&(
-              <div style={{background:"rgba(196,122,46,0.04)",border:`1px solid ${border}`,borderRadius:14,padding:"14px 16px"}}>
-                <div style={{...sLabel,marginBottom:8}}>Perfect for {theme.name}</div>
+            {theme&&vendors.length===0&&(
+              <div style={{background:"rgba(196,122,46,0.05)",border:`1px solid ${border}`,borderRadius:14,padding:"14px 16px",marginTop:8}}>
+                <div style={{...sLabel,marginBottom:6}}>About {theme.name}</div>
                 <p style={{fontSize:12.5,color:muted,margin:0,lineHeight:1.6}}>{theme.desc}</p>
               </div>
             )}
