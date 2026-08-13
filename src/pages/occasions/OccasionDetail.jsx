@@ -126,6 +126,12 @@ function getRecommended(occasion, theme, ageGroups, venueType) {
   return recs;
 }
 
+function getSmartVendors(occasion, theme, ageGroups, venueType, max=7) {
+  const recs = getRecommended(occasion, theme, ageGroups, venueType);
+  const base = occasion.vendorCategories || [];
+  return [...new Set([...base, ...recs])].slice(0, max);
+}
+
 /* ── vendor tips (what to actually ask for) ── */
 function getVendorTips(type, {theme, venueType, ageGroups, cateringType}) {
   const tags=(theme?.tags||[]).join(" ").toLowerCase();
@@ -329,6 +335,227 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType}) {
   };
 }
 
+/* ── vendor packages (3 tiers per vendor type) ── */
+function getVendorPackages(type, {guests=20, venueType="", theme=null, ageGroups=[]}) {
+  const g=guests;
+  const venue=venueType.toLowerCase();
+  const tags=(theme?.tags||[]).join(" ").toLowerCase();
+  const ages=ageGroups;
+  const outdoor=venue.includes("garden")||venue.includes("outdoor")||venue.includes("farmhouse")||venue.includes("rooftop")||venue.includes("terrace");
+  const large=g>60;
+  const hasKids=ages.includes("Kids")||ages.includes("Toddlers");
+
+  if(type==="Decorator") return [
+    {label:"Essential",price:outdoor?"₹8K–15K":"₹5K–10K",
+      items:["Balloon clusters at entry","Simple backdrop wall","Basic table centrepieces"],
+      note:"Clean, minimal setup — ideal for intimate gatherings"},
+    {label:"Standard",price:outdoor?"₹20K–38K":"₹14K–26K",popular:true,
+      items:["Themed backdrop + arch","Table décor for all tables",outdoor?"String lights overhead":"Balloon ceiling",tags.includes("floral")?"Fresh floral elements":"Colour-matched props"],
+      note:"Full venue coverage — most popular choice"},
+    {label:"Premium",price:outdoor?"₹50K+":"₹35K+",
+      items:["Full venue transformation",tags.includes("neon")?"Custom neon signs":"Custom floral installations",large?"Stage & focal-point décor":"Immersive themed corners","Day-of coordination included"],
+      note:"Showstopper — every detail custom-matched"},
+  ];
+
+  if(type==="Caterer") return [
+    {label:"Essential",price:"₹350–450/head",
+      items:["Buffet service","1 veg + 1 non-veg main","Dal, rice & bread","Basic dessert",hasKids?"Kids-friendly options":"Water station"],
+      note:"Simple & reliable for any occasion"},
+    {label:"Standard",price:"₹550–750/head",popular:true,
+      items:["Buffet + waiter service","2–3 main options","Live starters counter","Salad bar & dessert station",hasKids?"Kids corner (mini pizza, fries)":"Custom beverage station"],
+      note:"Covers all tastes — most popular"},
+    {label:"Premium",price:"₹850–1,200/head",
+      items:["Full waiter service","4+ mains + live counters","Cocktail starter round","Curated dessert table","Custom menu cards"],
+      note:"Full-service dining experience"},
+  ];
+
+  if(type==="DJ") return [
+    {label:"Essential",price:"₹8K–12K",
+      items:["3-hour set","Basic speaker setup","Standard playlist"],
+      note:"Solid music — no frills"},
+    {label:"Standard",price:"₹15K–22K",popular:true,
+      items:["4-hour set","DJ + LED light effects","Custom playlist coordination","Mic for announcements"],
+      note:"Dance floor guaranteed"},
+    {label:"Premium",price:"₹28K–45K",
+      items:["5-hour set","Moving heads + smoke machine","Custom mashups & remixing","Dedicated setup engineer"],
+      note:"Full club experience at your event"},
+  ];
+
+  if(type==="Photographer") return [
+    {label:"Essential",price:"₹8K–14K",
+      items:["3-hour coverage","150–200 edited photos","Delivery in 7 days"],
+      note:"Key moments captured"},
+    {label:"Standard",price:"₹18K–28K",popular:true,
+      items:["5-hour coverage","400+ edited photos","Candid + group shots","Delivery in 5 days"],
+      note:"Full event covered — most popular"},
+    {label:"Premium",price:"₹35K–55K",
+      items:["Full-day coverage","600+ edited photos","2nd photographer","Printed photo album"],
+      note:"Every moment beautifully archived"},
+  ];
+
+  if(type==="Videographer") return [
+    {label:"Essential",price:"₹10K–18K",
+      items:["3-hour coverage","3–5 min edited highlight reel","Basic colour grade"],
+      note:"Key moments in a shareable reel"},
+    {label:"Standard",price:"₹22K–35K",popular:true,
+      items:["5-hour coverage","Full event + highlight reel","Licensed background music","Delivery in 7 days"],
+      note:"Cinematic full coverage"},
+    {label:"Premium",price:"₹45K–70K",
+      items:["Full-day coverage","Drone aerial shots","Cinematic edit + reel","2 videographers"],
+      note:"Film-quality production"},
+  ];
+
+  if(type==="Florist") return [
+    {label:"Essential",price:"₹4K–8K",
+      items:["Entry arrangement","2–3 table centrepieces","Seasonal flowers"],
+      note:"Fresh, simple floral touches"},
+    {label:"Standard",price:"₹12K–22K",popular:true,
+      items:["Full table florals","Entrance arch / display",tags.includes("bollywood")||tags.includes("indian")?"Marigold garlands":"Focal floral installation"],
+      note:"Cohesive floral look throughout"},
+    {label:"Premium",price:"₹30K+",
+      items:["Custom floral installation","Ceiling / hanging arrangements","Imported blooms on request","Florist on-site for setup"],
+      note:"Garden-in-a-room effect"},
+  ];
+
+  if(type==="Entertainer") return [
+    {label:"Essential",price:"₹5K–9K",
+      items:[hasKids?"Magician (45 min)":"Games host (1 hr)","Basic props","1 activity"],
+      note:"One solid act for the crowd"},
+    {label:"Standard",price:"₹12K–18K",popular:true,
+      items:[hasKids?"Magician + balloon twisting":"Interactive games MC","2 activities / acts","Tailored to your age groups"],
+      note:"Keeps the crowd engaged throughout"},
+    {label:"Premium",price:"₹22K–35K",
+      items:[hasKids?"Multi-act kids package":"Full event host","Face painting + crafts + show","Customised for your theme"],
+      note:"Full entertainment programme"},
+  ];
+
+  if(type==="Photo Booth") return [
+    {label:"Essential",price:"₹6K–9K",
+      items:["Digital photo booth","Basic props box","QR share to phone"],
+      note:"Instant fun — guests love it"},
+    {label:"Standard",price:"₹11K–17K",popular:true,
+      items:["Prints + digital","Themed backdrop","Full props collection","Unlimited sessions"],
+      note:"Most popular party setup"},
+    {label:"Premium",price:"₹20K–32K",
+      items:["GIF + Boomerang + video booth","Custom overlay with event name","Roaming camera option","Full digital album"],
+      note:"Full interactive photo experience"},
+  ];
+
+  if(type==="Live Band") return [
+    {label:"Essential",price:"₹15K–22K",
+      items:["3-piece band","2-hour performance","Standard setlist"],
+      note:"Live music energy on a budget"},
+    {label:"Standard",price:"₹28K–45K",popular:true,
+      items:["5-piece band","3-hour performance","Customised song requests","Sound system included"],
+      note:"Full live band experience"},
+    {label:"Premium",price:"₹55K+",
+      items:["7+ piece band","4-hour set","Original arrangements","Lighting & sound engineer"],
+      note:"Concert-quality performance"},
+  ];
+
+  if(type==="Emcee / Host") return [
+    {label:"Essential",price:"₹8K–13K",
+      items:["3-hour hosting","Standard script","Mic + basic AV support"],
+      note:"Smooth event flow"},
+    {label:"Standard",price:"₹18K–28K",popular:true,
+      items:["Full event hosting","Custom script & games","Guest engagement activities","Bilingual (Hindi + English)"],
+      note:"Energetic host — vibe stays up"},
+    {label:"Premium",price:"₹35K+",
+      items:["Celebrity-style host","Full script coordination","Custom games & trivia","Pre-event rehearsal"],
+      note:"Professional show-runner experience"},
+  ];
+
+  if(type==="Lighting Setup") return [
+    {label:"Essential",price:outdoor?"₹8K–14K":"₹5K–9K",
+      items:["Warm ambient wash","Basic uplighting","Standard fixtures"],
+      note:"Sets the mood without breaking budget"},
+    {label:"Standard",price:outdoor?"₹15K–25K":"₹10K–18K",popular:true,
+      items:[outdoor?"String lights + pathway lights":"Themed LED wash",tags.includes("neon")?"Coloured LED wash":"Warm uplighting","Spotlit key areas (cake, backdrop)"],
+      note:"Full venue lighting transformation"},
+    {label:"Premium",price:outdoor?"₹30K+":"₹22K+",
+      items:["Moving head spotlights","Scene changes (dinner → dance)","Gobo / pattern projections","Lighting engineer on-site"],
+      note:"Dynamic, show-quality lighting"},
+  ];
+
+  if(type==="Sound System") return [
+    {label:"Essential",price:"₹5K–8K",
+      items:[`${g>40?"Dual speaker":"Single PA"} system`,"Basic mic setup","Plug & play"],
+      note:"Clear audio for speeches & music"},
+    {label:"Standard",price:"₹10K–16K",popular:true,
+      items:[`${large?"Multi-speaker line array":"4-speaker surround"}`,"2 wireless mics","Mixing board","On-call technician"],
+      note:"Full venue sound coverage"},
+    {label:"Premium",price:"₹20K+",
+      items:["Pro PA system","4+ wireless mics","In-ear monitors","Dedicated sound engineer"],
+      note:"Studio-quality sound"},
+  ];
+
+  if(type==="Makeup Artist") return [
+    {label:"Essential",price:"₹3K–6K",
+      items:["Party makeup (1 person)","1–1.5 hours","Basic touch-up kit"],
+      note:"Looking great for the party"},
+    {label:"Standard",price:"₹8K–14K",popular:true,
+      items:["Airbrush or HD makeup","1 person + assistant","2 hours + touch-ups during event"],
+      note:"Camera-ready, long-lasting look"},
+    {label:"Premium",price:"₹18K–30K",
+      items:["Celebrity-style makeup","Full beauty team","Customised look design","Group rates for multiple guests"],
+      note:"Flawless for every shot"},
+  ];
+
+  if(type==="Balloon Artist") return [
+    {label:"Essential",price:"₹4K–7K",
+      items:["Entry balloon cluster","2–3 balloon bouquets","Matching colour palette"],
+      note:"Cheerful, instant ambience"},
+    {label:"Standard",price:"₹9K–16K",popular:true,
+      items:["Balloon arch (entry or backdrop)","Table centrepiece balloons","Chrome or foil accents"],
+      note:"Full balloon décor — most popular"},
+    {label:"Premium",price:"₹20K+",
+      items:["Organic balloon wall / cloud","Custom balloon sculptures","Double-stuffed foil centrepieces","Artist on-site 3+ hours"],
+      note:"Statement organic balloon setup"},
+  ];
+
+  if(type==="Cake Artist") return [
+    {label:"Essential",price:"₹2K–4K",
+      items:[`${Math.max(1,Math.ceil(g/30))} kg themed cake`,"Fondant or buttercream","Custom message on top"],
+      note:"Classic cake — done right"},
+    {label:"Standard",price:"₹5K–10K",popular:true,
+      items:["Multi-tier or sculpted cake","Matching theme colours","Figurines or custom topper","Extra cupcakes for guests"],
+      note:"Showstopper cake — most popular"},
+    {label:"Premium",price:"₹12K–25K",
+      items:["Luxury custom cake","Hand-painted or sugar flowers","Multi-flavour tiers","Cake cutting service"],
+      note:"Bespoke luxury cake piece"},
+  ];
+
+  return [
+    {label:"Essential",price:"Budget-friendly",items:["Basic service package","Standard setup"],note:"Gets the job done"},
+    {label:"Standard",price:"Mid-range",popular:true,items:["Full service package","Customisation available","On-site support"],note:"Best value for most events"},
+    {label:"Premium",price:"Full-service",items:["Premium setup","Dedicated coordinator","Priority booking"],note:"Top-tier experience"},
+  ];
+}
+
+/* ── build WhatsApp Baat Karo message ── */
+function buildBaatKaroMsg(occasion, {guests, date, city, venueType, theme, vendors, vendorPackages, budget}) {
+  const pkgNames=["Essential","Standard","Premium"];
+  const vLines=vendors.filter(v=>ALL_VENDORS.includes(v)).map(v=>{
+    const pi=vendorPackages[v];
+    return `• ${v}${pi!==undefined?` — ${pkgNames[pi]}`:""}`;
+  });
+  const customLines=vendors.filter(v=>!ALL_VENDORS.includes(v)).map(v=>`• ${v}`);
+  const allLines=[...vLines,...customLines].join("\n");
+  const dateStr=date?new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"}):"";
+  const parts=[
+    `Hi Tendr! I've planned a ${occasion.name} and need help booking.`,
+    "",
+    `👥 Guests: ${guests}`,
+    dateStr?`📅 Date: ${dateStr}`:null,
+    (city||venueType)?`📍 ${[city,venueType].filter(Boolean).join(" · ")}`:null,
+    theme?`🎨 Theme: ${theme.name}`:null,
+    budget?`💰 Budget: ₹${Number(budget).toLocaleString("en-IN")}`:null,
+    allLines?`\n*Services I need:*\n${allLines}`:null,
+    "\nCan you help me book these?",
+  ].filter(x=>x!==null).join("\n");
+  return `https://wa.me/919211668427?text=${encodeURIComponent(parts)}`;
+}
+
 /* ── timeline ── */
 function buildTimeline(dateStr, vendors) {
   if(!dateStr) return null;
@@ -453,6 +680,7 @@ export default function OccasionDetail(){
   const [expandedTip,setExpandedTip]=useState(null);
   const [gifts,setGifts]=useState([]);
   const [checked,setChecked]=useState({});
+  const [vendorPackages,setVendorPackages]=useState({});
   const [downloading,setDownloading]=useState(false);
   const [savedPlan,setSavedPlan]=useState(null);
   const dateInputRef=useRef(null);
@@ -475,17 +703,18 @@ export default function OccasionDetail(){
     if(step>0){
       localStorage.setItem(PLAN_KEY,JSON.stringify({
         planMode,step,guests,date,budget,city,venueType,
-        ageGroups,theme,vendors,cateringType,cakeType,inviteType,gifts,checked,
+        ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked,
         savedAt:new Date().toISOString(),
       }));
     }
-  },[planMode,step,guests,date,budget,city,venueType,ageGroups,theme,vendors,cateringType,cakeType,inviteType,gifts,checked]);
+  },[planMode,step,guests,date,budget,city,venueType,ageGroups,theme,vendors,vendorPackages,cateringType,cakeType,inviteType,gifts,checked]);
 
   function restorePlan(s){
     setPlanMode(s.planMode);setStep(s.step);setGuests(s.guests||20);
     setDate(s.date||"");setBudget(s.budget||"");setCity(s.city||"");
     setVenueType(s.venueType||"");setAgeGroups(s.ageGroups||[]);
     setTheme(s.theme||null);setVendors(s.vendors||[]);
+    setVendorPackages(s.vendorPackages||{});
     setCateringType(s.cateringType||"");setCakeType(s.cakeType||"");
     setInviteType(s.inviteType||"");setGifts(s.gifts||[]);
     setChecked(s.checked||{});setSavedPlan(null);
@@ -512,11 +741,20 @@ export default function OccasionDetail(){
     return `/listings?${params.toString()}`;
   };
 
+  const smartVendors=getSmartVendors(occasion,theme,ageGroups,venueType);
+  const mainVendors=vendors.filter(v=>ALL_VENDORS.includes(v));
+  const allVendorsChosen=mainVendors.length>0&&mainVendors.every(v=>vendorPackages[v]!==undefined);
+
   /* navigation */
   const next=()=>{
     if(step===1){setStep(2);return;}
-    if(step===2){setStep(withTheme?3:4);return;}
-    if(step===3){setStep(4);return;}
+    if(step===2){
+      const toStep=withTheme?3:4;
+      setStep(toStep);
+      if(toStep===4&&vendors.length===0) setVendors(smartVendors);
+      return;
+    }
+    if(step===3){setStep(4);if(vendors.length===0)setVendors(smartVendors);return;}
     setStep(s=>Math.min(s+1,6));
   };
   const back=()=>{
@@ -834,121 +1072,126 @@ export default function OccasionDetail(){
         {/* ══ STEP 4: services ══ */}
         {step===4&&(
           <div className="os">
-            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>What do you need?</p>
-            {theme&&<div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(196,122,46,0.07)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:100,padding:"4px 12px",marginBottom:18}}>
-              <div style={{width:10,height:10,borderRadius:"50%",background:themeColor(theme.tags)}}/>
-              <span style={{fontSize:11,fontWeight:700,color:gold}}>{theme.name} theme</span>
-            </div>}
-            {!theme&&<p style={{fontSize:13,color:muted,marginBottom:20,lineHeight:1.6}}>Select what you'd like to arrange.</p>}
+            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:10}}>Services for your plan</p>
 
-            {/* vendors */}
-            <div style={{marginBottom:20}}>
-              <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12}}>
-                <div style={sLabel}>Who do you need?</div>
-                <span style={{fontSize:10,fontWeight:700,color:"#E05252",letterSpacing:"0.06em",marginTop:-2}}>Required</span>
-              </div>
-              <div style={{display:"flex",flexWrap:"wrap",gap:8,marginBottom:10}}>
-                {ALL_VENDORS.map(v=>{
-                  const sel=vendors.includes(v);
-                  const rec=recommended.has(v);
-                  return(
-                    <button key={v} onClick={()=>{toggleVendor(v);if(!sel)setExpandedTip(v);else if(expandedTip===v)setExpandedTip(null);}} className={`chip${sel?" sel":""}`}>
-                      {rec&&!sel&&<span style={{width:6,height:6,borderRadius:"50%",background:gold,flexShrink:0}}/>}
-                      {v}
+            {/* context pills */}
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:20}}>
+              <span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{guests} guests</span>
+              {venueType&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{venueType}</span>}
+              {city&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{city}</span>}
+              {theme&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.07)",border:`1px solid rgba(196,122,46,0.18)`,borderRadius:100,padding:"4px 10px"}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:themeColor(theme.tags),flexShrink:0}}/>{theme.name}
+              </span>}
+            </div>
+
+            {/* vendor package cards */}
+            {vendors.map(v=>{
+              const isKnown=ALL_VENDORS.includes(v);
+              const pkgs=isKnown?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
+              const chosen=vendorPackages[v];
+              const tips=isKnown?getVendorTips(v,{theme,venueType,ageGroups,cateringType}):null;
+              const isRec=recommended.has(v);
+              return(
+                <div key={v} style={{marginBottom:12,borderRadius:18,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
+                  {/* header */}
+                  <div style={{padding:"14px 18px 12px",background:chosen!==undefined?"rgba(196,122,46,0.04)":"#fff"}}>
+                    <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
+                      <span style={{fontSize:14,fontWeight:800,color:chosen!==undefined?gold:ink}}>{v}</span>
+                      <div style={{display:"flex",alignItems:"center",gap:6}}>
+                        {chosen!==undefined&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.22)`,borderRadius:100,padding:"2px 8px"}}>Chosen</span>}
+                        {isRec&&chosen===undefined&&<span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 8px",letterSpacing:"0.04em"}}>For you</span>}
+                      </div>
+                    </div>
+                    {tips&&<p style={{fontSize:11.5,color:muted,margin:0,lineHeight:1.5}}>{tips.tip.replace("Tip: ","")}</p>}
+                  </div>
+
+                  {/* packages — only for known vendor types */}
+                  {pkgs&&(
+                    <div style={{borderTop:`1px solid rgba(196,122,46,0.08)`,padding:"12px 18px 14px"}}>
+                      <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.5)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Pick a package</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:7}}>
+                        {pkgs.map((pkg,pi)=>{
+                          const sel=chosen===pi;
+                          return(
+                            <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
+                              style={{textAlign:"left",padding:"11px 14px",borderRadius:12,border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.07)":"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.18s"}}>
+                              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:5}}>
+                                <div style={{display:"flex",alignItems:"center",gap:8}}>
+                                  <div style={{width:16,height:16,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.22)"}`,background:sel?gold:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.18s"}}>
+                                    {sel&&<svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
+                                  </div>
+                                  <span style={{fontSize:13,fontWeight:700,color:sel?gold:ink}}>{pkg.label}</span>
+                                  {pkg.popular&&<span style={{fontSize:9,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:100,padding:"1px 7px"}}>Popular</span>}
+                                </div>
+                                <span style={{fontSize:11.5,fontWeight:700,color:sel?gold:"rgba(196,122,46,0.55)",flexShrink:0,marginLeft:8}}>≈{pkg.price}</span>
+                              </div>
+                              <div style={{marginLeft:24,display:"flex",flexDirection:"column",gap:2}}>
+                                {pkg.items.map((it,ii)=><div key={ii} style={{fontSize:11,color:sel?ink:muted,lineHeight:1.45}}>· {it}</div>)}
+                              </div>
+                              {sel&&pkg.note&&<div style={{marginLeft:24,marginTop:6,fontSize:11,color:gold,fontWeight:600,fontStyle:"italic"}}>{pkg.note}</div>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* remove */}
+                  <div style={{padding:"0 18px 12px"}}>
+                    <button onClick={()=>{toggleVendor(v);setVendorPackages(vp=>{const n={...vp};delete n[v];return n;});}}
+                      style={{fontSize:11,color:"rgba(30,15,0,0.3)",background:"none",border:"none",cursor:"pointer",fontFamily:font,padding:"4px 0"}}>
+                      Remove {v}
                     </button>
-                  );
-                })}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* add more */}
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:9,fontWeight:800,color:"rgba(196,122,46,0.4)",textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Add more services</div>
+              <div style={{display:"flex",flexWrap:"wrap",gap:7,marginBottom:10}}>
+                {ALL_VENDORS.filter(v=>!vendors.includes(v)).map(v=>(
+                  <button key={v} onClick={()=>toggleVendor(v)} className="chip" style={{fontSize:12,padding:"6px 12px"}}>+ {v}</button>
+                ))}
               </div>
-              {recommended.size>0&&<p style={{fontSize:11,color:muted,marginBottom:10}}>● Recommended for your setup</p>}
-              {/* add your own */}
               <div style={{display:"flex",gap:8,alignItems:"center"}}>
                 <input type="text" value={customVendor} onChange={e=>setCustomVendor(e.target.value)}
                   onKeyDown={e=>{if(e.key==="Enter")addCustomVendor();}}
-                  placeholder="Add your own vendor…"
+                  placeholder="Add a custom service…"
                   style={{flex:1,padding:"9px 14px",borderRadius:100,border:`1.5px solid ${border}`,background:"#fff",fontSize:12,fontFamily:font,outline:"none",minHeight:38}}/>
                 {customVendor.trim()&&<button onClick={addCustomVendor} style={{width:36,height:36,borderRadius:"50%",background:gold,border:"none",color:"#fff",cursor:"pointer",fontSize:20,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:300,flexShrink:0}}>+</button>}
               </div>
             </div>
 
-            {/* vendor tip cards — inline sub-selections for relevant vendors */}
-            {vendors.filter(v=>ALL_VENDORS.includes(v)).map(v=>{
-              const tips=getVendorTips(v,{theme,venueType,ageGroups,cateringType});
-              const isOpen=expandedTip===v;
-              const isCaterer=v==="Caterer";
-              const isCake=v==="Cake Artist";
-              return(
-                <div key={v} style={{marginBottom:10,borderRadius:16,overflow:"hidden",border:`1.5px solid ${isOpen?gold:border}`,transition:"border-color 0.2s",background:"#fff"}}>
-                  <button onClick={()=>setExpandedTip(t=>t===v?null:v)}
-                    style={{width:"100%",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"15px 18px",background:isOpen?`linear-gradient(135deg,rgba(196,122,46,0.06),rgba(212,168,72,0.04))`:"#fff",border:"none",cursor:"pointer",fontFamily:font,textAlign:"left",transition:"background 0.2s"}}>
-                    <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <div style={{width:8,height:8,borderRadius:"50%",background:isOpen?gold:"rgba(196,122,46,0.3)",transition:"background 0.2s",flexShrink:0}}/>
-                      <div style={{fontSize:14,fontWeight:700,color:isOpen?gold:ink,letterSpacing:"-0.01em"}}>{v}</div>
-                      {isCaterer&&cateringType&&<span style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"2px 8px",marginLeft:2}}>{cateringType.split("—")[0].trim()}</span>}
-                      {isCake&&cakeType&&<span style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"2px 8px",marginLeft:2}}>{cakeType}</span>}
-                    </div>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={isOpen?gold:"rgba(196,122,46,0.4)"} strokeWidth="2.5" strokeLinecap="round" style={{transform:isOpen?"rotate(180deg)":"none",transition:"transform 0.22s",flexShrink:0}}><polyline points="6 9 12 15 18 9"/></svg>
-                  </button>
-
-                  {isOpen&&(
-                    <div style={{borderTop:`1px solid rgba(196,122,46,0.1)`,padding:"16px 18px 18px",background:"rgba(196,122,46,0.02)"}}>
-
-                      {/* Caterer: service style picker first */}
-                      {isCaterer&&(
-                        <div style={{marginBottom:16}}>
-                          <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Service style</div>
-                          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-                            {CATERING_STYLES.map(s=>(
-                              <button key={s} onClick={()=>setCateringType(t=>t===s?"":s)}
-                                className={`chip${cateringType===s?" sel":""}`}
-                                style={{fontSize:12,padding:"7px 13px"}}>
-                                {s}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Cake Artist: cake style picker first */}
-                      {isCake&&(
-                        <div style={{marginBottom:16}}>
-                          <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>Cake style</div>
-                          <div style={{display:"flex",flexWrap:"wrap",gap:7}}>
-                            {CAKE_OPTS.map(s=>(
-                              <button key={s} onClick={()=>setCakeType(t=>t===s?"":s)}
-                                className={`chip${cakeType===s?" sel":""}`}
-                                style={{fontSize:12,padding:"7px 13px"}}>
-                                {s}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* tip items */}
-                      <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.12em",marginBottom:10}}>{tips.heading}</div>
-                      <div style={{display:"flex",flexDirection:"column",gap:4,marginBottom:12}}>
-                        {tips.items.map((item,i)=>(
-                          <div key={i} style={{display:"flex",alignItems:"flex-start",gap:10,padding:"7px 10px",borderRadius:8,background:"#fff",border:`1px solid rgba(196,122,46,0.1)`}}>
-                            <div style={{width:4,height:4,borderRadius:"50%",background:gold,marginTop:6,flexShrink:0}}/>
-                            <span style={{fontSize:12.5,color:ink,lineHeight:1.5,fontWeight:500}}>{item}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      {/* tip callout */}
-                      <div style={{padding:"10px 13px",background:`linear-gradient(135deg,rgba(196,122,46,0.08),rgba(212,168,72,0.05))`,borderRadius:10,fontSize:12,color:gold,fontWeight:600,lineHeight:1.5,marginBottom:12,borderLeft:`3px solid ${gold}`}}>{tips.tip}</div>
-
-                      <button onClick={()=>window.open(vendorUrl(v),"_blank","noopener")}
-                        style={{width:"100%",padding:"12px 0",borderRadius:12,background:`linear-gradient(135deg,${gold},${goldLt})`,border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,boxShadow:"0 4px 14px rgba(196,122,46,0.28)",letterSpacing:"0.01em"}}>
-                        Find {v}{city?` in ${city}`:""} ↗
-                      </button>
-                    </div>
-                  )}
+            {/* all-chosen completion banner */}
+            {allVendorsChosen&&vendors.length>0&&(
+              <div style={{background:`linear-gradient(135deg,rgba(196,122,46,0.1),rgba(212,168,72,0.05))`,border:`2px solid ${gold}`,borderRadius:20,padding:"20px 20px 16px",marginTop:4}}>
+                <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:12}}>
+                  <div style={{width:36,height:36,borderRadius:12,background:`linear-gradient(135deg,${gold},${goldLt})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,flexShrink:0}}>✦</div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:800,color:ink}}>Vendor plan complete</div>
+                    <div style={{fontSize:11,color:muted,marginTop:1}}>{mainVendors.length} services selected — send to Tendr to book</div>
+                  </div>
                 </div>
-              );
-            })}
+                <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget})}
+                  target="_blank" rel="noopener noreferrer"
+                  style={{display:"flex",alignItems:"center",gap:10,padding:"13px 16px",borderRadius:12,background:"#25D366",textDecoration:"none",marginBottom:8}}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Send to Baat Karo</div>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,0.82)",marginTop:1}}>We'll help you book all {mainVendors.length} vendors</div>
+                  </div>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                <button onClick={next}
+                  style={{width:"100%",padding:"11px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.3)`,background:"transparent",color:gold,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
+                  Continue — see full plan →
+                </button>
+              </div>
+            )}
 
-            {/* theme décor hint */}
+            {/* theme hint when no vendors yet */}
             {theme&&vendors.length===0&&(
               <div style={{background:"rgba(196,122,46,0.05)",border:`1px solid ${border}`,borderRadius:14,padding:"14px 16px",marginTop:8}}>
                 <div style={{...sLabel,marginBottom:6}}>About {theme.name}</div>
@@ -1080,40 +1323,15 @@ export default function OccasionDetail(){
               </div>
             )}
 
-            {/* vendor booking */}
-            {catVendors.length>0&&(
-              <div style={{marginBottom:16}}>
-                <div style={{fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font}}>
-                  Book your vendors{city&&<span style={{fontWeight:400,color:muted,textTransform:"none",fontSize:10}}> · {city}</span>}
-                </div>
-                <div style={{display:"flex",flexDirection:"column",gap:8}}>
-                  {catVendors.map(cat=>(
-                    <button key={cat} onClick={()=>window.open(vendorUrl(cat),"_blank","noopener")}
-                      style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"13px 16px",borderRadius:12,border:`1.5px solid ${border}`,background:"#fff",cursor:"pointer",fontFamily:font,transition:"all 0.18s",minHeight:44}}
-                      onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.35)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.borderColor=border;}}>
-                      <div>
-                        <div style={{fontSize:13.5,fontWeight:700,color:ink}}>{cat}</div>
-                        <div style={{fontSize:11,color:muted,marginTop:1}}>{city?`Showing in ${city}`:"Opens in new tab"}</div>
-                      </div>
-                      <div style={{background:`linear-gradient(135deg,${gold},${goldLt})`,borderRadius:8,padding:"6px 13px",flexShrink:0}}>
-                        <span style={{fontSize:12,fontWeight:700,color:"#fff"}}>Find ↗</span>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* WhatsApp CTA */}
-            <a href={`https://wa.me/919211668427?text=Hi%20Tendr%2C%20I%27m%20planning%20a%20${encodeURIComponent(occasion.name)}%20for%20${guests}%20guests${date?`%20on%20${encodeURIComponent(new Date(date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}))}`:""}.${city?`%20Location%3A%20${encodeURIComponent(city)}.`:""} Can you help me find vendors?`}
+            {/* WhatsApp CTA — includes all selected vendors + packages */}
+            <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget})}
               target="_blank" rel="noopener noreferrer"
               style={{display:"flex",alignItems:"center",gap:12,padding:"14px 18px",borderRadius:14,background:"#25D366",marginBottom:20,textDecoration:"none",transition:"opacity 0.18s"}}
               onMouseEnter={e=>{e.currentTarget.style.opacity="0.88";}} onMouseLeave={e=>{e.currentTarget.style.opacity="1";}}>
               <svg width="22" height="22" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
               <div style={{flex:1}}>
-                <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.2}}>Baat Karo Tendr Se</div>
-                <div style={{fontSize:11.5,color:"rgba(255,255,255,0.82)",marginTop:2}}>Chat on WhatsApp — we'll help you find vendors{city?` in ${city}`:""}</div>
+                <div style={{fontSize:14,fontWeight:700,color:"#fff",lineHeight:1.2}}>Baat Karo — Book via Tendr</div>
+                <div style={{fontSize:11.5,color:"rgba(255,255,255,0.82)",marginTop:2}}>{vendors.length>0?`${vendors.length} vendors ready — share plan & we'll book`:"Chat on WhatsApp — we'll help you plan"}</div>
               </div>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
             </a>
@@ -1201,13 +1419,13 @@ export default function OccasionDetail(){
                 {step===1&&(!date?"Set a date first →":"Next — Who's coming? →")}
                 {step===2&&"Next →"}
                 {step===3&&(theme?`Use "${theme.name}" →`:"Skip — no theme →")}
-                {step===4&&(vendors.length>0?"Next — Gifts →":"Skip →")}
+                {step===4&&(vendors.length>0?allVendorsChosen?"Skip to Gifts →":"Choose packages above →":"Skip →")}
                 {step===5&&(gifts.length>0?"See my plan →":"Skip — see plan →")}
               </button>
             )}
             {step===6&&(
-              <button onClick={()=>window.open(catVendors.length>0?vendorUrl(catVendors[0]):"/listings","_blank","noopener")} style={btnPrimary}>
-                Start Booking Vendors ↗
+              <button onClick={()=>window.open(buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget}),"_blank","noopener")} style={btnPrimary}>
+                Send to Baat Karo ↗
               </button>
             )}
           </div>
