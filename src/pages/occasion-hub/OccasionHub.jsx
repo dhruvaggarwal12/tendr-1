@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { usePartyRoom } from "../../hooks/usePartyRoom";
 import { useNavigate } from "react-router-dom";
 import { TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER, CHARADES, HOT_TAKES, BINGO_SQUARES } from "../../data/housePartyData";
 
@@ -17,8 +18,8 @@ function Modal({ onClose, title, emoji, children, wide }) {
     return () => window.removeEventListener("keydown", h);
   }, [onClose]);
   return (
-    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#12111e", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: wide ? 700 : 480, maxHeight: "92dvh", overflowY: "auto", padding: "24px 20px calc(32px + env(safe-area-inset-bottom,0px))", fontFamily: font, boxShadow: "0 -8px 40px rgba(0,0,0,0.6)" }}>
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.78)", backdropFilter: "blur(8px)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#12111e", borderRadius: 24, width: "100%", maxWidth: wide ? 680 : 460, maxHeight: "90dvh", overflowY: "auto", padding: "24px 20px 28px", fontFamily: font, boxShadow: "0 24px 80px rgba(0,0,0,0.7)", animation: "modal-in 0.24s cubic-bezier(0.22,1,0.36,1)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 28 }}>{emoji}</span>
@@ -95,13 +96,36 @@ function BillSplitter({ onClose, accent }) {
           <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Description" style={{ ...inp, marginBottom: 10 }} />
           <button onClick={addExpense} style={mkBtn(accent)}>Add</button>
         </div>}
-        {expenses.map((e, i) => <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between", marginTop: 8 }}><span>{e.paidBy} — {e.desc}</span><span style={{ fontWeight: 700, color: accent }}>₹{e.amount}</span></div>)}
+        {expenses.map((e, i) => <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+          <span style={{ color: "rgba(255,255,255,0.8)" }}>{e.paidBy} — {e.desc}</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontWeight: 700, color: accent }}>₹{e.amount}</span>
+            <span onClick={() => setExpenses(ex => ex.filter((_, j) => j !== i))} style={{ cursor: "pointer", opacity: 0.4, fontSize: 13 }}>✕</span>
+          </div>
+        </div>)}
       </>}
       {view === "result" && people.length >= 2 && expenses.length > 0 && (() => {
         const { total, share, txns } = calcSettlement();
         return <>
-          <div style={{ textAlign: "center", marginBottom: 16 }}><div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>₹{total}</div><div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>₹{Math.round(share)} per person</div></div>
-          {txns.length === 0 ? <div style={{ textAlign: "center", color: "#34D399" }}>✅ All settled!</div> : txns.map((t, i) => <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between" }}><span><b style={{ color: "#F87171" }}>{t.from}</b> → <b style={{ color: "#34D399" }}>{t.to}</b></span><span style={{ fontWeight: 700, color: "#FBBF24" }}>₹{t.amount}</span></div>)}
+          <div style={{ textAlign: "center", marginBottom: 16, background: accent + "18", borderRadius: 16, padding: "16px 20px" }}>
+            <div style={{ fontSize: 32, fontWeight: 900, color: "#fff" }}>₹{total}</div>
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>₹{Math.round(share)} per person · {people.length} people</div>
+          </div>
+          {txns.length === 0 ? <div style={{ textAlign: "center", color: "#34D399", padding: 20, fontSize: 18 }}>✅ All settled!</div> : txns.map((t, i) => (
+            <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <div>
+                <span style={{ fontWeight: 700, color: "#F87171" }}>{t.from}</span>
+                <span style={{ color: "rgba(255,255,255,0.4)", margin: "0 8px" }}>→</span>
+                <span style={{ fontWeight: 700, color: "#34D399" }}>{t.to}</span>
+              </div>
+              <span style={{ fontWeight: 800, color: "#FBBF24", fontSize: 16 }}>₹{t.amount}</span>
+            </div>
+          ))}
+          {txns.length > 0 && (
+            <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`💸 *Split Summary*\nTotal: ₹${total}\n\n` + txns.map(t => `• ${t.from} → ${t.to}: ₹${t.amount}`).join("\n"))}`, "_blank")} style={{ ...mkBtn("#25D366"), marginTop: 12 }}>
+              📤 Share on WhatsApp
+            </button>
+          )}
         </>;
       })()}
       {view === "result" && (people.length < 2 || expenses.length === 0) && <p style={{ color: "rgba(255,255,255,0.5)", textAlign: "center" }}>Add at least 2 people and 1 expense first.</p>}
@@ -113,44 +137,97 @@ function PlaylistBuilder({ onClose, accent }) {
   const [songs, setSongs] = useState([]);
   const [newSong, setNewSong] = useState("");
   const [newArtist, setNewArtist] = useState("");
-  const add = () => { if (!newSong.trim()) return; setSongs(s => [...s, { song: newSong.trim(), artist: newArtist.trim() }]); setNewSong(""); setNewArtist(""); };
-  const copy = () => { copyLink(songs.map((s, i) => `${i + 1}. ${s.song}${s.artist ? ` — ${s.artist}` : ""}`).join("\n")); alert("Playlist copied!"); };
+  const [addedBy, setAddedBy] = useState("");
+  const add = () => {
+    if (!newSong.trim()) return;
+    setSongs(s => [...s, { song: newSong.trim(), artist: newArtist.trim(), by: addedBy.trim() || "Anonymous", votes: 0 }]);
+    setNewSong(""); setNewArtist("");
+  };
+  const upvote = (i) => setSongs(s => [...s.map((x, j) => j === i ? { ...x, votes: x.votes + 1 } : x)].sort((a, b) => b.votes - a.votes));
+  const playlistText = songs.map((s, i) => `${i + 1}. ${s.song}${s.artist ? ` — ${s.artist}` : ""}`).join("\n");
   return (
-    <Modal onClose={onClose} emoji="🎵" title="Playlist Builder">
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Everyone adds 2 songs. Build tonight's vibe together.</p>
+    <Modal onClose={onClose} emoji="🎵" title="Playlist Builder" wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Everyone adds their song · upvote your favourites!</p>
+      <input value={addedBy} onChange={e => setAddedBy(e.target.value)} placeholder="Your name" style={{ ...inp, marginBottom: 8 }} />
       <input value={newSong} onChange={e => setNewSong(e.target.value)} placeholder="Song name" style={{ ...inp, marginBottom: 8 }} />
       <input value={newArtist} onChange={e => setNewArtist(e.target.value)} placeholder="Artist (optional)" style={{ ...inp, marginBottom: 10 }} onKeyDown={e => e.key === "Enter" && add()} />
-      <button onClick={add} style={{ ...mkBtn(accent), marginBottom: 16 }}>Add Song</button>
-      {songs.map((s, i) => <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div><div style={{ fontWeight: 600 }}>{i + 1}. {s.song}</div>{s.artist && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>{s.artist}</div>}</div>
-        <span onClick={() => setSongs(ss => ss.filter((_, j) => j !== i))} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span>
-      </div>)}
-      {songs.length > 0 && <button onClick={copy} style={{ ...mkBtn("rgba(255,255,255,0.1)"), marginTop: 10 }}>📋 Copy Playlist</button>}
+      <button onClick={add} style={{ ...mkBtn(accent), marginBottom: 16 }}>+ Add Song</button>
+      {songs.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>No songs yet — be the first!</p>}
+      {songs.map((s, i) => (
+        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: "rgba(255,255,255,0.05)", borderRadius: 12, marginBottom: 8, border: "1.5px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ width: 26, height: 26, borderRadius: 8, background: accent + "25", color: accent, fontWeight: 900, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{i + 1}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontWeight: 700, color: "#fff", fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.song}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>{s.artist ? `${s.artist} · ` : ""}by {s.by}</div>
+          </div>
+          <button onClick={() => upvote(i)} style={{ background: s.votes > 0 ? accent + "30" : "rgba(255,255,255,0.07)", border: `1.5px solid ${s.votes > 0 ? accent + "55" : "rgba(255,255,255,0.1)"}`, borderRadius: 10, padding: "6px 10px", cursor: "pointer", color: s.votes > 0 ? accent : "rgba(255,255,255,0.4)", fontSize: 13, fontWeight: 800, flexShrink: 0, fontFamily: font, transition: "all 0.15s" }}>▲ {s.votes}</button>
+          <span onClick={() => setSongs(ss => ss.filter((_, j) => j !== i))} style={{ cursor: "pointer", opacity: 0.35, fontSize: 14, padding: 4 }}>✕</span>
+        </div>
+      ))}
+      {songs.length > 0 && (
+        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+          <button onClick={() => { copyLink(playlistText); }} style={{ ...mkBtn("rgba(255,255,255,0.08)"), flex: 1 }}>📋 Copy List</button>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent("🎵 *Tonight's Playlist*\n\n" + playlistText)}`, "_blank")} style={{ ...mkBtn("#25D366"), flex: 1 }}>📤 WhatsApp</button>
+        </div>
+      )}
     </Modal>
   );
 }
 
 function Countdown({ onClose, accent }) {
   const [target, setTarget] = useState("");
+  const [eventName, setEventName] = useState("");
   const [timeLeft, setTimeLeft] = useState(null);
+  const [started, setStarted] = useState(false);
   const ref = useRef(null);
+  const pad = n => String(n).padStart(2, "0");
   const start = () => {
     if (!target) return;
+    setStarted(true);
     clearInterval(ref.current);
     ref.current = setInterval(() => {
       const diff = new Date(target) - Date.now();
-      if (diff <= 0) { setTimeLeft("🎉 It's time!"); clearInterval(ref.current); return; }
-      const h = Math.floor(diff / 3600000), m = Math.floor((diff % 3600000) / 60000), s = Math.floor((diff % 60000) / 1000);
-      setTimeLeft(`${h}h ${m}m ${s}s`);
+      if (diff <= 0) { setTimeLeft(null); clearInterval(ref.current); return; }
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      const s = Math.floor((diff % 60000) / 1000);
+      setTimeLeft({ d, h, m, s });
     }, 1000);
   };
   useEffect(() => () => clearInterval(ref.current), []);
+  const units = timeLeft ? (timeLeft.d > 0
+    ? [{ v: timeLeft.d, l: "days" }, { v: timeLeft.h, l: "hrs" }, { v: timeLeft.m, l: "min" }, { v: timeLeft.s, l: "sec" }]
+    : [{ v: timeLeft.h, l: "hrs" }, { v: timeLeft.m, l: "min" }, { v: timeLeft.s, l: "sec" }]) : [];
   return (
     <Modal onClose={onClose} emoji="⏱️" title="Countdown Timer">
-      <label style={lbl}>Date & Time</label>
-      <input type="datetime-local" value={target} onChange={e => setTarget(e.target.value)} style={{ ...inp, marginBottom: 12 }} />
-      <button onClick={start} style={{ ...mkBtn(accent), marginBottom: 20 }}>Start Countdown</button>
-      {timeLeft && <div style={{ textAlign: "center", fontSize: 40, fontWeight: 800, color: "#FBBF24" }}>{timeLeft}</div>}
+      {!started ? <>
+        <label style={lbl}>What are you counting down to?</label>
+        <input value={eventName} onChange={e => setEventName(e.target.value)} placeholder="e.g. Cake cutting! 🎂" style={{ ...inp, marginBottom: 12 }} />
+        <label style={lbl}>Date & Time</label>
+        <input type="datetime-local" value={target} onChange={e => setTarget(e.target.value)} style={{ ...inp, marginBottom: 16 }} />
+        <button onClick={start} disabled={!target} style={{ ...mkBtn(accent), opacity: target ? 1 : 0.5 }}>Start Countdown</button>
+      </> : (
+        <div style={{ textAlign: "center" }}>
+          {eventName && <div style={{ fontSize: 16, fontWeight: 800, color: accent, marginBottom: 20, letterSpacing: "-0.01em" }}>{eventName}</div>}
+          {timeLeft ? (
+            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap", marginBottom: 24 }}>
+              {units.map(({ v, l }) => (
+                <div key={l} style={{ textAlign: "center" }}>
+                  <div style={{ fontSize: 44, fontWeight: 900, color: l === "sec" ? accent : "#fff", lineHeight: 1, background: "rgba(255,255,255,0.07)", borderRadius: 14, padding: "14px 16px", minWidth: 60, fontVariantNumeric: "tabular-nums", boxShadow: l === "sec" ? `0 0 20px ${accent}30` : "none" }}>{pad(v)}</div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", marginTop: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>{l}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ marginBottom: 20 }}>
+              <div style={{ fontSize: 64, marginBottom: 12 }}>🎉</div>
+              <div style={{ fontSize: 26, fontWeight: 900, color: "#FBBF24" }}>It's time!</div>
+            </div>
+          )}
+          <button onClick={() => { setStarted(false); setTimeLeft(null); clearInterval(ref.current); }} style={{ ...mkBtn("rgba(255,255,255,0.1)") }}>Reset</button>
+        </div>
+      )}
     </Modal>
   );
 }
@@ -158,33 +235,63 @@ function Countdown({ onClose, accent }) {
 function ThemePicker({ onClose, accent, themes }) {
   const [votes, setVotes] = useState({});
   const [myVote, setMyVote] = useState(null);
+  const [showWinner, setShowWinner] = useState(false);
   const vote = (t) => {
     if (myVote) setVotes(v => ({ ...v, [myVote]: Math.max(0, (v[myVote] || 0) - 1) }));
     setMyVote(t);
     setVotes(v => ({ ...v, [t]: (v[t] || 0) + 1 }));
   };
+  const totalVotes = Object.values(votes).reduce((a, b) => a + b, 0);
+  const sorted = [...themes].sort((a, b) => (votes[b] || 0) - (votes[a] || 0));
+  const winner = totalVotes > 0 ? sorted[0] : null;
   const max = Math.max(...Object.values(votes), 0);
+  if (showWinner && winner) return (
+    <Modal onClose={onClose} emoji="🎨" title="Theme Picker">
+      <div style={{ textAlign: "center", padding: "16px 0 8px" }}>
+        <div style={{ fontSize: 56, marginBottom: 8 }}>🏆</div>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>Tonight's Theme</div>
+        <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", marginBottom: 6 }}>{winner}</div>
+        <div style={{ fontSize: 14, color: accent }}>{votes[winner] || 0} vote{(votes[winner] || 0) !== 1 ? "s" : ""} · {totalVotes} total</div>
+        <div style={{ marginTop: 20, display: "flex", gap: 10 }}>
+          <button onClick={() => setShowWinner(false)} style={{ ...mkBtn("rgba(255,255,255,0.08)"), flex: 1 }}>← Back</button>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`🎨 Tonight's party theme: *${winner}*! 🎉`)}`, "_blank")} style={{ ...mkBtn("#25D366"), flex: 1 }}>📤 Share</button>
+        </div>
+      </div>
+    </Modal>
+  );
   return (
     <Modal onClose={onClose} emoji="🎨" title="Theme Picker">
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Pass the phone around — everyone votes!</p>
-      {themes.map(t => (
-        <div key={t} onClick={() => vote(t)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${myVote === t ? accent : "rgba(255,255,255,0.1)"}`, background: myVote === t ? accent + "22" : "rgba(255,255,255,0.04)", marginBottom: 8, cursor: "pointer" }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ color: "#fff", fontSize: 14 }}>{t}</div>
-            <div style={{ height: 4, background: "rgba(255,255,255,0.1)", borderRadius: 4, marginTop: 6, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${max ? ((votes[t] || 0) / max) * 100 : 0}%`, background: accent, borderRadius: 4, transition: "width 0.3s" }} />
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Pass the phone — everyone votes once!</p>
+      {themes.map(t => {
+        const pct = max ? Math.round(((votes[t] || 0) / max) * 100) : 0;
+        const isLeading = winner === t && totalVotes > 0;
+        return (
+          <div key={t} onClick={() => vote(t)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${myVote === t ? accent : isLeading ? accent + "44" : "rgba(255,255,255,0.1)"}`, background: myVote === t ? accent + "22" : isLeading ? accent + "0a" : "rgba(255,255,255,0.04)", marginBottom: 8, cursor: "pointer", transition: "all 0.2s" }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ color: "#fff", fontSize: 14, marginBottom: 6, display: "flex", alignItems: "center", gap: 6 }}>
+                {t}
+                {isLeading && totalVotes >= 2 && <span style={{ fontSize: 10, fontWeight: 800, color: accent, background: accent + "25", padding: "2px 7px", borderRadius: 8, letterSpacing: "0.06em" }}>LEADING</span>}
+              </div>
+              <div style={{ height: 5, background: "rgba(255,255,255,0.08)", borderRadius: 4, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct}%`, background: myVote === t ? accent : isLeading ? accent + "aa" : "rgba(255,255,255,0.2)", borderRadius: 4, transition: "width 0.5s cubic-bezier(0.22,1,0.36,1)" }} />
+              </div>
             </div>
+            <span style={{ fontSize: 18, fontWeight: 800, color: myVote === t ? accent : isLeading ? accent + "cc" : "rgba(255,255,255,0.35)", minWidth: 24, textAlign: "right" }}>{votes[t] || 0}</span>
           </div>
-          <span style={{ fontSize: 18, fontWeight: 800, color: accent, minWidth: 28, textAlign: "right" }}>{votes[t] || 0}</span>
-        </div>
-      ))}
-      {max > 0 && <div style={{ textAlign: "center", marginTop: 12, fontSize: 14, color: "#FBBF24" }}>🏆 Leading: {Object.entries(votes).sort(([, a], [, b]) => b - a)[0]?.[0]}</div>}
+        );
+      })}
+      {totalVotes >= 2 && (
+        <button onClick={() => setShowWinner(true)} style={{ ...mkBtn(accent), marginTop: 8 }}>🏆 Reveal Tonight's Theme</button>
+      )}
     </Modal>
   );
 }
 
-function Checklist({ onClose, accent, checklistItems }) {
-  const [guests, setGuests] = useState(10);
+function Checklist({ onClose, accent, checklistItems, initialGuests }) {
+  const [guests, setGuests] = useState(initialGuests || 10);
+  const [checked, setChecked] = useState({});
+  const [custom, setCustom] = useState([]);
+  const [newCustom, setNewCustom] = useState("");
   const calc = (base, per) => Math.ceil(base + per * guests);
   const items = checklistItems || [
     { cat: "Food & Drinks", things: [{ name: "Snacks / Namkeen", qty: calc(0, 0.5) + " packs" }, { name: "Cold drinks (500ml)", qty: calc(0, 0.8) + " bottles" }, { name: "Water bottles (1L)", qty: calc(0, 0.5) + " bottles" }, { name: "Food portions", qty: calc(0, 0.7) + " portions" }] },
@@ -192,27 +299,65 @@ function Checklist({ onClose, accent, checklistItems }) {
     { cat: "Decor", things: [{ name: "Balloons", qty: Math.ceil(guests * 3) + " balloons" }, { name: "Fairy lights", qty: "2 sets" }, { name: "Streamers", qty: "3–4 rolls" }] },
     { cat: "Misc", things: [{ name: "Garbage bags", qty: "3–4" }, { name: "Bluetooth speaker", qty: "1–2" }, { name: "Extension cord", qty: "1" }] },
   ];
+  const allKeys = [...items.flatMap(c => c.things.map(t => t.name)), ...custom.map(c => c.name)];
+  const doneCount = allKeys.filter(k => checked[k]).length;
+  const addCustom = () => { if (newCustom.trim()) { setCustom(c => [...c, { name: newCustom.trim(), qty: "1" }]); setNewCustom(""); } };
+  const toggle = (name) => setChecked(c => ({ ...c, [name]: !c[name] }));
   return (
     <Modal onClose={onClose} emoji="📋" title="Checklist" wide>
-      <div style={{ marginBottom: 16 }}>
-        <label style={lbl}>Guest Count</label>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <button onClick={() => setGuests(g => Math.max(2, g - 1))} style={{ ...mkBtn("rgba(255,255,255,0.1)"), width: 40, padding: 0, height: 40 }}>−</button>
-          <span style={{ fontSize: 24, fontWeight: 800, color: "#fff", minWidth: 40, textAlign: "center" }}>{guests}</span>
-          <button onClick={() => setGuests(g => g + 1)} style={{ ...mkBtn(accent), width: 40, padding: 0, height: 40 }}>+</button>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div>
+          <label style={{ ...lbl, marginBottom: 4 }}>Guests</label>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <button onClick={() => setGuests(g => Math.max(2, g - 1))} style={{ ...mkBtn("rgba(255,255,255,0.1)"), width: 34, padding: 0, height: 34, fontSize: 18 }}>−</button>
+            <span style={{ fontSize: 22, fontWeight: 900, color: "#fff", minWidth: 34, textAlign: "center" }}>{guests}</span>
+            <button onClick={() => setGuests(g => g + 1)} style={{ ...mkBtn(accent), width: 34, padding: 0, height: 34, fontSize: 18 }}>+</button>
+          </div>
         </div>
+        <div style={{ textAlign: "right" }}>
+          <div style={{ fontSize: 26, fontWeight: 900, color: doneCount === allKeys.length && allKeys.length > 0 ? "#34D399" : accent }}>{doneCount}<span style={{ fontSize: 14, color: "rgba(255,255,255,0.3)", fontWeight: 400 }}>/{allKeys.length}</span></div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>bought</div>
+        </div>
+      </div>
+      <div style={{ height: 5, background: "rgba(255,255,255,0.07)", borderRadius: 4, marginBottom: 18, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${allKeys.length ? (doneCount / allKeys.length) * 100 : 0}%`, background: doneCount === allKeys.length && allKeys.length > 0 ? "#34D399" : accent, borderRadius: 4, transition: "width 0.35s cubic-bezier(0.22,1,0.36,1)" }} />
       </div>
       {items.map(({ cat, things }) => (
         <div key={cat} style={{ marginBottom: 16 }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>{cat}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{cat}</div>
           {things.map(({ name, qty }) => (
-            <div key={name} style={{ display: "flex", justifyContent: "space-between", padding: "10px 14px", background: "rgba(255,255,255,0.05)", borderRadius: 10, marginBottom: 6 }}>
-              <span style={{ color: "#fff", fontSize: 13 }}>{name}</span>
-              <span style={{ color: accent, fontSize: 13, fontWeight: 700 }}>{qty}</span>
+            <div key={name} onClick={() => toggle(name)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: checked[name] ? "rgba(52,211,153,0.07)" : "rgba(255,255,255,0.04)", borderRadius: 10, marginBottom: 6, cursor: "pointer", border: `1.5px solid ${checked[name] ? "#34D39940" : "transparent"}`, transition: "all 0.18s" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${checked[name] ? "#34D399" : "rgba(255,255,255,0.2)"}`, background: checked[name] ? "#34D399" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                  {checked[name] && <span style={{ color: "#000", fontSize: 10, fontWeight: 900 }}>✓</span>}
+                </div>
+                <span style={{ color: checked[name] ? "rgba(255,255,255,0.35)" : "#fff", fontSize: 13, textDecoration: checked[name] ? "line-through" : "none" }}>{name}</span>
+              </div>
+              <span style={{ color: checked[name] ? "rgba(255,255,255,0.25)" : accent, fontSize: 13, fontWeight: 700 }}>{qty}</span>
             </div>
           ))}
         </div>
       ))}
+      {custom.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Custom</div>
+          {custom.map(({ name, qty }) => (
+            <div key={name} onClick={() => toggle(name)} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: checked[name] ? "rgba(52,211,153,0.07)" : "rgba(255,255,255,0.04)", borderRadius: 10, marginBottom: 6, cursor: "pointer", border: `1.5px solid ${checked[name] ? "#34D39940" : "transparent"}`, transition: "all 0.18s" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 18, height: 18, borderRadius: 5, border: `2px solid ${checked[name] ? "#34D399" : "rgba(255,255,255,0.2)"}`, background: checked[name] ? "#34D399" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {checked[name] && <span style={{ color: "#000", fontSize: 10, fontWeight: 900 }}>✓</span>}
+                </div>
+                <span style={{ color: checked[name] ? "rgba(255,255,255,0.35)" : "#fff", fontSize: 13, textDecoration: checked[name] ? "line-through" : "none" }}>{name}</span>
+              </div>
+              <span style={{ color: accent, fontSize: 13, fontWeight: 700 }}>{qty}</span>
+            </div>
+          ))}
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+        <input value={newCustom} onChange={e => setNewCustom(e.target.value)} onKeyDown={e => e.key === "Enter" && addCustom()} placeholder="Add custom item…" style={{ ...inp, flex: 1 }} />
+        <button onClick={addCustom} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
+      </div>
     </Modal>
   );
 }
@@ -313,27 +458,113 @@ function ShareableTool({ onClose, emoji, title, description, path, fields, accen
 // ════════════════════════════════════════════════════════════════════════════
 
 function TruthOrDare({ onClose, accent }) {
+  const [players, setPlayers] = useState([]);
+  const [newP, setNewP] = useState("");
+  const [phase, setPhase] = useState("setup"); // setup | spinning | mode | card
+  const [current, setCurrent] = useState(null);
   const [mode, setMode] = useState(null);
   const [card, setCard] = useState(null);
-  const pick = (m) => { setMode(m); setCard(rand(m === "truth" ? TRUTHS : DARES)); };
-  const next = () => setCard(rand(mode === "truth" ? TRUTHS : DARES));
+  const [flipping, setFlipping] = useState(false);
+  const [completedBy, setCompletedBy] = useState({});
+  const [spinIdx, setSpinIdx] = useState(0);
+  const spinRef = useRef(null);
+
+  const addP = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
+  const pickPlayer = () => {
+    if (players.length === 0) { setCurrent("You"); setPhase("mode"); return; }
+    setPhase("spinning");
+    let count = 0, speed = 80;
+    const total = 16 + Math.floor(Math.random() * 8);
+    const tick = () => {
+      setSpinIdx(i => (i + 1) % players.length);
+      count++;
+      speed = 80 + (count / total) * 300;
+      if (count < total) spinRef.current = setTimeout(tick, speed);
+      else {
+        const winner = players[Math.floor(Math.random() * players.length)];
+        setCurrent(winner);
+        setTimeout(() => setPhase("mode"), 600);
+      }
+    };
+    spinRef.current = setTimeout(tick, speed);
+  };
+  useEffect(() => () => clearTimeout(spinRef.current), []);
+  const pickMode = (m) => {
+    setMode(m);
+    setCard(rand(m === "truth" ? TRUTHS : DARES));
+    setFlipping(true);
+    setTimeout(() => setFlipping(false), 400);
+    setPhase("card");
+  };
+  const done = () => { if (current) setCompletedBy(c => ({ ...c, [current]: (c[current] || 0) + 1 })); goNext(); };
+  const skip = () => goNext();
+  const goNext = () => {
+    if (players.length > 0) pickPlayer();
+    else { setCard(rand(mode === "truth" ? TRUTHS : DARES)); setFlipping(true); setTimeout(() => setFlipping(false), 400); }
+  };
+  const totalDone = Object.values(completedBy).reduce((a, b) => a + b, 0);
+
+  if (phase === "setup") return (
+    <Modal onClose={onClose} emoji="🎯" title="Truth or Dare">
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 14 }}>Add players for turn-based, or skip straight to cards.</p>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
+        <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && addP()} placeholder="Player name" style={{ ...inp, flex: 1 }} />
+        <button onClick={addP} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
+      </div>
+      {players.length > 0 && <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 14 }}>
+        {players.map(p => <span key={p} style={{ background: accent + "22", color: "#fff", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>{p}<span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span></span>)}
+      </div>}
+      <button onClick={pickPlayer} style={{ ...mkBtn(accent), marginBottom: 10 }}>
+        {players.length > 1 ? "🎲 Start with Turn Order →" : "🎯 Play →"}
+      </button>
+      {players.length > 1 && <button onClick={() => { setCurrent("You"); setPhase("mode"); }} style={{ ...mkBtn("rgba(255,255,255,0.07)") }}>Skip tracking →</button>}
+    </Modal>
+  );
+  if (phase === "spinning") return (
+    <Modal onClose={onClose} emoji="🎯" title="Truth or Dare">
+      <div style={{ textAlign: "center", padding: "12px 0" }}>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 20 }}>Picking who goes next…</div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center" }}>
+          {players.map((p, i) => (
+            <div key={p} style={{ padding: "10px 18px", borderRadius: 12, background: i === spinIdx ? accent + "35" : "rgba(255,255,255,0.05)", border: `2px solid ${i === spinIdx ? accent : "transparent"}`, color: i === spinIdx ? "#fff" : "rgba(255,255,255,0.3)", fontSize: 15, fontWeight: i === spinIdx ? 900 : 400, transition: "all 0.06s", transform: i === spinIdx ? "scale(1.12)" : "scale(1)" }}>{p}</div>
+          ))}
+        </div>
+      </div>
+    </Modal>
+  );
+  if (phase === "mode") return (
+    <Modal onClose={onClose} emoji="🎯" title="Truth or Dare">
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <div style={{ fontSize: 32, fontWeight: 900, color: "#fff", letterSpacing: "-0.02em" }}>{current}</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>it's your turn · round {totalDone + 1}</div>
+        {completedBy[current] > 0 && <div style={{ fontSize: 12, color: accent, marginTop: 6, fontWeight: 700 }}>✓ {completedBy[current]} completed</div>}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <button onClick={() => pickMode("truth")} style={{ ...mkBtn("#1D4ED8"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em" }}>🤔 Truth</button>
+        <button onClick={() => pickMode("dare")} style={{ ...mkBtn("#DC2626"), padding: "22px 20px", fontSize: 20, borderRadius: 16, letterSpacing: "0.01em" }}>🔥 Dare</button>
+      </div>
+    </Modal>
+  );
   return (
     <Modal onClose={onClose} emoji="🎯" title="Truth or Dare">
-      {!card ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <button onClick={() => pick("truth")} style={{ ...mkBtn("#1D4ED8"), padding: "18px 20px", fontSize: 18 }}>🤔 Truth</button>
-          <button onClick={() => pick("dare")} style={{ ...mkBtn("#DC2626"), padding: "18px 20px", fontSize: 18 }}>🔥 Dare</button>
-        </div>
-      ) : (
-        <div>
-          <div style={{ background: mode === "truth" ? "rgba(29,78,216,0.2)" : "rgba(220,38,38,0.2)", borderRadius: 16, padding: "28px 20px", textAlign: "center", marginBottom: 20, border: `1.5px solid ${mode === "truth" ? "rgba(29,78,216,0.4)" : "rgba(220,38,38,0.4)"}` }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: mode === "truth" ? "#60A5FA" : "#F87171", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.1em" }}>{mode === "truth" ? "🤔 TRUTH" : "🔥 DARE"}</div>
-            <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.5 }}>{card}</div>
-          </div>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button onClick={next} style={{ ...mkBtn(accent), flex: 1 }}>Next</button>
-            <button onClick={() => { setMode(null); setCard(null); }} style={{ ...mkBtn("rgba(255,255,255,0.1)"), flex: 1 }}>Switch</button>
-          </div>
+      {current && <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: accent }}>{current}'s turn</div>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)" }}>Round {totalDone + 1}</div>
+      </div>}
+      <div style={{ background: mode === "truth" ? "rgba(29,78,216,0.2)" : "rgba(220,38,38,0.2)", borderRadius: 20, padding: "28px 20px", textAlign: "center", marginBottom: 18, border: `2px solid ${mode === "truth" ? "rgba(29,78,216,0.4)" : "rgba(220,38,38,0.4)"}`, animation: flipping ? "card-flip 0.35s ease-out" : "none" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: mode === "truth" ? "#60A5FA" : "#F87171", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.12em" }}>{mode === "truth" ? "🤔 TRUTH" : "🔥 DARE"}</div>
+        <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.65 }}>{card}</div>
+      </div>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+        <button onClick={done} style={{ ...mkBtn("#059669"), flex: 2, fontSize: 14 }}>✓ Done</button>
+        <button onClick={skip} style={{ ...mkBtn("rgba(255,255,255,0.08)"), flex: 1, fontSize: 13 }}>Skip</button>
+        <button onClick={() => pickMode(mode === "truth" ? "dare" : "truth")} style={{ ...mkBtn(mode === "truth" ? "#DC2626aa" : "#1D4ED8aa"), flex: 1, fontSize: 13 }}>{mode === "truth" ? "🔥" : "🤔"}</button>
+      </div>
+      {Object.keys(completedBy).length > 0 && (
+        <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 6 }}>
+          {Object.entries(completedBy).sort(([, a], [, b]) => b - a).map(([p, c]) => (
+            <span key={p} style={{ background: "#059669" + "22", color: "#34D399", padding: "4px 10px", borderRadius: 10, fontSize: 12, fontWeight: 700 }}>✓ {p} {c > 1 ? `×${c}` : ""}</span>
+          ))}
         </div>
       )}
     </Modal>
@@ -345,34 +576,63 @@ function NeverHaveI({ onClose, accent }) {
   const [scores, setScores] = useState({});
   const [players, setPlayers] = useState([]);
   const [newP, setNewP] = useState("");
-  const add = () => { if (newP.trim()) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
-  const mark = (n) => setScores(s => ({ ...s, [n]: (s[n] || 0) + 1 }));
-  const next = () => setIdx(i => (i + 1) % NEVER_HAVE_I.length);
+  const [justMarked, setJustMarked] = useState(null);
+  const [round, setRound] = useState(1);
+  const add = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
+  const mark = (n) => { setScores(s => ({ ...s, [n]: (s[n] || 0) + 1 })); setJustMarked(n); setTimeout(() => setJustMarked(null), 1000); };
+  const next = () => { setIdx(i => (i + 1) % NEVER_HAVE_I.length); setRound(r => r + 1); };
+  const maxScore = Math.max(...Object.values(scores), 0);
   return (
     <Modal onClose={onClose} emoji="🙅" title="Never Have I Ever">
       {players.length < 2 ? (
         <div>
-          <p style={{ color: "rgba(255,255,255,0.6)", marginBottom: 16, fontSize: 14 }}>Add 2+ players or just play without tracking.</p>
-          <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <p style={{ color: "rgba(255,255,255,0.5)", marginBottom: 14, fontSize: 13 }}>Add 2+ players to track scores, or dive right in.</p>
+          <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
             <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Player name" style={{ ...inp, flex: 1 }} />
             <button onClick={add} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>Add</button>
           </div>
-          {players.map(p => <div key={p} style={{ ...crd, display: "flex", justifyContent: "space-between" }}>{p} <span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span></div>)}
-          <button onClick={next} style={{ ...mkBtn("#059669"), marginTop: 8 }}>Play without scores →</button>
+          {players.map(p => <div key={p} style={{ ...crd, display: "flex", justifyContent: "space-between", marginBottom: 6 }}><span>{p}</span><span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.45 }}>✕</span></div>)}
+          <button onClick={next} style={{ ...mkBtn(accent), marginTop: 8 }}>Play {players.length >= 2 ? "with scoring →" : "without scores →"}</button>
+          {players.length >= 2 && <button onClick={() => { setPlayers([]); next(); }} style={{ ...mkBtn("rgba(255,255,255,0.07)"), marginTop: 8 }}>Skip to game →</button>}
         </div>
       ) : (
         <div>
-          <div style={{ background: "rgba(5,150,105,0.15)", border: "1.5px solid rgba(5,150,105,0.35)", borderRadius: 16, padding: "24px 18px", textAlign: "center", marginBottom: 16 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#34D399", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Never Have I Ever…</div>
-            <div style={{ fontSize: 16, color: "#fff", lineHeight: 1.5 }}>{NEVER_HAVE_I[idx]}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>Statement {round}</div>
+            {maxScore > 0 && <div style={{ fontSize: 12, color: accent, fontWeight: 700 }}>🍺 Leader: {Object.entries(scores).sort(([, a], [, b]) => b - a)[0]?.[0]}</div>}
+          </div>
+          <div style={{ background: "rgba(5,150,105,0.14)", border: "1.5px solid rgba(5,150,105,0.3)", borderRadius: 18, padding: "26px 18px", textAlign: "center", marginBottom: 18 }}>
+            <div style={{ fontSize: 10, fontWeight: 800, color: "#34D399", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12 }}>Never Have I Ever…</div>
+            <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.6 }}>{NEVER_HAVE_I[idx]}</div>
           </div>
           <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginBottom: 8 }}>Who HAS done it?</div>
+            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 10 }}>Tap if you HAVE done it 🍺</div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {players.map(p => <button key={p} onClick={() => mark(p)} style={{ padding: "8px 14px", borderRadius: 20, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.08)", color: "#fff", cursor: "pointer", fontFamily: font, fontSize: 13 }}>{p} · {scores[p] || 0}</button>)}
+              {players.map(p => {
+                const count = scores[p] || 0;
+                const isJust = justMarked === p;
+                return (
+                  <button key={p} onClick={() => mark(p)} style={{ padding: "10px 16px", borderRadius: 14, border: `1.5px solid ${count > 0 ? accent + "60" : "rgba(255,255,255,0.15)"}`, background: isJust ? accent + "40" : count > 0 ? accent + "18" : "rgba(255,255,255,0.06)", color: "#fff", cursor: "pointer", fontFamily: font, fontSize: 13, fontWeight: count > 0 ? 700 : 400, transition: "all 0.15s", transform: isJust ? "scale(1.08)" : "scale(1)" }}>
+                    {p} {"🍺".repeat(count) || "—"}
+                  </button>
+                );
+              })}
             </div>
           </div>
-          <button onClick={next} style={mkBtn(accent)}>Next Statement</button>
+          {maxScore > 0 && (
+            <div style={{ marginBottom: 14 }}>
+              {players.sort((a, b) => (scores[b] || 0) - (scores[a] || 0)).slice(0, 3).map((p, i) => (
+                <div key={p} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, minWidth: 20, color: "rgba(255,255,255,0.3)" }}>{["🥇","🥈","🥉"][i]}</span>
+                  <div style={{ flex: 1, height: 6, background: "rgba(255,255,255,0.07)", borderRadius: 4, overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${maxScore ? ((scores[p] || 0) / maxScore) * 100 : 0}%`, background: [accent, accent + "88", accent + "55"][i], borderRadius: 4, transition: "width 0.4s" }} />
+                  </div>
+                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", minWidth: 60, textAlign: "right" }}>{p} ({scores[p] || 0})</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <button onClick={next} style={mkBtn(accent)}>Next Statement →</button>
         </div>
       )}
     </Modal>
@@ -381,39 +641,107 @@ function NeverHaveI({ onClose, accent }) {
 
 function WouldYouRather({ onClose, accent }) {
   const [pair, setPair] = useState(() => rand(WOULD_YOU_RATHER));
-  const [pick, setPick] = useState(null);
-  const next = () => { setPair(rand(WOULD_YOU_RATHER)); setPick(null); };
+  const [votes, setVotes] = useState({ a: 0, b: 0 });
+  const [myPick, setMyPick] = useState(null);
+  const [round, setRound] = useState(1);
+  const totalVotes = votes.a + votes.b;
+  const pctA = totalVotes ? Math.round((votes.a / totalVotes) * 100) : 50;
+  const pctB = 100 - pctA;
+  const pick = (side) => {
+    if (myPick) return;
+    setMyPick(side);
+    setVotes(v => ({ ...v, [side]: v[side] + 1 }));
+  };
+  const next = () => { setPair(rand(WOULD_YOU_RATHER)); setMyPick(null); setVotes({ a: 0, b: 0 }); setRound(r => r + 1); };
+  const debatePrompts = ["Defend your choice!", "Convince the other side!", "Why would anyone pick the other?!", "No backtracking now!", "Explain yourself!"];
   return (
     <Modal onClose={onClose} emoji="🤷" title="Would You Rather">
-      <div style={{ marginBottom: 16 }}>
-        {["a", "b"].map(side => (
-          <button key={side} onClick={() => setPick(side)} style={{ display: "block", width: "100%", marginBottom: 10, padding: "20px 16px", borderRadius: 14, border: `2px solid ${pick === side ? accent : "rgba(255,255,255,0.15)"}`, background: pick === side ? accent + "33" : "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, fontFamily: font, cursor: "pointer", textAlign: "left", lineHeight: 1.4 }}>
-            {side === "a" ? "👈 " : "👉 "}{pair[side]}
-          </button>
-        ))}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.4)" }}>Round {round}</div>
+        {totalVotes > 0 && <div style={{ fontSize: 12, color: accent }}>{totalVotes} vote{totalVotes !== 1 ? "s" : ""}</div>}
       </div>
-      {pick && <div style={{ textAlign: "center", color: accent, fontSize: 14, marginBottom: 14 }}>You chose — defend your answer!</div>}
-      <button onClick={next} style={mkBtn(accent)}>Next Question</button>
+      <div style={{ marginBottom: myPick ? 12 : 16 }}>
+        {["a", "b"].map((side, si) => {
+          const pct = side === "a" ? pctA : pctB;
+          const isChosen = myPick === side;
+          const isOther = myPick && myPick !== side;
+          return (
+            <div key={side} onClick={() => pick(side)} style={{ display: "block", width: "100%", marginBottom: 10, padding: "18px 16px", borderRadius: 16, border: `2px solid ${isChosen ? accent : isOther ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.14)"}`, background: isChosen ? accent + "28" : isOther ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.05)", color: isOther ? "rgba(255,255,255,0.4)" : "#fff", fontSize: 15, fontFamily: font, cursor: myPick ? "default" : "pointer", textAlign: "left", lineHeight: 1.45, position: "relative", overflow: "hidden", transition: "all 0.2s", boxSizing: "border-box" }}>
+              {myPick && <div style={{ position: "absolute", inset: 0, left: 0, width: `${pct}%`, background: isChosen ? accent + "15" : "rgba(255,255,255,0.03)", borderRadius: 14, transition: "width 0.5s cubic-bezier(0.22,1,0.36,1)", pointerEvents: "none" }} />}
+              <div style={{ position: "relative" }}>
+                <span style={{ fontWeight: 700, color: isChosen ? accent : "rgba(255,255,255,0.4)", marginRight: 8, fontSize: 13 }}>{si === 0 ? "A" : "B"}</span>
+                {pair[side]}
+              </div>
+              {myPick && (
+                <div style={{ position: "relative", marginTop: 8, fontSize: 13, fontWeight: 800, color: isChosen ? accent : "rgba(255,255,255,0.3)" }}>{pct}%</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {myPick && (
+        <div style={{ textAlign: "center", background: accent + "15", borderRadius: 12, padding: "10px 14px", marginBottom: 14, fontSize: 14, color: accent, fontWeight: 700 }}>
+          {rand(debatePrompts)}
+        </div>
+      )}
+      <button onClick={next} style={mkBtn(myPick ? accent : "rgba(255,255,255,0.12)")}>{myPick ? "Next Question →" : "Skip"}</button>
     </Modal>
   );
 }
 
 function HotTakes({ onClose, accent }) {
   const [take, setTake] = useState(() => rand(HOT_TAKES));
-  const [agreed, setAgreed] = useState(null);
-  const next = () => { setTake(rand(HOT_TAKES)); setAgreed(null); };
+  const [votes, setVotes] = useState({ agree: 0, disagree: 0 });
+  const [myVote, setMyVote] = useState(null);
+  const [round, setRound] = useState(1);
+  const total = votes.agree + votes.disagree;
+  const agPct = total ? Math.round((votes.agree / total) * 100) : 0;
+  const disPct = total ? 100 - agPct : 0;
+  const controversy = total >= 2 ? Math.round((1 - Math.abs(agPct - disPct) / 100) * 100) : 0;
+  const vote = (side) => {
+    if (myVote) return;
+    setMyVote(side);
+    setVotes(v => ({ ...v, [side]: v[side] + 1 }));
+  };
+  const next = () => { setTake(rand(HOT_TAKES)); setMyVote(null); setVotes({ agree: 0, disagree: 0 }); setRound(r => r + 1); };
   return (
     <Modal onClose={onClose} emoji="🌶️" title="Hot Takes">
-      <div style={{ background: "rgba(239,68,68,0.12)", border: "1.5px solid rgba(239,68,68,0.3)", borderRadius: 16, padding: "28px 18px", textAlign: "center", marginBottom: 16 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: "#F87171", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 12 }}>🌶️ Hot Take</div>
-        <div style={{ fontSize: 16, color: "#fff", lineHeight: 1.5 }}>{take}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>Take {round}</div>
+        {total > 0 && <div style={{ fontSize: 12, color: total >= 2 && controversy >= 60 ? "#F87171" : "rgba(255,255,255,0.35)" }}>
+          {controversy >= 60 ? `🔥 ${controversy}% controversial` : `${total} votes`}
+        </div>}
       </div>
-      <div style={{ display: "flex", gap: 10, marginBottom: 12 }}>
-        <button onClick={() => setAgreed(true)} style={{ ...mkBtn(agreed === true ? "#059669" : "rgba(255,255,255,0.08)"), flex: 1 }}>✅ Agree</button>
-        <button onClick={() => setAgreed(false)} style={{ ...mkBtn(agreed === false ? "#DC2626" : "rgba(255,255,255,0.08)"), flex: 1 }}>❌ Disagree</button>
+      <div style={{ background: "rgba(239,68,68,0.12)", border: "1.5px solid rgba(239,68,68,0.28)", borderRadius: 18, padding: "26px 18px", textAlign: "center", marginBottom: 18 }}>
+        <div style={{ fontSize: 10, fontWeight: 800, color: "#F87171", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 12 }}>🌶️ Hot Take</div>
+        <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.6 }}>{take}</div>
       </div>
-      {agreed !== null && <div style={{ textAlign: "center", color: agreed ? "#34D399" : "#F87171", fontSize: 14, marginBottom: 12 }}>Debate time! Go.</div>}
-      <button onClick={next} style={mkBtn(accent)}>Next Take</button>
+      <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
+        {[["agree", "✅ Agree", "#059669"], ["disagree", "❌ Disagree", "#DC2626"]].map(([side, label, clr]) => (
+          <button key={side} onClick={() => vote(side)} style={{ ...mkBtn(myVote === side ? clr : myVote ? clr + "30" : "rgba(255,255,255,0.08)"), flex: 1, fontSize: 14, opacity: myVote && myVote !== side ? 0.55 : 1, transition: "all 0.2s" }}>{label}</button>
+        ))}
+      </div>
+      {myVote && total >= 1 && (
+        <>
+          <div style={{ marginBottom: 14 }}>
+            {[{ label: "✅ Agree", pct: agPct, clr: "#059669" }, { label: "❌ Disagree", pct: disPct, clr: "#DC2626" }].map(({ label, pct, clr }) => (
+              <div key={label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                <span style={{ fontSize: 12, minWidth: 70, color: "rgba(255,255,255,0.5)" }}>{label}</span>
+                <div style={{ flex: 1, height: 8, background: "rgba(255,255,255,0.07)", borderRadius: 4, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${pct}%`, background: clr, borderRadius: 4, transition: "width 0.5s cubic-bezier(0.22,1,0.36,1)" }} />
+                </div>
+                <span style={{ fontSize: 13, fontWeight: 800, color: clr, minWidth: 36, textAlign: "right" }}>{pct}%</span>
+              </div>
+            ))}
+          </div>
+          {controversy >= 60 && (
+            <div style={{ background: "rgba(239,68,68,0.1)", borderRadius: 10, padding: "10px 14px", marginBottom: 14, textAlign: "center", fontSize: 13, color: "#F87171", fontWeight: 700 }}>
+              🌶️ The crowd is divided — debate time!
+            </div>
+          )}
+        </>
+      )}
+      <button onClick={next} style={mkBtn(accent)}>Next Take →</button>
     </Modal>
   );
 }
@@ -424,31 +752,49 @@ function SpinBottle({ onClose, accent }) {
   const [spinning, setSpinning] = useState(false);
   const [result, setResult] = useState(null);
   const [angle, setAngle] = useState(0);
-  const addP = () => { if (newP.trim()) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
+  const [revealing, setRevealing] = useState(false);
+  const addP = () => { if (newP.trim() && !players.includes(newP.trim())) { setPlayers(p => [...p, newP.trim()]); setNewP(""); } };
   const spin = () => {
     if (players.length < 2) return;
-    setSpinning(true); setResult(null);
-    const extra = 1440 + Math.random() * 720;
+    setSpinning(true); setResult(null); setRevealing(false);
+    const extra = 1440 + Math.random() * 1080;
     setAngle(a => a + extra);
-    setTimeout(() => { setSpinning(false); setResult(rand(players)); }, 3000);
+    setTimeout(() => {
+      setSpinning(false);
+      setRevealing(true);
+      setTimeout(() => { setResult(rand(players)); setRevealing(false); }, 600);
+    }, 3200);
   };
   return (
     <Modal onClose={onClose} emoji="🍾" title="Random Picker">
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
         <input value={newP} onChange={e => setNewP(e.target.value)} onKeyDown={e => e.key === "Enter" && addP()} placeholder="Add a name" style={{ ...inp, flex: 1 }} />
-        <button onClick={addP} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>Add</button>
+        <button onClick={addP} style={{ ...mkBtn(accent), width: "auto", padding: "10px 16px" }}>+</button>
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
-        {players.map(p => <span key={p} style={{ background: accent + "33", color: "#fff", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>{p} <span onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ cursor: "pointer", opacity: 0.6 }}>✕</span></span>)}
+        {players.map(p => <span key={p} style={{ background: accent + "25", color: "#fff", padding: "5px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>{p}<span onClick={() => { setPlayers(pl => pl.filter(x => x !== p)); setResult(null); }} style={{ cursor: "pointer", opacity: 0.5 }}>✕</span></span>)}
       </div>
-      <div style={{ display: "flex", justifyContent: "center", marginBottom: 20 }}>
-        <div style={{ position: "relative", width: 180, height: 180, borderRadius: "50%", border: `4px solid ${accent}55`, background: accent + "18", display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ width: 4, height: 80, background: `linear-gradient(to top, ${accent}, #fff)`, borderRadius: 4, transformOrigin: "50% 100%", transform: `rotate(${angle}deg)`, transition: spinning ? "transform 3s cubic-bezier(0.17,0.67,0.12,0.99)" : "none", position: "absolute", bottom: "50%", left: "calc(50% - 2px)" }} />
-          <div style={{ width: 16, height: 16, borderRadius: "50%", background: accent, zIndex: 2, position: "relative" }} />
+      {players.length >= 2 && (
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16, position: "relative" }}>
+          <div style={{ position: "relative", width: 180, height: 180, borderRadius: "50%", border: `4px solid ${accent}44`, background: `radial-gradient(circle, ${accent}18 0%, transparent 70%)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 4, height: 82, background: `linear-gradient(to top, ${accent}cc, #fff)`, borderRadius: "2px 2px 0 0", transformOrigin: "50% 100%", transform: `rotate(${angle}deg)`, transition: spinning ? "transform 3.2s cubic-bezier(0.17,0.67,0.08,0.99)" : "none", position: "absolute", bottom: "50%", left: "calc(50% - 2px)", boxShadow: `0 -4px 12px ${accent}80` }} />
+            <div style={{ width: 18, height: 18, borderRadius: "50%", background: accent, zIndex: 2, position: "relative", boxShadow: `0 0 16px ${accent}aa` }} />
+          </div>
         </div>
-      </div>
-      {result && !spinning && <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: accent, marginBottom: 16 }}>🎯 {result}!</div>}
-      <button onClick={spin} disabled={players.length < 2 || spinning} style={{ ...mkBtn(accent), opacity: players.length < 2 ? 0.5 : 1 }}>{spinning ? "Spinning…" : players.length < 2 ? "Add at least 2 names" : "SPIN!"}</button>
+      )}
+      {(result && !spinning && !revealing) ? (
+        <div style={{ textAlign: "center", padding: "16px", background: accent + "18", borderRadius: 14, marginBottom: 14, border: `1.5px solid ${accent}44`, animation: "card-flip 0.3s ease-out" }}>
+          <div style={{ fontSize: 11, color: accent, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Selected!</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "#fff" }}>🎯 {result}</div>
+        </div>
+      ) : revealing ? (
+        <div style={{ textAlign: "center", padding: "16px", marginBottom: 14 }}>
+          <div style={{ fontSize: 32, animation: "splash-pulse 0.6s ease-in-out" }}>🎯</div>
+        </div>
+      ) : null}
+      <button onClick={spin} disabled={players.length < 2 || spinning} style={{ ...mkBtn(accent), opacity: players.length < 2 ? 0.5 : 1 }}>
+        {spinning ? "Spinning…" : players.length < 2 ? "Add at least 2 names" : result ? "Spin Again!" : "SPIN! 🎯"}
+      </button>
     </Modal>
   );
 }
@@ -457,33 +803,55 @@ function Charades({ onClose, accent }) {
   const cats = { bollywood: "🎬 Bollywood", webshows: "📺 Web Shows", celebs: "🌟 Celebs", memesphrases: "😂 Memes & Phrases" };
   const [cat, setCat] = useState(null);
   const [word, setWord] = useState(null);
-  const [timer, setTimer] = useState(null);
+  const [timer, setTimer] = useState(60);
+  const [timerKey, setTimerKey] = useState(0);
+  const [teamScores, setTeamScores] = useState({ A: 0, B: 0 });
+  const [currentTeam, setCurrentTeam] = useState("A");
+  const [round, setRound] = useState(1);
   const ref = useRef(null);
-  const pick = (c) => { setCat(c); setWord(rand(CHARADES[c])); setTimer(60); };
-  const next = () => setWord(rand(CHARADES[cat]));
+  const pick = (c) => { setCat(c); setWord(rand(CHARADES[c])); setTimer(60); setTimerKey(k => k + 1); };
+  const nextWord = () => { setWord(rand(CHARADES[cat])); setTimer(60); setTimerKey(k => k + 1); };
+  const correct = () => {
+    setTeamScores(s => ({ ...s, [currentTeam]: s[currentTeam] + 1 }));
+    nextWord();
+    setCurrentTeam(t => t === "A" ? "B" : "A");
+    setRound(r => r + 1);
+  };
+  const skip = () => { nextWord(); setCurrentTeam(t => t === "A" ? "B" : "A"); setRound(r => r + 1); };
   useEffect(() => {
-    if (timer === null || timer === 0) { clearInterval(ref.current); return; }
+    if (timer === null || timer <= 0) { clearInterval(ref.current); return; }
     ref.current = setInterval(() => setTimer(t => t - 1), 1000);
     return () => clearInterval(ref.current);
-  }, [cat]);
+  }, [timerKey]);
   if (!cat) return (
     <Modal onClose={onClose} emoji="🎭" title="Dumb Charades">
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Team A vs Team B · 60s per word · most points wins!</p>
       <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-        {Object.entries(cats).map(([k, v]) => <button key={k} onClick={() => pick(k)} style={{ ...mkBtn(accent + "55"), border: `1.5px solid ${accent}88`, textAlign: "left", padding: "14px 16px", fontSize: 15 }}>{v}</button>)}
+        {Object.entries(cats).map(([k, v]) => <button key={k} onClick={() => pick(k)} style={{ ...mkBtn("rgba(255,255,255,0.06)"), border: `1.5px solid ${accent}44`, textAlign: "left", padding: "16px 18px", fontSize: 16 }}>{v}</button>)}
       </div>
     </Modal>
   );
   return (
     <Modal onClose={onClose} emoji="🎭" title="Dumb Charades">
-      <div style={{ textAlign: "center" }}>
-        <div style={{ fontSize: 13, color: accent, marginBottom: 16 }}>{cats[cat]}</div>
-        <div style={{ background: accent + "22", border: `2px solid ${accent}55`, borderRadius: 20, padding: "32px 20px", marginBottom: 16 }}>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#fff" }}>{word}</div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 16 }}>
+        {["A", "B"].map(t => (
+          <div key={t} style={{ flex: 1, textAlign: "center", padding: "10px", borderRadius: 12, background: currentTeam === t ? accent + "22" : "rgba(255,255,255,0.04)", border: `1.5px solid ${currentTeam === t ? accent : "rgba(255,255,255,0.1)"}`, transition: "all 0.2s" }}>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Team {t}{currentTeam === t ? " 🎯" : ""}</div>
+            <div style={{ fontSize: 26, fontWeight: 900, color: currentTeam === t ? accent : "#fff" }}>{teamScores[t]}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: "center", marginBottom: 4 }}>
+        <div style={{ fontSize: 11, color: accent, fontWeight: 700, marginBottom: 12 }}>{cats[cat]} · Round {round}</div>
+        <div style={{ background: accent + "18", border: `2px solid ${accent}40`, borderRadius: 20, padding: "28px 20px", marginBottom: 14 }}>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em" }}>{word}</div>
         </div>
-        <div style={{ fontSize: 36, fontWeight: 800, color: timer > 10 ? "#34D399" : "#F87171", marginBottom: 16 }}>{timer}s</div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <button onClick={next} style={{ ...mkBtn(accent), flex: 1 }}>Next Word</button>
-          <button onClick={() => { setCat(null); setWord(null); setTimer(null); }} style={{ ...mkBtn("rgba(255,255,255,0.1)"), flex: 1 }}>Change Category</button>
+        <div style={{ fontSize: 48, fontWeight: 900, color: timer > 15 ? "#34D399" : timer > 5 ? "#FBBF24" : "#F87171", marginBottom: 6, fontVariantNumeric: "tabular-nums", lineHeight: 1, transition: "color 0.3s" }}>{timer}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginBottom: 16 }}>seconds</div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={correct} style={{ ...mkBtn("#059669"), flex: 2, fontSize: 15 }}>✓ Correct +1</button>
+          <button onClick={skip} style={{ ...mkBtn("rgba(255,255,255,0.08)"), flex: 1, fontSize: 13 }}>Skip</button>
+          <button onClick={() => { setCat(null); setWord(null); clearInterval(ref.current); }} style={{ ...mkBtn("rgba(255,255,255,0.06)"), flex: 1, fontSize: 12 }}>◀</button>
         </div>
       </div>
     </Modal>
@@ -495,24 +863,56 @@ function Bingo({ onClose, accent, squares }) {
   const [card] = useState(() => shuffle(src).slice(0, 25));
   const [marked, setMarked] = useState({ 12: true });
   const [bingo, setBingo] = useState(false);
+  const [winLines, setWinLines] = useState([]);
+  const [justMarked, setJustMarked] = useState(null);
+  const LINES = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20]];
   const toggle = (i) => {
     if (i === 12) return;
     const next = { ...marked, [i]: !marked[i] };
     setMarked(next);
-    const lines = [[0,1,2,3,4],[5,6,7,8,9],[10,11,12,13,14],[15,16,17,18,19],[20,21,22,23,24],[0,5,10,15,20],[1,6,11,16,21],[2,7,12,17,22],[3,8,13,18,23],[4,9,14,19,24],[0,6,12,18,24],[4,8,12,16,20]];
-    setBingo(lines.some(line => line.every(j => next[j])));
+    setJustMarked(next[i] ? i : null);
+    setTimeout(() => setJustMarked(null), 500);
+    const wins = LINES.filter(line => line.every(j => next[j]));
+    setBingo(wins.length > 0);
+    setWinLines(wins);
   };
+  const inWinLine = (i) => winLines.some(line => line.includes(i));
+  const markedCount = Object.values(marked).filter(Boolean).length;
   return (
     <Modal onClose={onClose} emoji="🎱" title="Bingo" wide>
-      {bingo && <div style={{ textAlign: "center", fontSize: 22, fontWeight: 800, color: "#FBBF24", marginBottom: 16 }}>🎉 BINGO!</div>}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5, marginBottom: 16 }}>
-        {card.map((sq, i) => (
-          <div key={i} onClick={() => toggle(i)} style={{ aspectRatio: "1", background: marked[i] ? accent + "55" : "rgba(255,255,255,0.06)", border: `1.5px solid ${marked[i] ? accent : "rgba(255,255,255,0.12)"}`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 4, cursor: i === 12 ? "default" : "pointer", transition: "all 0.15s" }}>
-            <span style={{ fontSize: 9, color: marked[i] ? "#fff" : "rgba(255,255,255,0.7)", textAlign: "center", lineHeight: 1.2 }}>{sq}</span>
-          </div>
-        ))}
+      {bingo && (
+        <div style={{ textAlign: "center", marginBottom: 16, background: "rgba(251,191,36,0.12)", borderRadius: 14, padding: "14px", border: "1.5px solid rgba(251,191,36,0.3)" }}>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#FBBF24", letterSpacing: "-0.02em" }}>🎉 BINGO!</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>Shout it out!</div>
+        </div>
+      )}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>Tap when it happens</div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: accent }}>{markedCount}/25</div>
       </div>
-      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>Tap squares you've seen happen. Get 5 in a row!</p>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5, marginBottom: 12 }}>
+        {card.map((sq, i) => {
+          const isMarked = !!marked[i];
+          const isCenter = i === 12;
+          const isWin = inWinLine(i);
+          const isJust = justMarked === i;
+          return (
+            <div key={i} onClick={() => toggle(i)} style={{
+              aspectRatio: "1", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 4,
+              cursor: isCenter ? "default" : "pointer", transition: "all 0.15s",
+              background: isCenter ? accent + "40" : isWin ? "#FBBF2440" : isMarked ? accent + "40" : "rgba(255,255,255,0.05)",
+              border: `1.5px solid ${isCenter ? accent : isWin ? "#FBBF24" : isMarked ? accent + "80" : "rgba(255,255,255,0.1)"}`,
+              transform: isJust ? "scale(1.2)" : "scale(1)",
+              boxShadow: isWin ? `0 0 10px ${accent}40` : "none",
+            }}>
+              <span style={{ fontSize: 8, color: isMarked || isCenter ? "#fff" : "rgba(255,255,255,0.6)", textAlign: "center", lineHeight: 1.2, fontWeight: isMarked ? 700 : 400 }}>
+                {isCenter ? "⭐" : isMarked ? "✓ " + sq : sq}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", textAlign: "center" }}>Get 5 in a row — horizontal, vertical, or diagonal!</p>
     </Modal>
   );
 }
@@ -521,6 +921,27 @@ function Bingo({ onClose, accent, squares }) {
 // OCCASION-SPECIFIC TOOLS
 // ════════════════════════════════════════════════════════════════════════════
 
+function WallPost({ post, accent, onReact }) {
+  return (
+    <div style={{ ...crd, borderLeft: `3px solid ${accent}`, marginBottom: 10 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 10 }}>
+        <span style={{ fontSize: 20 }}>{post.emoji}</span>
+        <div>
+          <div style={{ fontSize: 12, color: accent, fontWeight: 700, marginBottom: 4 }}>{post.name}</div>
+          <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.55 }}>{post.text}</div>
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {["❤️", "🎉", "✨", "😍"].map(r => (
+          <button key={r} onClick={() => onReact(post.id, r)} style={{ background: (post.reactions?.[r] || 0) > 0 ? accent + "22" : "rgba(255,255,255,0.05)", border: `1px solid ${(post.reactions?.[r] || 0) > 0 ? accent + "55" : "rgba(255,255,255,0.1)"}`, borderRadius: 20, padding: "4px 10px", cursor: "pointer", fontSize: 12, color: (post.reactions?.[r] || 0) > 0 ? "#fff" : "rgba(255,255,255,0.45)", fontFamily: font, transition: "all 0.15s" }}>
+            {r} {(post.reactions?.[r] || 0) > 0 ? post.reactions[r] : ""}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Birthday: Wish Wall
 function WishWall({ onClose, accent, celebrant }) {
   const [wishes, setWishes] = useState([]);
@@ -528,26 +949,17 @@ function WishWall({ onClose, accent, celebrant }) {
   const [wish, setWish] = useState("");
   const post = () => {
     if (!wish.trim()) return;
-    setWishes(w => [{ name: name.trim() || "Anonymous", wish: wish.trim(), emoji: rand(["🎂", "🎉", "🥳", "🎁", "❤️", "✨", "🌟", "🎈"]) }, ...w]);
+    setWishes(w => [{ id: Date.now(), name: name.trim() || "Anonymous", text: wish.trim(), emoji: rand(["🎂", "🎉", "🥳", "🎁", "❤️", "✨", "🌟", "🎈"]), reactions: {} }, ...w]);
     setName(""); setWish("");
   };
+  const react = (id, emoji) => setWishes(ws => ws.map(w => w.id === id ? { ...w, reactions: { ...w.reactions, [emoji]: (w.reactions[emoji] || 0) + 1 } } : w));
   return (
     <Modal onClose={onClose} emoji="🎂" title={`Wish Wall for ${celebrant || "the Birthday Star"}`} wide>
       <input value={name} onChange={e => setName(e.target.value)} placeholder="Your name (optional)" style={{ ...inp, marginBottom: 8 }} />
       <textarea value={wish} onChange={e => setWish(e.target.value)} placeholder={`Write a wish for ${celebrant || "them"}…`} style={{ ...inp, minHeight: 80, resize: "vertical", marginBottom: 10 }} />
       <button onClick={post} style={{ ...mkBtn(accent), marginBottom: 20 }}>Post Wish 🎉</button>
       {wishes.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>No wishes yet — be the first!</p>}
-      {wishes.map((w, i) => (
-        <div key={i} style={{ ...crd, borderLeft: `3px solid ${accent}` }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 20 }}>{w.emoji}</span>
-            <div>
-              <div style={{ fontSize: 12, color: accent, fontWeight: 700, marginBottom: 4 }}>{w.name}</div>
-              <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{w.wish}</div>
-            </div>
-          </div>
-        </div>
-      ))}
+      {wishes.map(w => <WallPost key={w.id} post={w} accent={accent} onReact={react} />)}
     </Modal>
   );
 }
@@ -561,34 +973,85 @@ function BirthdayQuiz({ onClose, accent, celebrant }) {
     { q: `${celebrant || "They"} get 1 free day — what do they do?`, opts: ["Sleep all day", "Binge Netflix", "Go out", "Cook something new"] },
     { q: `What's ${celebrant || "their"} spirit animal?`, opts: ["Dog 🐶", "Cat 🐱", "Panda 🐼", "Peacock 🦚"] },
   ];
+  const [phase, setPhase] = useState("setup"); // setup | playing | results
+  const [playerName, setPlayerName] = useState("");
+  const [allSubmissions, setAllSubmissions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [submitted, setSubmitted] = useState(false);
-  if (submitted) return (
-    <Modal onClose={onClose} emoji="🎯" title="Quiz Results">
-      <div style={{ textAlign: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 60 }}>🎂</div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: "#fff", marginBottom: 8 }}>Now let {celebrant || "them"} reveal the answers!</div>
-        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>See who knows {celebrant || "them"} best</div>
-      </div>
-      {questions.map((q, i) => <div key={i} style={{ ...crd, marginBottom: 8 }}>
-        <div style={{ fontSize: 12, color: accent, marginBottom: 4 }}>Q{i + 1}</div>
-        <div style={{ fontSize: 13, color: "#fff", marginBottom: 4 }}>{q.q}</div>
-        <div style={{ fontSize: 13, color: "#FBBF24", fontWeight: 700 }}>Your answer: {answers[i] || "—"}</div>
-      </div>)}
-      <button onClick={() => { setAnswers({}); setSubmitted(false); }} style={{ ...mkBtn("rgba(255,255,255,0.1)"), marginTop: 8 }}>Play Again</button>
+  const [correctAnswers, setCorrectAnswers] = useState({});
+  const [revealMode, setRevealMode] = useState(false);
+
+  const submit = () => {
+    if (Object.keys(answers).length < questions.length) return;
+    setAllSubmissions(s => [...s, { name: playerName.trim() || "Player " + (s.length + 1), answers: { ...answers } }]);
+    setAnswers({});
+    setPlayerName("");
+    setPhase("setup");
+  };
+  const setCorrect = (qIdx, opt) => setCorrectAnswers(c => ({ ...c, [qIdx]: opt }));
+  const calcScore = (sub) => questions.filter((_, i) => correctAnswers[i] && sub.answers[i] === correctAnswers[i]).length;
+  const revealDone = Object.keys(correctAnswers).length === questions.length;
+
+  if (phase === "setup") return (
+    <Modal onClose={onClose} emoji="🎯" title={`How well do you know ${celebrant || "them"}?`} wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Pass the phone · each person answers · highest score wins!</p>
+      {allSubmissions.length > 0 && (
+        <div style={{ marginBottom: 14, background: accent + "10", borderRadius: 12, padding: "10px 14px" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Answered ({allSubmissions.length})</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {allSubmissions.map((s, i) => <span key={i} style={{ background: "rgba(255,255,255,0.07)", color: "#fff", padding: "4px 10px", borderRadius: 10, fontSize: 12 }}>✓ {s.name}</span>)}
+          </div>
+        </div>
+      )}
+      <input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Your name (e.g. Rahul)" style={{ ...inp, marginBottom: 10 }} />
+      <button onClick={() => setPhase("playing")} style={{ ...mkBtn(accent), marginBottom: 10 }}>Take the Quiz →</button>
+      {allSubmissions.length >= 1 && (
+        <button onClick={() => setRevealMode(true)} style={{ ...mkBtn("rgba(255,255,255,0.08)") }}>🏆 Reveal Results</button>
+      )}
+      {revealMode && allSubmissions.length >= 1 && (
+        <div style={{ marginTop: 16 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+            {revealDone ? "Results:" : `Set correct answers (${Object.keys(correctAnswers).length}/${questions.length})`}
+          </div>
+          {!revealDone && questions.map((q, i) => (
+            <div key={i} style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 12, color: accent, marginBottom: 6 }}>Q{i + 1}. {q.q}</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {q.opts.map(opt => <button key={opt} onClick={() => setCorrect(i, opt)} style={{ padding: "6px 12px", borderRadius: 8, border: `1.5px solid ${correctAnswers[i] === opt ? "#34D399" : "rgba(255,255,255,0.1)"}`, background: correctAnswers[i] === opt ? "#34D39922" : "rgba(255,255,255,0.04)", color: correctAnswers[i] === opt ? "#34D399" : "#fff", fontFamily: font, fontSize: 12, cursor: "pointer" }}>{opt}</button>)}
+              </div>
+            </div>
+          ))}
+          {revealDone && (
+            <div>
+              {[...allSubmissions].sort((a, b) => calcScore(b) - calcScore(a)).map((s, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: i === 0 ? "#FBBF2415" : "rgba(255,255,255,0.04)", borderRadius: 10, marginBottom: 6, border: `1.5px solid ${i === 0 ? "#FBBF2444" : "transparent"}` }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>{["🥇","🥈","🥉","4️⃣","5️⃣"][i] || (i + 1)}</span>
+                    <span style={{ color: "#fff", fontSize: 14, fontWeight: i === 0 ? 700 : 400 }}>{s.name}</span>
+                  </div>
+                  <span style={{ fontSize: 16, fontWeight: 800, color: i === 0 ? "#FBBF24" : accent }}>{calcScore(s)}/{questions.length}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </Modal>
   );
   return (
-    <Modal onClose={onClose} emoji="🎯" title={`How well do you know ${celebrant || "them"}?`} wide>
+    <Modal onClose={onClose} emoji="🎯" title={`${playerName ? `${playerName}'s turn` : "Your turn"}`} wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Answer all 5 questions — no peeking!</p>
       {questions.map((q, i) => (
         <div key={i} style={{ marginBottom: 18 }}>
           <div style={{ fontSize: 14, color: "#fff", marginBottom: 10, lineHeight: 1.4 }}><span style={{ color: accent, fontWeight: 700 }}>Q{i + 1}.</span> {q.q}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {q.opts.map(opt => <button key={opt} onClick={() => setAnswers(a => ({ ...a, [i]: opt }))} style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${answers[i] === opt ? accent : "rgba(255,255,255,0.1)"}`, background: answers[i] === opt ? accent + "33" : "rgba(255,255,255,0.04)", color: "#fff", fontFamily: font, fontSize: 13, textAlign: "left", cursor: "pointer" }}>{opt}</button>)}
+            {q.opts.map(opt => <button key={opt} onClick={() => setAnswers(a => ({ ...a, [i]: opt }))} style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${answers[i] === opt ? accent : "rgba(255,255,255,0.1)"}`, background: answers[i] === opt ? accent + "30" : "rgba(255,255,255,0.04)", color: "#fff", fontFamily: font, fontSize: 13, textAlign: "left", cursor: "pointer", transition: "all 0.15s" }}>{opt}</button>)}
           </div>
         </div>
       ))}
-      <button onClick={() => setSubmitted(true)} disabled={Object.keys(answers).length < questions.length} style={{ ...mkBtn(accent), opacity: Object.keys(answers).length < questions.length ? 0.5 : 1 }}>Submit Answers</button>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={submit} disabled={Object.keys(answers).length < questions.length} style={{ ...mkBtn(accent), flex: 2, opacity: Object.keys(answers).length < questions.length ? 0.5 : 1 }}>Submit Answers</button>
+        <button onClick={() => { setAnswers({}); setPhase("setup"); }} style={{ ...mkBtn("rgba(255,255,255,0.07)"), flex: 1 }}>Cancel</button>
+      </div>
     </Modal>
   );
 }
@@ -600,26 +1063,17 @@ function LoveNotes({ onClose, accent }) {
   const [note, setNote] = useState("");
   const post = () => {
     if (!note.trim()) return;
-    setNotes(n => [{ from: from.trim() || "Anonymous", note: note.trim(), emoji: rand(["💍", "❤️", "🌹", "💫", "✨", "💌", "🥂", "💎"]) }, ...n]);
+    setNotes(n => [{ id: Date.now(), name: `From ${from.trim() || "Anonymous"}`, text: note.trim(), emoji: rand(["💍", "❤️", "🌹", "💫", "✨", "💌", "🥂", "💎"]), reactions: {} }, ...n]);
     setFrom(""); setNote("");
   };
+  const react = (id, emoji) => setNotes(ns => ns.map(n => n.id === id ? { ...n, reactions: { ...n.reactions, [emoji]: (n.reactions[emoji] || 0) + 1 } } : n));
   return (
     <Modal onClose={onClose} emoji="💌" title="Love Notes Wall" wide>
-      <input value={from} onChange={e => setFrom(e.target.value)} placeholder="From (your name)" style={{ ...inp, marginBottom: 8 }} />
+      <input value={from} onChange={e => setFrom(e.target.value)} placeholder="Your name" style={{ ...inp, marginBottom: 8 }} />
       <textarea value={note} onChange={e => setNote(e.target.value)} placeholder="Write a note for the couple…" style={{ ...inp, minHeight: 80, resize: "vertical", marginBottom: 10 }} />
       <button onClick={post} style={{ ...mkBtn(accent), marginBottom: 20 }}>Post Note 💌</button>
       {notes.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Be the first to leave a note for the couple!</p>}
-      {notes.map((n, i) => (
-        <div key={i} style={{ ...crd, borderLeft: `3px solid ${accent}` }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 20 }}>{n.emoji}</span>
-            <div>
-              <div style={{ fontSize: 12, color: accent, fontWeight: 700, marginBottom: 4 }}>From {n.from}</div>
-              <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{n.note}</div>
-            </div>
-          </div>
-        </div>
-      ))}
+      {notes.map(n => <WallPost key={n.id} post={n} accent={accent} onReact={react} />)}
     </Modal>
   );
 }
@@ -628,31 +1082,80 @@ function LoveNotes({ onClose, accent }) {
 function CoupleQuiz({ onClose, accent }) {
   const questions = [
     { q: "Where did they first meet?", opts: ["College", "Work", "Common friends", "Online"] },
-    { q: "Who said 'I love you' first?", opts: ["Him/Her 1", "Him/Her 2", "Both at once", "Still waiting 😅"] },
-    { q: "What's their song?", opts: ["They have one", "Still arguing about it", "Whatever's on Spotify", "No idea"] },
-    { q: "Who's the better cook?", opts: ["Person 1", "Person 2", "Both bad", "Zomato is their chef"] },
-    { q: "Who controls the TV remote?", opts: ["Person 1 always", "Person 2 always", "They fight for it", "They have 2 TVs"] },
+    { q: "Who said 'I love you' first?", opts: ["Person 1", "Person 2", "Both at once", "Still waiting 😅"] },
+    { q: "What's their song?", opts: ["They have one ❤️", "Still arguing about it", "Whatever's on Spotify", "No idea"] },
+    { q: "Who's the better cook?", opts: ["Person 1", "Person 2", "Both bad", "Zomato is their chef 😂"] },
+    { q: "Who controls the TV remote?", opts: ["Person 1 always", "Person 2 always", "They fight for it", "They have 2 TVs 😂"] },
   ];
+  const [phase, setPhase] = useState("setup");
+  const [playerName, setPlayerName] = useState("");
+  const [submissions, setSubmissions] = useState([]);
   const [answers, setAnswers] = useState({});
-  const [done, setDone] = useState(false);
-  if (done) return (
-    <Modal onClose={onClose} emoji="💑" title="Quiz Complete!">
-      <div style={{ textAlign: "center", marginBottom: 20 }}><div style={{ fontSize: 60 }}>💍</div><div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Now ask the couple for the real answers!</div></div>
-      {questions.map((q, i) => <div key={i} style={crd}><div style={{ fontSize: 12, color: accent, marginBottom: 2 }}>Q{i + 1}</div><div style={{ fontSize: 13, color: "#fff" }}>{q.q}</div><div style={{ color: "#FBBF24", fontWeight: 700, marginTop: 4 }}>Your guess: {answers[i] || "—"}</div></div>)}
-      <button onClick={() => { setAnswers({}); setDone(false); }} style={{ ...mkBtn("rgba(255,255,255,0.1)"), marginTop: 8 }}>Play Again</button>
+  const [correctAnswers, setCorrectAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
+  const submit = () => {
+    if (Object.keys(answers).length < questions.length) return;
+    setSubmissions(s => [...s, { name: playerName.trim() || "Player " + (s.length + 1), answers: { ...answers } }]);
+    setAnswers({}); setPlayerName(""); setPhase("setup");
+  };
+  const calcScore = (sub) => questions.filter((_, i) => correctAnswers[i] && sub.answers[i] === correctAnswers[i]).length;
+  const revealDone = Object.keys(correctAnswers).length === questions.length;
+  if (phase === "setup") return (
+    <Modal onClose={onClose} emoji="💑" title="Couple Quiz" wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>Pass the phone · everyone guesses · couple reveals answers!</p>
+      {submissions.length > 0 && (
+        <div style={{ marginBottom: 14, background: accent + "10", borderRadius: 12, padding: "10px 14px" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 6 }}>Played ({submissions.length})</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>{submissions.map((s, i) => <span key={i} style={{ background: "rgba(255,255,255,0.07)", color: "#fff", padding: "4px 10px", borderRadius: 10, fontSize: 12 }}>✓ {s.name}</span>)}</div>
+        </div>
+      )}
+      <input value={playerName} onChange={e => setPlayerName(e.target.value)} placeholder="Your name" style={{ ...inp, marginBottom: 10 }} />
+      <button onClick={() => setPhase("playing")} style={{ ...mkBtn(accent), marginBottom: 10 }}>Take the Quiz →</button>
+      {submissions.length >= 1 && <button onClick={() => setShowResults(r => !r)} style={{ ...mkBtn("rgba(255,255,255,0.08)") }}>🏆 {showResults ? "Hide" : "Reveal"} Results</button>}
+      {showResults && submissions.length >= 1 && (
+        <div style={{ marginTop: 16 }}>
+          {!revealDone ? (
+            <>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Couple: set the correct answers!</div>
+              {questions.map((q, i) => (
+                <div key={i} style={{ marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, color: accent, marginBottom: 6 }}>Q{i + 1}. {q.q}</div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {q.opts.map(opt => <button key={opt} onClick={() => setCorrectAnswers(c => ({ ...c, [i]: opt }))} style={{ padding: "6px 12px", borderRadius: 8, border: `1.5px solid ${correctAnswers[i] === opt ? "#34D399" : "rgba(255,255,255,0.1)"}`, background: correctAnswers[i] === opt ? "#34D39922" : "rgba(255,255,255,0.04)", color: correctAnswers[i] === opt ? "#34D399" : "#fff", fontFamily: font, fontSize: 12, cursor: "pointer" }}>{opt}</button>)}
+                  </div>
+                </div>
+              ))}
+            </>
+          ) : (
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 12 }}>Leaderboard 🏆</div>
+              {[...submissions].sort((a, b) => calcScore(b) - calcScore(a)).map((s, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: i === 0 ? "#FBBF2415" : "rgba(255,255,255,0.04)", borderRadius: 10, marginBottom: 6, border: `1.5px solid ${i === 0 ? "#FBBF2444" : "transparent"}` }}>
+                  <span style={{ color: "#fff", fontSize: 14 }}>{["🥇","🥈","🥉"][i] || (i + 1)} {s.name}</span>
+                  <span style={{ fontSize: 16, fontWeight: 800, color: i === 0 ? "#FBBF24" : accent }}>{calcScore(s)}/{questions.length}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </Modal>
   );
   return (
-    <Modal onClose={onClose} emoji="💑" title="Couple Quiz" wide>
+    <Modal onClose={onClose} emoji="💑" title={`${playerName ? `${playerName}'s turn` : "Your turn"}`} wide>
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>How well do you know the couple?</p>
       {questions.map((q, i) => (
         <div key={i} style={{ marginBottom: 18 }}>
-          <div style={{ fontSize: 14, color: "#fff", marginBottom: 10 }}><span style={{ color: accent, fontWeight: 700 }}>Q{i + 1}.</span> {q.q}</div>
+          <div style={{ fontSize: 14, color: "#fff", marginBottom: 10, lineHeight: 1.4 }}><span style={{ color: accent, fontWeight: 700 }}>Q{i + 1}.</span> {q.q}</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-            {q.opts.map(opt => <button key={opt} onClick={() => setAnswers(a => ({ ...a, [i]: opt }))} style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${answers[i] === opt ? accent : "rgba(255,255,255,0.1)"}`, background: answers[i] === opt ? accent + "33" : "rgba(255,255,255,0.04)", color: "#fff", fontFamily: font, fontSize: 13, textAlign: "left", cursor: "pointer" }}>{opt}</button>)}
+            {q.opts.map(opt => <button key={opt} onClick={() => setAnswers(a => ({ ...a, [i]: opt }))} style={{ padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${answers[i] === opt ? accent : "rgba(255,255,255,0.1)"}`, background: answers[i] === opt ? accent + "30" : "rgba(255,255,255,0.04)", color: "#fff", fontFamily: font, fontSize: 13, textAlign: "left", cursor: "pointer", transition: "all 0.15s" }}>{opt}</button>)}
           </div>
         </div>
       ))}
-      <button onClick={() => setDone(true)} disabled={Object.keys(answers).length < questions.length} style={{ ...mkBtn(accent), opacity: Object.keys(answers).length < questions.length ? 0.5 : 1 }}>Submit</button>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={submit} disabled={Object.keys(answers).length < questions.length} style={{ ...mkBtn(accent), flex: 2, opacity: Object.keys(answers).length < questions.length ? 0.5 : 1 }}>Submit</button>
+        <button onClick={() => { setAnswers({}); setPhase("setup"); }} style={{ ...mkBtn("rgba(255,255,255,0.07)"), flex: 1 }}>Cancel</button>
+      </div>
     </Modal>
   );
 }
@@ -695,38 +1198,57 @@ function BabyNameVote({ onClose, accent }) {
 
 // Baby Shower: Gender Prediction Poll
 function GenderPoll({ onClose, accent }) {
-  const [vote, setVote] = useState(null);
-  const [boyVotes, setBoyVotes] = useState(0);
-  const [girlVotes, setGirlVotes] = useState(0);
-  const [voted, setVoted] = useState(false);
+  const [votes, setVotes] = useState({ boy: 0, girl: 0 });
+  const [myVote, setMyVote] = useState(null);
+  const [showReveal, setShowReveal] = useState(false);
+  const total = votes.boy + votes.girl;
+  const boyPct = total ? Math.round((votes.boy / total) * 100) : 50;
+  const girlPct = 100 - boyPct;
+  const winner = total > 0 ? (votes.boy > votes.girl ? "boy" : votes.girl > votes.boy ? "girl" : "tie") : null;
   const cast = (v) => {
-    if (voted) return;
-    setVote(v);
-    if (v === "boy") setBoyVotes(b => b + 1);
-    else setGirlVotes(g => g + 1);
-    setVoted(true);
+    if (myVote) return;
+    setMyVote(v);
+    setVotes(s => ({ ...s, [v]: s[v] + 1 }));
   };
-  const total = boyVotes + girlVotes;
   return (
     <Modal onClose={onClose} emoji="🍼" title="Gender Prediction Poll">
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 20, textAlign: "center" }}>Pass the phone around — everyone votes!</p>
-      <div style={{ display: "flex", gap: 12, marginBottom: 24 }}>
-        <button onClick={() => cast("boy")} style={{ ...mkBtn("#2563EB"), flex: 1, padding: "24px 16px", fontSize: 20, opacity: voted && vote !== "boy" ? 0.5 : 1 }}>👦 Boy</button>
-        <button onClick={() => cast("girl")} style={{ ...mkBtn("#DB2777"), flex: 1, padding: "24px 16px", fontSize: 20, opacity: voted && vote !== "girl" ? 0.5 : 1 }}>👧 Girl</button>
-      </div>
-      {total > 0 && <div>
-        <div style={{ marginBottom: 12 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-            <span style={{ color: "#60A5FA", fontWeight: 700 }}>👦 Boy — {boyVotes}</span>
-            <span style={{ color: "#F472B6", fontWeight: 700 }}>{girlVotes} — Girl 👧</span>
+      {showReveal && total > 0 ? (
+        <div style={{ textAlign: "center", padding: "10px 0" }}>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>{winner === "boy" ? "👦" : winner === "girl" ? "👧" : "🤝"}</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>The crowd says…</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: winner === "boy" ? "#60A5FA" : winner === "girl" ? "#F472B6" : "#fff", marginBottom: 16 }}>{winner === "boy" ? "It's a Boy!" : winner === "girl" ? "It's a Girl!" : "Too close to call!"}</div>
+          <div style={{ display: "flex", gap: 0, borderRadius: 14, overflow: "hidden", height: 40, marginBottom: 12 }}>
+            <div style={{ width: `${boyPct}%`, background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 800, transition: "width 0.8s cubic-bezier(0.22,1,0.36,1)" }}>{boyPct > 15 ? `👦 ${boyPct}%` : ""}</div>
+            <div style={{ flex: 1, background: "#DB2777", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 13, fontWeight: 800 }}>{girlPct > 15 ? `${girlPct}% 👧` : ""}</div>
           </div>
-          <div style={{ height: 20, background: "#F472B633", borderRadius: 10, overflow: "hidden", display: "flex" }}>
-            <div style={{ height: "100%", width: `${(boyVotes / total) * 100}%`, background: "#2563EB", transition: "width 0.4s", borderRadius: "10px 0 0 10px" }} />
-            <div style={{ height: "100%", flex: 1, background: "#DB2777", borderRadius: "0 10px 10px 0" }} />
-          </div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 20 }}>{votes.boy} boy · {votes.girl} girl · {total} votes total</div>
+          <button onClick={() => setShowReveal(false)} style={{ ...mkBtn("rgba(255,255,255,0.08)") }}>← Back to voting</button>
         </div>
-        <div style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.5)" }}>{total} vote{total !== 1 ? "s" : ""} so far</div>
-      </div>}
+      ) : (
+        <>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 20, textAlign: "center" }}>Pass the phone — everyone votes once!</p>
+          <div style={{ display: "flex", gap: 12, marginBottom: 20 }}>
+            <button onClick={() => cast("boy")} style={{ ...mkBtn(myVote === "boy" ? "#2563EB" : "#2563EB55"), flex: 1, padding: "28px 16px", fontSize: 28, borderRadius: 18, border: `2px solid ${myVote === "boy" ? "#60A5FA" : "rgba(96,165,250,0.2)"}`, opacity: myVote && myVote !== "boy" ? 0.5 : 1, transition: "all 0.2s" }}>
+              👦<div style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>Boy</div>
+            </button>
+            <button onClick={() => cast("girl")} style={{ ...mkBtn(myVote === "girl" ? "#DB2777" : "#DB277755"), flex: 1, padding: "28px 16px", fontSize: 28, borderRadius: 18, border: `2px solid ${myVote === "girl" ? "#F472B6" : "rgba(244,114,182,0.2)"}`, opacity: myVote && myVote !== "girl" ? 0.5 : 1, transition: "all 0.2s" }}>
+              👧<div style={{ fontSize: 14, fontWeight: 700, marginTop: 6 }}>Girl</div>
+            </button>
+          </div>
+          {total > 0 && <>
+            <div style={{ display: "flex", borderRadius: 10, overflow: "hidden", height: 28, marginBottom: 8, transition: "all 0.4s" }}>
+              <div style={{ width: `${boyPct}%`, background: "#2563EB", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 800, transition: "width 0.5s cubic-bezier(0.22,1,0.36,1)", minWidth: boyPct > 20 ? 40 : 0 }}>{boyPct > 20 ? `${boyPct}%` : ""}</div>
+              <div style={{ flex: 1, background: "#DB2777", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 800 }}>{girlPct > 20 ? `${girlPct}%` : ""}</div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>
+              <span>👦 {votes.boy} votes</span>
+              <span>{total} total</span>
+              <span>{votes.girl} votes 👧</span>
+            </div>
+            <button onClick={() => setShowReveal(true)} style={mkBtn(accent)}>🎉 Reveal the Verdict!</button>
+          </>}
+        </>
+      )}
     </Modal>
   );
 }
@@ -737,33 +1259,36 @@ function AdviceCards({ onClose, accent }) {
   const [from, setFrom] = useState("");
   const [advice, setAdvice] = useState("");
   const [type, setType] = useState("advice");
-  const prompts = { advice: "Write parenting advice…", memory: "Share a childhood memory…", prediction: "Predict something about the baby…" };
+  const [filter, setFilter] = useState("all");
+  const prompts = { advice: "Your parenting advice…", memory: "A childhood memory to inspire…", prediction: "Your prediction for the baby…" };
   const icons = { advice: "💡", memory: "🌟", prediction: "🔮" };
+  const typeLabels = { advice: "Advice", memory: "Memory", prediction: "Prediction" };
   const post = () => {
     if (!advice.trim()) return;
-    setCards(c => [{ from: from.trim() || "Anonymous", advice: advice.trim(), type, emoji: icons[type] }, ...c]);
+    setCards(c => [{ id: Date.now(), name: from.trim() || "Anonymous", text: advice.trim(), type, emoji: icons[type], reactions: {} }, ...c]);
     setFrom(""); setAdvice("");
   };
+  const react = (id, emoji) => setCards(cs => cs.map(c => c.id === id ? { ...c, reactions: { ...c.reactions, [emoji]: (c.reactions[emoji] || 0) + 1 } } : c));
+  const filtered = filter === "all" ? cards : cards.filter(c => c.type === filter);
   return (
     <Modal onClose={onClose} emoji="💌" title="Advice for the Parents" wide>
       <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
-        {Object.entries(prompts).map(([k]) => <button key={k} onClick={() => setType(k)} style={{ ...mkBtn(type === k ? accent : "rgba(255,255,255,0.08)"), flex: 1, padding: "8px 4px", fontSize: 12 }}>{icons[k]} {k.charAt(0).toUpperCase() + k.slice(1)}</button>)}
+        {Object.entries(prompts).map(([k]) => <button key={k} onClick={() => setType(k)} style={{ ...mkBtn(type === k ? accent : "rgba(255,255,255,0.07)"), flex: 1, padding: "8px 4px", fontSize: 12, border: type === k ? "none" : "1.5px solid rgba(255,255,255,0.1)" }}>{icons[k]} {typeLabels[k]}</button>)}
       </div>
       <input value={from} onChange={e => setFrom(e.target.value)} placeholder="Your name" style={{ ...inp, marginBottom: 8 }} />
       <textarea value={advice} onChange={e => setAdvice(e.target.value)} placeholder={prompts[type]} style={{ ...inp, minHeight: 80, resize: "vertical", marginBottom: 10 }} />
-      <button onClick={post} style={{ ...mkBtn(accent), marginBottom: 20 }}>Post Card</button>
-      {cards.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Be the first to share wisdom for the new parents!</p>}
-      {cards.map((c, i) => (
-        <div key={i} style={{ ...crd, borderLeft: `3px solid ${accent}` }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 20 }}>{c.emoji}</span>
-            <div>
-              <div style={{ fontSize: 12, color: accent, fontWeight: 700, marginBottom: 4 }}>{c.from} · {c.type}</div>
-              <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{c.advice}</div>
-            </div>
-          </div>
+      <button onClick={post} style={{ ...mkBtn(accent), marginBottom: 16 }}>Post Card</button>
+      {cards.length > 0 && (
+        <div style={{ display: "flex", gap: 6, marginBottom: 14 }}>
+          {["all", "advice", "memory", "prediction"].map(f => (
+            <button key={f} onClick={() => setFilter(f)} style={{ ...mkBtn(filter === f ? "rgba(255,255,255,0.12)" : "transparent"), padding: "5px 10px", fontSize: 11, border: `1px solid ${filter === f ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.08)"}`, width: "auto", color: filter === f ? "#fff" : "rgba(255,255,255,0.4)" }}>
+              {f === "all" ? `All (${cards.length})` : `${icons[f]} ${typeLabels[f]} (${cards.filter(c => c.type === f).length})`}
+            </button>
+          ))}
         </div>
-      ))}
+      )}
+      {filtered.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>No cards yet — share your wisdom!</p>}
+      {filtered.map(c => <WallPost key={c.id} post={{ ...c, name: `${c.emoji} ${c.name} · ${typeLabels[c.type]}` }} accent={accent} onReact={react} />)}
     </Modal>
   );
 }
@@ -815,18 +1340,31 @@ function LuckyDraw({ onClose, accent }) {
   const [newM, setNewM] = useState("");
   const [winner, setWinner] = useState(null);
   const [spinning, setSpinning] = useState(false);
+  const [spinDisplay, setSpinDisplay] = useState(null);
   const [past, setPast] = useState([]);
-  const add = () => { if (newM.trim()) { setMembers(m => [...m, newM.trim()]); setNewM(""); } };
+  const add = () => { if (newM.trim() && !members.includes(newM.trim())) { setMembers(m => [...m, newM.trim()]); setNewM(""); } };
+  const spinRef = useRef(null);
   const draw = () => {
     if (members.length < 2) return;
     setSpinning(true); setWinner(null);
-    setTimeout(() => {
-      const w = rand(members);
-      setWinner(w);
-      setPast(p => [...p, { name: w, date: new Date().toLocaleDateString("en-IN") }]);
-      setSpinning(false);
-    }, 2000);
+    let count = 0, speed = 80;
+    const total = 20 + Math.floor(Math.random() * 10);
+    const tick = () => {
+      setSpinDisplay(members[Math.floor(Math.random() * members.length)]);
+      count++;
+      speed = speed * 1.06;
+      if (count < total) spinRef.current = setTimeout(tick, speed);
+      else {
+        const w = rand(members);
+        setWinner(w);
+        setPast(p => [...p, { name: w, date: new Date().toLocaleDateString("en-IN") }]);
+        setSpinning(false);
+        setSpinDisplay(null);
+      }
+    };
+    spinRef.current = setTimeout(tick, speed);
   };
+  useEffect(() => () => clearTimeout(spinRef.current), []);
   return (
     <Modal onClose={onClose} emoji="🎀" title="Lucky Draw">
       <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
@@ -836,16 +1374,21 @@ function LuckyDraw({ onClose, accent }) {
       <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 16 }}>
         {members.map(m => <span key={m} style={{ background: accent + "33", color: "#fff", padding: "4px 12px", borderRadius: 20, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>{m} <span onClick={() => setMembers(ms => ms.filter(x => x !== m))} style={{ cursor: "pointer", opacity: 0.6 }}>✕</span></span>)}
       </div>
-      {winner && !spinning && <div style={{ textAlign: "center", padding: "20px", background: accent + "22", borderRadius: 16, marginBottom: 16, border: `2px solid ${accent}55` }}>
-        <div style={{ fontSize: 40 }}>🎀</div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginTop: 8 }}>{winner}</div>
-        <div style={{ fontSize: 13, color: accent, marginTop: 4 }}>This month's winner!</div>
-      </div>}
-      {spinning && <div style={{ textAlign: "center", padding: "20px", marginBottom: 16 }}>
-        <div style={{ fontSize: 40, animation: "spin 0.5s linear infinite" }}>🎰</div>
-        <div style={{ fontSize: 16, color: "rgba(255,255,255,0.6)", marginTop: 8 }}>Drawing…</div>
-      </div>}
-      <button onClick={draw} disabled={members.length < 2 || spinning} style={{ ...mkBtn(accent), opacity: members.length < 2 ? 0.5 : 1, marginBottom: 16 }}>{spinning ? "Drawing…" : "Draw Winner 🎀"}</button>
+      {spinning && spinDisplay && (
+        <div style={{ textAlign: "center", padding: "24px", marginBottom: 16, background: "rgba(255,255,255,0.04)", borderRadius: 16, border: "1.5px solid rgba(255,255,255,0.1)" }}>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.08em" }}>Drawing…</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: "#fff", minHeight: 38, animation: "card-flip 0.12s ease-out" }}>{spinDisplay}</div>
+        </div>
+      )}
+      {winner && !spinning && (
+        <div style={{ textAlign: "center", padding: "24px", background: `linear-gradient(135deg, ${accent}28, ${accent}10)`, borderRadius: 18, marginBottom: 16, border: `2px solid ${accent}60` }}>
+          <div style={{ fontSize: 44, marginBottom: 8 }}>🎀</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>This Month's Winner</div>
+          <div style={{ fontSize: 28, fontWeight: 900, color: "#fff" }}>{winner}</div>
+          <button onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(`🎀 Lucky Draw Result!\n\nThis month's winner is *${winner}*! 🎉`)}`, "_blank")} style={{ ...mkBtn("#25D366"), marginTop: 14, padding: "10px 20px", width: "auto" }}>📤 Announce</button>
+        </div>
+      )}
+      <button onClick={draw} disabled={members.length < 2 || spinning} style={{ ...mkBtn(accent), opacity: members.length < 2 ? 0.5 : 1, marginBottom: 16 }}>{spinning ? "Drawing…" : winner ? "Draw Again 🎀" : "Draw Winner 🎀"}</button>
       {past.length > 0 && <div>
         <div style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 8 }}>Past Winners</div>
         {past.map((p, i) => <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 12px", background: "rgba(255,255,255,0.05)", borderRadius: 10, marginBottom: 6 }}>
@@ -935,26 +1478,17 @@ function BlessingsWall({ onClose, accent, placeholder }) {
   const [blessing, setBlessing] = useState("");
   const post = () => {
     if (!blessing.trim()) return;
-    setBlessings(b => [{ from: from.trim() || "Anonymous", blessing: blessing.trim(), emoji: rand(["🙏", "🌸", "✨", "💫", "🌺", "🙌", "❤️", "🌼"]) }, ...b]);
+    setBlessings(b => [{ id: Date.now(), name: from.trim() || "Anonymous", text: blessing.trim(), emoji: rand(["🙏", "🌸", "✨", "💫", "🌺", "🙌", "❤️", "🌼"]), reactions: {} }, ...b]);
     setFrom(""); setBlessing("");
   };
+  const react = (id, emoji) => setBlessings(bs => bs.map(b => b.id === id ? { ...b, reactions: { ...b.reactions, [emoji]: (b.reactions[emoji] || 0) + 1 } } : b));
   return (
     <Modal onClose={onClose} emoji="🙏" title="Blessings Wall" wide>
       <input value={from} onChange={e => setFrom(e.target.value)} placeholder="Your name" style={{ ...inp, marginBottom: 8 }} />
       <textarea value={blessing} onChange={e => setBlessing(e.target.value)} placeholder={placeholder || "Share your blessings…"} style={{ ...inp, minHeight: 80, resize: "vertical", marginBottom: 10 }} />
       <button onClick={post} style={{ ...mkBtn(accent), marginBottom: 20 }}>Share Blessing 🙏</button>
       {blessings.length === 0 && <p style={{ textAlign: "center", color: "rgba(255,255,255,0.3)", fontSize: 13 }}>Be the first to share a blessing!</p>}
-      {blessings.map((b, i) => (
-        <div key={i} style={{ ...crd, borderLeft: `3px solid ${accent}` }}>
-          <div style={{ display: "flex", gap: 8, alignItems: "flex-start" }}>
-            <span style={{ fontSize: 20 }}>{b.emoji}</span>
-            <div>
-              <div style={{ fontSize: 12, color: accent, fontWeight: 700, marginBottom: 4 }}>{b.from}</div>
-              <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{b.blessing}</div>
-            </div>
-          </div>
-        </div>
-      ))}
+      {blessings.map(b => <WallPost key={b.id} post={b} accent={accent} onReact={react} />)}
     </Modal>
   );
 }
@@ -1200,11 +1734,46 @@ const BIRTHDAY_BINGO = [
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
+// ── occasion → plan slug ──────────────────────────────────────────────────
+const SLUG_FOR_OCC = {
+  birthday:"birthday-party", anniversary:"anniversary", "baby-shower":"baby-shower",
+  housewarming:"housewarming", "get-together":"get-together", "naming-ceremony":"naming-ceremony",
+  "kitty-party":"get-together",
+};
+
 export default function OccasionHub({ occasion }) {
-  const [open, setOpen] = useState(null);
-  const [hovered, setHovered] = useState(null);
-  const [glare, setGlare] = useState({});
+  const [open, setOpen]         = useState(null);
+  const [hovered, setHovered]   = useState(null);
+  const [glare, setGlare]       = useState({});
+  const [showSplash, setShowSplash] = useState(true);
+  const [splashOut, setSplashOut]   = useState(false);
+  const [activeTab, setActiveTab]   = useState(0);
+  const [planData, setPlanData]     = useState(null);
+
+  // Room modal flow states
+  const [roomModal, setRoomModal]   = useState(null); // "host" | "join" | "players"
+  const [hostName,  setHostName]    = useState("");
+  const [partyName, setPartyName]   = useState("");
+  const [joinCode,  setJoinCode]    = useState("");
+  const [joinName,  setJoinName]    = useState("");
+  const [roomLoading, setRoomLoading] = useState(false);
+  const [copied, setCopied]         = useState(false);
+
+  const { room, connected, error: roomError, myName, createRoom, joinRoom, leaveRoom } = usePartyRoom();
   const navigate = useNavigate();
+
+  // Load plan from localStorage
+  useEffect(() => {
+    const slug = SLUG_FOR_OCC[occasion] || occasion;
+    try { const raw = localStorage.getItem(`tendr-plan-${slug}`); if (raw) setPlanData(JSON.parse(raw)); } catch {}
+  }, [occasion]);
+
+  // Splash fade
+  useEffect(() => {
+    const t1 = setTimeout(() => setSplashOut(true), 2000);
+    const t2 = setTimeout(() => setShowSplash(false), 2500);
+    return () => { clearTimeout(t1); clearTimeout(t2); };
+  }, []);
 
   const occ = OCCASIONS[occasion];
   if (!occ) return <div style={{ color: "#fff", padding: 40, textAlign: "center", fontFamily: font }}>Unknown occasion: {occasion}</div>;
@@ -1217,104 +1786,311 @@ export default function OccasionHub({ occasion }) {
   };
   const handleLeave = (id) => { setHovered(null); setGlare(prev => { const n = { ...prev }; delete n[id]; return n; }); };
 
+  const handleHostCreate = async () => {
+    if (!hostName.trim()) return;
+    setRoomLoading(true);
+    const res = await createRoom({ occasionType: occasion, partyName: partyName.trim() || `${occ.name}`, hostName: hostName.trim() });
+    setRoomLoading(false);
+    if (!res.ok) alert(res.error || "Failed to create room");
+    else setRoomModal("players");
+  };
+
+  const handleJoin = async () => {
+    if (!joinCode.trim() || !joinName.trim()) return;
+    setRoomLoading(true);
+    const res = await joinRoom({ code: joinCode.trim(), name: joinName.trim() });
+    setRoomLoading(false);
+    if (!res.ok) alert(res.error || "Room not found");
+    else setRoomModal(null);
+  };
+
+  const copyRoomLink = async (code) => {
+    const url = `${window.location.origin}${window.location.pathname}?room=${code}`;
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 2200); } catch {}
+  };
+
   const renderModal = () => {
     const close = () => setOpen(null);
+    const planGuests = planData?.guests || 10;
     switch (open) {
-      // Shared tools
-      case "bills": return <BillSplitter onClose={close} accent={accent} />;
-      case "playlist": return <PlaylistBuilder onClose={close} accent={accent} />;
-      case "countdown": return <Countdown onClose={close} accent={accent} />;
-      case "theme": return <ThemePicker onClose={close} accent={accent} themes={occ.themes} />;
-      case "checklist": return <Checklist onClose={close} accent={accent} />;
-      case "reportcard": return <PartyReportCard onClose={close} accent={accent} />;
-      case "potluck": return <ShareableTool onClose={close} accent={accent} emoji="🥘" title="Potluck Planner" description="Create a potluck room. Share the link — friends claim what they'll bring." path="/house-party/potluck" fields={[{ key: "partyName", label: "Event Name", placeholder: "Our Get Together", required: true }, { key: "hostName", label: "Your Name", placeholder: "Priya", required: true }, { key: "items", label: "Items (comma-separated)", placeholder: "Chips, Coke, Cake, Plates", required: true }]} />;
-      case "invite": return <ShareableTool onClose={close} accent={accent} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly." path="/house-party/invite" fields={[{ key: "partyName", label: "Event Name", placeholder: "Meera's Birthday Bash", required: true }, { key: "hostName", label: "Host Name", placeholder: "Meera", required: true }, { key: "date", label: "Date", placeholder: "19 July 2026" }, { key: "time", label: "Time", placeholder: "7:00 PM" }, { key: "location", label: "Location", placeholder: "Aman's place, Noida" }, { key: "note", label: "Note (optional)", placeholder: "Dress code: yellow!" }]} />;
-      case "photowall": return <ShareableTool onClose={close} accent={accent} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos." path="/house-party/photo-wall" fields={[{ key: "partyName", label: "Event Name", placeholder: "Priya's Baby Shower 🎀", required: true }]} />;
-      // Games
-      case "truthordare": return <TruthOrDare onClose={close} accent={accent} />;
-      case "neverhavei": return <NeverHaveI onClose={close} accent={accent} />;
-      case "wouldyou": return <WouldYouRather onClose={close} accent={accent} />;
-      case "hottakes": return <HotTakes onClose={close} accent={accent} />;
-      case "spin": return <SpinBottle onClose={close} accent={accent} />;
-      case "charades": return <Charades onClose={close} accent={accent} />;
-      case "bingo": return <Bingo onClose={close} accent={accent} squares={occasion === "birthday" ? BIRTHDAY_BINGO : undefined} />;
-      // Occasion-specific
-      case "wishwall": return <WishWall onClose={close} accent={accent} />;
-      case "birthdayquiz": return <BirthdayQuiz onClose={close} accent={accent} />;
-      case "lovenotes": return <LoveNotes onClose={close} accent={accent} />;
-      case "couplequiz": return <CoupleQuiz onClose={close} accent={accent} />;
-      case "blessingswall": return <BlessingsWall onClose={close} accent={accent} placeholder="Share your blessings and wishes for the couple…" />;
-      case "babynamevote": return <BabyNameVote onClose={close} accent={accent} />;
-      case "genderpoll": return <GenderPoll onClose={close} accent={accent} />;
-      case "advicecards": return <AdviceCards onClose={close} accent={accent} />;
-      case "giftregistry": return <GiftRegistry onClose={close} accent={accent} />;
-      case "luckydraw": return <LuckyDraw onClose={close} accent={accent} />;
-      case "kittyfund": return <KittyFund onClose={close} accent={accent} />;
-      case "namesuggestions": return <NameSuggestions onClose={close} accent={accent} />;
-      case "blessings": return <BlessingsWall onClose={close} accent={accent} placeholder="Share a blessing for the child's journey ahead…" />;
+      case "bills":          return <BillSplitter onClose={close} accent={accent} />;
+      case "playlist":       return <PlaylistBuilder onClose={close} accent={accent} />;
+      case "countdown":      return <Countdown onClose={close} accent={accent} />;
+      case "theme":          return <ThemePicker onClose={close} accent={accent} themes={occ.themes} />;
+      case "checklist":      return <Checklist onClose={close} accent={accent} initialGuests={planGuests} />;
+      case "reportcard":     return <PartyReportCard onClose={close} accent={accent} />;
+      case "potluck":        return <ShareableTool onClose={close} accent={accent} emoji="🥘" title="Potluck Planner" description="Create a potluck room. Share the link — friends claim what they'll bring." path="/house-party/potluck" fields={[{ key: "partyName", label: "Event Name", placeholder: "Our Get Together", required: true }, { key: "hostName", label: "Your Name", placeholder: "Priya", required: true }, { key: "items", label: "Items (comma-separated)", placeholder: "Chips, Coke, Cake, Plates", required: true }]} />;
+      case "invite":         return <ShareableTool onClose={close} accent={accent} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly." path="/house-party/invite" fields={[{ key: "partyName", label: "Event Name", placeholder: "Meera's Birthday Bash", required: true }, { key: "hostName", label: "Host Name", placeholder: "Meera", required: true }, { key: "date", label: "Date", placeholder: "19 July 2026" }, { key: "time", label: "Time", placeholder: "7:00 PM" }, { key: "location", label: "Location", placeholder: "Aman's place, Noida" }, { key: "note", label: "Note (optional)", placeholder: "Dress code: yellow!" }]} />;
+      case "photowall":      return <ShareableTool onClose={close} accent={accent} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos." path="/house-party/photo-wall" fields={[{ key: "partyName", label: "Event Name", placeholder: "Priya's Baby Shower 🎀", required: true }]} />;
+      case "truthordare":    return <TruthOrDare onClose={close} accent={accent} />;
+      case "neverhavei":     return <NeverHaveI onClose={close} accent={accent} />;
+      case "wouldyou":       return <WouldYouRather onClose={close} accent={accent} />;
+      case "hottakes":       return <HotTakes onClose={close} accent={accent} />;
+      case "spin":           return <SpinBottle onClose={close} accent={accent} />;
+      case "charades":       return <Charades onClose={close} accent={accent} />;
+      case "bingo":          return <Bingo onClose={close} accent={accent} squares={occasion === "birthday" ? BIRTHDAY_BINGO : undefined} />;
+      case "wishwall":       return <WishWall onClose={close} accent={accent} />;
+      case "birthdayquiz":   return <BirthdayQuiz onClose={close} accent={accent} />;
+      case "lovenotes":      return <LoveNotes onClose={close} accent={accent} />;
+      case "couplequiz":     return <CoupleQuiz onClose={close} accent={accent} />;
+      case "blessingswall":  return <BlessingsWall onClose={close} accent={accent} placeholder="Share your blessings and wishes for the couple…" />;
+      case "babynamevote":   return <BabyNameVote onClose={close} accent={accent} />;
+      case "genderpoll":     return <GenderPoll onClose={close} accent={accent} />;
+      case "advicecards":    return <AdviceCards onClose={close} accent={accent} />;
+      case "giftregistry":   return <GiftRegistry onClose={close} accent={accent} />;
+      case "luckydraw":      return <LuckyDraw onClose={close} accent={accent} />;
+      case "kittyfund":      return <KittyFund onClose={close} accent={accent} />;
+      case "namesuggestions":return <NameSuggestions onClose={close} accent={accent} />;
+      case "blessings":      return <BlessingsWall onClose={close} accent={accent} placeholder="Share a blessing for the child's journey ahead…" />;
       default: return null;
     }
   };
 
+  const GAME_IDS = new Set(["truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo","luckydraw","birthdayquiz","couplequiz","genderpoll"]);
+  const currentSection = sections[Math.min(activeTab, sections.length - 1)];
+
+  // ── RENDER ────────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100dvh", fontFamily: font, background: occ.bg, backgroundSize: "300% 300%", animation: "occ-aurora 18s ease infinite" }}>
+    <div style={{ height: "100dvh", display: "flex", flexDirection: "column", fontFamily: font, background: occ.bg, backgroundSize: "300% 300%", animation: "occ-aurora 18s ease infinite", position: "relative", overflow: "hidden" }}>
       <style>{`
         @keyframes occ-aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes occ-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        @media (max-width: 480px) { .occ-h1 { font-size: 2rem !important; } .occ-grid { grid-template-columns: 1fr 1fr !important; } }
-        @media (prefers-reduced-motion: reduce) { [data-occ-card] { transition: none !important; } }
-        textarea { font-family: ${font}; }
+        @keyframes splash-pulse { 0%,100% { opacity:0.7;transform:scale(1);} 50%{opacity:1;transform:scale(1.05);} }
+        @keyframes splash-line { from{width:0} to{width:100%} }
+        @keyframes card-pop { 0%{transform:scale(0.92) translateY(12px);opacity:0} 100%{transform:scale(1) translateY(0);opacity:1} }
+        @keyframes modal-in { from{opacity:0;transform:scale(0.94) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes tab-slide { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes rm-in { from{opacity:0;transform:scale(0.93)} to{opacity:1;transform:scale(1)} }
+        @keyframes dot-pulse { 0%,100%{opacity:0.4;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
+        @keyframes card-flip { 0%{transform:rotateY(90deg) scale(0.95);opacity:0.4} 100%{transform:rotateY(0deg) scale(1);opacity:1} }
+        @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+        .occ-tool-card:active { transform: scale(0.96) !important; transition: transform 0.08s !important; }
+        .occ-tab-btn { transition: all 0.18s; }
+        textarea,input { font-family: ${font}; }
         select option { background: #1a1a2e; color: #fff; }
+        ::-webkit-scrollbar { display: none; }
+        @media (max-width: 480px) { .occ-h1 { font-size: 1.7rem !important; } .tool-grid { grid-template-columns: 1fr 1fr !important; } }
       `}</style>
 
-      {/* Hero */}
-      <div style={{ position: "relative", overflow: "hidden", padding: "28px 20px 0", textAlign: "center" }}>
-        <div style={{ position: "absolute", top: -120, left: "50%", transform: "translateX(-50%)", width: 700, height: 340, borderRadius: "50%", background: `radial-gradient(ellipse at 40% 60%, ${accent}30 0%, ${accent}15 40%, transparent 70%)`, filter: "blur(40px)", pointerEvents: "none" }} />
-
-        <button onClick={() => navigate(-1)} style={{ position: "relative", background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.7)", padding: "7px 16px", borderRadius: 100, cursor: "pointer", fontSize: 12, fontFamily: font, fontWeight: 600, marginBottom: 28 }}>← Back</button>
-
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 7, background: accent + "22", border: `1px solid ${accent}55`, borderRadius: 100, padding: "5px 14px" }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: accent, boxShadow: `0 0 6px ${accent}cc` }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.1em", textTransform: "uppercase" }}>{occ.eyebrow}</span>
-          </span>
-        </div>
-
-        <h1 className="occ-h1" style={{ position: "relative", fontSize: "clamp(2.2rem,5vw,3rem)", fontWeight: 900, color: "#fff", margin: "0 0 8px", letterSpacing: "-0.025em", lineHeight: 1.1 }}>
-          {occ.emoji} {occ.name}
-        </h1>
-        <p style={{ position: "relative", fontSize: 14, color: "rgba(255,255,255,0.45)", margin: "0 0 36px", lineHeight: 1.55 }}>{occ.tagline}</p>
-      </div>
-
-      {/* Sections */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px 56px" }}>
-        {sections.map((sec, si) => (
-          <div key={sec.id} style={{ marginBottom: 36 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14, paddingBottom: 10, borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
-              <span style={{ fontSize: 18 }}>{sec.label.split(" ")[0]}</span>
-              <div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>{sec.label.split(" ").slice(1).join(" ")}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{sec.subtitle}</div>
-              </div>
+      {/* Splash */}
+      {showSplash && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: `radial-gradient(ellipse at 30% 40%, ${accent}30 0%, #06050f 65%)`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", opacity: splashOut ? 0 : 1, transition: "opacity 0.55s cubic-bezier(0.4,0,0.2,1)", pointerEvents: splashOut ? "none" : "all" }}>
+          <div style={{ textAlign: "center", padding: "0 32px" }}>
+            <div style={{ fontSize: 72, marginBottom: 18, animation: "splash-pulse 1.8s ease-in-out infinite", filter: `drop-shadow(0 0 28px ${accent}90)` }}>{occ.emoji}</div>
+            <div style={{ fontSize: "clamp(1.7rem,5vw,2.5rem)", fontWeight: 900, color: "#fff", letterSpacing: "-0.03em", lineHeight: 1.15, marginBottom: 10 }}>
+              Let's make it<br/><span style={{ color: accent }}>a party.</span>
             </div>
-            <div className="occ-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-              {sec.tools.map((t, ti) => {
-                const isH = hovered === t.id;
-                const g = glare[t.id];
-                const bg = g ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}33 0%, rgba(255,255,255,0.06) 55%), rgba(255,255,255,0.04)` : "rgba(255,255,255,0.04)";
-                return (
-                  <div key={t.id} data-occ-card onClick={() => setOpen(t.id)} onMouseEnter={() => setHovered(t.id)} onMouseMove={e => handleMove(e, t.id)} onMouseLeave={() => handleLeave(t.id)} style={{ background: bg, border: `1.5px solid ${isH ? t.color + "55" : "rgba(255,255,255,0.07)"}`, borderRadius: 16, padding: "18px 15px 15px", cursor: "pointer", transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s", transform: isH ? "translateY(-3px) scale(1.01)" : "none", boxShadow: isH ? `0 10px 32px ${t.color}28` : "none", animation: "occ-in 0.4s ease both", animationDelay: `${(si * 6 + ti) * 0.04}s`, willChange: "background" }}>
-                    <div style={{ fontSize: 26, marginBottom: 10, lineHeight: 1 }}>{t.emoji}</div>
-                    <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
-                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
-                    <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isH ? 1 : 0.55, transition: "opacity 0.18s" }} />
-                  </div>
-                );
-              })}
+            <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 32 }}>{occ.tagline}</div>
+            <div style={{ width: 180, height: 2, background: "rgba(255,255,255,0.08)", borderRadius: 2, overflow: "hidden", margin: "0 auto" }}>
+              <div style={{ height: "100%", background: accent, animation: "splash-line 2s ease-out both" }} />
             </div>
           </div>
-        ))}
+        </div>
+      )}
+
+      {/* Room setup modals */}
+      {roomModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 5000, background: "rgba(0,0,0,0.8)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }} onClick={() => { setRoomModal(null); setRoomLoading(false); }}>
+          <div style={{ background: "#0f0f1c", border: `1.5px solid ${accent}44`, borderRadius: 24, padding: "28px 24px", maxWidth: 360, width: "100%", boxShadow: `0 36px 80px ${accent}20`, animation: "rm-in 0.25s cubic-bezier(0.22,1,0.36,1)" }} onClick={e => e.stopPropagation()}>
+
+            {roomModal === "host-setup" && (<>
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>🏠</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Host a Room</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Your guests join with the room code</div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Your Name</div>
+                <input value={hostName} onChange={e => setHostName(e.target.value)} placeholder="e.g. Priya" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${accent}33`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Party Name <span style={{ color: "rgba(255,255,255,0.3)", fontWeight: 400, textTransform: "none" }}>(optional)</span></div>
+                <input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder={`e.g. ${occ.name}`} style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${accent}33`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <button onClick={handleHostCreate} disabled={!hostName.trim() || roomLoading} style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", background: hostName.trim() ? accent : "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: hostName.trim() ? "pointer" : "not-allowed", opacity: hostName.trim() ? 1 : 0.5, marginBottom: 10 }}>
+                {roomLoading ? "Creating…" : "Create Room →"}
+              </button>
+              <button onClick={() => setRoomModal(null)} style={{ width: "100%", padding: "10px 0", border: "none", background: "none", color: "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer" }}>Cancel</button>
+            </>)}
+
+            {roomModal === "players" && room && (<>
+              <div style={{ textAlign: "center", marginBottom: 16 }}>
+                <div style={{ fontSize: 30, marginBottom: 6 }}>🎉</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", marginBottom: 2 }}>Room Created!</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>Share the code with your guests</div>
+                <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: accent + "1a", border: `1px solid ${accent}55`, borderRadius: 14, padding: "12px 24px", marginBottom: 14 }}>
+                  <span style={{ fontSize: 32, fontWeight: 900, color: accent, letterSpacing: "0.2em", fontFamily: "monospace" }}>{room.code}</span>
+                </div>
+              </div>
+              <button onClick={() => copyRoomLink(room.code)} style={{ width: "100%", padding: "12px 0", borderRadius: 12, border: `1.5px solid ${copied ? accent : "rgba(255,255,255,0.14)"}`, background: copied ? accent + "20" : "rgba(255,255,255,0.05)", color: copied ? accent : "rgba(255,255,255,0.75)", fontSize: 14, fontWeight: 700, cursor: "pointer", marginBottom: 12, transition: "all 0.18s" }}>
+                {copied ? "✓ Link Copied!" : "📋 Copy Room Link"}
+              </button>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Players ({room.players?.length || 1})</div>
+                {(room.players || [myName]).map((p, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", background: "rgba(255,255,255,0.04)", borderRadius: 8, marginBottom: 4 }}>
+                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ade80", animation: "dot-pulse 2s ease-in-out infinite", animationDelay: `${i * 0.3}s` }} />
+                    <span style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>{p}{p === myName ? " (you)" : ""}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={() => setRoomModal(null)} style={{ width: "100%", padding: "11px 0", borderRadius: 12, border: "none", background: accent, color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>Let's Play →</button>
+            </>)}
+
+            {roomModal === "join" && (<>
+              <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <div style={{ fontSize: 36, marginBottom: 8 }}>🔗</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Join a Room</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Enter the code your host shared</div>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Room Code</div>
+                <input value={joinCode} onChange={e => setJoinCode(e.target.value.toUpperCase().slice(0, 6))} placeholder="ABC123" maxLength={6} style={{ width: "100%", padding: "14px 16px", borderRadius: 12, border: `1.5px solid ${accent}44`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 24, fontWeight: 900, textAlign: "center", letterSpacing: "0.22em", fontFamily: "monospace", outline: "none", boxSizing: "border-box", marginBottom: 0 }} />
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Your Name</div>
+                <input value={joinName} onChange={e => setJoinName(e.target.value)} placeholder="e.g. Rahul" style={{ width: "100%", padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${accent}33`, background: "rgba(255,255,255,0.05)", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" }} />
+              </div>
+              <button onClick={handleJoin} disabled={joinCode.length < 6 || !joinName.trim() || roomLoading} style={{ width: "100%", padding: "14px 0", borderRadius: 12, border: "none", background: (joinCode.length >= 6 && joinName.trim()) ? accent : "rgba(255,255,255,0.08)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: (joinCode.length >= 6 && joinName.trim()) ? "pointer" : "not-allowed", opacity: (joinCode.length >= 6 && joinName.trim()) ? 1 : 0.5, marginBottom: 10 }}>
+                {roomLoading ? "Joining…" : "Join Room →"}
+              </button>
+              <button onClick={() => setRoomModal(null)} style={{ width: "100%", padding: "10px 0", border: "none", background: "none", color: "rgba(255,255,255,0.3)", fontSize: 13, cursor: "pointer" }}>Cancel</button>
+            </>)}
+          </div>
+        </div>
+      )}
+
+      {/* ── Top bar ── */}
+      <div style={{ flexShrink: 0, padding: "14px 16px 0", display: "flex", alignItems: "center", gap: 10, maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+        <button onClick={() => navigate(-1)} style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.65)", padding: "7px 14px", borderRadius: 100, cursor: "pointer", fontSize: 12, fontFamily: font, fontWeight: 600, flexShrink: 0 }}>← Back</button>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{occ.emoji} {occ.name}</div>
+          {room && <div style={{ fontSize: 11, color: accent, fontWeight: 700, marginTop: 1 }}>Room: <span style={{ fontFamily: "monospace", letterSpacing: "0.1em" }}>{room.code}</span> · {room.players?.length || 1} player{(room.players?.length || 1) !== 1 ? "s" : ""}</div>}
+        </div>
+        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+          {room ? (
+            <>
+              <button onClick={() => setRoomModal("players")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "1a", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80" }} />{room.code}
+              </button>
+              <button onClick={leaveRoom} style={{ padding: "7px 12px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Leave</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setRoomModal("host-setup")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "18", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Host
+              </button>
+              <button onClick={() => setRoomModal("join")} style={{ padding: "7px 14px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Join</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Plan banner */}
+      {planData && (
+        <div style={{ flexShrink: 0, maxWidth: 800, margin: "10px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "8px 12px" }}>
+            <span style={{ fontSize: 14 }}>📋</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", flex: 1 }}>
+              Plan: <strong style={{ color: "rgba(255,255,255,0.8)" }}>{planData.guests} guests</strong>
+              {planData.date ? ` · ${new Date(planData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}
+              {planData.city ? ` · ${planData.city}` : ""}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* ── Section Tabs ── */}
+      <div style={{ flexShrink: 0, maxWidth: 800, margin: "14px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", gap: 6, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 4 }}>
+          {sections.map((sec, i) => {
+            const active = activeTab === i;
+            const isGame = sec.id === "games";
+            return (
+              <button key={sec.id} className="occ-tab-btn" onClick={() => setActiveTab(i)} style={{
+                flex: 1, padding: "9px 4px", borderRadius: 10, border: "none",
+                background: active ? (isGame ? accent : "rgba(255,255,255,0.1)") : "transparent",
+                color: active ? (isGame ? "#fff" : "#fff") : "rgba(255,255,255,0.38)",
+                fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: font,
+                textTransform: "uppercase", letterSpacing: "0.05em",
+                boxShadow: active && isGame ? `0 4px 16px ${accent}44` : "none",
+              }}>
+                <div style={{ fontSize: 16, marginBottom: 2 }}>{sec.label.split(" ")[0]}</div>
+                <div style={{ fontSize: 9, letterSpacing: "0.06em", opacity: active ? 1 : 0.8 }}>{sec.label.split(" ").slice(1).join(" ") || sec.id}</div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Tool grid — centered in remaining space ── */}
+      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: sections[activeTab]?.tools.length <= 4 ? "center" : "flex-start", padding: "20px 16px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+
+        {/* Section title */}
+        <div style={{ width: "100%", marginBottom: 16, textAlign: "center", animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: currentSection?.id === "games" ? accent : "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>{currentSection?.subtitle}</div>
+        </div>
+
+        {/* Circular icon grid */}
+        <div className="tool-grid" style={{
+          display: "grid",
+          gridTemplateColumns: currentSection?.tools.length <= 3 ? `repeat(${currentSection.tools.length}, minmax(0,140px))` : "repeat(auto-fill, minmax(140px, 1fr))",
+          gap: 12,
+          width: "100%",
+          justifyContent: "center",
+          animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)",
+        }}>
+          {currentSection?.tools.map((t, ti) => {
+            const isH = hovered === t.id;
+            const g = glare[t.id];
+            const isGame = GAME_IDS.has(t.id);
+            const glowBg = g ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}50 0%, rgba(255,255,255,0.03) 65%), rgba(255,255,255,0.04)` : isGame ? `linear-gradient(145deg, ${t.color}18 0%, rgba(255,255,255,0.03) 100%)` : "rgba(255,255,255,0.04)";
+            return (
+              <div
+                key={t.id}
+                className="occ-tool-card"
+                onClick={() => setOpen(t.id)}
+                onMouseEnter={() => setHovered(t.id)}
+                onMouseMove={e => handleMove(e, t.id)}
+                onMouseLeave={() => handleLeave(t.id)}
+                style={{
+                  background: glowBg,
+                  border: `1.5px solid ${isH ? t.color + "99" : isGame ? t.color + "30" : "rgba(255,255,255,0.07)"}`,
+                  borderRadius: 20,
+                  padding: "20px 14px 16px",
+                  cursor: "pointer",
+                  transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
+                  transform: isH ? "translateY(-5px) scale(1.03)" : "none",
+                  boxShadow: isH ? `0 14px 40px ${t.color}40` : isGame ? `0 4px 20px ${t.color}15` : "none",
+                  animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${ti * 0.05}s both`,
+                  display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
+                  position: "relative", overflow: "hidden",
+                }}
+              >
+                {isGame && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2.5, background: `linear-gradient(90deg, transparent, ${t.color}, transparent)` }} />}
+                {/* Circular icon */}
+                <div style={{
+                  width: 64, height: 64, borderRadius: "50%",
+                  background: isH ? `radial-gradient(circle, ${t.color}40, ${t.color}14)` : `radial-gradient(circle, ${t.color}20, ${t.color}06)`,
+                  border: `1.5px solid ${isH ? t.color + "70" : t.color + "28"}`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 28, marginBottom: 12,
+                  boxShadow: isH ? `0 0 20px ${t.color}44` : "none",
+                  transition: "all 0.2s",
+                }}>
+                  {t.emoji}
+                </div>
+                <div style={{ fontSize: 12.5, fontWeight: 800, color: "#fff", marginBottom: 5, lineHeight: 1.25, letterSpacing: "-0.01em" }}>{t.title}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.4, marginBottom: 8 }}>{t.desc}</div>
+                {isGame && (
+                  <div style={{ fontSize: 9.5, fontWeight: 800, color: t.color, letterSpacing: "0.1em", textTransform: "uppercase", background: t.color + "18", border: `1px solid ${t.color}40`, borderRadius: 100, padding: "3px 10px", opacity: isH ? 1 : 0.7, transition: "opacity 0.18s" }}>
+                    {isH ? "Tap to Play" : "Play"}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       {renderModal()}

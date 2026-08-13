@@ -391,6 +391,7 @@ const Home = () => {
   const [occasionSearch, setOccasionSearch] = useState("");
   const [showRakhi, setShowRakhi] = useState(false);
   const [hoveredOcc, setHoveredOcc] = useState(null);
+  const [occModal, setOccModal] = useState(null);
   const [searchParams] = useSearchParams();
   useEffect(() => {
     const occ = searchParams.get("occasion");
@@ -1404,7 +1405,12 @@ const Home = () => {
                       "House Party":"get-together","Housewarming":"housewarming","Get Together":"get-together",
                       "Kitty Party":"get-together","Naming Ceremony":"naming-ceremony",
                     };
-                    navigate(`/occasions/${slugMap[label]||"birthday-party"}`);
+                    const hubMap = {
+                      "birthday-party":"/birthday-hub","anniversary":"/anniversary-hub","baby-shower":"/baby-shower-hub",
+                      "get-together":"/get-together-hub","housewarming":"/housewarming-hub","naming-ceremony":"/naming-ceremony-hub",
+                    };
+                    const slug = slugMap[label] || "birthday-party";
+                    setOccModal({ label, slug, hub: hubMap[slug] || "/birthday-hub", photo, step: 1 });
                   }}
                   initial={{ opacity: 0, y: 20, scale: 0.95 }}
                   whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -2472,6 +2478,114 @@ const Home = () => {
               </div>
             </div>
           </>
+        );
+      })()}
+
+      {/* ── Occasion Strip: two-step modal ── */}
+      {occModal && (()=>{
+        const f="'Outfit',sans-serif";
+        const ser="'Cormorant Garamond',Georgia,serif";
+        const g="#C47A2E";
+        const step=occModal.step||1;
+        return(
+          <div
+            style={{position:"fixed",inset:0,zIndex:3000,background:"rgba(8,4,0,0.7)",backdropFilter:"blur(8px)",display:"flex",alignItems:"center",justifyContent:"center",padding:20}}
+            onClick={()=>setOccModal(null)}
+          >
+            <style>{`
+              @keyframes occm-in{from{opacity:0;transform:scale(0.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+              @keyframes occm-slide{from{opacity:0;transform:translateX(18px)}to{opacity:1;transform:translateX(0)}}
+            `}</style>
+            <div
+              style={{background:"#FDFAF5",borderRadius:28,overflow:"hidden",maxWidth:380,width:"100%",boxShadow:"0 36px 90px rgba(28,9,0,0.38)",animation:"occm-in 0.26s cubic-bezier(0.22,1,0.36,1)"}}
+              onClick={e=>e.stopPropagation()}
+            >
+              {/* photo header */}
+              <div style={{position:"relative",height:140,overflow:"hidden"}}>
+                {occModal.photo&&<img src={occModal.photo} alt={occModal.label} style={{width:"100%",height:"100%",objectFit:"cover"}}/>}
+                <div style={{position:"absolute",inset:0,background:"linear-gradient(to top,rgba(8,4,0,0.82) 0%,rgba(8,4,0,0.3) 60%,transparent 100%)"}}/>
+                <div style={{position:"absolute",bottom:16,left:20,right:20}}>
+                  {step===2&&(
+                    <button onClick={()=>setOccModal(m=>({...m,step:1}))} style={{background:"rgba(255,255,255,0.12)",border:"none",color:"rgba(255,255,255,0.7)",fontSize:11,fontWeight:600,borderRadius:100,padding:"4px 12px",cursor:"pointer",fontFamily:f,marginBottom:8,display:"block"}}>← Back</button>
+                  )}
+                  <p style={{fontSize:10,color:"rgba(255,255,255,0.55)",fontWeight:700,letterSpacing:"0.14em",textTransform:"uppercase",margin:"0 0 2px",fontFamily:f}}>{step===1?"Choose":"How to plan"}</p>
+                  <p style={{fontFamily:ser,fontSize:22,fontWeight:500,color:"#fff",margin:0,lineHeight:1.15}}>{occModal.label}</p>
+                </div>
+              </div>
+
+              <div style={{padding:"20px 20px 24px",animation:"occm-slide 0.2s ease both"}}>
+                {step===1&&(
+                  <div style={{display:"flex",flexDirection:"column",gap:9}}>
+                    {/* Party Hub */}
+                    <button
+                      onClick={()=>{setOccModal(null);navigate(occModal.hub);}}
+                      style={{display:"flex",alignItems:"center",gap:14,padding:"15px 16px",borderRadius:16,border:"none",background:"#1C0900",cursor:"pointer",textAlign:"left",fontFamily:f,transition:"opacity 0.14s"}}
+                      onMouseEnter={e=>e.currentTarget.style.opacity="0.88"}
+                      onMouseLeave={e=>e.currentTarget.style.opacity="1"}
+                    >
+                      <div style={{width:42,height:42,borderRadius:13,background:"rgba(255,255,255,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>🎮</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:15,fontWeight:700,color:"#fff",marginBottom:2}}>Party Hub</div>
+                        <div style={{fontSize:11.5,color:"rgba(255,255,255,0.5)",lineHeight:1.4}}>Games, tools & activities for tonight</div>
+                      </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.35)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                    {/* Plan the Party */}
+                    <button
+                      onClick={()=>setOccModal(m=>({...m,step:2}))}
+                      style={{display:"flex",alignItems:"center",gap:14,padding:"15px 16px",borderRadius:16,border:`1.5px solid rgba(196,122,46,0.2)`,background:"rgba(196,122,46,0.04)",cursor:"pointer",textAlign:"left",fontFamily:f,transition:"all 0.16s"}}
+                      onMouseEnter={e=>{e.currentTarget.style.background="rgba(196,122,46,0.09)";e.currentTarget.style.borderColor="#C47A2E";}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="rgba(196,122,46,0.04)";e.currentTarget.style.borderColor="rgba(196,122,46,0.2)";}}
+                    >
+                      <div style={{width:42,height:42,borderRadius:13,background:`linear-gradient(135deg,${g},#D4A848)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,boxShadow:"0 4px 12px rgba(196,122,46,0.28)"}}>📋</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:15,fontWeight:700,color:"#1C0900",marginBottom:2}}>Plan the Party</div>
+                        <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4}}>Vendors, timeline & full blueprint</div>
+                      </div>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={g} strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                )}
+
+                {step===2&&(
+                  <div style={{display:"flex",flexDirection:"column",gap:9,animation:"occm-slide 0.2s ease both"}}>
+                    {/* With Theme */}
+                    <button
+                      onClick={()=>{setOccModal(null);navigate(`/occasions/${occModal.slug}?planMode=with`);}}
+                      style={{display:"flex",alignItems:"center",gap:14,padding:"15px 16px",borderRadius:16,border:"none",
+                        background:`linear-gradient(135deg,rgba(196,122,46,0.12),rgba(196,122,46,0.04))`,
+                        cursor:"pointer",textAlign:"left",fontFamily:f,transition:"transform 0.15s,box-shadow 0.15s",boxShadow:"0 2px 10px rgba(196,122,46,0.1)"}}
+                      onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 22px rgba(196,122,46,0.2)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 2px 10px rgba(196,122,46,0.1)";}}
+                    >
+                      <div style={{width:42,height:42,borderRadius:13,background:`linear-gradient(135deg,${g},#D4A848)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,boxShadow:"0 4px 12px rgba(196,122,46,0.3)"}}>🎨</div>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
+                          <span style={{fontSize:15,fontWeight:700,color:"#1C0900"}}>Plan with a Theme</span>
+                          <span style={{fontSize:9,fontWeight:800,color:"#fff",background:g,borderRadius:100,padding:"1px 7px",letterSpacing:"0.06em",textTransform:"uppercase"}}>Best</span>
+                        </div>
+                        <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4}}>Choose a look — we tailor everything to it</div>
+                      </div>
+                    </button>
+                    {/* Jump in */}
+                    <button
+                      onClick={()=>{setOccModal(null);navigate(`/occasions/${occModal.slug}?planMode=without`);}}
+                      style={{display:"flex",alignItems:"center",gap:14,padding:"15px 16px",borderRadius:16,border:`1.5px solid rgba(28,9,0,0.08)`,background:"#fff",cursor:"pointer",textAlign:"left",fontFamily:f,transition:"all 0.16s"}}
+                      onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.25)";e.currentTarget.style.background="rgba(196,122,46,0.03)";}}
+                      onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(28,9,0,0.08)";e.currentTarget.style.background="#fff";}}
+                    >
+                      <div style={{width:42,height:42,borderRadius:13,background:"rgba(28,9,0,0.05)",border:"1.5px solid rgba(28,9,0,0.07)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>⚡</div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:15,fontWeight:700,color:"#1C0900",marginBottom:2}}>Jump Straight In</div>
+                        <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4}}>Skip theme — go directly to vendors</div>
+                      </div>
+                    </button>
+                  </div>
+                )}
+                <button onClick={()=>setOccModal(null)} style={{display:"block",width:"100%",marginTop:12,padding:"9px 0",border:"none",background:"none",color:"rgba(28,9,0,0.3)",fontSize:12,cursor:"pointer",fontFamily:f}}>Cancel</button>
+              </div>
+            </div>
+          </div>
         );
       })()}
     </div>

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { getOccasionById } from "../../data/occasions";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -433,6 +433,7 @@ function Progress({step,withTheme}){
 export default function OccasionDetail(){
   const {slug}=useParams();
   const navigate=useNavigate();
+  const [searchParams]=useSearchParams();
   const cardRef=useRef(null);
 
   const [planMode,setPlanMode]=useState(null);
@@ -454,6 +455,7 @@ export default function OccasionDetail(){
   const [checked,setChecked]=useState({});
   const [downloading,setDownloading]=useState(false);
   const [savedPlan,setSavedPlan]=useState(null);
+  const dateInputRef=useRef(null);
 
   const PLAN_KEY=`tendr-plan-${slug}`;
 
@@ -463,6 +465,9 @@ export default function OccasionDetail(){
       const saved=JSON.parse(localStorage.getItem(PLAN_KEY)||"null");
       if(saved&&saved.step>0) setSavedPlan(saved);
     }catch{}
+    /* honour ?planMode= from home modal */
+    const pm=searchParams.get("planMode");
+    if(pm==="with"||pm==="without"){setPlanMode(pm);setStep(1);}
   },[slug]);
 
   /* save on any change */
@@ -577,64 +582,89 @@ export default function OccasionDetail(){
 
         {/* ══ STEP 0: mode choice ══ */}
         {step===0&&(
-          <div className="os">
+          <div className="os" style={{paddingBottom:0}}>
+            {/* Occasion hero — photo backdrop */}
+            <div style={{position:"relative",borderRadius:24,overflow:"hidden",marginBottom:24,height:180}}>
+              <img src={occasion.coverImage} alt={occasion.name} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+              <div style={{position:"absolute",inset:0,background:`linear-gradient(160deg,${ink}CC 0%,${ink}88 55%,${ink}44 100%)`}}/>
+              <div style={{position:"absolute",inset:0,padding:"22px 22px 20px",display:"flex",flexDirection:"column",justifyContent:"flex-end"}}>
+                <div style={{fontSize:36,marginBottom:8,lineHeight:1}}>{occasion.icon}</div>
+                <div style={{fontFamily:serif,fontSize:"clamp(1.4rem,4vw,1.8rem)",fontWeight:500,color:"#fff",lineHeight:1.2,letterSpacing:"-0.02em"}}>{occasion.name}</div>
+                <div style={{fontSize:12,color:"rgba(255,255,255,0.6)",marginTop:4}}>{occasion.tagline}</div>
+              </div>
+            </div>
+
             {/* saved plan banner */}
             {savedPlan&&(
-              <div style={{background:"rgba(196,122,46,0.06)",border:`1.5px solid rgba(196,122,46,0.2)`,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
-                <div style={{fontSize:12,fontWeight:700,color:gold,marginBottom:6}}>📋 You have a saved plan · {timeAgo(savedPlan.savedAt)}</div>
-                <div style={{fontSize:12,color:muted,marginBottom:12}}>{savedPlan.guests} guests · {savedPlan.date||"No date"}{savedPlan.city?` · ${savedPlan.city}`:""}</div>
+              <div style={{background:"rgba(196,122,46,0.06)",border:`1.5px solid rgba(196,122,46,0.18)`,borderRadius:16,padding:"14px 16px",marginBottom:20}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:10}}>
+                  <div style={{width:32,height:32,borderRadius:10,background:"rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:14}}>📋</div>
+                  <div>
+                    <div style={{fontSize:12,fontWeight:700,color:gold}}>Saved plan · {timeAgo(savedPlan.savedAt)}</div>
+                    <div style={{fontSize:11,color:muted,marginTop:1}}>{savedPlan.guests} guests{savedPlan.date?` · ${new Date(savedPlan.date+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"short"})}`:""}
+                    {savedPlan.city?` · ${savedPlan.city}`:""}</div>
+                  </div>
+                </div>
                 <div style={{display:"flex",gap:8}}>
                   <button onClick={()=>restorePlan(savedPlan)} style={{flex:1,padding:"10px 0",borderRadius:10,border:"none",background:gold,color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>Continue plan</button>
-                  <button onClick={()=>{setSavedPlan(null);localStorage.removeItem(PLAN_KEY);}} style={{padding:"10px 14px",borderRadius:10,border:`1px solid rgba(196,122,46,0.2)`,background:"transparent",color:muted,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font}}>Start fresh</button>
+                  <button onClick={()=>{setSavedPlan(null);localStorage.removeItem(PLAN_KEY);}} style={{padding:"10px 14px",borderRadius:10,border:`1px solid rgba(196,122,46,0.18)`,background:"transparent",color:muted,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:font,whiteSpace:"nowrap"}}>Start fresh</button>
                 </div>
               </div>
             )}
 
-            <p style={{fontFamily:serif,fontSize:"clamp(1.5rem,4vw,2rem)",color:ink,lineHeight:1.25,marginBottom:6}}>
-              How would you like to plan?
-            </p>
-            <p style={{fontSize:13,color:muted,marginBottom:28,lineHeight:1.6}}>Pick a style — you can always change your mind.</p>
-            <div style={{display:"flex",flexDirection:"column",gap:12}}>
+            <p style={{fontSize:11,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",margin:"0 0 6px",fontFamily:font}}>How would you like to plan?</p>
+            <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,4vw,1.7rem)",color:ink,lineHeight:1.2,margin:"0 0 20px",letterSpacing:"-0.01em",fontWeight:400}}>Choose your approach</p>
+
+            <div style={{display:"flex",flexDirection:"column",gap:10}}>
+              {/* ── With Theme ── */}
               <button onClick={()=>{setPlanMode("with");setStep(1);}}
-                style={{padding:"22px 22px 20px",borderRadius:20,textAlign:"left",cursor:"pointer",border:`1.5px solid rgba(196,122,46,0.22)`,background:"#fff",fontFamily:font,position:"relative",overflow:"hidden",transition:"all 0.22s"}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor=gold;e.currentTarget.style.background="rgba(196,122,46,0.04)";}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.22)";e.currentTarget.style.background="#fff";}}>
-                <div aria-hidden style={{position:"absolute",left:0,top:0,bottom:0,width:4,background:`linear-gradient(180deg,${gold},${goldLt})`}}/>
-                <div style={{paddingLeft:14}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-                    <div style={{width:40,height:40,borderRadius:12,background:"rgba(196,122,46,0.1)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>🎨</div>
-                    <div>
+                style={{padding:"22px 20px",borderRadius:20,textAlign:"left",cursor:"pointer",border:"none",
+                  background:`linear-gradient(135deg, rgba(196,122,46,0.11) 0%, rgba(196,122,46,0.04) 100%)`,
+                  fontFamily:font,position:"relative",overflow:"hidden",transition:"transform 0.18s,box-shadow 0.18s",
+                  boxShadow:"0 2px 12px rgba(196,122,46,0.08)"}}
+                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(196,122,46,0.18)";}}
+                onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 2px 12px rgba(196,122,46,0.08)";}}>
+                {/* decorative circle */}
+                <div style={{position:"absolute",right:-30,top:-30,width:120,height:120,borderRadius:"50%",background:"rgba(196,122,46,0.08)",pointerEvents:"none"}}/>
+                <div style={{display:"flex",alignItems:"flex-start",gap:14,position:"relative"}}>
+                  <div style={{width:50,height:50,borderRadius:16,background:`linear-gradient(135deg,${gold},${goldLt})`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0,boxShadow:`0 6px 16px rgba(196,122,46,0.3)`}}>🎨</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:"flex",alignItems:"center",gap:7,marginBottom:4}}>
                       <div style={{fontFamily:serif,fontSize:17,fontWeight:500,color:ink}}>Plan with a Theme</div>
-                      <div style={{fontSize:10,color:gold,fontWeight:700,marginTop:1,letterSpacing:"0.06em",textTransform:"uppercase"}}>Recommended</div>
+                      <span style={{fontSize:9,fontWeight:800,color:"#fff",background:gold,borderRadius:100,padding:"2px 7px",letterSpacing:"0.06em",textTransform:"uppercase",flexShrink:0}}>Best</span>
                     </div>
-                    <svg style={{marginLeft:"auto",flexShrink:0}} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    <p style={{fontSize:12.5,color:muted,margin:"0 0 12px",lineHeight:1.6}}>Pick a look — we'll customise vendors, décor, gifts and the full plan around it.</p>
+                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                      {["Theme picker","Tailored vendors","Full blueprint"].map(t=>(
+                        <span key={t} style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.09)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
+                      ))}
+                    </div>
                   </div>
-                  <p style={{fontSize:12.5,color:muted,margin:"0 0 10px",lineHeight:1.6}}>Browse curated décor themes and get specific advice on what to arrange, what to ask vendors, and what to order.</p>
-                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    {["Theme picker","Vendor advice","Full blueprint"].map(t=>(
-                      <span key={t} style={{fontSize:10,fontWeight:600,color:gold,background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
-                    ))}
-                  </div>
+                  <svg style={{flexShrink:0,marginTop:14}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </div>
               </button>
 
+              {/* ── Jump straight in ── */}
               <button onClick={()=>{setPlanMode("without");setStep(1);}}
-                style={{padding:"22px 22px 20px",borderRadius:20,textAlign:"left",cursor:"pointer",border:`1.5px solid ${border}`,background:"#fff",fontFamily:font,position:"relative",overflow:"hidden",transition:"all 0.22s"}}
-                onMouseEnter={e=>{e.currentTarget.style.borderColor="rgba(196,122,46,0.32)";}}
-                onMouseLeave={e=>{e.currentTarget.style.borderColor=border;}}>
-                <div aria-hidden style={{position:"absolute",left:0,top:0,bottom:0,width:4,background:"rgba(196,122,46,0.18)"}}/>
-                <div style={{paddingLeft:14}}>
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
-                    <div style={{width:40,height:40,borderRadius:12,background:"rgba(196,122,46,0.06)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:18}}>⚡</div>
-                    <div style={{fontFamily:serif,fontSize:17,fontWeight:500,color:ink}}>Jump straight in</div>
-                    <svg style={{marginLeft:"auto",flexShrink:0}} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(196,122,46,0.4)" strokeWidth="2" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                style={{padding:"22px 20px",borderRadius:20,textAlign:"left",cursor:"pointer",
+                  border:`1.5px solid rgba(28,9,0,0.08)`,background:"#fff",
+                  fontFamily:font,position:"relative",overflow:"hidden",transition:"transform 0.18s,box-shadow 0.18s",
+                  boxShadow:"0 2px 8px rgba(28,9,0,0.04)"}}
+                onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 24px rgba(28,9,0,0.08)";e.currentTarget.style.borderColor="rgba(196,122,46,0.25)";}}
+                onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 2px 8px rgba(28,9,0,0.04)";e.currentTarget.style.borderColor="rgba(28,9,0,0.08)";}}>
+                <div style={{position:"absolute",right:-30,top:-30,width:120,height:120,borderRadius:"50%",background:"rgba(28,9,0,0.02)",pointerEvents:"none"}}/>
+                <div style={{display:"flex",alignItems:"flex-start",gap:14,position:"relative"}}>
+                  <div style={{width:50,height:50,borderRadius:16,background:"rgba(28,9,0,0.05)",border:"1.5px solid rgba(28,9,0,0.07)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,flexShrink:0}}>⚡</div>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:serif,fontSize:17,fontWeight:500,color:ink,marginBottom:4}}>Jump straight in</div>
+                    <p style={{fontSize:12.5,color:muted,margin:"0 0 12px",lineHeight:1.6}}>Skip the theme — go straight to vendors, timeline and budget.</p>
+                    <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                      {["Faster","Direct to vendors"].map(t=>(
+                        <span key={t} style={{fontSize:10,fontWeight:600,color:"rgba(28,9,0,0.38)",background:"rgba(28,9,0,0.04)",border:"1px solid rgba(28,9,0,0.08)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
+                      ))}
+                    </div>
                   </div>
-                  <p style={{fontSize:12.5,color:muted,margin:"0 0 10px",lineHeight:1.6}}>Skip theme selection — go straight to vendors. Great if you already know what you want.</p>
-                  <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                    {["Faster","Direct to vendors","Full blueprint"].map(t=>(
-                      <span key={t} style={{fontSize:10,fontWeight:600,color:"rgba(196,122,46,0.5)",background:"rgba(196,122,46,0.05)",border:"1px solid rgba(196,122,46,0.12)",borderRadius:100,padding:"3px 9px"}}>{t}</span>
-                    ))}
-                  </div>
+                  <svg style={{flexShrink:0,marginTop:14}} width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="rgba(28,9,0,0.25)" strokeWidth="2.5" strokeLinecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </div>
               </button>
             </div>
@@ -684,7 +714,7 @@ export default function OccasionDetail(){
                   {!date&&<span style={{fontSize:10,color:"#E05252",fontWeight:800,letterSpacing:"0.08em"}}>Required</span>}
                   {date&&<span style={{fontSize:10,color:gold,fontWeight:700}}>✓ {timeline?.days} days away</span>}
                 </div>
-                <label style={{display:"block",position:"relative",cursor:"pointer"}}>
+                <div style={{display:"block",position:"relative",cursor:"pointer"}} onClick={()=>{try{dateInputRef.current?.showPicker?.()}catch{dateInputRef.current?.click()}}}>
                   <div style={{display:"flex",alignItems:"center",gap:10,padding:"14px 16px",borderRadius:12,border:`1.5px solid ${date?gold:"rgba(196,122,46,0.18)"}`,background:date?"rgba(196,122,46,0.04)":"#fff",transition:"all 0.2s"}}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={date?gold:muted} strokeWidth="2" strokeLinecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     <span style={{fontFamily:serif,fontSize:20,fontWeight:date?700:400,color:date?ink:muted,flex:1,letterSpacing:"-0.01em"}}>
@@ -692,9 +722,9 @@ export default function OccasionDetail(){
                     </span>
                     {date&&<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                   </div>
-                  <input type="date" value={date} onChange={e=>setDate(e.target.value)}
-                    style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%"}}/>
-                </label>
+                  <input ref={dateInputRef} type="date" value={date} onChange={e=>setDate(e.target.value)}
+                    style={{position:"absolute",inset:0,opacity:0,cursor:"pointer",width:"100%",height:"100%",pointerEvents:"none"}}/>
+                </div>
               </div>
 
               {/* at [venue] */}
