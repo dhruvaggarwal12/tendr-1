@@ -468,10 +468,20 @@ const Home = () => {
   }, []);
 
   useEffect(() => {
+    const GH_HERO_FALLBACK = GH_FALLBACKS.map(p => ({
+      url: p.images[0].replace("w=400&q=75", "w=900&q=80"),
+      label: p.name,
+    }));
     fetch(`${BASE_URL}/admin/gift-hamper-samples`)
       .then(r => r.ok ? r.json() : { samples: [] })
-      .then(d => { if (d.samples?.length) setGhSamplePhotos(d.samples.map(s => ({ url: s.url, label: s.name || "Gift Hamper" }))); })
-      .catch(() => {});
+      .then(d => {
+        if (d.samples?.length) {
+          setGhSamplePhotos(d.samples.map(s => ({ url: s.url, label: s.name || "Gift Hamper" })));
+        } else {
+          setGhSamplePhotos(GH_HERO_FALLBACK);
+        }
+      })
+      .catch(() => setGhSamplePhotos(GH_HERO_FALLBACK));
   }, []);
 
   useEffect(() => {
