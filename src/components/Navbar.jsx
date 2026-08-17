@@ -298,10 +298,12 @@ const Navbar = ({
     {
       label: "Tools",
       items: [
-        { label: "Timeline",         href: "/timeline-picker" },
-        { label: "Budget Allocator", href: "/budget-picker" },
-        { label: "Find by Style",    href: "/find-by-style" },
-        // { label: "Decor Finder", href: "/decor-finder" }, // disabled
+        { label: "Plan My Event",      href: "/plan" },
+        { label: "Timeline",           href: "/timeline-picker" },
+        { label: "Budget Allocator",   href: "/budget-picker" },
+        { label: "Equipment Planner",  href: "/equipment-list" },
+        { label: "Invitation Builder", href: "/invitation-builder" },
+        { label: "Find by Style",      href: "/find-by-style" },
       ],
     },
     {

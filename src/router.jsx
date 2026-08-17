@@ -1,4 +1,4 @@
-import { createBrowserRouter, Outlet, ScrollRestoration, Navigate } from "react-router-dom";
+import { createBrowserRouter, Outlet, ScrollRestoration, Navigate, useLocation } from "react-router-dom";
 import { lazy, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import PWAInstallPrompt from "./components/PWAInstallPrompt";
@@ -15,7 +15,55 @@ function AppInit() {
       syncProgressOnLogin(token);
     }
   }, [token, dispatch]);
+
+  // Global Esc key: close the topmost visible modal
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key !== "Escape") return;
+      // Let components that listen to this event handle it first
+      document.dispatchEvent(new CustomEvent("tendr:esc"));
+      // Also click the topmost × / ✕ close button inside a fixed overlay
+      const btns = [...document.querySelectorAll("button")];
+      const closeBtn = btns.reverse().find((b) => {
+        const t = b.textContent.trim();
+        if (t !== "×" && t !== "✕") return false;
+        let el = b.parentElement;
+        while (el && el !== document.body) {
+          if (getComputedStyle(el).position === "fixed") return true;
+          el = el.parentElement;
+        }
+        return false;
+      });
+      closeBtn?.click();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, []);
+
   return null;
+}
+
+function PageTransition() {
+  const { pathname } = useLocation();
+  return (
+    <>
+      <style>{`
+        @keyframes tendr-page-in {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .tendr-page-wrapper {
+          animation: tendr-page-in 0.18s ease-out both;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .tendr-page-wrapper { animation: none; }
+        }
+      `}</style>
+      <div key={pathname} className="tendr-page-wrapper">
+        <Outlet />
+      </div>
+    </>
+  );
 }
 
 // Root layout — FloatingChatButton + VendorChatModal remain in App.jsx
@@ -28,7 +76,7 @@ function RootLayout() {
       <ScrollRestoration />
       <PWAInstallPrompt />
       <MobileBottomNav />
-      <Outlet />
+      <PageTransition />
     </>
   );
 }

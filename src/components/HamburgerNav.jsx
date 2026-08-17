@@ -155,6 +155,20 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
     return () => { window.removeEventListener("tendr:saved-updated", onSaved); window.removeEventListener("tendr:timeline-saved", onSaved); window.removeEventListener("tendr:budget-saved", onSaved); };
   }, []);
 
+  // Close any open panel/drawer on Esc
+  useEffect(() => {
+    const onEsc = () => {
+      if (drawerOpen)       { setDrawerOpen(false);       return; }
+      if (compareModalOpen) { setCompareModalOpen(false); return; }
+      if (profileOpen)      { setProfileOpen(false);      return; }
+      if (bookmarksOpen)    { setBookmarksOpen(false);    return; }
+      if (savedOpen)        { setSavedOpen(false);        return; }
+      if (searchOverlay)    { setSearchOverlay(false);    return; }
+    };
+    document.addEventListener("tendr:esc", onEsc);
+    return () => document.removeEventListener("tendr:esc", onEsc);
+  }, [drawerOpen, compareModalOpen, profileOpen, bookmarksOpen, savedOpen, searchOverlay]);
+
   // Check backend: if user has a paid EventPlan, silently clear Review & Pay state
   useEffect(() => {
     if (!token || !finalisedCount || user?.isAdmin) return;
@@ -373,11 +387,17 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
           {/* Sign In — for logged-out users, shown prominently near top */}
           {!token && (
-            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)" }}>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid rgba(196,122,46,0.1)", display: "flex", flexDirection: "column", gap: 7 }}>
               <button onClick={() => navigate("/login", { state: { returnTo: window.location.pathname + window.location.search } })}
                 style={{ width: "100%", padding: "10px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 3px 10px rgba(196,122,46,0.3)" }}>
                 Sign In / Sign Up →
               </button>
+              {compareSelected.length > 0 && (
+                <button onClick={() => setCompareModalOpen(true)} style={{ width: "100%", padding: "7px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  🔀 Compare
+                  <span style={{ background: "#CCAB4A", color: "#1C0900", borderRadius: 100, padding: "1px 7px", fontSize: 10, fontWeight: 800 }}>{compareSelected.length}</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -400,6 +420,12 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
               {!isHomePage && finalisedCount > 0 && (
                 <button onClick={() => navigate("/booking/review")} style={{ width: "100%", marginTop: 7, padding: "7px", borderRadius: 7, border: "none", background: "linear-gradient(135deg,#15803d,#22c55e)", color: "#fff", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
                   Review & Pay ({finalisedCount}) →
+                </button>
+              )}
+              {compareSelected.length > 0 && (
+                <button onClick={() => setCompareModalOpen(true)} style={{ width: "100%", marginTop: 7, padding: "7px", borderRadius: 7, border: "1.5px solid rgba(196,122,46,0.35)", background: "rgba(196,122,46,0.1)", color: "#CCAB4A", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font, display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+                  🔀 Compare Vendors
+                  <span style={{ background: "#CCAB4A", color: "#1C0900", borderRadius: 100, padding: "1px 7px", fontSize: 10, fontWeight: 800 }}>{compareSelected.length}</span>
                 </button>
               )}
             </div>
