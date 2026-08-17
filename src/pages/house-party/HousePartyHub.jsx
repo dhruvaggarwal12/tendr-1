@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER,
@@ -616,58 +616,6 @@ function PartyReportCard({ onClose }) {
   );
 }
 
-// ── Most Likely To ───────────────────────────────────────────────────────────
-const MOST_LIKELY_TO = [
-  "Most likely to still be awake at 5 AM",
-  "Most likely to accidentally text the wrong person something embarrassing",
-  "Most likely to become famous one day",
-  "Most likely to forget someone's name 2 minutes after meeting them",
-  "Most likely to cry at a movie",
-  "Most likely to be late to their own wedding",
-  "Most likely to end up on a reality show",
-  "Most likely to ghost someone they like",
-  "Most likely to order food at 2 AM",
-  "Most likely to have a secret talent no one knows about",
-  "Most likely to accidentally like an old Instagram photo while stalking someone",
-  "Most likely to move to another city on impulse",
-  "Most likely to start a business that fails spectacularly",
-  "Most likely to be the reason the party gets shut down",
-  "Most likely to fall asleep before midnight on New Year's Eve",
-  "Most likely to become a travel blogger",
-  "Most likely to marry someone they met online",
-  "Most likely to still be using Snapchat in 2030",
-  "Most likely to get kicked off a flight",
-  "Most likely to run into their ex at the worst possible moment",
-];
-
-function MostLikelyTo({ onClose }) {
-  const [idx, setIdx] = useState(() => Math.floor(Math.random() * MOST_LIKELY_TO.length));
-  const [voted, setVoted] = useState(null);
-
-  const next = () => { setIdx(i => (i + 1) % MOST_LIKELY_TO.length); setVoted(null); };
-
-  return (
-    <Modal onClose={onClose} emoji="🎲" title="Most Likely To">
-      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>
-        Everyone points at the person they think fits — most fingers = winner.
-      </p>
-      <div style={{ background: "rgba(124,58,237,0.15)", border: "1.5px solid rgba(124,58,237,0.35)", borderRadius: 16, padding: "28px 20px", textAlign: "center", marginBottom: 20 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#A78BFA", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>🎲 MOST LIKELY TO…</div>
-        <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.55 }}>{MOST_LIKELY_TO[idx]}</div>
-      </div>
-      {voted && (
-        <div style={{ textAlign: "center", fontSize: 26, marginBottom: 14, color: "#FBBF24", fontWeight: 800 }}>
-          👆 Everyone point now!
-        </div>
-      )}
-      <div style={{ display: "flex", gap: 10 }}>
-        <button onClick={() => setVoted(true)} style={{ ...btn("rgba(124,58,237,0.4)"), flex: 1 }}>👆 Point!</button>
-        <button onClick={next} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Next →</button>
-      </div>
-    </Modal>
-  );
-}
-
 // Potluck / Invite / PhotoWall — link-based, navigate to dedicated pages
 function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   const [data, setData] = useState({});
@@ -728,139 +676,6 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   );
 }
 
-// ── Octagon Layout (for sections with exactly 8 tools) ───────────────────────
-function OctagonGrid({ tools, onOpen }) {
-  const containerRef = useRef(null);
-  const [size, setSize] = useState(340);
-
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const ro = new ResizeObserver(([entry]) => setSize(entry.contentRect.width));
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  const n = tools.length;
-  const cx = size / 2;
-  const cy = size / 2;
-  const R = size * 0.355;
-  const nW = Math.max(68, Math.min(88, size * 0.21));
-  const nH = nW * 1.1;
-
-  const pts = tools.map((_, i) => {
-    const a = ((i * 360) / n - 90) * (Math.PI / 180);
-    return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
-  });
-
-  return (
-    <div ref={containerRef} style={{ width: '100%', position: 'relative', paddingBottom: '100%', maxWidth: 440, margin: '0 auto' }}>
-      <div style={{ position: 'absolute', inset: 0 }}>
-        <svg
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
-          viewBox={`0 0 ${size} ${size}`}
-        >
-          <defs>
-            <filter id="oct-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="oct-glow-sm" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="1.5" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-
-          {/* diameter cross-lines (faint) */}
-          {Array.from({ length: n / 2 }, (_, i) => (
-            <line key={`d${i}`}
-              x1={pts[i].x} y1={pts[i].y}
-              x2={pts[i + n / 2].x} y2={pts[i + n / 2].y}
-              stroke="rgba(167,139,250,0.12)" strokeWidth="1"
-            />
-          ))}
-
-          {/* outer octagon edges (bright) */}
-          {Array.from({ length: n }, (_, i) => (
-            <line key={`e${i}`}
-              x1={pts[i].x} y1={pts[i].y}
-              x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
-              stroke="rgba(167,139,250,0.45)" strokeWidth="1.5"
-              filter="url(#oct-glow-sm)"
-            />
-          ))}
-
-          {/* vertex dots */}
-          {pts.map((p, i) => (
-            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
-              fill="rgba(167,139,250,0.7)" filter="url(#oct-glow-sm)" />
-          ))}
-
-          {/* center dot */}
-          <circle cx={cx} cy={cy} r={5}
-            fill="rgba(124,58,237,0.6)" filter="url(#oct-glow)" />
-        </svg>
-
-        {/* Tool nodes */}
-        {tools.map((t, i) => {
-          const p = pts[i];
-          return (
-            <button
-              key={t.id}
-              onClick={() => onOpen(t.id)}
-              style={{
-                position: 'absolute',
-                width: nW,
-                height: nH,
-                left: p.x - nW / 2,
-                top: p.y - nH / 2,
-                background: `radial-gradient(circle at 50% 30%, ${t.color}28, rgba(20,15,40,0.9))`,
-                border: `1.5px solid ${t.color}55`,
-                borderRadius: 14,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 5,
-                padding: '6px 4px',
-                fontFamily: font,
-                transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
-                boxSizing: 'border-box',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = `0 0 22px ${t.color}55`;
-                e.currentTarget.style.borderColor = `${t.color}aa`;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = `${t.color}55`;
-              }}
-            >
-              <span style={{ fontSize: Math.max(18, nW * 0.28), lineHeight: 1 }}>{t.emoji}</span>
-              <span style={{
-                fontSize: Math.max(8.5, nW * 0.115),
-                fontWeight: 700,
-                color: '#fff',
-                textAlign: 'center',
-                lineHeight: 1.2,
-                padding: '0 3px',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}>{t.title}</span>
-              <div style={{ width: '50%', height: 2, background: t.color, borderRadius: 4, opacity: 0.7 }} />
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN HUB
 // ════════════════════════════════════════════════════════════════════════════
@@ -884,7 +699,6 @@ const TOOLS = [
   { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB" },
   { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706" },
   { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
-  { id: "mostlikelyto", section: "games", emoji: "🎲", title: "Most Likely To", desc: "Point at whoever fits — most fingers wins", color: "#A855F7" },
   // Other
   { id: "reportcard", section: "other", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade + verdict", color: "#FBBF24" },
 ];
@@ -898,25 +712,7 @@ const SECTIONS = [
 
 export default function HousePartyHub() {
   const [open, setOpen] = useState(null);
-  const [hoveredTool, setHoveredTool] = useState(null);
-  const [glare, setGlare] = useState({});
   const navigate = useNavigate();
-
-  const handleCardMouseMove = (e, id) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setGlare(prev => ({
-      ...prev,
-      [id]: {
-        x: ((e.clientX - rect.left) / rect.width) * 100,
-        y: ((e.clientY - rect.top) / rect.height) * 100,
-      },
-    }));
-  };
-
-  const handleCardMouseLeave = (id) => {
-    setHoveredTool(null);
-    setGlare(prev => { const n = { ...prev }; delete n[id]; return n; });
-  };
 
   const renderModal = () => {
     switch (open) {
@@ -927,7 +723,6 @@ export default function HousePartyHub() {
       case "spin": return <SpinBottle onClose={() => setOpen(null)} />;
       case "charades": return <Charades onClose={() => setOpen(null)} />;
       case "bingo": return <Bingo onClose={() => setOpen(null)} />;
-      case "mostlikelyto": return <MostLikelyTo onClose={() => setOpen(null)} />;
       case "checklist": return <Checklist onClose={() => setOpen(null)} />;
       case "bills": return <BillSplitter onClose={() => setOpen(null)} />;
       case "theme": return <ThemePicker onClose={() => setOpen(null)} />;
@@ -970,148 +765,39 @@ export default function HousePartyHub() {
   };
 
   return (
-    <div className="hp-aurora-bg" style={{ minHeight: "100dvh", fontFamily: font }}>
-      <style>{`
-        @keyframes hp-aurora {
-          0%   { background-position: 0% 50%; }
-          50%  { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes hp-tool-in {
-          from { opacity: 0; transform: translateY(14px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .hp-aurora-bg {
-          background: linear-gradient(125deg, #0d0a1e, #1a1030, #0d1a2e, #1a0d2e, #0d0a1e);
-          background-size: 300% 300%;
-          animation: hp-aurora 18s ease infinite;
-        }
-        @media (max-width: 480px) {
-          .hp-hero-h1 { font-size: 2rem !important; }
-          .hp-grid    { grid-template-columns: 1fr 1fr !important; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .hp-aurora-bg { animation: none; }
-          [data-hp-card] { transition: none !important; }
-        }
-      `}</style>
-
-      {/* ── Hero ── */}
-      <div style={{ position: "relative", overflow: "hidden", padding: "28px 20px 0", textAlign: "center" }}>
-        {/* Aurora accent layer */}
-        <div style={{
-          position: "absolute", top: -120, left: "50%", transform: "translateX(-50%)",
-          width: 700, height: 340, borderRadius: "50%",
-          background: "radial-gradient(ellipse at 40% 60%, rgba(124,58,237,0.18) 0%, rgba(37,99,235,0.1) 40%, transparent 70%)",
-          filter: "blur(40px)",
-          pointerEvents: "none",
-        }} />
-
-        {/* back */}
-        <button onClick={() => navigate(-1)} style={{
-          position: "relative",
-          background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
-          color: "rgba(255,255,255,0.7)", padding: "7px 16px",
-          borderRadius: 100, cursor: "pointer", fontSize: 12,
-          fontFamily: font, fontWeight: 600, marginBottom: 28,
-          transition: "background 0.15s",
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.12)"}
-        onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.07)"}
-        >← Back</button>
-
-        {/* eyebrow pill */}
-        <div style={{ position: "relative", marginBottom: 14 }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 7,
-            background: "rgba(124,58,237,0.15)",
-            border: "1px solid rgba(124,58,237,0.35)",
-            borderRadius: 100, padding: "5px 14px",
-          }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#A78BFA", boxShadow: "0 0 6px rgba(167,139,250,0.8)" }} />
-            <span style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", letterSpacing: "0.1em", textTransform: "uppercase" }}>Party Toolkit</span>
-          </span>
+    <div style={{ minHeight: "100dvh", background: "linear-gradient(135deg, #0f0c29, #1a1a2e, #16213e)", fontFamily: font, paddingBottom: 40 }}>
+      {/* Header */}
+      <div style={{ padding: "20px 18px 0" }}>
+        <button onClick={() => navigate(-1)} style={{ background: "rgba(255,255,255,0.1)", border: "none", color: "#fff", padding: "8px 14px", borderRadius: 20, cursor: "pointer", fontSize: 13, fontFamily: font, marginBottom: 20 }}>← Back</button>
+        <div style={{ textAlign: "center", paddingBottom: 24 }}>
+          <div style={{ fontSize: 52 }}>🎉</div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: "#fff", margin: "8px 0 4px", letterSpacing: "-0.02em" }}>House Party Hub</h1>
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", margin: 0 }}>The app everyone opens during the party</p>
         </div>
-
-        <h1 className="hp-hero-h1" style={{
-          position: "relative",
-          fontSize: "clamp(2.2rem,5vw,3rem)", fontWeight: 900,
-          color: "#fff", margin: "0 0 8px", letterSpacing: "-0.025em", lineHeight: 1.1,
-        }}>House Party Hub</h1>
-        <p style={{
-          position: "relative",
-          fontSize: 14, color: "rgba(255,255,255,0.45)",
-          margin: "0 0 36px", lineHeight: 1.55,
-        }}>The app everyone opens during the party</p>
       </div>
 
-      {/* ── Sections ── */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px 56px" }}>
-        {SECTIONS.map((sec, si) => {
-          const tools = TOOLS.filter(t => t.section === sec.id);
-          return (
-            <div key={sec.id} style={{ marginBottom: 36 }}>
-              {/* Section header */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 10, marginBottom: 14,
-                paddingBottom: 10,
-                borderBottom: "1px solid rgba(255,255,255,0.06)",
-              }}>
-                <span style={{ fontSize: 18 }}>{sec.label.split(" ")[0]}</span>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>
-                    {sec.label.split(" ").slice(1).join(" ")}
-                  </div>
-                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{sec.subtitle}</div>
-                </div>
-              </div>
-
-              {/* Tool grid or Octagon */}
-              {tools.length === 8 ? (
-                <OctagonGrid tools={tools} onOpen={setOpen} />
-              ) : (
-                <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-                  {tools.map((t, ti) => {
-                    const isHovered = hoveredTool === t.id;
-                    const g = glare[t.id];
-                    const cardBg = g
-                      ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}33 0%, rgba(255,255,255,0.06) 55%), rgba(255,255,255,0.04)`
-                      : "rgba(255,255,255,0.04)";
-                    return (
-                      <div
-                        key={t.id}
-                        data-hp-card
-                        onClick={() => setOpen(t.id)}
-                        onMouseEnter={() => setHoveredTool(t.id)}
-                        onMouseMove={(e) => handleCardMouseMove(e, t.id)}
-                        onMouseLeave={() => handleCardMouseLeave(t.id)}
-                        style={{
-                          background: cardBg,
-                          border: `1.5px solid ${isHovered ? t.color + "55" : "rgba(255,255,255,0.07)"}`,
-                          borderRadius: 16,
-                          padding: "18px 15px 15px",
-                          cursor: "pointer",
-                          transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
-                          transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
-                          boxShadow: isHovered ? `0 10px 32px ${t.color}28` : "none",
-                          animation: `hp-tool-in 0.4s ease both`,
-                          animationDelay: `${(si * tools.length + ti) * 0.04}s`,
-                          willChange: "background",
-                        }}
-                      >
-                        <div style={{ fontSize: 26, marginBottom: 10, lineHeight: 1 }}>{t.emoji}</div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
-                        <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.55, transition: "opacity 0.18s" }} />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+      {/* Sections */}
+      {SECTIONS.map(sec => {
+        const tools = TOOLS.filter(t => t.section === sec.id);
+        return (
+          <div key={sec.id} style={{ padding: "0 16px", marginBottom: 28 }}>
+            <div style={{ marginBottom: 14 }}>
+              <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>{sec.label}</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{sec.subtitle}</div>
             </div>
-          );
-        })}
-      </div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))", gap: 10 }}>
+              {tools.map(t => (
+                <div key={t.id} onClick={() => setOpen(t.id)} style={{ background: "rgba(255,255,255,0.05)", border: "1.5px solid rgba(255,255,255,0.08)", borderRadius: 16, padding: "16px 14px", cursor: "pointer", transition: "all 0.15s", active: { transform: "scale(0.97)" } }}>
+                  <div style={{ fontSize: 28, marginBottom: 8 }}>{t.emoji}</div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4, lineHeight: 1.3 }}>{t.title}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", lineHeight: 1.4 }}>{t.desc}</div>
+                  <div style={{ width: 24, height: 3, background: t.color, borderRadius: 4, marginTop: 10 }} />
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })}
 
       {renderModal()}
     </div>
