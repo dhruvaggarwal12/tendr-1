@@ -728,8 +728,8 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   );
 }
 
-// ── Octagon Layout (for sections with exactly 8 tools) ───────────────────────
-function OctagonGrid({ tools, onOpen }) {
+// ── Polygon Layout (triangle for 3, square for 4, pentagon for 5 … octagon for 8) ──
+function PolygonGrid({ tools, onOpen }) {
   const containerRef = useRef(null);
   const [size, setSize] = useState(340);
 
@@ -744,60 +744,65 @@ function OctagonGrid({ tools, onOpen }) {
   const cx = size / 2;
   const cy = size / 2;
   const R = size * 0.355;
-  const nW = Math.max(68, Math.min(88, size * 0.21));
-  const nH = nW * 1.1;
+  // Larger nodes for fewer items, smaller for more
+  const nW = Math.max(64, Math.min(size * 0.26, 64 + (8 - n) * 4));
+  const nH = nW * 1.12;
 
   const pts = tools.map((_, i) => {
     const a = ((i * 360) / n - 90) * (Math.PI / 180);
     return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
   });
 
+  // Even N → diameters (opposite vertices); Odd N → spokes from center
+  const innerLines = n % 2 === 0
+    ? Array.from({ length: n / 2 }, (_, i) => [pts[i], pts[i + n / 2]])
+    : pts.map(p => [{ x: cx, y: cy }, p]);
+
   return (
-    <div ref={containerRef} style={{ width: '100%', position: 'relative', paddingBottom: '100%', maxWidth: 440, margin: '0 auto' }}>
+    <div ref={containerRef} style={{ width: '100%', position: 'relative', paddingBottom: '100%', maxWidth: 460, margin: '0 auto' }}>
       <div style={{ position: 'absolute', inset: 0 }}>
         <svg
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
           viewBox={`0 0 ${size} ${size}`}
         >
           <defs>
-            <filter id="oct-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="3" result="blur"/>
+            <filter id="pg-glow" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="3.5" result="blur"/>
               <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
-            <filter id="oct-glow-sm" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="1.5" result="blur"/>
+            <filter id="pg-glow-sm" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="1.8" result="blur"/>
               <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
             </filter>
           </defs>
 
-          {/* diameter cross-lines (faint) */}
-          {Array.from({ length: n / 2 }, (_, i) => (
-            <line key={`d${i}`}
-              x1={pts[i].x} y1={pts[i].y}
-              x2={pts[i + n / 2].x} y2={pts[i + n / 2].y}
-              stroke="rgba(167,139,250,0.12)" strokeWidth="1"
+          {/* Inner lines — diameters (even) or spokes (odd) */}
+          {innerLines.map(([a, b], i) => (
+            <line key={`il${i}`}
+              x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+              stroke="rgba(167,139,250,0.14)" strokeWidth="1"
             />
           ))}
 
-          {/* outer octagon edges (bright) */}
+          {/* Outer polygon edges */}
           {Array.from({ length: n }, (_, i) => (
             <line key={`e${i}`}
               x1={pts[i].x} y1={pts[i].y}
               x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
-              stroke="rgba(167,139,250,0.45)" strokeWidth="1.5"
-              filter="url(#oct-glow-sm)"
+              stroke="rgba(167,139,250,0.5)" strokeWidth="1.6"
+              filter="url(#pg-glow-sm)"
             />
           ))}
 
-          {/* vertex dots */}
+          {/* Vertex dots */}
           {pts.map((p, i) => (
             <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
-              fill="rgba(167,139,250,0.7)" filter="url(#oct-glow-sm)" />
+              fill="rgba(167,139,250,0.8)" filter="url(#pg-glow-sm)" />
           ))}
 
-          {/* center dot */}
+          {/* Center dot */}
           <circle cx={cx} cy={cy} r={5}
-            fill="rgba(124,58,237,0.6)" filter="url(#oct-glow)" />
+            fill="rgba(124,58,237,0.65)" filter="url(#pg-glow)" />
         </svg>
 
         {/* Tool nodes */}
@@ -813,7 +818,7 @@ function OctagonGrid({ tools, onOpen }) {
                 height: nH,
                 left: p.x - nW / 2,
                 top: p.y - nH / 2,
-                background: `radial-gradient(circle at 50% 30%, ${t.color}28, rgba(20,15,40,0.9))`,
+                background: `radial-gradient(circle at 50% 30%, ${t.color}2a, rgba(14,10,32,0.92))`,
                 border: `1.5px solid ${t.color}55`,
                 borderRadius: 14,
                 cursor: 'pointer',
@@ -830,8 +835,8 @@ function OctagonGrid({ tools, onOpen }) {
               }}
               onMouseEnter={e => {
                 e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = `0 0 22px ${t.color}55`;
-                e.currentTarget.style.borderColor = `${t.color}aa`;
+                e.currentTarget.style.boxShadow = `0 0 24px ${t.color}55`;
+                e.currentTarget.style.borderColor = `${t.color}bb`;
               }}
               onMouseLeave={e => {
                 e.currentTarget.style.transform = 'scale(1)';
@@ -839,9 +844,9 @@ function OctagonGrid({ tools, onOpen }) {
                 e.currentTarget.style.borderColor = `${t.color}55`;
               }}
             >
-              <span style={{ fontSize: Math.max(18, nW * 0.28), lineHeight: 1 }}>{t.emoji}</span>
+              <span style={{ fontSize: Math.max(18, nW * 0.29), lineHeight: 1 }}>{t.emoji}</span>
               <span style={{
-                fontSize: Math.max(8.5, nW * 0.115),
+                fontSize: Math.max(8.5, nW * 0.118),
                 fontWeight: 700,
                 color: '#fff',
                 textAlign: 'center',
@@ -852,7 +857,7 @@ function OctagonGrid({ tools, onOpen }) {
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
               }}>{t.title}</span>
-              <div style={{ width: '50%', height: 2, background: t.color, borderRadius: 4, opacity: 0.7 }} />
+              <div style={{ width: '44%', height: 2, background: t.color, borderRadius: 4, opacity: 0.72 }} />
             </button>
           );
         })}
@@ -1066,9 +1071,9 @@ export default function HousePartyHub() {
                 </div>
               </div>
 
-              {/* Tool grid or Octagon */}
-              {tools.length === 8 ? (
-                <OctagonGrid tools={tools} onOpen={setOpen} />
+              {/* Polygon web (triangle/square/pentagon/…/octagon) or plain grid for 1-2 */}
+              {tools.length >= 3 ? (
+                <PolygonGrid tools={tools} onOpen={setOpen} />
               ) : (
                 <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
                   {tools.map((t, ti) => {
