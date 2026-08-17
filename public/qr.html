@@ -90,17 +90,19 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .dot.on{background:var(--gold);width:24px;border-radius:4px;box-shadow:0 0 10px var(--gg);}
 .dot.dn{background:var(--gold);opacity:.35;}
 .qnum{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);}
-.qb{flex:1;display:flex;flex-direction:column;justify-content:center;padding:12px 28px 20px;}
+.qmid{flex:1;display:flex;flex-direction:column;justify-content:center;
+  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 16px);}
+.qb{display:flex;flex-direction:column;padding:8px 28px 20px;}
 .qbadge{display:inline-flex;align-items:center;padding:5px 12px;border-radius:30px;
   background:var(--gls);border:1px solid var(--bdg);
   font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--gold);margin-bottom:20px;align-self:flex-start;
+  color:var(--gold);margin-bottom:20px;align-self:center;
   animation:fu .4s .05s ease both;}
 .qhead{font-size:clamp(19px,5.2vw,25px);font-weight:900;color:var(--txt);
-  line-height:1.25;margin-bottom:12px;animation:fu .4s .1s ease both;}
+  line-height:1.25;margin-bottom:12px;text-align:center;animation:fu .4s .1s ease both;}
 .qhead em{color:var(--gl);font-style:normal;}
-.qsub{font-size:14px;color:var(--dim);line-height:1.7;animation:fu .4s .15s ease both;}
-.qc{padding:0 20px calc(env(safe-area-inset-bottom,24px) + 20px);
+.qsub{font-size:14px;color:var(--dim);line-height:1.7;text-align:center;animation:fu .4s .15s ease both;}
+.qc{padding:0 20px 0;
   display:flex;flex-direction:column;gap:11px;flex-shrink:0;
   animation:fu .4s .22s ease both;}
 .ch{display:flex;align-items:center;gap:13px;padding:17px 20px;border-radius:18px;
@@ -136,14 +138,14 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   opacity:0;transition:opacity .35s ease;}
 .eov[data-s="fade"].show{opacity:1;}
 .eov[data-s="card"]{top:auto;min-height:54%;background:var(--sf);
-  align-items:flex-start;text-align:left;padding:36px 28px 80px;
+  align-items:center;text-align:center;padding:36px 32px 80px;
   opacity:1;transform:translateY(112%);
   transition:transform .48s cubic-bezier(.08,.9,.22,1);
   border-radius:24px 24px 0 0;border-top:1.5px solid var(--bdg);
   box-shadow:0 -20px 60px rgba(0,0,0,.75);-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);}
 .eov[data-s="card"].show{transform:translateY(0);}
 .eov[data-s="wipe"]{bottom:auto;min-height:52%;background:var(--sf);
-  align-items:flex-start;text-align:left;padding:58px 28px 36px;
+  align-items:center;text-align:center;padding:58px 32px 36px;
   opacity:1;transform:translateY(-112%);
   transition:transform .48s cubic-bezier(.08,.9,.22,1);
   border-radius:0 0 24px 24px;border-bottom:1.5px solid var(--bdg);
@@ -160,9 +162,8 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .et{font-size:20px;font-weight:900;color:var(--txt);line-height:1.4;margin-bottom:10px;}
 .et b{color:var(--gl);}
 .eb{font-size:14px;color:var(--dim);line-height:1.7;max-width:300px;}
-.eov[data-s="card"] .et,.eov[data-s="wipe"] .et{
-  font-size:18px;padding-left:16px;border-left:3px solid var(--gold);}
-.eov[data-s="card"] .eb,.eov[data-s="wipe"] .eb{padding-left:19px;}
+.eov[data-s="card"] .et,.eov[data-s="wipe"] .et{font-size:18px;}
+.eov[data-s="card"] .eb,.eov[data-s="wipe"] .eb{max-width:300px;}
 .epbar{position:absolute;bottom:40px;left:32px;right:32px;
   height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
 .epfill{height:100%;width:0%;
@@ -294,13 +295,13 @@ const L={
 en:{
   skip:['I see it →','And? →','Keep going →','Show me →'],
   qs:[
-    {badge:'Gifting',
-     head:'Finding the right gift feels like <em>a part-time job.</em>',
-     sub:'Budget. Occasion. Packaging. Still second-guessing.',
-     y:{em:'😩',t:'Every occasion, every time.',s:'You\'re not alone.'},
-     n:{em:'😎',t:'I\'m quick with gifts.',s:'Teach us your ways.'},
-     oy:{icon:'🎁',t:'<b>Gift hunting is underrated effort.</b>',b:'Tendr curates hampers for every occasion and budget — no hunting needed.'},
-     on:{icon:'✨',t:'<b>That confidence is rare.</b>',b:'Tendr makes it even easier. Next question.'},
+    {badge:'Occasion Planning',
+     head:'You know the occasion — <em>but have no idea where to even start.</em>',
+     sub:'Venue? Caterer? Decor? That blank-page feeling.',
+     y:{em:'😵',t:'Every time. Completely blank.',s:'You\'re not alone.'},
+     n:{em:'🗂️',t:'I plan it out ahead.',s:'Teach us.'},
+     oy:{icon:'🎯',t:'<b>That blank-page feeling is real.</b>',b:'Tendr walks you through every step — all in one place.'},
+     on:{icon:'✨',t:'<b>That clarity is rare.</b>',b:'Tendr makes it even faster.'},
     },
     {badge:'Planning',
      head:'For any event — you\'ve used <em>3+ different places</em> just to pull it together.',
@@ -318,13 +319,13 @@ en:{
      oy:{icon:'📋',t:'<b>Booking from 6 places has a hidden tax.</b>',b:'Your time. Tendr coordinates everything so you don\'t have to.'},
      on:{icon:'✨',t:'<b>That\'s a rare setup.</b>',b:'Tendr keeps it that way — without the effort. Last one.'},
     },
-    {badge:'Trust',
-     head:'Has a vendor ever <em>bailed last minute</em> — no warning, no fix?',
-     sub:'Cancelled. Late. Surprise fees.',
-     y:{em:'😤',t:'Yes. Still bitter.',s:'We know.'},
-     n:{em:'🤞',t:'Not yet.',s:'Lucky.'},
-     oy:{icon:'🛡️',t:'<b>One vendor failure ruins everything.</b>',b:'Tendr vets every vendor — and our team steps in if anything goes wrong.'},
-     on:{icon:'🤞',t:'<b>Let\'s keep it that way.</b>',b:'Tendr makes sure it stays that way.'},
+    {badge:'Finding Vendors',
+     head:'Ever struggled to find <em>the right vendor</em> — not just any, the perfect fit?',
+     sub:'Price. Quality. Reviews. Still unsure who to trust.',
+     y:{em:'😩',t:'Always feels like a gamble.',s:'We know the feeling.'},
+     n:{em:'🤝',t:'I have trusted go-tos.',s:'That\'s rare.'},
+     oy:{icon:'🔍',t:'<b>Finding the right one is the hardest part.</b>',b:'Tendr\'s vetted network — quality vendors, real quotes, zero guesswork.'},
+     on:{icon:'🌟',t:'<b>That trust takes years to build.</b>',b:'Tendr gives you that network instantly.'},
     },
   ],
   fq:{
@@ -356,13 +357,13 @@ en:{
 hi:{
   skip:['देखते हैं →','और? →','आगे →','दिखाइए →'],
   qs:[
-    {badge:'Gift देना',
-     head:'सही gift ढूंढना <em>एक part-time job जैसा लगता है।</em>',
-     sub:'Budget। Occasion। Packaging। फिर भी doubt।',
-     y:{em:'😩',t:'हर बार यही होता है।',s:'आप अकेले नहीं।'},
-     n:{em:'😎',t:'मैं जल्दी ढूंढ लेता/लेती हूँ।',s:'राज़ बताइए।'},
-     oy:{icon:'🎁',t:'<b>Gift hunting असली मेहनत है।</b>',b:'Tendr हर occasion और budget के लिए curated hampers देता है।'},
-     on:{icon:'✨',t:'<b>यह confidence rare है।</b>',b:'Tendr इसे और आसान बनाता है।'},
+    {badge:'Occasion Planning',
+     head:'Occasion पता है — <em>पर शुरू कहाँ से करें, कुछ समझ नहीं आता।</em>',
+     sub:'Venue? Caterer? Decor? Blank page जैसा लगता है।',
+     y:{em:'😵',t:'हर बार यही होता है।',s:'आप अकेले नहीं।'},
+     n:{em:'🗂️',t:'मेरा plan ready रहता है।',s:'बताइए कैसे।'},
+     oy:{icon:'🎯',t:'<b>वो blank-page feeling real है।</b>',b:'Tendr हर step guide करता है — सब एक जगह।'},
+     on:{icon:'✨',t:'<b>यह clarity rare है।</b>',b:'Tendr इसे और fast बनाता है।'},
     },
     {badge:'Planning',
      head:'किसी भी event के लिए — <em>3+ अलग जगहों से</em> सब जोड़ना पड़ता है।',
@@ -380,13 +381,13 @@ hi:{
      oy:{icon:'📋',t:'<b>6 जगहों से book करने का एक hidden tax है।</b>',b:'आपका समय। Tendr coordinate करता है ताकि आपको न करना पड़े।'},
      on:{icon:'✨',t:'<b>यह rare setup है।</b>',b:'Tendr इसे बनाए रखता है — बिना मेहनत के।'},
     },
-    {badge:'भरोसा',
-     head:'किसी vendor ने कभी <em>last minute में धोखा दिया</em> — बिना warning, बिना fix?',
-     sub:'Cancel। Late। Surprise fees।',
-     y:{em:'😤',t:'हाँ। अभी तक याद है।',s:'हम जानते हैं।'},
-     n:{em:'🤞',t:'अभी तक नहीं।',s:'Lucky।'},
-     oy:{icon:'🛡️',t:'<b>एक vendor की गलती सब बर्बाद करती है।</b>',b:'Tendr हर vendor को verify करता है — और कुछ गलत हो तो team खड़ी है।'},
-     on:{icon:'🤞',t:'<b>यही बना रहे।</b>',b:'Tendr यही ensure करता है।'},
+    {badge:'Vendor ढूंढना',
+     head:'कभी <em>सही vendor नहीं मिला</em> — कोई भी नहीं, बिल्कुल perfect fit?',
+     sub:'Price। Quality। Reviews। फिर भी doubt।',
+     y:{em:'😩',t:'हमेशा एक जुआ लगता है।',s:'हम जानते हैं।'},
+     n:{em:'🤝',t:'मेरे trusted लोग हैं।',s:'Rare है यह।'},
+     oy:{icon:'🔍',t:'<b>सही vendor ढूंढना सबसे मुश्किल है।</b>',b:'Tendr का vetted network — quality vendors, real quotes, कोई guesswork नहीं।'},
+     on:{icon:'🌟',t:'<b>यह trust बनाने में साल लगते हैं।</b>',b:'Tendr वो network तुरंत देता है।'},
     },
   ],
   fq:{
@@ -418,13 +419,13 @@ hi:{
 hl:{
   skip:['Dekho →','Aur? →','Aage →','Dikhao →'],
   qs:[
-    {badge:'Gifting',
-     head:'Sahi gift dhundhna <em>ek part-time job lagta hai.</em>',
-     sub:'Budget. Occasion. Packaging. Phir bhi doubt.',
-     y:{em:'😩',t:'Har baar yahi hota hai.',s:'Tum akele nahi.'},
-     n:{em:'😎',t:'Main jaldi dhundh leta/leti hoon.',s:'Raaz batao.'},
-     oy:{icon:'🎁',t:'<b>Gift hunting underrated effort hai.</b>',b:'Tendr har occasion ke liye curated hampers deta hai — koi hunting nahi.'},
-     on:{icon:'✨',t:'<b>Yeh confidence rare hai.</b>',b:'Tendr ise aur aasaan banata hai.'},
+    {badge:'Occasion Planning',
+     head:'Occasion pata hai — <em>par shuru kahan se karein, kuch samajh nahi aata.</em>',
+     sub:'Venue? Caterer? Decor? Blank page jaisa feel.',
+     y:{em:'😵',t:'Har baar yahi hota hai.',s:'Tum akele nahi.'},
+     n:{em:'🗂️',t:'Mera plan ready rehta hai.',s:'Batao kaise.'},
+     oy:{icon:'🎯',t:'<b>Woh blank-page feeling real hai.</b>',b:'Tendr har step guide karta hai — sab ek jagah.'},
+     on:{icon:'✨',t:'<b>Yeh clarity rare hai.</b>',b:'Tendr ise aur fast banata hai.'},
     },
     {badge:'Planning',
      head:'Kisi bhi event ke liye — <em>3+ alag jagah se</em> sab jodhna padta hai.',
@@ -442,13 +443,13 @@ hl:{
      oy:{icon:'📋',t:'<b>6 jagah se book karne ka hidden tax hai.</b>',b:'Tumhara time. Tendr coordinate karta hai taaki tumhe na karna pade.'},
      on:{icon:'✨',t:'<b>Yeh rare setup hai.</b>',b:'Tendr ise banaye rakhta hai — bina effort ke.'},
     },
-    {badge:'Trust',
-     head:'Kisi vendor ne kabhi <em>last minute bail kiya</em> — no warning, no fix?',
-     sub:'Cancel. Late. Surprise fees.',
-     y:{em:'😤',t:'Haan. Abhi tak yaad hai.',s:'Hum jaante hain.'},
-     n:{em:'🤞',t:'Abhi tak nahi.',s:'Lucky.'},
-     oy:{icon:'🛡️',t:'<b>Ek vendor failure sab barbad karta hai.</b>',b:'Tendr har vendor ko verify karta hai — kuch galat ho toh team khadi hai.'},
-     on:{icon:'🤞',t:'<b>Yahi banaye rakhte hain.</b>',b:'Tendr yahi ensure karta hai.'},
+    {badge:'Vendor dhundhna',
+     head:'Kabhi <em>sahi vendor nahi mila</em> — koi bhi nahi, bilkul perfect fit?',
+     sub:'Price. Quality. Reviews. Phir bhi doubt.',
+     y:{em:'😩',t:'Hamesha ek juaa lagta hai.',s:'Hum jaante hain.'},
+     n:{em:'🤝',t:'Mere trusted log hain.',s:'Rare hai yeh.'},
+     oy:{icon:'🔍',t:'<b>Sahi vendor dhundhna sabse mushkil hai.</b>',b:'Tendr ka vetted network — quality vendors, real quotes, koi guesswork nahi.'},
+     on:{icon:'🌟',t:'<b>Yeh trust banane mein saal lagte hain.</b>',b:'Tendr woh network turant deta hai.'},
     },
   ],
   fq:{
@@ -562,20 +563,22 @@ function renderQ(idx){
       <div class="qdots">${dots(idx)}</div>
       <div class="qnum">${idx+1} of 4</div>
     </div>
-    <div class="qb">
-      <div class="qbadge">${q.badge}</div>
-      <div class="qhead">${q.head}</div>
-      <div class="qsub">${q.sub}</div>
-    </div>
-    <div class="qc">
-      <button class="ch yo" id="by" onclick="ans('y',${idx})">
-        <span class="ce">${q.y.em}</span>
-        <div><div class="ct">${q.y.t}</div><span class="cs">${q.y.s}</span></div>
-      </button>
-      <button class="ch no" id="bn" onclick="ans('n',${idx})">
-        <span class="ce">${q.n.em}</span>
-        <div><div class="ct">${q.n.t}</div><span class="cs">${q.n.s}</span></div>
-      </button>
+    <div class="qmid">
+      <div class="qb">
+        <div class="qbadge">${q.badge}</div>
+        <div class="qhead">${q.head}</div>
+        <div class="qsub">${q.sub}</div>
+      </div>
+      <div class="qc">
+        <button class="ch yo" id="by" onclick="ans('y',${idx})">
+          <span class="ce">${q.y.em}</span>
+          <div><div class="ct">${q.y.t}</div><span class="cs">${q.y.s}</span></div>
+        </button>
+        <button class="ch no" id="bn" onclick="ans('n',${idx})">
+          <span class="ce">${q.n.em}</span>
+          <div><div class="ct">${q.n.t}</div><span class="cs">${q.n.s}</span></div>
+        </button>
+      </div>
     </div>
     <div class="eov" id="eov" data-s="${STYLES[idx]}" onclick="advance(${idx})">
       <div class="ei" id="ei"></div>
