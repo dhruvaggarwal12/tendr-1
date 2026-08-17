@@ -616,6 +616,58 @@ function PartyReportCard({ onClose }) {
   );
 }
 
+// ── Most Likely To ───────────────────────────────────────────────────────────
+const MOST_LIKELY_TO = [
+  "Most likely to still be awake at 5 AM",
+  "Most likely to accidentally text the wrong person something embarrassing",
+  "Most likely to become famous one day",
+  "Most likely to forget someone's name 2 minutes after meeting them",
+  "Most likely to cry at a movie",
+  "Most likely to be late to their own wedding",
+  "Most likely to end up on a reality show",
+  "Most likely to ghost someone they like",
+  "Most likely to order food at 2 AM",
+  "Most likely to have a secret talent no one knows about",
+  "Most likely to accidentally like an old Instagram photo while stalking someone",
+  "Most likely to move to another city on impulse",
+  "Most likely to start a business that fails spectacularly",
+  "Most likely to be the reason the party gets shut down",
+  "Most likely to fall asleep before midnight on New Year's Eve",
+  "Most likely to become a travel blogger",
+  "Most likely to marry someone they met online",
+  "Most likely to still be using Snapchat in 2030",
+  "Most likely to get kicked off a flight",
+  "Most likely to run into their ex at the worst possible moment",
+];
+
+function MostLikelyTo({ onClose }) {
+  const [idx, setIdx] = useState(() => Math.floor(Math.random() * MOST_LIKELY_TO.length));
+  const [voted, setVoted] = useState(null);
+
+  const next = () => { setIdx(i => (i + 1) % MOST_LIKELY_TO.length); setVoted(null); };
+
+  return (
+    <Modal onClose={onClose} emoji="🎲" title="Most Likely To">
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>
+        Everyone points at the person they think fits — most fingers = winner.
+      </p>
+      <div style={{ background: "rgba(124,58,237,0.15)", border: "1.5px solid rgba(124,58,237,0.35)", borderRadius: 16, padding: "28px 20px", textAlign: "center", marginBottom: 20 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#A78BFA", marginBottom: 14, textTransform: "uppercase", letterSpacing: "0.1em" }}>🎲 MOST LIKELY TO…</div>
+        <div style={{ fontSize: 17, color: "#fff", lineHeight: 1.55 }}>{MOST_LIKELY_TO[idx]}</div>
+      </div>
+      {voted && (
+        <div style={{ textAlign: "center", fontSize: 26, marginBottom: 14, color: "#FBBF24", fontWeight: 800 }}>
+          👆 Everyone point now!
+        </div>
+      )}
+      <div style={{ display: "flex", gap: 10 }}>
+        <button onClick={() => setVoted(true)} style={{ ...btn("rgba(124,58,237,0.4)"), flex: 1 }}>👆 Point!</button>
+        <button onClick={next} style={{ ...btn("rgba(255,255,255,0.1)"), flex: 1 }}>Next →</button>
+      </div>
+    </Modal>
+  );
+}
+
 // Potluck / Invite / PhotoWall — link-based, navigate to dedicated pages
 function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   const [data, setData] = useState({});
@@ -676,6 +728,139 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   );
 }
 
+// ── Octagon Layout (for sections with exactly 8 tools) ───────────────────────
+function OctagonGrid({ tools, onOpen }) {
+  const containerRef = useRef(null);
+  const [size, setSize] = useState(340);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(([entry]) => setSize(entry.contentRect.width));
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  const n = tools.length;
+  const cx = size / 2;
+  const cy = size / 2;
+  const R = size * 0.355;
+  const nW = Math.max(68, Math.min(88, size * 0.21));
+  const nH = nW * 1.1;
+
+  const pts = tools.map((_, i) => {
+    const a = ((i * 360) / n - 90) * (Math.PI / 180);
+    return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
+  });
+
+  return (
+    <div ref={containerRef} style={{ width: '100%', position: 'relative', paddingBottom: '100%', maxWidth: 440, margin: '0 auto' }}>
+      <div style={{ position: 'absolute', inset: 0 }}>
+        <svg
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
+          viewBox={`0 0 ${size} ${size}`}
+        >
+          <defs>
+            <filter id="oct-glow" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="oct-glow-sm" x="-50%" y="-50%" width="200%" height="200%">
+              <feGaussianBlur stdDeviation="1.5" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          {/* diameter cross-lines (faint) */}
+          {Array.from({ length: n / 2 }, (_, i) => (
+            <line key={`d${i}`}
+              x1={pts[i].x} y1={pts[i].y}
+              x2={pts[i + n / 2].x} y2={pts[i + n / 2].y}
+              stroke="rgba(167,139,250,0.12)" strokeWidth="1"
+            />
+          ))}
+
+          {/* outer octagon edges (bright) */}
+          {Array.from({ length: n }, (_, i) => (
+            <line key={`e${i}`}
+              x1={pts[i].x} y1={pts[i].y}
+              x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
+              stroke="rgba(167,139,250,0.45)" strokeWidth="1.5"
+              filter="url(#oct-glow-sm)"
+            />
+          ))}
+
+          {/* vertex dots */}
+          {pts.map((p, i) => (
+            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
+              fill="rgba(167,139,250,0.7)" filter="url(#oct-glow-sm)" />
+          ))}
+
+          {/* center dot */}
+          <circle cx={cx} cy={cy} r={5}
+            fill="rgba(124,58,237,0.6)" filter="url(#oct-glow)" />
+        </svg>
+
+        {/* Tool nodes */}
+        {tools.map((t, i) => {
+          const p = pts[i];
+          return (
+            <button
+              key={t.id}
+              onClick={() => onOpen(t.id)}
+              style={{
+                position: 'absolute',
+                width: nW,
+                height: nH,
+                left: p.x - nW / 2,
+                top: p.y - nH / 2,
+                background: `radial-gradient(circle at 50% 30%, ${t.color}28, rgba(20,15,40,0.9))`,
+                border: `1.5px solid ${t.color}55`,
+                borderRadius: 14,
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 5,
+                padding: '6px 4px',
+                fontFamily: font,
+                transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
+                boxSizing: 'border-box',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = 'scale(1.1)';
+                e.currentTarget.style.boxShadow = `0 0 22px ${t.color}55`;
+                e.currentTarget.style.borderColor = `${t.color}aa`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.borderColor = `${t.color}55`;
+              }}
+            >
+              <span style={{ fontSize: Math.max(18, nW * 0.28), lineHeight: 1 }}>{t.emoji}</span>
+              <span style={{
+                fontSize: Math.max(8.5, nW * 0.115),
+                fontWeight: 700,
+                color: '#fff',
+                textAlign: 'center',
+                lineHeight: 1.2,
+                padding: '0 3px',
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+              }}>{t.title}</span>
+              <div style={{ width: '50%', height: 2, background: t.color, borderRadius: 4, opacity: 0.7 }} />
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN HUB
 // ════════════════════════════════════════════════════════════════════════════
@@ -699,6 +884,7 @@ const TOOLS = [
   { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB" },
   { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706" },
   { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
+  { id: "mostlikelyto", section: "games", emoji: "🎲", title: "Most Likely To", desc: "Point at whoever fits — most fingers wins", color: "#A855F7" },
   // Other
   { id: "reportcard", section: "other", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade + verdict", color: "#FBBF24" },
 ];
@@ -741,6 +927,7 @@ export default function HousePartyHub() {
       case "spin": return <SpinBottle onClose={() => setOpen(null)} />;
       case "charades": return <Charades onClose={() => setOpen(null)} />;
       case "bingo": return <Bingo onClose={() => setOpen(null)} />;
+      case "mostlikelyto": return <MostLikelyTo onClose={() => setOpen(null)} />;
       case "checklist": return <Checklist onClose={() => setOpen(null)} />;
       case "bills": return <BillSplitter onClose={() => setOpen(null)} />;
       case "theme": return <ThemePicker onClose={() => setOpen(null)} />;
@@ -879,44 +1066,48 @@ export default function HousePartyHub() {
                 </div>
               </div>
 
-              {/* Tool grid */}
-              <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-                {tools.map((t, ti) => {
-                  const isHovered = hoveredTool === t.id;
-                  const g = glare[t.id];
-                  const cardBg = g
-                    ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}33 0%, rgba(255,255,255,0.06) 55%), rgba(255,255,255,0.04)`
-                    : "rgba(255,255,255,0.04)";
-                  return (
-                    <div
-                      key={t.id}
-                      data-hp-card
-                      onClick={() => setOpen(t.id)}
-                      onMouseEnter={() => setHoveredTool(t.id)}
-                      onMouseMove={(e) => handleCardMouseMove(e, t.id)}
-                      onMouseLeave={() => handleCardMouseLeave(t.id)}
-                      style={{
-                        background: cardBg,
-                        border: `1.5px solid ${isHovered ? t.color + "55" : "rgba(255,255,255,0.07)"}`,
-                        borderRadius: 16,
-                        padding: "18px 15px 15px",
-                        cursor: "pointer",
-                        transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
-                        transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
-                        boxShadow: isHovered ? `0 10px 32px ${t.color}28` : "none",
-                        animation: `hp-tool-in 0.4s ease both`,
-                        animationDelay: `${(si * tools.length + ti) * 0.04}s`,
-                        willChange: "background",
-                      }}
-                    >
-                      <div style={{ fontSize: 26, marginBottom: 10, lineHeight: 1 }}>{t.emoji}</div>
-                      <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
-                      <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.55, transition: "opacity 0.18s" }} />
-                    </div>
-                  );
-                })}
-              </div>
+              {/* Tool grid or Octagon */}
+              {tools.length === 8 ? (
+                <OctagonGrid tools={tools} onOpen={setOpen} />
+              ) : (
+                <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
+                  {tools.map((t, ti) => {
+                    const isHovered = hoveredTool === t.id;
+                    const g = glare[t.id];
+                    const cardBg = g
+                      ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}33 0%, rgba(255,255,255,0.06) 55%), rgba(255,255,255,0.04)`
+                      : "rgba(255,255,255,0.04)";
+                    return (
+                      <div
+                        key={t.id}
+                        data-hp-card
+                        onClick={() => setOpen(t.id)}
+                        onMouseEnter={() => setHoveredTool(t.id)}
+                        onMouseMove={(e) => handleCardMouseMove(e, t.id)}
+                        onMouseLeave={() => handleCardMouseLeave(t.id)}
+                        style={{
+                          background: cardBg,
+                          border: `1.5px solid ${isHovered ? t.color + "55" : "rgba(255,255,255,0.07)"}`,
+                          borderRadius: 16,
+                          padding: "18px 15px 15px",
+                          cursor: "pointer",
+                          transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
+                          transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
+                          boxShadow: isHovered ? `0 10px 32px ${t.color}28` : "none",
+                          animation: `hp-tool-in 0.4s ease both`,
+                          animationDelay: `${(si * tools.length + ti) * 0.04}s`,
+                          willChange: "background",
+                        }}
+                      >
+                        <div style={{ fontSize: 26, marginBottom: 10, lineHeight: 1 }}>{t.emoji}</div>
+                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
+                        <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.55, transition: "opacity 0.18s" }} />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           );
         })}
