@@ -9,7 +9,6 @@ import "./Home.css";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import PlatformFlow from "../../components/PlatformFlow";
 import OccasionPlanner from "../../components/OccasionPlanner";
-import IndependenceDayFlow from "../independence-day/IndependenceDayFlow";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { easeIn, motion } from "framer-motion";
@@ -337,7 +336,6 @@ const Home = () => {
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null); // null = closed, "" = all-occasions, string = specific occasion
-  const [showIndepDay, setShowIndepDay] = useState(false);
   const [showRakhi, setShowRakhi] = useState(false);
   const [searchParams] = useSearchParams();
   useEffect(() => {
@@ -912,14 +910,6 @@ const Home = () => {
               >
                 🪢 Rakhi Hampers
               </button>
-              <button
-                onClick={() => setShowIndepDay(true)}
-                style={{ background: "linear-gradient(90deg, #FF9933 0%, #e67e00 50%, #138808 100%)", color: "#fff", fontSize: 14, fontWeight: 700, letterSpacing: "0.01em", padding: "13px 22px", borderRadius: 14, border: "none", cursor: "pointer", boxShadow: "0 4px 20px rgba(255,153,51,0.35)", transition: "transform 0.2s, box-shadow 0.2s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 7 }}
-                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-3px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(255,153,51,0.45)"; }}
-                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 20px rgba(255,153,51,0.35)"; }}
-              >
-                🇮🇳 Plan for Independence Day
-              </button>
             </div>
 
           </div>
@@ -1185,39 +1175,6 @@ const Home = () => {
             <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.6rem,3vw,2.2rem)", fontWeight: 400, color: "#FFF8EC", margin: 0, letterSpacing: "0.01em" }}>What's the occasion?</h2>
           </div>
 
-          {/* ── Independence Day featured strip ── */}
-          <div
-            onClick={() => setShowIndepDay(true)}
-            style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              width: "100%", marginBottom: 18,
-              background: "linear-gradient(90deg, #FF9933 0%, #e67e00 30%, #138808 100%)",
-              borderRadius: 14, padding: "12px 14px",
-              overflow: "hidden", position: "relative",
-              boxShadow: "0 4px 20px rgba(255,153,51,0.35)",
-              boxSizing: "border-box", gap: 10, cursor: "pointer",
-            }}
-          >
-            <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.18)" }} />
-            <div style={{ position: "relative", textAlign: "left", minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 2 }}>
-                <span style={{ fontSize: 20, flexShrink: 0 }}>🇮🇳</span>
-                <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.85)", textTransform: "uppercase", letterSpacing: "0.1em", whiteSpace: "nowrap" }}>
-                  Independence Day
-                </span>
-              </div>
-              <div style={{ fontSize: "clamp(0.88rem,3.5vw,1.05rem)", fontWeight: 700, color: "#FFFFFF", lineHeight: 1.3 }}>
-                Plan your celebration
-              </div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.8)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                Decorator · Caterer · DJ · Photographer
-              </div>
-            </div>
-            <div style={{ position: "relative", background: "rgba(255,255,255,0.22)", borderRadius: 20, padding: "5px 12px", fontSize: 11, fontWeight: 700, color: "#fff", flexShrink: 0, whiteSpace: "nowrap" }}>
-              Plan Now →
-            </div>
-          </div>
-          {/* ── END Independence Day strip ── */}
 
 
           {/* ── House Party Hub strip — hidden on main ── */}
@@ -1946,10 +1903,6 @@ const Home = () => {
         />
       )}
 
-      {/* ── Independence Day Flow Modal ── */}
-      {showIndepDay && (
-        <IndependenceDayFlow onClose={() => setShowIndepDay(false)} />
-      )}
     </div>
   );
 };

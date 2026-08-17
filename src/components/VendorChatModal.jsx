@@ -542,7 +542,7 @@ export default function VendorChatModal() {
   const [showFinalisePopup, setShowFinalisePopup] = useState(false);
   const [finalising, setFinalising] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // All null-vendorId non-SmartPlan chats are Baat Karo flows (Baat Karo, Independence Day, Gift Hampers, etc.)
+  // All null-vendorId non-SmartPlan chats are Baat Karo flows (Baat Karo, Gift Hampers, etc.)
   const isBaatKaro = !vendor?._id && !isSmartPlan;
   // Direct chats (no approval) — Mark Done + Finalise locked until admin replies once
   const isDirectChat = isBaatKaro || (isConcierge && !isSmartPlan);
@@ -688,7 +688,7 @@ export default function VendorChatModal() {
     if (isConcierge && !chatState.conversationId) {
       if (isSkipBot) {
         // Talk to Tendr Team — find-or-create the single unified Baat Karo conversation
-        // so every entry point (Baat Karo page, Independence Day, Talk to Tendr Team) shares one chat
+        // so every entry point (Baat Karo page, Talk to Tendr Team) shares one chat
         (async () => {
           try {
             const res = await fetch(`${BASE_URL}/conversations/baat-karo`, {
@@ -1816,7 +1816,6 @@ export default function VendorChatModal() {
               SmartPlan:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
               Concierge:    ["Which vendors have you shortlisted for me?","Can I change my event date?","What is the total estimated budget?","How long until everything is confirmed?","Can I add more vendor categories?"],
               "Baat Karo":       ["Aap kis date ke liye plan kar rahe hain?","Budget kitna rakha hai?","Konsi services chahiye — caterer, decorator, DJ?","Kitne guests honge?","Kab tak reply mil jayega?"],
-              "Independence Day": ["Aap kis city mein event plan kar rahe hain?","Kitne guests honge?","Decorator ya caterer — dono chahiye?","Garden ya hall venue prefer karenge?","Budget batayein?"],
               "Gift Hampers":     ["Kaunse occasion ke liye hamper chahiye?","Budget kitna hai per piece?","Kitne pieces chahiye?","Koi specific items ya theme?","Delivery kahan chahiye?"],
               "Occasions":        ["Kaunsa occasion hai?","Kitne guests honge?","Date aur location?","Budget range?","Koi specific theme ya requirements?"],
             };

@@ -9,19 +9,6 @@ const font = "'Outfit', sans-serif";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const CONFIG = {
-  "Independence Day": {
-    icon: "🇮🇳",
-    title: "Independence Day Planning",
-    subtitle: "Tell us about your Independence Day event — date, location, guests, and what you need. Our team will reply right here in the app.",
-    suggestions: [
-      "200 logo ka Independence Day function hai, decorator aur caterer chahiye, garden venue mein, budget 1.5 lakh",
-      "Society ke liye flag hoisting + cultural program, 15 August, 150 guests, Delhi NCR",
-      "School/college event, 300 students, decoration + sound system chahiye, 15 Aug",
-    ],
-    seoTitle: "Independence Day Planning | Tendr",
-    seoDesc: "Plan your Independence Day event with Tendr. Tell us what you need — decorator, caterer, venue — and we'll get back to you.",
-    seoPath: "/independence-day/chat",
-  },
   "Gift Hampers": {
     icon: "🎁",
     title: "Gift Hampers",

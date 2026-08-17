@@ -332,7 +332,7 @@ export default function FloatingChatButton({ hideOnRoutes = ["/chat", "/chats", 
 
             {/* Service filter dropdown — shown only when 2+ Baat Karo-type chats exist */}
             {(() => {
-              const ICONS = { "Baat Karo": "💬", "Independence Day": "🇮🇳", "Gift Hampers": "🎁", "Occasions": "🎉" };
+              const ICONS = { "Baat Karo": "💬", "Gift Hampers": "🎁", "Occasions": "🎉" };
               const minimizedVendorId = chatState?.vendor?._id;
               const alreadyInList = vendorChats.some(c => {
                 if (chatState?.conversationId && c._id?.toString() === chatState.conversationId?.toString()) return true;

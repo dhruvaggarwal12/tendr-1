@@ -256,16 +256,6 @@ const stats_users = [
   },
 ];
 
-// ── Independence Day Photos admin section ─────────────────────────────────
-const VENUE_TYPES_IND = [
-  { id: "room",     label: "Room",          icon: "🛋️" },
-  { id: "hall",     label: "Hall",          icon: "🏛️" },
-  { id: "terrace",  label: "Terrace",       icon: "🌇" },
-  { id: "garden",   label: "Garden / Park", icon: "🌳" },
-  { id: "office",   label: "Office",        icon: "🏢" },
-  { id: "roadside", label: "Roadside",      icon: "🚦" },
-];
-
 async function extractPdfPages(file) {
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -292,200 +282,6 @@ async function extractPdfPages(file) {
   return blobs;
 }
 
-function IndependenceDayPhotosSection({ BASE_URL, token }) {
-  const [photos, setPhotos]       = React.useState([]);
-  const [loading, setLoading]     = React.useState(true);
-  const [activeVenue, setActiveVenue] = React.useState("hall");
-  const [uploading, setUploading] = React.useState(false);
-  const [uploadProgress, setUploadProgress] = React.useState("");
-  const [title, setTitle]         = React.useState("");
-  const [deleting, setDeleting]   = React.useState(null);
-  const [lightbox, setLightbox]   = React.useState(null);
-  const fileRef = React.useRef();
-
-  const load = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(`${BASE_URL}/independence-day-photos`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      const data = await res.json();
-      setPhotos(Array.isArray(data) ? data : []);
-    } catch {}
-    setLoading(false);
-  };
-
-  React.useEffect(() => { load(); }, []);
-
-  const venuePhotos = photos.filter((p) => p.venueType === activeVenue);
-
-  const uploadBlob = async (blob, pageTitle, index) => {
-    const fd = new FormData();
-    fd.append("photo", blob, `page-${index + 1}.jpg`);
-    fd.append("venueType", activeVenue);
-    fd.append("title", pageTitle);
-    const res = await fetch(`${BASE_URL}/independence-day-photos`, {
-      method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: fd,
-    });
-    if (!res.ok) {
-      const ct = res.headers.get("content-type") || "";
-      const msg = ct.includes("json")
-        ? (await res.json()).error
-        : `Server error ${res.status} — route may not be deployed`;
-      throw new Error(msg || "Upload failed");
-    }
-  };
-
-  const handleUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    e.target.value = "";
-    setUploading(true);
-    const venueName = VENUE_TYPES_IND.find(v => v.id === activeVenue)?.label || activeVenue;
-
-    if (file.type === "application/pdf") {
-      try {
-        setUploadProgress("Reading PDF…");
-        const blobs = await extractPdfPages(file);
-        for (let i = 0; i < blobs.length; i++) {
-          setUploadProgress(`Uploading page ${i + 1} / ${blobs.length}…`);
-          await uploadBlob(blobs[i], `${title.trim() || venueName} — pg ${i + 1}`, i);
-        }
-        setTitle("");
-        await load();
-      } catch (err) {
-        alert("PDF upload failed: " + err.message);
-      }
-    } else {
-      setUploadProgress("Uploading…");
-      try {
-        await uploadBlob(file, title.trim() || venueName, 0);
-        setTitle("");
-        await load();
-      } catch (err) {
-        alert("Upload failed: " + err.message);
-      }
-    }
-
-    setUploading(false);
-    setUploadProgress("");
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this photo?")) return;
-    setDeleting(id);
-    try {
-      await fetch(`${BASE_URL}/independence-day-photos/${id}`, {
-        method: "DELETE",
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      await load();
-    } catch {}
-    setDeleting(null);
-  };
-
-  return (
-    <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#0d0d0d] border-l-2 border-[#CCAB4A] overflow-y-auto p-6" style={{ fontFamily: "'Outfit', sans-serif" }}>
-      {lightbox && (
-        <div onClick={() => setLightbox(null)} style={{ position: "fixed", inset: 0, zIndex: 9999, background: "rgba(0,0,0,0.9)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-          <div onClick={(e) => e.stopPropagation()} style={{ position: "relative", maxWidth: 720, width: "100%" }}>
-            <img src={lightbox.url} alt={lightbox.title} style={{ width: "100%", borderRadius: 14, display: "block", maxHeight: "85vh", objectFit: "contain" }} />
-            {lightbox.title && <div style={{ marginTop: 10, textAlign: "center", color: "#fff", fontSize: 14, fontWeight: 600 }}>{lightbox.title}</div>}
-            <button onClick={() => setLightbox(null)} style={{ position: "absolute", top: -14, right: -14, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.3)", color: "#fff", fontSize: 16, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
-          </div>
-        </div>
-      )}
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#FFF8EC", marginBottom: 4 }}>🇮🇳 Independence Day Photos</div>
-        <div style={{ fontSize: 13, color: "#9B7450" }}>Upload decoration reference photos grouped by venue type. Customers see photos matching their chosen venue.</div>
-      </div>
-
-      {/* Venue tabs */}
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
-        {VENUE_TYPES_IND.map((v) => {
-          const count = photos.filter(p => p.venueType === v.id).length;
-          return (
-            <button
-              key={v.id}
-              onClick={() => setActiveVenue(v.id)}
-              style={{
-                padding: "8px 16px", borderRadius: 20, cursor: "pointer", fontSize: 13, fontWeight: 600,
-                border: activeVenue === v.id ? "2px solid #FF9933" : "1.5px solid #3A2A1A",
-                background: activeVenue === v.id ? "rgba(255,153,51,0.15)" : "#1A0E06",
-                color: activeVenue === v.id ? "#FF9933" : "#9B7450",
-                display: "flex", alignItems: "center", gap: 6,
-              }}
-            >
-              <span>{v.icon}</span>
-              <span>{v.label}</span>
-              {count > 0 && (
-                <span style={{ background: activeVenue === v.id ? "#FF9933" : "#3A2A1A", color: activeVenue === v.id ? "#fff" : "#9B7450", borderRadius: 10, fontSize: 10, fontWeight: 700, padding: "1px 6px" }}>{count}</span>
-              )}
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Upload row */}
-      <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 20, flexWrap: "wrap" }}>
-        <input
-          type="text"
-          placeholder="Photo title (optional)"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ flex: 1, minWidth: 160, padding: "9px 14px", borderRadius: 10, border: "1.5px solid #3A2A1A", background: "#1A0E06", color: "#FFF8EC", fontSize: 13, outline: "none" }}
-        />
-        <button
-          onClick={() => fileRef.current?.click()}
-          disabled={uploading}
-          style={{ padding: "10px 20px", borderRadius: 10, background: uploading ? "#3A2A1A" : "linear-gradient(90deg,#FF9933,#e67e00)", color: "#fff", border: "none", cursor: uploading ? "not-allowed" : "pointer", fontWeight: 700, fontSize: 13, whiteSpace: "nowrap" }}
-        >
-          {uploading ? (uploadProgress || "Uploading…") : `+ Upload image / PDF to ${VENUE_TYPES_IND.find(v => v.id === activeVenue)?.label}`}
-        </button>
-        <input ref={fileRef} type="file" accept="image/*,.pdf,application/pdf" style={{ display: "none" }} onChange={handleUpload} />
-      </div>
-
-      {/* Photo grid */}
-      {loading ? (
-        <div style={{ color: "#9B7450", fontSize: 14 }}>Loading…</div>
-      ) : venuePhotos.length === 0 ? (
-        <div style={{ color: "#9B7450", fontSize: 14, padding: "32px 0", textAlign: "center" }}>
-          No photos yet for {VENUE_TYPES_IND.find(v => v.id === activeVenue)?.label}. Upload the first one above.
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 12 }}>
-          {venuePhotos.map((p) => (
-            <div key={p._id} style={{ position: "relative", borderRadius: 12, overflow: "hidden", background: "#1A0E06", border: "1px solid #3A2A1A" }}>
-              <img
-                src={p.url} alt={p.title}
-                onClick={() => setLightbox(p)}
-                style={{ width: "100%", aspectRatio: "4/3", objectFit: "cover", display: "block", cursor: "zoom-in" }}
-                loading="lazy"
-              />
-              {p.title && (
-                <div style={{ padding: "6px 8px", fontSize: 11, fontWeight: 600, color: "#FFF8EC", background: "rgba(0,0,0,0.6)" }}>{p.title}</div>
-              )}
-              <button
-                onClick={() => setLightbox(p)}
-                style={{ position: "absolute", bottom: p.title ? 32 : 6, right: 6, background: "rgba(0,0,0,0.6)", border: "none", borderRadius: 6, color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 7px", cursor: "pointer" }}
-              >⤢ View</button>
-              <button
-                onClick={() => handleDelete(p._id)}
-                disabled={deleting === p._id}
-                style={{ position: "absolute", top: 6, right: 6, width: 24, height: 24, borderRadius: "50%", background: "rgba(0,0,0,0.7)", border: "none", color: "#fff", fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-              >
-                {deleting === p._id ? "…" : "✕"}
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-// ── END Independence Day Photos section ────────────────────────────────────
 
 const sidebar_arr = [
   { label: "Dashboard",        icon: <LayoutDashboard size={22} />,   key: "Dashboard" },
@@ -509,7 +305,6 @@ const sidebar_arr = [
   { label: "Event Day",             icon: <span style={{ fontSize: 16 }}>🎉</span>,  key: "EventDay" },
   { label: "Ebooks",               icon: <span style={{ fontSize: 16 }}>📚</span>,  key: "Ebooks" },
   { label: "Reminders",             icon: <span style={{ fontSize: 16 }}>📲</span>,  key: "Reminders" },
-  { label: "🇮🇳 Ind. Day Photos",  icon: <span style={{ fontSize: 16 }}>🇮🇳</span>, key: "IndependenceDayPhotos" },
   { label: "🚀 Launch",            icon: <span style={{ fontSize: 16 }}>🚀</span>,  key: "Launch" },
 ];
 
@@ -891,11 +686,6 @@ const AdminDashboard = () => {
   const [adminGalleryPhotos, setAdminGalleryPhotos] = useState([]);
   const [adminGalleryLoading, setAdminGalleryLoading] = useState(false);
   const [adminGallerySelected, setAdminGallerySelected] = useState([]);
-  // Independence Day photos inline panel in chat
-  const [indepDayPanelOpen, setIndepDayPanelOpen] = useState(false);
-  const [indepDayPhotos, setIndepDayPhotos] = useState([]);
-  const [indepDayPhotosLoading, setIndepDayPhotosLoading] = useState(false);
-  const [indepDayVenueFilter, setIndepDayVenueFilter] = useState("all");
   // Gallery / Photos
   const [galleryPhotos, setGalleryPhotos] = useState([]);
   const [galleryLoaded, setGalleryLoaded] = useState(false);
@@ -3853,7 +3643,6 @@ const AdminDashboard = () => {
               const tabs = [
                 { key: "all",             label: "All" },
                 { key: "Baat Karo",       label: "💬 Baat Karo" },
-                { key: "Independence Day", label: "🇮🇳 Independence Day" },
                 { key: "Gift Hampers",    label: "🎁 Gift Hampers" },
                 { key: "Occasions",       label: "🎉 Occasions" },
                 { key: "vendor",          label: "🏪 Vendors" },
@@ -4055,7 +3844,7 @@ const AdminDashboard = () => {
                     )}
 
                     {/* Hinglish quick replies — Baat Karo / concierge-type chats */}
-                    {(!selectedChat?.vendorId && ["Baat Karo","Independence Day","Gift Hampers","Occasions"].includes(selectedChat?.serviceType)) && (
+                    {(!selectedChat?.vendorId && ["Baat Karo","Gift Hampers","Occasions"].includes(selectedChat?.serviceType)) && (
                       <div style={{ padding: "8px 10px 0", display: "flex", gap: 6, flexWrap: "wrap", borderTop: "1px solid #F1E1A8" }}>
                         {[
                           "Dhanyawad! Hum aapke liye best vendors dhoondh rahe hain.",
@@ -4305,62 +4094,6 @@ const AdminDashboard = () => {
                           🖼️ From Gallery
                         </button>
 
-                        {/* Independence Day photos inline panel */}
-                        <button onClick={() => {
-                          const opening = !indepDayPanelOpen;
-                          setIndepDayPanelOpen(opening);
-                          if (opening && !indepDayPhotos.length) {
-                            setIndepDayPhotosLoading(true);
-                            fetch(`${BASE_URL}/independence-day-photos`)
-                              .then(r => r.json())
-                              .then(data => { setIndepDayPhotos(Array.isArray(data) ? data : []); setIndepDayPhotosLoading(false); })
-                              .catch(() => setIndepDayPhotosLoading(false));
-                          }
-                        }} style={{ display: "block", width: "100%", padding: "9px 10px", borderRadius: 9, border: "1.5px solid rgba(255,153,51,0.4)", background: indepDayPanelOpen ? "rgba(255,153,51,0.08)" : "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", textAlign: "center" }}>
-                          🇮🇳 Independence Day Photos {indepDayPanelOpen ? "▲" : "▼"}
-                        </button>
-
-                        {indepDayPanelOpen && (
-                          <div style={{ border: "1px solid rgba(255,153,51,0.2)", borderRadius: 10, overflow: "hidden", background: "#fffdf8" }}>
-                            {/* Venue filter chips */}
-                            <div style={{ display: "flex", gap: 4, padding: "7px 8px", overflowX: "auto", borderBottom: "1px solid rgba(255,153,51,0.15)" }}>
-                              {[{ id: "all", label: "All" }, ...VENUE_TYPES_IND].map(v => (
-                                <button key={v.id} onClick={() => setIndepDayVenueFilter(v.id)}
-                                  style={{ flexShrink: 0, padding: "3px 9px", borderRadius: 20, border: `1.5px solid ${indepDayVenueFilter === v.id ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: indepDayVenueFilter === v.id ? "#C47A2E" : "#fff", color: indepDayVenueFilter === v.id ? "#fff" : "#9B7450", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
-                                  {v.icon ? `${v.icon} ` : ""}{v.label}
-                                </button>
-                              ))}
-                            </div>
-                            {indepDayPhotosLoading ? (
-                              <div style={{ padding: "14px 10px", textAlign: "center", fontSize: 12, color: "#9B7450" }}>Loading…</div>
-                            ) : (() => {
-                              const filtered = indepDayVenueFilter === "all" ? indepDayPhotos : indepDayPhotos.filter(p => p.venueType === indepDayVenueFilter);
-                              if (!filtered.length) return <div style={{ padding: "14px 10px", textAlign: "center", fontSize: 12, color: "#bbb" }}>No photos yet</div>;
-                              return (
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, padding: 7, maxHeight: 240, overflowY: "auto" }}>
-                                  {filtered.map(photo => (
-                                    <div key={photo._id} onClick={() => {
-                                      if (!selectedChat?._id || !adminSocketRef.current) return;
-                                      const content = `[img:${photo.url}]`;
-                                      const m = { conversationId: selectedChat._id, sender: 'customer-care', content };
-                                      adminSocketRef.current.emit('send_message', m);
-                                      setCurrentConversation(prev => [...(prev || []), { ...m, createdAt: new Date().toISOString() }]);
-                                    }} style={{ cursor: "pointer", borderRadius: 7, overflow: "hidden", position: "relative" }}>
-                                      <img src={photo.url} alt={photo.title || "style"} style={{ width: "100%", aspectRatio: "1", objectFit: "cover", display: "block" }} />
-                                      <div style={{ position: "absolute", inset: 0, background: "rgba(196,122,46,0)", transition: "background 0.15s" }}
-                                        onMouseEnter={e => e.currentTarget.style.background = "rgba(196,122,46,0.18)"}
-                                        onMouseLeave={e => e.currentTarget.style.background = "rgba(196,122,46,0)"}
-                                      />
-                                      {photo.title && (
-                                        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "rgba(0,0,0,0.45)", color: "#fff", fontSize: 9, padding: "3px 5px", lineHeight: 1.3 }}>{photo.title}</div>
-                                      )}
-                                    </div>
-                                  ))}
-                                </div>
-                              );
-                            })()}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -6417,10 +6150,6 @@ const AdminDashboard = () => {
         })()}
 
         {/* ── LAUNCH TAB ── */}
-        {activeDropdown === "independencedayphotos" && (
-          <IndependenceDayPhotosSection BASE_URL={BASE_URL} token={token} />
-        )}
-
         {activeDropdown === "launch" && (
           <div className="right-dashboard w-full sm:w-[85%] md:w-[75%] lg:w-[70%] bg-[#0d0d0d] border-l-2 border-[#CCAB4A] overflow-y-auto" style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "100%" }}>
             <div style={{ textAlign: "center", padding: "48px 32px", fontFamily: "'Outfit', sans-serif", maxWidth: 540 }}>
