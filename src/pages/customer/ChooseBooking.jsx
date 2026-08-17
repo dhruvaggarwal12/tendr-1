@@ -140,7 +140,7 @@ export default function ChooseBooking() {
   const CHOOSE_BOOKING_STEPS = [{
     target: "body", placement: "center", disableBeacon: true,
     title: "How would you like to plan?",
-    content: "You Do It: browse vendors yourself. Smart Plan: fill budget once, Tendr picks the best package. Baat Karo: just chat with our team.",
+    content: "You Do It — pick vendors yourself. Smart Plan — Tendr auto-selects the best package. Baat Karo — just chat with us.",
   }];
 
   return (
