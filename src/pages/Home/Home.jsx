@@ -9,7 +9,6 @@ import "./Home.css";
 import tendrLogo from "../../assets/logos/tendr-logo-secondary.png";
 import PlatformFlow from "../../components/PlatformFlow";
 import OccasionPlanner from "../../components/OccasionPlanner";
-import IndependenceDayFlow from "../independence-day/IndependenceDayFlow";
 import BasicSpeedDial from "../../components/BasicSpeedDial";
 import Footer from "../../components/Footer";
 import { easeIn, motion } from "framer-motion";
@@ -386,7 +385,6 @@ const Home = () => {
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null);
   const [activePath, setActivePath] = useState(0);
-  const [showIndepDay, setShowIndepDay] = useState(false);
   const [occasionFlow, setOccasionFlow] = useState(null); // null | "grid" | occasionObject
   const [occasionSearch, setOccasionSearch] = useState("");
   const [showRakhi, setShowRakhi] = useState(false);
@@ -1026,16 +1024,6 @@ const Home = () => {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
                 Rakhi Hampers
               </button>
-              <button
-                onClick={() => setShowIndepDay(true)}
-                className="home-seasonal-btn"
-                style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(255,153,51,0.08)", border: "1px solid rgba(255,153,51,0.28)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(255,153,51,0.16)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.48)"; e.currentTarget.style.color = "#FFF8EC"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,153,51,0.08)"; e.currentTarget.style.borderColor = "rgba(255,153,51,0.28)"; e.currentTarget.style.color = "rgba(255,247,235,0.8)"; }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF9933" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-                Independence Day
-              </button>
             </motion.div>
 
             {/* Social proof trust bar — below CTAs */}
@@ -1380,16 +1368,6 @@ const Home = () => {
                 <em style={{ fontStyle: "italic", fontWeight: 700, background: "linear-gradient(135deg,#C47A2E 0%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>occasion?</em>
               </h2>
             </div>
-            <button
-              onClick={() => setShowIndepDay(true)}
-              style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.72)", border: "1px solid rgba(196,122,46,0.28)", borderRadius: 100, padding: "9px 18px 9px 14px", cursor: "pointer", transition: "all 0.2s", fontFamily: "'Outfit',sans-serif", backdropFilter: "blur(8px)", boxShadow: "0 2px 10px rgba(196,122,46,0.07)", flexShrink: 0 }}
-              onMouseEnter={e => { e.currentTarget.style.boxShadow = "0 6px 22px rgba(196,122,46,0.16)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.background = "#fff"; }}
-              onMouseLeave={e => { e.currentTarget.style.boxShadow = "0 2px 10px rgba(196,122,46,0.07)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.28)"; e.currentTarget.style.background = "rgba(255,255,255,0.72)"; }}
-            >
-              <span style={{ fontSize: 16 }}>🇮🇳</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#2C1A0E" }}>Independence Day</span>
-              <span style={{ fontSize: 11, color: "#C47A2E", fontWeight: 700 }}>→</span>
-            </button>
           </motion.div>
 
           {/* Single-row strip — hover-reveal: non-hovered cards dim */}
@@ -2487,10 +2465,6 @@ const Home = () => {
         />
       )}
 
-      {/* ── Independence Day Flow Modal ── */}
-      {showIndepDay && (
-        <IndependenceDayFlow onClose={() => setShowIndepDay(false)} />
-      )}
 
       {/* ── Plan an Occasion Flow ── */}
       {occasionFlow && (() => {

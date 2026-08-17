@@ -301,11 +301,6 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />
   },
   {
-    path: "/independence-day/chat",
-    element: <ServiceChat serviceType="Independence Day" />,
-    errorElement: <ErrorPage />
-  },
-  {
     path: "/gift-hampers/chat",
     element: <ServiceChat serviceType="Gift Hampers" />,
     errorElement: <ErrorPage />
