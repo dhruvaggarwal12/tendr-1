@@ -39,7 +39,6 @@ body {
         url('../../assets/backgrounds/bg.jpg');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
     color: #FFFFFF;
     padding: 140px 0 100px;
     position: relative;
@@ -1448,7 +1447,6 @@ body {
         url('https://images.unsplash.com/photo-1556761175-b413da4baf72?w=1920&h=1080&fit=crop');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
     padding: 90px 0;
     color: #fff;
     text-align: center;

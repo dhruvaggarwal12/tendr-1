@@ -1990,7 +1990,7 @@ const Home = () => {
         return (
           <section style={{ position: "relative", padding: "56px 24px 64px", fontFamily: "'Outfit', sans-serif", overflow: "hidden" }}>
             {/* Background image */}
-            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${SECTION_BG}')`, backgroundSize: "cover", backgroundPosition: "center", backgroundAttachment: "fixed" }} />
+            <div style={{ position: "absolute", inset: 0, backgroundImage: `url('${SECTION_BG}')`, backgroundSize: "cover", backgroundPosition: "center", }} />
             {/* Dark overlay on top of bg image */}
             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg,rgba(18,8,2,0.88) 0%,rgba(25,12,4,0.82) 60%,rgba(18,8,2,0.9) 100%)" }} />
             {/* Gold shimmer blobs */}
