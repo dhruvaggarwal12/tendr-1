@@ -168,7 +168,7 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
   height:2px;background:rgba(255,255,255,.08);border-radius:2px;overflow:hidden;}
 .epfill{height:100%;width:0%;
   background:linear-gradient(90deg,var(--gold),var(--gl));
-  border-radius:2px;transition:width 2.8s linear;box-shadow:0 0 8px var(--gg);}
+  border-radius:2px;transition:width 1.6s linear;box-shadow:0 0 8px var(--gg);}
 .eskip{position:absolute;bottom:12px;right:20px;
   font-size:11px;font-weight:700;color:var(--muted);
   padding:10px 14px;cursor:pointer;opacity:0;
@@ -202,10 +202,13 @@ html,body{height:100%;background:var(--bg);color:var(--txt);
 .fqbtn:active{transform:scale(.97);}
 .fqbtn.ch{background:var(--gls);border-color:var(--gold);color:var(--gl);}
 .fqbtn.fd{opacity:.12;pointer-events:none;}
-.fqresp{margin-top:12px;padding:14px 16px;background:var(--gls);
-  border:1px solid var(--bdg);border-radius:14px;font-size:14px;
-  color:var(--dim);line-height:1.65;display:none;animation:fu .3s ease both;}
-.fqresp b{color:var(--gl);font-weight:800;}
+.fqresp{margin-top:14px;padding:18px 20px;
+  background:linear-gradient(135deg,rgba(200,155,60,.12),rgba(200,155,60,.04));
+  border:1.5px solid var(--gold);border-radius:16px;
+  font-size:15px;font-weight:600;color:var(--txt);line-height:1.65;
+  display:none;animation:fu .3s ease both;text-align:center;
+  box-shadow:0 4px 24px rgba(200,155,60,.18);}
+.fqresp b{color:var(--gl);font-weight:900;}
 .fqresp.show{display:block;}
 
 /* ── REVEAL ── */
@@ -342,11 +345,11 @@ en:{
   },
   rev:{
     spre:'of celebrators in India',
-    ssub:'...juggle 3+ apps for one event. You\'re not alone — and there\'s one fix.',
+    ssub:'...say planning a celebration feels scattered, stressful, and takes far more effort than it should.',
     pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes'],
     pvbig:'What if <em>one app</em> replaced all of them?',
     feats:[
-      {i:'🎉',t:'Occasions, vendors & gifts — one place.'},
+      {i:'🎉',t:'Plan any occasion — birthdays, weddings, pujas & more.'},
       {i:'🎁',t:'Curated hampers for every budget & mood.'},
       {i:'🤝',t:'Verified vendors. Real quotes. No chasing.'},
       {i:'✨',t:'Our team steps in if anything goes wrong.'},
@@ -404,11 +407,11 @@ hi:{
   },
   rev:{
     spre:'India में celebrate करने वाले',
-    ssub:'...एक event के लिए 3+ apps use करते हैं। एक fix है।',
+    ssub:'...कहते हैं celebration plan करना scattered, stressful और जरूरत से ज्यादा मेहनत वाला लगता है।',
     pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes'],
     pvbig:'क्या हो अगर <em>एक app</em> सब replace कर दे?',
     feats:[
-      {i:'🎉',t:'Occasions, vendors और gifts — एक जगह।'},
+      {i:'🎉',t:'कोई भी occasion plan करें — birthday, wedding, puja और भी।'},
       {i:'🎁',t:'हर budget के लिए curated hampers।'},
       {i:'🤝',t:'Verified vendors। Real quotes। No chasing।'},
       {i:'✨',t:'कुछ गलत हो — हमारी team है।'},
@@ -466,11 +469,11 @@ hl:{
   },
   rev:{
     spre:'India mein celebrate karne wale',
-    ssub:'...ek event ke liye 3+ apps use karte hain. Ek fix hai.',
+    ssub:'...kehte hain celebration plan karna scattered, stressful aur zaroorat se zyada mushkil lagta hai.',
     pills:['🔍 Google','📸 Instagram','💬 WhatsApp','🎂 Cake site','🎁 Gift site','📝 Notes'],
     pvbig:'Kya ho agar <em>ek app</em> sab replace kar de?',
     feats:[
-      {i:'🎉',t:'Occasions, vendors aur gifts — ek jagah.'},
+      {i:'🎉',t:'Koi bhi occasion plan karo — birthday, wedding, puja aur bhi.'},
       {i:'🎁',t:'Har budget ke liye curated hampers.'},
       {i:'🤝',t:'Verified vendors. Real quotes. No chasing.'},
       {i:'✨',t:'Kuch galat ho — humari team hai.'},
@@ -612,7 +615,7 @@ function ans(w,idx){
   const st=el.dataset.s;
   setTimeout(()=>el.classList.add('show'),st==='card'||st==='wipe'?55:120);
   setTimeout(()=>{const f=document.getElementById('epf');if(f)requestAnimationFrame(()=>requestAnimationFrame(()=>f.style.width='100%'));},360);
-  adv=setTimeout(()=>advance(idx),3300);
+  adv=setTimeout(()=>advance(idx),1800);
 }
 
 // ── FINAL Q ──
