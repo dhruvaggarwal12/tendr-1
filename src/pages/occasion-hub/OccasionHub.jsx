@@ -2351,8 +2351,10 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
                 position: "absolute",
                 width: nW, height: nH,
                 left: p.x - nW / 2, top: p.y - nH / 2,
-                background: `radial-gradient(circle at 50% 30%, ${accent}22, rgba(12,9,3,0.92))`,
-                border: `1.5px solid ${accent}44`,
+                background: i === 0
+                  ? `radial-gradient(circle at 50% 30%, ${accent}38, rgba(12,9,3,0.88))`
+                  : `radial-gradient(circle at 50% 30%, ${accent}22, rgba(12,9,3,0.92))`,
+                border: i === 0 ? `1.5px solid ${accent}88` : `1.5px solid ${accent}44`,
                 borderRadius: 14,
                 cursor: "pointer",
                 display: "flex", flexDirection: "column",
@@ -2398,6 +2400,16 @@ function OccPolygonGrid({ tools, onOpen, accent }) {
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
               }}>{t.title}</span>
+              {i === 0 && (
+                <div style={{
+                  position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)",
+                  fontSize: 7.5, fontWeight: 800, color: accent,
+                  background: `${accent}25`, border: `1px solid ${accent}70`,
+                  borderRadius: 100, padding: "2px 6px",
+                  letterSpacing: "0.05em", whiteSpace: "nowrap", zIndex: 2,
+                  pointerEvents: "none",
+                }}>★ Start here</div>
+              )}
             </button>
           );
         })}
@@ -2417,7 +2429,9 @@ export default function OccasionHub({ occasion }) {
   const [open, setOpen]         = useState(null);
   const [hovered, setHovered]   = useState(null);
   const [glare, setGlare]       = useState({});
-  const [showSplash, setShowSplash] = useState(true);
+  const [showSplash, setShowSplash] = useState(() => {
+    try { return !localStorage.getItem(`tendr-splash-${occasion}`); } catch { return true; }
+  });
   const [splashOut, setSplashOut]   = useState(false);
   const [activeTab, setActiveTab]   = useState(0);
   const [planData, setPlanData]     = useState(null);
@@ -2453,8 +2467,13 @@ export default function OccasionHub({ occasion }) {
 
   // Splash fade
   useEffect(() => {
+    if (!showSplash) return;
+    const key = `tendr-splash-${occasion}`;
     const t1 = setTimeout(() => setSplashOut(true), 2000);
-    const t2 = setTimeout(() => setShowSplash(false), 2500);
+    const t2 = setTimeout(() => {
+      setShowSplash(false);
+      try { localStorage.setItem(key, '1'); } catch {}
+    }, 2500);
     return () => { clearTimeout(t1); clearTimeout(t2); };
   }, []);
 
@@ -2668,23 +2687,26 @@ export default function OccasionHub({ occasion }) {
           <div style={{ fontSize: 15, fontWeight: 900, color: "#fff", letterSpacing: "-0.01em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{occ.emoji} {occ.name}</div>
           {room && <div style={{ fontSize: 11, color: accent, fontWeight: 700, marginTop: 1 }}>Room: <span style={{ fontFamily: "monospace", letterSpacing: "0.1em" }}>{room.code}</span> · {room.players?.length || 1} player{(room.players?.length || 1) !== 1 ? "s" : ""}</div>}
         </div>
-        <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-          {room ? (
-            <>
-              <button onClick={() => setRoomModal("players")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "1a", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80" }} />{room.code}
-              </button>
-              <button onClick={leaveRoom} style={{ padding: "7px 12px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Leave</button>
-            </>
-          ) : (
-            <>
-              <button onClick={() => setRoomModal("host-setup")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "18", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-                Host
-              </button>
-              <button onClick={() => setRoomModal("join")} style={{ padding: "7px 14px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Join</button>
-            </>
-          )}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
+          <div style={{ display: "flex", gap: 6 }}>
+            {room ? (
+              <>
+                <button onClick={() => setRoomModal("players")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "1a", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80" }} />{room.code}
+                </button>
+                <button onClick={leaveRoom} style={{ padding: "7px 12px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>Leave</button>
+              </>
+            ) : (
+              <>
+                <button onClick={() => setRoomModal("host-setup")} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 100, border: `1.5px solid ${accent}55`, background: accent + "18", color: accent, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                  Host
+                </button>
+                <button onClick={() => setRoomModal("join")} style={{ padding: "7px 14px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.65)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font }}>Join</button>
+              </>
+            )}
+          </div>
+          {!room && <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.3)", fontFamily: font, letterSpacing: "0.02em" }}>Play games with your group</div>}
         </div>
       </div>
 

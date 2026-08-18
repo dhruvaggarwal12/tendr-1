@@ -28,7 +28,7 @@ const CATEGORIES = [
 const NAV_COLORS = {
   Home:     { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Browse:   { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
-  Products: { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
+  Tools: { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Plan:     { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Profile:  { active: "#C47A2E", bg: "rgba(196,122,46,0.14)", shadow: "rgba(196,122,46,0.5)" },
   Tips:     { active: "#4F8EF7", bg: "rgba(79,142,247,0.12)", shadow: "rgba(79,142,247,0.4)" },
@@ -64,7 +64,7 @@ const NAV_ICONS = {
       <circle cx="12" cy="7" r="4"/>
     </svg>
   ),
-  Products: (on, color) => (
+  Tools: (on, color) => (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={on ? color : "#BFA080"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="3" width="6" height="6" rx="1"/><rect x="9" y="3" width="6" height="6" rx="1"/><rect x="16" y="3" width="6" height="6" rx="1"/>
       <rect x="2" y="11" width="6" height="6" rx="1"/><rect x="9" y="11" width="6" height="6" rx="1"/><rect x="16" y="11" width="6" height="6" rx="1"/>
@@ -144,7 +144,7 @@ function BottomNavInner() {
   const items = [
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
     ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
-    { label: "Products", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
+    { label: "Tools", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan",     paths: ["/booking","/plan-event","/baat-karo"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
     { label: "Profile",  paths: ["/dashboard","/AdminDashboard"],     onTap: () => navigate(token ? (user?.isAdmin ? "/AdminDashboard" : "/dashboard") : "/login") },
@@ -265,7 +265,7 @@ function BottomNavInner() {
             <div style={{ display: "flex", justifyContent: "center", marginBottom: 14 }}>
               <div style={{ width: 36, height: 4, borderRadius: 2, background: "rgba(196,122,46,0.25)" }} />
             </div>
-            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Products</p>
+            <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Tools</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
               {PRODUCTS.map(({ icon, label, href, newTab, path }) => {
                 const savedKey = label === "Timeline" ? "tendr_timeline_v2" : label === "Budget Allocator" ? "tendr_budget_v2" : null;
@@ -366,7 +366,7 @@ function BottomNavInner() {
           const isOn = active || isBrowseActive;
           const navColor = NAV_COLORS[label] || NAV_COLORS.Home;
           // Green dot: Products tab gets a dot if any tool has been saved
-          const hasProductsSaved = label === "Products" && (() => {
+          const hasProductsSaved = label === "Tools" && (() => {
             try {
               return !!localStorage.getItem("tendr_timeline_v2") ||
                      !!localStorage.getItem("tendr_budget_v2");

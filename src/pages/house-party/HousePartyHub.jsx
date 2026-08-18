@@ -35,6 +35,11 @@ const TOOL_ICONS = {
   bingo:          hpic(<><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></>),
   mostlikelyto:   hpic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
   reportcard:     hpic(<><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></>),
+  guestlist:      hpic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+  menu:           hpic(<><path d="M3 11l19-9-9 19-2-8-8-2z"/></>),
+  seating:        hpic(<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>),
+  daytimeline:    hpic(<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
+  venue:          hpic(<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
 };
 const SECTION_SVGS = {
   manage: hpic(<><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></>, 16),
@@ -901,7 +906,12 @@ const TOOLS = [
   { id: "potluck", section: "manage", emoji: "🥘", title: "Potluck Planner", desc: "Shareable link · claim items · no duplicates", color: "#059669" },
   { id: "invite", section: "manage", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP · live count", color: "#2563EB" },
   { id: "checklist", section: "manage", emoji: "📋", title: "Party Checklist", desc: "Enter guest count → auto buy list", color: "#D97706" },
-  { id: "bills", section: "manage", emoji: "💸", title: "Bill Splitter", desc: "Enter spends → who owes whom", color: "#DC2626" },
+  { id: "bills",        section: "manage", emoji: "💸", title: "Bill Splitter",    desc: "Enter spends → who owes whom",              color: "#DC2626" },
+  { id: "guestlist",   section: "manage", emoji: "👥", title: "Guest List",      desc: "Track RSVPs · who's confirmed",              color: "#7C3AED" },
+  { id: "menu",        section: "manage", emoji: "🍽️", title: "Menu Planner",    desc: "Plan food · drinks · who brings what",        color: "#059669" },
+  { id: "seating",     section: "manage", emoji: "🪑", title: "Seating Chart",   desc: "Assign seats · manage tables",                color: "#0891B2" },
+  { id: "daytimeline", section: "manage", emoji: "🗓️", title: "Party Timeline",  desc: "Schedule the day · minute by minute",         color: "#D97706" },
+  { id: "venue",       section: "manage", emoji: "📍", title: "Venue Notes",     desc: "Address · parking · contacts · notes",        color: "#DC2626" },
   // Fun
   { id: "theme", section: "fun", emoji: "🎨", title: "Theme Picker", desc: "Vote as a group on party theme", color: "#7C3AED" },
   { id: "photowall", section: "fun", emoji: "📸", title: "Photo Wall", desc: "Shared album · everyone uploads", color: "#DB2777" },
@@ -917,15 +927,221 @@ const TOOLS = [
   { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
   { id: "mostlikelyto", section: "games", emoji: "🎲", title: "Most Likely To", desc: "Point at whoever fits — most fingers wins", color: "#A855F7" },
   // Other
-  { id: "reportcard", section: "other", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade + verdict", color: "#FBBF24" },
+  { id: "reportcard", section: "fun", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade + verdict", color: "#FBBF24" },
 ];
 
 const SECTIONS = [
-  { id: "manage", label: "Manage", subtitle: "Plan · track · split" },
+  { id: "manage", label: "Manage", subtitle: "Plan · track · coordinate" },
   { id: "games",  label: "Games",  subtitle: "Biggest reason to come back" },
   { id: "fun",    label: "Fun",    subtitle: "Theme · music · photos · countdown" },
-  { id: "other",  label: "Other",  subtitle: "Post-party vibes" },
 ];
+
+// ── Coordination tool modals ──────────────────────────────────────────────────
+
+function GuestListModal({ onClose }) {
+  const SK = 'tendr-hp-guestlist';
+  const [guests, setGuests] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [input, setInput] = useState('');
+  const save = (g) => { setGuests(g); try { localStorage.setItem(SK, JSON.stringify(g)); } catch {} };
+  const add = () => { if (!input.trim()) return; save([...guests, { id: Date.now(), name: input.trim(), rsvp: 'pending' }]); setInput(''); };
+  const setRsvp = (id, rsvp) => save(guests.map(g => g.id === id ? { ...g, rsvp } : g));
+  const counts = { yes: guests.filter(g => g.rsvp === 'yes').length, no: guests.filter(g => g.rsvp === 'no').length, maybe: guests.filter(g => g.rsvp === 'maybe').length, pending: guests.filter(g => g.rsvp === 'pending').length };
+  return (
+    <Modal onClose={onClose} title="Guest List" emoji="👥">
+      <div style={{ display: 'flex', gap: 8, marginBottom: 18, flexWrap: 'wrap' }}>
+        {[['Coming', counts.yes, '#22c55e'], ['Maybe', counts.maybe, '#f59e0b'], ['Not Coming', counts.no, '#ef4444'], ['Pending', counts.pending, '#6b7280']].map(([label, count, color]) => (
+          <div key={label} style={{ flex: 1, minWidth: 64, textAlign: 'center', background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '8px 4px', border: `1px solid ${color}30` }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color }}>{count}</div>
+            <div style={{ fontSize: 9.5, color: 'rgba(255,255,255,0.35)', marginTop: 2 }}>{label}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+        <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="Guest name…" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
+        <button onClick={add} style={{ background: '#C47A2E', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
+      </div>
+      {guests.length === 0 ? (
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 13, padding: '32px 0' }}>No guests yet. Add names above!</div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
+          {guests.map(g => (
+            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '9px 12px' }}>
+              <span style={{ flex: 1, fontSize: 14, color: '#fff', fontFamily: font }}>{g.name}</span>
+              {[['✓', 'yes', '#22c55e'], ['?', 'maybe', '#f59e0b'], ['✗', 'no', '#ef4444']].map(([label, val, color]) => (
+                <button key={val} onClick={() => setRsvp(g.id, g.rsvp === val ? 'pending' : val)} style={{ padding: '4px 9px', borderRadius: 100, border: `1.5px solid ${g.rsvp === val ? color : 'rgba(255,255,255,0.1)'}`, background: g.rsvp === val ? color + '22' : 'transparent', color: g.rsvp === val ? color : 'rgba(255,255,255,0.35)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>{label}</button>
+              ))}
+              <button onClick={() => save(guests.filter(x => x.id !== g.id))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 2px' }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function MenuPlannerModal({ onClose }) {
+  const SK = 'tendr-hp-menu';
+  const [items, setItems] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [name, setName] = useState('');
+  const [cat, setCat] = useState('food');
+  const save = (it) => { setItems(it); try { localStorage.setItem(SK, JSON.stringify(it)); } catch {} };
+  const add = () => { if (!name.trim()) return; save([...items, { id: Date.now(), name: name.trim(), cat, done: false }]); setName(''); };
+  const toggle = (id) => save(items.map(it => it.id === id ? { ...it, done: !it.done } : it));
+  const cats = [
+    { id: 'food', label: '🍲 Food', color: '#f97316' },
+    { id: 'drinks', label: '🥂 Drinks', color: '#06b6d4' },
+    { id: 'dessert', label: '🍰 Dessert', color: '#ec4899' },
+    { id: 'other', label: '📦 Other', color: '#8b5cf6' },
+  ];
+  return (
+    <Modal onClose={onClose} title="Menu Planner" emoji="🍽️">
+      <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
+        {cats.map(c => (
+          <button key={c.id} onClick={() => setCat(c.id)} style={{ fontSize: 12, padding: '5px 11px', borderRadius: 100, border: `1.5px solid ${cat === c.id ? c.color : 'rgba(255,255,255,0.1)'}`, background: cat === c.id ? c.color + '22' : 'transparent', color: cat === c.id ? c.color : 'rgba(255,255,255,0.4)', cursor: 'pointer', fontFamily: font, fontWeight: 700 }}>{c.label}</button>
+        ))}
+      </div>
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        <input value={name} onChange={e => setName(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="Add menu item…" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
+        <button onClick={add} style={{ background: '#C47A2E', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
+      </div>
+      {cats.map(c => {
+        const catItems = items.filter(it => it.cat === c.id);
+        if (!catItems.length) return null;
+        return (
+          <div key={c.id} style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 10.5, fontWeight: 800, color: c.color, textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 7 }}>{c.label} ({catItems.length})</div>
+            {catItems.map(it => (
+              <div key={it.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, marginBottom: 5 }}>
+                <button onClick={() => toggle(it.id)} style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${it.done ? c.color : 'rgba(255,255,255,0.2)'}`, background: it.done ? c.color + '28' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  {it.done && <span style={{ color: c.color, fontSize: 11, fontWeight: 900 }}>✓</span>}
+                </button>
+                <span style={{ flex: 1, fontSize: 14, color: it.done ? 'rgba(255,255,255,0.3)' : '#fff', textDecoration: it.done ? 'line-through' : 'none', fontFamily: font }}>{it.name}</span>
+                <button onClick={() => save(items.filter(x => x.id !== it.id))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: 18, lineHeight: 1, padding: '0 2px' }}>×</button>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+      {items.length === 0 && <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 13, padding: '28px 0' }}>Pick a category and add menu items!</div>}
+    </Modal>
+  );
+}
+
+function DayTimelineModal({ onClose }) {
+  const SK = 'tendr-hp-daytimeline';
+  const [entries, setEntries] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '[]'); } catch { return []; } });
+  const [time, setTime] = useState('');
+  const [event, setEvent] = useState('');
+  const save = (e) => { setEntries(e); try { localStorage.setItem(SK, JSON.stringify(e)); } catch {} };
+  const add = () => { if (!time || !event.trim()) return; save([...entries, { id: Date.now(), time, event: event.trim(), done: false }].sort((a, b) => a.time.localeCompare(b.time))); setTime(''); setEvent(''); };
+  const toggle = (id) => save(entries.map(e => e.id === id ? { ...e, done: !e.done } : e));
+  return (
+    <Modal onClose={onClose} title="Party Timeline" emoji="🗓️">
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        <input type="time" value={time} onChange={e => setTime(e.target.value)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 10px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none', width: 100, colorScheme: 'dark' }} />
+        <input value={event} onChange={e => setEvent(e.target.value)} onKeyDown={e => e.key === 'Enter' && add()} placeholder="What happens?" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
+        <button onClick={add} disabled={!time || !event.trim()} style={{ background: time && event.trim() ? '#C47A2E' : 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 18, fontWeight: 700, cursor: 'pointer', opacity: time && event.trim() ? 1 : 0.4 }}>+</button>
+      </div>
+      {entries.length === 0 ? (
+        <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', fontSize: 13, padding: '28px 0' }}>Add time slots to build the day's schedule!</div>
+      ) : (
+        <div style={{ position: 'relative' }}>
+          <div style={{ position: 'absolute', left: 44, top: 0, bottom: 0, width: 2, background: 'rgba(255,255,255,0.06)', zIndex: 0 }} />
+          {entries.map(e => (
+            <div key={e.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', padding: '9px 0', position: 'relative', zIndex: 1 }}>
+              <div style={{ minWidth: 44, fontSize: 11, fontWeight: 800, color: e.done ? 'rgba(255,255,255,0.2)' : '#CCAB4A', textAlign: 'right', paddingTop: 3, flexShrink: 0 }}>{e.time}</div>
+              <button onClick={() => toggle(e.id)} style={{ width: 18, height: 18, borderRadius: '50%', border: `2px solid ${e.done ? '#22c55e' : 'rgba(255,255,255,0.2)'}`, background: e.done ? '#22c55e28' : '#140e08', cursor: 'pointer', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2 }}>
+                {e.done && <span style={{ color: '#22c55e', fontSize: 9, fontWeight: 900 }}>✓</span>}
+              </button>
+              <div style={{ flex: 1, fontSize: 14, color: e.done ? 'rgba(255,255,255,0.3)' : '#fff', textDecoration: e.done ? 'line-through' : 'none', fontFamily: font, paddingTop: 1, lineHeight: 1.4 }}>{e.event}</div>
+              <button onClick={() => save(entries.filter(x => x.id !== e.id))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontSize: 18, lineHeight: 1, paddingTop: 2 }}>×</button>
+            </div>
+          ))}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function VenueNotesModal({ onClose }) {
+  const SK = 'tendr-hp-venue';
+  const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(SK) || '{}'); } catch { return {}; } });
+  const update = (key, val) => { const d = { ...data, [key]: val }; setData(d); try { localStorage.setItem(SK, JSON.stringify(d)); } catch {} };
+  const fields = [
+    { key: 'address', label: '📍 Address', placeholder: '42, Sector 18, Noida, UP 201301', rows: 2 },
+    { key: 'parking', label: '🅿️ Parking', placeholder: 'Free parking in basement, enter from Gate B', rows: 2 },
+    { key: 'contact', label: '📞 Venue Contact', placeholder: '+91 98765 43210', rows: 1 },
+    { key: 'entry', label: '🚪 Entry Instructions', placeholder: 'Take lift to 5th floor, Suite 502', rows: 2 },
+    { key: 'notes', label: '📝 Notes', placeholder: 'Decor setup from 5 PM · No outside food · Parking free till 11 PM', rows: 3 },
+  ];
+  return (
+    <Modal onClose={onClose} title="Venue Notes" emoji="📍">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        {fields.map(f => (
+          <div key={f.key}>
+            <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 6 }}>{f.label}</div>
+            <textarea value={data[f.key] || ''} onChange={e => update(f.key, e.target.value)} placeholder={f.placeholder} rows={f.rows}
+              style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none', resize: 'none', boxSizing: 'border-box', lineHeight: 1.5, colorScheme: 'dark' }}
+            />
+          </div>
+        ))}
+      </div>
+    </Modal>
+  );
+}
+
+function SeatingChartModal({ onClose }) {
+  const TSK = 'tendr-hp-seating-tables';
+  const GSK = 'tendr-hp-seating-guests';
+  const [tables, setTables] = useState(() => { try { return JSON.parse(localStorage.getItem(TSK) || '[]'); } catch { return []; } });
+  const [guests, setGuests] = useState(() => { try { return JSON.parse(localStorage.getItem(GSK) || '[]'); } catch { return []; } });
+  const [tName, setTName] = useState('');
+  const [gName, setGName] = useState('');
+  const saveT = (t) => { setTables(t); try { localStorage.setItem(TSK, JSON.stringify(t)); } catch {} };
+  const saveG = (g) => { setGuests(g); try { localStorage.setItem(GSK, JSON.stringify(g)); } catch {} };
+  const addTable = () => { if (!tName.trim()) return; saveT([...tables, { id: Date.now(), name: tName.trim() }]); setTName(''); };
+  const addGuest = () => { if (!gName.trim()) return; saveG([...guests, { id: Date.now(), name: gName.trim(), table: null }]); setGName(''); };
+  const assign = (gId, tId) => saveG(guests.map(g => g.id === gId ? { ...g, table: tId ? Number(tId) : null } : g));
+  return (
+    <Modal onClose={onClose} title="Seating Chart" emoji="🪑" wide>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Tables</div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            <input value={tName} onChange={e => setTName(e.target.value)} onKeyDown={e => e.key === 'Enter' && addTable()} placeholder="Table name" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none' }} />
+            <button onClick={addTable} style={{ background: '#C47A2E', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+</button>
+          </div>
+          {tables.length === 0 ? <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: 16 }}>Add tables above</div> : tables.map(t => {
+            const seated = guests.filter(g => g.table === t.id);
+            return (
+              <div key={t.id} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '10px 12px', marginBottom: 8 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#CCAB4A', marginBottom: seated.length ? 6 : 0 }}>{t.name} · {seated.length} seated</div>
+                {seated.map(g => <div key={g.id} style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)', padding: '2px 0' }}>{g.name}</div>)}
+                {!seated.length && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.18)', fontStyle: 'italic' }}>Empty</div>}
+              </div>
+            );
+          })}
+        </div>
+        <div>
+          <div style={{ fontSize: 10.5, fontWeight: 700, color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Guests</div>
+          <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+            <input value={gName} onChange={e => setGName(e.target.value)} onKeyDown={e => e.key === 'Enter' && addGuest()} placeholder="Guest name" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, padding: '8px 10px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none' }} />
+            <button onClick={addGuest} style={{ background: '#C47A2E', border: 'none', borderRadius: 8, padding: '8px 12px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+</button>
+          </div>
+          {guests.length === 0 ? <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)', textAlign: 'center', padding: 16 }}>Add guests above</div> : guests.map(g => (
+            <div key={g.id} style={{ display: 'flex', alignItems: 'center', gap: 7, background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '8px 10px', marginBottom: 6 }}>
+              <span style={{ flex: 1, fontSize: 13, color: '#fff', fontFamily: font, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.name}</span>
+              <select value={g.table || ''} onChange={e => assign(g.id, e.target.value)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 6, color: '#fff', fontSize: 11, padding: '4px 5px', fontFamily: font, outline: 'none', colorScheme: 'dark', maxWidth: 90 }}>
+                <option value="">No seat</option>
+                {tables.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+              </select>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Modal>
+  );
+}
 
 export default function HousePartyHub() {
   const [open, setOpen] = useState(null);
@@ -996,6 +1212,11 @@ export default function HousePartyHub() {
           ]}
         />
       );
+      case "guestlist":   return <GuestListModal onClose={() => setOpen(null)} />;
+      case "menu":        return <MenuPlannerModal onClose={() => setOpen(null)} />;
+      case "seating":     return <SeatingChartModal onClose={() => setOpen(null)} />;
+      case "daytimeline": return <DayTimelineModal onClose={() => setOpen(null)} />;
+      case "venue":       return <VenueNotesModal onClose={() => setOpen(null)} />;
       default: return null;
     }
   };

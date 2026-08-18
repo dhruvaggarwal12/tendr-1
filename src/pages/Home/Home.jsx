@@ -1000,7 +1000,7 @@ const Home = () => {
                 onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 36px rgba(196,122,46,0.65)"; }}
                 onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 22px rgba(196,122,46,0.5)"; }}
               >
-                Start Planning →
+                Book Vendors →
               </button>
 
               {/* Plan an Occasion — secondary CTA */}
@@ -1014,20 +1014,6 @@ const Home = () => {
                 Plan an Occasion ✦
               </button>
 
-              {/* Divider */}
-              <div style={{ width: 1, height: 22, background: "rgba(204,171,74,0.25)", flexShrink: 0 }} />
-
-              {/* Seasonal — subordinate ghost-pill style */}
-              <button
-                onClick={() => navigate("/rakhi-hampers")}
-                className="home-seasonal-btn"
-                style={{ display: "flex", alignItems: "center", gap: 7, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.32)", color: "rgba(255,247,235,0.8)", fontSize: 13, fontWeight: 600, padding: "9px 16px", borderRadius: 100, cursor: "pointer", transition: "all 0.18s", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
-                onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.2)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.55)"; e.currentTarget.style.color = "#FFF8EC"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.32)"; e.currentTarget.style.color = "rgba(255,247,235,0.8)"; }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-                Rakhi Hampers
-              </button>
             </motion.div>
 
             {/* Social proof trust bar — below CTAs */}
@@ -1229,56 +1215,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* ── Marquee strip — right under hero text ── */}
-      {(() => {
-        const GROUPS = [
-          { label: "Cities", color: "#CCAB4A", items: ["Delhi", "Noida", "Gurgaon", "Ghaziabad", "Greater Noida"] },
-          { label: "Services", color: "#E8C87A", items: ["Photography", "Catering", "DJ & Music", "Decoration", "Balloon Setup", "Fun Activities"] },
-          { label: "Events", color: "#CCAB4A", items: ["Birthday Parties", "Anniversaries", "Corporate Events", "Baby Showers", "House Parties", "Surprise Setups"] },
-          { label: "Platform", color: "#E8C87A", items: ["Delhi NCR's Trusted Platform", "Free to Browse", "Instant Chat", "100+ Verified Vendors", "Verified Reviews", "Same-Day Support"] },
-        ];
-
-        const strip = [...GROUPS, ...GROUPS]; // duplicate for seamless loop
-
-        return (
-          <div style={{
-            background: "#1C0E04",
-            borderTop: "1px solid rgba(204,171,74,0.12)",
-            borderBottom: "1px solid rgba(204,171,74,0.12)",
-            padding: "11px 0", overflow: "hidden",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", width: "max-content", animation: "tendr-marquee 40s linear infinite" }}>
-              {strip.map((group, gi) => (
-                <React.Fragment key={gi}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 0 }}>
-                    {group.items.map((item, ii) => (
-                      <React.Fragment key={ii}>
-                        <span style={{ color: group.color, fontSize: 11, fontWeight: 600, letterSpacing: "0.12em", whiteSpace: "nowrap", textTransform: "uppercase" }}>
-                          {item}
-                        </span>
-                        {ii < group.items.length - 1 && (
-                          <span style={{ color: "rgba(204,171,74,0.3)", fontSize: 10, padding: "0 10px" }}>·</span>
-                        )}
-                      </React.Fragment>
-                    ))}
-                  </span>
-                  <span style={{
-                    display: "inline-block", width: 1, height: 14,
-                    background: "linear-gradient(180deg,transparent,rgba(204,171,74,0.5),transparent)",
-                    margin: "0 28px", verticalAlign: "middle", flexShrink: 0,
-                  }} />
-                </React.Fragment>
-              ))}
-            </div>
-          </div>
-        );
-      })()}
-
       <style>{`
-        @keyframes tendr-marquee {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
         @keyframes heroFadeIn {
           from { opacity: 0; transform: scale(1.04); }
           to   { opacity: 1; transform: scale(1); }
@@ -1375,6 +1312,7 @@ const Home = () => {
           </motion.div>
 
           {/* Single-row strip — hover-reveal: non-hovered cards dim */}
+          <div style={{ position: "relative" }}>
           <div className="occ-strip" style={{ display: "flex", gap: 10, overflowX: "auto", scrollbarWidth: "none", msOverflowStyle: "none", paddingBottom: 6 }}>
             {[
               { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
@@ -1453,6 +1391,8 @@ const Home = () => {
             })}
           </div>
 
+          <div style={{ position: "absolute", right: 0, top: 0, bottom: 6, width: 80, background: "linear-gradient(to right, transparent, #F5EFE6)", pointerEvents: "none", zIndex: 1 }} />
+          </div>
           <style>{`.occ-strip::-webkit-scrollbar { display: none; }`}</style>
         </div>
       </section>
