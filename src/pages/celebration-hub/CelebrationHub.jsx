@@ -10,13 +10,15 @@ const GOLD  = "#C47A2E";
 const CREAM = "#FFF8EE";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
+const tabIc = (d) => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+
 // Tabs — no Trending; Discussions renamed to All Posts
 const TABS = [
-  { id: "all",     label: "All Posts",         emoji: "💬", accent: "#e05d2e" },
-  { id: "polls",   label: "Polls & Votes",      emoji: "📊", accent: GOLD },
-  { id: "ideas",   label: "Ideas & Inspo",      emoji: "💡", accent: "#7c3aed" },
-  { id: "ask",     label: "Ask the Community",  emoji: "🙋", accent: "#16a34a" },
-  { id: "stories", label: "Share Your Story",   emoji: "🎉", accent: "#ea580c" },
+  { id: "all",     label: "All Posts",         icon: tabIc(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>), accent: "#e05d2e" },
+  { id: "polls",   label: "Polls & Votes",      icon: tabIc(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>), accent: GOLD },
+  { id: "ideas",   label: "Ideas & Inspo",      icon: tabIc(<><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></>), accent: "#7c3aed" },
+  { id: "ask",     label: "Ask the Community",  icon: tabIc(<><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>), accent: "#16a34a" },
+  { id: "stories", label: "Share Your Story",   icon: tabIc(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>), accent: "#ea580c" },
 ];
 
 // Category options for the new-post modal — aligned with the 4 non-"all" tabs
@@ -55,25 +57,27 @@ function saveReactions(r){ try { localStorage.setItem(REACT_KEY, JSON.stringify(
 
 function postId(p) { return String(p._id || p.id); }
 
+const ric = (d) => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>{d}</svg>;
+
 // ── Reaction bar (interactive) ─────────────────────────────────────────────
 const REACTION_ITEMS = [
-  { key: "agree",     label: "Agree",      emoji: "👍" },
-  { key: "facedThis", label: "Faced this", emoji: "🙋" },
-  { key: "greatIdea", label: "Great idea", emoji: "💡" },
-  { key: "loveThis",  label: "Love this",  emoji: "❤️" },
+  { key: "agree",     label: "Agree",      icon: ric(<><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></>) },
+  { key: "facedThis", label: "Faced this", icon: ric(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>) },
+  { key: "greatIdea", label: "Great idea", icon: ric(<><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></>) },
+  { key: "loveThis",  label: "Love this",  icon: ric(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>) },
 ];
 
 function ReactionBar({ reactions, userReaction, onReact }) {
   return (
     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 10 }}>
-      {REACTION_ITEMS.map(({ key, label, emoji }) => {
+      {REACTION_ITEMS.map(({ key, label, icon }) => {
         const base  = reactions?.[key] || 0;
         const count = base + (userReaction === key ? 1 : 0);
         const active = userReaction === key;
         return (
           <button key={key} onClick={() => onReact(key)}
             style={{ fontSize: 11, color: active ? "#fff" : "#9B7450", background: active ? GOLD : "rgba(196,122,46,0.07)", border: `1px solid ${active ? GOLD : "rgba(196,122,46,0.15)"}`, borderRadius: 100, padding: "5px 10px", display: "flex", alignItems: "center", gap: 4, cursor: "pointer", fontFamily: font, touchAction: "manipulation", transition: "all 0.15s", fontWeight: active ? 700 : 500 }}>
-            {emoji} {count > 0 ? count.toLocaleString() : ""} {label}
+            {icon} {count > 0 ? count.toLocaleString() : ""} {label}
           </button>
         );
       })}
@@ -141,9 +145,9 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
           <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: catColor, borderRadius: 100, padding: "2px 10px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
             {CAT_LABELS[post.category] || post.category?.replace(/-/g, " ")}
           </span>
-          {post.isPinned   && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD,     background: "rgba(196,122,46,0.1)",   borderRadius: 100, padding: "2px 10px" }}>📌 Pinned</span>}
-          {post.isFeatured && <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", background: "rgba(124,58,237,0.08)", borderRadius: 100, padding: "2px 10px" }}>✨ Featured</span>}
-          {post._isUserCreated && <span style={{ fontSize: 10, fontWeight: 700, color: "#16a34a", background: "rgba(22,163,74,0.08)", borderRadius: 100, padding: "2px 10px" }}>🆕 New</span>}
+          {post.isPinned   && <span style={{ fontSize: 10, fontWeight: 700, color: GOLD,     background: "rgba(196,122,46,0.1)",   borderRadius: 100, padding: "2px 10px", display: "inline-flex", alignItems: "center", gap: 3 }}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"/></svg> Pinned</span>}
+          {post.isFeatured && <span style={{ fontSize: 10, fontWeight: 700, color: "#7c3aed", background: "rgba(124,58,237,0.08)", borderRadius: 100, padding: "2px 10px", display: "inline-flex", alignItems: "center", gap: 3 }}><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Featured</span>}
+          {post._isUserCreated && <span style={{ fontSize: 10, fontWeight: 700, color: "#16a34a", background: "rgba(22,163,74,0.08)", borderRadius: 100, padding: "2px 10px" }}>New</span>}
         </div>
       </div>
 
@@ -167,18 +171,18 @@ function PostCard({ post, liked, onLike, onRemove, isAdmin, onAddComment, userRe
           {/* Like button */}
           <button onClick={() => onLike(post.id || post._id)}
             style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, color: liked ? "#e05d2e" : "#9B7450", background: liked ? "rgba(224,93,46,0.08)" : "transparent", border: liked ? "1px solid rgba(224,93,46,0.2)" : "1px solid transparent", borderRadius: 100, padding: "6px 12px", cursor: "pointer", fontFamily: font, transition: "all 0.15s", touchAction: "manipulation" }}>
-            {liked ? "❤️" : "🤍"} {(post.likes || 0) + (liked ? 1 : 0)}
+            <svg width="13" height="13" viewBox="0 0 24 24" fill={liked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {(post.likes || 0) + (liked ? 1 : 0)}
           </button>
           {/* Comments toggle */}
           <button onClick={toggleComments}
             style={{ fontSize: 12, color: "#9B7450", background: "none", border: "none", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: "6px 8px", touchAction: "manipulation" }}>
-            💬 {post.commentsCount ?? comments.length ?? post.answers ?? 0} replies
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> {post.commentsCount ?? comments.length ?? post.answers ?? 0} replies
           </button>
           {/* Admin remove */}
           {isAdmin && (
             <button onClick={() => onRemove(post.id || post._id)}
               style={{ fontSize: 11, color: "#ef4444", background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: 100, padding: "3px 10px", cursor: "pointer", fontFamily: font, fontWeight: 700 }}>
-              🗑 Remove
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ marginRight: 4 }}><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Remove
             </button>
           )}
         </div>
@@ -261,8 +265,8 @@ function IdeaCard({ idea }) {
       <div style={{ position: "relative", height: 180 }}>
         <img src={idea.image} alt={idea.title} style={{ width: "100%", height: "100%", objectFit: "cover" }} loading="lazy" />
         <button onClick={() => setSaved(v => !v)}
-          style={{ position: "absolute", top: 10, right: 10, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          {saved ? "❤️" : "🤍"}
+          style={{ position: "absolute", top: 10, right: 10, width: 32, height: 32, borderRadius: "50%", background: "rgba(255,255,255,0.9)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: saved ? "#e05d2e" : "#9B7450" }}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill={saved ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
         </button>
       </div>
       <div style={{ padding: "14px 16px" }}>
@@ -275,7 +279,7 @@ function IdeaCard({ idea }) {
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 11, color: "#9B7450" }}>
           <span>by {idea.author}</span>
-          <span>❤️ {(idea.saved + (saved ? 1 : 0)).toLocaleString()} saved</span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#e05d2e" }}><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {(idea.saved + (saved ? 1 : 0)).toLocaleString()} saved</span>
         </div>
       </div>
     </div>
@@ -301,7 +305,7 @@ function NewPostModal({ onClose, onSubmit, authorName }) {
       <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)", zIndex: 2001, width: "min(94vw,560px)", borderRadius: 20, background: CREAM, boxShadow: "0 24px 72px rgba(44,26,14,0.28)", fontFamily: font, display: "flex", flexDirection: "column", maxHeight: "90vh", overflow: "hidden" }}>
         {/* Header */}
         <div style={{ padding: "18px 22px 14px", borderBottom: "1px solid rgba(196,122,46,0.12)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 900, color: BROWN }}>✍️ Create a Post</div>
+          <div style={{ fontSize: 17, fontWeight: 900, color: BROWN }}>Create a Post</div>
           <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(44,26,14,0.08)", border: "none", fontSize: 14, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: BROWN }}>✕</button>
         </div>
         {/* Scrollable body */}
@@ -573,7 +577,7 @@ export default function CelebrationHub() {
                   boxShadow: active ? `0 4px 14px ${tab.accent}35` : "none",
                   transition: "all 0.18s",
                 }}>
-                <span style={{ fontSize: 14 }}>{tab.emoji}</span>
+                {tab.icon}
                 {tab.label}
               </button>
             );

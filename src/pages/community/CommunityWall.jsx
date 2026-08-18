@@ -15,11 +15,13 @@ const CATEGORIES = [
   { key: "story", label: "Share Your Story", emoji: "🎉" },
 ];
 
+const cwic = (d) => <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}>{d}</svg>;
+
 const REACTIONS = [
-  { key: "agree",     emoji: "👍", label: "Agree"      },
-  { key: "facedThis", emoji: "🙋", label: "Faced this" },
-  { key: "greatIdea", emoji: "💡", label: "Great idea" },
-  { key: "loveThis",  emoji: "❤️", label: "Love this"  },
+  { key: "agree",     icon: cwic(<><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/><path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></>), label: "Agree"      },
+  { key: "facedThis", icon: cwic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>), label: "Faced this" },
+  { key: "greatIdea", icon: cwic(<><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></>), label: "Great idea" },
+  { key: "loveThis",  icon: cwic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>), label: "Love this"  },
 ];
 
 const ADMIN_TAGS = [
@@ -493,7 +495,7 @@ export default function CommunityWall() {
       {IS_PROD && !isStandalone && !installed && (
         <div style={{ maxWidth: 680, margin: "0 auto", padding: "16px 20px 0" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, background: "linear-gradient(135deg,rgba(196,122,46,0.08),rgba(204,171,74,0.06))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 14, padding: "12px 16px" }}>
-            <span style={{ fontSize: 22, flexShrink: 0 }}>📲</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" style={{ flexShrink: 0 }}><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 800, color: "#2C1A0E", marginBottom: 2 }}>Add Tendr to your home screen</div>
               <div style={{ fontSize: 11, color: "#9B7450", lineHeight: 1.4 }}>Get the full community experience as an app — no app store needed.</div>
@@ -654,7 +656,7 @@ export default function CommunityWall() {
           {CATEGORIES.map(cat => (
             <button key={cat.key} onClick={() => setActiveCategory(cat.key)}
               style={{ padding: "8px 18px", borderRadius: 100, border: activeCategory === cat.key ? "2px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.2)", background: activeCategory === cat.key ? "linear-gradient(135deg,#C47A2E,#CCAB4A)" : "#fff", color: activeCategory === cat.key ? "#fff" : "#6B3A1F", fontSize: 13, fontWeight: activeCategory === cat.key ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s", whiteSpace: "nowrap" }}>
-              {cat.emoji} {cat.label}
+              {cat.label}
               {cat.key !== "all" && (
                 <span style={{ marginLeft: 6, fontSize: 11, opacity: 0.75 }}>
                   ({posts.filter(p => p.category === cat.key).length})
@@ -717,7 +719,7 @@ export default function CommunityWall() {
                 {/* Pinned indicator */}
                 {post.isPinned && (
                   <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "rgba(196,122,46,0.1)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "3px 10px", fontSize: 11, fontWeight: 700, color: "#C47A2E", marginBottom: 12 }}>
-                    📌 Pinned
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V17z"/></svg> Pinned
                   </div>
                 )}
 
@@ -738,7 +740,7 @@ export default function CommunityWall() {
                     </div>
                   </div>
                   <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, background: cc.bg, border: `1px solid ${cc.border}`, color: cc.text, flexShrink: 0 }}>
-                    {ci.emoji} {ci.label}
+                    {ci.label}
                   </span>
                 </div>
 
@@ -832,7 +834,7 @@ export default function CommunityWall() {
                       const ti = ADMIN_TAGS.find(t => t.key === tagKey);
                       return ti ? (
                         <span key={tagKey} style={{ padding: "3px 10px", borderRadius: 100, fontSize: 11, fontWeight: 700, background: "rgba(196,122,46,0.08)", color: "#C47A2E", border: "1px solid rgba(196,122,46,0.2)" }}>
-                          {ti.emoji} {ti.label}
+                          {ti.label}
                         </span>
                       ) : null;
                     })}
@@ -847,7 +849,7 @@ export default function CommunityWall() {
                     return (
                       <button key={r.key} onClick={() => handleReaction(postId, r.key)}
                         style={{ display: "flex", alignItems: "center", gap: 4, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${isActive ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: isActive ? "rgba(196,122,46,0.1)" : "transparent", color: isActive ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: isActive ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
-                        <span style={{ fontSize: 13 }}>{r.emoji}</span>
+                        {r.icon}
                         <span style={{ fontWeight: 700 }}>{count}</span>
                         <span>{r.label}</span>
                       </button>
@@ -856,11 +858,11 @@ export default function CommunityWall() {
                   <div style={{ marginLeft: "auto", display: "flex", gap: 6 }}>
                     <button onClick={() => toggleComments(postId, post.isFromApi)}
                       style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${openComments[postId] ? "#C47A2E" : "rgba(196,122,46,0.15)"}`, background: openComments[postId] ? "rgba(196,122,46,0.08)" : "transparent", color: openComments[postId] ? "#C47A2E" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
-                      💬 {post.comments}
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> {post.comments}
                     </button>
                     <button onClick={() => toggleBookmark(postId)}
                       style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${isBookmarked ? "#CCAB4A" : "rgba(196,122,46,0.15)"}`, background: isBookmarked ? "rgba(204,171,74,0.12)" : "transparent", color: isBookmarked ? "#CCAB4A" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
-                      {isBookmarked ? "🔖" : "🏷️"} {post.bookmarks}
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill={isBookmarked ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg> {post.bookmarks}
                     </button>
                     <button onClick={() => handleShare(post)}
                       style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", borderRadius: 100, border: `1.5px solid ${shareCopied[postId] ? "#15803d" : "rgba(196,122,46,0.15)"}`, background: shareCopied[postId] ? "rgba(21,128,61,0.08)" : "transparent", color: shareCopied[postId] ? "#15803d" : "#9B7450", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
@@ -925,11 +927,11 @@ export default function CommunityWall() {
                     <div style={{ display: "flex", gap: 6, marginBottom: adminTagOpen[postId] ? 8 : 0, flexWrap: "wrap" }}>
                     <button onClick={() => setAdminTagOpen(prev => ({ ...prev, [postId]: !prev[postId] }))}
                       style={{ fontSize: 11, color: "#9B7450", background: "none", border: "1px dashed rgba(196,122,46,0.3)", borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontFamily: font, fontWeight: 600 }}>
-                      🏷️ {adminTagOpen[postId] ? "Close" : (post.adminTags?.length > 0 ? `Edit Tags (${post.adminTags.length})` : "Add Tag")}
+                      {adminTagOpen[postId] ? "Close" : (post.adminTags?.length > 0 ? `Edit Tags (${post.adminTags.length})` : "Add Tag")}
                     </button>
                     <button onClick={() => handleTogglePin(postId, post)}
                       style={{ fontSize: 11, color: post.isPinned ? "#C47A2E" : "#9B7450", background: post.isPinned ? "rgba(196,122,46,0.08)" : "none", border: `1px dashed ${post.isPinned ? "#C47A2E" : "rgba(196,122,46,0.3)"}`, borderRadius: 8, padding: "4px 10px", cursor: "pointer", fontFamily: font, fontWeight: post.isPinned ? 700 : 600 }}>
-                      📌 {post.isPinned ? "Unpin" : "Pin to top"}
+                      {post.isPinned ? "Unpin" : "Pin to top"}
                     </button>
                     </div>
                     {adminTagOpen[postId] && (
@@ -939,7 +941,7 @@ export default function CommunityWall() {
                           return (
                             <button key={tag.key} onClick={() => handleAdminTag(postId, tag.key)}
                               style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${isTagged ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: isTagged ? "rgba(196,122,46,0.1)" : "transparent", color: isTagged ? "#C47A2E" : "#9B7450", fontSize: 11, fontWeight: isTagged ? 700 : 500, cursor: "pointer", fontFamily: font, transition: "all 0.15s" }}>
-                              {tag.emoji} {tag.label}
+                              {tag.label}
                             </button>
                           );
                         })}

@@ -184,8 +184,11 @@ export default function FindByStyle() {
               position: 'relative', overflow: 'hidden',
             }}
           >
-            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(196,122,46,0.08)', border: '1.5px solid rgba(196,122,46,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px', fontSize: 26 }}>
-              {dragging ? '⬇' : '🖼'}
+            <div style={{ width: 56, height: 56, borderRadius: 16, background: 'rgba(196,122,46,0.08)', border: '1.5px solid rgba(196,122,46,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 18px' }}>
+              {dragging
+                ? <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                : <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              }
             </div>
             <div style={{ fontSize: 18, fontWeight: 700, color: '#2C1A0E', marginBottom: 8 }}>
               {dragging ? 'Drop it here' : 'Drop a photo here'}
@@ -241,7 +244,7 @@ export default function FindByStyle() {
         {/* Coming soon */}
         {error === 'coming-soon' && (
           <div style={{ textAlign: 'center', padding: '40px 24px', background: '#FFFCF5', border: '1px solid rgba(196,122,46,0.15)', borderRadius: 16, marginBottom: 20 }}>
-            <div style={{ fontSize: 36, marginBottom: 14 }}>🔧</div>
+            <div style={{ marginBottom: 14 }}><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
             <div style={{ fontSize: 16, fontWeight: 600, color: '#2C1A0E', marginBottom: 8, fontFamily: "'Cormorant Garamond', serif" }}>
               This feature is being set up
             </div>
@@ -379,9 +382,9 @@ export default function FindByStyle() {
 
                 {/* Stats pills */}
                 <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
-                  {city && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><span>📍</span>{city}</div>}
-                  {v.yearsOfExperience > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><span>⏱</span>{v.yearsOfExperience}y experience</div>}
-                  {v.teamSize > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><span>👥</span>Team of {v.teamSize}</div>}
+                  {city && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>{city}</div>}
+                  {v.yearsOfExperience > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>{v.yearsOfExperience}y experience</div>}
+                  {v.teamSize > 0 && <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 13, color: '#7A5535', background: 'rgba(196,122,46,0.07)', borderRadius: 20, padding: '5px 12px', border: '1px solid rgba(196,122,46,0.12)' }}><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Team of {v.teamSize}</div>}
                 </div>
 
                 {/* About */}

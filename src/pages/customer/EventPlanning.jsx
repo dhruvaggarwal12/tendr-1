@@ -612,7 +612,7 @@ const EventPlanning = () => {
             {/* Packages — expandable cards */}
             <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>📦 Choose a Package</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>Choose a Package</div>
                 <button onClick={() => isLastStep ? submitPlan() : setWizardStep(s => s + 1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600, color: "#9B7450", padding: 0, fontFamily: "'Outfit',sans-serif" }}>{isLastStep ? "Skip & Confirm →" : "Skip →"}</button>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -651,7 +651,7 @@ const EventPlanning = () => {
             {/* Menu preview */}
             {selectedPackages.Caterer && catererMenu.length > 0 && (
               <div style={{ background: "rgba(196,122,46,0.04)", borderRadius: 10, padding: "12px 14px", border: "1px solid rgba(196,122,46,0.15)" }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>🍽 Menu</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Menu</div>
                 {menuLoading ? <div style={{ fontSize: 12, color: "#9B7450" }}>Loading menu…</div> : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     {catererMenu.slice(0, 8).map((item, i) => (
@@ -682,7 +682,7 @@ const EventPlanning = () => {
             </div>
           ))}
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {CHAT_PACKAGES.Decorator.map(p => { const sel = selectedPackages.Decorator === p.tier; const key = `Decorator-${p.tier}`; const open = !!pkgExpanded[key]; return (
                 <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
@@ -713,7 +713,7 @@ const EventPlanning = () => {
             </div>
           ))}
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {CHAT_PACKAGES.Photographer.map(p => { const sel = selectedPackages.Photographer === p.tier; const key = `Photographer-${p.tier}`; const open = !!pkgExpanded[key]; return (
                 <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
@@ -743,7 +743,7 @@ const EventPlanning = () => {
             </div>
           ))}
           <div style={{ borderTop: "1px solid rgba(196,122,46,0.15)", paddingTop: 14 }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>📦 Choose a Package</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Choose a Package</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {CHAT_PACKAGES.DJ.map(p => { const sel = selectedPackages.DJ === p.tier; const key = `DJ-${p.tier}`; const open = !!pkgExpanded[key]; return (
                 <div key={p.tier} style={{ borderRadius: 12, border: `2px solid ${sel ? "#C47A2E" : "rgba(196,122,46,0.2)"}`, background: sel ? "rgba(196,122,46,0.05)" : "#FFFCF5", overflow: "hidden" }}>
@@ -848,7 +848,7 @@ const EventPlanning = () => {
               {slots.length > 0 && (
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                   <div style={{ maxWidth: "80%", background: "linear-gradient(135deg,#CCAB4A,#e8c96a)", color: "#fff", borderRadius: "18px 18px 4px 18px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", fontSize: 13, lineHeight: 1.7 }}>
-                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5, opacity: 0.85 }}>📋 Suggested Vendors</div>
+                    <div style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 5, opacity: 0.85 }}>Suggested Vendors</div>
                     {slots.map((s, i) => `${CAT_EMOJI[s.category] || '🏷'} ${s.vendorName || s.category} — ₹${Number(s.estimatedCost || 0).toLocaleString('en-IN')}`).join('\n')}
                   </div>
                 </div>

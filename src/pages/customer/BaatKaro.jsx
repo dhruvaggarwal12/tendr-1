@@ -196,14 +196,14 @@ export default function BaatKaro() {
 
           {/* Bot message */}
           <div style={{ display: "flex", gap: 10, marginBottom: 18 }}>
-            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, flexShrink: 0 }}>
-              🎉
+            <div style={{ width: 34, height: 34, borderRadius: "50%", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
             </div>
             <div style={{ background: "rgba(196,122,46,0.08)", borderRadius: "4px 14px 14px 14px", padding: "10px 14px", maxWidth: "85%" }}>
               <p style={{ fontSize: 13.5, color: "#2C1A0E", margin: 0, lineHeight: 1.6 }}>
-                Namaste! 👋 Welcome to Tendr.<br /><br />
+                Namaste! Welcome to Tendr.<br /><br />
                 Bas ek kaam karo — apna event batao. Likh do:<br />
-                <span style={{ color: "#C47A2E", fontWeight: 700 }}>📅 Date · 📍 Location · 👥 Guests · 💰 Budget · 🎊 Kya chahiye</span><br /><br />
+                <span style={{ color: "#C47A2E", fontWeight: 700 }}>Date · Location · Guests · Budget · Kya chahiye</span><br /><br />
                 Apni bhasha mein — Hinglish bilkul theek hai!
               </p>
             </div>
@@ -213,8 +213,9 @@ export default function BaatKaro() {
           {refPhotos.length > 0 && (
             <div style={{ marginBottom: 14, padding: "10px 12px", borderRadius: 12, background: "rgba(196,122,46,0.07)", border: "1px dashed rgba(196,122,46,0.35)" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                  📎 {refPhotos.length} photo{refPhotos.length > 1 ? "s" : ""} attached
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.08em", display: "inline-flex", alignItems: "center", gap: 4 }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                  {refPhotos.length} photo{refPhotos.length > 1 ? "s" : ""} attached
                 </span>
                 <button
                   onClick={() => { setRefPhotos([]); try { sessionStorage.removeItem("gh_chat_photos"); } catch {} }}

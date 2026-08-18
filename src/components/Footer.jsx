@@ -196,13 +196,17 @@ export default function Footer() {
             <p style={{ fontSize: 13, color: "rgba(255,247,235,0.36)", margin: 0 }}>Android · iOS · Desktop — no app store needed.</p>
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {[{ label: "Android", icon: "🤖" }, { label: "iPhone", icon: "🍎" }, { label: "Desktop", icon: "💻" }].map(({ label, icon }) => (
+            {[
+              { label: "Android", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> },
+              { label: "iPhone",  icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> },
+              { label: "Desktop", icon: <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg> },
+            ].map(({ label, icon }) => (
               <a key={label} href="/install"
                 style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 17px", borderRadius: 10, border: "1px solid rgba(196,122,46,0.2)", background: "rgba(255,247,235,0.04)", color: "rgba(255,247,235,0.5)", fontSize: 13, fontWeight: 500, textDecoration: "none", transition: "all 0.18s" }}
                 onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.38)"; e.currentTarget.style.color = "#CCAB4A"; }}
                 onMouseLeave={e => { e.currentTarget.style.background = "rgba(255,247,235,0.04)"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.2)"; e.currentTarget.style.color = "rgba(255,247,235,0.5)"; }}
               >
-                <span style={{ fontSize: 15 }}>{icon}</span>
+                {icon}
                 {label}
               </a>
             ))}

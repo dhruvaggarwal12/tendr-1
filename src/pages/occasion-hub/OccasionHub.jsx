@@ -2380,7 +2380,7 @@ export default function OccasionHub({ occasion }) {
           .tool-scroll-outer::-webkit-scrollbar { display: none; }
           .tool-grid-mobile { display: flex !important; flex-wrap: nowrap !important; gap: 10px !important; width: max-content !important; padding-right: 24px; }
           .occ-tool-card-mobile { width: 88px !important; flex-shrink: 0 !important; }
-          .occ-tab-label { display: none !important; }
+          .occ-tab-label { font-size: 10px !important; }
           .occ-scroll-area { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
         }
       `}</style>
@@ -2548,7 +2548,7 @@ export default function OccasionHub({ occasion }) {
                 transition: "all 0.18s",
               }}>
                 <div style={{ fontSize: 15, marginBottom: 1 }}>{sec.label.split(" ")[0]}</div>
-                <div className="occ-tab-label" style={{ fontSize: 8.5, letterSpacing: "0.05em", opacity: active ? 1 : 0.7 }}>{sec.label.split(" ").slice(1).join(" ") || sec.id}</div>
+                <div className="occ-tab-label" style={{ letterSpacing: "0.05em", opacity: active ? 1 : 0.7 }}>{sec.label.split(" ").slice(1).join(" ") || sec.id}</div>
               </button>
             );
           })}
@@ -2628,9 +2628,9 @@ export default function OccasionHub({ occasion }) {
                 }}>
                   {t.emoji}
                 </div>
-                <div style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.01em" }}>{t.title}</div>
+                <div style={{ fontSize: 12, fontWeight: 800, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.01em" }}>{t.title}</div>
                 {/* Description only on desktop when cards are large enough */}
-                {n <= 5 && <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.35)", lineHeight: 1.3, marginTop: 2 }}>{t.desc}</div>}
+                {n <= 5 && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.3, marginTop: 2 }}>{t.desc}</div>}
                 {isGame && (
                   <div className="occ-tab-label" style={{ fontSize: 8.5, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.1em", background: accent + "18", border: `1px solid ${accent}40`, borderRadius: 100, padding: "2px 7px", marginTop: 5, opacity: isH ? 1 : 0.65 }}>
                     Play

@@ -236,22 +236,22 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
 
   const NAV_SECTIONS = [
-    { label: "Vendors", hideOnMobile: true, items: [
+    { label: "Vendors", items: [
       { label: "Browse Vendors",     href: "/listings", onClickOverride: handleBrowseVendors, disabled: browseDisabled, activePaths: ["/listings", "/search", "/vendor/"] },
       { label: "Register as Vendor", href: "/vendor/register" },
     ]},
-    { label: "Our Products", hideOnMobile: true, items: [
-      { label: "🎁 Gift Hampers", href: "/gifting" },
-      { label: "💒 Wedding Stationeries", href: "/stationery" },
-      { label: "🎭 Fun Activities",       href: "/fun-activities" },
+    { label: "Our Products", items: [
+      { label: "Gift Hampers",          href: "/gifting" },
+      { label: "Wedding Stationeries",  href: "/stationery" },
+      { label: "Fun Activities",        href: "/fun-activities" },
     ]},
-    { label: "Booking", hideOnMobile: true, items: [
-      { label: "🔍 You Do It",       href: "/booking", activePaths: ["/plan-event"], activeBookingType: "you-do-it" },
-      { label: "✨ Smart Planner",    href: "/booking", activePaths: ["/plan-event"], activeBookingType: "let-us-do-it" },
-      { label: "💬 Baat Karo",       href: "/baat-karo", activePaths: ["/baat-karo"] },
-      { label: "🎉 Plan by Occasion", href: "/", onClickOverride: () => { close(); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
+    { label: "Plan Your Event", items: [
+      { label: "You Do It",       href: "/booking", activePaths: ["/plan-event"], activeBookingType: "you-do-it" },
+      { label: "Smart Planner",   href: "/booking", activePaths: ["/plan-event"], activeBookingType: "let-us-do-it" },
+      { label: "Baat Karo",       href: "/baat-karo", activePaths: ["/baat-karo"] },
+      { label: "Plan by Occasion", href: "/", onClickOverride: () => { close(); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
     ]},
-    { label: "Tools", hideOnMobile: true, items: [
+    { label: "Tools", items: [
       { label: "✦ Plan My Event",  href: "/plan", activePaths: ["/plan","/checklist-picker","/prebuilt-checklist"], tag: "hub", onClickOverride: () => { close(); navigate("/plan"); } },
       { label: "Timeline",         href: "/timeline-picker", activePaths: ["/timeline-picker","/timeline","/prebuilt-timeline"],
         onClickOverride: () => { try { const d = localStorage.getItem("tendr_timeline_v2"); const s = d ? JSON.parse(d) : null; if (s?.phases?.length > 0) { setTimelinePopupOpen(true); } else { window.open("/timeline-picker", "_blank"); } } catch { window.open("/timeline-picker", "_blank"); } } },
@@ -819,7 +819,7 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
 
             {/* Nav sections */}
             <div style={{ padding: "12px 0", flex: 1 }}>
-              {NAV_SECTIONS.filter(sec => !sec.hideOnMobile).map((sec, si) => (
+              {NAV_SECTIONS.map((sec, si) => (
                 <div key={sec.label} style={{ marginBottom: 4 }}>
                   <div style={{ fontSize: 10, fontWeight: 800, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.14em", padding: "10px 20px 6px" }}>
                     {sec.label}
@@ -838,11 +838,10 @@ export default function HamburgerNav({ title = "", showReviewPay = false, active
                     ) : (
                       <button key={item.label}
                         onClick={() => { if (item.onClickOverride) { item.onClickOverride(); close(); } else { navigate(item.href); close(); } }}
-                        style={{ display: "flex", alignItems: "center", gap: 12, width: "100%", textAlign: "left", padding: "10px 20px", border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
+                        style={{ display: "flex", alignItems: "center", width: "100%", textAlign: "left", padding: "10px 20px", border: "none", background: "transparent", fontSize: 14, fontWeight: 500, color: "#2C1A0E", cursor: "pointer", fontFamily: font, transition: "all 0.15s", borderRadius: 0 }}
                         onMouseEnter={e => { e.currentTarget.style.background = "rgba(196,122,46,0.07)"; e.currentTarget.style.paddingLeft = "26px"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.paddingLeft = "20px"; }}
                       >
-                        <span style={{ fontSize: 16, width: 22, textAlign: "center", flexShrink: 0 }}>{item.icon}</span>
                         <span style={{ flex: 1 }}>{item.label}</span>
                         {item.tag && <span style={{ fontSize: 9, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "1px 6px", flexShrink: 0, letterSpacing: "0.05em" }}>{item.tag.toUpperCase()}</span>}
                       </button>

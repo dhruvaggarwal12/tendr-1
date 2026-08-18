@@ -287,7 +287,7 @@ function Bingo({ onClose }) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 5, marginBottom: 16 }}>
         {card.map((sq, i) => (
           <div key={i} onClick={() => toggle(i)} style={{ aspectRatio: "1", background: marked[i] ? "rgba(124,58,237,0.5)" : "rgba(255,255,255,0.06)", border: `1.5px solid ${marked[i] ? "#7C3AED" : "rgba(255,255,255,0.12)"}`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", padding: 4, cursor: i === 12 ? "default" : "pointer", transition: "all 0.15s" }}>
-            <span style={{ fontSize: 9, color: marked[i] ? "#fff" : "rgba(255,255,255,0.7)", textAlign: "center", lineHeight: 1.2 }}>{sq.text}</span>
+            <span style={{ fontSize: 11, color: marked[i] ? "#fff" : "rgba(255,255,255,0.7)", textAlign: "center", lineHeight: 1.2 }}>{sq.text}</span>
           </div>
         ))}
       </div>

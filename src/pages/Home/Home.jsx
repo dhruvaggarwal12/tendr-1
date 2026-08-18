@@ -106,7 +106,7 @@ const FAQS = [
   { q: "How long does it take to get vendor quotes?", a: "Once your chat is approved, most vendors respond within a few hours. Price confirmation typically happens within 24–48 hours of starting the conversation." },
   { q: "What cities does Tendr currently serve?", a: "We currently operate across Delhi, Noida, Greater Noida and Ghaziabad — covering all major event venues across the NCR region." },
   { q: "What happens if there is no activity on my chat for 24 hours?", a: "If neither you nor the vendor sends a message for 24 hours, the chat request and conversation are automatically removed from our system and your booking moves to Cancelled status. This keeps our platform clean and responsive. Simply start a new chat request if you would like to reconnect with the vendor." },
-  { q: "How do I open a chat with a vendor I was already talking to?", a: "Go to your Dashboard → Chats tab to see all your active vendor conversations and open them directly. You can also click the 💛 Saved Vendors icon in the top-right corner and tap 'Chat' next to any saved vendor. Alternatively, visit the vendor's profile page and click 'Request to Chat' to start a new conversation." },
+  { q: "How do I open a chat with a vendor I was already talking to?", a: "Go to your Dashboard → Chats tab to see all your active vendor conversations and open them directly. You can also click the Saved Vendors icon in the top-right corner and tap 'Chat' next to any saved vendor. Alternatively, visit the vendor's profile page and click 'Request to Chat' to start a new conversation." },
 ];
 
 function TipsByTendrSection() {
@@ -897,7 +897,7 @@ const Home = () => {
                     {vendorStripOpen && isVendors
                       ? <svg width="16" height="16" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1.5 1.5l9 9M10.5 1.5l-9 9"/></svg>
                       : icon}
-                    <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2, textAlign: "center" }}>{label}</span>
+                    <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2, textAlign: "center" }}>{label}</span>
                   </button>
                 ))}
               </div>
@@ -917,7 +917,7 @@ const Home = () => {
                     <button key={label} onClick={() => { setVendorStripOpen(false); navigate(path); }}
                       style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, padding: "10px 4px", background: "rgba(196,122,46,0.06)", border: "1px solid rgba(196,122,46,0.18)", borderRadius: 12, cursor: "pointer", fontFamily: "'Outfit',sans-serif", color: "#CCAB4A" }}>
                       {icon}
-                      <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2 }}>{label}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.2 }}>{label}</span>
                     </button>
                   ))}
                 </div>
@@ -1429,7 +1429,7 @@ const Home = () => {
                     <motion.span
                       animate={{ opacity: isHovered ? 1 : 0 }}
                       transition={{ duration: 0.18 }}
-                      style={{ fontSize: 9.5, color: "#CCAB4A", fontWeight: 600, display: "block", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase" }}
+                      style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 600, display: "block", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase" }}
                     >Explore →</motion.span>
                   </div>
                 </motion.button>
@@ -1530,7 +1530,7 @@ const Home = () => {
                       }}
                     >
                       {/* Tag pill */}
-                      <span style={{ fontSize: 9.5, fontWeight: 700, color: activePath === i ? "#C47A2E" : "#B8956A", textTransform: "uppercase", letterSpacing: "0.16em", display: "block", marginBottom: 8 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: activePath === i ? "#C47A2E" : "#B8956A", textTransform: "uppercase", letterSpacing: "0.16em", display: "block", marginBottom: 8 }}>
                         {p.tag}
                       </span>
                       <p style={{ fontSize: 15, fontWeight: 600, color: activePath === i ? "#1C0E04" : "#6B4528", margin: "0 0 5px", lineHeight: 1.3, fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
@@ -1555,7 +1555,7 @@ const Home = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
                   >
-                    <p style={{ fontSize: 9.5, fontWeight: 700, color: "rgba(196,122,46,0.7)", textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 12px" }}>How it works</p>
+                    <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(196,122,46,0.7)", textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 12px" }}>How it works</p>
                     <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.25rem,2.2vw,1.55rem)", fontWeight: 600, fontStyle: "italic", color: "rgba(255,247,235,0.92)", margin: "0 0 32px", lineHeight: 1.28 }}>
                       {ap.hook}
                     </p>
@@ -1785,7 +1785,7 @@ const Home = () => {
                   <img src={act.image} alt={act.name} style={{ width:"100%", height:"100%", objectFit:"cover", display:"block" }} />
                   <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(0,0,0,0.45) 0%, transparent 60%)", pointerEvents:"none" }} />
                   <div style={{ position:"absolute", top:8, right:8, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:10, fontWeight:600, padding:"3px 9px", borderRadius:"100px 100px 100px 4px", fontFamily:"'Outfit',sans-serif" }}>
-                    ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:8, fontWeight:500 }}> /{act.unitLabel}</span> : ""}
+                    ₹{act.price.toLocaleString()}{act.perUnit ? <span style={{ fontSize:11, fontWeight:500 }}> /{act.unitLabel}</span> : ""}
                   </div>
                 </div>
                 {/* Text body */}
@@ -2067,7 +2067,7 @@ const Home = () => {
 
                     {/* Content bottom */}
                     <div style={{ position: "relative", zIndex: 2, padding: "0 20px 22px" }}>
-                      <div style={{ fontSize: 9, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 5 }}>{cat.sub}</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: 5 }}>{cat.sub}</div>
                       <div style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 23, fontWeight: 400, color: "#fff", lineHeight: 1.15, marginBottom: 7 }}>{cat.label}</div>
                       <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.4, marginBottom: 12 }}>{cat.desc}</div>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -2532,7 +2532,7 @@ const Home = () => {
                       </div>
                       <div style={{ padding: "7px 10px 9px" }}>
                         <div style={{ fontSize: 11.5, fontWeight: 700, color: "#F5ECD8", lineHeight: 1.25 }}>{o.name}</div>
-                        {o.localName && <div style={{ fontSize: 9.5, color: "#C47A2E", fontWeight: 600, marginTop: 2 }}>{o.localName}</div>}
+                        {o.localName && <div style={{ fontSize: 11, color: "#C47A2E", fontWeight: 600, marginTop: 2 }}>{o.localName}</div>}
                       </div>
                     </button>
                   ))}
@@ -2624,7 +2624,7 @@ const Home = () => {
                       <div style={{flex:1}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
                           <span style={{fontSize:15,fontWeight:700,color:"#1C0900"}}>Plan with a Theme</span>
-                          <span style={{fontSize:9,fontWeight:800,color:"#fff",background:g,borderRadius:100,padding:"1px 7px",letterSpacing:"0.06em",textTransform:"uppercase"}}>Best</span>
+                          <span style={{fontSize:11,fontWeight:800,color:"#fff",background:g,borderRadius:100,padding:"1px 7px",letterSpacing:"0.06em",textTransform:"uppercase"}}>Best</span>
                         </div>
                         <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4}}>Choose a look — we tailor everything to it</div>
                       </div>
