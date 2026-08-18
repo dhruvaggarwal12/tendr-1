@@ -13,13 +13,16 @@ const HIDE_PATHS = [
   "/chat",
 ];
 
+const ic = (d, extra) => (
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}{extra}</svg>
+);
 const CATEGORIES = [
-  { emoji: "📸", label: "Photography",         path: "/search?categories=Photographer" },
-  { emoji: "🍽", label: "Catering",            path: "/search?categories=Caterer" },
-  { emoji: "🎵", label: "DJ & Music",          path: "/search?categories=DJ" },
-  { emoji: "🎀", label: "Decoration",          path: "/search?categories=Decorator" },
-  { emoji: "🎁", label: "Gift Hampers",        path: "/gift-hampers-cakes" },
-  { emoji: "💒", label: "Wedding Stationeries",path: "/stationery" },
+  { icon: ic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>), label: "Photography", path: "/search?categories=Photographer" },
+  { icon: ic(<><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></>), label: "Catering", path: "/search?categories=Caterer" },
+  { icon: ic(<><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></>), label: "DJ & Music", path: "/search?categories=DJ" },
+  { icon: ic(<><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.47-1.125-.29-.289-.47-.688-.47-1.125A1.64 1.64 0 0 1 14.828 17h1.93C19.858 17 22 14.858 22 12 22 6.477 17.523 2 12 2z"/></>), label: "Decoration", path: "/search?categories=Decorator" },
+  { icon: ic(<><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></>), label: "Gift Hampers", path: "/gift-hampers-cakes" },
+  { icon: ic(<><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></>), label: "Wedding Stationeries", path: "/stationery" },
 ];
 
 const NAV_COLORS = {
@@ -133,10 +136,9 @@ function BottomNavInner() {
   const isHomePage = location.pathname === "/";
 
   const PRODUCTS = [
-    { emoji: "⏱️", label: "Timeline",         href: "/timeline-picker" },
-    { emoji: "💰", label: "Budget Allocator", href: "/budget-picker" },
-    { emoji: "🔍", label: "Find by Style",    href: "/find-by-style" },
-    // { emoji: "🎨", label: "Decor Finder", href: "/decor-finder" }, // disabled
+    { icon: ic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>), label: "Timeline",         href: "/timeline-picker" },
+    { icon: ic(<><path d="M20 12V8H6a2 2 0 0 1-2-2c0-1.1.9-2 2-2h12v4"/><path d="M4 6v12c0 1.1.9 2 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></>), label: "Budget Allocator", href: "/budget-picker" },
+    { icon: ic(<><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></>), label: "Find by Style",    href: "/find-by-style" },
   ];
 
   const items = [
@@ -179,8 +181,8 @@ function BottomNavInner() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))", gap: 10, marginBottom: 10 }}>
               {[
                 ...CATEGORIES,
-                { emoji: "🎭", label: "Fun Activities", path: "/fun-activities" },
-              ].map(({ emoji, label, path, soon }) => (
+                { icon: ic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>), label: "Fun Activities", path: "/fun-activities" },
+              ].map(({ icon, label, path, soon }) => (
                 <button key={label}
                   onClick={() => { navigate(path); setBrowseOpen(false); }}
                   style={{ display: "flex", alignItems: "center", gap: 12, padding: "14px 16px", borderRadius: 14, border: "1.5px solid rgba(196,122,46,0.15)", background: "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", transition: "background 0.15s", position: "relative" }}
@@ -188,7 +190,7 @@ function BottomNavInner() {
                   onTouchEnd={e => e.currentTarget.style.background = "#fff"}
                 >
                   {soon && <span style={{ position: "absolute", top: 6, right: 8, fontSize: 9, fontWeight: 800, color: "#C47A2E", background: "rgba(196,122,46,0.12)", border: "1px solid rgba(196,122,46,0.25)", borderRadius: 100, padding: "1px 5px", letterSpacing: "0.04em" }}>SOON</span>}
-                  <span style={{ fontSize: 26, lineHeight: 1 }}>{emoji}</span>
+                  <span style={{ color: "#7A5535", display: "flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
                   <span style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3 }}>{label}</span>
                 </button>
               ))}
@@ -198,11 +200,12 @@ function BottomNavInner() {
             <div style={{ display: "flex", gap: 8, marginBottom: 10 }}>
               <button
                 onClick={() => { navigate("/vendor/register"); setBrowseOpen(false); }}
-                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "11px 10px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 700, color: "#7A4A1E" }}
+                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "13px 14px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.04)", cursor: "pointer", fontFamily: font, fontSize: 12, fontWeight: 700, color: "#7A4A1E" }}
                 onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.1)"}
                 onTouchEnd={e => e.currentTarget.style.background = "rgba(196,122,46,0.04)"}
               >
-                <span>🤝</span> Register as Vendor
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Register as Vendor
               </button>
             </div>
 
@@ -228,17 +231,17 @@ function BottomNavInner() {
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>How do you want to plan?</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
-                { emoji: "🔍", title: "You Do It", desc: "Browse vendors, compare & book yourself", path: "/booking", active: location.pathname === "/booking" || location.pathname.startsWith("/plan-event") },
-                { emoji: "✨", title: "Smart Planner", desc: "Tell us once, we build your full package", path: "/booking", active: false },
-                { emoji: "💬", title: "Baat Karo", desc: "Likh do apni requirements — Tendr Team yahin reply karegi", path: "/baat-karo", active: location.pathname === "/baat-karo", green: true },
-                { emoji: "🎉", title: "Plan by Occasion", desc: "Birthday, Anniversary, House Party & more", path: null, active: false, action: () => { setPlanOpen(false); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
-              ].map(({ emoji, title, desc, path, active, green, action }) => (
+                { icon: ic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>), title: "You Do It", desc: "Browse vendors, compare & book yourself", path: "/booking", active: location.pathname === "/booking" || location.pathname.startsWith("/plan-event") },
+                { icon: ic(<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>), title: "Smart Planner", desc: "Tell us once, we build your full package", path: "/booking", active: false },
+                { icon: ic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>), title: "Baat Karo", desc: "Likh do apni requirements — Tendr Team yahin reply karegi", path: "/baat-karo", active: location.pathname === "/baat-karo", green: true },
+                { icon: ic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>), title: "Plan by Occasion", desc: "Birthday, Anniversary, House Party & more", path: null, active: false, action: () => { setPlanOpen(false); navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 150); } },
+              ].map(({ icon, title, desc, path, active, green, action }) => (
                 <button key={title}
                   onClick={() => { if (action) { action(); } else { navigate(path); setPlanOpen(false); } }}
                   style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px", borderRadius: 14, border: `1.5px solid ${active ? (green ? "rgba(37,211,102,0.5)" : "rgba(196,122,46,0.5)") : "rgba(196,122,46,0.15)"}`, background: active ? (green ? "rgba(37,211,102,0.06)" : "rgba(196,122,46,0.06)") : "#fff", cursor: "pointer", fontFamily: font, boxShadow: "0 2px 8px rgba(196,122,46,0.08)", textAlign: "left" }}
                   onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.08)"}
                   onTouchEnd={e => e.currentTarget.style.background = active ? (green ? "rgba(37,211,102,0.06)" : "rgba(196,122,46,0.06)") : "#fff"}>
-                  <span style={{ fontSize: 26 }}>{emoji}</span>
+                  <span style={{ color: green ? "#25D366" : "#7A5535", display: "flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", display: "flex", alignItems: "center", gap: 6 }}>
                       {title}
@@ -264,7 +267,7 @@ function BottomNavInner() {
             </div>
             <p style={{ fontSize: 12, fontWeight: 700, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.12em", textAlign: "center", margin: "0 0 14px" }}>Our Products</p>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(130px, 1fr))", gap: 10 }}>
-              {PRODUCTS.map(({ emoji, label, href, newTab, path }) => {
+              {PRODUCTS.map(({ icon, label, href, newTab, path }) => {
                 const savedKey = label === "Timeline" ? "tendr_timeline_v2" : label === "Budget Allocator" ? "tendr_budget_v2" : null;
                 const isSaved = savedKey ? (() => { try { return !!localStorage.getItem(savedKey); } catch { return false; } })() : false;
                 return (
@@ -274,7 +277,7 @@ function BottomNavInner() {
                     onTouchStart={e => e.currentTarget.style.background = "rgba(196,122,46,0.06)"}
                     onTouchEnd={e => e.currentTarget.style.background = isSaved ? "rgba(34,197,94,0.04)" : "#fff"}
                   >
-                    <span style={{ fontSize: 22, lineHeight: 1 }}>{emoji}</span>
+                    <span style={{ color: "#7A5535", display: "flex", alignItems: "center", flexShrink: 0 }}>{icon}</span>
                     <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E", textAlign: "left", lineHeight: 1.3, flex: 1 }}>{label}</span>
                     {isSaved && <span style={{ fontSize: 9, fontWeight: 800, color: "#22c55e", background: "rgba(34,197,94,0.12)", borderRadius: 100, padding: "2px 7px", flexShrink: 0 }}>✓ Saved</span>}
                   </button>
@@ -304,7 +307,9 @@ function BottomNavInner() {
                 onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.08)"}
                 onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
               >
-                <span style={{ fontSize: 28, lineHeight: 1 }}>📚</span>
+                <span style={{ color: "#4F8EF7", display: "flex", alignItems: "center", flexShrink: 0 }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Guide Store</div>
                   <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>Free event planning guides — unlock with WhatsApp</div>
@@ -317,7 +322,9 @@ function BottomNavInner() {
                 onTouchStart={(e) => e.currentTarget.style.background = "rgba(79,142,247,0.08)"}
                 onTouchEnd={(e) => e.currentTarget.style.background = "#0A0E1A"}
               >
-                <span style={{ fontSize: 28, lineHeight: 1 }}>💬</span>
+                <span style={{ color: "#4F8EF7", display: "flex", alignItems: "center", flexShrink: 0 }}>
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </span>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 700, color: "#FFFFFF" }}>Community Wall</div>
                   <div style={{ fontSize: 12, color: "#7A8BA8", marginTop: 2 }}>See real events shared by customers — photos, setups, ideas</div>

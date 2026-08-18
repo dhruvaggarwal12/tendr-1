@@ -369,8 +369,9 @@ const VendorList = () => {
               const val = currentCatBudget || range.max;
               return (
                 <div className="vendor-budget-strip" style={{ marginBottom: 12, display: "flex", alignItems: "center", gap: 10, padding: "8px 16px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", fontFamily: "'Outfit',sans-serif", maxWidth: "calc(100vw - 40px)", boxSizing: "border-box" }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0 }}>
-                    💰 {serviceType}
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#5a3a1a", flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 5 }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    {serviceType}
                   </span>
                   {fromBudgetAllocator ? (
                     <span style={{ fontSize: 14, fontWeight: 900, color: "#C47A2E" }}>{fmtBudget(val)}</span>
@@ -405,7 +406,8 @@ const VendorList = () => {
                   }}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
                 >
-                  🖼 See Gallery
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                  See Gallery
                 </button>
                 {/* <button onClick={() => window.open("/decor-finder", "_blank")} style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", borderRadius: 100, background: "rgba(196,122,46,0.06)", border: "1.5px solid rgba(196,122,46,0.18)", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}>🎨 Decor Finder ↗</button> */}
               </div>
@@ -603,7 +605,8 @@ const VendorList = () => {
           {/* Corporate filter active indicator */}
           {formEventType === "Corporate Event" && (
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 13px", borderRadius: 100, background: "rgba(124,58,237,0.08)", border: "1px solid rgba(124,58,237,0.2)", fontSize: 11, fontWeight: 600, color: "#7c3aed", marginBottom: 10 }}>
-              🏢 Showing corporate-experienced vendors — based on your Corporate Event type
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M12 3l8 6H4l8-6z"/></svg>
+              Showing corporate-experienced vendors — based on your Corporate Event type
             </div>
           )}
 
@@ -611,7 +614,7 @@ const VendorList = () => {
           {showHint && (
             <div className="vendor-hint-strip" style={{ background: "linear-gradient(135deg,rgba(196,122,46,0.12),rgba(204,171,74,0.08))", border: "1.5px solid rgba(196,122,46,0.22)", borderRadius: 12, padding: "10px 14px", marginBottom: 12, fontFamily: "'Outfit', sans-serif" }}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                <span><span style={{ fontSize: 14, marginRight: 4 }}>💡</span><span style={{ fontSize: 12, color: "#7A4A1A", fontWeight: 700 }}>How to book:</span></span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8a6 6 0 0 0-6-6 6 6 0 0 0-6 6 4.65 4.65 0 0 0 1.5 3.5c.75.76 1.23 1.52 1.41 2.5"/></svg><span style={{ fontSize: 12, color: "#7A4A1A", fontWeight: 700 }}>How to book:</span></span>
                 <button onClick={() => setShowHint(false)} style={{ background: "rgba(196,122,46,0.1)", border: "none", borderRadius: "50%", color: "#9B7450", cursor: "pointer", fontSize: 12, width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>✕</button>
               </div>
               <div style={{ display: "flex", gap: 5, overflowX: "auto", scrollbarWidth: "none" }}>
@@ -632,12 +635,12 @@ const VendorList = () => {
               <button onClick={() => setShowTip(false)} style={{ position: "absolute", top: 8, right: 10, background: "none", border: "none", cursor: "pointer", color: "#9B7450", fontSize: 14, lineHeight: 1 }}>✕</button>
               {isNormalFlow ? (
                 <>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>💡 Compare vendors side by side</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8a6 6 0 0 0-6-6 6 6 0 0 0-6 6 4.65 4.65 0 0 0 1.5 3.5c.75.76 1.23 1.52 1.41 2.5"/></svg>Compare vendors side by side</div>
                   <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>Tap the <strong>♡ heart icon</strong> on any vendor card to add them to compare. Then tap Compare in the bottom bar.</div>
                 </>
               ) : (
                 <>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4 }}>💡 Don't lose a great vendor</div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#2C1A0E", marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>Don't lose a great vendor</div>
                   <div style={{ fontSize: 12, color: "#9B7450", lineHeight: 1.5 }}>Tap the <strong>Save button</strong> on any vendor card to bookmark them. Find saved vendors in the floating icon anytime.</div>
                 </>
               )}
@@ -698,7 +701,7 @@ const VendorList = () => {
             {/* Compare nudge — shown after 3+ vendors loaded, not already comparing */}
             {vendorList.length >= 3 && compareSelected.length === 0 && token && (
               <div style={{ margin: "20px 0", padding: "14px 18px", borderRadius: 14, background: "rgba(196,122,46,0.05)", border: "1.5px solid rgba(196,122,46,0.2)", display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", fontFamily: font }}>
-                <span style={{ fontSize: 20 }}>🔀</span>
+                <span style={{ color: "#C47A2E", display: "flex", alignItems: "center" }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
                 <div style={{ flex: 1, minWidth: 180 }}>
                   <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 2 }}>Comparing vendors?</div>
                   <div style={{ fontSize: 12, color: "#9B7450" }}>Add vendors to Compare to see their profiles side by side before deciding.</div>

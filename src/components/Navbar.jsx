@@ -90,14 +90,16 @@ function SavedVendorsInline({ asStrip = false }) {
       {asStrip ? (
         <button onClick={() => setOpen(true)}
           style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 5, width: "100%", padding: "4px 10px", borderRadius: "0 0 100px 100px", border: "1.5px solid rgba(196,122,46,0.22)", borderTop: "none", background: "rgba(196,122,46,0.07)", color: "#C47A2E", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}>
-          🔀 Compare ({compareSelected.length})
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Compare ({compareSelected.length})
         </button>
       ) : (
         <button onClick={() => setOpen(true)}
           style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 11px", borderRadius: 8, border: "1.5px solid rgba(204,171,74,0.4)", background: "#fff", color: "#C47A2E", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif", whiteSpace: "nowrap" }}
           onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.06)")}
           onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}>
-          🔀 Compare
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+          Compare
           <span style={{ background: "#CCAB4A", color: "#fff", borderRadius: 100, padding: "1px 7px", fontSize: 11, fontWeight: 800 }}>{compareSelected.length}</span>
         </button>
       )}
@@ -319,7 +321,7 @@ const Navbar = ({
         { label: "You Do It",          href: "/booking" },
         { label: "Smart Planner",      href: "/booking" },
         { label: "Baat Karo",          href: "/baat-karo" },
-        { label: "🎉 Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
+        { label: "Plan by Occasion", onClick: () => { navigate("/"); setTimeout(() => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }), 120); } },
       ],
     },
     {
@@ -532,17 +534,17 @@ const Navbar = ({
                       <p style={{ fontSize: 9, fontWeight: 700, color: "#B8956A", textTransform: "uppercase", letterSpacing: "0.18em", margin: "0 0 10px 2px" }}>Find a Vendor</p>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 12 }}>
                         {[
-                          { id: "Decorator",    label: "Decorator",    href: "/search?categories=Decorator",    icon: "🎀", color: "#F9EEF4" },
-                          { id: "Caterer",      label: "Caterer",      href: "/search?categories=Caterer",      icon: "🍽️", color: "#F0F5EE" },
-                          { id: "Photographer", label: "Photographer", href: "/search?categories=Photographer", icon: "📸", color: "#EEF2FA" },
-                          { id: "DJ",           label: "DJ",           href: "/search?categories=DJ",           icon: "🎵", color: "#F5EDFE" },
+                          { id: "Decorator",    label: "Decorator",    href: "/search?categories=Decorator",    color: "#F9EEF4", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r=".5" fill="#C47A2E"/><circle cx="17.5" cy="10.5" r=".5" fill="#C47A2E"/><circle cx="8.5" cy="7.5" r=".5" fill="#C47A2E"/><circle cx="6.5" cy="12.5" r=".5" fill="#C47A2E"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.47-1.125-.29-.289-.47-.688-.47-1.125A1.64 1.64 0 0 1 14.828 17h1.93C19.858 17 22 14.858 22 12 22 6.477 17.523 2 12 2z"/></svg> },
+                          { id: "Caterer",      label: "Caterer",      href: "/search?categories=Caterer",      color: "#F0F5EE", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5A8A5A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg> },
+                          { id: "Photographer", label: "Photographer", href: "/search?categories=Photographer", color: "#EEF2FA", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A6FB5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg> },
+                          { id: "DJ",           label: "DJ",           href: "/search?categories=DJ",           color: "#F5EDFE", icon: <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg> },
                         ].map(item => (
                           <a key={item.id} href={item.href}
                             style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 11px", borderRadius: 10, background: "#F9F6F1", textDecoration: "none", cursor: "pointer", transition: "all 0.15s", border: "1px solid transparent" }}
                             onMouseEnter={e => { e.currentTarget.style.background = "#fff"; e.currentTarget.style.borderColor = "rgba(196,122,46,0.18)"; e.currentTarget.style.boxShadow = "0 2px 10px rgba(196,122,46,0.09)"; }}
                             onMouseLeave={e => { e.currentTarget.style.background = "#F9F6F1"; e.currentTarget.style.borderColor = "transparent"; e.currentTarget.style.boxShadow = "none"; }}
                           >
-                            <span style={{ width: 28, height: 28, borderRadius: 7, background: item.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, flexShrink: 0 }}>{item.icon}</span>
+                            <span style={{ width: 28, height: 28, borderRadius: 7, background: item.color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{item.icon}</span>
                             <span style={{ fontSize: 13.5, fontWeight: 600, color: "#1C0E04", letterSpacing: "0.01em" }}>{item.label}</span>
                           </a>
                         ))}
@@ -660,7 +662,8 @@ const Navbar = ({
                             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(196,122,46,0.08)")}
                             onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
                           >
-                            <span>🗺️</span> Take the tour
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+                            Take the tour
                           </button>
 
                           {/* Per-category counts */}

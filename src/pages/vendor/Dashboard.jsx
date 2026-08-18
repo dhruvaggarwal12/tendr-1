@@ -30,9 +30,15 @@ const PAY_COLOR = {
   Partial: '#7C3AED',
   Paid:    '#16A34A',
 };
-const SOURCE_EMOJI = {
-  WhatsApp: '💬', Instagram: '📸', Facebook: '👤',
-  Referral: '🤝', 'Walk-in': '🚶', Phone: '📞', Other: '✦',
+const dsic = (d) => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+const SOURCE_ICON = {
+  WhatsApp:  dsic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>),
+  Instagram: dsic(<><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></>),
+  Facebook:  dsic(<><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></>),
+  Referral:  dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+  'Walk-in': dsic(<><circle cx="12" cy="5" r="1"/><path d="m9 20 3-3 1.5 3"/><path d="m6 8 3 1.5L12 8l1.5 4-3 3"/><path d="M18 14v-4"/></>),
+  Phone:     dsic(<><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>),
+  Other:     dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>),
 };
 
 // ── Stat tile ──────────────────────────────────────────────────────────────────
@@ -45,7 +51,7 @@ function Stat({ label, value, sub, icon, accent }) {
           <div style={{ fontSize: 26, fontWeight: 800, color: ink, lineHeight: 1 }}>{value}</div>
           {sub && <div style={{ fontSize: 12, color: '#9B7450', marginTop: 4 }}>{sub}</div>}
         </div>
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: accent || 'rgba(196,122,46,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{icon}</div>
+        <div style={{ width: 38, height: 38, borderRadius: 10, background: accent || 'rgba(196,122,46,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</div>
       </div>
     </div>
   );
@@ -204,10 +210,10 @@ function BookingCard({ b }) {
           <span style={{ fontWeight: 700, color: ink, fontSize: 14 }}>{b.customerName || 'Customer'}</span>
           <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: sc.bg, color: sc.color }}>{b.status}</span>
         </div>
-        <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2 }}>
-          {b.eventType && `🎉 ${b.eventType}`}
-          {b.eventDate && ` · 📅 ${new Date(b.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}`}
-          {b.guestCount && ` · 👥 ${b.guestCount}`}
+        <div style={{ fontSize: 12, color: '#9B7450', marginTop: 2, display: 'flex', flexWrap: 'wrap', gap: '2px 10px' }}>
+          {b.eventType && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{b.eventType}</span>}
+          {b.eventDate && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(b.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>}
+          {b.guestCount && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>)}{b.guestCount}</span>}
         </div>
       </div>
       {b.amount != null && <div style={{ fontWeight: 800, color: ink, fontSize: 15, flexShrink: 0 }}>₹{b.amount.toLocaleString('en-IN')}</div>}
@@ -230,8 +236,8 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus }) {
     <div style={{ background: '#fff', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(196,122,46,0.12)' }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         {/* Source badge */}
-        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(196,122,46,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
-          {SOURCE_EMOJI[order.source] || '✦'}
+        <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(196,122,46,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9B7450', flexShrink: 0 }}>
+          {SOURCE_ICON[order.source] || dsic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>)}
         </div>
 
         {/* Info */}
@@ -242,9 +248,9 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus }) {
             <span style={{ fontSize: 11, fontWeight: 600, padding: '2px 8px', borderRadius: 100, background: 'rgba(196,122,46,0.08)', color: '#9B7450' }}>{order.source}</span>
           </div>
           <div style={{ fontSize: 12, color: '#9B7450', marginTop: 3, display: 'flex', flexWrap: 'wrap', gap: '2px 12px' }}>
-            {order.clientPhone && <span>📱 {order.clientPhone}</span>}
-            {order.eventType   && <span>🎉 {order.eventType}</span>}
-            {order.eventDate   && <span>📅 {new Date(order.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
+            {order.clientPhone && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.29 6.29l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></>)}{order.clientPhone}</span>}
+            {order.eventType   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)}{order.eventType}</span>}
+            {order.eventDate   && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>{dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)}{new Date(order.eventDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>}
           </div>
           {order.notes && <div style={{ fontSize: 12, color: '#9B7450', marginTop: 4, fontStyle: 'italic' }}>"{order.notes}"</div>}
         </div>
@@ -267,7 +273,7 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus }) {
             {menuOpen && (
               <div style={{ position: 'absolute', top: 32, right: 0, background: '#fff', borderRadius: 12, boxShadow: '0 8px 28px rgba(0,0,0,0.14)', border: '1px solid rgba(196,122,46,0.15)', zIndex: 50, minWidth: 160, padding: '6px 0', fontFamily: font }}>
                 <button onClick={() => { onEdit(order); setMenuOpen(false); }}
-                  style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: ink, cursor: 'pointer' }}>✏️ Edit</button>
+                  style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: ink, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Edit</button>
                 {STATUSES.filter(s => s !== order.status).map(s => (
                   <button key={s} onClick={() => { onStatus(order._id, s); setMenuOpen(false); }}
                     style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: STATUS_COLOR[s].color, cursor: 'pointer' }}>
@@ -276,7 +282,7 @@ function OutsideOrderCard({ order, onEdit, onDelete, onStatus }) {
                 ))}
                 <div style={{ borderTop: '1px solid rgba(196,122,46,0.1)', margin: '4px 0' }} />
                 <button onClick={() => { onDelete(order._id); setMenuOpen(false); }}
-                  style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#DC2626', cursor: 'pointer' }}>🗑 Delete</button>
+                  style={{ width: '100%', padding: '8px 16px', border: 'none', background: 'none', textAlign: 'left', fontSize: 13, fontWeight: 600, color: '#DC2626', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>Delete</button>
               </div>
             )}
           </div>
@@ -496,16 +502,16 @@ export default function VendorDashboard() {
           <>
             {/* Welcome */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {vendorName.split(' ')[0]} 👋</div>
+              <div style={{ fontSize: 22, fontWeight: 800, color: ink }}>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 17 ? 'afternoon' : 'evening'}, {vendorName.split(' ')[0]}</div>
               <div style={{ fontSize: 13.5, color: '#9B7450', marginTop: 3 }}>Here's your business at a glance.</div>
             </div>
 
             {/* Stats row */}
             <div style={{ display: 'flex', gap: 14, marginBottom: 24, flexWrap: 'wrap' }}>
-              <Stat label="Tendr Orders"   value={tendrCount}   sub="via platform"          icon="🎟️" />
-              <Stat label="Outside Orders" value={outsideCount} sub={`${pendingCount} pending`} icon="📦" accent="rgba(124,58,237,0.1)" />
-              <Stat label="Total Revenue"  value={`₹${(outsideRevenue).toLocaleString('en-IN')}`} sub={`₹${outsideCollected.toLocaleString('en-IN')} collected`} icon="💰" accent="rgba(22,163,74,0.1)" />
-              <Stat label="This Month"     value={thisMonthOutside} sub={`₹${thisMonthRevenue.toLocaleString('en-IN')} revenue`} icon="📅" accent="rgba(59,130,246,0.1)" />
+              <Stat label="Tendr Orders"   value={tendrCount}   sub="via platform"          icon={dsic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>)} />
+              <Stat label="Outside Orders" value={outsideCount} sub={`${pendingCount} pending`} icon={dsic(<><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>)} accent="rgba(124,58,237,0.1)" />
+              <Stat label="Total Revenue"  value={`₹${(outsideRevenue).toLocaleString('en-IN')}`} sub={`₹${outsideCollected.toLocaleString('en-IN')} collected`} icon={dsic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>)} accent="rgba(22,163,74,0.1)" />
+              <Stat label="This Month"     value={thisMonthOutside} sub={`₹${thisMonthRevenue.toLocaleString('en-IN')} revenue`} icon={dsic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>)} accent="rgba(59,130,246,0.1)" />
             </div>
 
             {/* Two-column */}
@@ -520,7 +526,7 @@ export default function VendorDashboard() {
                   <div style={{ textAlign: 'center', padding: '24px 0', color: '#9B7450', fontSize: 13 }}>Loading…</div>
                 ) : bookings.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>📋</div>
+                    <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center', color: '#C47A2E', opacity: 0.45 }}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
                     <div style={{ fontSize: 13, color: '#9B7450' }}>No Tendr bookings yet</div>
                   </div>
                 ) : (
@@ -543,7 +549,7 @@ export default function VendorDashboard() {
                   <div style={{ textAlign: 'center', padding: '24px 0', color: '#9B7450', fontSize: 13 }}>Loading…</div>
                 ) : outsideOrders.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '24px 0' }}>
-                    <div style={{ fontSize: 28, marginBottom: 8 }}>📦</div>
+                    <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center', color: '#7C3AED', opacity: 0.45 }}><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
                     <div style={{ fontSize: 13, color: '#9B7450', marginBottom: 10 }}>No outside orders yet</div>
                     <button onClick={() => setModal('add')}
                       style={{ padding: '8px 18px', borderRadius: 9, border: `1.5px solid ${gold}`, background: 'transparent', color: gold, fontFamily: font, fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>
@@ -566,10 +572,10 @@ export default function VendorDashboard() {
               <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                 {[
                   { label: '+ Log Outside Order', sub: 'Add a booking from WhatsApp/Instagram', onClick: () => setModal('add'), primary: true },
-                  { label: '💬 View Chats',        sub: 'Manage Tendr customer conversations', onClick: () => navigate('/vendor/chats') },
-                  { label: '📋 All Bookings',      sub: 'See all Tendr platform bookings',    onClick: () => setTab('bookings') },
-                  { label: '📅 Set Availability',  sub: 'Block dates you\'re busy',            onClick: () => setTab('avail') },
-                  { label: '✏️ Edit Profile',       sub: 'Update your portfolio & info',        onClick: () => navigate('/vendor/profile') },
+                  { label: 'View Chats',       sub: 'Manage Tendr customer conversations', onClick: () => navigate('/vendor/chats') },
+                  { label: 'All Bookings',     sub: 'See all Tendr platform bookings',    onClick: () => setTab('bookings') },
+                  { label: 'Set Availability', sub: "Block dates you're busy",            onClick: () => setTab('avail') },
+                  { label: 'Edit Profile',     sub: 'Update your portfolio & info',       onClick: () => navigate('/vendor/profile') },
                 ].map(a => (
                   <button key={a.label} onClick={a.onClick}
                     style={{ flex: '1 1 180px', padding: '13px 16px', borderRadius: 12, border: a.primary ? 'none' : '1.5px solid rgba(196,122,46,0.18)', background: a.primary ? `linear-gradient(135deg,${gold},${goldLt})` : '#FFFCF5', color: a.primary ? '#fff' : ink, textAlign: 'left', cursor: 'pointer', fontFamily: font, boxShadow: a.primary ? '0 3px 12px rgba(196,122,46,0.3)' : 'none', transition: 'all 0.15s' }}>

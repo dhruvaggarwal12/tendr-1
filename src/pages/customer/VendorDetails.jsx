@@ -377,15 +377,36 @@ const VendorDetailsPage = () => {
   const categoryKey = Object.keys(CATEGORY_SECTIONS).find(k => k.toLowerCase() === normalised);
   const categorySections = CATEGORY_SECTIONS[categoryKey] || [];
 
-  // Category field icons
+  // Category field icons — inline SVG helpers, stroke="currentColor" → coloured by parent
+  const fic = (children) => (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7A5535" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{children}</svg>
+  );
   const FIELD_ICONS = {
-    cuisine: "🍽️", serviceStyle: "👨‍🍳", menuType: "📋", beveragesIncluded: "🥤",
-    typesOfDecoration: "🎨", venueCoverage: "🏛️", themes: "✨",
-    setup: "🎛️", lightsIncluded: "💡", eventTypes: "🎉",
-    services: "📸", photographyType: "🎞️", hoursIncluded: "⏱️", editingTimeDays: "✏️",
-    photographersCount: "👤", videographersCount: "🎥", socialMedia: "📱", album: "📔",
-    deliveryOptions: "🚚", panIndiaDelivery: "🇮🇳", deliveryAreas: "📍", maxDeliveryCapacity: "📦",
-    availableSizes: "📏", customFlavors: "🍰", pricesNegotiable: "💬",
+    cuisine:              fic(<><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></>),
+    serviceStyle:         fic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+    menuType:             fic(<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>),
+    beveragesIncluded:    fic(<><path d="M17 8h1a4 4 0 0 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4Z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></>),
+    typesOfDecoration:    fic(<><circle cx="13.5" cy="6.5" r=".5" fill="#7A5535"/><circle cx="17.5" cy="10.5" r=".5" fill="#7A5535"/><circle cx="8.5" cy="7.5" r=".5" fill="#7A5535"/><circle cx="6.5" cy="12.5" r=".5" fill="#7A5535"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.47-1.125-.29-.289-.47-.688-.47-1.125A1.64 1.64 0 0 1 14.828 17h1.93C19.858 17 22 14.858 22 12 22 6.477 17.523 2 12 2z"/></>),
+    venueCoverage:        fic(<><rect x="3" y="9" width="18" height="12" rx="2"/><path d="M12 3l8 6H4l8-6z"/></>),
+    themes:               fic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+    setup:                fic(<><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></>),
+    lightsIncluded:       fic(<><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8a6 6 0 0 0-6-6 6 6 0 0 0-6 6 4.65 4.65 0 0 0 1.5 3.5c.75.76 1.23 1.52 1.41 2.5"/></>),
+    eventTypes:           fic(<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
+    services:             fic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>),
+    photographyType:      fic(<><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></>),
+    hoursIncluded:        fic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
+    editingTimeDays:      fic(<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></>),
+    photographersCount:   fic(<><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></>),
+    videographersCount:   fic(<><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></>),
+    socialMedia:          fic(<><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></>),
+    album:                fic(<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></>),
+    deliveryOptions:      fic(<><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>),
+    panIndiaDelivery:     fic(<><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 13 8 13s8-7.75 8-13a8 8 0 0 0-8-8z"/></>),
+    deliveryAreas:        fic(<><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 13 8 13s8-7.75 8-13a8 8 0 0 0-8-8z"/></>),
+    maxDeliveryCapacity:  fic(<><path d="M16.5 9.4l-9-5.19M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></>),
+    availableSizes:       fic(<><path d="M21 3H3v7h18V3z"/><path d="M21 14H3v7h18v-7z"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="12" y1="10" x2="12" y2="14"/><line x1="16" y1="10" x2="16" y2="14"/></>),
+    customFlavors:        fic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+    pricesNegotiable:     fic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
   };
 
   return (
@@ -419,7 +440,7 @@ const VendorDetailsPage = () => {
           <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, flexWrap: "wrap" }}>
             <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 14px", borderRadius: 100, background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", letterSpacing: "0.06em", textTransform: "uppercase" }}>{serviceType}</span>
             {isPhoneVerified && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0", display: "flex", alignItems: "center", gap: 4 }}><CheckCircle2 size={11} /> Phone Verified</span>}
-            {vendor?.isTopRated && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa" }}>🏆 Top Rated</span>}
+            {vendor?.isTopRated && <span style={{ fontSize: 11, fontWeight: 600, padding: "4px 11px", borderRadius: 100, background: "#fff7ed", color: "#c2410c", border: "1px solid #fed7aa", display: "inline-flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="#c2410c" stroke="none" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Top Rated</span>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
             <h1 className="vendor-detail-h1" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.8rem,4vw,2.6rem)", fontWeight: 300, color: "#1C0A04", margin: 0, lineHeight: 1.1, letterSpacing: "0.01em", flex: 1 }}>{vendor.name || "Vendor"}</h1>
@@ -640,7 +661,7 @@ const VendorDetailsPage = () => {
                 const icon = FIELD_ICONS[key] || "•";
                 return (
                   <div key={key} style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
-                    <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(196,122,46,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0, marginTop: 2 }}>{icon}</div>
+                    <div style={{ width: 38, height: 38, borderRadius: 12, background: "rgba(196,122,46,0.08)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>{icon}</div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "#2C1A0E", marginBottom: 6 }}>{title}</div>
                       {bool ? (
