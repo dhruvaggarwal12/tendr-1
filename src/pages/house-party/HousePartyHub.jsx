@@ -13,9 +13,35 @@ const THEMES = ["Retro 70s", "Bollywood Night", "Neon Glow", "Black & White", "B
 // ── helpers ──────────────────────────────────────────────────────────────────
 function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
-function copyLink(text) {
-  navigator.clipboard?.writeText(text).catch(() => {});
-}
+function copyLink(text) { navigator.clipboard?.writeText(text).catch(() => {}); }
+
+const hpic = (d, sz = 20) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+
+const TOOL_ICONS = {
+  potluck:        hpic(<><path d="M3 11l19-9-9 19-2-8-8-2z"/></>),
+  invite:         hpic(<><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>),
+  checklist:      hpic(<><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>),
+  bills:          hpic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
+  theme:          hpic(<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></>),
+  photowall:      hpic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>),
+  countdown:      hpic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
+  playlist:       hpic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>),
+  truthordare:    hpic(<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="22" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="2" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/></>),
+  neverhavei:     hpic(<><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>),
+  wouldyou:       hpic(<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>),
+  hottakes:       hpic(<><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></>),
+  spin:           hpic(<><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></>),
+  charades:       hpic(<><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="2" y1="15" x2="22" y2="15"/><line x1="9" y1="2" x2="9" y2="22"/><line x1="15" y1="2" x2="15" y2="22"/></>),
+  bingo:          hpic(<><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></>),
+  mostlikelyto:   hpic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+  reportcard:     hpic(<><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></>),
+};
+const SECTION_SVGS = {
+  manage: hpic(<><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></>, 16),
+  games:  hpic(<><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M12 12h.01"/><path d="M7 12h.01"/><path d="M17 12h.01"/><path d="M12 8v8"/></>, 16),
+  fun:    hpic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>, 16),
+  other:  hpic(<><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></>, 16),
+};
 
 // ── shared modal shell ────────────────────────────────────────────────────────
 function Modal({ onClose, title, emoji, children, wide }) {
@@ -27,7 +53,7 @@ function Modal({ onClose, title, emoji, children, wide }) {
 
   return (
     <div onClick={onClose} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", zIndex: 1000, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: 0 }}>
-      <div onClick={e => e.stopPropagation()} style={{ background: "#1a1a2e", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: wide ? 700 : 480, maxHeight: "92dvh", overflowY: "auto", padding: "24px 20px calc(32px + env(safe-area-inset-bottom, 0px))", fontFamily: font, boxShadow: "0 -8px 40px rgba(0,0,0,0.5)" }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: "#140e08", borderRadius: "20px 20px 0 0", width: "100%", maxWidth: wide ? 700 : 480, maxHeight: "92dvh", overflowY: "auto", padding: "24px 20px calc(32px + env(safe-area-inset-bottom, 0px))", fontFamily: font, boxShadow: "0 -8px 40px rgba(0,0,0,0.5)" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 28 }}>{emoji}</span>
@@ -789,7 +815,7 @@ function PolygonGrid({ tools, onOpen }) {
             <line key={`e${i}`}
               x1={pts[i].x} y1={pts[i].y}
               x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
-              stroke="rgba(167,139,250,0.5)" strokeWidth="1.6"
+              stroke="rgba(196,122,46,0.35)" strokeWidth="1.6"
               filter="url(#pg-glow-sm)"
             />
           ))}
@@ -797,12 +823,12 @@ function PolygonGrid({ tools, onOpen }) {
           {/* Vertex dots */}
           {pts.map((p, i) => (
             <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
-              fill="rgba(167,139,250,0.8)" filter="url(#pg-glow-sm)" />
+              fill="rgba(196,122,46,0.7)" filter="url(#pg-glow-sm)" />
           ))}
 
           {/* Center dot */}
           <circle cx={cx} cy={cy} r={5}
-            fill="rgba(124,58,237,0.65)" filter="url(#pg-glow)" />
+            fill="rgba(196,122,46,0.55)" filter="url(#pg-glow)" />
         </svg>
 
         {/* Tool nodes */}
@@ -818,7 +844,7 @@ function PolygonGrid({ tools, onOpen }) {
                 height: nH,
                 left: p.x - nW / 2,
                 top: p.y - nH / 2,
-                background: `radial-gradient(circle at 50% 30%, ${t.color}2a, rgba(14,10,32,0.92))`,
+                background: `radial-gradient(circle at 50% 30%, ${t.color}2a, rgba(14,10,4,0.92))`,
                 border: `1.5px solid ${t.color}55`,
                 borderRadius: 14,
                 cursor: 'pointer',
@@ -844,9 +870,9 @@ function PolygonGrid({ tools, onOpen }) {
                 e.currentTarget.style.borderColor = `${t.color}55`;
               }}
             >
-              <span style={{ fontSize: Math.max(18, nW * 0.29), lineHeight: 1 }}>{t.emoji}</span>
+              <span style={{ color: t.color, display: "flex", lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>, Math.max(18, nW * 0.27))}</span>
               <span style={{
-                fontSize: Math.max(8.5, nW * 0.118),
+                fontSize: Math.max(11, nW * 0.12),
                 fontWeight: 700,
                 color: '#fff',
                 textAlign: 'center',
@@ -895,10 +921,10 @@ const TOOLS = [
 ];
 
 const SECTIONS = [
-  { id: "manage", label: "⚙️ Manage", subtitle: "Plan · track · split" },
-  { id: "games", label: "🎮 Games", subtitle: "Biggest reason to come back" },
-  { id: "fun", label: "✨ Fun", subtitle: "Theme · music · photos · countdown" },
-  { id: "other", label: "🏆 Other", subtitle: "Post-party vibes" },
+  { id: "manage", label: "Manage", subtitle: "Plan · track · split" },
+  { id: "games",  label: "Games",  subtitle: "Biggest reason to come back" },
+  { id: "fun",    label: "Fun",    subtitle: "Theme · music · photos · countdown" },
+  { id: "other",  label: "Other",  subtitle: "Post-party vibes" },
 ];
 
 export default function HousePartyHub() {
@@ -987,7 +1013,7 @@ export default function HousePartyHub() {
           to   { opacity: 1; transform: translateY(0); }
         }
         .hp-aurora-bg {
-          background: linear-gradient(125deg, #0d0a1e, #1a1030, #0d1a2e, #1a0d2e, #0d0a1e);
+          background: linear-gradient(125deg, #0e0a04, #160d06, #0c0903, #160d06, #0e0a04);
           background-size: 300% 300%;
           animation: hp-aurora 18s ease infinite;
         }
@@ -1062,11 +1088,9 @@ export default function HousePartyHub() {
                 paddingBottom: 10,
                 borderBottom: "1px solid rgba(255,255,255,0.06)",
               }}>
-                <span style={{ fontSize: 18 }}>{sec.label.split(" ")[0]}</span>
+                <span style={{ color: "rgba(196,122,46,0.8)", display: "flex" }}>{SECTION_SVGS[sec.id] || SECTION_SVGS.other}</span>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>
-                    {sec.label.split(" ").slice(1).join(" ")}
-                  </div>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", letterSpacing: "-0.01em" }}>{sec.label}</div>
                   <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>{sec.subtitle}</div>
                 </div>
               </div>
@@ -1104,7 +1128,7 @@ export default function HousePartyHub() {
                           willChange: "background",
                         }}
                       >
-                        <div style={{ fontSize: 26, marginBottom: 10, lineHeight: 1 }}>{t.emoji}</div>
+                        <div style={{ color: t.color, marginBottom: 10, lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>)}</div>
                         <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
                         <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
                         <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.55, transition: "opacity 0.18s" }} />

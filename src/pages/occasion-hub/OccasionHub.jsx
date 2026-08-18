@@ -10,6 +10,59 @@ function rand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function shuffle(arr) { return [...arr].sort(() => Math.random() - 0.5); }
 function copyLink(text) { navigator.clipboard?.writeText(text).catch(() => {}); }
 
+const occic = (d, sz = 20) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+
+const TOOL_ICONS = {
+  invite:         occic(<><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></>),
+  checklist:      occic(<><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>),
+  bills:          occic(<><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></>),
+  gifttracker:    occic(<><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></>),
+  giftregistry:   occic(<><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></>),
+  theme:          occic(<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3"/></>),
+  wishwall:       occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+  countdown:      occic(<><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>),
+  playlist:       occic(<><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></>),
+  photowall:      occic(<><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></>),
+  secretmessage:  occic(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>),
+  moodmeter:      occic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>),
+  lovenotes:      occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+  birthdayquiz:   occic(<><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>),
+  mostlikelyto:   occic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+  t2l:            occic(<><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>),
+  rapidfire:      occic(<><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></>),
+  truthordare:    occic(<><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="22" y1="12" x2="19" y2="12"/><line x1="5" y1="12" x2="2" y2="12"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/></>),
+  neverhavei:     occic(<><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></>),
+  wouldyou:       occic(<><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></>),
+  hottakes:       occic(<><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></>),
+  spin:           occic(<><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></>),
+  charades:       occic(<><rect x="2" y="2" width="20" height="20" rx="2"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="2" y1="15" x2="22" y2="15"/><line x1="9" y1="2" x2="9" y2="22"/><line x1="15" y1="2" x2="15" y2="22"/></>),
+  bingo:          occic(<><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></>),
+  couplequiz:     occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+  blessingswall:  occic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+  blessings:      occic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+  reportcard:     occic(<><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></>),
+  potluck:        occic(<><path d="M3 11l19-9-9 19-2-8-8-2z"/></>),
+  babynamevote:   occic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></>),
+  genderpoll:     occic(<><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></>),
+  advicecards:    occic(<><line x1="9" y1="18" x2="15" y2="18"/><line x1="10" y1="22" x2="14" y2="22"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></>),
+  luckydraw:      occic(<><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></>),
+  kittyfund:      occic(<><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></>),
+  namesuggestions: occic(<><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></>),
+};
+
+const SECTION_ICONS = {
+  manage:    occic(<><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></>, 16),
+  fun:       occic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>, 16),
+  games:     occic(<><rect x="2" y="6" width="20" height="12" rx="2"/><line x1="12" y1="12" x2="12.01" y2="12"/><line x1="7" y1="12" x2="7.01" y2="12"/><line x1="17" y1="12" x2="17.01" y2="12"/></>, 16),
+  other:     occic(<><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></>, 16),
+  votes:     occic(<><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></>, 16),
+  ceremony:  occic(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>, 16),
+  love:      occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>, 16),
+  celebrate: occic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>, 16),
+  baby:      occic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></>, 16),
+};
+const defaultSecIcon = occic(<><circle cx="12" cy="12" r="10"/></>, 16);
+
 // ── Modal ──────────────────────────────────────────────────────────────────────
 function Modal({ onClose, title, emoji, children, wide }) {
   useEffect(() => {
@@ -1962,7 +2015,7 @@ const OCCASIONS = {
     name: "Birthday Hub",
     emoji: "🎂",
     accent: "#EC4899",
-    bg: "linear-gradient(125deg, #1a0620, #200d30, #0f1830, #1a0620)",
+    bg: "linear-gradient(125deg, #150608, #1a080c, #0f0508, #150608)",
     eyebrow: "Birthday Toolkit",
     tagline: "Make it a birthday they never forget",
     themes: ["Bollywood Night", "Neon Glow", "Retro 70s", "All White", "Fairy Lights", "Masquerade", "Beach Vibes", "Royale Night"],
@@ -2129,7 +2182,7 @@ const OCCASIONS = {
     name: "Kitty Party Hub",
     emoji: "🎀",
     accent: "#E879F9",
-    bg: "linear-gradient(125deg, #1a0020, #200030, #100020, #1a0020)",
+    bg: "linear-gradient(125deg, #1a0518, #1e0a1c, #160416, #1a0518)",
     eyebrow: "Kitty Party Toolkit",
     tagline: "The OG girls' get-together, elevated",
     themes: ["All Pink", "Bollywood Glam", "Saree Night", "Floral Fiesta", "Retro Kitty", "Peacock Blue", "Black & Gold", "Garden Party"],
@@ -2162,7 +2215,7 @@ const OCCASIONS = {
     name: "Naming Ceremony Hub",
     emoji: "🌸",
     accent: "#A78BFA",
-    bg: "linear-gradient(125deg, #0f0820, #150e30, #0a0818, #0f0820)",
+    bg: "linear-gradient(125deg, #0c0808, #140a08, #0a0606, #0c0808)",
     eyebrow: "Naming Ceremony Toolkit",
     tagline: "Celebrate the name that will define a lifetime",
     themes: ["Floral Garden", "Saffron & Gold", "Pastel Dreams", "Traditional Hindu", "White & Gold", "Marigold Festival", "Starry Night", "Peacock Royal"],
@@ -2547,8 +2600,8 @@ export default function OccasionHub({ occasion }) {
                 filter: active && isGame ? `drop-shadow(0 2px 8px ${accent}55)` : "none",
                 transition: "all 0.18s",
               }}>
-                <div style={{ fontSize: 15, marginBottom: 1 }}>{sec.label.split(" ")[0]}</div>
-                <div className="occ-tab-label" style={{ letterSpacing: "0.05em", opacity: active ? 1 : 0.7 }}>{sec.label.split(" ").slice(1).join(" ") || sec.id}</div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: active ? "#fff" : "rgba(255,255,255,0.6)", marginBottom: 1 }}>{SECTION_ICONS[sec.id] || defaultSecIcon}</div>
+                <div className="occ-tab-label" style={{ letterSpacing: "0.05em", opacity: active ? 1 : 0.7 }}>{sec.label.replace(/^\S+\s*/, "").trim() || sec.label}</div>
               </button>
             );
           })}
@@ -2623,10 +2676,11 @@ export default function OccasionHub({ occasion }) {
                   background: isH ? `radial-gradient(circle, ${accent}50, ${accent}18)` : `radial-gradient(circle, ${accent}28, ${accent}08)`,
                   border: `1.5px solid ${isH ? accent + "80" : accent + "35"}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: n <= 3 ? 22 : 20, marginBottom: 6, flexShrink: 0,
+                  marginBottom: 6, flexShrink: 0,
                   transition: "all 0.2s",
+                  color: isH ? accent : `${accent}cc`,
                 }}>
-                  {t.emoji}
+                  {TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>, n <= 3 ? 22 : 20)}
                 </div>
                 <div style={{ fontSize: 12, fontWeight: 800, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.01em" }}>{t.title}</div>
                 {/* Description only on desktop when cards are large enough */}
