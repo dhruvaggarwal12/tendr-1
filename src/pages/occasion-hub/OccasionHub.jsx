@@ -1494,6 +1494,466 @@ function BlessingsWall({ onClose, accent, placeholder }) {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// NEW EXCLUSIVE TOOLS
+// ════════════════════════════════════════════════════════════════════════════
+
+// ── Most Likely To ────────────────────────────────────────────────────────────
+const MLT_PROMPTS = shuffle([
+  "Most likely to arrive 2 hours late 🕐","Most likely to cry at a movie 🎬","Most likely to become famous 🌟",
+  "Most likely to forget everyone's birthday 😅","Most likely to travel the world solo ✈️","Most likely to start a business 💼",
+  "Most likely to stay up until 4AM 🌙","Most likely to eat the last piece of cake 🎂","Most likely to get lost in their own city 🗺️",
+  "Most likely to become a millionaire 💰","Most likely to adopt 5 pets 🐾","Most likely to go viral on Instagram 📸",
+  "Most likely to be the loudest at the party 🎉","Most likely to fall asleep first 😴","Most likely to start a diet on Monday 🥗",
+  "Most likely to get roasted on the group chat 😂","Most likely to quit their job and travel 🏝️","Most likely to turn up uninvited 🚪",
+  "Most likely to propose on the first date 💍","Most likely to cry at the wedding 👰","Most likely to forget where they parked 🚗",
+  "Most likely to become a chef 🍳","Most likely to move abroad 🌍","Most likely to still be using the same phone in 5 years 📱",
+]);
+
+function MostLikelyTo({ onClose, accent }) {
+  const [players, setPlayers]   = useState([]);
+  const [input, setInput]       = useState("");
+  const [promptIdx, setPromptIdx] = useState(0);
+  const [votes, setVotes]       = useState({});
+  const [phase, setPhase]       = useState("setup");
+  const [history, setHistory]   = useState([]);
+
+  const prompt = MLT_PROMPTS[promptIdx % MLT_PROMPTS.length];
+  const addPlayer = () => { const n = input.trim(); if (n && !players.includes(n)) { setPlayers(p => [...p, n]); setInput(""); } };
+  const vote = (name) => setVotes(v => ({ ...v, [prompt]: name }));
+  const reveal = () => { setHistory(h => [...h, { prompt, winner: votes[prompt] }]); setPhase("result"); };
+  const next   = () => { setPromptIdx(i => i + 1); setPhase("voting"); };
+
+  return (
+    <Modal onClose={onClose} emoji="🏆" title="Most Likely To" wide>
+      {phase === "setup" && (<>
+        <div style={{ ...crd, textAlign: "center", marginBottom: 16 }}>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>Add everyone playing, then vote on each prompt together.</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Add player name…" style={{ ...inp, flex: 1 }} />
+          <button onClick={addPlayer} style={{ ...mkBtn(accent), width: "auto", padding: "10px 18px" }}>+</button>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+          {players.map(p => (
+            <span key={p} style={{ background: accent + "22", border: `1px solid ${accent}44`, color: "#fff", padding: "5px 14px", borderRadius: 100, fontSize: 13, display: "flex", alignItems: "center", gap: 6 }}>
+              {p}
+              <button onClick={() => setPlayers(pl => pl.filter(x => x !== p))} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.45)", cursor: "pointer", padding: 0, fontSize: 15, lineHeight: 1 }}>×</button>
+            </span>
+          ))}
+        </div>
+        {players.length >= 2
+          ? <button onClick={() => setPhase("voting")} style={mkBtn(accent)}>Start Voting →</button>
+          : <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", textAlign: "center" }}>Add at least 2 players to begin</div>
+        }
+      </>)}
+
+      {phase === "voting" && (<>
+        <div style={{ ...crd, textAlign: "center", marginBottom: 20, padding: "22px 16px" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: accent, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 10 }}>Who is most likely to…</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", lineHeight: 1.35 }}>{prompt}</div>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 16 }}>
+          {players.map(p => { const voted = votes[prompt] === p; return (
+            <button key={p} onClick={() => vote(p)} style={{ padding: "13px 18px", borderRadius: 12, border: `2px solid ${voted ? accent : "rgba(255,255,255,0.1)"}`, background: voted ? accent + "22" : "rgba(255,255,255,0.04)", color: "#fff", fontSize: 14, fontWeight: voted ? 800 : 500, cursor: "pointer", textAlign: "left", fontFamily: font, display: "flex", alignItems: "center", gap: 10, transition: "all 0.18s" }}>
+              <span style={{ width: 28, height: 28, borderRadius: "50%", background: voted ? accent : "rgba(255,255,255,0.1)", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 12, flexShrink: 0 }}>{voted ? "✓" : p.charAt(0).toUpperCase()}</span>
+              {p}
+            </button>
+          );})}
+        </div>
+        {votes[prompt] && <button onClick={reveal} style={mkBtn(accent)}>Reveal 🎉</button>}
+      </>)}
+
+      {phase === "result" && (() => { const last = history[history.length - 1]; return (<>
+        <div style={{ textAlign: "center", marginBottom: 20 }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginBottom: 8 }}>Most likely to…</div>
+          <div style={{ fontSize: 15, fontWeight: 700, color: "#fff", marginBottom: 18 }}>{last.prompt}</div>
+          <div style={{ fontSize: 56, marginBottom: 8 }}>🏆</div>
+          <div style={{ fontSize: 26, fontWeight: 900, color: accent }}>{last.winner}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>Everyone agrees!</div>
+        </div>
+        {history.length > 1 && (
+          <div style={{ marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Previous rounds</div>
+            {history.slice(0,-1).map((h, i) => (
+              <div key={i} style={{ ...crd, display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 14px", marginBottom: 6 }}>
+                <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", flex: 1 }}>{h.prompt.split(" ").slice(0,7).join(" ")}…</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: accent, marginLeft: 10 }}>{h.winner}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        <button onClick={next} style={mkBtn(accent)}>Next Prompt →</button>
+        <button onClick={() => setPhase("setup")} style={{ ...mkBtn("rgba(255,255,255,0.06)"), marginTop: 10 }}>Change Players</button>
+      </>);})()}
+    </Modal>
+  );
+}
+
+// ── Two Truths One Lie ────────────────────────────────────────────────────────
+function TwoTruthsOneLie({ onClose, accent }) {
+  const [players, setPlayers] = useState([]);
+  const [input, setInput]     = useState("");
+  const [hotseat, setHotseat] = useState(null);
+  const [form, setForm]       = useState({ t1: "", t2: "", lie: "" });
+  const [shuffled, setShuffled] = useState([]);
+  const [guessResult, setGuessResult] = useState(null);
+  const [scores, setScores]   = useState({});
+  const [phase, setPhase]     = useState("setup");
+
+  const addPlayer = () => { const n = input.trim(); if (n && !players.includes(n)) { setPlayers(p => [...p, n]); setInput(""); } };
+  const pickHotseat = () => { setHotseat(rand(players)); setForm({ t1:"", t2:"", lie:"" }); setPhase("write"); };
+  const submitStatements = () => {
+    const items = shuffle([{ text: form.t1, isLie: false }, { text: form.t2, isLie: false }, { text: form.lie, isLie: true }]);
+    setShuffled(items); setGuessResult(null); setPhase("guess");
+  };
+  const guess = (item) => {
+    if (item.isLie) { setGuessResult("correct"); setScores(s => { const u = {...s}; players.filter(p=>p!==hotseat).forEach(p=>{u[p]=(u[p]||0)+1;}); return u; }); }
+    else { setGuessResult("wrong"); setScores(s => ({ ...s, [hotseat]: (s[hotseat]||0)+1 })); }
+    setPhase("reveal");
+  };
+
+  return (
+    <Modal onClose={onClose} emoji="🤥" title="Two Truths One Lie" wide>
+      {phase === "setup" && (<>
+        <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+          <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addPlayer()} placeholder="Player name…" style={{ ...inp, flex: 1 }} />
+          <button onClick={addPlayer} style={{ ...mkBtn(accent), width: "auto", padding: "10px 18px" }}>+</button>
+        </div>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
+          {players.map(p => (
+            <span key={p} style={{ background: accent + "22", border: `1px solid ${accent}44`, color: "#fff", padding: "5px 14px", borderRadius: 100, fontSize: 13, display:"flex", alignItems:"center", gap:6 }}>
+              {p} <button onClick={() => setPlayers(pl=>pl.filter(x=>x!==p))} style={{ background:"none",border:"none",color:"rgba(255,255,255,0.4)",cursor:"pointer",padding:0,fontSize:15 }}>×</button>
+            </span>
+          ))}
+        </div>
+        {players.length >= 2 ? <button onClick={pickHotseat} style={mkBtn(accent)}>🎲 Pick Hot Seat</button>
+          : <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", textAlign: "center" }}>Add at least 2 players</div>}
+        {Object.keys(scores).length > 0 && (
+          <div style={{ marginTop: 18 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Scoreboard</div>
+            {Object.entries(scores).sort(([,a],[,b])=>b-a).map(([p,s]) => (
+              <div key={p} style={{ display:"flex", justifyContent:"space-between", padding:"9px 14px", background:"rgba(255,255,255,0.04)", borderRadius:10, marginBottom:6 }}>
+                <span style={{ color:"#fff",fontSize:13 }}>{p}</span><span style={{ color:accent,fontWeight:700 }}>{s} pts</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </>)}
+      {phase === "write" && (<>
+        <div style={{ ...crd, textAlign:"center", marginBottom:20, padding:"20px 16px" }}>
+          <div style={{ fontSize:32, marginBottom:6 }}>🔥</div>
+          <div style={{ fontSize:20, fontWeight:800, color:accent }}>{hotseat}</div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginTop:4 }}>is in the Hot Seat — write privately!</div>
+        </div>
+        <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:14 }}>Write 2 true things and 1 convincing lie. Others will try to find the lie.</div>
+        {[["t1","Truth 1","Something true about you…"],["t2","Truth 2","Another truth…"],["lie","The Lie 🤥","Make it believable…"]].map(([k,lbl,ph]) => (
+          <div key={k} style={{ marginBottom:12 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:k==="lie"?"#EF4444":accent, marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>{lbl}</div>
+            <input value={form[k]} onChange={e => setForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={{ ...inp, borderColor:k==="lie"?"#EF444440":undefined }} />
+          </div>
+        ))}
+        {form.t1.trim()&&form.t2.trim()&&form.lie.trim() && <button onClick={submitStatements} style={mkBtn(accent)}>Done — Show the Group 🎭</button>}
+      </>)}
+      {phase === "guess" && (<>
+        <div style={{ ...crd, textAlign:"center", marginBottom:20 }}>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginBottom:4 }}>Everyone — which one is the lie?</div>
+          <div style={{ fontSize:15, fontWeight:700, color:"#fff" }}>{hotseat}'s statements:</div>
+        </div>
+        <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:16 }}>
+          {shuffled.map((item,i) => (
+            <button key={i} onClick={() => guess(item)} style={{ padding:"16px 18px", borderRadius:12, border:"1.5px solid rgba(255,255,255,0.1)", background:"rgba(255,255,255,0.04)", color:"#fff", fontSize:14, cursor:"pointer", textAlign:"left", fontFamily:font, lineHeight:1.4 }}
+              onMouseEnter={e=>{e.currentTarget.style.borderColor=accent;e.currentTarget.style.background=accent+"15";}}
+              onMouseLeave={e=>{e.currentTarget.style.borderColor="rgba(255,255,255,0.1)";e.currentTarget.style.background="rgba(255,255,255,0.04)";}}>
+              {String.fromCharCode(65+i)}. {item.text}
+            </button>
+          ))}
+        </div>
+      </>)}
+      {phase === "reveal" && (<>
+        <div style={{ textAlign:"center", marginBottom:20 }}>
+          <div style={{ fontSize:48, marginBottom:10 }}>{guessResult==="correct"?"🎉":"😈"}</div>
+          <div style={{ fontSize:20, fontWeight:800, color:guessResult==="correct"?"#4ADE80":"#F87171" }}>
+            {guessResult==="correct"?"The group got it!":hotseat+" fooled everyone!"}
+          </div>
+          <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginTop:10 }}>
+            The lie was: <strong style={{color:"#fff"}}>{shuffled.find(s=>s.isLie)?.text}</strong>
+          </div>
+        </div>
+        <button onClick={pickHotseat} style={mkBtn(accent)}>Next Hot Seat 🎲</button>
+        <button onClick={() => setPhase("setup")} style={{ ...mkBtn("rgba(255,255,255,0.06)"), marginTop:10 }}>Scoreboard</button>
+      </>)}
+    </Modal>
+  );
+}
+
+// ── Rapid Fire ────────────────────────────────────────────────────────────────
+const RF_DECKS = {
+  "🍕 Food & Vibes": ["Pizza ya Biryani?","Tea ya Coffee?","Dosa ya Idli?","Butter Chicken ya Paneer?","Maggi ya Ramen?","Rajma Chawal ya Chole Bhature?","Kulfi ya Ice Cream?","Pani Puri ya Bhel Puri?","Gol Gappe ya Samosa?","Litti Chokha ya Dal Baati?"],
+  "🧠 Personality":  ["Introvert ya Extrovert?","Planner ya Spontaneous?","Morning ya Night person?","Leader ya Follower?","Heart ya Head?","Spender ya Saver?","Risk-taker ya Safe player?","Talker ya Listener?","Perfectionist ya Chill?","Clean room ya Organized chaos?"],
+  "✈️ Travel & Life": ["Mountains ya Beach?","Solo trip ya Group trip?","Hotel ya Homestay?","Road trip ya Flight?","City ya Village?","Summer ya Winter?","Budget trip ya Luxury?","Local food ya Safe food?","Early bird ya Last minute?","Planned itinerary ya Wing it?"],
+  "🎬 Entertainment": ["Movies ya Web series?","Bollywood ya Hollywood?","Comedy ya Thriller?","Netflix ya YouTube?","Music ya Podcasts?","Reading ya Watching?","Classic ya New release?","Concert ya House party?","OTT ya Theatre?","Gaming ya Sports?"],
+};
+
+function RapidFire({ onClose, accent }) {
+  const [deck, setDeck]       = useState(null);
+  const [idx, setIdx]         = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [active, setActive]   = useState(false);
+  const [answers, setAnswers] = useState([]);
+  const [done, setDone]       = useState(false);
+  const timerRef              = useRef(null);
+
+  const questions = deck ? RF_DECKS[deck] : [];
+
+  useEffect(() => {
+    if (!active) return;
+    timerRef.current = setInterval(() => {
+      setTimeLeft(t => { if (t <= 1) { clearInterval(timerRef.current); setActive(false); setDone(true); return 0; } return t - 1; });
+    }, 1000);
+    return () => clearInterval(timerRef.current);
+  }, [active]);
+
+  const start = (d) => { setDeck(d); setIdx(0); setTimeLeft(30); setAnswers([]); setDone(false); setActive(true); };
+  const answer = (opt) => {
+    clearInterval(timerRef.current);
+    const updated = [...answers, { q: questions[idx], a: opt }];
+    setAnswers(updated);
+    if (idx + 1 >= questions.length) { setDone(true); setActive(false); }
+    else { setIdx(i => i + 1); setTimeLeft(30); setActive(true); }
+  };
+
+  const timerColor = timeLeft > 15 ? "#4ADE80" : timeLeft > 7 ? "#FBBF24" : "#F87171";
+
+  if (!deck) return (
+    <Modal onClose={onClose} emoji="⚡" title="Rapid Fire" wide>
+      <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)", marginBottom:20, textAlign:"center" }}>Pick a category — 30 seconds per question!</div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+        {Object.keys(RF_DECKS).map(d => (
+          <button key={d} onClick={() => start(d)} style={{ padding:"18px 12px", borderRadius:14, border:`1.5px solid ${accent}33`, background:accent+"11", color:"#fff", fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:font, textAlign:"center", lineHeight:1.4 }}>{d}</button>
+        ))}
+      </div>
+    </Modal>
+  );
+
+  if (done) return (
+    <Modal onClose={onClose} emoji="⚡" title="Rapid Fire" wide>
+      <div style={{ textAlign:"center", marginBottom:20 }}>
+        <div style={{ fontSize:40, marginBottom:8 }}>🔥</div>
+        <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:4 }}>Round over!</div>
+        <div style={{ fontSize:13, color:"rgba(255,255,255,0.5)" }}>{answers.filter(a=>a.a!=="–").length} / {answers.length} answered</div>
+      </div>
+      <div style={{ maxHeight:240, overflowY:"auto", marginBottom:14 }}>
+        {answers.map((a,i) => (
+          <div key={i} style={{ display:"flex", justifyContent:"space-between", padding:"9px 14px", background:"rgba(255,255,255,0.04)", borderRadius:10, marginBottom:6 }}>
+            <span style={{ fontSize:12, color:"rgba(255,255,255,0.6)" }}>{a.q}</span>
+            <span style={{ fontSize:13, fontWeight:700, color:a.a==="–"?"rgba(255,255,255,0.25)":accent, marginLeft:10 }}>{a.a}</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={() => setDeck(null)} style={mkBtn(accent)}>Play Again ⚡</button>
+    </Modal>
+  );
+
+  const parts = questions[idx].replace("?","").split(" ya ");
+  return (
+    <Modal onClose={onClose} emoji="⚡" title="Rapid Fire" wide>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16 }}>
+        <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)" }}>Question {idx+1} / {questions.length}</div>
+        <div style={{ fontSize:30, fontWeight:900, color:timerColor, fontVariantNumeric:"tabular-nums", minWidth:40, textAlign:"center", transition:"color 0.3s" }}>{timeLeft}</div>
+      </div>
+      <div style={{ ...crd, textAlign:"center", marginBottom:22, padding:"22px 16px" }}>
+        <div style={{ fontSize:19, fontWeight:700, color:"#fff", lineHeight:1.3 }}>{questions[idx]}</div>
+      </div>
+      <div style={{ display:"flex", gap:10, marginBottom:12 }}>
+        <button onClick={() => answer(parts[0])} style={{ ...mkBtn(accent), flex:1, fontSize:15 }}>👈 {parts[0]}</button>
+        <button onClick={() => answer(parts[1]||"B")} style={{ ...mkBtn("#7C3AED"), flex:1, fontSize:15 }}>{parts[1]||"B"} 👉</button>
+      </div>
+      <button onClick={() => answer("–")} style={{ ...mkBtn("rgba(255,255,255,0.06)"), fontSize:12 }}>Skip</button>
+    </Modal>
+  );
+}
+
+// ── Mood Meter ────────────────────────────────────────────────────────────────
+const MOOD_LABELS = ["😴 Dead","😐 Meh","🙂 Good","😄 Lit","🔥 On Fire"];
+
+function MoodMeter({ onClose, accent }) {
+  const [myMood, setMyMood]   = useState(null);
+  const [name, setName]       = useState("");
+  const [allMoods, setAllMoods] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
+
+  const submit = () => { if (myMood===null||!name.trim()) return; setAllMoods(m=>[...m,{name:name.trim(),mood:myMood}]); setSubmitted(true); };
+  const avg    = allMoods.length ? (allMoods.reduce((s,m)=>s+m.mood,0)/allMoods.length) : 0;
+  const pct    = (avg/4)*100;
+
+  return (
+    <Modal onClose={onClose} emoji="🌡️" title="Mood Meter" wide>
+      {allMoods.length > 0 && (
+        <div style={{ textAlign:"center", marginBottom:22, padding:"16px", background:"rgba(255,255,255,0.04)", borderRadius:14 }}>
+          <div style={{ fontSize:40, marginBottom:6 }}>{MOOD_LABELS[Math.round(avg)].split(" ")[0]}</div>
+          <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:10 }}>Party Vibe — {allMoods.length} votes</div>
+          <div style={{ background:"rgba(255,255,255,0.08)", borderRadius:100, height:10, overflow:"hidden", marginBottom:8 }}>
+            <div style={{ height:"100%", width:`${pct}%`, background:`linear-gradient(90deg,${accent},#fff)`, borderRadius:100, transition:"width 0.6s cubic-bezier(0.4,0,0.2,1)" }} />
+          </div>
+          <div style={{ fontSize:22, fontWeight:900, color:accent }}>{avg.toFixed(1)} / 4.0</div>
+        </div>
+      )}
+
+      {!submitted ? (<>
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name…" style={{ ...inp, marginBottom:14 }} />
+        <div style={{ display:"flex", gap:8, marginBottom:22 }}>
+          {MOOD_LABELS.map((e,i) => (
+            <button key={i} onClick={()=>setMyMood(i)} style={{ flex:1, padding:"14px 4px", borderRadius:12, border:`2px solid ${myMood===i?accent:"rgba(255,255,255,0.1)"}`, background:myMood===i?accent+"22":"rgba(255,255,255,0.04)", cursor:"pointer", transition:"all 0.18s", transform:myMood===i?"scale(1.1)":"scale(1)" }}>
+              <div style={{ fontSize:24 }}>{e.split(" ")[0]}</div>
+              <div style={{ fontSize:9, color:"rgba(255,255,255,0.5)", marginTop:4 }}>{e.split(" ")[1]}</div>
+            </button>
+          ))}
+        </div>
+        {myMood!==null&&name.trim() && <button onClick={submit} style={mkBtn(accent)}>Submit Vibe</button>}
+      </>) : (<>
+        <div style={{ textAlign:"center", padding:"16px 0 8px" }}>
+          <div style={{ fontSize:16, fontWeight:700, color:"#4ADE80", marginBottom:16 }}>✓ Vibe submitted!</div>
+          {allMoods.map((m,i) => (
+            <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"8px 14px", background:"rgba(255,255,255,0.04)", borderRadius:10, marginBottom:6 }}>
+              <span style={{ fontSize:13, color:"#fff" }}>{m.name}</span>
+              <span style={{ fontSize:20 }}>{MOOD_LABELS[m.mood].split(" ")[0]}</span>
+            </div>
+          ))}
+          <button onClick={()=>{setSubmitted(false);setMyMood(null);setName("");}} style={{ ...mkBtn(accent), marginTop:14 }}>Add Another</button>
+        </div>
+      </>)}
+    </Modal>
+  );
+}
+
+// ── Secret Messages ───────────────────────────────────────────────────────────
+function SecretMessage({ onClose, accent }) {
+  const [msg, setMsg]           = useState("");
+  const [name, setName]         = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [mode, setMode]         = useState("send");
+  const [revealed, setRevealed] = useState([]);
+
+  const send = () => {
+    if (!msg.trim()) return;
+    setMessages(m => [...m,{from:name.trim()||"Anonymous 🎭",text:msg.trim()}]);
+    setMsg(""); setName(""); setSubmitted(true); setTimeout(()=>setSubmitted(false),2500);
+  };
+
+  return (
+    <Modal onClose={onClose} emoji="💌" title="Secret Messages" wide>
+      <div style={{ display:"flex", gap:8, marginBottom:16 }}>
+        {["send","reveal"].map(v => (
+          <button key={v} onClick={()=>setMode(v)} style={{ ...mkBtn(mode===v?accent:"rgba(255,255,255,0.08)"), flex:1, padding:"10px", fontSize:13 }}>
+            {v==="send" ? "Write a Message" : `Open Envelopes${messages.length>0?` (${messages.length})`:""}` }
+          </button>
+        ))}
+      </div>
+
+      {mode==="send" && (<>
+        <div style={{ ...crd, fontSize:12, color:"rgba(255,255,255,0.5)", textAlign:"center", marginBottom:14 }}>Write a secret message for the birthday star. They'll open it later 🎭</div>
+        <input value={name} onChange={e=>setName(e.target.value)} placeholder="Your name (leave blank for Anonymous 🎭)" style={{ ...inp, marginBottom:10 }} />
+        <textarea value={msg} onChange={e=>setMsg(e.target.value)} placeholder="Write your secret message…" style={{ ...inp, minHeight:88, resize:"vertical", marginBottom:14 }} />
+        {submitted
+          ? <div style={{ textAlign:"center", padding:"12px", background:accent+"22", borderRadius:12, color:"#fff", fontWeight:700 }}>✓ Message sealed and hidden! 💌</div>
+          : <button onClick={send} disabled={!msg.trim()} style={{ ...mkBtn(accent), opacity:msg.trim()?1:0.4 }}>Seal Message 💌</button>
+        }
+      </>)}
+
+      {mode==="reveal" && (<>
+        {messages.length===0
+          ? <div style={{ textAlign:"center", padding:"40px 0", color:"rgba(255,255,255,0.3)", fontSize:13 }}>No messages yet — ask friends to write some!</div>
+          : <>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,0.4)", marginBottom:14, textAlign:"center" }}>Tap each sealed envelope to reveal</div>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              {messages.map((m,i) => { const isOpen=revealed.includes(i); return (
+                <div key={i} onClick={()=>!isOpen&&setRevealed(r=>[...r,i])} style={{ padding:"16px 18px", borderRadius:14, border:`1.5px solid ${isOpen?accent+"44":"rgba(255,255,255,0.1)"}`, background:isOpen?accent+"09":"rgba(255,255,255,0.04)", cursor:isOpen?"default":"pointer", transition:"all 0.3s" }}>
+                  {!isOpen
+                    ? <div style={{ textAlign:"center", color:"rgba(255,255,255,0.35)", fontSize:26 }}>💌 Tap to open</div>
+                    : <>
+                      <div style={{ fontSize:10, fontWeight:700, color:accent, textTransform:"uppercase", letterSpacing:"0.08em", marginBottom:6 }}>from {m.from}</div>
+                      <div style={{ fontSize:14, color:"#fff", lineHeight:1.6 }}>{m.text}</div>
+                    </>
+                  }
+                </div>
+              );})}
+            </div>
+          </>
+        }
+      </>)}
+    </Modal>
+  );
+}
+
+// ── Gift Tracker ──────────────────────────────────────────────────────────────
+function GiftTracker({ onClose, accent }) {
+  const [gifts, setGifts]   = useState([]);
+  const [form, setForm]     = useState({ from:"", gift:"", value:"" });
+  const [view, setView]     = useState("add");
+
+  const add = () => {
+    if (!form.from.trim()||!form.gift.trim()) return;
+    setGifts(g=>[...g,{...form,id:Date.now(),thanked:false}]);
+    setForm({from:"",gift:"",value:""});
+  };
+  const toggleThanked = (id) => setGifts(g=>g.map(x=>x.id===id?{...x,thanked:!x.thanked}:x));
+  const remove = (id) => setGifts(g=>g.filter(x=>x.id!==id));
+
+  const total     = gifts.reduce((s,g)=>s+(Number(g.value)||0),0);
+  const unthanked = gifts.filter(g=>!g.thanked).length;
+
+  return (
+    <Modal onClose={onClose} emoji="🎁" title="Gift Tracker" wide>
+      <div style={{ display:"flex", gap:8, marginBottom:16 }}>
+        {["add","list"].map(v => <button key={v} onClick={()=>setView(v)} style={{ ...mkBtn(view===v?accent:"rgba(255,255,255,0.08)"), flex:1, padding:"10px", fontSize:13 }}>
+          {v==="add"?"Log Gift":"All Gifts"+(gifts.length?` (${gifts.length})`:"")}</button>)}
+      </div>
+
+      {view==="add" && (<>
+        {[["from","Gifted by","e.g. Priya Aunty"],["gift","What was the gift?","e.g. Amazon voucher"],["value","Value ₹ (optional)","e.g. 500"]].map(([k,lbl,ph]) => (
+          <div key={k} style={{ marginBottom:10 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:accent, marginBottom:5, textTransform:"uppercase", letterSpacing:"0.06em" }}>{lbl}</div>
+            <input value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} placeholder={ph} style={inp} />
+          </div>
+        ))}
+        <button onClick={add} disabled={!form.from.trim()||!form.gift.trim()} style={{ ...mkBtn(accent), marginTop:8, opacity:form.from.trim()&&form.gift.trim()?1:0.4 }}>+ Add Gift</button>
+      </>)}
+
+      {view==="list" && (<>
+        {gifts.length===0
+          ? <div style={{ textAlign:"center", padding:"30px 0", color:"rgba(255,255,255,0.3)",fontSize:13 }}>No gifts logged yet</div>
+          : (<>
+            <div style={{ display:"flex", gap:10, marginBottom:16 }}>
+              <div style={{ flex:1, background:"rgba(255,255,255,0.05)", borderRadius:12, padding:"12px 14px", textAlign:"center" }}>
+                <div style={{ fontSize:20, fontWeight:800, color:accent }}>₹{total.toLocaleString("en-IN")}</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginTop:2 }}>Estimated total</div>
+              </div>
+              <div style={{ flex:1, background:"rgba(255,255,255,0.05)", borderRadius:12, padding:"12px 14px", textAlign:"center" }}>
+                <div style={{ fontSize:20, fontWeight:800, color:unthanked?"#F87171":"#4ADE80" }}>{unthanked}</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)", marginTop:2 }}>Thank-yous left</div>
+              </div>
+            </div>
+            {gifts.map(g => (
+              <div key={g.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"12px 14px", background:"rgba(255,255,255,0.04)", borderRadius:12, marginBottom:8 }}>
+                <button onClick={()=>toggleThanked(g.id)} style={{ width:28, height:28, borderRadius:"50%", border:`2px solid ${g.thanked?"#4ADE80":"rgba(255,255,255,0.2)"}`, background:g.thanked?"#4ADE8022":"transparent", color:g.thanked?"#4ADE80":"rgba(255,255,255,0.3)", cursor:"pointer", fontSize:14, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  {g.thanked?"✓":"○"}
+                </button>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color:g.thanked?"rgba(255,255,255,0.4)":"#fff", textDecoration:g.thanked?"line-through":"none" }}>{g.gift}</div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,0.4)" }}>from {g.from}{g.value?` · ₹${g.value}`:""}</div>
+                </div>
+                <button onClick={()=>remove(g.id)} style={{ background:"none", border:"none", color:"rgba(255,255,255,0.25)", cursor:"pointer", fontSize:16 }}>×</button>
+              </div>
+            ))}
+          </>)
+        }
+      </>)}
+    </Modal>
+  );
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // OCCASIONS CONFIG
 // ════════════════════════════════════════════════════════════════════════════
 
@@ -1508,25 +1968,31 @@ const OCCASIONS = {
     themes: ["Bollywood Night", "Neon Glow", "Retro 70s", "All White", "Fairy Lights", "Masquerade", "Beach Vibes", "Royale Night"],
     sections: [
       { id: "manage", label: "⚙️ Manage", subtitle: "Plan the perfect celebration", tools: [
-        { id: "invite", emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP instantly", color: "#2563EB" },
-        { id: "checklist", emoji: "📋", title: "Party Checklist", desc: "Guest count → auto buy list", color: "#D97706" },
-        { id: "bills", emoji: "💸", title: "Bill Splitter", desc: "Split party expenses fairly", color: "#DC2626" },
+        { id: "invite",      emoji: "📨", title: "Digital Invite & RSVP", desc: "One link · guests RSVP instantly", color: "#2563EB" },
+        { id: "checklist",   emoji: "📋", title: "Party Checklist",        desc: "Guest count → auto buy list",       color: "#D97706" },
+        { id: "bills",       emoji: "💸", title: "Bill Splitter",           desc: "Split party expenses fairly",        color: "#DC2626" },
+        { id: "gifttracker", emoji: "🎁", title: "Gift Tracker",            desc: "Log gifts · track thank-yous",      color: "#16A34A" },
       ]},
       { id: "fun", label: "✨ Fun", subtitle: "Make it memorable", tools: [
-        { id: "wishwall", emoji: "🎂", title: "Wish Wall", desc: "Everyone writes a wish for the birthday star", color: "#EC4899" },
-        { id: "theme", emoji: "🎨", title: "Theme Picker", desc: "Vote on the party theme", color: "#7C3AED" },
-        { id: "countdown", emoji: "⏱️", title: "Countdown Timer", desc: "Count down to the big day", color: "#0891B2" },
-        { id: "playlist", emoji: "🎵", title: "Playlist Builder", desc: "Everyone adds their song", color: "#059669" },
-        { id: "photowall", emoji: "📸", title: "Shared Photo Wall", desc: "Everyone uploads memories", color: "#DB2777" },
+        { id: "wishwall",      emoji: "🎂", title: "Wish Wall",          desc: "Everyone writes a wish for the birthday star", color: "#EC4899" },
+        { id: "theme",         emoji: "🎨", title: "Theme Picker",       desc: "Vote on the party theme",                     color: "#7C3AED" },
+        { id: "countdown",     emoji: "⏱️", title: "Countdown Timer",    desc: "Count down to the big day",                   color: "#0891B2" },
+        { id: "playlist",      emoji: "🎵", title: "Playlist Builder",   desc: "Everyone adds their song",                    color: "#059669" },
+        { id: "photowall",     emoji: "📸", title: "Shared Photo Wall",  desc: "Everyone uploads memories",                   color: "#DB2777" },
+        { id: "secretmessage", emoji: "💌", title: "Secret Messages",    desc: "Anonymous wishes for the birthday star",       color: "#F59E0B" },
+        { id: "moodmeter",     emoji: "🌡️", title: "Mood Meter",         desc: "Live party vibe tracker",                     color: "#10B981" },
       ]},
       { id: "games", label: "🎮 Games", subtitle: "Keep the energy going", tools: [
-        { id: "birthdayquiz", emoji: "🎯", title: "Birthday Quiz", desc: "How well do you know the birthday person?", color: "#EC4899" },
-        { id: "truthordare", emoji: "🎯", title: "Truth or Dare", desc: "Indian youth decks · 25 truths + 25 dares", color: "#DC2626" },
-        { id: "neverhavei", emoji: "🙅", title: "Never Have I Ever", desc: "30 statements · score tracker", color: "#059669" },
-        { id: "wouldyou", emoji: "🤷", title: "Would You Rather", desc: "Spicy choices · defend your answer", color: "#7C3AED" },
-        { id: "spin", emoji: "🍾", title: "Spin the Bottle", desc: "Random picker with spinner", color: "#2563EB" },
-        { id: "charades", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Celebs · Memes", color: "#D97706" },
-        { id: "bingo", emoji: "🎱", title: "Party Bingo", desc: "5×5 birthday scenario bingo", color: "#0891B2" },
+        { id: "birthdayquiz",  emoji: "🎯", title: "Birthday Quiz",       desc: "How well do you know the birthday person?", color: "#EC4899" },
+        { id: "mostlikelyto",  emoji: "🏆", title: "Most Likely To",      desc: "Vote who's most likely to…",                color: "#F59E0B" },
+        { id: "t2l",           emoji: "🤥", title: "Two Truths One Lie",  desc: "Find the lie · earn points",                color: "#8B5CF6" },
+        { id: "rapidfire",     emoji: "⚡", title: "Rapid Fire",          desc: "Ya/Ya choices · 30 seconds",                color: "#EF4444" },
+        { id: "truthordare",   emoji: "🎯", title: "Truth or Dare",       desc: "Indian youth decks · 25 + 25",              color: "#DC2626" },
+        { id: "neverhavei",    emoji: "🙅", title: "Never Have I Ever",   desc: "30 statements · score tracker",             color: "#059669" },
+        { id: "wouldyou",      emoji: "🤷", title: "Would You Rather",    desc: "Spicy choices · defend your answer",        color: "#7C3AED" },
+        { id: "spin",          emoji: "🍾", title: "Spin the Bottle",     desc: "Random picker with spinner",                color: "#2563EB" },
+        { id: "charades",      emoji: "🎭", title: "Dumb Charades",       desc: "Bollywood · Celebs · Memes",               color: "#D97706" },
+        { id: "bingo",         emoji: "🎱", title: "Party Bingo",         desc: "5×5 birthday scenario bingo",              color: "#0891B2" },
       ]},
       { id: "other", label: "🏆 Other", subtitle: "After the party", tools: [
         { id: "reportcard", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade", color: "#FBBF24" },
@@ -1785,6 +2251,17 @@ export default function OccasionHub({ occasion }) {
     try { const raw = localStorage.getItem(`tendr-plan-${slug}`); if (raw) setPlanData(JSON.parse(raw)); } catch {}
   }, [occasion]);
 
+  // Auto-detect ?room=CODE in URL and pre-fill join modal
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get("room");
+    if (code && !room) {
+      setJoinCode(code.toUpperCase());
+      setRoomModal("join");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Splash fade
   useEffect(() => {
     const t1 = setTimeout(() => setSplashOut(true), 2000);
@@ -1817,8 +2294,14 @@ export default function OccasionHub({ occasion }) {
     setRoomLoading(true);
     const res = await joinRoom({ code: joinCode.trim(), name: joinName.trim() });
     setRoomLoading(false);
-    if (!res.ok) alert(res.error || "Room not found");
-    else setRoomModal(null);
+    if (!res.ok) alert(res.error || "Room not found — check the code and try again.");
+    else {
+      setRoomModal(null);
+      // Clear ?room= param from URL so refreshing doesn't re-prompt join
+      const url = new URL(window.location.href);
+      url.searchParams.delete("room");
+      window.history.replaceState({}, "", url.toString());
+    }
   };
 
   const copyRoomLink = async (code) => {
@@ -1859,11 +2342,17 @@ export default function OccasionHub({ occasion }) {
       case "kittyfund":      return <KittyFund onClose={close} accent={accent} />;
       case "namesuggestions":return <NameSuggestions onClose={close} accent={accent} />;
       case "blessings":      return <BlessingsWall onClose={close} accent={accent} placeholder="Share a blessing for the child's journey ahead…" />;
+      case "mostlikelyto":   return <MostLikelyTo onClose={close} accent={accent} />;
+      case "t2l":            return <TwoTruthsOneLie onClose={close} accent={accent} />;
+      case "rapidfire":      return <RapidFire onClose={close} accent={accent} />;
+      case "moodmeter":      return <MoodMeter onClose={close} accent={accent} />;
+      case "secretmessage":  return <SecretMessage onClose={close} accent={accent} />;
+      case "gifttracker":    return <GiftTracker onClose={close} accent={accent} />;
       default: return null;
     }
   };
 
-  const GAME_IDS = new Set(["truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo","luckydraw","birthdayquiz","couplequiz","genderpoll"]);
+  const GAME_IDS = new Set(["truthordare","neverhavei","wouldyou","hottakes","spin","charades","bingo","luckydraw","birthdayquiz","couplequiz","genderpoll","mostlikelyto","t2l","rapidfire"]);
   const currentSection = sections[Math.min(activeTab, sections.length - 1)];
 
   // ── RENDER ────────────────────────────────────────────────────────────────
@@ -1885,7 +2374,15 @@ export default function OccasionHub({ occasion }) {
         textarea,input { font-family: ${font}; }
         select option { background: #1a1a2e; color: #fff; }
         ::-webkit-scrollbar { display: none; }
-        @media (max-width: 480px) { .occ-h1 { font-size: 1.7rem !important; } .tool-grid { grid-template-columns: 1fr 1fr !important; } }
+        @media (max-width: 600px) {
+          .occ-h1 { font-size: 1.7rem !important; }
+          .tool-scroll-outer { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+          .tool-scroll-outer::-webkit-scrollbar { display: none; }
+          .tool-grid-mobile { display: flex !important; flex-wrap: nowrap !important; gap: 10px !important; width: max-content !important; padding-right: 24px; }
+          .occ-tool-card-mobile { width: 88px !important; flex-shrink: 0 !important; }
+          .occ-tab-label { display: none !important; }
+          .occ-scroll-area { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
+        }
       `}</style>
 
       {/* Splash */}
@@ -1957,7 +2454,9 @@ export default function OccasionHub({ occasion }) {
               <div style={{ textAlign: "center", marginBottom: 20 }}>
                 <div style={{ fontSize: 36, marginBottom: 8 }}>🔗</div>
                 <div style={{ fontSize: 17, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Join a Room</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Enter the code your host shared</div>
+                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>
+                  {joinCode ? "You were invited — just enter your name!" : "Enter the code your host shared"}
+                </div>
               </div>
               <div style={{ marginBottom: 12 }}>
                 <div style={{ fontSize: 11, fontWeight: 700, color: accent, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>Room Code</div>
@@ -2003,33 +2502,43 @@ export default function OccasionHub({ occasion }) {
         </div>
       </div>
 
-      {/* Plan banner */}
-      {planData && (
-        <div style={{ flexShrink: 0, maxWidth: 800, margin: "10px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "8px 12px" }}>
-            <span style={{ fontSize: 14 }}>📋</span>
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", flex: 1 }}>
-              Plan: <strong style={{ color: "rgba(255,255,255,0.8)" }}>{planData.guests} guests</strong>
-              {planData.date ? ` · ${new Date(planData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}
-              {planData.city ? ` · ${planData.city}` : ""}
-            </span>
+      {/* Plan banner + Live room — merged into one compact strip */}
+      {(planData || room) && (
+        <div style={{ flexShrink: 0, maxWidth: 800, margin: "8px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: room ? `linear-gradient(90deg, ${accent}14, rgba(255,255,255,0.03))` : "rgba(255,255,255,0.04)", border: `1px solid ${room ? accent + "35" : "rgba(255,255,255,0.07)"}`, borderRadius: 10, padding: "7px 12px", flexWrap: "wrap" }}>
+            {room && <>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ADE80", boxShadow: "0 0 6px #4ADE80", flexShrink: 0, animation: "dot-pulse 2s ease infinite" }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: accent, fontFamily: "monospace", letterSpacing: "0.15em" }}>{room.code}</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>· {room.players?.length || 1} online</span>
+              <button onClick={() => copyRoomLink(room.code)} style={{ padding: "3px 10px", borderRadius: 100, border: `1px solid ${accent}45`, background: accent + "18", color: accent, fontSize: 10.5, fontWeight: 700, cursor: "pointer", fontFamily: font, whiteSpace: "nowrap", marginLeft: "auto" }}>
+                {copied ? "✓ Copied" : "Share"}
+              </button>
+            </>}
+            {planData && !room && <>
+              <span style={{ fontSize: 13 }}>📋</span>
+              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.45)", flex: 1 }}>
+                <strong style={{ color: "rgba(255,255,255,0.75)" }}>{planData.guests} guests</strong>
+                {planData.date ? ` · ${new Date(planData.date + "T00:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })}` : ""}
+                {planData.city ? ` · ${planData.city}` : ""}
+              </span>
+            </>}
           </div>
         </div>
       )}
 
       {/* ── Section Tabs ── */}
-      <div style={{ flexShrink: 0, maxWidth: 800, margin: "14px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
-        <div style={{ display: "flex", gap: 6, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 14, padding: 4 }}>
+      <div style={{ flexShrink: 0, maxWidth: 800, margin: "10px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 3 }}>
           {sections.map((sec, i) => {
             const active = activeTab === i;
             const isGame = sec.id === "games";
             return (
               <button key={sec.id} className="occ-tab-btn" onClick={() => setActiveTab(i)} style={{
-                flex: 1, padding: "10px 4px", border: "none",
+                flex: 1, padding: "8px 2px", border: "none",
                 background: active ? (isGame ? accent : "rgba(255,255,255,0.14)") : "transparent",
-                color: active ? "#fff" : "rgba(255,255,255,0.38)",
-                fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: font,
-                textTransform: "uppercase", letterSpacing: "0.05em",
+                color: active ? "#fff" : "rgba(255,255,255,0.35)",
+                fontSize: 10, fontWeight: 800, cursor: "pointer", fontFamily: font,
+                textTransform: "uppercase", letterSpacing: "0.04em",
                 clipPath: i === 0
                   ? "polygon(0% 0%, 88% 0%, 100% 50%, 88% 100%, 0% 100%)"
                   : i === sections.length - 1
@@ -2038,8 +2547,8 @@ export default function OccasionHub({ occasion }) {
                 filter: active && isGame ? `drop-shadow(0 2px 8px ${accent}55)` : "none",
                 transition: "all 0.18s",
               }}>
-                <div style={{ fontSize: 16, marginBottom: 2 }}>{sec.label.split(" ")[0]}</div>
-                <div style={{ fontSize: 9, letterSpacing: "0.06em", opacity: active ? 1 : 0.8 }}>{sec.label.split(" ").slice(1).join(" ") || sec.id}</div>
+                <div style={{ fontSize: 15, marginBottom: 1 }}>{sec.label.split(" ")[0]}</div>
+                <div className="occ-tab-label" style={{ fontSize: 8.5, letterSpacing: "0.05em", opacity: active ? 1 : 0.7 }}>{sec.label.split(" ").slice(1).join(" ") || sec.id}</div>
               </button>
             );
           })}
@@ -2047,28 +2556,29 @@ export default function OccasionHub({ occasion }) {
       </div>
 
       {/* ── Tool grid — centered in remaining space ── */}
-      <div style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: sections[activeTab]?.tools.length <= 4 ? "center" : "flex-start", padding: "20px 16px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+      <div className="occ-scroll-area" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: sections[activeTab]?.tools.length <= 4 ? "center" : "flex-start", padding: "16px 16px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
 
         {/* Section title */}
-        <div style={{ width: "100%", marginBottom: 16, textAlign: "center", animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-          <div style={{ fontSize: 12, fontWeight: 700, color: currentSection?.id === "games" ? accent : "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>{currentSection?.subtitle}</div>
+        <div style={{ width: "100%", marginBottom: 14, animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{currentSection?.subtitle}</div>
         </div>
 
-        {/* Circular icon grid */}
-        <div className="tool-grid" style={{
-          display: "grid",
-          gridTemplateColumns: (() => {
-            const n = currentSection?.tools.length || 0;
-            if (n <= 3) return `repeat(${n}, minmax(0, 150px))`;
-            if (n <= 5) return "repeat(3, minmax(0, 150px))";
-            if (n <= 6) return "repeat(3, minmax(0, 140px))";
-            return "repeat(4, minmax(0, 140px))";
-          })(),
-          gap: currentSection?.tools.length <= 3 ? 20 : 14,
-          width: "100%",
-          justifyContent: "center",
-          animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)",
-        }}>
+        {/* Desktop: wrapping grid. Mobile: horizontal scroll strip (CSS override) */}
+        <div className="tool-scroll-outer" style={{ width: "100%" }}>
+          <div className="tool-grid tool-grid-mobile" style={{
+            display: "grid",
+            gridTemplateColumns: (() => {
+              const n = currentSection?.tools.length || 0;
+              if (n <= 3) return `repeat(${n}, minmax(0, 150px))`;
+              if (n <= 5) return "repeat(3, minmax(0, 150px))";
+              if (n <= 6) return "repeat(3, minmax(0, 140px))";
+              return "repeat(4, minmax(0, 140px))";
+            })(),
+            gap: currentSection?.tools.length <= 3 ? 20 : 14,
+            width: "100%",
+            justifyContent: "center",
+            animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)",
+          }}>
           {currentSection?.tools.map((t, ti) => {
             const isH = hovered === t.id;
             const g = glare[t.id];
@@ -2076,14 +2586,14 @@ export default function OccasionHub({ occasion }) {
             const n = currentSection.tools.length;
             const clipPath = getPolyClip(n);
             const glowBg = g
-              ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}55 0%, rgba(255,255,255,0.04) 65%), rgba(255,255,255,0.05)`
+              ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${accent}55 0%, rgba(255,255,255,0.04) 65%), rgba(255,255,255,0.05)`
               : isGame
-              ? `linear-gradient(145deg, ${t.color}22 0%, rgba(255,255,255,0.04) 100%)`
+              ? `linear-gradient(145deg, ${accent}22 0%, rgba(255,255,255,0.04) 100%)`
               : "rgba(255,255,255,0.06)";
             return (
               <div
                 key={t.id}
-                className="occ-tool-card"
+                className="occ-tool-card occ-tool-card-mobile"
                 onClick={() => setOpen(t.id)}
                 onMouseEnter={() => setHovered(t.id)}
                 onMouseMove={e => handleMove(e, t.id)}
@@ -2097,9 +2607,9 @@ export default function OccasionHub({ occasion }) {
                   transition: "filter 0.18s, transform 0.18s",
                   transform: isH ? "scale(1.06)" : "none",
                   filter: isH
-                    ? `drop-shadow(0 8px 24px ${t.color}55) brightness(1.05)`
+                    ? `drop-shadow(0 8px 24px ${accent}55) brightness(1.05)`
                     : isGame
-                    ? `drop-shadow(0 3px 10px ${t.color}25)`
+                    ? `drop-shadow(0 3px 10px ${accent}25)`
                     : "none",
                   animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${ti * 0.06}s both`,
                   display: "flex", flexDirection: "column", alignItems: "center",
@@ -2107,27 +2617,29 @@ export default function OccasionHub({ occasion }) {
                   position: "relative",
                 }}
               >
-                {/* Circular icon */}
+                {/* Icon circle */}
                 <div style={{
-                  width: n <= 3 ? 48 : 56, height: n <= 3 ? 48 : 56, borderRadius: "50%",
-                  background: isH ? `radial-gradient(circle, ${t.color}50, ${t.color}18)` : `radial-gradient(circle, ${t.color}28, ${t.color}08)`,
-                  border: `1.5px solid ${isH ? t.color + "80" : t.color + "35"}`,
+                  width: n <= 3 ? 48 : 44, height: n <= 3 ? 48 : 44, borderRadius: "50%",
+                  background: isH ? `radial-gradient(circle, ${accent}50, ${accent}18)` : `radial-gradient(circle, ${accent}28, ${accent}08)`,
+                  border: `1.5px solid ${isH ? accent + "80" : accent + "35"}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: n <= 3 ? 22 : 26, marginBottom: n <= 3 ? 6 : 10, flexShrink: 0,
+                  fontSize: n <= 3 ? 22 : 20, marginBottom: 6, flexShrink: 0,
                   transition: "all 0.2s",
                 }}>
                   {t.emoji}
                 </div>
-                <div style={{ fontSize: n <= 3 ? 10.5 : 12, fontWeight: 800, color: "#fff", marginBottom: 3, lineHeight: 1.2, letterSpacing: "-0.01em" }}>{t.title}</div>
-                {n > 3 && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.38)", lineHeight: 1.35 }}>{t.desc}</div>}
-                {isGame && n > 4 && (
-                  <div style={{ fontSize: 9, fontWeight: 800, color: t.color, letterSpacing: "0.1em", textTransform: "uppercase", background: t.color + "18", border: `1px solid ${t.color}40`, borderRadius: 100, padding: "2px 8px", marginTop: 6, opacity: isH ? 1 : 0.7, transition: "opacity 0.18s" }}>
+                <div style={{ fontSize: 10.5, fontWeight: 800, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.01em" }}>{t.title}</div>
+                {/* Description only on desktop when cards are large enough */}
+                {n <= 5 && <div style={{ fontSize: 9.5, color: "rgba(255,255,255,0.35)", lineHeight: 1.3, marginTop: 2 }}>{t.desc}</div>}
+                {isGame && (
+                  <div className="occ-tab-label" style={{ fontSize: 8.5, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.1em", background: accent + "18", border: `1px solid ${accent}40`, borderRadius: 100, padding: "2px 7px", marginTop: 5, opacity: isH ? 1 : 0.65 }}>
                     Play
                   </div>
                 )}
               </div>
             );
           })}
+          </div>
         </div>
       </div>
 

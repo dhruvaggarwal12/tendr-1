@@ -223,7 +223,7 @@ export default function Footer() {
         }
         @media (max-width: 560px) {
           .footer-main-grid { grid-template-columns: 1fr !important; }
-          .footer-bottom-bar { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; }
+          .footer-bottom-bar { flex-direction: column !important; align-items: flex-start !important; gap: 4px !important; padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)) !important; }
         }
       `}</style>
     </footer>

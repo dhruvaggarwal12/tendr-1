@@ -925,7 +925,7 @@ const Navbar = ({
         @media (max-width: 767px) {
           .desktop-nav { display: none !important; }
           .desktop-search { display: none !important; }
-          .burger-btn-custom { display: flex !important; }
+          .burger-btn-custom { display: none !important; }
           .mobile-search-bar { display: flex !important; }
           .nav-announcement { display: none !important; }
           .navbar-main-bar img { height: 28px !important; }

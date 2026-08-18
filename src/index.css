@@ -670,6 +670,7 @@ body {
   pointer-events: none;
 }
 
+
 /* 7. Page-level section cards (Tailwind rounded-3xl / rounded-2xl on bg-white) */
 .rounded-3xl.bg-white,
 .rounded-2xl.bg-white {
