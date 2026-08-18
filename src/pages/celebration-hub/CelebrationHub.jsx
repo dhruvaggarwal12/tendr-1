@@ -485,13 +485,13 @@ export default function CelebrationHub() {
         @media (max-width: 640px) {
           .ch-hero { padding: 48px 18px 36px !important; }
           .ch-hero-h1 { font-size: 2.2rem !important; }
-          .ch-layout { padding: 24px 14px 64px !important; }
+          .ch-layout { padding: 24px 14px calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
         }
       `}</style>
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: "fixed", bottom: 90, left: "50%", transform: "translateX(-50%)", zIndex: 9999, background: "#2C1A0E", color: "#fff", fontSize: 13, fontWeight: 600, borderRadius: 12, padding: "12px 22px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)", fontFamily: font, whiteSpace: "nowrap", maxWidth: "90vw", textAlign: "center" }}>
+        <div style={{ position: "fixed", bottom: "calc(76px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", zIndex: 9999, background: "#2C1A0E", color: "#fff", fontSize: 13, fontWeight: 600, borderRadius: 12, padding: "12px 22px", boxShadow: "0 8px 24px rgba(0,0,0,0.25)", fontFamily: font, whiteSpace: "nowrap", maxWidth: "90vw", textAlign: "center" }}>
           {toast}
         </div>
       )}

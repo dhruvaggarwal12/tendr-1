@@ -199,8 +199,9 @@ const GiftHampersCakes = () => {
           .gh-hero-inner { padding: 44px 20px 40px !important; }
           .gh-h1 { font-size: clamp(1.9rem,7vw,2.5rem) !important; }
           .gh-cta-btn { width: 100% !important; justify-content: center; }
-          .gh-island { min-width: unset !important; left: 16px !important; right: 16px !important; transform: none !important; border-radius: 20px !important; }
+          .gh-island { min-width: unset !important; left: 16px !important; right: 16px !important; transform: none !important; border-radius: 20px !important; bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important; }
           .gh-island { animation-name: ghIslandInMobile !important; }
+          .gh-photos-grid { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)) !important; }
         }
       `}</style>
 
@@ -249,7 +250,7 @@ const GiftHampersCakes = () => {
       </div>
 
       {/* ── Sample Photos ── */}
-      <div style={{ background: "#FAF7F2", padding: "52px 24px", paddingBottom: selectedPhotos.length > 0 ? "120px" : "52px", transition: "padding-bottom 0.3s" }}>
+      <div className="gh-photos-grid" style={{ background: "#FAF7F2", padding: "52px 24px", paddingBottom: selectedPhotos.length > 0 ? "120px" : "52px", transition: "padding-bottom 0.3s" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
 
           {/* Section header */}

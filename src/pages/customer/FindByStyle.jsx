@@ -164,7 +164,7 @@ export default function FindByStyle() {
         </div>
       </div>
 
-      <div style={{ maxWidth: 720, margin: '0 auto', padding: '36px 20px 60px' }}>
+      <div style={{ maxWidth: 720, margin: '0 auto', padding: '36px 20px calc(80px + env(safe-area-inset-bottom, 0px))' }}>
 
         {/* Upload area */}
         {!preview ? (

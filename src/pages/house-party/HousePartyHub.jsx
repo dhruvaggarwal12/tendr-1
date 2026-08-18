@@ -1051,7 +1051,7 @@ export default function HousePartyHub() {
       </div>
 
       {/* ── Sections ── */}
-      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px 56px" }}>
+      <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {SECTIONS.map((sec, si) => {
           const tools = TOOLS.filter(t => t.section === sec.id);
           return (

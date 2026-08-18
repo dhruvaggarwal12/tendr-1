@@ -509,7 +509,7 @@ export default function CommunityWall() {
 
       {/* Toast */}
       {formSubmitted && (
-        <div style={{ position: "fixed", bottom: 80, left: "50%", transform: "translateX(-50%)", zIndex: 999, background: formSubmitted === "error" ? "#c0392b" : "#15803d", color: "#fff", padding: "12px 24px", borderRadius: 100, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.2)", fontFamily: font, whiteSpace: "nowrap" }}>
+        <div style={{ position: "fixed", bottom: "calc(76px + env(safe-area-inset-bottom, 0px))", left: "50%", transform: "translateX(-50%)", zIndex: 999, background: formSubmitted === "error" ? "#c0392b" : "#15803d", color: "#fff", padding: "12px 24px", borderRadius: 100, fontSize: 13, fontWeight: 700, boxShadow: "0 8px 24px rgba(0,0,0,0.2)", fontFamily: font, whiteSpace: "nowrap" }}>
           {formSubmitted === "error" ? "✗ Something went wrong — try again." : "✓ Posted to the community wall!"}
         </div>
       )}
@@ -681,7 +681,7 @@ export default function CommunityWall() {
       </div>
 
       {/* Feed */}
-      <div style={{ maxWidth: 900, margin: "24px auto 80px", padding: "0 20px" }}>
+      <div style={{ maxWidth: 900, margin: "24px auto 0", padding: "0 20px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
         {postsLoading && (
           <div style={{ textAlign: "center", padding: "60px 24px", color: "#9B7450" }}>
             <div style={{ width: 32, height: 32, border: "3px solid rgba(196,122,46,0.2)", borderTopColor: "#C47A2E", borderRadius: "50%", animation: "cw-spin 0.65s linear infinite", margin: "0 auto 14px" }} />
