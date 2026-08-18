@@ -2270,6 +2270,142 @@ const getPolyClip = (n) => POLY_CLIP[Math.min(n, 7)] ?? DEFAULT_POLY;
 const POLY_PAD = { 3: "36% 20% 12%", 4: "14% 14% 14%", 5: "14% 14% 14%", 6: "18% 12% 18%", 7: "16% 12% 16%" };
 const getPolyPad = (n) => POLY_PAD[Math.min(n, 7)] || "14% 10% 14%";
 
+// ── Polygon vertex grid for OccasionHub ───────────────────────────────────
+function OccPolygonGrid({ tools, onOpen, accent }) {
+  const containerRef = useRef(null);
+  const [size, setSize] = useState(320);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setSize(Math.min(entry.contentRect.width, 460));
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  const n = tools.length;
+  const cx = size / 2;
+  const cy = size / 2;
+  const R  = size * 0.355;
+
+  // n=4 → square corners (-45° start); others → top vertex (-90°)
+  const startDeg = n === 4 ? -45 : -90;
+
+  const pts = tools.map((_, i) => {
+    const a = ((i * 360) / n + startDeg) * (Math.PI / 180);
+    return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
+  });
+
+  // Even n → cross diameters; odd n → spokes from center
+  const innerLines = n % 2 === 0
+    ? Array.from({ length: n / 2 }, (_, i) => [pts[i], pts[i + n / 2]])
+    : pts.map(p => [{ x: cx, y: cy }, p]);
+
+  // Node size scales with container, capped for readability
+  const nW = Math.min(Math.max(58, size * 0.21), 96);
+  const nH = nW * 1.16;
+  const iconSz = Math.max(15, nW * 0.26);
+  const lblSz  = Math.max(9,  nW * 0.115);
+
+  return (
+    <div ref={containerRef} style={{ width: "100%", maxWidth: 460, margin: "0 auto" }}>
+      <div style={{ position: "relative", width: size, height: size, margin: "0 auto" }}>
+        {/* Web SVG */}
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "visible" }}
+          viewBox={`0 0 ${size} ${size}`}>
+          <defs>
+            <filter id="occ-glow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          {/* Inner lines */}
+          {innerLines.map(([a, b], i) => (
+            <line key={`il${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+              stroke={`${accent}20`} strokeWidth="1" />
+          ))}
+          {/* Outer polygon edges */}
+          {Array.from({ length: n }, (_, i) => (
+            <line key={`e${i}`}
+              x1={pts[i].x} y1={pts[i].y}
+              x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
+              stroke={`${accent}55`} strokeWidth="1.5" filter="url(#occ-glow)" />
+          ))}
+          {/* Vertex dots */}
+          {pts.map((p, i) => (
+            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
+              fill={`${accent}88`} filter="url(#occ-glow)" />
+          ))}
+          {/* Center dot */}
+          <circle cx={cx} cy={cy} r={4.5}
+            fill={`${accent}66`} filter="url(#occ-glow)" />
+        </svg>
+
+        {/* Tool nodes */}
+        {tools.map((t, i) => {
+          const p = pts[i];
+          return (
+            <button key={t.id} onClick={() => onOpen(t.id)}
+              style={{
+                position: "absolute",
+                width: nW, height: nH,
+                left: p.x - nW / 2, top: p.y - nH / 2,
+                background: `radial-gradient(circle at 50% 30%, ${accent}22, rgba(12,9,3,0.92))`,
+                border: `1.5px solid ${accent}44`,
+                borderRadius: 14,
+                cursor: "pointer",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                gap: 4,
+                padding: "6px 4px",
+                fontFamily: font,
+                transition: "transform 0.18s, box-shadow 0.18s, border-color 0.18s",
+                boxSizing: "border-box",
+                WebkitTapHighlightColor: "transparent",
+                animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${i * 0.07}s both`,
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.boxShadow = `0 0 22px ${accent}55`;
+                e.currentTarget.style.borderColor = `${accent}aa`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "";
+                e.currentTarget.style.borderColor = `${accent}44`;
+              }}
+            >
+              <div style={{
+                width: Math.max(26, nW * 0.42), height: Math.max(26, nW * 0.42),
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${accent}35, ${accent}0d)`,
+                border: `1.5px solid ${accent}55`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: accent, flexShrink: 0,
+              }}>
+                {TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>, iconSz)}
+              </div>
+              <span style={{
+                fontSize: lblSz,
+                fontWeight: 700,
+                color: "#fff",
+                lineHeight: 1.2,
+                textAlign: "center",
+                padding: "0 2px",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+              }}>{t.title}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 // ── occasion → plan slug ──────────────────────────────────────────────────
 const SLUG_FOR_OCC = {
   birthday:"birthday-party", anniversary:"anniversary", "baby-shower":"baby-shower",
@@ -2428,13 +2564,10 @@ export default function OccasionHub({ occasion }) {
         select option { background: #1a1a2e; color: #fff; }
         ::-webkit-scrollbar { display: none; }
         @media (max-width: 600px) {
-          .occ-h1 { font-size: 1.7rem !important; }
-          .tool-scroll-outer { overflow-x: auto; -webkit-overflow-scrolling: touch; padding-bottom: 4px; margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
-          .tool-scroll-outer::-webkit-scrollbar { display: none; }
-          .tool-grid-mobile { display: flex !important; flex-wrap: nowrap !important; gap: 10px !important; width: max-content !important; padding-right: 24px; }
-          .occ-tool-card-mobile { width: 88px !important; flex-shrink: 0 !important; }
-          .occ-tab-label { font-size: 10px !important; }
-          .occ-scroll-area { padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
+          .occ-h1 { font-size: 1.5rem !important; }
+          .occ-tab-label { font-size: 9px !important; }
+          .occ-scroll-area { padding: 4px 8px calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
+          .occ-tab-btn { padding: 7px 4px 5px !important; min-width: 56px !important; }
         }
       `}</style>
 
@@ -2608,93 +2741,46 @@ export default function OccasionHub({ occasion }) {
         </div>
       </div>
 
-      {/* ── Tool grid — centered in remaining space ── */}
-      <div className="occ-scroll-area" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: sections[activeTab]?.tools.length <= 4 ? "center" : "flex-start", padding: "16px 16px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+      {/* ── Tool grid — polygon vertex layout ── */}
+      <div className="occ-scroll-area" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 12px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
 
-        {/* Section title */}
-        <div style={{ width: "100%", marginBottom: 14, animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{currentSection?.subtitle}</div>
+        {/* Section subtitle */}
+        <div style={{ width: "100%", marginBottom: 8, animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{currentSection?.subtitle}</div>
         </div>
 
-        {/* Desktop: wrapping grid. Mobile: horizontal scroll strip (CSS override) */}
-        <div className="tool-scroll-outer" style={{ width: "100%" }}>
-          <div className="tool-grid tool-grid-mobile" style={{
-            display: "grid",
-            gridTemplateColumns: (() => {
-              const n = currentSection?.tools.length || 0;
-              if (n <= 3) return `repeat(${n}, minmax(0, 150px))`;
-              if (n <= 5) return "repeat(3, minmax(0, 150px))";
-              if (n <= 6) return "repeat(3, minmax(0, 140px))";
-              return "repeat(4, minmax(0, 140px))";
-            })(),
-            gap: currentSection?.tools.length <= 3 ? 20 : 14,
-            width: "100%",
-            justifyContent: "center",
-            animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)",
-          }}>
-          {currentSection?.tools.map((t, ti) => {
-            const isH = hovered === t.id;
-            const g = glare[t.id];
-            const isGame = GAME_IDS.has(t.id);
-            const n = currentSection.tools.length;
-            const clipPath = getPolyClip(n);
-            const glowBg = g
-              ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${accent}55 0%, rgba(255,255,255,0.04) 65%), rgba(255,255,255,0.05)`
-              : isGame
-              ? `linear-gradient(145deg, ${accent}22 0%, rgba(255,255,255,0.04) 100%)`
-              : "rgba(255,255,255,0.06)";
-            return (
-              <div
-                key={t.id}
-                className="occ-tool-card occ-tool-card-mobile"
-                onClick={() => setOpen(t.id)}
-                onMouseEnter={() => setHovered(t.id)}
-                onMouseMove={e => handleMove(e, t.id)}
-                onMouseLeave={() => handleLeave(t.id)}
-                style={{
-                  background: glowBg,
-                  clipPath,
-                  aspectRatio: "1",
-                  padding: getPolyPad(n),
-                  cursor: "pointer",
-                  transition: "filter 0.18s, transform 0.18s",
-                  transform: isH ? "scale(1.06)" : "none",
-                  filter: isH
-                    ? `drop-shadow(0 8px 24px ${accent}55) brightness(1.05)`
-                    : isGame
-                    ? `drop-shadow(0 3px 10px ${accent}25)`
-                    : "none",
-                  animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${ti * 0.06}s both`,
-                  display: "flex", flexDirection: "column", alignItems: "center",
-                  justifyContent: "center", textAlign: "center",
-                  position: "relative",
-                }}
-              >
-                {/* Icon circle */}
-                <div style={{
-                  width: n <= 3 ? 48 : 44, height: n <= 3 ? 48 : 44, borderRadius: "50%",
-                  background: isH ? `radial-gradient(circle, ${accent}50, ${accent}18)` : `radial-gradient(circle, ${accent}28, ${accent}08)`,
-                  border: `1.5px solid ${isH ? accent + "80" : accent + "35"}`,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  marginBottom: 6, flexShrink: 0,
-                  transition: "all 0.2s",
-                  color: isH ? accent : `${accent}cc`,
-                }}>
-                  {TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>, n <= 3 ? 22 : 20)}
+        {currentSection?.tools.length >= 3 ? (
+          <OccPolygonGrid
+            key={activeTab}
+            tools={currentSection.tools}
+            onOpen={setOpen}
+            accent={accent}
+          />
+        ) : (
+          /* 1–2 tools: simple centered row */
+          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", width: "100%", animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)" }}>
+            {currentSection?.tools.map((t) => {
+              const isH = hovered === t.id;
+              return (
+                <div key={t.id}
+                  onClick={() => setOpen(t.id)}
+                  onMouseEnter={() => setHovered(t.id)}
+                  onMouseLeave={() => handleLeave(t.id)}
+                  style={{
+                    width: 140, background: isH ? `${accent}18` : "rgba(255,255,255,0.06)",
+                    border: `1.5px solid ${isH ? accent + "66" : accent + "25"}`,
+                    borderRadius: 18, padding: "22px 14px", cursor: "pointer",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+                    transition: "all 0.18s", transform: isH ? "translateY(-3px)" : "none",
+                  }}>
+                  <div style={{ color: accent }}>{TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", textAlign: "center" }}>{t.title}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>{t.desc}</div>
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 800, color: "#fff", lineHeight: 1.2, letterSpacing: "-0.01em" }}>{t.title}</div>
-                {/* Description only on desktop when cards are large enough */}
-                {n <= 5 && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.3, marginTop: 2 }}>{t.desc}</div>}
-                {isGame && (
-                  <div className="occ-tab-label" style={{ fontSize: 8.5, fontWeight: 800, color: accent, textTransform: "uppercase", letterSpacing: "0.1em", background: accent + "18", border: `1px solid ${accent}40`, borderRadius: 100, padding: "2px 7px", marginTop: 5, opacity: isH ? 1 : 0.65 }}>
-                    Play
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
-        </div>
+        )}
       </div>
 
       {renderModal()}
