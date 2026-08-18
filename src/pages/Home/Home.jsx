@@ -33,6 +33,22 @@ import { OCCASIONS } from "../../data/occasions";
 
 const FunActivitiesLazy = React.lazy(() => import("../../components/FunActivitiesSection"));
 
+const _ic = (d, sz = 16) => <svg width={sz} height={sz} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">{d}</svg>;
+const OCCASION_ICONS = {
+  "baby-shower":     _ic(<><path d="M12 2a5 5 0 0 1 5 5c0 5-5 11-5 11S7 12 7 7a5 5 0 0 1 5-5z"/><circle cx="12" cy="7" r="2"/></>),
+  "newborn-welcome": _ic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></>),
+  "first-birthday":  _ic(<><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><line x1="7" y1="8" x2="7" y2="11"/><line x1="12" y1="6" x2="12" y2="11"/><line x1="17" y1="8" x2="17" y2="11"/></>),
+  "naming-ceremony": _ic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+  "birthday-party":  _ic(<><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2 1 2 1"/><line x1="2" y1="21" x2="22" y2="21"/><line x1="7" y1="8" x2="7" y2="11"/><line x1="12" y1="6" x2="12" y2="11"/><line x1="17" y1="8" x2="17" y2="11"/></>),
+  "anniversary":     _ic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
+  "gender-reveal":   _ic(<><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></>),
+  "housewarming":    _ic(<><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></>),
+  "graduation":      _ic(<><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></>),
+  "farewell":        _ic(<><path d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></>),
+  "retirement":      _ic(<><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></>),
+  "get-together":    _ic(<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></>),
+};
+
 const HUB_ROUTES = {
   "birthday-party":  "/birthday-hub",
   "first-birthday":  "/birthday-hub",
@@ -2528,7 +2544,7 @@ const Home = () => {
                       <div style={{ height: 80, overflow: "hidden", position: "relative" }}>
                         <img src={o.coverImage} alt={o.name} style={{ width: "100%", height: "100%", objectFit: "cover", opacity: 0.78 }} />
                         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.52) 0%,transparent 55%)" }} />
-                        <span style={{ position: "absolute", top: 7, left: 8, fontSize: 19 }}>{o.icon}</span>
+                        <span style={{ position: "absolute", top: 7, left: 8, color: "#fff", display: "flex" }}>{OCCASION_ICONS[o.id] || _ic(<><circle cx="12" cy="12" r="10"/></>)}</span>
                       </div>
                       <div style={{ padding: "7px 10px 9px" }}>
                         <div style={{ fontSize: 11.5, fontWeight: 700, color: "#F5ECD8", lineHeight: 1.25 }}>{o.name}</div>
@@ -2599,7 +2615,7 @@ const Home = () => {
                       onMouseEnter={e=>{e.currentTarget.style.background="rgba(196,122,46,0.09)";e.currentTarget.style.borderColor="#C47A2E";}}
                       onMouseLeave={e=>{e.currentTarget.style.background="rgba(196,122,46,0.04)";e.currentTarget.style.borderColor="rgba(196,122,46,0.2)";}}
                     >
-                      <div style={{width:42,height:42,borderRadius:13,background:`linear-gradient(135deg,${g},#D4A848)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,boxShadow:"0 4px 12px rgba(196,122,46,0.28)"}}>📋</div>
+                      <div style={{width:42,height:42,borderRadius:13,background:`linear-gradient(135deg,${g},#D4A848)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 12px rgba(196,122,46,0.28)",color:"#fff"}}>{_ic(<><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></>, 20)}</div>
                       <div style={{flex:1}}>
                         <div style={{fontSize:15,fontWeight:700,color:"#1C0900",marginBottom:2}}>Plan the Party</div>
                         <div style={{fontSize:11.5,color:"rgba(28,9,0,0.5)",lineHeight:1.4}}>Vendors, timeline & full blueprint</div>
@@ -2620,7 +2636,7 @@ const Home = () => {
                       onMouseEnter={e=>{e.currentTarget.style.transform="translateY(-2px)";e.currentTarget.style.boxShadow="0 8px 22px rgba(196,122,46,0.2)";}}
                       onMouseLeave={e=>{e.currentTarget.style.transform="none";e.currentTarget.style.boxShadow="0 2px 10px rgba(196,122,46,0.1)";}}
                     >
-                      <div style={{width:42,height:42,borderRadius:13,background:`linear-gradient(135deg,${g},#D4A848)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0,boxShadow:"0 4px 12px rgba(196,122,46,0.3)"}}>🎨</div>
+                      <div style={{width:42,height:42,borderRadius:13,background:`linear-gradient(135deg,${g},#D4A848)`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,boxShadow:"0 4px 12px rgba(196,122,46,0.3)",color:"#fff"}}>{_ic(<><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10c1.1 0 2-.9 2-2v-.5c0-.28-.1-.53-.26-.74-.16-.21-.24-.47-.24-.76 0-.55.45-1 1-1h1.46c2.5 0 4.54-2.04 4.54-4.54C22 6.75 17.52 2 12 2z"/><circle cx="7.5" cy="12.5" r="1"/><circle cx="10.5" cy="8.5" r="1"/><circle cx="14.5" cy="8.5" r="1"/><circle cx="17" cy="12.5" r="1"/></>, 20)}</div>
                       <div style={{flex:1}}>
                         <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:2}}>
                           <span style={{fontSize:15,fontWeight:700,color:"#1C0900"}}>Plan with a Theme</span>

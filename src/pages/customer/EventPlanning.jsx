@@ -1620,33 +1620,33 @@ const EventPlanning = () => {
 
           {/* Extra requirements chips — always visible, same for both flows */}
           {(() => {
+            const _eic = (d) => <svg width={13} height={13} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }} aria-hidden="true">{d}</svg>;
+            const EXTRA_ICONS = {
+              "Tables":          _eic(<><rect x="3" y="8" width="18" height="2" rx="1"/><path d="M6 10v6M18 10v6M4 16h16"/></>),
+              "Mats / Carpets":  _eic(<><rect x="2" y="8" width="20" height="8" rx="1"/><line x1="2" y1="12" x2="22" y2="12"/></>),
+              "Generator":       _eic(<><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></>),
+              "Air Cooler":      _eic(<><path d="M12 22V2M4.93 4.93l14.14 14.14M2 12h20M4.93 19.07l14.14-14.14"/><circle cx="12" cy="12" r="4"/></>),
+              "Heater":          _eic(<><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></>),
+              "Fan Arrangement": _eic(<><path d="M12 22V2M4.93 4.93l14.14 14.14M2 12h20M4.93 19.07l14.14-14.14"/><circle cx="12" cy="12" r="2"/></>),
+              "Washroom Setup":  _eic(<><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></>),
+              "Security Staff":  _eic(<><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></>),
+              "Valet Parking":   _eic(<><rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 5v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></>),
+              "LED Screen":      _eic(<><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></>),
+              "Standees":        _eic(<><rect x="5" y="2" width="14" height="18" rx="1"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="20" x2="12" y2="22"/></>),
+              "Welcome Board":   _eic(<><rect x="3" y="3" width="18" height="13" rx="1"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="16" x2="12" y2="21"/></>),
+            };
             const EXTRA_GROUPS = [
               {
                 label: "Infrastructure",
-                items: [
-                  { id: "Tables", emoji: "🪑" },
-                  { id: "Mats / Carpets", emoji: "🏮" },
-                  { id: "Generator", emoji: "🔌" },
-                  { id: "Air Cooler", emoji: "❄️" },
-                  { id: "Heater", emoji: "🔥" },
-                  { id: "Fan Arrangement", emoji: "🌀" },
-                  { id: "Washroom Setup", emoji: "🚻" },
-                ],
+                items: ["Tables", "Mats / Carpets", "Generator", "Air Cooler", "Heater", "Fan Arrangement", "Washroom Setup"].map(id => ({ id })),
               },
               {
                 label: "Staff",
-                items: [
-                  { id: "Security Staff", emoji: "💂" },
-                  { id: "Valet Parking", emoji: "🚗" },
-                ],
+                items: ["Security Staff", "Valet Parking"].map(id => ({ id })),
               },
               {
                 label: "Display",
-                items: [
-                  { id: "LED Screen", emoji: "📺" },
-                  { id: "Standees", emoji: "🖼️" },
-                  { id: "Welcome Board", emoji: "🪧" },
-                ],
+                items: ["LED Screen", "Standees", "Welcome Board"].map(id => ({ id })),
               },
             ];
             return (
@@ -1664,13 +1664,14 @@ const EventPlanning = () => {
                     <div key={group.label}>
                       <div style={{ fontSize: 10, fontWeight: 800, color: "#9B7450", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 8 }}>{group.label}</div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                        {group.items.map(({ id, emoji }) => {
+                        {group.items.map(({ id }) => {
                           const on = extraRequirements.includes(id);
                           return (
                             <button
                               key={id}
                               onClick={() => dispatch(toggleExtraRequirement(id))}
                               style={{
+                                display: "inline-flex", alignItems: "center", gap: 5,
                                 padding: "6px 13px", borderRadius: 100, fontSize: 12, fontWeight: 600,
                                 fontFamily: "'Outfit', sans-serif", cursor: "pointer", transition: "all 0.15s",
                                 border: on ? "1.5px solid #C47A2E" : "1.5px solid rgba(196,122,46,0.22)",
@@ -1679,7 +1680,7 @@ const EventPlanning = () => {
                                 boxShadow: on ? "0 2px 8px rgba(196,122,46,0.15)" : "none",
                               }}
                             >
-                              {emoji} {id}
+                              {EXTRA_ICONS[id]} {id}
                             </button>
                           );
                         })}
@@ -1702,7 +1703,7 @@ const EventPlanning = () => {
             {/* Error state */}
             {planError && (
               <div style={{ background: "#fff8f2", border: "1.5px solid rgba(196,122,46,0.25)", borderRadius: 14, padding: "18px 24px", textAlign: "center", maxWidth: 420, fontFamily: "'Outfit', sans-serif" }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>😕</div>
+                <div style={{ marginBottom: 8, display:"flex", justifyContent:"center" }}><svg width={28} height={28} viewBox="0 0 24 24" fill="none" stroke="#C47A2E" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></div>
                 <p style={{ fontSize: 14, fontWeight: 700, color: "#2C1A0E", margin: "0 0 6px" }}>Couldn't build your plan right now</p>
                 <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 14px" }}>Our server may be waking up — try again in a moment.</p>
                 {planErrorMsg && <p style={{ fontSize: 11, color: "#bbb", margin: "0 0 12px", wordBreak: "break-all" }}>{planErrorMsg}</p>}
@@ -1866,7 +1867,7 @@ const EventPlanning = () => {
                       return (
                         <div key={cat}>
                           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{range.emoji || "🏷"} {cat}{pp && <span style={{ fontSize: 10, color: "#9B7450", fontWeight: 500, marginLeft: 4 }}>(per person)</span>}</span>
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#2C1A0E" }}>{cat}{pp && <span style={{ fontSize: 10, color: "#9B7450", fontWeight: 500, marginLeft: 4 }}>(per person)</span>}</span>
                             <span style={{ fontSize: 13, fontWeight: 900, color: "#C47A2E" }}>Up to {fmtBudget(val)}{pp && <span style={{ fontSize: 10, fontWeight: 600 }}> pp</span>}</span>
                           </div>
                           <input type="range" min={range.min} max={range.max} step={range.step} value={val}
