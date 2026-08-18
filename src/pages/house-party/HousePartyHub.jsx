@@ -1142,6 +1142,30 @@ export default function HousePartyHub() {
         })}
       </div>
 
+      {/* Play Together CTA */}
+      <div style={{ padding: "32px 20px 48px", display: "flex", justifyContent: "center" }}>
+        <button
+          onClick={() => navigate("/play")}
+          style={{
+            display: "flex", alignItems: "center", gap: 12,
+            padding: "16px 32px", borderRadius: 100,
+            background: "linear-gradient(135deg, #C47A2E, #CCAB4A)",
+            border: "none", cursor: "pointer",
+            fontFamily: font, fontSize: 16, fontWeight: 800, color: "#fff",
+            boxShadow: "0 8px 32px rgba(196,122,46,0.45)",
+            transition: "transform 0.15s, box-shadow 0.15s",
+          }}
+          onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 12px 40px rgba(196,122,46,0.6)"; }}
+          onMouseLeave={e => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = "0 8px 32px rgba(196,122,46,0.45)"; }}
+        >
+          <svg width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          Play Together
+        </button>
+      </div>
+
       {renderModal()}
     </div>
   );

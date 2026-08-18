@@ -165,6 +165,7 @@ const InviteRSVP          = lazy(() => import("./pages/house-party/InviteRSVP.js
 const PhotoWallPage       = lazy(() => import("./pages/house-party/PhotoWallPage.jsx"));
 const OccasionHub         = lazy(() => import("./pages/occasion-hub/OccasionHub.jsx"));
 const PujaKits            = lazy(() => import("./pages/puja-kits/PujaKits.jsx"));
+const PartyRoomPage       = lazy(() => import("./pages/party-room/PartyRoomPage.jsx"));
 
 
 import LaunchLivePage from "./pages/LaunchLivePage";
@@ -513,6 +514,7 @@ const router = createBrowserRouter([
 
   // ── House Party Hub ─────────────────────────────────────────────────────
   { path: '/house-party', element: <HousePartyHub />, errorElement: <ErrorPage /> },
+  { path: '/play', element: <PartyRoomPage />, errorElement: <ErrorPage /> },
   { path: '/house-party/potluck/:roomId', element: <PotluckJoin />, errorElement: <ErrorPage /> },
   { path: '/house-party/invite/:inviteId', element: <InviteRSVP />, errorElement: <ErrorPage /> },
   { path: '/house-party/photo-wall/:wallId', element: <PhotoWallPage />, errorElement: <ErrorPage /> },
