@@ -1886,8 +1886,8 @@ export default function VendorChatModal() {
                   </div>
                 );
               })()}
-              {/* Action buttons row — only after chat is approved */}
-              {approved && (
+              {/* Action buttons row — only after chat is approved and before plan is finalised */}
+              {approved && !isThisVendorFinalised && (
                 <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between" }}>
                   {!chatCompleted ? (
                     <p style={{ fontSize: 11, color: "#7A5535", margin: 0, fontWeight: 600, borderLeft: "3px solid #C47A2E", paddingLeft: 8, lineHeight: 1.4 }}>
