@@ -50,10 +50,10 @@ function PageTransition() {
       <style>{`
         @keyframes tendr-page-in {
           from { opacity: 0; transform: translateY(6px); }
-          to   { opacity: 1; transform: translateY(0); }
+          to   { opacity: 1; }
         }
         .tendr-page-wrapper {
-          animation: tendr-page-in 0.18s ease-out both;
+          animation: tendr-page-in 0.18s ease-out backwards;
         }
         @media (prefers-reduced-motion: reduce) {
           .tendr-page-wrapper { animation: none; }
