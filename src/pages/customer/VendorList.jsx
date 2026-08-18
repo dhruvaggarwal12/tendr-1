@@ -434,9 +434,10 @@ const VendorList = () => {
                 .mobile-cat-switcher { display: block !important; }
                 .vendor-filter-chips { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; padding-bottom: 4px !important; }
                 .vendor-filter-chips::-webkit-scrollbar { display: none; }
-                .vendor-filter-chips span { font-size: 10px !important; padding: 2px 7px !important; }
+                .vendor-filter-chips span { font-size: 12px !important; padding: 4px 10px !important; }
                 .vendor-sort-row { flex-wrap: nowrap !important; overflow-x: auto !important; scrollbar-width: none !important; justify-content: flex-start !important; gap: 6px !important; }
                 .vendor-sort-row::-webkit-scrollbar { display: none; }
+                .vendor-sort-label { display: none !important; }
               }
             `}</style>
 
@@ -490,16 +491,16 @@ const VendorList = () => {
             <div className="listings-sort-sticky vendor-sort-row" style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
               {/* Sort controls — left */}
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
+                <span className="vendor-sort-label" style={{ fontFamily: "'Outfit', sans-serif", fontSize: 14, fontWeight: 600, color: "#9B7450" }}>Sort:</span>
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
-                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, padding: "9px 12px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none", minHeight: 40 }}>
                   <option value="rankingScore">Best Match</option>
                   <option value="rating">Rating</option>
                   <option value="price">Price</option>
                   <option value="experience">Experience</option>
                 </select>
                 <select value={sortOrder} onChange={(e) => setSortOrder(e.target.value)}
-                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none" }}>
+                  style={{ fontFamily: "'Outfit', sans-serif", fontSize: 13, padding: "9px 12px", borderRadius: 100, border: "1px solid rgba(204,171,74,0.6)", background: "#fff", color: "#4a2c0e", cursor: "pointer", outline: "none", minHeight: 40 }}>
                   <option value="desc">High to Low</option>
                   <option value="asc">Low to High</option>
                 </select>
@@ -512,8 +513,9 @@ const VendorList = () => {
                   onClick={() => setFiltersOpen(o => !o)}
                   style={{ display: "flex", alignItems: "center", gap: 7, padding: "6px 16px", borderRadius: 100, border: `1.5px solid ${filtersOpen ? "#C47A2E" : "rgba(196,122,46,0.4)"}`, background: filtersOpen ? "rgba(196,122,46,0.07)" : "#fff", color: "#C47A2E", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Outfit', sans-serif" }}
                 >
-                  <span>⚙ Filters</span>
-                  <span style={{ display: "inline-block", transform: filtersOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", fontSize: 11 }}>⌄</span>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="21" y1="6" x2="3" y2="6"/><line x1="17" y1="12" x2="3" y2="12"/><line x1="13" y1="18" x2="3" y2="18"/><circle cx="21" cy="6" r="2" fill="currentColor" stroke="none"/><circle cx="17" cy="12" r="2" fill="currentColor" stroke="none"/><circle cx="13" cy="18" r="2" fill="currentColor" stroke="none"/></svg>
+                  <span>Filters</span>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ transform: filtersOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
                 </button>
 
                 {/* Filters — bottom sheet on mobile, dropdown on desktop */}

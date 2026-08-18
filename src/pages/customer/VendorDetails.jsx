@@ -412,7 +412,7 @@ const VendorDetailsPage = () => {
       <BasicSpeedDial />
       <HamburgerNav active="Browse" />
 
-      <div className="page-container vendor-profile-content" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px 80px" }}>
+      <div className="page-container vendor-profile-content" style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
 
         {/* ── Hero Header ── */}
         <div style={{ padding: "28px 0 20px" }}>
@@ -556,16 +556,17 @@ const VendorDetailsPage = () => {
                       setChatFormOpen(true);
                     }
                   }}
-                  style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)" }}
+                  style={{ flex: 1, padding: "12px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 14, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 3px 12px rgba(196,122,46,0.4)", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                 >
-                  💬 {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
                 </button>
               </div>
               <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 10px", lineHeight: 1.5 }}>Our team reviews and connects you within a few hours</p>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 16px" }}>
-                {totalEventsCompleted > 0 && <span style={{ fontSize: 11, color: "#7A5535" }}>🎉 {totalEventsCompleted} events completed</span>}
-                {maxConcurrentEvents && <span style={{ fontSize: 11, color: "#7A5535" }}>📅 Up to {maxConcurrentEvents} events at once</span>}
-                {vendor?.createdAt && <span style={{ fontSize: 11, color: "#7A5535" }}>🗓️ On Tendr since {new Date(vendor.createdAt).getFullYear()}</span>}
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px" }}>
+                {totalEventsCompleted > 0 && <span style={{ fontSize: 11, color: "#7A5535", display: "flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>{totalEventsCompleted} events done</span>}
+                {maxConcurrentEvents && <span style={{ fontSize: 11, color: "#7A5535", display: "flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Up to {maxConcurrentEvents} events/month</span>}
+                {vendor?.createdAt && <span style={{ fontSize: 11, color: "#7A5535", display: "flex", alignItems: "center", gap: 4 }}><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>On Tendr since {new Date(vendor.createdAt).getFullYear()}</span>}
               </div>
             </div>
           </div>
@@ -792,9 +793,10 @@ const VendorDetailsPage = () => {
                         setChatFormOpen(true);
                       }
                     }}
-                    style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em" }}
+                    style={{ flex: 1, padding: "14px", borderRadius: 12, border: "none", background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, fontFamily: "'Outfit',sans-serif", cursor: "pointer", boxShadow: "0 4px 16px rgba(196,122,46,0.4)", letterSpacing: "0.01em", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}
                   >
-                    💬 {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    {!token ? "Sign In to Chat" : hasActiveChatSave ? "View Active Chat" : "Chat & Finalise"}
                   </button>
                 </div>
                 <p style={{ fontSize: 11, color: "#9B7450", textAlign: "center", margin: "0 0 14px", lineHeight: 1.5 }}>

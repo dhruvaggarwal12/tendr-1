@@ -214,7 +214,7 @@ const VendorList_ListingPage = ({
         <div>
           {isLoading ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 24px 60px", fontFamily: font }}>
-              <div style={{ fontSize: 50, marginBottom: 20, animation: "curateFloat 2s ease-in-out infinite" }}>✨</div>
+              <div style={{ width: 48, height: 48, borderRadius: "50%", border: "3px solid rgba(196,122,46,0.15)", borderTopColor: "#C47A2E", animation: "curateSpin 0.7s linear infinite", marginBottom: 20 }} />
               <h3 style={{ fontSize: 22, fontWeight: 800, color: "#2C1A0E", margin: "0 0 8px", letterSpacing: "-0.02em" }}>Curating your list...</h3>
               <p style={{ fontSize: 13, color: "#9B7450", margin: "0 0 28px" }}>Finding the best vendors for your event</p>
               <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -223,7 +223,7 @@ const VendorList_ListingPage = ({
                 ))}
               </div>
               <style>{`
-                @keyframes curateFloat { 0%, 100% { transform: translateY(0) rotate(-5deg); } 50% { transform: translateY(-10px) rotate(5deg); } }
+                @keyframes curateSpin { to { transform: rotate(360deg); } }
                 @keyframes curateDot { 0%, 100% { opacity: 0.25; transform: scale(0.85); } 50% { opacity: 1; transform: scale(1.2); } }
               `}</style>
             </div>
@@ -284,7 +284,6 @@ const VendorList_ListingPage = ({
                   <div
                     key={vendor._id || index}
                     className="vendor-card"
-                    style={{ animationDelay: `${Math.min(index, 8) * 55}ms` }}
                     onClick={() => {
                       if (window.innerWidth >= 1024) {
                         window.open(`/vendor/${vendor._id}`, "_blank");
@@ -293,6 +292,7 @@ const VendorList_ListingPage = ({
                       }
                     }}
                     style={{
+                      animationDelay: `${Math.min(index, 8) * 55}ms`,
                       background: "#FFFCF5", borderRadius: 20,
                       border: "1.5px solid rgba(0,0,0,0.07)",
                       boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
@@ -552,16 +552,16 @@ const VendorList_ListingPage = ({
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 20 }}>
                 {[
                   (quickViewVendor.city || quickViewVendor.address?.city || quickViewVendor.locations?.[0]) && {
-                    icon: "📍",
+                    icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>,
                     val: quickViewVendor.city || quickViewVendor.address?.city || quickViewVendor.locations?.[0],
                   },
-                  quickViewVendor.yearsOfExperience > 0 && { icon: "⏱", val: `${quickViewVendor.yearsOfExperience}y experience` },
-                  quickViewVendor.teamSize > 0 && { icon: "👥", val: `Team of ${quickViewVendor.teamSize}` },
+                  quickViewVendor.yearsOfExperience > 0 && { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>, val: `${quickViewVendor.yearsOfExperience}y exp` },
+                  quickViewVendor.teamSize > 0 && { icon: <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, val: `Team of ${quickViewVendor.teamSize}` },
                 ]
                   .filter(Boolean)
                   .map(({ icon, val }) => (
                     <div key={val} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 13, color: "#7A5535", background: "rgba(196,122,46,0.07)", borderRadius: 20, padding: "5px 12px", border: "1px solid rgba(196,122,46,0.12)" }}>
-                      <span style={{ fontSize: 14 }}>{icon}</span> {val}
+                      {icon} {val}
                     </div>
                   ))}
               </div>
@@ -749,9 +749,10 @@ const VendorList_ListingPage = ({
                     // Planning flow → open chat modal; chatSave is written after conversation is created
                     openVendorChat({ _id: vendor._id, name: vendor.name, serviceType: vendor.serviceType, addToCompare: true });
                   }}
-                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer" }}
+                  style={{ width: "100%", padding: "12px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.25)", background: "#fff", color: "#C47A2E", fontSize: 14, fontWeight: 700, fontFamily: font, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}
                 >
-                  {!token ? "Sign In to Chat" : getChatSave(quickViewVendor._id) ? "💬 View Active Chat" : "💬 Chat & Finalise"}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                  {!token ? "Sign In to Chat" : getChatSave(quickViewVendor._id) ? "View Active Chat" : "Chat & Finalise"}
                 </button>
               </div>
             </div>
