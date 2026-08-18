@@ -1734,6 +1734,23 @@ const BIRTHDAY_BINGO = [
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
+// ── polygon clip-path per section tool count ──────────────────────────────
+const POLY_CLIP = {
+  1: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",                                                                    // diamond
+  2: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",                                                                    // diamond
+  3: "polygon(50% 0%, 100% 100%, 0% 100%)",                                                                             // triangle
+  4: "polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%)",                                                          // pentagon
+  5: "polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%)",                                                          // pentagon
+  6: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",                                                  // hexagon
+  7: "polygon(50% 0%, 90% 15%, 100% 55%, 75% 93%, 25% 93%, 0% 55%, 10% 15%)",                                          // heptagon
+};
+const DEFAULT_POLY = "polygon(29% 0%, 71% 0%, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0% 71%, 0% 29%)";               // octagon
+const getPolyClip = (n) => POLY_CLIP[Math.min(n, 7)] ?? DEFAULT_POLY;
+
+// ── padding offset per polygon type so content clears clipped corners ──────
+const POLY_PAD = { 3: "36% 20% 12%", 4: "14% 14% 14%", 5: "14% 14% 14%", 6: "18% 12% 18%", 7: "16% 12% 16%" };
+const getPolyPad = (n) => POLY_PAD[Math.min(n, 7)] || "14% 10% 14%";
+
 // ── occasion → plan slug ──────────────────────────────────────────────────
 const SLUG_FOR_OCC = {
   birthday:"birthday-party", anniversary:"anniversary", "baby-shower":"baby-shower",
@@ -2008,12 +2025,18 @@ export default function OccasionHub({ occasion }) {
             const isGame = sec.id === "games";
             return (
               <button key={sec.id} className="occ-tab-btn" onClick={() => setActiveTab(i)} style={{
-                flex: 1, padding: "9px 4px", borderRadius: 10, border: "none",
-                background: active ? (isGame ? accent : "rgba(255,255,255,0.1)") : "transparent",
-                color: active ? (isGame ? "#fff" : "#fff") : "rgba(255,255,255,0.38)",
+                flex: 1, padding: "10px 4px", border: "none",
+                background: active ? (isGame ? accent : "rgba(255,255,255,0.14)") : "transparent",
+                color: active ? "#fff" : "rgba(255,255,255,0.38)",
                 fontSize: 11, fontWeight: 800, cursor: "pointer", fontFamily: font,
                 textTransform: "uppercase", letterSpacing: "0.05em",
-                boxShadow: active && isGame ? `0 4px 16px ${accent}44` : "none",
+                clipPath: i === 0
+                  ? "polygon(0% 0%, 88% 0%, 100% 50%, 88% 100%, 0% 100%)"
+                  : i === sections.length - 1
+                  ? "polygon(0% 50%, 12% 0%, 100% 0%, 100% 100%, 12% 100%)"
+                  : "polygon(0% 50%, 12% 0%, 88% 0%, 100% 50%, 88% 100%, 12% 100%)",
+                filter: active && isGame ? `drop-shadow(0 2px 8px ${accent}55)` : "none",
+                transition: "all 0.18s",
               }}>
                 <div style={{ fontSize: 16, marginBottom: 2 }}>{sec.label.split(" ")[0]}</div>
                 <div style={{ fontSize: 9, letterSpacing: "0.06em", opacity: active ? 1 : 0.8 }}>{sec.label.split(" ").slice(1).join(" ") || sec.id}</div>
@@ -2034,8 +2057,14 @@ export default function OccasionHub({ occasion }) {
         {/* Circular icon grid */}
         <div className="tool-grid" style={{
           display: "grid",
-          gridTemplateColumns: currentSection?.tools.length <= 3 ? `repeat(${currentSection.tools.length}, minmax(0,140px))` : "repeat(auto-fill, minmax(140px, 1fr))",
-          gap: 12,
+          gridTemplateColumns: (() => {
+            const n = currentSection?.tools.length || 0;
+            if (n <= 3) return `repeat(${n}, minmax(0, 150px))`;
+            if (n <= 5) return "repeat(3, minmax(0, 150px))";
+            if (n <= 6) return "repeat(3, minmax(0, 140px))";
+            return "repeat(4, minmax(0, 140px))";
+          })(),
+          gap: currentSection?.tools.length <= 3 ? 20 : 14,
           width: "100%",
           justifyContent: "center",
           animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)",
@@ -2044,7 +2073,13 @@ export default function OccasionHub({ occasion }) {
             const isH = hovered === t.id;
             const g = glare[t.id];
             const isGame = GAME_IDS.has(t.id);
-            const glowBg = g ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}50 0%, rgba(255,255,255,0.03) 65%), rgba(255,255,255,0.04)` : isGame ? `linear-gradient(145deg, ${t.color}18 0%, rgba(255,255,255,0.03) 100%)` : "rgba(255,255,255,0.04)";
+            const n = currentSection.tools.length;
+            const clipPath = getPolyClip(n);
+            const glowBg = g
+              ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}55 0%, rgba(255,255,255,0.04) 65%), rgba(255,255,255,0.05)`
+              : isGame
+              ? `linear-gradient(145deg, ${t.color}22 0%, rgba(255,255,255,0.04) 100%)`
+              : "rgba(255,255,255,0.06)";
             return (
               <div
                 key={t.id}
@@ -2055,36 +2090,39 @@ export default function OccasionHub({ occasion }) {
                 onMouseLeave={() => handleLeave(t.id)}
                 style={{
                   background: glowBg,
-                  border: `1.5px solid ${isH ? t.color + "99" : isGame ? t.color + "30" : "rgba(255,255,255,0.07)"}`,
-                  borderRadius: 20,
-                  padding: "20px 14px 16px",
+                  clipPath,
+                  aspectRatio: "1",
+                  padding: getPolyPad(n),
                   cursor: "pointer",
-                  transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
-                  transform: isH ? "translateY(-5px) scale(1.03)" : "none",
-                  boxShadow: isH ? `0 14px 40px ${t.color}40` : isGame ? `0 4px 20px ${t.color}15` : "none",
-                  animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${ti * 0.05}s both`,
-                  display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center",
-                  position: "relative", overflow: "hidden",
+                  transition: "filter 0.18s, transform 0.18s",
+                  transform: isH ? "scale(1.06)" : "none",
+                  filter: isH
+                    ? `drop-shadow(0 8px 24px ${t.color}55) brightness(1.05)`
+                    : isGame
+                    ? `drop-shadow(0 3px 10px ${t.color}25)`
+                    : "none",
+                  animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${ti * 0.06}s both`,
+                  display: "flex", flexDirection: "column", alignItems: "center",
+                  justifyContent: "center", textAlign: "center",
+                  position: "relative",
                 }}
               >
-                {isGame && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2.5, background: `linear-gradient(90deg, transparent, ${t.color}, transparent)` }} />}
                 {/* Circular icon */}
                 <div style={{
-                  width: 64, height: 64, borderRadius: "50%",
-                  background: isH ? `radial-gradient(circle, ${t.color}40, ${t.color}14)` : `radial-gradient(circle, ${t.color}20, ${t.color}06)`,
-                  border: `1.5px solid ${isH ? t.color + "70" : t.color + "28"}`,
+                  width: n <= 3 ? 48 : 56, height: n <= 3 ? 48 : 56, borderRadius: "50%",
+                  background: isH ? `radial-gradient(circle, ${t.color}50, ${t.color}18)` : `radial-gradient(circle, ${t.color}28, ${t.color}08)`,
+                  border: `1.5px solid ${isH ? t.color + "80" : t.color + "35"}`,
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 28, marginBottom: 12,
-                  boxShadow: isH ? `0 0 20px ${t.color}44` : "none",
+                  fontSize: n <= 3 ? 22 : 26, marginBottom: n <= 3 ? 6 : 10, flexShrink: 0,
                   transition: "all 0.2s",
                 }}>
                   {t.emoji}
                 </div>
-                <div style={{ fontSize: 12.5, fontWeight: 800, color: "#fff", marginBottom: 5, lineHeight: 1.25, letterSpacing: "-0.01em" }}>{t.title}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.4, marginBottom: 8 }}>{t.desc}</div>
-                {isGame && (
-                  <div style={{ fontSize: 9.5, fontWeight: 800, color: t.color, letterSpacing: "0.1em", textTransform: "uppercase", background: t.color + "18", border: `1px solid ${t.color}40`, borderRadius: 100, padding: "3px 10px", opacity: isH ? 1 : 0.7, transition: "opacity 0.18s" }}>
-                    {isH ? "Tap to Play" : "Play"}
+                <div style={{ fontSize: n <= 3 ? 10.5 : 12, fontWeight: 800, color: "#fff", marginBottom: 3, lineHeight: 1.2, letterSpacing: "-0.01em" }}>{t.title}</div>
+                {n > 3 && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.38)", lineHeight: 1.35 }}>{t.desc}</div>}
+                {isGame && n > 4 && (
+                  <div style={{ fontSize: 9, fontWeight: 800, color: t.color, letterSpacing: "0.1em", textTransform: "uppercase", background: t.color + "18", border: `1px solid ${t.color}40`, borderRadius: 100, padding: "2px 8px", marginTop: 6, opacity: isH ? 1 : 0.7, transition: "opacity 0.18s" }}>
+                    Play
                   </div>
                 )}
               </div>

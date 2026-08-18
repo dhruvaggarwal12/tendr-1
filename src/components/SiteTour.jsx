@@ -148,75 +148,79 @@ const STEPS = [
 ];
 
 function TourTooltip({ continuous, index, step, backProps, closeProps, primaryProps, tooltipProps, size }) {
+  const pct = Math.round(((index + 1) / size) * 100);
   return (
     <div
       {...tooltipProps}
       style={{
-        background: CREAM,
-        borderRadius: 18,
-        padding: "26px 28px 22px",
-        maxWidth: 400,
-        boxShadow: "0 20px 60px rgba(44,26,14,0.2), 0 0 0 2px rgba(196,122,46,0.18)",
+        background: "linear-gradient(160deg, #1C0E04 0%, #2A1408 100%)",
+        borderRadius: 20,
+        maxWidth: 370,
+        boxShadow: "0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(196,122,46,0.22), 0 0 50px rgba(196,122,46,0.06)",
         fontFamily: font,
-        position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Gold top bar */}
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: `linear-gradient(90deg, ${GOLD}, #CCAB4A, ${GOLD})` }} />
-
-      <div style={{ fontSize: 10.5, fontWeight: 700, color: GOLD, textTransform: "uppercase", letterSpacing: "0.14em", marginBottom: 10 }}>
-        Step {index + 1} of {size}
+      {/* Gold progress bar */}
+      <div style={{ height: 3, background: "rgba(196,122,46,0.12)" }}>
+        <div style={{ height: "100%", width: `${pct}%`, background: `linear-gradient(90deg, ${GOLD}, #CCAB4A)`, transition: "width 0.35s cubic-bezier(0.4,0,0.2,1)" }} />
       </div>
 
-      {step.title && (
-        <div style={{ fontSize: 17, fontWeight: 800, color: DARK, marginBottom: 10, lineHeight: 1.3 }}>
-          {step.title}
+      <div style={{ padding: "18px 22px 20px" }}>
+        {/* Step badge + counter */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+          <div style={{
+            background: `linear-gradient(135deg, ${GOLD}, #CCAB4A)`,
+            color: "#fff", fontWeight: 800, fontSize: 10.5,
+            padding: "3px 11px", borderRadius: 100, letterSpacing: "0.06em",
+          }}>
+            {index + 1} / {size}
+          </div>
+          {/* Segmented progress dots */}
+          <div style={{ display: "flex", gap: 3 }}>
+            {Array.from({ length: Math.min(size, 10) }).map((_, i) => (
+              <div key={i} style={{
+                width: i === index ? 16 : 5, height: 4, borderRadius: 100,
+                background: i < index ? `${GOLD}70` : i === index ? GOLD : "rgba(255,255,255,0.1)",
+                transition: "all 0.25s",
+              }} />
+            ))}
+          </div>
         </div>
-      )}
 
-      <div style={{ fontSize: 14, lineHeight: 1.7, color: "#5C3D1E" }}>
-        {step.content}
-      </div>
+        {step.title && (
+          <div style={{ fontSize: 19, fontWeight: 800, color: "#FFF8EC", marginBottom: 10, lineHeight: 1.25 }}>
+            {step.title}
+          </div>
+        )}
 
-      {/* Progress dots */}
-      <div style={{ display: "flex", gap: 4, marginTop: 18, marginBottom: 14, flexWrap: "wrap" }}>
-        {Array.from({ length: size }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              width: i === index ? 18 : 5,
-              height: 5,
-              borderRadius: 100,
-              background: i === index ? GOLD : "rgba(196,122,46,0.25)",
-              transition: "all 0.25s",
-            }}
-          />
-        ))}
-      </div>
+        <div style={{ fontSize: 13.5, lineHeight: 1.68, color: "rgba(255,240,215,0.6)" }}>
+          {step.content}
+        </div>
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
-        <button
-          {...closeProps}
-          style={{ background: "none", border: "none", fontSize: 12.5, color: MUTED, cursor: "pointer", padding: "4px 0", fontFamily: font, fontWeight: 600 }}
-        >
-          Skip tour
-        </button>
-        <div style={{ display: "flex", gap: 8 }}>
-          {index > 0 && (
-            <button
-              {...backProps}
-              style={{ padding: "7px 16px", borderRadius: 9, border: `1.5px solid rgba(196,122,46,0.35)`, background: "transparent", fontSize: 13, fontWeight: 700, color: GOLD, cursor: "pointer", fontFamily: font }}
-            >
-              ← Back
-            </button>
-          )}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 20, gap: 10 }}>
           <button
-            {...primaryProps}
-            style={{ padding: "8px 20px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${GOLD}, #CCAB4A)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 14px rgba(196,122,46,0.35)" }}
+            {...closeProps}
+            style={{ background: "none", border: "none", fontSize: 12, color: "rgba(255,240,215,0.3)", cursor: "pointer", fontFamily: font, fontWeight: 600, padding: 0 }}
           >
-            {index === size - 1 ? "Done! 🎊" : "Next →"}
+            Skip
           </button>
+          <div style={{ display: "flex", gap: 8 }}>
+            {index > 0 && (
+              <button
+                {...backProps}
+                style={{ padding: "8px 15px", borderRadius: 10, border: "1.5px solid rgba(196,122,46,0.22)", background: "rgba(196,122,46,0.06)", fontSize: 13, fontWeight: 700, color: "rgba(196,122,46,0.75)", cursor: "pointer", fontFamily: font }}
+              >
+                ←
+              </button>
+            )}
+            <button
+              {...primaryProps}
+              style={{ padding: "9px 22px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${GOLD}, #CCAB4A)`, color: "#fff", fontSize: 13.5, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 18px rgba(196,122,46,0.42)", letterSpacing: "0.01em" }}
+            >
+              {index === size - 1 ? "Done 🎊" : "Next →"}
+            </button>
+          </div>
         </div>
       </div>
     </div>

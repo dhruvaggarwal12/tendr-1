@@ -33,6 +33,18 @@ import { OCCASIONS } from "../../data/occasions";
 
 const FunActivitiesLazy = React.lazy(() => import("../../components/FunActivitiesSection"));
 
+const HUB_ROUTES = {
+  "birthday-party":  "/birthday-hub",
+  "first-birthday":  "/birthday-hub",
+  "anniversary":     "/anniversary-hub",
+  "baby-shower":     "/baby-shower-hub",
+  "gender-reveal":   "/baby-shower-hub",
+  "newborn-welcome": "/baby-shower-hub",
+  "housewarming":    "/housewarming-hub",
+  "get-together":    "/get-together-hub",
+  "naming-ceremony": "/naming-ceremony-hub",
+};
+
 const HERO_FEATURES = [
   {
     tag: "Budget Allocator",
@@ -2444,17 +2456,6 @@ const Home = () => {
 
       {/* ── Plan an Occasion Flow ── */}
       {occasionFlow && (() => {
-        const HUB_ROUTES = {
-          "birthday-party":  "/birthday-hub",
-          "first-birthday":  "/birthday-hub",
-          "anniversary":     "/anniversary-hub",
-          "baby-shower":     "/baby-shower-hub",
-          "gender-reveal":   "/baby-shower-hub",
-          "newborn-welcome": "/baby-shower-hub",
-          "housewarming":    "/housewarming-hub",
-          "get-together":    "/get-together-hub",
-          "naming-ceremony": "/naming-ceremony-hub",
-        };
         const isGrid = occasionFlow === "grid";
         const occ = isGrid ? null : occasionFlow;
         const hub = occ ? HUB_ROUTES[occ.id] : null;
@@ -2511,7 +2512,15 @@ const Home = () => {
                   {filtered.map(o => (
                     <button
                       key={o.id}
-                      onClick={() => { setOccasionFlow(null); navigate(`/occasions/${o.id}`); }}
+                      onClick={() => {
+                        setOccasionFlow(null);
+                        const hub = HUB_ROUTES[o.id];
+                        if (hub) {
+                          setOccModal({ label: o.name, slug: o.id, hub, photo: o.coverImage, step: 1 });
+                        } else {
+                          navigate(`/occasions/${o.id}`);
+                        }
+                      }}
                       style={{ background: "rgba(255,247,235,0.04)", border: "1.5px solid rgba(196,122,46,0.12)", borderRadius: 14, overflow: "hidden", cursor: "pointer", textAlign: "left", padding: 0, fontFamily: f, transition: "all 0.18s" }}
                       onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.45)"; e.currentTarget.style.background = "rgba(196,122,46,0.1)"; e.currentTarget.style.transform = "translateY(-2px)"; }}
                       onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(196,122,46,0.12)"; e.currentTarget.style.background = "rgba(255,247,235,0.04)"; e.currentTarget.style.transform = "translateY(0)"; }}
