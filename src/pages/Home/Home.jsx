@@ -1324,11 +1324,15 @@ const Home = () => {
               { label: "Birthday",        photo: "/occasions/birthday-mobile.png" },
               { label: "Anniversary",     photo: "/occasions/anniversary-mobile.png" },
               { label: "Baby Shower",     photo: "/occasions/baby-shower-mobile.png" },
+              { label: "First Birthday",  photo: "/occasions/birthday-mobile.png" },
               { label: "House Party",     photo: "/occasions/house-party-mobile.png" },
               { label: "Housewarming",    photo: "/occasions/housewarming-mobile.png" },
               { label: "Get Together",    photo: "/occasions/get-together-mobile.png" },
-              { label: "Kitty Party",     photo: "/occasions/kitty-party-mobile.png" },
               { label: "Naming Ceremony", photo: "/occasions/naming-ceremony-mobile.png" },
+              { label: "Gender Reveal",   photo: "/occasions/baby-shower-mobile.png" },
+              { label: "Newborn Welcome", photo: "/occasions/baby-shower-mobile.png" },
+              { label: "Kitty Party",     photo: "/occasions/kitty-party-mobile.png" },
+              { label: "Graduation",      photo: "/occasions/get-together-mobile.png" },
             ].map(({ label, photo }, i) => {
               const isHovered = hoveredOcc === label;
               const isDimmed  = hoveredOcc !== null && !isHovered;
@@ -1338,12 +1342,17 @@ const Home = () => {
                   onClick={() => {
                     const slugMap = {
                       "Birthday":"birthday-party","Anniversary":"anniversary","Baby Shower":"baby-shower",
-                      "House Party":"get-together","Housewarming":"housewarming","Get Together":"get-together",
-                      "Kitty Party":"get-together","Naming Ceremony":"naming-ceremony",
+                      "First Birthday":"first-birthday","House Party":"get-together","Housewarming":"housewarming",
+                      "Get Together":"get-together","Naming Ceremony":"naming-ceremony",
+                      "Gender Reveal":"gender-reveal","Newborn Welcome":"newborn-welcome",
+                      "Kitty Party":"get-together","Graduation":"graduation",
                     };
                     const hubMap = {
-                      "birthday-party":"/birthday-hub","anniversary":"/anniversary-hub","baby-shower":"/baby-shower-hub",
-                      "get-together":"/get-together-hub","housewarming":"/housewarming-hub","naming-ceremony":"/naming-ceremony-hub",
+                      "birthday-party":"/birthday-hub","first-birthday":"/birthday-hub",
+                      "anniversary":"/anniversary-hub","baby-shower":"/baby-shower-hub",
+                      "gender-reveal":"/baby-shower-hub","newborn-welcome":"/baby-shower-hub",
+                      "get-together":"/get-together-hub","housewarming":"/housewarming-hub",
+                      "naming-ceremony":"/naming-ceremony-hub","graduation":"/get-together-hub",
                     };
                     const slug = slugMap[label] || "birthday-party";
                     setOccModal({ label, slug, hub: hubMap[slug] || "/birthday-hub", photo, step: 1 });

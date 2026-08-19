@@ -598,14 +598,25 @@ function buildBudgetSplit(total) {
   ].map(c=>({...c,amt:Math.round(n*c.pct/100)}));
 }
 
-/* ── plan card download ── */
+/* ── plan card download (PDF) ── */
 async function downloadPlanCard(el,name){
   try{
     const h2c=(await import("html2canvas")).default;
+    const {jsPDF}=await import("jspdf");
     const canvas=await h2c(el,{scale:2,useCORS:true,backgroundColor:"#FDFAF5"});
-    const a=document.createElement("a");
-    a.download=`${name.replace(/\s+/g,"-").toLowerCase()}-plan.png`;
-    a.href=canvas.toDataURL("image/png");a.click();
+    const imgData=canvas.toDataURL("image/png");
+    const pdf=new jsPDF({orientation:"portrait",unit:"mm",format:"a4"});
+    const pW=pdf.internal.pageSize.getWidth();
+    const pH=pdf.internal.pageSize.getHeight();
+    const ratio=pW/canvas.width;
+    const totalH=canvas.height*ratio;
+    let yOff=0;
+    while(yOff<totalH){
+      if(yOff>0)pdf.addPage();
+      pdf.addImage(imgData,"PNG",0,-yOff,pW,totalH);
+      yOff+=pH;
+    }
+    pdf.save(`${name.replace(/\s+/g,"-").toLowerCase()}-plan.pdf`);
   }catch{window.print();}
 }
 
@@ -1213,23 +1224,21 @@ export default function OccasionDetail(){
                   );
                 })}
 
-                {/* completion CTA */}
+                {/* completion CTA — gifts next */}
                 {allVendorsChosen&&mainVendors.length>0&&(
                   <div style={{marginTop:8,padding:"16px 18px",borderRadius:16,background:"rgba(196,122,46,0.06)",border:`1.5px solid rgba(196,122,46,0.2)`}}>
-                    <div style={{fontSize:12.5,fontWeight:700,color:ink,marginBottom:10}}>
-                      {mainVendors.length} service{mainVendors.length>1?"s":""} planned — ready to book?
+                    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      <span style={{fontSize:12.5,fontWeight:700,color:ink}}>{mainVendors.length} service{mainVendors.length>1?"s":""} selected</span>
                     </div>
-                    <a href={buildBaatKaroMsg(occasion,{guests,date,city,venueType,theme,vendors,vendorPackages,budget})}
-                      target="_blank" rel="noopener noreferrer"
-                      style={{display:"flex",alignItems:"center",gap:10,padding:"12px 16px",borderRadius:12,background:"#25D366",textDecoration:"none",marginBottom:8}}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="white"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 2C6.477 2 2 6.477 2 12c0 1.89.525 3.66 1.438 5.168L2 22l4.942-1.42A9.959 9.959 0 0012 22c5.523 0 10-4.477 10-10S17.523 2 12 2zm0 18a7.952 7.952 0 01-4.065-1.112l-.29-.173-3.013.866.847-3.093-.19-.307A7.957 7.957 0 014 12c0-4.411 3.589-8 8-8s8 3.589 8 8-3.589 8-8 8z"/></svg>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:13,fontWeight:700,color:"#fff"}}>Send to Baat Karo</div>
-                        <div style={{fontSize:11,color:"rgba(255,255,255,0.82)"}}>We'll book all {mainVendors.length} vendors for you</div>
-                      </div>
-                    </a>
-                    <button onClick={next} style={{width:"100%",padding:"10px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.25)`,background:"transparent",color:gold,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font}}>
-                      Continue — see full plan →
+                    <p style={{fontSize:11.5,color:muted,margin:"0 0 12px",lineHeight:1.5}}>Want to add gifts to your celebration plan?</p>
+                    <button onClick={next}
+                      style={{width:"100%",padding:"12px 0",borderRadius:12,background:`linear-gradient(135deg,${gold},${goldLt})`,border:"none",color:"#fff",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:font,marginBottom:8,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
+                      <span>🎁</span> Pick Gifts →
+                    </button>
+                    <button onClick={()=>setStep(6)}
+                      style={{width:"100%",padding:"10px 0",borderRadius:12,border:`1.5px solid rgba(196,122,46,0.25)`,background:"transparent",color:gold,fontSize:12.5,fontWeight:600,cursor:"pointer",fontFamily:font}}>
+                      Skip — see my plan →
                     </button>
                   </div>
                 )}
@@ -1282,12 +1291,12 @@ export default function OccasionDetail(){
         {step===6&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:4}}>Your plan is ready ✦</p>
-            <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>Full plan below — download it all as an image.</p>
+            <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>Full plan below — download as a PDF to save or share.</p>
 
             {/* download button — at top */}
             <button onClick={async()=>{setDownloading(true);await downloadPlanCard(planRef.current,occasion.name);setDownloading(false);}} disabled={downloading}
               style={{width:"100%",padding:"13px 20px",borderRadius:12,border:`1px solid rgba(196,122,46,0.25)`,background:"#fff",color:gold,fontSize:13.5,fontWeight:700,cursor:downloading?"wait":"pointer",fontFamily:font,transition:"all 0.2s",marginBottom:20,display:"flex",alignItems:"center",justifyContent:"center",gap:8}}>
-              {downloading?<><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating…</>:<><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Full Plan</>}
+              {downloading?<><div style={{width:15,height:15,borderRadius:"50%",border:`2px solid rgba(196,122,46,0.2)`,borderTopColor:gold,animation:"spin 0.7s linear infinite"}}/><style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>Generating PDF…</>:<><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={gold} strokeWidth="2.5" strokeLinecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download Plan (PDF)</>}
             </button>
 
             {/* everything below this is captured by planRef */}
@@ -1323,9 +1332,20 @@ export default function OccasionDetail(){
                 {cateringType&&<div style={{marginBottom:8,fontSize:11.5,color:muted}}>🍽️ {cateringType}{cakeType&&` · ${cakeType}`}{inviteType&&` · ${inviteType}`}</div>}
                 {catVendors.length>0&&(
                   <div style={{marginBottom:10}}>
-                    <div style={{fontSize:9,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:6}}>Vendors needed</div>
-                    <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                      {catVendors.map(v=><span key={v} style={{fontSize:10.5,fontWeight:600,color:gold,background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:100,padding:"3px 9px"}}>{v}</span>)}
+                    <div style={{fontSize:9,fontWeight:700,color:gold,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:8}}>Services planned</div>
+                    <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
+                      {catVendors.map(v=>{
+                        const pkgIdx=vendorPackages[v];
+                        const pkgLabel=pkgIdx!==undefined&&ALL_VENDORS.includes(v)
+                          ?getVendorPackages(v,{guests,venueType,theme,ageGroups})[pkgIdx]?.label
+                          :null;
+                        return(
+                          <div key={v} style={{display:"flex",flexDirection:"column",background:"rgba(196,122,46,0.08)",border:"1px solid rgba(196,122,46,0.16)",borderRadius:10,padding:"5px 10px",minWidth:80}}>
+                            <span style={{fontSize:10.5,fontWeight:700,color:gold,lineHeight:1.3}}>{v}</span>
+                            {pkgLabel&&<span style={{fontSize:9,fontWeight:600,color:muted,marginTop:1}}>{pkgLabel}</span>}
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
