@@ -5,6 +5,7 @@ import {
   CHARADES, HOT_TAKES, BINGO_SQUARES, PARTY_THEMES, CHECKLIST_TEMPLATE,
   HOT_SEAT_QUESTIONS, WORD_WOLF_PAIRS, CATEGORY_BLITZ, ROAST_PROMPTS,
 } from "../../data/housePartyData";
+import { usePartyRoom } from "../../hooks/usePartyRoom";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', 'Inter', sans-serif";
@@ -47,6 +48,10 @@ const TOOL_ICONS = {
   wordwolf:       hpic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>),
   categoryblitz:  hpic(<><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></>),
   roastbattle:    hpic(<><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></>),
+  wishwall:       hpic(<><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>),
+  moodmeter:      hpic(<><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></>),
+  secretmsg:      hpic(<><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></>),
+  lovenotes:      hpic(<><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></>),
 };
 const SECTION_SVGS = {
   manage: hpic(<><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></>, 16),
@@ -394,108 +399,334 @@ function Checklist({ onClose }) {
   );
 }
 
-function BillSplitter({ onClose }) {
-  const [people, setPeople] = useState([]);
-  const [newName, setNewName] = useState("");
-  const [expenses, setExpenses] = useState([]);
-  const [paidBy, setPaidBy] = useState("");
-  const [amount, setAmount] = useState("");
-  const [desc, setDesc] = useState("");
-  const [view, setView] = useState("add"); // add | result
+const BS_COLORS = ["#7C3AED","#DC2626","#059669","#D97706","#2563EB","#DB2777","#0891B2","#65A30D","#9333EA","#B45309"];
+const BS_CATS = [
+  { id:"food",     emoji:"🍕", label:"Food"      },
+  { id:"drinks",   emoji:"🍺", label:"Drinks"    },
+  { id:"transport",emoji:"🚗", label:"Transport" },
+  { id:"fun",      emoji:"🎮", label:"Fun"       },
+  { id:"shop",     emoji:"🛒", label:"Shopping"  },
+  { id:"stay",     emoji:"🏠", label:"Stay"      },
+  { id:"other",    emoji:"📦", label:"Other"     },
+];
 
-  const addPerson = () => { if (newName.trim()) { setPeople(p => [...p, newName.trim()]); setNewName(""); } };
-  const addExpense = () => {
-    if (!paidBy || !amount || isNaN(Number(amount))) return;
-    setExpenses(e => [...e, { paidBy, amount: Number(amount), desc: desc || "Expense" }]);
-    setAmount(""); setDesc("");
+function BillSplitter({ onClose }) {
+  const [people, setPeople]     = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [settled, setSettled]   = useState(new Set());
+  const [tab, setTab]           = useState("expenses");
+  const [newName, setNewName]   = useState("");
+  const [showForm, setShowForm] = useState(false);
+
+  // expense form
+  const [fDesc, setFDesc]               = useState("");
+  const [fAmount, setFAmount]           = useState("");
+  const [fCat, setFCat]                 = useState("food");
+  const [fPaidBy, setFPaidBy]           = useState("");
+  const [fSplitAmong, setFSplitAmong]   = useState([]);
+  const [fSplitType, setFSplitType]     = useState("equal");
+  const [fCustom, setFCustom]           = useState({});
+
+  const addPerson = () => {
+    const name = newName.trim();
+    if (!name || people.find(p => p.name === name)) return;
+    const color = BS_COLORS[people.length % BS_COLORS.length];
+    setPeople(prev => [...prev, { name, color }]);
+    setNewName("");
   };
 
-  const calcSettlement = () => {
-    const total = expenses.reduce((s, e) => s + e.amount, 0);
-    const share = total / people.length;
-    const balances = {};
-    people.forEach(p => { balances[p] = 0; });
-    expenses.forEach(e => { balances[e.paidBy] = (balances[e.paidBy] || 0) + e.amount; });
-    people.forEach(p => { balances[p] = (balances[p] || 0) - share; });
+  const openForm = () => {
+    setFDesc(""); setFAmount(""); setFCat("food");
+    const first = people[0]?.name || "";
+    setFPaidBy(first);
+    setFSplitAmong(people.map(p => p.name));
+    setFSplitType("equal"); setFCustom({});
+    setShowForm(true);
+  };
 
+  const toggleSplit = (name) =>
+    setFSplitAmong(prev => prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]);
+
+  const addExpense = () => {
+    if (!fPaidBy || !fAmount || isNaN(Number(fAmount)) || fSplitAmong.length === 0) return;
+    const total = Number(fAmount);
+    const splits = {};
+    if (fSplitType === "equal") {
+      const share = total / fSplitAmong.length;
+      fSplitAmong.forEach(n => { splits[n] = share; });
+    } else if (fSplitType === "amount") {
+      fSplitAmong.forEach(n => { splits[n] = Number(fCustom[n] || 0); });
+    } else {
+      fSplitAmong.forEach(n => { splits[n] = total * Number(fCustom[n] || 0) / 100; });
+    }
+    setExpenses(prev => [...prev, { id: Date.now(), desc: fDesc || "Expense", cat: fCat, paidBy: fPaidBy, amount: total, splits }]);
+    setShowForm(false);
+  };
+
+  const deleteExpense = (id) => setExpenses(prev => prev.filter(e => e.id !== id));
+
+  const colorOf = (name) => people.find(p => p.name === name)?.color || "#7C3AED";
+  const catOf   = (id)   => BS_CATS.find(c => c.id === id) || BS_CATS[BS_CATS.length - 1];
+
+  const calcBalances = () => {
+    const bal = {};
+    people.forEach(p => { bal[p.name] = 0; });
+    expenses.forEach(exp => {
+      bal[exp.paidBy] = (bal[exp.paidBy] || 0) + exp.amount;
+      Object.entries(exp.splits).forEach(([n, amt]) => { bal[n] = (bal[n] || 0) - amt; });
+    });
+    return bal;
+  };
+
+  const calcSettlements = () => {
+    const bal = calcBalances();
+    const debtors   = Object.entries(bal).filter(([,v]) => v < -0.01).sort(([,a],[,b]) => a - b);
+    const creditors = Object.entries(bal).filter(([,v]) => v > 0.01).sort(([,a],[,b]) => b - a);
+    const dAmt = debtors.map(([,v])   => -v);
+    const cAmt = creditors.map(([,v]) =>  v);
     const txns = [];
-    const debtors = Object.entries(balances).filter(([, v]) => v < -0.01).sort(([, a], [, b]) => a - b);
-    const creditors = Object.entries(balances).filter(([, v]) => v > 0.01).sort(([, a], [, b]) => b - a);
     let di = 0, ci = 0;
-    const dAmt = debtors.map(([, v]) => -v);
-    const cAmt = creditors.map(([, v]) => v);
     while (di < debtors.length && ci < creditors.length) {
       const pay = Math.min(dAmt[di], cAmt[ci]);
-      txns.push({ from: debtors[di][0], to: creditors[ci][0], amount: Math.round(pay) });
+      txns.push({ key: `${debtors[di][0]}-${creditors[ci][0]}-${pay}`, from: debtors[di][0], to: creditors[ci][0], amount: Math.round(pay) });
       dAmt[di] -= pay; cAmt[ci] -= pay;
       if (dAmt[di] < 0.01) di++;
       if (cAmt[ci] < 0.01) ci++;
     }
-    return { total, share, txns };
+    return txns;
   };
+
+  const balances    = calcBalances();
+  const settlements = calcSettlements();
+  const grandTotal  = expenses.reduce((s, e) => s + e.amount, 0);
+
+  const tabBtn = (id, label) => (
+    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", background: tab === id ? "#7C3AED" : "rgba(255,255,255,0.07)", color: tab === id ? "#fff" : "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, letterSpacing: "0.03em" }}>{label}</button>
+  );
+
+  const Avatar = ({ name, size = 30 }) => (
+    <div style={{ width: size, height: size, borderRadius: "50%", background: colorOf(name), display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.4, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+      {name[0].toUpperCase()}
+    </div>
+  );
 
   return (
     <Modal onClose={onClose} emoji="💸" title="Bill Splitter" wide>
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <button onClick={() => setView("add")} style={{ ...btn(view === "add" ? "#7C3AED" : "rgba(255,255,255,0.08)"), flex: 1, padding: "10px" }}>Add Expenses</button>
-        <button onClick={() => setView("result")} style={{ ...btn(view === "result" ? "#7C3AED" : "rgba(255,255,255,0.08)"), flex: 1, padding: "10px" }}>See Settlement</button>
+
+      {/* ── People row ── */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 16 }}>
+        {people.map(p => (
+          <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 6, background: "rgba(255,255,255,0.07)", borderRadius: 100, padding: "4px 12px 4px 4px" }}>
+            <Avatar name={p.name} size={26} />
+            <span style={{ fontSize: 13, fontWeight: 600, color: "#fff" }}>{p.name}</span>
+            <button onClick={() => setPeople(prev => prev.filter(x => x.name !== p.name))} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.35)", cursor: "pointer", fontSize: 14, lineHeight: 1, padding: 0, marginLeft: 2 }}>×</button>
+          </div>
+        ))}
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          <input
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && addPerson()}
+            placeholder="+ Add person"
+            style={{ ...inp, width: 120, padding: "6px 10px", fontSize: 13 }}
+          />
+          {newName.trim() && (
+            <button onClick={addPerson} style={{ ...btn("#7C3AED"), width: "auto", padding: "7px 14px", fontSize: 13 }}>Add</button>
+          )}
+        </div>
       </div>
 
-      {view === "add" && (
-        <>
-          <div style={{ marginBottom: 16 }}>
-            <label style={label}>Add People</label>
-            <div style={{ display: "flex", gap: 8, marginBottom: 8 }}>
-              <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && addPerson()} placeholder="Name" style={{ ...inp, flex: 1 }} />
-              <button onClick={addPerson} style={{ ...btn("#7C3AED"), width: "auto", padding: "10px 16px" }}>+</button>
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-              {people.map(p => <span key={p} style={{ background: "rgba(124,58,237,0.2)", color: "#C4B5FD", padding: "4px 12px", borderRadius: 20, fontSize: 13 }}>{p}</span>)}
-            </div>
-          </div>
-          {people.length >= 2 && (
-            <div>
-              <label style={label}>Add an Expense</label>
-              <select value={paidBy} onChange={e => setPaidBy(e.target.value)} style={{ ...inp, marginBottom: 8 }}>
-                <option value="">Who paid?</option>
-                {people.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-              <input value={amount} onChange={e => setAmount(e.target.value)} placeholder="Amount (₹)" type="number" style={{ ...inp, marginBottom: 8 }} />
-              <input value={desc} onChange={e => setDesc(e.target.value)} placeholder="Description (optional)" style={{ ...inp, marginBottom: 10 }} />
-              <button onClick={addExpense} style={btn("#7C3AED")}>Add Expense</button>
-            </div>
-          )}
-          {expenses.map((e, i) => (
-            <div key={i} style={{ ...card, display: "flex", justifyContent: "space-between", marginTop: 8 }}>
-              <span>{e.paidBy} — {e.desc}</span>
-              <span style={{ fontWeight: 700, color: "#A78BFA" }}>₹{e.amount}</span>
+      {/* ── Stats bar ── */}
+      {expenses.length > 0 && (
+        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
+          {[
+            { label: "Total", value: `₹${grandTotal.toLocaleString()}` },
+            { label: "Expenses", value: expenses.length },
+            { label: "To settle", value: settlements.filter(t => !settled.has(t.key)).length },
+          ].map(s => (
+            <div key={s.label} style={{ flex: 1, background: "rgba(255,255,255,0.06)", borderRadius: 12, padding: "10px 8px", textAlign: "center" }}>
+              <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{s.value}</div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.45)", textTransform: "uppercase", letterSpacing: "0.08em", marginTop: 2 }}>{s.label}</div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* ── Tabs ── */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
+        {tabBtn("expenses", "Expenses")}
+        {tabBtn("balances", "Balances")}
+        {tabBtn("settle",   "Settle Up")}
+      </div>
+
+      {/* ── Expenses tab ── */}
+      {tab === "expenses" && (
+        <>
+          {expenses.length === 0
+            ? <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.35)", fontSize: 14 }}>No expenses yet — add one below</div>
+            : expenses.map(exp => (
+              <div key={exp.id} style={{ ...card, display: "flex", alignItems: "center", gap: 12, padding: "12px 14px" }}>
+                <span style={{ fontSize: 24, flexShrink: 0 }}>{catOf(exp.cat).emoji}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, color: "#fff", fontSize: 14, marginBottom: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{exp.desc}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", display: "flex", gap: 6, alignItems: "center" }}>
+                    <span style={{ width: 14, height: 14, borderRadius: "50%", background: colorOf(exp.paidBy), display: "inline-block", flexShrink: 0 }} />
+                    {exp.paidBy} paid · split {Object.keys(exp.splits).length > 1 ? `${Object.keys(exp.splits).length} ways` : "1 way"}
+                  </div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontWeight: 800, color: "#A78BFA", fontSize: 15 }}>₹{exp.amount.toLocaleString()}</div>
+                  <button onClick={() => deleteExpense(exp.id)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.3)", cursor: "pointer", fontSize: 12, padding: 0, marginTop: 2 }}>Delete</button>
+                </div>
+              </div>
+            ))
+          }
+
+          {/* ── Add Expense Form ── */}
+          {showForm && people.length >= 2 ? (
+            <div style={{ background: "rgba(124,58,237,0.1)", border: "1.5px solid rgba(124,58,237,0.3)", borderRadius: 16, padding: "16px", marginTop: 8 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#C4B5FD", marginBottom: 12 }}>New Expense</div>
+
+              {/* Category */}
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 12 }}>
+                {BS_CATS.map(c => (
+                  <button key={c.id} onClick={() => setFCat(c.id)} style={{ padding: "5px 10px", borderRadius: 20, border: `1.5px solid ${fCat === c.id ? "#7C3AED" : "rgba(255,255,255,0.12)"}`, background: fCat === c.id ? "rgba(124,58,237,0.3)" : "transparent", color: fCat === c.id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 12, cursor: "pointer", fontFamily: font }}>
+                    {c.emoji} {c.label}
+                  </button>
+                ))}
+              </div>
+
+              <input value={fDesc} onChange={e => setFDesc(e.target.value)} placeholder="Description" style={{ ...inp, marginBottom: 8 }} />
+              <input value={fAmount} onChange={e => setFAmount(e.target.value)} placeholder="Amount (₹)" type="number" style={{ ...inp, marginBottom: 8 }} />
+
+              {/* Paid by */}
+              <div style={{ marginBottom: 8 }}>
+                <label style={label}>Paid by</label>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {people.map(p => (
+                    <button key={p.name} onClick={() => setFPaidBy(p.name)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 12px 5px 5px", borderRadius: 100, border: `1.5px solid ${fPaidBy === p.name ? p.color : "rgba(255,255,255,0.15)"}`, background: fPaidBy === p.name ? `${p.color}30` : "transparent", cursor: "pointer", fontFamily: font }}>
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", background: p.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff" }}>{p.name[0].toUpperCase()}</div>
+                      <span style={{ fontSize: 13, color: "#fff", fontWeight: 600 }}>{p.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Split among */}
+              <div style={{ marginBottom: 8 }}>
+                <label style={label}>Split among</label>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                  {people.map(p => (
+                    <button key={p.name} onClick={() => toggleSplit(p.name)} style={{ display: "flex", alignItems: "center", gap: 5, padding: "5px 12px 5px 5px", borderRadius: 100, border: `1.5px solid ${fSplitAmong.includes(p.name) ? p.color : "rgba(255,255,255,0.12)"}`, background: fSplitAmong.includes(p.name) ? `${p.color}25` : "transparent", cursor: "pointer", fontFamily: font }}>
+                      <div style={{ width: 16, height: 16, borderRadius: "50%", background: fSplitAmong.includes(p.name) ? p.color : "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff" }}>{fSplitAmong.includes(p.name) ? "✓" : p.name[0].toUpperCase()}</div>
+                      <span style={{ fontSize: 12, color: "#fff" }}>{p.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Split type */}
+              <div style={{ marginBottom: 12 }}>
+                <label style={label}>Split type</label>
+                <div style={{ display: "flex", gap: 6 }}>
+                  {[["equal","Equally"],["amount","By amount"],["percent","By %"]].map(([id, lbl]) => (
+                    <button key={id} onClick={() => setFSplitType(id)} style={{ flex: 1, padding: "7px 4px", borderRadius: 9, border: "none", background: fSplitType === id ? "#7C3AED" : "rgba(255,255,255,0.08)", color: fSplitType === id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>{lbl}</button>
+                  ))}
+                </div>
+                {fSplitType !== "equal" && fSplitAmong.length > 0 && (
+                  <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+                    {fSplitAmong.map(n => (
+                      <div key={n} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ width: 20, height: 20, borderRadius: "50%", background: colorOf(n), display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff", flexShrink: 0 }}>{n[0].toUpperCase()}</div>
+                        <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", flex: 1 }}>{n}</span>
+                        <input value={fCustom[n] || ""} onChange={e => setFCustom(prev => ({ ...prev, [n]: e.target.value }))} placeholder={fSplitType === "percent" ? "%" : "₹"} type="number" style={{ ...inp, width: 80, padding: "6px 8px", fontSize: 13 }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: "flex", gap: 8 }}>
+                <button onClick={() => setShowForm(false)} style={{ ...btn("rgba(255,255,255,0.08)"), flex: 0.5 }}>Cancel</button>
+                <button onClick={addExpense} style={{ ...btn("#7C3AED"), flex: 1 }}>Add Expense</button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={people.length < 2 ? undefined : openForm}
+              style={{ ...btn(people.length < 2 ? "rgba(255,255,255,0.05)" : "#7C3AED"), marginTop: 8, opacity: people.length < 2 ? 0.5 : 1 }}
+            >
+              {people.length < 2 ? "Add at least 2 people first" : "+ Add Expense"}
+            </button>
+          )}
         </>
       )}
 
-      {view === "result" && people.length >= 2 && expenses.length > 0 && (() => {
-        const { total, share, txns } = calcSettlement();
-        return (
-          <>
-            <div style={{ textAlign: "center", marginBottom: 16 }}>
-              <div style={{ fontSize: 28, fontWeight: 800, color: "#fff" }}>₹{total}</div>
-              <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)" }}>total · ₹{Math.round(share)} per person</div>
-            </div>
-            {txns.length === 0
-              ? <div style={{ textAlign: "center", color: "#34D399", fontSize: 15 }}>✅ All settled!</div>
-              : txns.map((t, i) => (
-                <div key={i} style={{ ...card, display: "flex", justifyContent: "space-between" }}>
-                  <span><b style={{ color: "#F87171" }}>{t.from}</b> pays <b style={{ color: "#34D399" }}>{t.to}</b></span>
-                  <span style={{ fontWeight: 700, color: "#FBBF24" }}>₹{t.amount}</span>
+      {/* ── Balances tab ── */}
+      {tab === "balances" && (
+        <>
+          {people.length === 0
+            ? <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.35)", fontSize: 14 }}>Add people to see balances</div>
+            : people.map(p => {
+              const bal = balances[p.name] || 0;
+              const isPos = bal > 0.01;
+              const isNeg = bal < -0.01;
+              return (
+                <div key={p.name} style={{ ...card, display: "flex", alignItems: "center", gap: 12 }}>
+                  <Avatar name={p.name} size={38} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, color: "#fff", fontSize: 14 }}>{p.name}</div>
+                    <div style={{ fontSize: 12, color: isPos ? "#34D399" : isNeg ? "#F87171" : "rgba(255,255,255,0.4)", marginTop: 2 }}>
+                      {isPos ? `gets back ₹${Math.round(bal).toLocaleString()}` : isNeg ? `owes ₹${Math.round(-bal).toLocaleString()}` : "settled up ✓"}
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: isPos ? "#34D399" : isNeg ? "#F87171" : "rgba(255,255,255,0.3)" }}>
+                    {isPos ? "+" : ""}{Math.round(bal) === 0 ? "₹0" : `₹${Math.abs(Math.round(bal)).toLocaleString()}`}
+                  </div>
                 </div>
-              ))
-            }
-          </>
-        );
-      })()}
-      {view === "result" && (people.length < 2 || expenses.length === 0) && (
-        <p style={{ color: "rgba(255,255,255,0.5)", textAlign: "center", fontSize: 14 }}>Add at least 2 people and 1 expense first.</p>
+              );
+            })
+          }
+        </>
+      )}
+
+      {/* ── Settle Up tab ── */}
+      {tab === "settle" && (
+        <>
+          {settlements.length === 0
+            ? <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>🎉</div>
+                <div style={{ color: "#34D399", fontWeight: 700, fontSize: 15 }}>All settled up!</div>
+                <div style={{ color: "rgba(255,255,255,0.4)", fontSize: 13, marginTop: 4 }}>No payments needed</div>
+              </div>
+            : settlements.map(t => {
+              const done = settled.has(t.key);
+              return (
+                <div key={t.key} style={{ ...card, display: "flex", alignItems: "center", gap: 10, opacity: done ? 0.45 : 1 }}>
+                  <Avatar name={t.from} size={32} />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 14, color: "#fff" }}>
+                      <b style={{ color: colorOf(t.from) }}>{t.from}</b>
+                      <span style={{ color: "rgba(255,255,255,0.45)", margin: "0 6px" }}>pays</span>
+                      <b style={{ color: colorOf(t.to) }}>{t.to}</b>
+                    </div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#FBBF24", marginTop: 2 }}>₹{t.amount.toLocaleString()}</div>
+                  </div>
+                  <button
+                    onClick={() => setSettled(prev => {
+                      const s = new Set(prev);
+                      done ? s.delete(t.key) : s.add(t.key);
+                      return s;
+                    })}
+                    style={{ padding: "7px 14px", borderRadius: 20, border: `1.5px solid ${done ? "#34D399" : "rgba(255,255,255,0.2)"}`, background: done ? "rgba(52,211,153,0.15)" : "transparent", color: done ? "#34D399" : "rgba(255,255,255,0.5)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}
+                  >
+                    {done ? "✓ Done" : "Mark done"}
+                  </button>
+                </div>
+              );
+            })
+          }
+        </>
       )}
     </Modal>
   );
@@ -924,6 +1155,10 @@ const TOOLS = [
   { id: "photowall", section: "fun", emoji: "📸", title: "Photo Wall", desc: "Shared album · everyone uploads", color: "#DB2777" },
   { id: "countdown", section: "fun", emoji: "⏱️", title: "Countdown Timer", desc: "Visual countdown to party time", color: "#0891B2" },
   { id: "playlist", section: "fun", emoji: "🎵", title: "Playlist Builder", desc: "Everyone adds 2 songs", color: "#059669" },
+  { id: "wishwall", section: "fun", emoji: "⭐", title: "Wish Wall", desc: "Everyone adds wishes · react together", color: "#F59E0B", live: true },
+  { id: "moodmeter", section: "fun", emoji: "💫", title: "Mood Meter", desc: "Check the room's collective vibe", color: "#EC4899", live: true },
+  { id: "secretmsg", section: "fun", emoji: "🤫", title: "Secret Messages", desc: "Anonymous notes for anyone in the room", color: "#6366F1", live: true },
+  { id: "lovenotes", section: "fun", emoji: "💌", title: "Love Notes Wall", desc: "Leave sweet notes for your crew", color: "#F43F5E", live: true },
   // Games
   { id: "truthordare", section: "games", emoji: "🎯", title: "Truth or Dare", desc: "Indian youth decks — 25 truths + 25 dares", color: "#DC2626" },
   { id: "neverhavei", section: "games", emoji: "🙅", title: "Never Have I Ever", desc: "30 statements · score tracker", color: "#059669" },
@@ -1837,11 +2072,301 @@ function SeatingChartModal({ onClose }) {
   );
 }
 
+// ── Room-based new tools ──────────────────────────────────────────────────────
+
+function WishWall({ onClose, room, myName, gameState, sendAction, sendEffect }) {
+  const [text, setText] = useState('');
+  const items = gameState?.items || [];
+
+  const add = () => {
+    if (!text.trim()) return;
+    sendAction?.('add', { text: text.trim(), emoji: '⭐' });
+    sendEffect?.('wish', { text: text.trim() });
+    setText('');
+  };
+
+  const react = (id, emoji) => sendAction?.('react', { id, emoji });
+
+  return (
+    <Modal onClose={onClose} emoji="⭐" title="Wish Wall">
+      {!room && <div style={{ background: "rgba(245,158,11,0.1)", border: "1.5px solid rgba(245,158,11,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FCD34D", marginBottom: 14 }}>Join or host a room for live sharing</div>}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Add your wish…" style={{ ...inp, flex: 1 }} />
+        <button onClick={add} style={{ ...btn("#F59E0B"), width: "auto", padding: "10px 16px" }}>⭐</button>
+      </div>
+      {items.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No wishes yet — add one!</div>
+      ) : items.map(it => (
+        <div key={it.id} style={{ ...card, display: "flex", gap: 10, alignItems: "flex-start" }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5 }}>{it.text}</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 4 }}>— {it.by}</div>
+            <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+              {["❤️","🔥","😂","👏"].map(e => (
+                <button key={e} onClick={() => react(it.id, e)} style={{ padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", cursor: "pointer", fontSize: 12, fontFamily: font }}>
+                  {e} {it.reactions?.[e] || 0}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </Modal>
+  );
+}
+
+function MoodMeter({ onClose, room, myName, gameState, sendAction }) {
+  const moods = gameState?.moods || {};
+  const MOOD_OPTIONS = [
+    { mood: "🔥", label: "On Fire", color: "#EF4444" },
+    { mood: "😄", label: "Happy",   color: "#22C55E" },
+    { mood: "😎", label: "Chill",   color: "#3B82F6" },
+    { mood: "🤔", label: "Unsure",  color: "#F59E0B" },
+    { mood: "😴", label: "Sleepy",  color: "#8B5CF6" },
+  ];
+  const myMood = moods[myName];
+  const set = (mood, lbl) => sendAction?.('set-mood', { mood, label: lbl });
+
+  return (
+    <Modal onClose={onClose} emoji="💫" title="Mood Meter">
+      {!room && <div style={{ background: "rgba(236,72,153,0.1)", border: "1.5px solid rgba(236,72,153,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#F9A8D4", marginBottom: 14 }}>Join a room to share your mood live</div>}
+      <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginBottom: 16 }}>How are you feeling right now?</p>
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 24 }}>
+        {MOOD_OPTIONS.map(({ mood, label, color }) => (
+          <button key={mood} onClick={() => set(mood, label)} style={{ flex: 1, padding: "16px 4px", borderRadius: 14, border: `2px solid ${myMood?.mood === mood ? color : "rgba(255,255,255,0.1)"}`, background: myMood?.mood === mood ? `${color}22` : "rgba(255,255,255,0.04)", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <span style={{ fontSize: 24 }}>{mood}</span>
+            <span style={{ fontSize: 10, color: myMood?.mood === mood ? color : "rgba(255,255,255,0.4)", fontWeight: 700, fontFamily: font }}>{label}</span>
+          </button>
+        ))}
+      </div>
+      {Object.keys(moods).length > 0 && (
+        <div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 10 }}>Room Vibes</div>
+          {Object.entries(moods).map(([name, m]) => (
+            <div key={name} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 10, marginBottom: 6 }}>
+              <span style={{ fontSize: 20 }}>{m.mood}</span>
+              <span style={{ flex: 1, fontSize: 14, color: "#fff", fontWeight: name === myName ? 700 : 400, fontFamily: font }}>{name}</span>
+              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", fontFamily: font }}>{m.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </Modal>
+  );
+}
+
+function SecretMessages({ onClose, room, myName, players, gameState, sendAction }) {
+  const [text, setText] = useState('');
+  const [to, setTo] = useState('everyone');
+  const msgs = gameState?.messages || [];
+
+  const send = () => {
+    if (!text.trim()) return;
+    sendAction?.('send', { text: text.trim(), to });
+    setText('');
+  };
+
+  return (
+    <Modal onClose={onClose} emoji="🤫" title="Secret Messages">
+      {!room && <div style={{ background: "rgba(99,102,241,0.1)", border: "1.5px solid rgba(99,102,241,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#A5B4FC", marginBottom: 14 }}>Join a room to send live secret messages</div>}
+      <div style={{ marginBottom: 12 }}>
+        <label style={label}>Send to</label>
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {["everyone", ...(players || [])].map(p => (
+            <button key={p} onClick={() => setTo(p)} style={{ padding: "5px 12px", borderRadius: 100, border: `1.5px solid ${to === p ? "#6366F1" : "rgba(255,255,255,0.12)"}`, background: to === p ? "rgba(99,102,241,0.25)" : "transparent", color: to === p ? "#fff" : "rgba(255,255,255,0.45)", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: font }}>
+              {p === "everyone" ? "🌐 Everyone" : p}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && send()} placeholder="Your secret message…" style={{ ...inp, flex: 1 }} />
+        <button onClick={send} style={{ ...btn("#6366F1"), width: "auto", padding: "10px 16px" }}>Send</button>
+      </div>
+      {msgs.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No messages yet 🤫</div>
+      ) : msgs.map(m => (
+        <div key={m.id} style={{ ...card }}>
+          <div style={{ fontSize: 11, color: "#A5B4FC", fontWeight: 700, marginBottom: 4 }}>→ {m.to}</div>
+          <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.5, fontStyle: "italic" }}>"{m.text}"</div>
+        </div>
+      ))}
+    </Modal>
+  );
+}
+
+function LoveNotes({ onClose, room, myName, gameState, sendAction, sendEffect }) {
+  const [text, setText] = useState('');
+  const items = gameState?.items || [];
+
+  const add = () => {
+    if (!text.trim()) return;
+    sendAction?.('add', { text: text.trim(), emoji: '💌' });
+    sendEffect?.('love', { text: text.trim() });
+    setText('');
+  };
+
+  const react = (id, emoji) => sendAction?.('react', { id, emoji });
+
+  return (
+    <Modal onClose={onClose} emoji="💌" title="Love Notes Wall">
+      {!room && <div style={{ background: "rgba(244,63,94,0.1)", border: "1.5px solid rgba(244,63,94,0.3)", borderRadius: 12, padding: "10px 14px", fontSize: 13, color: "#FDA4AF", marginBottom: 14 }}>Join a room to share live love notes</div>}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <input value={text} onChange={e => setText(e.target.value)} onKeyDown={e => e.key === "Enter" && add()} placeholder="Write a sweet note…" style={{ ...inp, flex: 1 }} />
+        <button onClick={add} style={{ ...btn("#F43F5E"), width: "auto", padding: "10px 16px" }}>💌</button>
+      </div>
+      {items.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "32px 0", color: "rgba(255,255,255,0.3)", fontSize: 14 }}>No notes yet — be the first!</div>
+      ) : items.map(it => (
+        <div key={it.id} style={{ ...card, background: "rgba(244,63,94,0.07)", border: "1.5px solid rgba(244,63,94,0.2)" }}>
+          <div style={{ fontSize: 14, color: "#fff", lineHeight: 1.6, marginBottom: 4 }}>{it.text}</div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginBottom: 8 }}>— {it.by}</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+            {["❤️","😭","🥹","💕"].map(e => (
+              <button key={e} onClick={() => react(it.id, e)} style={{ padding: "3px 8px", borderRadius: 100, border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", cursor: "pointer", fontSize: 12, fontFamily: font }}>
+                {e} {it.reactions?.[e] || 0}
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+    </Modal>
+  );
+}
+
+// ── Room lobby modal ──────────────────────────────────────────────────────────
+function RoomLobbyModal({ onClose, onCreate, onJoin, error }) {
+  const [tab, setTab] = useState('join'); // 'host' | 'join'
+  const [name, setName] = useState('');
+  const [partyName, setPartyName] = useState('');
+  const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
+  const tabBtn = (id, lbl) => (
+    <button onClick={() => setTab(id)} style={{ flex: 1, padding: "9px 4px", borderRadius: 10, border: "none", background: tab === id ? "#7C3AED" : "rgba(255,255,255,0.07)", color: tab === id ? "#fff" : "rgba(255,255,255,0.5)", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: font }}>{lbl}</button>
+  );
+  const handleCreate = async () => {
+    if (!name.trim()) return;
+    setLoading(true);
+    const res = await onCreate({ partyName: partyName.trim() || `${name}'s Party`, hostName: name.trim(), occasionType: "house-party" });
+    setLoading(false);
+    if (res?.ok) onClose();
+  };
+  const handleJoin = async () => {
+    if (!name.trim() || code.length < 4) return;
+    setLoading(true);
+    const res = await onJoin({ code: code.trim().toUpperCase(), name: name.trim() });
+    setLoading(false);
+    if (res?.ok) onClose();
+  };
+  return (
+    <Modal onClose={onClose} emoji="🎉" title="Party Room">
+      {error && <div style={{ background: "rgba(239,68,68,0.12)", border: "1.5px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#FCA5A5", marginBottom: 14 }}>{error}</div>}
+      <div style={{ display: "flex", gap: 6, marginBottom: 20 }}>{tabBtn("join", "Join a Room")}{tabBtn("host", "Host a Room")}</div>
+
+      {tab === "host" ? (
+        <>
+          <div style={{ marginBottom: 10 }}><label style={label}>Your Name</label><input value={name} onChange={e => setName(e.target.value)} placeholder="What should we call you?" style={inp} /></div>
+          <div style={{ marginBottom: 16 }}><label style={label}>Party Name (optional)</label><input value={partyName} onChange={e => setPartyName(e.target.value)} placeholder="Saturday Night Out" style={inp} /></div>
+          <button onClick={handleCreate} disabled={!name.trim() || loading} style={{ ...btn("#7C3AED"), opacity: !name.trim() || loading ? 0.5 : 1 }}>{loading ? "Creating…" : "🎉 Create Room"}</button>
+          <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", marginTop: 10, textAlign: "center" }}>You can host up to 5 rooms per day. Share the code with friends to join.</p>
+        </>
+      ) : (
+        <>
+          <div style={{ marginBottom: 10 }}><label style={label}>Your Name</label><input value={name} onChange={e => setName(e.target.value)} placeholder="Your name" style={inp} /></div>
+          <div style={{ marginBottom: 16 }}><label style={label}>Room Code</label><input value={code} onChange={e => setCode(e.target.value.toUpperCase())} placeholder="ABC123" maxLength={6} style={{ ...inp, textTransform: "uppercase", letterSpacing: "0.15em", fontSize: 18, fontWeight: 800 }} /></div>
+          <button onClick={handleJoin} disabled={!name.trim() || code.length < 4 || loading} style={{ ...btn("#059669"), opacity: !name.trim() || code.length < 4 || loading ? 0.5 : 1 }}>{loading ? "Joining…" : "🚀 Join Room"}</button>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+// ── Room banner ───────────────────────────────────────────────────────────────
+function RoomBanner({ room, players, isHost, myName, onClose, onLeave }) {
+  const [copied, setCopied] = useState(false);
+  const copyCode = () => {
+    navigator.clipboard?.writeText(room.code).catch(() => {});
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+  return (
+    <div style={{ margin: "0 16px 16px", background: "rgba(124,58,237,0.12)", border: "1.5px solid rgba(124,58,237,0.35)", borderRadius: 16, padding: "14px 16px", fontFamily: font }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#A78BFA", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 2 }}>Live Room · {room.partyName}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 20, fontWeight: 900, color: "#fff", letterSpacing: "0.12em" }}>{room.code}</span>
+            <button onClick={copyCode} style={{ background: "rgba(255,255,255,0.1)", border: "none", borderRadius: 6, padding: "4px 10px", color: copied ? "#34D399" : "#A78BFA", fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: font }}>
+              {copied ? "✓ Copied" : "Copy"}
+            </button>
+          </div>
+        </div>
+        {isHost ? (
+          <button onClick={onClose} style={{ padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.1)", color: "#FCA5A5", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>Close Room</button>
+        ) : (
+          <button onClick={onLeave} style={{ padding: "6px 14px", borderRadius: 100, border: "1.5px solid rgba(255,255,255,0.2)", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.6)", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: font, flexShrink: 0 }}>Leave</button>
+        )}
+      </div>
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+        {players.map(p => (
+          <div key={p} style={{ display: "flex", alignItems: "center", gap: 5, background: p === myName ? "rgba(124,58,237,0.35)" : "rgba(255,255,255,0.08)", borderRadius: 100, padding: "3px 10px 3px 4px" }}>
+            <div style={{ width: 20, height: 20, borderRadius: "50%", background: p === room.hostName ? "#FBBF24" : "#7C3AED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#fff" }}>{p[0]?.toUpperCase()}</div>
+            <span style={{ fontSize: 12, color: "#fff", fontWeight: p === myName ? 700 : 400 }}>{p}{p === room.hostName ? " 👑" : ""}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Effect flash overlay ──────────────────────────────────────────────────────
+const EFFECT_CONFIGS = {
+  "truth-done":  { emoji: "🎤", text: "Truth Told!", color: "#60A5FA" },
+  "dare-done":   { emoji: "🔥", text: "Dare Done!", color: "#F87171" },
+  "bingo":       { emoji: "🎱", text: "BINGO!", color: "#FBBF24" },
+  "wish":        { emoji: "⭐", text: "Wish Added!", color: "#FCD34D" },
+  "love":        { emoji: "💌", text: "Love Sent!", color: "#FDA4AF" },
+  "done":        { emoji: "✅", text: "Done!", color: "#34D399" },
+  "spin":        { emoji: "🍾", text: "Spin!", color: "#A78BFA" },
+  default:       { emoji: "🎉", text: "Let's go!", color: "#FBBF24" },
+};
+
+function EffectFlash({ effect }) {
+  if (!effect) return null;
+  const cfg = EFFECT_CONFIGS[effect.type] || EFFECT_CONFIGS.default;
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 2000, display: "flex", alignItems: "center", justifyContent: "center", pointerEvents: "none", background: `${cfg.color}18` }}>
+      <div style={{ textAlign: "center", animation: "ef-pop 0.35s cubic-bezier(0.34,1.56,0.64,1) both" }}>
+        <div style={{ fontSize: 72 }}>{cfg.emoji}</div>
+        <div style={{ fontSize: 28, fontWeight: 900, color: cfg.color, fontFamily: font, marginTop: 8, textShadow: `0 0 40px ${cfg.color}` }}>{cfg.text}</div>
+        {effect.by && <div style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", marginTop: 6, fontFamily: font }}>{effect.by}</div>}
+      </div>
+      <style>{`@keyframes ef-pop { from { transform: scale(0.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }`}</style>
+    </div>
+  );
+}
+
 export default function HousePartyHub() {
-  const [open, setOpen] = useState(null);
+  const [open, setOpen]               = useState(null);
   const [hoveredTool, setHoveredTool] = useState(null);
-  const [glare, setGlare] = useState({});
+  const [glare, setGlare]             = useState({});
+  const [showRoomLobby, setShowRoomLobby] = useState(false);
   const navigate = useNavigate();
+
+  const {
+    room, players, gameState, currentGame, myName, isHost, effect, error,
+    createRoom, joinRoom, closeRoom, leaveRoom, sendAction, sendEffect, clearError,
+  } = usePartyRoom();
+
+  // When a live game tool is opened in a room, push game state to room
+  const openTool = (id) => {
+    const tool = TOOLS.find(t => t.id === id);
+    if (tool?.live && room) {
+      // Sync game to room (host only sets game; members just open local view)
+      if (isHost) sendAction('next', {}).catch?.(() => {});
+    }
+    setOpen(id);
+  };
 
   const handleCardMouseMove = (e, id) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -1859,24 +2384,33 @@ export default function HousePartyHub() {
     setGlare(prev => { const n = { ...prev }; delete n[id]; return n; });
   };
 
+  const close = () => setOpen(null);
+
+  // Shared room props for live tools
+  const liveProps = { room, myName, players, gameState, sendAction, sendEffect };
+
   const renderModal = () => {
     switch (open) {
-      case "truthordare": return <TruthOrDare onClose={() => setOpen(null)} />;
-      case "neverhavei": return <NeverHaveI onClose={() => setOpen(null)} />;
-      case "wouldyou": return <WouldYouRather onClose={() => setOpen(null)} />;
-      case "hottakes": return <HotTakes onClose={() => setOpen(null)} />;
-      case "spin": return <SpinBottle onClose={() => setOpen(null)} />;
-      case "charades": return <Charades onClose={() => setOpen(null)} />;
-      case "bingo": return <Bingo onClose={() => setOpen(null)} />;
-      case "mostlikelyto": return <MostLikelyTo onClose={() => setOpen(null)} />;
-      case "checklist": return <Checklist onClose={() => setOpen(null)} />;
-      case "bills": return <BillSplitter onClose={() => setOpen(null)} />;
-      case "theme": return <ThemePicker onClose={() => setOpen(null)} />;
-      case "countdown": return <Countdown onClose={() => setOpen(null)} />;
-      case "playlist": return <PlaylistBuilder onClose={() => setOpen(null)} />;
-      case "reportcard": return <PartyReportCard onClose={() => setOpen(null)} />;
+      case "truthordare": return <TruthOrDare onClose={close} />;
+      case "neverhavei": return <NeverHaveI onClose={close} />;
+      case "wouldyou": return <WouldYouRather onClose={close} />;
+      case "hottakes": return <HotTakes onClose={close} />;
+      case "spin": return <SpinBottle onClose={close} />;
+      case "charades": return <Charades onClose={close} />;
+      case "bingo": return <Bingo onClose={close} />;
+      case "mostlikelyto": return <MostLikelyTo onClose={close} />;
+      case "checklist": return <Checklist onClose={close} />;
+      case "bills": return <BillSplitter onClose={close} />;
+      case "theme": return <ThemePicker onClose={close} />;
+      case "countdown": return <Countdown onClose={close} />;
+      case "playlist": return <PlaylistBuilder onClose={close} />;
+      case "reportcard": return <PartyReportCard onClose={close} />;
+      case "wishwall":   return <WishWall   onClose={close} {...liveProps} />;
+      case "moodmeter":  return <MoodMeter  onClose={close} {...liveProps} />;
+      case "secretmsg":  return <SecretMessages onClose={close} {...liveProps} />;
+      case "lovenotes":  return <LoveNotes  onClose={close} {...liveProps} />;
       case "potluck": return (
-        <ShareableTool onClose={() => setOpen(null)} emoji="🥘" title="Potluck Planner" description="Create a potluck room. Share the link — friends claim what they'll bring."
+        <ShareableTool onClose={close} emoji="🥘" title="Potluck Planner" description="Create a potluck room. Share the link — friends claim what they'll bring."
           path="/house-party/potluck"
           fields={[
             { key: "partyName", label: "Party Name", placeholder: "Aman's Birthday Bash", required: true },
@@ -1886,7 +2420,7 @@ export default function HousePartyHub() {
         />
       );
       case "invite": return (
-        <ShareableTool onClose={() => setOpen(null)} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly."
+        <ShareableTool onClose={close} emoji="📨" title="Digital Invite & RSVP" description="Create an invite. Share the link — guests RSVP instantly."
           path="/house-party/invite"
           fields={[
             { key: "partyName", label: "Party Name", placeholder: "Saturday Night Out", required: true },
@@ -1899,24 +2433,24 @@ export default function HousePartyHub() {
         />
       );
       case "photowall": return (
-        <ShareableTool onClose={() => setOpen(null)} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos."
+        <ShareableTool onClose={close} emoji="📸" title="Shared Photo Wall" description="Create a photo wall. Share the link — everyone uploads their photos."
           path="/house-party/photo-wall"
           fields={[
             { key: "partyName", label: "Party Name", placeholder: "Saturday Night 🎉", required: true },
           ]}
         />
       );
-      case "guestlist":   return <GuestListModal onClose={() => setOpen(null)} />;
-      case "menu":        return <MenuPlannerModal onClose={() => setOpen(null)} />;
-      case "seating":     return <SeatingChartModal onClose={() => setOpen(null)} />;
-      case "daytimeline": return <DayTimelineModal onClose={() => setOpen(null)} />;
-      case "venue":       return <VenueNotesModal onClose={() => setOpen(null)} />;
-      case "twotruthslie": return <TwoTruthsLieGame onClose={() => setOpen(null)} />;
-      case "hotseat":      return <HotSeatGame onClose={() => setOpen(null)} />;
-      case "darewheel":    return <DareWheelGame onClose={() => setOpen(null)} />;
-      case "wordwolf":     return <WordWolfGame onClose={() => setOpen(null)} />;
-      case "categoryblitz": return <CategoryBlitzGame onClose={() => setOpen(null)} />;
-      case "roastbattle":  return <RoastBattleGame onClose={() => setOpen(null)} />;
+      case "guestlist":   return <GuestListModal onClose={close} />;
+      case "menu":        return <MenuPlannerModal onClose={close} />;
+      case "seating":     return <SeatingChartModal onClose={close} />;
+      case "daytimeline": return <DayTimelineModal onClose={close} />;
+      case "venue":       return <VenueNotesModal onClose={close} />;
+      case "twotruthslie": return <TwoTruthsLieGame onClose={close} />;
+      case "hotseat":      return <HotSeatGame onClose={close} />;
+      case "darewheel":    return <DareWheelGame onClose={close} />;
+      case "wordwolf":     return <WordWolfGame onClose={close} />;
+      case "categoryblitz": return <CategoryBlitzGame onClose={close} />;
+      case "roastbattle":  return <RoastBattleGame onClose={close} />;
       default: return null;
     }
   };
@@ -1993,9 +2527,28 @@ export default function HousePartyHub() {
         <p style={{
           position: "relative",
           fontSize: 14, color: "rgba(255,255,255,0.45)",
-          margin: "0 0 36px", lineHeight: 1.55,
+          margin: "0 0 20px", lineHeight: 1.55,
         }}>The app everyone opens during the party</p>
+
+        {/* Room CTA */}
+        {!room ? (
+          <button onClick={() => setShowRoomLobby(true)} style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 22px", borderRadius: 100, background: "linear-gradient(135deg, #7C3AED, #2563EB)", border: "none", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: font, boxShadow: "0 4px 20px rgba(124,58,237,0.4)", marginBottom: 28 }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#A78BFA", boxShadow: "0 0 6px rgba(167,139,250,0.8)", flexShrink: 0 }} />
+            Host or Join a Room
+          </button>
+        ) : (
+          <div style={{ marginBottom: 20 }} />
+        )}
       </div>
+
+      {/* ── Room banner ── */}
+      {room && (
+        <RoomBanner
+          room={room} players={players} isHost={isHost} myName={myName}
+          onClose={async () => { await closeRoom(); }}
+          onLeave={async () => { await leaveRoom(); }}
+        />
+      )}
 
       {/* ── Sections ── */}
       <div style={{ maxWidth: 800, margin: "0 auto", padding: "0 16px calc(80px + env(safe-area-inset-bottom, 0px))" }}>
@@ -2018,7 +2571,7 @@ export default function HousePartyHub() {
 
               {/* Polygon web (triangle/square/pentagon/…/octagon) or plain grid for 1-2 */}
               {tools.length >= 3 ? (
-                <PolygonGrid tools={tools} onOpen={setOpen} />
+                <PolygonGrid tools={tools} onOpen={openTool} />
               ) : (
                 <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
                   {tools.map((t, ti) => {
@@ -2031,7 +2584,7 @@ export default function HousePartyHub() {
                       <div
                         key={t.id}
                         data-hp-card
-                        onClick={() => setOpen(t.id)}
+                        onClick={() => openTool(t.id)}
                         onMouseEnter={() => setHoveredTool(t.id)}
                         onMouseMove={(e) => handleCardMouseMove(e, t.id)}
                         onMouseLeave={() => handleCardMouseLeave(t.id)}
@@ -2088,6 +2641,17 @@ export default function HousePartyHub() {
       </div>
 
       {renderModal()}
+
+      {showRoomLobby && (
+        <RoomLobbyModal
+          onClose={() => { setShowRoomLobby(false); clearError(); }}
+          onCreate={createRoom}
+          onJoin={joinRoom}
+          error={error}
+        />
+      )}
+
+      <EffectFlash effect={effect} />
     </div>
   );
 }
