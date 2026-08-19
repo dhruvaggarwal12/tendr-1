@@ -869,12 +869,28 @@ const Home = () => {
           overflow: "hidden",
         }}
       >
+        {/* Mobile-only background photo */}
+        <img
+          className="hero-mobile-photo-bg"
+          src="/hero-mobile-bg.png"
+          alt=""
+          aria-hidden
+          style={{ display: "none", position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top", zIndex: 0 }}
+        />
+        {/* Dark overlay so cream text stays readable over the bright photo */}
+        <div
+          className="hero-mobile-photo-overlay"
+          aria-hidden
+          style={{ display: "none", position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(10,5,0,0.72) 0%, rgba(10,5,0,0.48) 45%, rgba(10,5,0,0.78) 100%)", zIndex: 1 }}
+        />
         <div
           style={{
             width: "100%",
             display: "flex",
             alignItems: "stretch",
             flex: 1,
+            position: "relative",
+            zIndex: 2,
           }}
           className="hero-split"
         >
@@ -1241,7 +1257,9 @@ const Home = () => {
         }
         .hero-desktop-search { display: flex !important; }
         @media (max-width: 900px) {
-          .hero-section-wrap { height: auto !important; min-height: 100dvh !important; }
+          .hero-mobile-photo-bg { display: block !important; }
+          .hero-mobile-photo-overlay { display: block !important; }
+          .hero-section-wrap { height: auto !important; min-height: 100dvh !important; position: relative !important; }
           .hero-split { flex-direction: column !important; }
           .hero-split > div:first-child {
             flex: unset !important;
