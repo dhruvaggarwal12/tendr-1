@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import HamburgerNav from "../../components/HamburgerNav";
@@ -8,6 +8,14 @@ import { useChatOverlay } from "../../context/ChatContext";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
+
+const GH_HERO_FALLBACK = [
+  { url: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80", name: "Gift Box" },
+  { url: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=900&q=80", name: "Hamper" },
+  { url: "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=900&q=80", name: "Corporate Gift" },
+  { url: "https://images.unsplash.com/photo-1607082349566-187342175e2f?w=900&q=80", name: "Premium Hamper" },
+  { url: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=900&q=80", name: "Sweet Box" },
+];
 
 const GiftHampersCakes = () => {
   const navigate = useNavigate();
@@ -35,6 +43,7 @@ const GiftHampersCakes = () => {
   const [showGiftTypeFilter, setShowGiftTypeFilter] = useState(false);
   const [similarTo, setSimilarTo] = useState(null);
   const [similarSheetOpen, setSimilarSheetOpen] = useState(false);
+  const [heroIdx, setHeroIdx] = useState(0);
 
   const filteredSamples = samples.filter(s => {
     if (selectedCategories.length > 0) {
@@ -80,6 +89,14 @@ const GiftHampersCakes = () => {
       .then(d => { setSamples(d.samples || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  const heroPhotos = samples.length > 0 ? samples : GH_HERO_FALLBACK;
+
+  useEffect(() => {
+    if (heroPhotos.length <= 1) return;
+    const t = setInterval(() => setHeroIdx(i => (i + 1) % heroPhotos.length), 4000);
+    return () => clearInterval(t);
+  }, [heroPhotos.length]);
 
   const preview = previewIdx !== null ? filteredSamples[previewIdx] : null;
   const closePreview = useCallback(() => setPreviewIdx(null), []);
@@ -203,6 +220,14 @@ const GiftHampersCakes = () => {
           .gh-island { animation-name: ghIslandInMobile !important; }
           .gh-photos-grid { padding-bottom: calc(160px + env(safe-area-inset-bottom, 0px)) !important; }
         }
+        .gh-hero-split { display: flex; align-items: stretch; min-height: 420px; }
+        .gh-hero-carousel-col { flex: 0 0 42%; position: relative; overflow: hidden; }
+        @keyframes ghHeroFade { from{opacity:0;transform:scale(1.04)} to{opacity:1;transform:scale(1)} }
+        .gh-hero-carousel-col img { width:100%; height:100%; object-fit:cover; animation: ghHeroFade 0.7s ease forwards; }
+        .gh-hero-dots { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:2; }
+        .gh-hero-dots span { width:6px; height:6px; border-radius:50%; background:rgba(255,248,236,0.35); transition:background 0.3s,width 0.3s; }
+        .gh-hero-dots span.active { background:#CCAB4A; width:18px; border-radius:4px; }
+        @media(max-width:900px){ .gh-hero-carousel-col { display:none !important; } .gh-hero-split { min-height:unset; } }
       `}</style>
 
       {/* ── Hero ── */}
@@ -210,42 +235,65 @@ const GiftHampersCakes = () => {
         {/* Ambient orbs */}
         <div aria-hidden style={{ position:"absolute", top:"-28%", right:"-10%", width:520, height:520, borderRadius:"50%", background:"radial-gradient(circle, rgba(196,122,46,0.22) 0%, rgba(196,122,46,0.07) 42%, transparent 70%)", pointerEvents:"none", animation:"ghOrbBreath 7s ease-in-out infinite" }} />
         <div aria-hidden style={{ position:"absolute", bottom:"-22%", left:"-8%", width:380, height:380, borderRadius:"50%", background:"radial-gradient(circle, rgba(204,171,74,0.14) 0%, transparent 65%)", pointerEvents:"none" }} />
-        <div aria-hidden style={{ position:"absolute", top:"55%", left:"48%", transform:"translate(-50%,-50%)", width:560, height:280, borderRadius:"50%", background:"radial-gradient(ellipse, rgba(196,122,46,0.06) 0%, transparent 70%)", pointerEvents:"none" }} />
         {/* Crosshatch grid */}
         <div aria-hidden style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(204,171,74,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(204,171,74,0.04) 1px, transparent 1px)", backgroundSize:"44px 44px", pointerEvents:"none" }} />
         {/* Top hairline */}
         <div aria-hidden style={{ position:"absolute", top:0, left:"12%", right:"12%", height:1, background:"linear-gradient(90deg, transparent, rgba(196,122,46,0.38), transparent)", pointerEvents:"none" }} />
-        {/* Lettermark watermark */}
-        <div aria-hidden style={{ position:"absolute", top:"-6%", right:"-7%", fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"min(58vw,500px)", fontWeight:700, fontStyle:"italic", color:"rgba(196,122,46,0.036)", lineHeight:1, pointerEvents:"none", userSelect:"none", WebkitUserSelect:"none", zIndex:0 }}>H</div>
 
-        <div className="gh-hero-inner" style={{ padding:"64px 24px 56px", maxWidth:680, margin:"0 auto", textAlign:"center", position:"relative", zIndex:1 }}>
-          {/* Live badge */}
-          <div style={{ display:"inline-flex", alignItems:"center", gap:7, background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.22)", borderRadius:100, padding:"5px 14px 5px 10px", marginBottom:20 }}>
-            <div style={{ width:6, height:6, borderRadius:"50%", background:"#4ADE80", boxShadow:"0 0 0 2px rgba(74,222,128,0.22)", animation:"ghPulse 2s infinite", flexShrink:0 }} />
-            <span style={{ fontSize:10, fontWeight:700, color:"#CCAB4A", letterSpacing:"0.14em", textTransform:"uppercase", fontFamily:font }}>Available now · Delhi NCR</span>
+        <div className="gh-hero-split" style={{ position:"relative", zIndex:1 }}>
+          {/* Left: text */}
+          <div className="gh-hero-inner" style={{ flex:"1 1 58%", padding:"64px 48px 56px 48px", display:"flex", flexDirection:"column", justifyContent:"center", minWidth:0 }}>
+            {/* Live badge */}
+            <div style={{ display:"inline-flex", alignItems:"center", gap:7, background:"rgba(196,122,46,0.1)", border:"1px solid rgba(196,122,46,0.22)", borderRadius:100, padding:"5px 14px 5px 10px", marginBottom:20, width:"fit-content" }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:"#4ADE80", boxShadow:"0 0 0 2px rgba(74,222,128,0.22)", animation:"ghPulse 2s infinite", flexShrink:0 }} />
+              <span style={{ fontSize:10, fontWeight:700, color:"#CCAB4A", letterSpacing:"0.14em", textTransform:"uppercase", fontFamily:font }}>Available now · Delhi NCR</span>
+            </div>
+
+            <h1 className="gh-h1" style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(2.2rem,4vw,3.4rem)", fontWeight:300, fontStyle:"italic", color:"#FFF8EC", margin:"0 0 8px", lineHeight:1.2, letterSpacing:"-0.01em" }}>
+              Gift Hampers
+            </h1>
+            <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(1rem,1.8vw,1.35rem)", fontWeight:300, color:"rgba(255,248,236,0.45)", margin:"0 0 22px", letterSpacing:"0.03em" }}>
+              Curated for every occasion
+            </div>
+            <p style={{ fontSize:15, color:"rgba(255,248,236,0.62)", margin:"0 0 34px", lineHeight:1.78, maxWidth:440, fontFamily:font }}>
+              Browse our sample collection, pick your favourites, and our team will curate the perfect hamper — custom packaging, personalised notes, delivery across Delhi NCR.
+            </p>
+
+            <div style={{ display:"flex", gap:12, flexWrap:"wrap" }}>
+              <button
+                className="gh-cta-btn"
+                onClick={goToChat}
+                style={{ display:"inline-flex", alignItems:"center", gap:9, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:700, padding:"14px 30px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 8px 28px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.2s, transform 0.2s" }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                Talk to Our Team{selectedPhotos.length > 0 ? ` · ${selectedPhotos.length} selected` : ""}
+              </button>
+            </div>
+            <p style={{ fontSize:11, color:"rgba(255,248,236,0.28)", marginTop:14, fontFamily:font, letterSpacing:"0.04em" }}>Replies within 2 hours · Custom orders welcome</p>
           </div>
 
-          <h1 className="gh-h1" style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(2.2rem,5.5vw,3.4rem)", fontWeight:300, fontStyle:"italic", color:"#FFF8EC", margin:"0 0 8px", lineHeight:1.2, letterSpacing:"-0.01em" }}>
-            Gift Hampers
-          </h1>
-          <div style={{ fontFamily:"'Cormorant Garamond',Georgia,serif", fontSize:"clamp(1rem,2.2vw,1.35rem)", fontWeight:300, color:"rgba(255,248,236,0.45)", margin:"0 0 22px", letterSpacing:"0.03em" }}>
-            Curated for every occasion
+          {/* Right: photo carousel (desktop only) */}
+          <div className="gh-hero-carousel-col">
+            <img
+              key={heroIdx}
+              src={heroPhotos[heroIdx]?.url}
+              alt={heroPhotos[heroIdx]?.name || "Gift Hamper"}
+            />
+            {/* gradient overlay on left edge for blend */}
+            <div aria-hidden style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #1C0A04 0%, transparent 28%)", pointerEvents:"none" }} />
+            {/* dots */}
+            <div className="gh-hero-dots">
+              {heroPhotos.map((_, i) => (
+                <span key={i} className={i === heroIdx ? "active" : ""} onClick={() => setHeroIdx(i)} style={{ cursor:"pointer" }} />
+              ))}
+            </div>
+            {/* vendor label */}
+            {heroPhotos[heroIdx]?.vendorName && (
+              <div style={{ position:"absolute", top:14, right:14, background:"rgba(28,10,4,0.7)", backdropFilter:"blur(6px)", borderRadius:8, padding:"4px 10px", fontSize:11, color:"rgba(255,248,236,0.7)", fontFamily:font }}>
+                {heroPhotos[heroIdx].vendorName}
+              </div>
+            )}
           </div>
-          <p style={{ fontSize:15, color:"rgba(255,248,236,0.62)", margin:"0 0 34px", lineHeight:1.78, maxWidth:460, marginLeft:"auto", marginRight:"auto", fontFamily:font }}>
-            Browse our sample collection, pick your favourites, and our team will curate the perfect hamper — custom packaging, personalised notes, delivery across Delhi NCR.
-          </p>
-
-          <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-            <button
-              className="gh-cta-btn"
-              onClick={goToChat}
-              style={{ display:"inline-flex", alignItems:"center", gap:9, background:"linear-gradient(135deg,#C47A2E,#CCAB4A)", color:"#fff", fontSize:15, fontWeight:700, padding:"14px 30px", borderRadius:100, border:"none", cursor:"pointer", fontFamily:font, boxShadow:"0 8px 28px rgba(196,122,46,0.42)", letterSpacing:"0.02em", transition:"box-shadow 0.2s, transform 0.2s" }}
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-              Talk to Our Team{selectedPhotos.length > 0 ? ` · ${selectedPhotos.length} selected` : ""}
-            </button>
-          </div>
-          <p style={{ fontSize:11, color:"rgba(255,248,236,0.28)", marginTop:14, fontFamily:font, letterSpacing:"0.04em" }}>Replies within 2 hours · Custom orders welcome</p>
         </div>
       </div>
 

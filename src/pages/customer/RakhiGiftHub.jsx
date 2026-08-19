@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import HamburgerNav from "../../components/HamburgerNav";
 import SEO from "../../components/SEO";
@@ -9,6 +9,13 @@ const FD = "'Cormorant Garamond', Georgia, serif";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 const RAKSHA_BANDHAN = new Date("2026-08-09T00:00:00");
+
+const RH_HERO_FALLBACK = [
+  { url: "https://images.unsplash.com/photo-1619615665559-7bfb0d73c5a6?w=900&q=80", name: "Rakhi Hamper" },
+  { url: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80", name: "Gift Box" },
+  { url: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=900&q=80", name: "Gift Hamper" },
+  { url: "https://images.unsplash.com/photo-1587556930799-8dca6fad6d41?w=900&q=80", name: "Festive Hamper" },
+];
 
 const AVATARS = [
   { initials: "P", color: "#C47A2E" },
@@ -47,6 +54,7 @@ const RakhiGiftHub = () => {
   const [samples, setSamples] = useState([]);
   const [samplesLoading, setSamplesLoading] = useState(true);
   const [previewIdx, setPreviewIdx] = useState(null);
+  const [heroIdx, setHeroIdx] = useState(0);
 
   useEffect(() => {
     fetch(`${BASE_URL}/admin/gift-hamper-samples?type=rakhi`)
@@ -54,6 +62,14 @@ const RakhiGiftHub = () => {
       .then(d => { setSamples(d.samples || []); setSamplesLoading(false); })
       .catch(() => setSamplesLoading(false));
   }, []);
+
+  const heroPhotos = samples.length > 0 ? samples : RH_HERO_FALLBACK;
+
+  useEffect(() => {
+    if (heroPhotos.length <= 1) return;
+    const t = setInterval(() => setHeroIdx(i => (i + 1) % heroPhotos.length), 4200);
+    return () => clearInterval(t);
+  }, [heroPhotos.length]);
 
   const handleNotify = (e) => {
     e.preventDefault();
@@ -123,14 +139,20 @@ const RakhiGiftHub = () => {
         @media (prefers-reduced-motion: reduce) {
           .rh-pulse-dot { animation: none !important; }
         }
+        .rh-hero-split { display: flex; align-items: stretch; }
+        .rh-hero-carousel-col { flex: 0 0 42%; position: relative; overflow: hidden; min-height: 480px; }
+        @keyframes rh-hero-fade { from{opacity:0;transform:scale(1.04)} to{opacity:1;transform:scale(1)} }
+        .rh-hero-carousel-col img { width:100%; height:100%; object-fit:cover; animation: rh-hero-fade 0.7s ease forwards; position:absolute; inset:0; }
+        .rh-hero-dots { position:absolute; bottom:14px; left:50%; transform:translateX(-50%); display:flex; gap:6px; z-index:2; }
+        .rh-hero-dots span { width:6px; height:6px; border-radius:50%; background:rgba(255,248,236,0.35); transition:background 0.3s,width 0.3s; cursor:pointer; }
+        .rh-hero-dots span.rh-dot-active { background:#CCAB4A; width:18px; border-radius:4px; }
+        @media(max-width:900px){ .rh-hero-carousel-col { display:none !important; } }
       `}</style>
 
       {/* Hero */}
-      <div className="rh-hero" style={{
+      <div style={{
         position: "relative", overflow: "hidden",
         background: "linear-gradient(160deg, #1C0A04 0%, #3A1808 55%, #2C1A0E 100%)",
-        padding: "96px 24px 80px",
-        textAlign: "center",
       }}>
         {/* Texture overlay */}
         <div style={{
@@ -143,129 +165,157 @@ const RakhiGiftHub = () => {
           background: "radial-gradient(ellipse 70% 60% at 50% 40%, rgba(196,122,46,0.12) 0%, transparent 70%)",
         }} />
 
-        <div style={{ position: "relative", maxWidth: 580, margin: "0 auto" }}>
-          {/* Live badge */}
-          <div style={{ marginBottom: 28, animation: "rh-in 0.5s 0.05s both" }}>
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 8,
-              background: "rgba(204,171,74,0.1)",
-              border: "1.5px solid rgba(204,171,74,0.28)",
-              borderRadius: 100, padding: "7px 18px",
-            }}>
-              <span className="rh-pulse-dot" style={{
-                width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A",
-                display: "inline-block",
-                animation: "rh-pulse 2s ease-in-out infinite",
-              }} />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.14em", textTransform: "uppercase" }}>
-                Raksha Bandhan 2026 — Coming Soon
+        <div className="rh-hero-split" style={{ position: "relative", zIndex: 1 }}>
+          {/* Left: text content */}
+          <div className="rh-hero" style={{
+            flex: "1 1 58%", padding: "96px 48px 80px", minWidth: 0,
+          }}>
+            {/* Live badge */}
+            <div style={{ marginBottom: 28, animation: "rh-in 0.5s 0.05s both" }}>
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                background: "rgba(204,171,74,0.1)",
+                border: "1.5px solid rgba(204,171,74,0.28)",
+                borderRadius: 100, padding: "7px 18px",
+              }}>
+                <span className="rh-pulse-dot" style={{
+                  width: 7, height: 7, borderRadius: "50%", background: "#CCAB4A",
+                  display: "inline-block",
+                  animation: "rh-pulse 2s ease-in-out infinite",
+                }} />
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#CCAB4A", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+                  Raksha Bandhan 2026 — Coming Soon
+                </span>
               </span>
-            </span>
-          </div>
+            </div>
 
-          <h1 className="rh-hero-h1" style={{
-            fontFamily: FD, fontSize: "clamp(3rem,7vw,4.8rem)",
-            fontWeight: 300, color: "#FAF7F2",
-            margin: "0 0 10px", lineHeight: 1.06,
-            animation: "rh-in 0.55s 0.12s cubic-bezier(.22,1,.36,1) both",
-          }}>
-            Rakhi Hampers
-          </h1>
-          <p style={{
-            fontFamily: FD, fontSize: "clamp(1.1rem,3vw,1.4rem)",
-            color: "rgba(255,255,255,0.42)", fontStyle: "italic",
-            margin: "0 0 44px",
-            animation: "rh-in 0.55s 0.2s both",
-          }}>For the ones who matter most</p>
+            <h1 className="rh-hero-h1" style={{
+              fontFamily: FD, fontSize: "clamp(3rem,5vw,4.8rem)",
+              fontWeight: 300, color: "#FAF7F2",
+              margin: "0 0 10px", lineHeight: 1.06,
+              animation: "rh-in 0.55s 0.12s cubic-bezier(.22,1,.36,1) both",
+            }}>
+              Rakhi Hampers
+            </h1>
+            <p style={{
+              fontFamily: FD, fontSize: "clamp(1.1rem,2.2vw,1.4rem)",
+              color: "rgba(255,255,255,0.42)", fontStyle: "italic",
+              margin: "0 0 44px",
+              animation: "rh-in 0.55s 0.2s both",
+            }}>For the ones who matter most</p>
 
-          {/* Countdown */}
-          <div style={{
-            display: "flex", gap: 12, justifyContent: "center", marginBottom: 44,
-            animation: "rh-in 0.55s 0.28s both",
-          }}>
-            {[
-              { value: timeLeft.days,    label: "Days"    },
-              { value: timeLeft.hours,   label: "Hours"   },
-              { value: timeLeft.minutes, label: "Mins"    },
-              { value: timeLeft.seconds, label: "Secs"    },
-            ].map(({ value, label }) => (
-              <div key={label} className="rh-digit-block">
-                <div style={{
-                  fontFamily: FD, fontSize: "clamp(2rem,5vw,2.8rem)",
-                  fontWeight: 300, color: "#CCAB4A", lineHeight: 1,
-                  fontVariantNumeric: "tabular-nums",
-                }}>
-                  {String(value).padStart(2, "0")}
+            {/* Countdown */}
+            <div style={{
+              display: "flex", gap: 12, marginBottom: 44,
+              animation: "rh-in 0.55s 0.28s both",
+            }}>
+              {[
+                { value: timeLeft.days,    label: "Days"    },
+                { value: timeLeft.hours,   label: "Hours"   },
+                { value: timeLeft.minutes, label: "Mins"    },
+                { value: timeLeft.seconds, label: "Secs"    },
+              ].map(({ value, label }) => (
+                <div key={label} className="rh-digit-block">
+                  <div style={{
+                    fontFamily: FD, fontSize: "clamp(2rem,4vw,2.8rem)",
+                    fontWeight: 300, color: "#CCAB4A", lineHeight: 1,
+                    fontVariantNumeric: "tabular-nums",
+                  }}>
+                    {String(value).padStart(2, "0")}
+                  </div>
+                  <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.38)", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 6 }}>
+                    {label}
+                  </div>
                 </div>
-                <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.38)", letterSpacing: "0.12em", textTransform: "uppercase", marginTop: 6 }}>
-                  {label}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Social proof avatars */}
-          <div style={{
-            display: "flex", alignItems: "center", justifyContent: "center", gap: 10,
-            marginBottom: 36,
-            animation: "rh-in 0.55s 0.34s both",
-          }}>
-            <div style={{ display: "flex" }}>
-              {AVATARS.map((av, i) => (
-                <div key={i} style={{
-                  width: 32, height: 32, borderRadius: "50%",
-                  background: av.color,
-                  border: "2px solid #1C0A04",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: 12, fontWeight: 700, color: "#fff",
-                  marginLeft: i === 0 ? 0 : -10,
-                  zIndex: AVATARS.length - i,
-                  position: "relative",
-                }}>{av.initials}</div>
               ))}
             </div>
-            <span style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>
-              <strong style={{ color: "rgba(255,255,255,0.8)" }}>200+ families</strong> already on the waitlist
-            </span>
-          </div>
 
-          {/* Email capture */}
-          <div style={{ animation: "rh-in 0.55s 0.4s both" }}>
-            {submitted ? (
-              <div style={{
-                background: "rgba(196,122,46,0.12)",
-                border: "1.5px solid rgba(196,122,46,0.3)",
-                borderRadius: 14, padding: "18px 24px",
-                color: "#CCAB4A", fontSize: 15, fontWeight: 600,
-              }}>
-                You're on the list! We'll notify you before launch.
+            {/* Social proof avatars */}
+            <div style={{
+              display: "flex", alignItems: "center", gap: 10,
+              marginBottom: 36,
+              animation: "rh-in 0.55s 0.34s both",
+            }}>
+              <div style={{ display: "flex" }}>
+                {AVATARS.map((av, i) => (
+                  <div key={i} style={{
+                    width: 32, height: 32, borderRadius: "50%",
+                    background: av.color,
+                    border: "2px solid #1C0A04",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 12, fontWeight: 700, color: "#fff",
+                    marginLeft: i === 0 ? 0 : -10,
+                    zIndex: AVATARS.length - i,
+                    position: "relative",
+                  }}>{av.initials}</div>
+                ))}
               </div>
-            ) : (
-              <form onSubmit={handleNotify} style={{ display: "flex", gap: 8, maxWidth: 440, margin: "0 auto" }} className="rh-email-row">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  required
-                  style={{
-                    flex: 1, background: "rgba(255,255,255,0.07)",
-                    border: "1.5px solid rgba(255,255,255,0.14)",
-                    borderRadius: 12, padding: "14px 16px",
-                    color: "#FAF7F2", fontSize: 14, fontFamily: F,
-                    outline: "none", minWidth: 0,
-                  }}
-                />
-                <button type="submit" className="rh-notify-btn">Notify me</button>
-              </form>
-            )}
+              <span style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>
+                <strong style={{ color: "rgba(255,255,255,0.8)" }}>200+ families</strong> already on the waitlist
+              </span>
+            </div>
+
+            {/* Email capture */}
+            <div style={{ animation: "rh-in 0.55s 0.4s both" }}>
+              {submitted ? (
+                <div style={{
+                  background: "rgba(196,122,46,0.12)",
+                  border: "1.5px solid rgba(196,122,46,0.3)",
+                  borderRadius: 14, padding: "18px 24px",
+                  color: "#CCAB4A", fontSize: 15, fontWeight: 600,
+                }}>
+                  You're on the list! We'll notify you before launch.
+                </div>
+              ) : (
+                <form onSubmit={handleNotify} style={{ display: "flex", gap: 8, maxWidth: 440 }} className="rh-email-row">
+                  <input
+                    type="email"
+                    placeholder="your@email.com"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    required
+                    style={{
+                      flex: 1, background: "rgba(255,255,255,0.07)",
+                      border: "1.5px solid rgba(255,255,255,0.14)",
+                      borderRadius: 12, padding: "14px 16px",
+                      color: "#FAF7F2", fontSize: 14, fontFamily: F,
+                      outline: "none", minWidth: 0,
+                    }}
+                  />
+                  <button type="submit" className="rh-notify-btn">Notify me</button>
+                </form>
+              )}
+            </div>
+
+            {/* Browse existing */}
+            <div style={{ marginTop: 20, animation: "rh-in 0.55s 0.46s both" }}>
+              <button onClick={() => navigate("/gift-hampers-cakes")} className="rh-secondary-btn">
+                Browse Gift Hampers in the meantime →
+              </button>
+            </div>
           </div>
 
-          {/* Browse existing */}
-          <div style={{ marginTop: 20, animation: "rh-in 0.55s 0.46s both" }}>
-            <button onClick={() => navigate("/gift-hampers-cakes")} className="rh-secondary-btn">
-              Browse Gift Hampers in the meantime →
-            </button>
+          {/* Right: photo carousel (desktop only) */}
+          <div className="rh-hero-carousel-col">
+            <img
+              key={heroIdx}
+              src={heroPhotos[heroIdx]?.url}
+              alt={heroPhotos[heroIdx]?.name || "Rakhi Hamper"}
+            />
+            {/* left-edge gradient blend */}
+            <div aria-hidden style={{ position:"absolute", inset:0, background:"linear-gradient(90deg, #1C0A04 0%, transparent 28%)", pointerEvents:"none", zIndex:1 }} />
+            {/* dots */}
+            <div className="rh-hero-dots" style={{ zIndex:2 }}>
+              {heroPhotos.map((_, i) => (
+                <span key={i} className={i === heroIdx ? "rh-dot-active" : ""} onClick={() => setHeroIdx(i)} />
+              ))}
+            </div>
+            {/* vendor label */}
+            {heroPhotos[heroIdx]?.vendorName && (
+              <div style={{ position:"absolute", top:14, right:14, zIndex:2, background:"rgba(28,10,4,0.7)", backdropFilter:"blur(6px)", borderRadius:8, padding:"4px 10px", fontSize:11, color:"rgba(255,248,236,0.7)", fontFamily:F }}>
+                {heroPhotos[heroIdx].vendorName}
+              </div>
+            )}
           </div>
         </div>
       </div>
