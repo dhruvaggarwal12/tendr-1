@@ -143,7 +143,7 @@ function BottomNavInner() {
 
   const items = [
     { label: "Home",     paths: ["/"],                                onTap: () => navigate("/") },
-    ...(!isHomePage ? [{ label: "Browse", paths: ["/listings","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } }] : []),
+    { label: "Browse", paths: ["/listings","/search"], onTap: () => { setProductsOpen(false); setTipsOpen(false); setBrowseOpen(o => !o); } },
     { label: "Tools", paths: ["/checklist","/timeline","/budget","/decor"], onTap: () => { setBrowseOpen(false); setTipsOpen(false); setProductsOpen(o => !o); } },
     { label: "Plan",     paths: ["/booking","/plan-event","/baat-karo"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setTipsOpen(false); setPlanOpen(o => !o); } },
     { label: "Tips", paths: ["/guides","/community"], onTap: () => { setBrowseOpen(false); setProductsOpen(false); setPlanOpen(false); setTipsOpen(o => !o); } },
