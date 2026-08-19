@@ -9,6 +9,13 @@ import { useChatOverlay } from "../../context/ChatContext";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 const font = "'Outfit', sans-serif";
 
+const RH_HERO_FALLBACK = [
+  { url: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=900&q=80", name: "Gift Hamper" },
+  { url: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=900&q=80", name: "Hamper" },
+  { url: "https://images.unsplash.com/photo-1587556930799-8dca6fad6d41?w=900&q=80", name: "Festive Hamper" },
+  { url: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=900&q=80", name: "Sweet Box" },
+];
+
 const RakhiGiftHub = () => {
   const navigate = useNavigate();
   const { token } = useSelector(s => s.auth);
@@ -19,6 +26,7 @@ const RakhiGiftHub = () => {
   const [previewIdx, setPreviewIdx] = useState(null);
   const [downloading, setDownloading] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState([]);
+  const [heroIdx, setHeroIdx] = useState(0);
 
   useEffect(() => {
     if (!token) return;
@@ -36,6 +44,14 @@ const RakhiGiftHub = () => {
       .then(d => { setSamples(d.samples || []); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
+
+  const heroPhotos = samples.length > 0 ? samples : RH_HERO_FALLBACK;
+
+  useEffect(() => {
+    if (heroPhotos.length <= 1) return;
+    const t = setInterval(() => setHeroIdx(i => (i + 1) % heroPhotos.length), 4200);
+    return () => clearInterval(t);
+  }, [heroPhotos.length]);
 
   const preview = previewIdx !== null ? samples[previewIdx] : null;
   const closePreview = useCallback(() => setPreviewIdx(null), []);
@@ -135,46 +151,71 @@ const RakhiGiftHub = () => {
 
       <style>{`
         @media(max-width:640px){
-          .rh-hero{padding:36px 18px 32px!important}
-          .rh-hero h1{font-size:clamp(1.6rem,6vw,2rem)!important}
+          .rh-hero-text{padding:36px 18px 32px!important}
+          .rh-hero-text h1{font-size:clamp(1.6rem,6vw,2rem)!important}
           .rh-cta-btn{width:100%!important}
         }
         .rh-card:hover .rh-overlay{opacity:1!important}
         .rh-card:hover img{transform:scale(1.04)}
         @keyframes rhShimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+        @keyframes rh-hero-fade{from{opacity:0;transform:scale(1.04)}to{opacity:1;transform:scale(1)}}
+        .rh-hero-carousel-col{flex:0 0 42%;position:relative;overflow:hidden;min-height:340px;}
+        .rh-hero-carousel-col img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0;animation:rh-hero-fade 0.7s ease forwards;}
+        .rh-hero-dots{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2;}
+        .rh-hero-dots span{width:6px;height:6px;border-radius:50%;background:rgba(255,248,236,0.35);transition:background 0.3s,width 0.3s;cursor:pointer;display:block;}
+        .rh-hero-dots span.active{background:#CCAB4A;width:18px;border-radius:4px;}
+        @media(max-width:900px){.rh-hero-carousel-col{display:none!important;}}
       `}</style>
 
       {/* ── Hero ── */}
-      <div className="rh-hero" style={{
+      <div style={{
         background: "linear-gradient(135deg,#2C1A0E 0%,#4A2810 55%,#3A200C 100%)",
-        padding: "56px 24px 52px",
-        textAlign: "center",
         position: "relative",
         overflow: "hidden",
+        display: "flex",
+        alignItems: "stretch",
       }}>
-        <div style={{ position: "absolute", top: -10, left: "4%", fontSize: 110, opacity: 0.07, transform: "rotate(-15deg)", userSelect: "none", pointerEvents: "none" }}>🪢</div>
-        <div style={{ position: "absolute", bottom: -8, right: "5%", fontSize: 90, opacity: 0.07, transform: "rotate(10deg)", userSelect: "none", pointerEvents: "none" }}>🎁</div>
+        {/* Left: text */}
+        <div className="rh-hero-text" style={{ flex: "1 1 58%", padding: "56px 48px 52px", position: "relative", minWidth: 0 }}>
+          <div style={{ position: "absolute", top: -10, left: "4%", fontSize: 110, opacity: 0.07, transform: "rotate(-15deg)", userSelect: "none", pointerEvents: "none" }}>🪢</div>
 
-        <div style={{ maxWidth: 640, margin: "0 auto", position: "relative" }}>
-          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "#CCAB4A", display: "block", marginBottom: 14 }}>
-            Raksha Bandhan Special
-          </span>
-          <h1 className="rh-hero" style={{ fontSize: "clamp(2rem,5vw,3rem)", fontWeight: 900, color: "#fff", margin: "0 0 14px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
-            Rakhi Hampers
-          </h1>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.72)", margin: "0 0 32px", lineHeight: 1.7, maxWidth: 480, marginLeft: "auto", marginRight: "auto" }}>
-            Tell us your budget and preferences — our team will curate the perfect Rakhi hamper and handle delivery across Delhi NCR.
-          </p>
-          <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
-            <button
-              className="rh-cta-btn"
-              onClick={goToChat}
-              style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, padding: "13px 32px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.45)", letterSpacing: "0.01em" }}
-            >
-              💬 Talk to Our Team{selectedPhotos.length > 0 ? ` · ${selectedPhotos.length} photo${selectedPhotos.length > 1 ? "s" : ""} added` : ""}
-            </button>
+          <div style={{ position: "relative", maxWidth: 560 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: "0.16em", textTransform: "uppercase", color: "#CCAB4A", display: "block", marginBottom: 14 }}>
+              Raksha Bandhan Special
+            </span>
+            <h1 style={{ fontSize: "clamp(2rem,4vw,3rem)", fontWeight: 900, color: "#fff", margin: "0 0 14px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+              Rakhi Hampers
+            </h1>
+            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.72)", margin: "0 0 32px", lineHeight: 1.7, maxWidth: 460 }}>
+              Tell us your budget and preferences — our team will curate the perfect Rakhi hamper and handle delivery across Delhi NCR.
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <button
+                className="rh-cta-btn"
+                onClick={goToChat}
+                style={{ background: "linear-gradient(135deg,#C47A2E,#CCAB4A)", color: "#fff", fontSize: 15, fontWeight: 800, padding: "13px 32px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: font, boxShadow: "0 6px 24px rgba(196,122,46,0.45)", letterSpacing: "0.01em" }}
+              >
+                Talk to Our Team{selectedPhotos.length > 0 ? ` · ${selectedPhotos.length} photo${selectedPhotos.length > 1 ? "s" : ""} added` : ""}
+              </button>
+            </div>
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 12 }}>Replies within 2 hours · Custom orders welcome</p>
           </div>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 12 }}>Replies within 2 hours · Custom orders welcome</p>
+        </div>
+
+        {/* Right: photo carousel (desktop only) */}
+        <div className="rh-hero-carousel-col">
+          <img key={heroIdx} src={heroPhotos[heroIdx]?.url} alt={heroPhotos[heroIdx]?.name || "Rakhi Hamper"} />
+          <div aria-hidden style={{ position:"absolute", inset:0, background:"linear-gradient(90deg,#2C1A0E 0%,transparent 28%)", pointerEvents:"none", zIndex:1 }} />
+          <div className="rh-hero-dots">
+            {heroPhotos.map((_, i) => (
+              <span key={i} className={i === heroIdx ? "active" : ""} onClick={() => setHeroIdx(i)} />
+            ))}
+          </div>
+          {heroPhotos[heroIdx]?.vendorName && (
+            <div style={{ position:"absolute", top:12, right:12, zIndex:2, background:"rgba(28,10,4,0.7)", backdropFilter:"blur(6px)", borderRadius:8, padding:"4px 10px", fontSize:11, color:"rgba(255,248,236,0.75)", fontFamily:font }}>
+              {heroPhotos[heroIdx].vendorName}
+            </div>
+          )}
         </div>
       </div>
 
