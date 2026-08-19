@@ -2870,79 +2870,168 @@ const BIRTHDAY_BINGO = [
 // MAIN COMPONENT
 // ════════════════════════════════════════════════════════════════════════════
 
-// (polygon layout removed — replaced with clean card grid)
+// ── polygon clip-path per section tool count ──────────────────────────────
+const POLY_CLIP = {
+  1: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",                                                                    // diamond
+  2: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",                                                                    // diamond
+  3: "polygon(50% 0%, 100% 100%, 0% 100%)",                                                                             // triangle
+  4: "polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%)",                                                          // pentagon
+  5: "polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%)",                                                          // pentagon
+  6: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",                                                  // hexagon
+  7: "polygon(50% 0%, 90% 15%, 100% 55%, 75% 93%, 25% 93%, 0% 55%, 10% 15%)",                                          // heptagon
+};
+const DEFAULT_POLY = "polygon(29% 0%, 71% 0%, 100% 29%, 100% 71%, 71% 100%, 29% 100%, 0% 71%, 0% 29%)";               // octagon
+const getPolyClip = (n) => POLY_CLIP[Math.min(n, 7)] ?? DEFAULT_POLY;
 
-// ── Clean tool card grid ───────────────────────────────────────────────────
-const MANAGE_SECTIONS = new Set(['manage','celebrate','ceremony']);
+// ── padding offset per polygon type so content clears clipped corners ──────
+const POLY_PAD = { 3: "36% 20% 12%", 4: "14% 14% 14%", 5: "14% 14% 14%", 6: "18% 12% 18%", 7: "16% 12% 16%" };
+const getPolyPad = (n) => POLY_PAD[Math.min(n, 7)] || "14% 10% 14%";
 
-function OccToolGrid({ tools, onOpen, sectionId }) {
-  const isManage = MANAGE_SECTIONS.has(sectionId);
+// ── Polygon vertex grid for OccasionHub ───────────────────────────────────
+function OccPolygonGrid({ tools, onOpen, accent }) {
+  const containerRef = useRef(null);
+  const [size, setSize] = useState(320);
 
-  if (isManage) {
-    return (
-      <div style={{ display:'flex', flexDirection:'column', gap:7, width:'100%' }}>
-        {tools.map((t, i) => (
-          <button key={t.id} onClick={() => onOpen(t.id)}
-            className="occ-list-card"
-            style={{
-              display:'flex', alignItems:'center', gap:14, width:'100%',
-              padding:'13px 14px 13px 0',
-              background:'rgba(255,255,255,0.04)',
-              border:'1px solid rgba(255,255,255,0.07)',
-              borderLeft:`3px solid ${t.color}`,
-              borderRadius:14, cursor:'pointer', fontFamily:font, textAlign:'left',
-              animation:`card-pop 0.32s cubic-bezier(0.22,1,0.36,1) ${i*0.03}s both`,
-              transition:'background 0.14s, box-shadow 0.14s',
-              WebkitTapHighlightColor:'transparent',
-            }}
-            onMouseEnter={e=>{ e.currentTarget.style.background=`${t.color}10`; e.currentTarget.style.boxShadow=`inset 0 0 0 1px ${t.color}30`; }}
-            onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.boxShadow=''; }}
-          >
-            <div style={{ width:44, height:44, borderRadius:12, background:`${t.color}18`, border:`1px solid ${t.color}28`, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0, fontSize:20, marginLeft:14 }}>
-              {t.emoji}
-            </div>
-            <div style={{ flex:1, minWidth:0 }}>
-              <div style={{ fontSize:14, fontWeight:700, color:'#fff', fontFamily:font, letterSpacing:'-0.01em', marginBottom:2, lineHeight:1.3 }}>{t.title}</div>
-              <div style={{ fontSize:11.5, color:'rgba(255,255,255,0.38)', fontFamily:font, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{t.desc}</div>
-            </div>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink:0, marginRight:12, opacity:0.25 }}>
-              <path d="M5 2.5l4.5 4.5L5 11.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-        ))}
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(([entry]) => {
+      setSize(Math.min(entry.contentRect.width, 460));
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
-  // Fun / Games / Other / Baby Votes etc. → 2-column grid
+  const n = tools.length;
+  const cx = size / 2;
+  const cy = size / 2;
+  const R  = size * 0.37;
+
+  // n=4 → square corners (-45° start); others → top vertex (-90°)
+  const startDeg = n === 4 ? -45 : -90;
+
+  const pts = tools.map((_, i) => {
+    const a = ((i * 360) / n + startDeg) * (Math.PI / 180);
+    return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
+  });
+
+  // Even n → cross diameters; odd n → spokes from center
+  const innerLines = n % 2 === 0
+    ? Array.from({ length: n / 2 }, (_, i) => [pts[i], pts[i + n / 2]])
+    : pts.map(p => [{ x: cx, y: cy }, p]);
+
+  // Node size scales with container, capped for readability
+  const nW = Math.min(Math.max(80, size * 0.24), 112);
+  const nH = nW * 1.22;
+  const iconSz = Math.max(18, nW * 0.28);
+  const lblSz  = Math.max(11, nW * 0.125);
+
   return (
-    <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:10, width:'100%' }}>
-      {tools.map((t, i) => (
-        <button key={t.id} onClick={() => onOpen(t.id)}
-          className="occ-grid-card"
-          style={{
-            display:'flex', flexDirection:'column', alignItems:'flex-start', gap:10,
-            padding:'16px 14px',
-            background:'rgba(255,255,255,0.04)',
-            border:'1px solid rgba(255,255,255,0.07)',
-            borderTop:`2.5px solid ${t.color}60`,
-            borderRadius:14, cursor:'pointer', fontFamily:font, textAlign:'left',
-            animation:`card-pop 0.32s cubic-bezier(0.22,1,0.36,1) ${i*0.03}s both`,
-            transition:'background 0.14s, box-shadow 0.14s',
-            WebkitTapHighlightColor:'transparent',
-          }}
-          onMouseEnter={e=>{ e.currentTarget.style.background=`${t.color}10`; e.currentTarget.style.boxShadow=`0 4px 20px ${t.color}18`; }}
-          onMouseLeave={e=>{ e.currentTarget.style.background='rgba(255,255,255,0.04)'; e.currentTarget.style.boxShadow=''; }}
-        >
-          <div style={{ width:38, height:38, borderRadius:10, background:`${t.color}15`, border:`1px solid ${t.color}25`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:18, flexShrink:0 }}>
-            {t.emoji}
-          </div>
-          <div style={{ width:'100%' }}>
-            <div style={{ fontSize:13, fontWeight:700, color:'#fff', fontFamily:font, letterSpacing:'-0.01em', lineHeight:1.3, marginBottom:4 }}>{t.title}</div>
-            <div style={{ fontSize:11, color:'rgba(255,255,255,0.38)', fontFamily:font, lineHeight:1.5 }}>{t.desc}</div>
-          </div>
-        </button>
-      ))}
+    <div ref={containerRef} style={{ width: "100%", maxWidth: 460, margin: "0 auto" }}>
+      <div style={{ position: "relative", width: size, height: size, margin: "0 auto" }}>
+        {/* Web SVG */}
+        <svg style={{ position: "absolute", inset: 0, width: "100%", height: "100%", pointerEvents: "none", overflow: "visible" }}
+          viewBox={`0 0 ${size} ${size}`}>
+          <defs>
+            <filter id="occ-glow" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur stdDeviation="3" result="blur"/>
+              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+          {/* Inner lines */}
+          {innerLines.map(([a, b], i) => (
+            <line key={`il${i}`} x1={a.x} y1={a.y} x2={b.x} y2={b.y}
+              stroke={`${accent}20`} strokeWidth="1" />
+          ))}
+          {/* Outer polygon edges */}
+          {Array.from({ length: n }, (_, i) => (
+            <line key={`e${i}`}
+              x1={pts[i].x} y1={pts[i].y}
+              x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
+              stroke={`${accent}55`} strokeWidth="1.5" filter="url(#occ-glow)" />
+          ))}
+          {/* Vertex dots */}
+          {pts.map((p, i) => (
+            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
+              fill={`${accent}88`} filter="url(#occ-glow)" />
+          ))}
+          {/* Center dot */}
+          <circle cx={cx} cy={cy} r={4.5}
+            fill={`${accent}66`} filter="url(#occ-glow)" />
+        </svg>
+
+        {/* Tool nodes */}
+        {tools.map((t, i) => {
+          const p = pts[i];
+          return (
+            <button key={t.id} onClick={() => onOpen(t.id)}
+              style={{
+                position: "absolute",
+                width: nW, height: nH,
+                left: p.x - nW / 2, top: p.y - nH / 2,
+                background: i === 0
+                  ? `radial-gradient(circle at 50% 30%, ${accent}38, rgba(12,9,3,0.88))`
+                  : `radial-gradient(circle at 50% 30%, ${accent}22, rgba(12,9,3,0.92))`,
+                border: i === 0 ? `1.5px solid ${accent}88` : `1.5px solid ${accent}44`,
+                borderRadius: 14,
+                cursor: "pointer",
+                display: "flex", flexDirection: "column",
+                alignItems: "center", justifyContent: "center",
+                gap: 4,
+                padding: "6px 4px",
+                fontFamily: font,
+                transition: "transform 0.18s, box-shadow 0.18s, border-color 0.18s",
+                boxSizing: "border-box",
+                WebkitTapHighlightColor: "transparent",
+                animation: `card-pop 0.45s cubic-bezier(0.22,1,0.36,1) ${i * 0.07}s both`,
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.transform = "scale(1.1)";
+                e.currentTarget.style.boxShadow = `0 0 22px ${accent}55`;
+                e.currentTarget.style.borderColor = `${accent}aa`;
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.transform = "";
+                e.currentTarget.style.boxShadow = "";
+                e.currentTarget.style.borderColor = `${accent}44`;
+              }}
+            >
+              <div style={{
+                width: Math.max(32, nW * 0.44), height: Math.max(32, nW * 0.44),
+                borderRadius: "50%",
+                background: `radial-gradient(circle, ${accent}35, ${accent}0d)`,
+                border: `1.5px solid ${accent}55`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: accent, flexShrink: 0,
+              }}>
+                {TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>, iconSz)}
+              </div>
+              <span style={{
+                fontSize: lblSz,
+                fontWeight: 700,
+                color: "#fff",
+                lineHeight: 1.25,
+                textAlign: "center",
+                padding: "0 4px",
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+                overflow: "hidden",
+                letterSpacing: "-0.01em",
+              }}>{t.title}</span>
+              {i === 0 && (
+                <div style={{
+                  position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)",
+                  fontSize: 7.5, fontWeight: 800, color: accent,
+                  background: `${accent}25`, border: `1px solid ${accent}70`,
+                  borderRadius: 100, padding: "2px 6px",
+                  letterSpacing: "0.05em", whiteSpace: "nowrap", zIndex: 2,
+                  pointerEvents: "none",
+                }}>★ Start here</div>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -3114,14 +3203,16 @@ export default function OccasionHub({ occasion }) {
         @keyframes dot-pulse { 0%,100%{opacity:0.4;transform:scale(0.8)} 50%{opacity:1;transform:scale(1)} }
         @keyframes card-flip { 0%{transform:rotateY(90deg) scale(0.95);opacity:0.4} 100%{transform:rotateY(0deg) scale(1);opacity:1} }
         @keyframes spin { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-        .occ-list-card:active, .occ-grid-card:active { transform: scale(0.98) !important; transition: transform 0.08s !important; }
+        .occ-tool-card:active { transform: scale(0.96) !important; transition: transform 0.08s !important; }
+        .occ-tab-btn { transition: all 0.18s; }
         textarea,input { font-family: ${font}; }
         select option { background: #1a1a2e; color: #fff; }
         ::-webkit-scrollbar { display: none; }
         @media (max-width: 600px) {
           .occ-h1 { font-size: 1.5rem !important; }
-          .occ-scroll-area { padding: 4px 10px calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
-          .occ-grid-card { padding: 13px 11px !important; }
+          .occ-tab-label { font-size: 9px !important; }
+          .occ-scroll-area { padding: 4px 8px calc(80px + env(safe-area-inset-bottom, 0px)) !important; }
+          .occ-tab-btn { padding: 7px 4px 5px !important; min-width: 56px !important; }
         }
       `}</style>
 
@@ -3270,42 +3361,74 @@ export default function OccasionHub({ occasion }) {
       )}
 
       {/* ── Section Tabs ── */}
-      <div style={{ flexShrink:0, maxWidth:800, margin:"12px auto 0", padding:"0 16px", width:"100%", boxSizing:"border-box" }}>
-        <div style={{ display:"flex", gap:3, background:"rgba(255,255,255,0.05)", border:"1px solid rgba(255,255,255,0.08)", borderRadius:14, padding:4 }}>
+      <div style={{ flexShrink: 0, maxWidth: 800, margin: "10px auto 0", padding: "0 16px", width: "100%", boxSizing: "border-box" }}>
+        <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 12, padding: 3 }}>
           {sections.map((sec, i) => {
             const active = activeTab === i;
-            const label = sec.label.replace(/^\S+\s*/, "").trim() || sec.label;
+            const isGame = sec.id === "games";
             return (
-              <button key={sec.id} onClick={() => setActiveTab(i)} style={{
-                flex:1, padding:"8px 4px",
-                background: active ? accent : 'transparent',
-                border:'none', borderRadius:10,
-                color: active ? '#fff' : 'rgba(255,255,255,0.38)',
-                fontSize:10, fontWeight: active ? 800 : 600,
-                cursor:'pointer', fontFamily:font, letterSpacing:'0.04em',
-                textTransform:'uppercase',
-                transition:'all 0.18s',
-                boxShadow: active ? `0 2px 14px ${accent}50` : 'none',
-                display:'flex', flexDirection:'column', alignItems:'center', gap:3,
+              <button key={sec.id} className="occ-tab-btn" onClick={() => setActiveTab(i)} style={{
+                flex: 1, padding: "8px 2px", border: "none",
+                background: active ? (isGame ? accent : "rgba(255,255,255,0.14)") : "transparent",
+                color: active ? "#fff" : "rgba(255,255,255,0.35)",
+                fontSize: 10, fontWeight: 800, cursor: "pointer", fontFamily: font,
+                textTransform: "uppercase", letterSpacing: "0.04em",
+                clipPath: i === 0
+                  ? "polygon(0% 0%, 88% 0%, 100% 50%, 88% 100%, 0% 100%)"
+                  : i === sections.length - 1
+                  ? "polygon(0% 50%, 12% 0%, 100% 0%, 100% 100%, 12% 100%)"
+                  : "polygon(0% 50%, 12% 0%, 88% 0%, 100% 50%, 88% 100%, 12% 100%)",
+                filter: active && isGame ? `drop-shadow(0 2px 8px ${accent}55)` : "none",
+                transition: "all 0.18s",
               }}>
-                <div style={{ color: active ? '#fff' : 'rgba(255,255,255,0.4)', transition:'color 0.18s' }}>{SECTION_ICONS[sec.id] || defaultSecIcon}</div>
-                <span>{label}</span>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", color: active ? "#fff" : "rgba(255,255,255,0.6)", marginBottom: 1 }}>{SECTION_ICONS[sec.id] || defaultSecIcon}</div>
+                <div className="occ-tab-label" style={{ letterSpacing: "0.05em", opacity: active ? 1 : 0.7 }}>{sec.label.replace(/^\S+\s*/, "").trim() || sec.label}</div>
               </button>
             );
           })}
         </div>
       </div>
 
-      {/* ── Tool grid ── */}
-      <div className="occ-scroll-area" style={{ flex:1, overflowY:"auto", padding:"14px 16px 40px", maxWidth:800, margin:"0 auto", width:"100%", boxSizing:"border-box" }}>
-        {currentSection?.subtitle && (
-          <div style={{ marginBottom:14, animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-            <p style={{ fontSize:10, fontWeight:700, color:"rgba(255,255,255,0.25)", textTransform:"uppercase", letterSpacing:"0.14em", margin:0 }}>{currentSection.subtitle}</p>
+      {/* ── Tool grid — polygon vertex layout ── */}
+      <div className="occ-scroll-area" style={{ flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "8px 12px 32px", maxWidth: 800, margin: "0 auto", width: "100%", boxSizing: "border-box" }}>
+
+        {/* Section subtitle */}
+        <div style={{ width: "100%", marginBottom: 8, animation: "tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.12em" }}>{currentSection?.subtitle}</div>
+        </div>
+
+        {currentSection?.tools.length >= 3 ? (
+          <OccPolygonGrid
+            key={activeTab}
+            tools={currentSection.tools}
+            onOpen={setOpen}
+            accent={accent}
+          />
+        ) : (
+          /* 1–2 tools: simple centered row */
+          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", width: "100%", animation: "tab-slide 0.3s cubic-bezier(0.22,1,0.36,1)" }}>
+            {currentSection?.tools.map((t) => {
+              const isH = hovered === t.id;
+              return (
+                <div key={t.id}
+                  onClick={() => setOpen(t.id)}
+                  onMouseEnter={() => setHovered(t.id)}
+                  onMouseLeave={() => handleLeave(t.id)}
+                  style={{
+                    width: 140, background: isH ? `${accent}18` : "rgba(255,255,255,0.06)",
+                    border: `1.5px solid ${isH ? accent + "66" : accent + "25"}`,
+                    borderRadius: 18, padding: "22px 14px", cursor: "pointer",
+                    display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
+                    transition: "all 0.18s", transform: isH ? "translateY(-3px)" : "none",
+                  }}>
+                  <div style={{ color: accent }}>{TOOL_ICONS[t.id] || occic(<><circle cx="12" cy="12" r="10"/></>)}</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#fff", textAlign: "center" }}>{t.title}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", textAlign: "center" }}>{t.desc}</div>
+                </div>
+              );
+            })}
           </div>
         )}
-        <div style={{ animation:"tab-slide 0.28s cubic-bezier(0.22,1,0.36,1)" }}>
-          <OccToolGrid key={activeTab} tools={currentSection?.tools || []} onOpen={setOpen} sectionId={currentSection?.id} />
-        </div>
       </div>
 
       {renderModal()}
