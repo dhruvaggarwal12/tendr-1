@@ -126,14 +126,17 @@ function getRecommended(occasion, theme, ageGroups, venueType) {
   return recs;
 }
 
-function getSmartVendors(occasion, theme, ageGroups, venueType, max=7) {
+function getSmartVendors(occasion, theme, ageGroups, venueType, budget, max=7) {
   const recs = getRecommended(occasion, theme, ageGroups, venueType);
   const base = occasion.vendorCategories || [];
-  return [...new Set([...base, ...recs])].slice(0, max);
+  // Limit pre-selected vendors by budget — tight budgets can't cover too many
+  const b = Number(budget)||0;
+  const limit = b>0 ? (b<20000?3 : b<40000?4 : b<80000?5 : max) : max;
+  return [...new Set([...base, ...recs])].slice(0, limit);
 }
 
 /* ── vendor tips (what to actually ask for) ── */
-function getVendorTips(type, {theme, venueType, ageGroups, cateringType}) {
+function getVendorTips(type, {theme, venueType, ageGroups, cateringType, budget, guests}) {
   const tags=(theme?.tags||[]).join(" ").toLowerCase();
   const venue=(venueType||"").toLowerCase();
   const ages=ageGroups||[];
@@ -173,10 +176,13 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType}) {
     if(ages.includes("Kids")||ages.includes("Toddlers")) {
       items.push("Character-themed balloons","Colourful streamers","Soft safe props (no sharp edges)");
     }
+    const decorBudget = budget&&guests ? Math.round(Number(budget)*0.28) : null;
     return {
       heading:"Ask your decorator for",
       items:[...new Set(items)].slice(0,7),
-      tip:venueType?`Tip: Tell the decorator it's a ${venueType} — setup time and equipment change significantly.`:"Tip: Share reference photos and the venue size before finalising quotes.",
+      tip: decorBudget
+        ? `~28% of your budget (≈₹${decorBudget.toLocaleString("en-IN")}) for décor. ${venueType?`Tell them it's a ${venueType} — setup time changes.`:"Share reference photos and venue size before finalising."}`
+        : venueType?`Tip: Tell the decorator it's a ${venueType} — setup time and equipment change significantly.`:"Tip: Share reference photos and the venue size before finalising quotes.",
     };
   }
 
@@ -205,10 +211,13 @@ function getVendorTips(type, {theme, venueType, ageGroups, cateringType}) {
     }
     if(ages.includes("Teens")) menu.push("Live pizza/pasta counter","Mocktail bar");
     if(ages.includes("Seniors")) menu.push("Soft/easy options + low-spice section");
+    const foodBudget = budget&&guests ? Math.round(Number(budget)*0.3/guests) : null;
     return {
       heading:"Menu to plan with caterer",
       items:[...new Set(menu)].slice(0,8),
-      tip:"Tip: Tell the caterer your service style, guest count, veg/non-veg split, and venue type upfront — they'll size everything correctly.",
+      tip: foodBudget
+        ? `~30% of your budget = ₹${foodBudget}/head for food. Share service style, guest count, veg/non-veg split and venue upfront — they'll size everything correctly.`
+        : "Tip: Tell the caterer your service style, guest count, veg/non-veg split, and venue type upfront — they'll size everything correctly.",
     };
   }
 
@@ -598,6 +607,52 @@ function buildBudgetSplit(total) {
   ].map(c=>({...c,amt:Math.round(n*c.pct/100)}));
 }
 
+/* ── gift personalization score ── */
+function scoreGift(g, {theme, ageGroups=[], budget=null, guests=20}) {
+  let sc=0, reason=null;
+  const text=[g.name,g.desc||""].join(" ").toLowerCase();
+
+  // Budget fit — assume ~12% of total budget goes to gifts
+  if(budget&&Number(budget)>0) {
+    const nums=(g.price||"").replace(/[₹+, ]/g,"").replace(/K/g,"000").match(/\d+/g)?.map(Number)||[];
+    if(nums.length) {
+      const low=nums[0], high=nums[nums.length-1]||low, mid=(low+high)/2;
+      const giftAlloc=Number(budget)*0.12;
+      if(mid<=giftAlloc){sc+=3;if(!reason)reason="Fits your gift budget";}
+      else if(mid>giftAlloc*4){sc-=2;}
+    }
+  }
+
+  // Theme keyword match
+  if(theme) {
+    const tWords=(theme.tags||[]).join(" ").toLowerCase().split(/\s+/).filter(w=>w.length>3);
+    const hits=tWords.filter(tw=>text.includes(tw)).length;
+    if(hits>0){sc+=hits*3;if(!reason)reason=`Curated for ${theme.name}`;}
+  }
+
+  // Age group relevance
+  const hasKids=ageGroups.includes("Kids")||ageGroups.includes("Toddlers");
+  const hasSeniors=ageGroups.includes("Seniors");
+  const hasTeens=ageGroups.includes("Teens");
+  if(hasKids&&/baby|child|kid|play|soft|toy|onesie|swaddle|learn|craft|magic|puzzle/i.test(text)){sc+=5;if(!reason)reason="Great for little ones";}
+  if(hasSeniors&&/comfort|relax|memory|book|plant|health|garden|travel|journey|classic|watch|craft|hobby|keepsake|album|plaque/i.test(text)){sc+=4;if(!reason)reason="Ideal for seniors";}
+  if(hasSeniors&&/baby|kid|toy|game/i.test(text)){sc-=3;}
+  if(hasTeens&&/game|music|photo|gadget|fashion|experience|fun|tech|polaroid/i.test(text)){sc+=4;if(!reason)reason="Teens will love this";}
+  if(hasKids&&/alcohol|wine|premium watch|luxury|jewellery/i.test(text)){sc-=3;}
+
+  return {score:sc,reason};
+}
+
+/* ── approximate cost parser for budget matching ── */
+function approxCost(priceStr, guests) {
+  if(!priceStr) return null;
+  const isPerHead=/head/i.test(priceStr);
+  const nums=priceStr.replace(/[₹+, ]/g,"").replace(/K/g,"000").match(/\d+/g)?.map(Number)||[];
+  if(!nums.length) return null;
+  const mid=(nums[0]+(nums[nums.length-1]||nums[0]))/2;
+  return isPerHead?mid*guests:mid;
+}
+
 /* ── plan card download (PDF) ── */
 async function downloadPlanCard(el,name){
   try{
@@ -753,9 +808,11 @@ export default function OccasionDetail(){
     return `/listings?${params.toString()}`;
   };
 
-  const smartVendors=getSmartVendors(occasion,theme,ageGroups,venueType);
+  const smartVendors=getSmartVendors(occasion,theme,ageGroups,venueType,budget);
   const mainVendors=vendors.filter(v=>ALL_VENDORS.includes(v));
   const allVendorsChosen=mainVendors.length>0&&mainVendors.every(v=>vendorPackages[v]!==undefined);
+  // per-vendor budget allocation (used for package tier highlighting)
+  const perVendorBudget=budget&&mainVendors.length?Math.round(Number(budget)/mainVendors.length):null;
 
   /* navigation */
   const next=()=>{
@@ -797,13 +854,10 @@ export default function OccasionDetail(){
   const sLabel={fontSize:10,fontWeight:800,color:gold,textTransform:"uppercase",letterSpacing:"0.14em",marginBottom:12,fontFamily:font};
   const fieldCard={background:"#fff",borderRadius:18,padding:"20px 22px",border:`1.5px solid ${border}`,marginBottom:12,transition:"border-color 0.2s"};
 
-  /* theme-aware gift sort */
-  const sortedGifts=[...(occasion.giftIdeas||[])].sort((a,b)=>{
-    if(!theme) return 0;
-    const tags=(theme.tags||[]).join(" ").toLowerCase();
-    const score=x=>[x.name,x.desc||""].join(" ").toLowerCase().split(/\s+/).filter(w=>tags.includes(w)).length;
-    return score(b)-score(a);
-  });
+  /* fully personalized gift sort — theme + age groups + budget */
+  const sortedGifts=(occasion.giftIdeas||[]).map(g=>({
+    ...g,...scoreGift(g,{theme,ageGroups,budget,guests})
+  })).sort((a,b)=>b.score-a.score);
 
   return(
     <div style={{minHeight:"100dvh",background:bg,fontFamily:font,display:"flex",flexDirection:"column"}}>
@@ -1118,6 +1172,8 @@ export default function OccasionDetail(){
               <span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{guests} guests</span>
               {venueType&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{venueType}</span>}
               {city&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{city}</span>}
+              {budget&&Number(budget)>0&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>₹{Number(budget).toLocaleString("en-IN")} budget</span>}
+              {ageGroups.length>0&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"4px 10px"}}>{ageGroups.join(", ")}</span>}
               {theme&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.07)",border:`1px solid rgba(196,122,46,0.18)`,borderRadius:100,padding:"4px 10px"}}>
                 <div style={{width:8,height:8,borderRadius:"50%",background:themeColor(theme.tags),flexShrink:0}}/>{theme.name}
               </span>}
@@ -1171,7 +1227,7 @@ export default function OccasionDetail(){
                   const isKnown=ALL_VENDORS.includes(v);
                   const pkgs=isKnown?getVendorPackages(v,{guests,venueType,theme,ageGroups}):null;
                   const chosen=vendorPackages[v];
-                  const tips=isKnown?getVendorTips(v,{theme,venueType,ageGroups,cateringType}):null;
+                  const tips=isKnown?getVendorTips(v,{theme,venueType,ageGroups,cateringType,budget,guests}):null;
                   return(
                     <div key={v} style={{marginBottom:14,borderRadius:16,border:`1.5px solid ${chosen!==undefined?gold:border}`,background:"#fff",overflow:"hidden",transition:"border-color 0.2s"}}>
                       {/* header row */}
@@ -1192,19 +1248,24 @@ export default function OccasionDetail(){
                           <div style={{display:"flex",gap:7,overflowX:"auto",paddingBottom:2}}>
                             {pkgs.slice(0,3).map((pkg,pi)=>{
                               const sel=chosen===pi;
+                              const cost=approxCost(pkg.price,guests);
+                              const budgetFit=perVendorBudget&&cost
+                                ?(cost<=perVendorBudget*1.25?"fits":cost<=perVendorBudget*2?"stretch":"over")
+                                :null;
                               return(
                                 <button key={pkg.label} onClick={()=>setVendorPackages(vp=>({...vp,[v]:pi}))}
                                   style={{
                                     flex:"0 0 auto",width:"31%",minWidth:100,maxWidth:140,
                                     textAlign:"left",padding:"10px 11px",borderRadius:12,
-                                    border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.14)"}`,
+                                    border:`1.5px solid ${sel?gold:budgetFit==="fits"?"rgba(34,197,94,0.35)":"rgba(196,122,46,0.14)"}`,
                                     background:sel?"rgba(196,122,46,0.07)":"#FAFAF8",
                                     cursor:"pointer",fontFamily:font,transition:"all 0.18s",
                                     display:"flex",flexDirection:"column",gap:4,
                                   }}>
-                                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4}}>
+                                  <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",gap:4,flexWrap:"wrap"}}>
                                     <span style={{fontSize:12,fontWeight:700,color:sel?gold:ink,lineHeight:1.2}}>{pkg.label}</span>
-                                    {pkg.popular&&<span style={{fontSize:8,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>Best</span>}
+                                    {budgetFit==="fits"&&!sel&&<span style={{fontSize:7.5,fontWeight:800,color:"#16a34a",background:"rgba(34,197,94,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>✓ Budget</span>}
+                                    {pkg.popular&&budgetFit!=="fits"&&<span style={{fontSize:8,fontWeight:800,color:gold,background:"rgba(196,122,46,0.1)",borderRadius:100,padding:"1px 5px",flexShrink:0}}>Best</span>}
                                   </div>
                                   <span style={{fontSize:11.5,fontWeight:700,color:sel?gold:"rgba(196,122,46,0.6)"}}>{pkg.price}</span>
                                   <div style={{display:"flex",flexDirection:"column",gap:1.5}}>
@@ -1259,21 +1320,30 @@ export default function OccasionDetail(){
         {step===5&&(
           <div className="os">
             <p style={{fontFamily:serif,fontSize:"clamp(1.4rem,3.5vw,1.9rem)",color:ink,lineHeight:1.3,marginBottom:6}}>Any gifts?</p>
-            <p style={{fontSize:13,color:muted,marginBottom:24,lineHeight:1.6}}>Add to your plan or skip straight to the blueprint.</p>
-            {theme&&<div style={{display:"inline-flex",alignItems:"center",gap:6,background:"rgba(196,122,46,0.07)",border:`1px solid rgba(196,122,46,0.2)`,borderRadius:100,padding:"4px 12px",marginBottom:16}}>
-              <div style={{width:10,height:10,borderRadius:"50%",background:themeColor(theme.tags)}}/>
-              <span style={{fontSize:11,fontWeight:700,color:gold}}>Curated for {theme.name}</span>
-            </div>}
+            <p style={{fontSize:13,color:muted,marginBottom:16,lineHeight:1.6}}>
+              {[theme&&`Curated for ${theme.name}`,ageGroups.length>0&&`tailored for ${ageGroups.join(" & ")}`,budget&&Number(budget)>0&&`within ₹${Math.round(Number(budget)*0.12).toLocaleString("en-IN")} gift budget`].filter(Boolean).join(" · ")||"Pick gifts to add to your plan."}
+              {(theme||ageGroups.length>0||budget)&&" — ranked for your event."}
+            </p>
+            <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:16}}>
+              {theme&&<span style={{display:"inline-flex",alignItems:"center",gap:5,fontSize:11,fontWeight:700,color:gold,background:"rgba(196,122,46,0.07)",border:`1px solid rgba(196,122,46,0.18)`,borderRadius:100,padding:"3px 10px"}}>
+                <div style={{width:7,height:7,borderRadius:"50%",background:themeColor(theme.tags)}}/>{theme.name}
+              </span>}
+              {ageGroups.map(ag=><span key={ag} style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"3px 10px"}}>{ag}</span>)}
+              {budget&&Number(budget)>0&&<span style={{fontSize:11,fontWeight:600,color:muted,background:"rgba(28,9,0,0.05)",borderRadius:100,padding:"3px 10px"}}>₹{Number(budget).toLocaleString("en-IN")} total</span>}
+            </div>
             <div className="g2" style={{display:"grid",gridTemplateColumns:"1fr",gap:10}}>
               {sortedGifts.map((g,i)=>{
                 const sel=gifts.includes(g.name);
                 return(
                   <button key={i} onClick={()=>toggleGift(g.name)}
-                    style={{padding:"15px 16px",borderRadius:14,textAlign:"left",cursor:"pointer",border:`1.5px solid ${sel?gold:"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.06)":"#fff",fontFamily:font,transition:"all 0.18s",minHeight:44}}
+                    style={{padding:"15px 16px",borderRadius:14,textAlign:"left",cursor:"pointer",border:`1.5px solid ${sel?gold:g.score>0?"rgba(196,122,46,0.22)":"rgba(196,122,46,0.12)"}`,background:sel?"rgba(196,122,46,0.06)":"#fff",fontFamily:font,transition:"all 0.18s",minHeight:44}}
                     onMouseEnter={e=>{if(!sel)e.currentTarget.style.borderColor="rgba(196,122,46,0.3)";}}
-                    onMouseLeave={e=>{if(!sel)e.currentTarget.style.borderColor="rgba(196,122,46,0.12)";}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:5}}>
-                      <div style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.3}}>{g.name}</div>
+                    onMouseLeave={e=>{if(!sel)e.currentTarget.style.borderColor=g.score>0?"rgba(196,122,46,0.22)":"rgba(196,122,46,0.12)";}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",gap:10,marginBottom:4}}>
+                      <div>
+                        <div style={{fontSize:13,fontWeight:700,color:sel?gold:ink,lineHeight:1.3,marginBottom:3}}>{g.name}</div>
+                        {g.reason&&!sel&&<span style={{fontSize:9.5,fontWeight:700,color:g.reason.includes("Budget")||g.reason.includes("budget")?"#16a34a":gold,background:g.reason.includes("Budget")||g.reason.includes("budget")?"rgba(34,197,94,0.09)":"rgba(196,122,46,0.08)",borderRadius:100,padding:"2px 8px"}}>{g.reason}</span>}
+                      </div>
                       <div style={{width:20,height:20,borderRadius:"50%",border:`2px solid ${sel?gold:"rgba(196,122,46,0.18)"}`,background:sel?gold:"transparent",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",transition:"all 0.18s",marginTop:1}}>
                         {sel&&<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round"><polyline points="20 6 9 17 4 12"/></svg>}
                       </div>
