@@ -412,7 +412,7 @@ const Home = () => {
   const [ghProducts, setGhProducts] = useState([]);
   const ghCarouselRef = useRef(null);
   const [plannerOccasion, setPlannerOccasion] = useState(null);
-  const [activePath, setActivePath] = useState(0);
+  const [activePath, setActivePath] = useState(null);
   const [occasionFlow, setOccasionFlow] = useState(null); // null | "grid" | occasionObject
   const [occasionSearch, setOccasionSearch] = useState("");
   const [showRakhi, setShowRakhi] = useState(false);
@@ -1381,7 +1381,7 @@ const Home = () => {
                   <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px 10px 10px" }}>
                     <span style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: 13, fontWeight: 600, fontStyle: "italic", color: "#fff", display: "block", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.45)" }}>{label}</span>
                     <motion.span
-                      animate={{ opacity: isHovered ? 1 : 0 }}
+                      animate={{ opacity: isHovered ? 1 : 0.55 }}
                       transition={{ duration: 0.18 }}
                       style={{ fontSize: 11, color: "#CCAB4A", fontWeight: 600, display: "block", marginTop: 2, letterSpacing: "0.08em", textTransform: "uppercase" }}
                     >Explore →</motion.span>
@@ -1438,116 +1438,78 @@ const Home = () => {
             action: () => document.getElementById("plan-by-occasion")?.scrollIntoView({ behavior: "smooth" }),
           },
         ];
-        const ap = PATHS[activePath];
+        const ap = activePath !== null ? PATHS[activePath] : null;
         return (
-          <section style={{ background: "#F5EFE6", padding: "80px 28px 88px", fontFamily: "'Outfit', sans-serif" }}>
+          <section style={{ background: "#F5EFE6", padding: "52px 28px 56px", fontFamily: "'Outfit', sans-serif" }}>
             <div style={{ maxWidth: 1080, margin: "0 auto" }}>
 
-              {/* Header */}
-              <motion.div
-                initial={{ opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ duration: 0.48, ease: [0.25, 0.46, 0.45, 0.94] }}
-                style={{ marginBottom: 48 }}
-              >
-                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                  <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)" }} />
-                  <span style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.28em" }}>Find your way</span>
-                </div>
-                <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,3.4vw,2.8rem)", fontWeight: 600, color: "#1C0E04", margin: 0, lineHeight: 1.06, letterSpacing: "-0.02em" }}>
-                  Which path suits you?
-                </h2>
-              </motion.div>
-
-              <div className="path-two-col" style={{ display: "grid", gridTemplateColumns: "5fr 7fr", gap: 20, alignItems: "stretch" }}>
-
-                {/* Left: tab pills — no numbered badges, clean state clarity (ui-ux-pro-max: state-clarity) */}
-                <div className="path-tab-list" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {PATHS.map((p, i) => (
-                    <motion.button
-                      key={i}
-                      onClick={() => setActivePath(i)}
-                      whileHover={{ x: activePath === i ? 0 : 3 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 28 }}
-                      style={{
-                        textAlign: "left",
-                        cursor: "pointer",
-                        fontFamily: "'Outfit', sans-serif",
-                        background: activePath === i ? "#fff" : "rgba(255,255,255,0.45)",
-                        borderRadius: 14,
-                        padding: "20px 22px",
-                        border: "1px solid",
-                        borderColor: activePath === i ? "rgba(196,122,46,0.28)" : "rgba(196,122,46,0.1)",
-                        borderLeft: `3px solid ${activePath === i ? "#C47A2E" : "rgba(196,122,46,0.12)"}`,
-                        boxShadow: activePath === i ? "0 6px 28px rgba(196,122,46,0.13)" : "none",
-                        transition: "background 0.22s, border-color 0.22s, box-shadow 0.22s",
-                        outline: "none",
-                      }}
-                    >
-                      {/* Tag pill */}
-                      <span style={{ fontSize: 11, fontWeight: 700, color: activePath === i ? "#C47A2E" : "#B8956A", textTransform: "uppercase", letterSpacing: "0.16em", display: "block", marginBottom: 8 }}>
-                        {p.tag}
-                      </span>
-                      <p style={{ fontSize: 15, fontWeight: 600, color: activePath === i ? "#1C0E04" : "#6B4528", margin: "0 0 5px", lineHeight: 1.3, fontFamily: "'Cormorant Garamond', Georgia, serif" }}>
-                        {p.title}
-                      </p>
-                      <p style={{ fontSize: 12.5, color: activePath === i ? "#7A5535" : "rgba(107,69,40,0.6)", margin: 0, lineHeight: 1.45 }}>
-                        {p.hook}
-                      </p>
-                    </motion.button>
-                  ))}
-                </div>
-
-                {/* Right: dark panel — strong contrast, premium feel */}
-                <div style={{ background: "#1C0E04", borderRadius: 20, padding: "36px 36px 32px", position: "relative", overflow: "hidden" }}>
-                  {/* Ambient glow */}
-                  <div aria-hidden style={{ position: "absolute", top: -60, right: -40, width: 220, height: 220, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-                  {/* AnimatePresence for content switch (ui-ux-pro-max: motion-meaning) */}
-                  <motion.div
-                    key={activePath}
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.32, ease: [0.25, 0.46, 0.45, 0.94] }}
+              {/* Compact strip — 3 pill cards side by side, tap to expand */}
+              <div className="path-strip" style={{ display: "flex", gap: 10, marginBottom: ap ? 14 : 0, flexWrap: "wrap" }}>
+                {PATHS.map((p, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setActivePath(activePath === i ? null : i)}
+                    style={{
+                      flex: "1 1 160px",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      fontFamily: "'Outfit', sans-serif",
+                      background: activePath === i ? "#fff" : "rgba(255,255,255,0.52)",
+                      borderRadius: 14,
+                      padding: "14px 16px",
+                      border: `1.5px solid ${activePath === i ? "rgba(196,122,46,0.32)" : "rgba(196,122,46,0.1)"}`,
+                      borderLeft: `3px solid ${activePath === i ? "#C47A2E" : "rgba(196,122,46,0.15)"}`,
+                      boxShadow: activePath === i ? "0 4px 16px rgba(196,122,46,0.13)" : "none",
+                      transition: "all 0.2s",
+                      outline: "none",
+                    }}
                   >
-                    <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(196,122,46,0.7)", textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 12px" }}>How it works</p>
-                    <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.25rem,2.2vw,1.55rem)", fontWeight: 600, fontStyle: "italic", color: "rgba(255,247,235,0.92)", margin: "0 0 32px", lineHeight: 1.28 }}>
-                      {ap.hook}
-                    </p>
-
-                    {/* Steps — clean numbered lines, no circle bubbles */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 20, marginBottom: 32 }}>
-                      {ap.steps.map(({ n, text }, i) => (
-                        <motion.div
-                          key={n}
-                          initial={{ opacity: 0, x: -8 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.3, delay: i * 0.07, ease: [0.25, 0.46, 0.45, 0.94] }}
-                          style={{ display: "flex", gap: 16, alignItems: "flex-start" }}
-                        >
-                          <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,122,46,0.6)", letterSpacing: "0.1em", minWidth: 22, paddingTop: 2, fontFamily: "monospace" }}>{n}</span>
-                          <div style={{ flex: 1, borderTop: "1px solid rgba(255,247,235,0.07)", paddingTop: 12 }}>
-                            <p style={{ fontSize: 13.5, color: "rgba(255,247,235,0.72)", margin: 0, lineHeight: 1.65, fontWeight: 400 }}>{text}</p>
-                          </div>
-                        </motion.div>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={ap.action}
-                      style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 13.5, fontWeight: 600, padding: "12px 28px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.38)", transition: "transform 0.2s, box-shadow 0.2s", letterSpacing: "0.02em" }}
-                      onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.5)"; }}
-                      onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.38)"; }}
-                    >
-                      {ap.cta} →
-                    </button>
-                  </motion.div>
-                </div>
-
+                    <span style={{ fontSize: 10, fontWeight: 700, color: activePath === i ? "#C47A2E" : "#B8956A", textTransform: "uppercase", letterSpacing: "0.16em", display: "block", marginBottom: 5 }}>{p.tag}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: activePath === i ? "#1C0E04" : "#6B4528", display: "block", fontFamily: "'Cormorant Garamond', Georgia, serif", lineHeight: 1.2, marginBottom: 3 }}>{p.title}</span>
+                    <span style={{ fontSize: 11.5, color: activePath === i ? "#7A5535" : "rgba(107,69,40,0.52)", display: "block", lineHeight: 1.4 }}>{p.hook}</span>
+                  </button>
+                ))}
               </div>
+
+              {/* Expandable panel — slides in below the strip when a path is selected */}
+              {ap && (
+                <motion.div
+                  key={activePath}
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.26, ease: [0.25, 0.46, 0.45, 0.94] }}
+                  style={{ background: "#1C0E04", borderRadius: 18, padding: "28px 32px", position: "relative", overflow: "hidden" }}
+                >
+                  <div aria-hidden style={{ position: "absolute", top: -60, right: -40, width: 200, height: 200, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
+                  <p style={{ fontSize: 11, fontWeight: 700, color: "rgba(196,122,46,0.7)", textTransform: "uppercase", letterSpacing: "0.2em", margin: "0 0 10px" }}>How it works</p>
+                  <p style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.1rem,2vw,1.4rem)", fontWeight: 600, fontStyle: "italic", color: "rgba(255,247,235,0.92)", margin: "0 0 22px", lineHeight: 1.28 }}>{ap.hook}</p>
+                  <div className="path-steps-row" style={{ display: "flex", gap: 0, marginBottom: 24 }}>
+                    {ap.steps.map(({ n, text }, i) => (
+                      <div key={n} style={{ flex: 1, paddingRight: i < 2 ? 20 : 0, borderRight: i < 2 ? "1px solid rgba(255,247,235,0.07)" : "none", paddingLeft: i > 0 ? 20 : 0 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(196,122,46,0.6)", letterSpacing: "0.1em", display: "block", marginBottom: 8, fontFamily: "monospace" }}>{n}</span>
+                        <p style={{ fontSize: 13, color: "rgba(255,247,235,0.72)", margin: 0, lineHeight: 1.6 }}>{text}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <button
+                    onClick={ap.action}
+                    style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 13.5, fontWeight: 600, padding: "11px 26px", borderRadius: 10, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", boxShadow: "0 4px 18px rgba(196,122,46,0.38)", letterSpacing: "0.02em", transition: "transform 0.2s, box-shadow 0.2s" }}
+                    onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 10px 28px rgba(196,122,46,0.5)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 4px 18px rgba(196,122,46,0.38)"; }}
+                  >
+                    {ap.cta} →
+                  </button>
+                </motion.div>
+              )}
             </div>
-            <style>{`@media (max-width: 760px) { .path-two-col { grid-template-columns: 1fr !important; } }`}</style>
+            <style>{`
+              @media (max-width: 640px) {
+                .path-strip { flex-direction: column !important; }
+                .path-steps-row { flex-direction: column !important; gap: 14px !important; }
+                .path-steps-row > div { border-right: none !important; border-bottom: 1px solid rgba(255,247,235,0.07) !important; padding: 0 0 14px 0 !important; }
+                .path-steps-row > div:last-child { border-bottom: none !important; padding-bottom: 0 !important; }
+              }
+            `}</style>
           </section>
         );
       })()}
@@ -1654,9 +1616,9 @@ const Home = () => {
 
           <style>{`
             @media (max-width: 640px) {
-              .efc-grid { display: flex !important; overflow-x: auto !important; gap: 10px !important; padding-bottom: 8px !important; scrollbar-width: none; }
-              .efc-grid::-webkit-scrollbar { display: none; }
-              .efc-tile { min-width: 148px !important; max-width: 148px !important; flex-shrink: 0 !important; }
+              .efc-grid { display: grid !important; grid-template-columns: 1fr 1fr !important; gap: 8px !important; overflow-x: unset !important; }
+              .efc-tile { min-width: unset !important; max-width: unset !important; flex-shrink: unset !important; padding: 14px 12px 12px !important; gap: 8px !important; }
+              .efc-tile[style*="span 2"] { grid-column: span 2 !important; }
             }
             @media (min-width: 641px) and (max-width: 900px) {
               .efc-grid { grid-template-columns: repeat(2,1fr) !important; }
