@@ -309,9 +309,10 @@ body {
     min-height: unset !important;
     padding-top: 60px !important;
   }
-  /* Trust bar hidden on mobile — too cluttered */
+  /* Trust bar: compact row visible on mobile */
   .home-hero-trust {
-    display: none !important;
+    display: flex !important;
+    flex-wrap: wrap !important;
   }
   .hero-split {
     flex-direction: column !important;
@@ -1991,23 +1992,29 @@ body {
     display: none !important;
   }
 
-  /* "Why Tendr" trust stats — horizontal scroll on mobile */
+  /* Trust stats — vertical stack on mobile */
   .trust-bar-grid {
     display: flex !important;
-    overflow-x: auto !important;
-    scroll-snap-type: x mandatory !important;
-    scrollbar-width: none !important;
+    flex-direction: column !important;
+    overflow-x: unset !important;
+    scroll-snap-type: none !important;
     border-radius: 14px !important;
   }
-  .trust-bar-grid::-webkit-scrollbar { display: none; }
   .trust-bar-grid > div {
-    min-width: 78vw !important;
+    min-width: unset !important;
     flex-shrink: 0 !important;
-    scroll-snap-align: start !important;
-    border-right: 1px solid rgba(204,171,74,0.1) !important;
+    scroll-snap-align: unset !important;
+    padding: 24px 20px !important;
   }
   .trust-bar-grid > div > div[style*="position: absolute"] {
     display: none !important;
+  }
+}
+
+/* ── Mobile section rhythm — compact, professional ── */
+@media (max-width: 640px) {
+  #plan-by-occasion {
+    padding: 52px 18px 56px !important;
   }
 }
 

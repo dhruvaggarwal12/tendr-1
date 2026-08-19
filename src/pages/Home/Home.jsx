@@ -1285,9 +1285,7 @@ const Home = () => {
       </motion.section>
 
       {/* ── Plan by Occasion ── */}
-      <section id="plan-by-occasion" style={{ background: "#F5EFE6", padding: "76px 28px 84px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        {/* Ambient warm glow */}
-        <div aria-hidden style={{ position: "absolute", top: -100, right: -60, width: 380, height: 380, borderRadius: "50%", background: "radial-gradient(circle, rgba(196,122,46,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+      <section id="plan-by-occasion" style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
 
         <div style={{ maxWidth: 1120, margin: "0 auto", position: "relative" }}>
 
@@ -1297,16 +1295,11 @@ const Home = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.4 }}
             transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] }}
-            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 44, flexWrap: "wrap", gap: 16 }}
+            style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 40, flexWrap: "wrap", gap: 16 }}
           >
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg, #C47A2E, #CCAB4A)" }} />
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.3em", fontFamily: "'Outfit', sans-serif" }}>Plan by Occasion</span>
-              </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(2rem,3.4vw,2.8rem)", fontWeight: 600, color: "#1C0E04", margin: 0, lineHeight: 1.05, letterSpacing: "-0.02em" }}>
-                What's the{" "}
-                <em style={{ fontStyle: "italic", fontWeight: 700, background: "linear-gradient(135deg,#C47A2E 0%,#CCAB4A 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>occasion?</em>
+              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(1.9rem,3.2vw,2.6rem)", fontWeight: 700, color: "#1C0E04", margin: 0, lineHeight: 1.04, letterSpacing: "-0.03em" }}>
+                Pick your occasion
               </h2>
             </div>
           </motion.div>
@@ -1352,9 +1345,9 @@ const Home = () => {
                   style={{
                     position: "relative",
                     flexShrink: 0,
-                    width: 128,
-                    height: 172,
-                    borderRadius: 14,
+                    width: 136,
+                    height: 192,
+                    borderRadius: 16,
                     overflow: "hidden",
                     border: "none",
                     background: "#D4C0A8",
@@ -1391,7 +1384,7 @@ const Home = () => {
             })}
           </div>
 
-          <div style={{ position: "absolute", right: 0, top: 0, bottom: 6, width: 80, background: "linear-gradient(to right, transparent, #F5EFE6)", pointerEvents: "none", zIndex: 1 }} />
+          <div style={{ position: "absolute", right: 0, top: 0, bottom: 6, width: 80, background: "linear-gradient(to right, transparent, #ffffff)", pointerEvents: "none", zIndex: 1 }} />
           </div>
           <style>{`.occ-strip::-webkit-scrollbar { display: none; }`}</style>
         </div>
@@ -1515,7 +1508,7 @@ const Home = () => {
       })()}
 
       {/* ── Everything for your celebration ── */}
-      <section style={{ background: "#FAF7F2", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif" }}>
+      <section style={{ background: "#ffffff", padding: "72px 28px 80px", fontFamily: "'Outfit', sans-serif" }}>
         <div style={{ maxWidth: 1080, margin: "0 auto" }}>
 
           {/* Header */}
@@ -1527,11 +1520,7 @@ const Home = () => {
             style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 36, flexWrap: "wrap", gap: 16 }}
           >
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                <div style={{ width: 28, height: 1.5, background: "linear-gradient(90deg,#C47A2E,#CCAB4A)" }} />
-                <span style={{ fontSize: 10.5, fontWeight: 700, color: "#C47A2E", textTransform: "uppercase", letterSpacing: "0.28em" }}>Built for your event</span>
-              </div>
-              <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.9rem,3.2vw,2.6rem)", fontWeight: 600, color: "#1C0E04", margin: 0, lineHeight: 1.06, letterSpacing: "-0.02em" }}>
+              <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(1.9rem,3.2vw,2.6rem)", fontWeight: 700, color: "#1C0E04", margin: 0, lineHeight: 1.04, letterSpacing: "-0.03em" }}>
                 Everything for your celebration
               </h2>
             </div>
@@ -1629,7 +1618,7 @@ const Home = () => {
       </section>
 
       {/* ── Live Entertainment Add-ons ── */}
-      <section style={{ background:"#FAF7F2", padding:"72px 24px 68px", fontFamily:"'Outfit', sans-serif", borderTop:"1px solid rgba(196,122,46,0.07)" }}>
+      <section style={{ background:"#F5EEE3", padding:"72px 24px 68px", fontFamily:"'Outfit', sans-serif" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
 
           {/* Editorial split header */}
@@ -1730,9 +1719,7 @@ const Home = () => {
       </section>
 
       {/* ── Gift Hampers ── */}
-      <section style={{ background: "#F5EFE6", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
-        {/* Subtle radial warmth */}
-        <div style={{ position: "absolute", inset: 0, backgroundImage: "radial-gradient(circle at 10% 50%,rgba(196,122,46,0.06),transparent 50%), radial-gradient(circle at 90% 50%,rgba(204,171,74,0.05),transparent 50%)", pointerEvents: "none" }} />
+      <section style={{ background: "#ffffff", padding: "72px 24px 80px", fontFamily: "'Outfit', sans-serif", position: "relative", overflow: "hidden" }}>
         <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
           <motion.div
             className="gh-band"
@@ -1752,7 +1739,7 @@ const Home = () => {
                   { src: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=300&q=80", h: 100 },
                   { src: "https://images.unsplash.com/photo-1512909006721-3d6018887383?w=300&q=80", h: 80 },
                 ].map(({ src, h }, i) => (
-                  <div key={i} style={{ width: 82, height: h, borderRadius: 14, overflow: "hidden", border: "2.5px solid #F5EFE6", flexShrink: 0, marginLeft: i > 0 ? -18 : 0, position: "relative", zIndex: i === 1 ? 2 : 1, boxShadow: "0 6px 20px rgba(28,14,4,0.14)", transition: "transform 0.2s" }}>
+                  <div key={i} style={{ width: 82, height: h, borderRadius: 14, overflow: "hidden", border: "2.5px solid #ffffff", flexShrink: 0, marginLeft: i > 0 ? -18 : 0, position: "relative", zIndex: i === 1 ? 2 : 1, boxShadow: "0 6px 20px rgba(28,14,4,0.14)", transition: "transform 0.2s" }}>
                     <img src={src} alt="hamper" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
                   </div>
                 ))}
@@ -1800,13 +1787,8 @@ const Home = () => {
         <div style={{ maxWidth: 1060, margin: "0 auto", position: "relative" }}>
           {/* Header */}
           <div style={{ textAlign: "center", marginBottom: 36 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 32, height: 1, background: "linear-gradient(90deg,transparent,rgba(204,171,74,0.5))" }} />
-              <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: "0.22em", textTransform: "uppercase", color: "#CCAB4A" }}>Why Tendr</span>
-              <div style={{ width: 32, height: 1, background: "linear-gradient(90deg,rgba(204,171,74,0.5),transparent)" }} />
-            </div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: "clamp(1.5rem,2.8vw,2.2rem)", fontWeight: 300, color: "#FFF8EC", margin: 0, lineHeight: 1.1, fontStyle: "italic", letterSpacing: "0.01em" }}>
-              Built on trust. Proven by results.
+            <h2 style={{ fontFamily: "'Outfit', sans-serif", fontSize: "clamp(1.4rem,2.4vw,1.9rem)", fontWeight: 700, color: "#FFF8EC", margin: 0, lineHeight: 1.1, letterSpacing: "-0.01em" }}>
+              Trusted by Delhi NCR.
             </h2>
           </div>
 
@@ -1864,8 +1846,8 @@ const Home = () => {
 
         <style>{`
           @media (max-width: 640px) {
-            .trust-bar-grid { display: flex !important; overflow-x: auto !important; scroll-snap-type: x mandatory !important; border-radius: 14px !important; }
-            .trust-bar-grid > div { min-width: 78vw !important; flex-shrink: 0 !important; scroll-snap-align: start !important; }
+            .trust-bar-grid { display: flex !important; flex-direction: column !important; overflow-x: unset !important; scroll-snap-type: none !important; border-radius: 14px !important; }
+            .trust-bar-grid > div { min-width: unset !important; flex-shrink: 0 !important; scroll-snap-align: unset !important; padding: 24px 20px !important; }
           }
         `}</style>
       </section>
