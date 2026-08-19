@@ -119,6 +119,7 @@ const ServiceChat         = lazy(() => import("./pages/customer/ServiceChat"));
 const GiftHampersCakes    = lazy(() => import('./pages/customer/GiftHampersCakes'));
 const RakhiGiftHub        = lazy(() => import('./pages/customer/RakhiGiftHub'));
 const GiftingHub          = lazy(() => import('./pages/customer/GiftingHub'));
+const HamperBuilder       = lazy(() => import('./pages/gifting/HamperBuilder'));
 const CheckboxPicker         = lazy(() => import('./pages/checkbox/CheckboxPicker'));
 const PrebuiltCheckbox       = lazy(() => import('./pages/checkbox/PrebuiltCheckbox'));
 // const DecorFinder      = lazy(() => import('./pages/tools/DecorFinder.jsx')); // disabled
@@ -484,6 +485,11 @@ const router = createBrowserRouter([
   {
     path: '/gift-hampers-cakes',
     element: <GiftHampersCakes />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/hamper-builder',
+    element: <HamperBuilder />,
     errorElement: <ErrorPage />,
   },
   {

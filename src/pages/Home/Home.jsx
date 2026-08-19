@@ -1762,16 +1762,26 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right: CTA */}
-            <motion.button
-              onClick={() => navigate("/gift-hampers-cakes")}
-              style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "14px 30px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", flexShrink: 0, boxShadow: "0 6px 22px rgba(196,122,46,0.38)" }}
-              whileHover={{ scale: 1.03, boxShadow: "0 12px 32px rgba(196,122,46,0.5)" }}
-              whileTap={{ scale: 0.97 }}
-              transition={{ type: "spring", stiffness: 380, damping: 24 }}
-            >
-              Browse Hampers →
-            </motion.button>
+            {/* Right: CTAs */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
+              <motion.button
+                onClick={() => navigate("/gift-hampers-cakes")}
+                style={{ background: "linear-gradient(135deg,#C47A2E,#D4A848)", color: "#fff", fontSize: 14.5, fontWeight: 700, padding: "14px 30px", borderRadius: 12, border: "none", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap", boxShadow: "0 6px 22px rgba(196,122,46,0.38)" }}
+                whileHover={{ scale: 1.03, boxShadow: "0 12px 32px rgba(196,122,46,0.5)" }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ type: "spring", stiffness: 380, damping: 24 }}
+              >
+                Browse Hampers →
+              </motion.button>
+              <motion.button
+                onClick={() => navigate("/hamper-builder")}
+                style={{ background: "transparent", color: "#C47A2E", fontSize: 13.5, fontWeight: 700, padding: "11px 24px", borderRadius: 12, border: "1.5px solid rgba(196,122,46,0.38)", cursor: "pointer", fontFamily: "'Outfit',sans-serif", whiteSpace: "nowrap" }}
+                whileHover={{ background: "rgba(196,122,46,0.06)" }}
+                whileTap={{ scale: 0.97 }}
+              >
+                🧺 Build Your Own
+              </motion.button>
+            </div>
           </motion.div>
         </div>
         <style>{`

@@ -113,6 +113,7 @@ function openBaatKaro(onSubmit, message) {
 // ════════════════════════════════════════════════════════════════════════════
 function HomeView({ setView, setBulk }) {
   const [hoveredFlow, setHoveredFlow] = React.useState(null);
+  const navigate = useNavigate();
 
   const FLOWS = [
     { id: "ai",          emoji: "🤖", label: "AI Creates My Gift",   sub: "Tell us who & why — we suggest the perfect hamper", badge: "Smart Pick", badgeColor: "#7C3AED" },
@@ -359,11 +360,12 @@ function AIView({ setView, onSubmit }) {
           </div>
         </div>
 
-        <button onClick={() => setView("builder")} style={{
+        <button onClick={() => navigate("/hamper-builder")} style={{
           width: "100%", marginTop: 16, padding: "13px", borderRadius: 14,
           border: "1.5px solid rgba(196,122,46,0.4)", background: "transparent",
           color: GOLD, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: font,
-        }}>🎨 Prefer to build it yourself?</button>
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+        }}>🧺 Build your own — pick a tokri &amp; fill it yourself</button>
       </div>
     );
   }
