@@ -1083,6 +1083,18 @@ const Home = () => {
               />
               )}
 
+              {/* Left-edge blend — covers the dark strip at the column boundary */}
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0, left: 0, bottom: 0,
+                  width: 72,
+                  background: "linear-gradient(to right, #1C0E04 0%, transparent 100%)",
+                  pointerEvents: "none",
+                  zIndex: 1,
+                }}
+              />
+
               {/* Gradient overlay at bottom */}
               <div
                 style={{
