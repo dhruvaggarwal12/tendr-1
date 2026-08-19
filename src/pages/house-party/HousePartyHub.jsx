@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   TRUTHS, DARES, NEVER_HAVE_I, WOULD_YOU_RATHER,
-  CHARADES, HOT_TAKES, BINGO_SQUARES, PARTY_THEMES, CHECKLIST_TEMPLATE
+  CHARADES, HOT_TAKES, BINGO_SQUARES, PARTY_THEMES, CHECKLIST_TEMPLATE,
+  HOT_SEAT_QUESTIONS, WORD_WOLF_PAIRS, CATEGORY_BLITZ, ROAST_PROMPTS,
 } from "../../data/housePartyData";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
@@ -40,6 +41,12 @@ const TOOL_ICONS = {
   seating:        hpic(<><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></>),
   daytimeline:    hpic(<><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>),
   venue:          hpic(<><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></>),
+  twotruthslie:   hpic(<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/></>),
+  hotseat:        hpic(<><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></>),
+  darewheel:      hpic(<><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></>),
+  wordwolf:       hpic(<><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></>),
+  categoryblitz:  hpic(<><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></>),
+  roastbattle:    hpic(<><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 3z"/></>),
 };
 const SECTION_SVGS = {
   manage: hpic(<><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M4.93 4.93l1.41 1.41M4.93 19.07l1.41-1.41M19.07 19.07l-1.41-1.41M12 2v2M12 20v2M2 12h2M20 12h2"/></>, 16),
@@ -925,7 +932,13 @@ const TOOLS = [
   { id: "spin", section: "games", emoji: "🍾", title: "Spin the Bottle", desc: "Add names → random picker with spinner", color: "#2563EB" },
   { id: "charades", section: "games", emoji: "🎭", title: "Dumb Charades", desc: "Bollywood · Web Shows · Celebs · Memes", color: "#D97706" },
   { id: "bingo", section: "games", emoji: "🎱", title: "Party Bingo", desc: "5×5 party scenario bingo cards", color: "#0891B2" },
-  { id: "mostlikelyto", section: "games", emoji: "🎲", title: "Most Likely To", desc: "Point at whoever fits — most fingers wins", color: "#A855F7" },
+  { id: "mostlikelyto",  section: "games", emoji: "🎲", title: "Most Likely To",      desc: "Point at whoever fits — most fingers wins",      color: "#A855F7" },
+  { id: "twotruthslie", section: "games", emoji: "🤥", title: "Two Truths One Lie",  desc: "Spot the lie · everyone submits · vote as a group", color: "#6366F1" },
+  { id: "hotseat",      section: "games", emoji: "🔥", title: "Hot Seat",            desc: "One player · rapid-fire questions · 60 seconds",    color: "#F43F5E" },
+  { id: "darewheel",    section: "games", emoji: "🎡", title: "Dare Wheel",          desc: "Spin the wheel · land on someone · get a dare",     color: "#8B5CF6" },
+  { id: "wordwolf",     section: "games", emoji: "🐺", title: "Word Wolf",           desc: "One imposter gets a different word · find them",    color: "#10B981" },
+  { id: "categoryblitz",section: "games", emoji: "⚡", title: "Category Blitz",      desc: "Name items in a category · go around · fail = out", color: "#F59E0B" },
+  { id: "roastbattle",  section: "games", emoji: "🎤", title: "Roast Battle",        desc: "Two players · 30 sec each · audience votes",        color: "#EF4444" },
   // Other
   { id: "reportcard", section: "fun", emoji: "🏆", title: "Party Report Card", desc: "Rate the night · get a grade + verdict", color: "#FBBF24" },
 ];
@@ -935,6 +948,687 @@ const SECTIONS = [
   { id: "games",  label: "Games",  subtitle: "Biggest reason to come back" },
   { id: "fun",    label: "Fun",    subtitle: "Theme · music · photos · countdown" },
 ];
+
+// ── New game modals ───────────────────────────────────────────────────────────
+
+function TwoTruthsLieGame({ onClose }) {
+  const [phase, setPhase] = useState('setup'); // setup | collect | vote | reveal | scores
+  const [players, setPlayers] = useState([]); // [{name, s:[str,str,str], lieIdx:0|1|2, shuffled:[0,1,2]}]
+  const [nameInput, setNameInput] = useState('');
+  const [stmts, setStmts] = useState(['', '', '']);
+  const [lieIdx, setLieIdx] = useState(null);
+  const [currentIdx, setCurrentIdx] = useState(0); // which player is being guessed
+  const [votes, setVotes] = useState({}); // voterName->stmtIdx
+  const [voterInput, setVoterInput] = useState('');
+  const [scores, setScores] = useState({});
+  const [votingFor, setVotingFor] = useState(null); // stmtIdx chosen by current voter
+
+  const addPlayer = () => {
+    if (!nameInput.trim() || stmts.some(s => !s.trim()) || lieIdx === null) return;
+    const shuffled = [0, 1, 2].sort(() => Math.random() - 0.5);
+    setPlayers(p => [...p, { name: nameInput.trim(), s: stmts, lieIdx, shuffled }]);
+    setNameInput(''); setStmts(['', '', '']); setLieIdx(null);
+  };
+
+  const startVoting = () => { setPhase('vote'); setCurrentIdx(0); setVotes({}); };
+
+  const submitVote = () => {
+    if (votingFor === null || !voterInput.trim()) return;
+    setVotes(v => ({ ...v, [voterInput.trim()]: votingFor }));
+    setVoterInput(''); setVotingFor(null);
+  };
+
+  const reveal = () => {
+    const cur = players[currentIdx];
+    const newScores = { ...scores };
+    Object.entries(votes).forEach(([voter, guessShuffledIdx]) => {
+      const guessedOriginalIdx = cur.shuffled[guessShuffledIdx];
+      if (guessedOriginalIdx === cur.lieIdx) {
+        newScores[voter] = (newScores[voter] || 0) + 1;
+      }
+    });
+    setScores(newScores);
+    setPhase('reveal');
+  };
+
+  const next = () => {
+    if (currentIdx + 1 >= players.length) { setPhase('scores'); return; }
+    setCurrentIdx(i => i + 1); setVotes({}); setVoterInput(''); setVotingFor(null); setPhase('vote');
+  };
+
+  const cur = players[currentIdx];
+
+  return (
+    <Modal onClose={onClose} title="Two Truths One Lie" emoji="🤥" wide>
+      {phase === 'setup' && (
+        <>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.6 }}>
+            Each player adds their name + 3 statements (2 truths, 1 lie). Others guess which is the lie.
+          </div>
+          {players.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              {players.map((p, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 6 }}>
+                  <span style={{ fontSize: 16 }}>🤥</span>
+                  <span style={{ fontSize: 14, color: '#fff', fontFamily: font, fontWeight: 700 }}>{p.name}</span>
+                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginLeft: 'auto' }}>ready</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '16px 14px', marginBottom: 16 }}>
+            <input value={nameInput} onChange={e => setNameInput(e.target.value)} placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 8, alignItems: 'center' }}>
+                <button onClick={() => setLieIdx(i)} style={{ width: 28, height: 28, borderRadius: '50%', border: `2px solid ${lieIdx === i ? '#EF4444' : 'rgba(255,255,255,0.2)'}`, background: lieIdx === i ? '#EF444422' : 'transparent', color: lieIdx === i ? '#EF4444' : 'rgba(255,255,255,0.4)', fontSize: 11, fontWeight: 800, cursor: 'pointer', flexShrink: 0 }}>LIE</button>
+                <input value={stmts[i]} onChange={e => setStmts(s => { const n = [...s]; n[i] = e.target.value; return n; })} placeholder={`Statement ${i + 1}`} style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: `1px solid ${lieIdx === i ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}`, borderRadius: 10, padding: '9px 12px', color: '#fff', fontSize: 13, fontFamily: font, outline: 'none' }} />
+              </div>
+            ))}
+            <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>Mark which statement is the LIE before adding ↑</div>
+            <button onClick={addPlayer} disabled={!nameInput.trim() || stmts.some(s => !s.trim()) || lieIdx === null} style={{ width: '100%', background: nameInput.trim() && stmts.every(s => s.trim()) && lieIdx !== null ? '#6366F1' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>+ Add Player</button>
+          </div>
+          <button onClick={startVoting} disabled={players.length < 2} style={{ width: '100%', background: players.length >= 2 ? 'linear-gradient(135deg,#6366F1,#8B5CF6)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: players.length >= 2 ? 'pointer' : 'not-allowed', fontFamily: font }}>
+            {players.length < 2 ? `Add ${2 - players.length} more player${players.length === 1 ? '' : 's'} to start` : `Start Game (${players.length} players) →`}
+          </button>
+        </>
+      )}
+
+      {phase === 'vote' && cur && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#6366F1', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>Player {currentIdx + 1} of {players.length}</div>
+            <div style={{ fontSize: 24, fontWeight: 900, color: '#fff', fontFamily: font }}>{cur.name}'s statements</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Which one is the LIE?</div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+            {cur.shuffled.map((origIdx, si) => (
+              <div key={si} style={{ padding: '14px 16px', background: 'rgba(255,255,255,0.05)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.1)', fontSize: 14, color: '#fff', fontFamily: font, lineHeight: 1.5 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.35)', marginRight: 8 }}>{si + 1}.</span>
+                {cur.s[origIdx]}
+              </div>
+            ))}
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '14px' }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 10 }}>Cast your vote</div>
+            <input value={voterInput} onChange={e => setVoterInput(e.target.value)} placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '9px 12px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              {[1, 2, 3].map(n => (
+                <button key={n} onClick={() => setVotingFor(n - 1)} style={{ flex: 1, padding: '10px 0', borderRadius: 10, border: `2px solid ${votingFor === n - 1 ? '#EF4444' : 'rgba(255,255,255,0.12)'}`, background: votingFor === n - 1 ? '#EF444422' : 'rgba(255,255,255,0.04)', color: votingFor === n - 1 ? '#EF4444' : 'rgba(255,255,255,0.6)', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>#{n}</button>
+              ))}
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={submitVote} disabled={!voterInput.trim() || votingFor === null} style={{ flex: 1, background: voterInput.trim() && votingFor !== null ? '#6366F1' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Submit Vote</button>
+              <button onClick={reveal} disabled={Object.keys(votes).length === 0} style={{ flex: 1, background: Object.keys(votes).length > 0 ? '#F43F5E' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Reveal ({Object.keys(votes).length} voted)</button>
+            </div>
+          </div>
+        </>
+      )}
+
+      {phase === 'reveal' && cur && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontSize: 36, marginBottom: 8 }}>🤥</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontFamily: font }}>{cur.name}'s LIE was:</div>
+          </div>
+          <div style={{ padding: '16px', background: '#EF444418', borderRadius: 14, border: '1.5px solid #EF444455', marginBottom: 20, fontSize: 15, color: '#fff', fontFamily: font, lineHeight: 1.5, textAlign: 'center' }}>
+            "{cur.s[cur.lieIdx]}"
+          </div>
+          <div style={{ marginBottom: 20 }}>
+            {Object.entries(votes).map(([voter, guessIdx]) => {
+              const guessedOrigIdx = cur.shuffled[guessIdx];
+              const correct = guessedOrigIdx === cur.lieIdx;
+              return (
+                <div key={voter} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: correct ? '#22c55e14' : '#EF444414', borderRadius: 10, marginBottom: 6, border: `1px solid ${correct ? '#22c55e30' : '#EF444430'}` }}>
+                  <span style={{ fontSize: 16 }}>{correct ? '✅' : '❌'}</span>
+                  <span style={{ flex: 1, fontSize: 14, color: '#fff', fontFamily: font, fontWeight: 600 }}>{voter}</span>
+                  <span style={{ fontSize: 12, color: correct ? '#22c55e' : '#EF4444', fontWeight: 700 }}>{correct ? '+1 point' : 'fooled!'}</span>
+                </div>
+              );
+            })}
+          </div>
+          <button onClick={next} style={{ width: '100%', background: 'linear-gradient(135deg,#6366F1,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
+            {currentIdx + 1 >= players.length ? 'See Final Scores →' : `Next Player: ${players[currentIdx + 1]?.name} →`}
+          </button>
+        </>
+      )}
+
+      {phase === 'scores' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ fontSize: 40 }}>🏆</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font, marginTop: 8 }}>Final Scores</div>
+          </div>
+          {Object.entries(scores).sort(([, a], [, b]) => b - a).map(([name, score], i) => (
+            <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: i === 0 ? 'linear-gradient(90deg,#6366F120,rgba(255,255,255,0.03))' : 'rgba(255,255,255,0.04)', borderRadius: 12, marginBottom: 8, border: i === 0 ? '1px solid #6366F140' : '1px solid rgba(255,255,255,0.07)' }}>
+              <span style={{ fontSize: 18, minWidth: 28 }}>{i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `#${i + 1}`}</span>
+              <span style={{ flex: 1, fontSize: 15, color: '#fff', fontFamily: font, fontWeight: 700 }}>{name}</span>
+              <span style={{ fontSize: 20, fontWeight: 900, color: i === 0 ? '#6366F1' : '#fff', fontFamily: font }}>{score}</span>
+            </div>
+          ))}
+          {Object.keys(scores).length === 0 && <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontSize: 14, padding: 20 }}>No one guessed correctly. You're all expert liars! 🤥</div>}
+          <button onClick={() => { setPhase('setup'); setPlayers([]); setScores({}); setCurrentIdx(0); }} style={{ width: '100%', marginTop: 16, background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 12, padding: '12px 0', color: 'rgba(255,255,255,0.6)', fontSize: 14, cursor: 'pointer', fontFamily: font }}>Play Again</button>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+function HotSeatGame({ onClose }) {
+  const [phase, setPhase] = useState('setup'); // setup | playing | done
+  const [player, setPlayer] = useState('');
+  const [qIdx, setQIdx] = useState(0);
+  const [shuffled, setShuffled] = useState([]);
+  const [timer, setTimer] = useState(60);
+  const [answered, setAnswered] = useState(0);
+  const [passed, setPassed] = useState(0);
+  const timerRef = useRef(null);
+
+  const start = () => {
+    const qs = [...HOT_SEAT_QUESTIONS].sort(() => Math.random() - 0.5);
+    setShuffled(qs); setQIdx(0); setAnswered(0); setPassed(0); setTimer(60);
+    setPhase('playing');
+    timerRef.current = setInterval(() => {
+      setTimer(t => { if (t <= 1) { clearInterval(timerRef.current); setPhase('done'); return 0; } return t - 1; });
+    }, 1000);
+  };
+
+  const next = (answered_) => {
+    if (answered_) setAnswered(a => a + 1); else setPassed(p => p + 1);
+    setQIdx(i => i + 1);
+  };
+
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const pct = timer / 60;
+  const timerColor = timer > 30 ? '#22c55e' : timer > 10 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <Modal onClose={onClose} title="Hot Seat" emoji="🔥">
+      {phase === 'setup' && (
+        <>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 24, lineHeight: 1.7 }}>
+            One player sits in the <strong style={{ color: '#F43F5E' }}>Hot Seat</strong>. The group fires rapid questions at them. 60 seconds. Answer or pass — no hiding.
+          </div>
+          <input value={player} onChange={e => setPlayer(e.target.value)} placeholder="Who's in the hot seat?" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '14px 16px', color: '#fff', fontSize: 16, fontFamily: font, outline: 'none', boxSizing: 'border-box', marginBottom: 16, textAlign: 'center', fontWeight: 700 }} />
+          <button onClick={start} disabled={!player.trim()} style={{ width: '100%', background: player.trim() ? 'linear-gradient(135deg,#F43F5E,#F97316)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '16px 0', color: '#fff', fontSize: 16, fontWeight: 800, cursor: player.trim() ? 'pointer' : 'not-allowed', fontFamily: font }}>
+            Start the Clock 🔥
+          </button>
+        </>
+      )}
+      {phase === 'playing' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ position: 'relative', width: 80, height: 80, margin: '0 auto 12px' }}>
+              <svg viewBox="0 0 80 80" style={{ position: 'absolute', inset: 0, transform: 'rotate(-90deg)' }}>
+                <circle cx="40" cy="40" r="34" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="6" />
+                <circle cx="40" cy="40" r="34" fill="none" stroke={timerColor} strokeWidth="6"
+                  strokeDasharray={`${2 * Math.PI * 34 * pct} ${2 * Math.PI * 34 * (1 - pct)}`}
+                  style={{ transition: 'stroke-dasharray 0.9s linear, stroke 0.3s' }} />
+              </svg>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, fontWeight: 900, color: timerColor, fontFamily: "'Outfit',sans-serif" }}>{timer}</div>
+            </div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)' }}>{player} is in the hot seat</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 18px', marginBottom: 20, minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', fontFamily: font, textAlign: 'center', lineHeight: 1.5 }}>
+              {shuffled[qIdx] || "That's all the questions!"}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => next(false)} style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12, padding: '14px 0', color: 'rgba(255,255,255,0.55)', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Pass</button>
+            <button onClick={() => next(true)} style={{ flex: 2, background: 'linear-gradient(135deg,#F43F5E,#F97316)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Answered ✓</button>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 24, marginTop: 16 }}>
+            <div style={{ textAlign: 'center' }}><div style={{ fontSize: 22, fontWeight: 900, color: '#22c55e' }}>{answered}</div><div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>ANSWERED</div></div>
+            <div style={{ textAlign: 'center' }}><div style={{ fontSize: 22, fontWeight: 900, color: '#f59e0b' }}>{passed}</div><div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)' }}>PASSED</div></div>
+          </div>
+        </>
+      )}
+      {phase === 'done' && (
+        <>
+          <div style={{ textAlign: 'center', padding: '20px 0 28px' }}>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>🔥</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font }}>{player} survived!</div>
+            <div style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', marginTop: 6 }}>60 seconds of pure pressure</div>
+          </div>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center', marginBottom: 28 }}>
+            <div style={{ textAlign: 'center', background: '#22c55e18', border: '1px solid #22c55e30', borderRadius: 14, padding: '16px 24px' }}>
+              <div style={{ fontSize: 36, fontWeight: 900, color: '#22c55e' }}>{answered}</div>
+              <div style={{ fontSize: 11, color: '#22c55e', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 2 }}>Answered</div>
+            </div>
+            <div style={{ textAlign: 'center', background: '#f59e0b18', border: '1px solid #f59e0b30', borderRadius: 14, padding: '16px 24px' }}>
+              <div style={{ fontSize: 36, fontWeight: 900, color: '#f59e0b' }}>{passed}</div>
+              <div style={{ fontSize: 11, color: '#f59e0b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: 2 }}>Passed</div>
+            </div>
+          </div>
+          <button onClick={() => { setPhase('setup'); setPlayer(''); }} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#F97316)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Next Player →</button>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+function DareWheelGame({ onClose }) {
+  const [players, setPlayers] = useState([]);
+  const [input, setInput] = useState('');
+  const [spinning, setSpinning] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  const [landed, setLanded] = useState(null); // player name
+  const [dare, setDare] = useState(null);
+  const canvasRef = useRef(null);
+
+  const addPlayer = () => { if (!input.trim() || players.includes(input.trim())) return; setPlayers(p => [...p, input.trim()]); setInput(''); setLanded(null); setDare(null); };
+  const removePlayer = (p) => setPlayers(ps => ps.filter(x => x !== p));
+
+  const spin = () => {
+    if (players.length < 2 || spinning) return;
+    setSpinning(true); setLanded(null); setDare(null);
+    const extra = 360 * (5 + Math.floor(Math.random() * 5));
+    const sliceAngle = 360 / players.length;
+    const targetIdx = Math.floor(Math.random() * players.length);
+    const targetAngle = extra + 360 - (targetIdx * sliceAngle + sliceAngle / 2);
+    const newRotation = rotation + targetAngle;
+    setRotation(newRotation);
+    setTimeout(() => {
+      setSpinning(false);
+      setLanded(players[targetIdx]);
+      setDare(DARES[Math.floor(Math.random() * DARES.length)]);
+    }, 3500);
+  };
+
+  const n = players.length;
+  const colors = ['#F43F5E', '#F97316', '#EAB308', '#22c55e', '#06b6d4', '#8B5CF6', '#EC4899', '#14b8a6'];
+  const size = 220;
+  const cx = size / 2, cy = size / 2, r = size / 2 - 4;
+
+  return (
+    <Modal onClose={onClose} title="Dare Wheel" emoji="🎡">
+      {n < 2 ? (
+        <>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.6 }}>Add at least 2 players. Spin the wheel — whoever it lands on gets a dare.</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addPlayer()} placeholder="Player name" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
+            <button onClick={addPlayer} style={{ background: '#8B5CF6', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
+          </div>
+          {players.map(p => (
+            <div key={p} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 6 }}>
+              <span style={{ flex: 1, fontSize: 14, color: '#fff', fontFamily: font }}>{p}</span>
+              <button onClick={() => removePlayer(p)} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 18 }}>×</button>
+            </div>
+          ))}
+          {players.length > 0 && <button onClick={() => setPlayers([])} style={{ width: '100%', marginTop: 8, background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '10px', color: 'rgba(255,255,255,0.4)', fontSize: 13, cursor: 'pointer', fontFamily: font }}>Clear all</button>}
+        </>
+      ) : (
+        <>
+          <div style={{ position: 'relative', width: size, height: size, margin: '0 auto 20px', userSelect: 'none' }}>
+            <svg width={size} height={size} style={{ transform: `rotate(${rotation}deg)`, transition: spinning ? 'transform 3.5s cubic-bezier(0.17,0.67,0.12,0.99)' : 'none', display: 'block' }}>
+              {players.map((p, i) => {
+                const startAngle = (i * 360 / n - 90) * Math.PI / 180;
+                const endAngle = ((i + 1) * 360 / n - 90) * Math.PI / 180;
+                const x1 = cx + r * Math.cos(startAngle), y1 = cy + r * Math.sin(startAngle);
+                const x2 = cx + r * Math.cos(endAngle), y2 = cy + r * Math.sin(endAngle);
+                const midAngle = (startAngle + endAngle) / 2;
+                const tx = cx + (r * 0.62) * Math.cos(midAngle), ty = cy + (r * 0.62) * Math.sin(midAngle);
+                const largeArc = n === 1 ? 1 : 0;
+                return (
+                  <g key={p}>
+                    <path d={`M${cx},${cy} L${x1},${y1} A${r},${r},0,${largeArc},1,${x2},${y2} Z`} fill={colors[i % colors.length]} opacity={0.85} />
+                    <text x={tx} y={ty} textAnchor="middle" dominantBaseline="middle" fontSize={Math.max(9, Math.min(13, 100 / n))} fontWeight="800" fill="#fff" fontFamily="Outfit,sans-serif" transform={`rotate(${(i + 0.5) * 360 / n},${tx},${ty})`}>{p.length > 8 ? p.slice(0, 7) + '…' : p}</text>
+                  </g>
+                );
+              })}
+              <circle cx={cx} cy={cy} r={14} fill="#140e08" />
+              <circle cx={cx} cy={cy} r={9} fill="#CCAB4A" />
+            </svg>
+            <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', width: 0, height: 0, borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '18px solid #fff', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }} />
+          </div>
+          <button onClick={spin} disabled={spinning} style={{ width: '100%', marginBottom: 16, background: spinning ? 'rgba(255,255,255,0.06)' : 'linear-gradient(135deg,#8B5CF6,#6366F1)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: spinning ? 'not-allowed' : 'pointer', fontFamily: font }}>{spinning ? 'Spinning…' : '🎡 Spin the Wheel'}</button>
+          {landed && dare && (
+            <div style={{ background: '#8B5CF618', border: '1.5px solid #8B5CF655', borderRadius: 14, padding: '16px' }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>🎯 {landed} gets a dare</div>
+              <div style={{ fontSize: 14, color: '#fff', fontFamily: font, lineHeight: 1.6 }}>{dare}</div>
+            </div>
+          )}
+          <button onClick={() => { setPlayers([]); setLanded(null); setDare(null); setRotation(0); }} style={{ width: '100%', marginTop: 12, background: 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '10px', color: 'rgba(255,255,255,0.4)', fontSize: 13, cursor: 'pointer', fontFamily: font }}>Change Players</button>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+function WordWolfGame({ onClose }) {
+  const [phase, setPhase] = useState('setup'); // setup | deal | discuss | vote | reveal
+  const [players, setPlayers] = useState([]);
+  const [input, setInput] = useState('');
+  const [pair, setPair] = useState(null);
+  const [wolves, setWolves] = useState([]); // indices who got minority word
+  const [dealIdx, setDealIdx] = useState(0); // current player seeing their card
+  const [showing, setShowing] = useState(false);
+  const [votes, setVotes] = useState({});
+  const [voterName, setVoterName] = useState('');
+  const [votingFor, setVotingFor] = useState('');
+
+  const addPlayer = () => { if (!input.trim() || players.includes(input.trim())) return; setPlayers(p => [...p, input.trim()]); setInput(''); };
+
+  const startGame = () => {
+    const p = WORD_WOLF_PAIRS[Math.floor(Math.random() * WORD_WOLF_PAIRS.length)];
+    setPair(p);
+    const wolfCount = players.length >= 6 ? 2 : 1;
+    const shuffledIdxs = [...players.keys()].sort(() => Math.random() - 0.5);
+    setWolves(shuffledIdxs.slice(0, wolfCount));
+    setDealIdx(0); setShowing(false); setPhase('deal'); setVotes({});
+  };
+
+  const submitVote = () => {
+    if (!voterName.trim() || !votingFor) return;
+    setVotes(v => ({ ...v, [voterName.trim()]: votingFor }));
+    setVoterName(''); setVotingFor('');
+  };
+
+  const wolfNames = wolves.map(i => players[i]);
+  const voteResult = Object.values(votes).reduce((acc, v) => { acc[v] = (acc[v] || 0) + 1; return acc; }, {});
+  const mostVoted = Object.entries(voteResult).sort(([, a], [, b]) => b - a)[0]?.[0];
+  const caught = mostVoted && wolfNames.includes(mostVoted);
+
+  return (
+    <Modal onClose={onClose} title="Word Wolf" emoji="🐺">
+      {phase === 'setup' && (
+        <>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.7 }}>
+            Everyone gets a <strong style={{ color: '#10B981' }}>secret word</strong>. One person (the Wolf 🐺) gets a <em>similar but different</em> word. Describe your word naturally. Find the Wolf before they find out they're different.
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && addPlayer()} placeholder="Add player" style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '10px 14px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none' }} />
+            <button onClick={addPlayer} style={{ background: '#10B981', border: 'none', borderRadius: 10, padding: '10px 18px', color: '#fff', fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Add</button>
+          </div>
+          {players.map(p => (
+            <div key={p} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, marginBottom: 6 }}>
+              <span style={{ flex: 1, fontSize: 14, color: '#fff', fontFamily: font }}>{p}</span>
+              <button onClick={() => setPlayers(ps => ps.filter(x => x !== p))} style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.3)', cursor: 'pointer', fontSize: 18 }}>×</button>
+            </div>
+          ))}
+          <button onClick={startGame} disabled={players.length < 3} style={{ width: '100%', marginTop: 16, background: players.length >= 3 ? 'linear-gradient(135deg,#10B981,#06b6d4)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: players.length >= 3 ? 'pointer' : 'not-allowed', fontFamily: font }}>
+            {players.length < 3 ? `Need ${3 - players.length} more player${players.length === 2 ? '' : 's'}` : `Deal Cards (${players.length} players) →`}
+          </button>
+        </>
+      )}
+      {phase === 'deal' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Pass phone to each player</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font }}>{players[dealIdx]}, look at your word</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>Don't show anyone else</div>
+          </div>
+          {!showing ? (
+            <button onClick={() => setShowing(true)} style={{ width: '100%', background: 'linear-gradient(135deg,#10B981,#06b6d4)', border: 'none', borderRadius: 12, padding: '18px 0', color: '#fff', fontSize: 16, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Tap to see your word</button>
+          ) : (
+            <>
+              <div style={{ background: '#10B98118', border: '2px solid #10B98155', borderRadius: 16, padding: '28px 20px', textAlign: 'center', marginBottom: 16 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#10B981', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 8 }}>Your word is</div>
+                <div style={{ fontSize: 36, fontWeight: 900, color: '#fff', fontFamily: font }}>
+                  {wolves.includes(dealIdx) ? pair.minority : pair.majority}
+                </div>
+              </div>
+              <button onClick={() => { setShowing(false); if (dealIdx + 1 >= players.length) { setPhase('discuss'); } else { setDealIdx(i => i + 1); } }} style={{ width: '100%', background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>
+                {dealIdx + 1 >= players.length ? 'Start Discussion →' : `Done — pass to ${players[dealIdx + 1]}`}
+              </button>
+            </>
+          )}
+        </>
+      )}
+      {phase === 'discuss' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontSize: 40 }}>🐺</div>
+            <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', fontFamily: font, marginTop: 8 }}>Describe your word!</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.45)', marginTop: 6, lineHeight: 1.6 }}>Each player gives 1–2 clues. Don't say the word. Wolves — blend in!</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '14px', marginBottom: 20 }}>
+            {players.map(p => <div key={p} style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)', padding: '5px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>👤 {p}</div>)}
+          </div>
+          <button onClick={() => setPhase('vote')} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Vote for the Wolf →</button>
+        </>
+      )}
+      {phase === 'vote' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontSize: 18, fontWeight: 900, color: '#fff', fontFamily: font }}>Who is the Wolf? 🐺</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{Object.keys(votes).length} of {players.length} voted</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '14px', marginBottom: 16 }}>
+            <input value={voterName} onChange={e => setVoterName(e.target.value)} placeholder="Your name" style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '9px 12px', color: '#fff', fontSize: 14, fontFamily: font, outline: 'none', boxSizing: 'border-box', marginBottom: 10 }} />
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 10 }}>
+              {players.map(p => (
+                <button key={p} onClick={() => setVotingFor(p)} style={{ padding: '8px 14px', borderRadius: 100, border: `1.5px solid ${votingFor === p ? '#F43F5E' : 'rgba(255,255,255,0.12)'}`, background: votingFor === p ? '#F43F5E22' : 'rgba(255,255,255,0.04)', color: votingFor === p ? '#F43F5E' : 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>{p}</button>
+              ))}
+            </div>
+            <button onClick={submitVote} disabled={!voterName.trim() || !votingFor} style={{ width: '100%', background: voterName.trim() && votingFor ? '#F43F5E' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 10, padding: '11px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Submit Vote</button>
+          </div>
+          <button onClick={() => setPhase('reveal')} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Reveal the Wolf →</button>
+        </>
+      )}
+      {phase === 'reveal' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 20 }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>🐺</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: caught ? '#22c55e' : '#EF4444', textTransform: 'uppercase', letterSpacing: '0.15em' }}>{caught ? 'Wolf caught!' : 'Wolf escaped!'}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font, marginTop: 4 }}>{wolfNames.join(' & ')} was the Wolf</div>
+            <div style={{ marginTop: 12, display: 'flex', justifyContent: 'center', gap: 16 }}>
+              <div style={{ textAlign: 'center' }}><div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Majority word</div><div style={{ fontSize: 18, fontWeight: 800, color: '#10B981' }}>{pair.majority}</div></div>
+              <div style={{ fontSize: 24, color: 'rgba(255,255,255,0.2)', alignSelf: 'center' }}>vs</div>
+              <div style={{ textAlign: 'center' }}><div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Wolf's word</div><div style={{ fontSize: 18, fontWeight: 800, color: '#F43F5E' }}>{pair.minority}</div></div>
+            </div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 14, padding: '12px', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 8 }}>Votes</div>
+            {Object.entries(voteResult).sort(([, a], [, b]) => b - a).map(([name, count]) => (
+              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <span style={{ fontSize: 14, color: wolfNames.includes(name) ? '#F43F5E' : '#fff', fontFamily: font, flex: 1, fontWeight: wolfNames.includes(name) ? 800 : 400 }}>{name} {wolfNames.includes(name) ? '🐺' : ''}</span>
+                <span style={{ fontSize: 14, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>{count} vote{count !== 1 ? 's' : ''}</span>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => { setPhase('setup'); setPlayers([]); setPair(null); setWolves([]); setDealIdx(0); setVotes({}); }} style={{ width: '100%', background: 'linear-gradient(135deg,#10B981,#06b6d4)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>Play Again 🐺</button>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+function CategoryBlitzGame({ onClose }) {
+  const [phase, setPhase] = useState('pick'); // pick | playing | done
+  const [cat, setCat] = useState(null);
+  const [timer, setTimer] = useState(60);
+  const [answers, setAnswers] = useState([]);
+  const [input, setInput] = useState('');
+  const [out, setOut] = useState('');
+  const timerRef = useRef(null);
+  const inputRef = useRef(null);
+
+  const start = (c) => {
+    setCat(c); setTimer(60); setAnswers([]); setInput(''); setOut('');
+    setPhase('playing');
+    timerRef.current = setInterval(() => {
+      setTimer(t => { if (t <= 1) { clearInterval(timerRef.current); setPhase('done'); return 0; } return t - 1; });
+    }, 1000);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const submit = () => {
+    const val = input.trim();
+    if (!val) return;
+    setAnswers(a => [...a, val]);
+    setInput('');
+  };
+
+  useEffect(() => () => clearInterval(timerRef.current), []);
+  const timerColor = timer > 30 ? '#22c55e' : timer > 10 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <Modal onClose={onClose} title="Category Blitz" emoji="⚡">
+      {phase === 'pick' && (
+        <>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 20, lineHeight: 1.6 }}>
+            Pick a category. Go around the group naming items. Can't think of one in time → you're out! Or just list everything you can in 60 seconds.
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {CATEGORY_BLITZ.sort(() => Math.random() - 0.5).slice(0, 12).map(c => (
+              <button key={c.name} onClick={() => start(c)} style={{ padding: '12px 10px', background: 'rgba(255,255,255,0.05)', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: font, textAlign: 'left', lineHeight: 1.4 }}>
+                <div style={{ fontSize: 18, marginBottom: 4 }}>{c.emoji}</div>
+                {c.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {phase === 'playing' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: 28, marginBottom: 6 }}>{cat.emoji}</div>
+            <div style={{ fontSize: 16, fontWeight: 800, color: '#fff', fontFamily: font, lineHeight: 1.4 }}>{cat.name}</div>
+            <div style={{ fontSize: 36, fontWeight: 900, color: timerColor, fontFamily: font, marginTop: 8 }}>{timer}s</div>
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 14 }}>
+            <input ref={inputRef} value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && submit()} placeholder="Type an answer…" style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: `1.5px solid ${timerColor}44`, borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 15, fontFamily: font, outline: 'none' }} />
+            <button onClick={submit} style={{ background: timerColor, border: 'none', borderRadius: 10, padding: '12px 16px', color: '#fff', fontWeight: 800, cursor: 'pointer', fontSize: 18 }}>✓</button>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, minHeight: 60 }}>
+            {answers.map((a, i) => (
+              <span key={i} style={{ fontSize: 13, fontWeight: 700, color: '#22c55e', background: '#22c55e14', border: '1px solid #22c55e30', borderRadius: 100, padding: '4px 12px' }}>{a}</span>
+            ))}
+          </div>
+        </>
+      )}
+      {phase === 'done' && (
+        <>
+          <div style={{ textAlign: 'center', padding: '16px 0 24px' }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>⏱️</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font }}>{answers.length} answers!</div>
+            <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Category: {cat.name}</div>
+          </div>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
+            {answers.map((a, i) => <span key={i} style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B', background: '#F59E0B14', border: '1px solid #F59E0B30', borderRadius: 100, padding: '6px 14px' }}>{a}</span>)}
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => start(cat)} style={{ flex: 1, background: 'linear-gradient(135deg,#F59E0B,#F97316)', border: 'none', borderRadius: 12, padding: '13px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>Same category</button>
+            <button onClick={() => setPhase('pick')} style={{ flex: 1, background: 'rgba(255,255,255,0.07)', border: 'none', borderRadius: 12, padding: '13px 0', color: '#fff', fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: font }}>New category</button>
+          </div>
+        </>
+      )}
+    </Modal>
+  );
+}
+
+function RoastBattleGame({ onClose }) {
+  const [players, setPlayers] = useState(['', '']);
+  const [phase, setPhase] = useState('setup'); // setup | roast | vote | scores
+  const [promptIdx, setPromptIdx] = useState(0);
+  const [roasterIdx, setRoasterIdx] = useState(0); // 0 or 1
+  const [timer, setTimer] = useState(30);
+  const [scores, setScores] = useState([0, 0]);
+  const [round, setRound] = useState(1);
+  const [prompts, setPrompts] = useState([]);
+  const timerRef = useRef(null);
+
+  const start = () => {
+    const shuffled = [...ROAST_PROMPTS].sort(() => Math.random() - 0.5);
+    setPrompts(shuffled); setPromptIdx(0); setRoasterIdx(0); setTimer(30); setScores([0, 0]); setRound(1);
+    setPhase('roast');
+    timerRef.current = setInterval(() => {
+      setTimer(t => { if (t <= 1) { clearInterval(timerRef.current); setPhase('vote'); return 0; } return t - 1; });
+    }, 1000);
+  };
+
+  const startNextRoast = () => {
+    setTimer(30); setPhase('roast');
+    timerRef.current = setInterval(() => {
+      setTimer(t => { if (t <= 1) { clearInterval(timerRef.current); setPhase('vote'); return 0; } return t - 1; });
+    }, 1000);
+  };
+
+  const vote = (winnerIdx) => {
+    const ns = [...scores]; ns[winnerIdx]++; setScores(ns);
+    const nextRoaster = 1 - roasterIdx;
+    const nextRound = round + 1;
+    if (nextRound > 3) { setPhase('scores'); return; }
+    setRound(nextRound); setPromptIdx(i => i + 1); setRoasterIdx(nextRoaster);
+    startNextRoast();
+  };
+
+  useEffect(() => () => clearInterval(timerRef.current), []);
+
+  const currentPrompt = prompts[promptIdx]?.replace(/{A}/g, players[roasterIdx])?.replace(/{B}/g, players[1 - roasterIdx]);
+  const timerColor = timer > 15 ? '#22c55e' : timer > 5 ? '#f59e0b' : '#ef4444';
+
+  return (
+    <Modal onClose={onClose} title="Roast Battle" emoji="🎤">
+      {phase === 'setup' && (
+        <>
+          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 24, lineHeight: 1.7 }}>
+            Two players. A random roast prompt. 30 seconds each. The audience votes who roasted better. Best of 3 wins. Keep it playful — roast with love!
+          </div>
+          {[0, 1].map(i => (
+            <div key={i} style={{ marginBottom: 12 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: i === 0 ? '#F43F5E' : '#8B5CF6', textTransform: 'uppercase', letterSpacing: '0.12em', marginBottom: 6 }}>Player {i + 1}</div>
+              <input value={players[i]} onChange={e => { const p = [...players]; p[i] = e.target.value; setPlayers(p); }} placeholder={`Player ${i + 1} name`} style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: `1.5px solid ${i === 0 ? 'rgba(244,63,94,0.3)' : 'rgba(139,92,246,0.3)'}`, borderRadius: 10, padding: '12px 14px', color: '#fff', fontSize: 15, fontFamily: font, outline: 'none', boxSizing: 'border-box', fontWeight: 700 }} />
+            </div>
+          ))}
+          <button onClick={start} disabled={!players[0].trim() || !players[1].trim()} style={{ width: '100%', marginTop: 8, background: players.every(p => p.trim()) ? 'linear-gradient(135deg,#F43F5E,#8B5CF6)' : 'rgba(255,255,255,0.05)', border: 'none', borderRadius: 12, padding: '15px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>
+            Let the Roast Begin 🎤
+          </button>
+        </>
+      )}
+      {phase === 'roast' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: 4 }}>Round {round} of 3</div>
+            <div style={{ fontSize: 20, fontWeight: 900, color: roasterIdx === 0 ? '#F43F5E' : '#8B5CF6', fontFamily: font }}>{players[roasterIdx]}'s turn to roast</div>
+            <div style={{ fontSize: 36, fontWeight: 900, color: timerColor, fontFamily: font, marginTop: 6 }}>{timer}s</div>
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: '20px 18px', marginBottom: 20, minHeight: 80, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', fontFamily: font, textAlign: 'center', lineHeight: 1.6 }}>{currentPrompt}</div>
+          </div>
+          <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>Audience vote happens when the timer ends</div>
+        </>
+      )}
+      {phase === 'vote' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ fontSize: 20, fontWeight: 900, color: '#fff', fontFamily: font }}>Who roasted better?</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>Round {round} · Audience votes</div>
+          </div>
+          <div style={{ display: 'flex', gap: 12 }}>
+            {[0, 1].map(i => (
+              <button key={i} onClick={() => vote(i)} style={{ flex: 1, padding: '20px 0', background: i === 0 ? '#F43F5E22' : '#8B5CF622', border: `2px solid ${i === 0 ? '#F43F5E66' : '#8B5CF666'}`, borderRadius: 16, cursor: 'pointer', fontFamily: font }}>
+                <div style={{ fontSize: 22, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#8B5CF6' }}>{players[i]}</div>
+                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{scores[i]} point{scores[i] !== 1 ? 's' : ''}</div>
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+      {phase === 'scores' && (
+        <>
+          <div style={{ textAlign: 'center', marginBottom: 24 }}>
+            <div style={{ fontSize: 40 }}>🎤</div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff', fontFamily: font, marginTop: 8 }}>
+              {scores[0] === scores[1] ? "It's a tie!" : `${players[scores[0] > scores[1] ? 0 : 1]} wins!`}
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+            {[0, 1].map(i => (
+              <div key={i} style={{ flex: 1, textAlign: 'center', background: i === 0 ? '#F43F5E18' : '#8B5CF618', border: `1.5px solid ${i === 0 ? '#F43F5E40' : '#8B5CF640'}`, borderRadius: 14, padding: '20px 0' }}>
+                <div style={{ fontSize: 36, fontWeight: 900, color: i === 0 ? '#F43F5E' : '#8B5CF6' }}>{scores[i]}</div>
+                <div style={{ fontSize: 14, color: '#fff', fontFamily: font, fontWeight: 700, marginTop: 4 }}>{players[i]}</div>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => { setPhase('setup'); setPlayers(['', '']); }} style={{ width: '100%', background: 'linear-gradient(135deg,#F43F5E,#8B5CF6)', border: 'none', borderRadius: 12, padding: '14px 0', color: '#fff', fontSize: 15, fontWeight: 800, cursor: 'pointer', fontFamily: font }}>New Battle 🎤</button>
+        </>
+      )}
+    </Modal>
+  );
+}
 
 // ── Coordination tool modals ──────────────────────────────────────────────────
 
@@ -1217,6 +1911,12 @@ export default function HousePartyHub() {
       case "seating":     return <SeatingChartModal onClose={() => setOpen(null)} />;
       case "daytimeline": return <DayTimelineModal onClose={() => setOpen(null)} />;
       case "venue":       return <VenueNotesModal onClose={() => setOpen(null)} />;
+      case "twotruthslie": return <TwoTruthsLieGame onClose={() => setOpen(null)} />;
+      case "hotseat":      return <HotSeatGame onClose={() => setOpen(null)} />;
+      case "darewheel":    return <DareWheelGame onClose={() => setOpen(null)} />;
+      case "wordwolf":     return <WordWolfGame onClose={() => setOpen(null)} />;
+      case "categoryblitz": return <CategoryBlitzGame onClose={() => setOpen(null)} />;
+      case "roastbattle":  return <RoastBattleGame onClose={() => setOpen(null)} />;
       default: return null;
     }
   };
