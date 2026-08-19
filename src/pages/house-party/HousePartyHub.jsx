@@ -1064,143 +1064,80 @@ function ShareableTool({ onClose, emoji, title, description, path, fields }) {
   );
 }
 
-// ── Polygon Layout (triangle for 3, square for 4, pentagon for 5 … octagon for 8) ──
-function PolygonGrid({ tools, onOpen }) {
-  const containerRef = useRef(null);
-  const [size, setSize] = useState(340);
+// ── Clean card grid (list for manage, 2-col for fun/games) ──
+function HPToolGrid({ tools, onOpen, sectionId }) {
+  const isManage = sectionId === 'manage';
 
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const ro = new ResizeObserver(([entry]) => setSize(entry.contentRect.width));
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  const n = tools.length;
-  const cx = size / 2;
-  const cy = size / 2;
-  const R = size * 0.355;
-  // Larger nodes for fewer items, smaller for more
-  const nW = Math.max(64, Math.min(size * 0.26, 64 + (8 - n) * 4));
-  const nH = nW * 1.12;
-
-  const pts = tools.map((_, i) => {
-    const a = ((i * 360) / n - 90) * (Math.PI / 180);
-    return { x: cx + R * Math.cos(a), y: cy + R * Math.sin(a) };
-  });
-
-  // Even N → diameters (opposite vertices); Odd N → spokes from center
-  const innerLines = n % 2 === 0
-    ? Array.from({ length: n / 2 }, (_, i) => [pts[i], pts[i + n / 2]])
-    : pts.map(p => [{ x: cx, y: cy }, p]);
+  if (isManage) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 7, width: '100%' }}>
+        {tools.map((t, i) => (
+          <button key={t.id} onClick={() => onOpen(t.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 14, width: '100%',
+              padding: '13px 14px 13px 0',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderLeft: `3px solid ${t.color}`,
+              borderRadius: 14, cursor: 'pointer',
+              fontFamily: font,
+              animation: `hp-tool-in 0.32s cubic-bezier(0.22,1,0.36,1) ${i * 0.03}s both`,
+              transition: 'background 0.14s, box-shadow 0.14s',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = `${t.color}10`; e.currentTarget.style.boxShadow = `inset 0 0 0 1px ${t.color}30`; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.boxShadow = ''; }}
+          >
+            <div style={{ width: 44, height: 44, borderRadius: 12, background: `${t.color}18`, border: `1px solid ${t.color}28`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginLeft: 14, color: t.color }}>
+              {TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>)}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em', marginBottom: 2 }}>{t.title}</div>
+              <div style={{ fontSize: 11.5, color: 'rgba(255,255,255,0.38)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.desc}</div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ flexShrink: 0, marginRight: 4, opacity: 0.25 }}>
+              <path d="M5 2.5l4.5 4.5L5 11.5" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div ref={containerRef} style={{ width: '100%', position: 'relative', paddingBottom: '100%', maxWidth: 460, margin: '0 auto' }}>
-      <div style={{ position: 'absolute', inset: 0 }}>
-        <svg
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', overflow: 'visible' }}
-          viewBox={`0 0 ${size} ${size}`}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 10, width: '100%' }}>
+      {tools.map((t, i) => (
+        <button key={t.id} onClick={() => onOpen(t.id)}
+          style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
+            padding: '16px 14px',
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderTop: `2.5px solid ${t.color}60`,
+            borderRadius: 14, cursor: 'pointer',
+            fontFamily: font,
+            animation: `hp-tool-in 0.32s cubic-bezier(0.22,1,0.36,1) ${i * 0.03}s both`,
+            transition: 'background 0.14s, box-shadow 0.14s',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+          onMouseEnter={e => { e.currentTarget.style.background = `${t.color}10`; e.currentTarget.style.boxShadow = `0 4px 20px ${t.color}18`; }}
+          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.boxShadow = ''; }}
         >
-          <defs>
-            <filter id="pg-glow" x="-60%" y="-60%" width="220%" height="220%">
-              <feGaussianBlur stdDeviation="3.5" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-            <filter id="pg-glow-sm" x="-60%" y="-60%" width="220%" height="220%">
-              <feGaussianBlur stdDeviation="1.8" result="blur"/>
-              <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-            </filter>
-          </defs>
-
-          {/* Inner lines — diameters (even) or spokes (odd) */}
-          {innerLines.map(([a, b], i) => (
-            <line key={`il${i}`}
-              x1={a.x} y1={a.y} x2={b.x} y2={b.y}
-              stroke="rgba(167,139,250,0.14)" strokeWidth="1"
-            />
-          ))}
-
-          {/* Outer polygon edges */}
-          {Array.from({ length: n }, (_, i) => (
-            <line key={`e${i}`}
-              x1={pts[i].x} y1={pts[i].y}
-              x2={pts[(i + 1) % n].x} y2={pts[(i + 1) % n].y}
-              stroke="rgba(196,122,46,0.35)" strokeWidth="1.6"
-              filter="url(#pg-glow-sm)"
-            />
-          ))}
-
-          {/* Vertex dots */}
-          {pts.map((p, i) => (
-            <circle key={`v${i}`} cx={p.x} cy={p.y} r={3.5}
-              fill="rgba(196,122,46,0.7)" filter="url(#pg-glow-sm)" />
-          ))}
-
-          {/* Center dot */}
-          <circle cx={cx} cy={cy} r={5}
-            fill="rgba(196,122,46,0.55)" filter="url(#pg-glow)" />
-        </svg>
-
-        {/* Tool nodes */}
-        {tools.map((t, i) => {
-          const p = pts[i];
-          return (
-            <button
-              key={t.id}
-              onClick={() => onOpen(t.id)}
-              style={{
-                position: 'absolute',
-                width: nW,
-                height: nH,
-                left: p.x - nW / 2,
-                top: p.y - nH / 2,
-                background: `radial-gradient(circle at 50% 30%, ${t.color}2a, rgba(14,10,4,0.92))`,
-                border: `1.5px solid ${t.color}55`,
-                borderRadius: 14,
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 5,
-                padding: '6px 4px',
-                fontFamily: font,
-                transition: 'transform 0.18s, box-shadow 0.18s, border-color 0.18s',
-                boxSizing: 'border-box',
-                WebkitTapHighlightColor: 'transparent',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'scale(1.1)';
-                e.currentTarget.style.boxShadow = `0 0 24px ${t.color}55`;
-                e.currentTarget.style.borderColor = `${t.color}bb`;
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = 'none';
-                e.currentTarget.style.borderColor = `${t.color}55`;
-              }}
-            >
-              <span style={{ color: t.color, display: "flex", lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>, Math.max(18, nW * 0.27))}</span>
-              <span style={{
-                fontSize: Math.max(11, nW * 0.12),
-                fontWeight: 700,
-                color: '#fff',
-                textAlign: 'center',
-                lineHeight: 1.2,
-                padding: '0 3px',
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-              }}>{t.title}</span>
-              <div style={{ width: '44%', height: 2, background: t.color, borderRadius: 4, opacity: 0.72 }} />
-            </button>
-          );
-        })}
-      </div>
+          <div style={{ width: 38, height: 38, borderRadius: 10, background: `${t.color}15`, border: `1px solid ${t.color}25`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: t.color }}>
+            {TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>)}
+          </div>
+          <div style={{ width: '100%' }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#fff', letterSpacing: '-0.01em', marginBottom: 4, textAlign: 'left' }}>{t.title}</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.38)', lineHeight: 1.5, textAlign: 'left' }}>{t.desc}</div>
+          </div>
+        </button>
+      ))}
     </div>
   );
 }
+
+// ── (legacy PolygonGrid removed) ──
+
 
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN HUB
@@ -3132,48 +3069,7 @@ export default function HousePartyHub() {
                 </div>
               </div>
 
-              {/* Polygon web (triangle/square/pentagon/…/octagon) or plain grid for 1-2 */}
-              {tools.length >= 3 ? (
-                <PolygonGrid tools={tools} onOpen={openTool} />
-              ) : (
-                <div className="hp-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 10 }}>
-                  {tools.map((t, ti) => {
-                    const isHovered = hoveredTool === t.id;
-                    const g = glare[t.id];
-                    const cardBg = g
-                      ? `radial-gradient(circle at ${g.x}% ${g.y}%, ${t.color}33 0%, rgba(255,255,255,0.06) 55%), rgba(255,255,255,0.04)`
-                      : "rgba(255,255,255,0.04)";
-                    return (
-                      <div
-                        key={t.id}
-                        data-hp-card
-                        onClick={() => openTool(t.id)}
-                        onMouseEnter={() => setHoveredTool(t.id)}
-                        onMouseMove={(e) => handleCardMouseMove(e, t.id)}
-                        onMouseLeave={() => handleCardMouseLeave(t.id)}
-                        style={{
-                          background: cardBg,
-                          border: `1.5px solid ${isHovered ? t.color + "55" : "rgba(255,255,255,0.07)"}`,
-                          borderRadius: 16,
-                          padding: "18px 15px 15px",
-                          cursor: "pointer",
-                          transition: "border-color 0.18s, box-shadow 0.18s, transform 0.18s",
-                          transform: isHovered ? "translateY(-3px) scale(1.01)" : "none",
-                          boxShadow: isHovered ? `0 10px 32px ${t.color}28` : "none",
-                          animation: `hp-tool-in 0.4s ease both`,
-                          animationDelay: `${(si * tools.length + ti) * 0.04}s`,
-                          willChange: "background",
-                        }}
-                      >
-                        <div style={{ color: t.color, marginBottom: 10, lineHeight: 1 }}>{TOOL_ICONS[t.id] || hpic(<circle cx="12" cy="12" r="9"/>)}</div>
-                        <div style={{ fontSize: 12.5, fontWeight: 700, color: "#fff", marginBottom: 5, lineHeight: 1.3 }}>{t.title}</div>
-                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.38)", lineHeight: 1.4 }}>{t.desc}</div>
-                        <div style={{ width: 20, height: 2.5, background: t.color, borderRadius: 4, marginTop: 12, opacity: isHovered ? 1 : 0.55, transition: "opacity 0.18s" }} />
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+              <HPToolGrid tools={tools} onOpen={openTool} sectionId={sec.id} />
             </div>
           );
         })}
